@@ -134,6 +134,7 @@ private:
         TEST_CASE(varid14);
         TEST_CASE(varid15);
         TEST_CASE(varid16);
+        TEST_CASE(varid17); // ticket #1810
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -1864,6 +1865,24 @@ private:
                                    "2: {\n"
                                    "3: int x@1 ; x@1 = 1 ;\n"
                                    "4: y = ( z * x@1 ) ;\n"
+                                   "5: }\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid17() // ticket #1810
+    {
+        const std::string code("char foo()\n"
+                               "{\n"
+                               "    char c('c');\n"
+                               "    return c;\n"
+                               "}\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: char foo ( )\n"
+                                   "2: {\n"
+                                   "3: char c@1 ( 'c' ) ;\n"
+                                   "4: return c@1 ;\n"
                                    "5: }\n");
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));

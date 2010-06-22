@@ -2822,6 +2822,7 @@ void Tokenizer::setVarId()
             if (Token::Match(tok2->next(), "%num%") ||
                 Token::Match(tok2->next(), "%bool%") ||
                 tok2->next()->str()[0] == '"' ||
+                tok2->next()->str()[0] == '\'' ||
                 tok2->next()->varId() != 0)
             {
                 // This is not a function
