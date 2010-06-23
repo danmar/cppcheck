@@ -73,6 +73,7 @@ private:
         TEST_CASE(localvaralias4); // ticket #1643
         TEST_CASE(localvaralias5); // ticket #1647
         TEST_CASE(localvaralias6); // ticket #1729
+        TEST_CASE(localvaralias7); // ticket #1732
         TEST_CASE(localvarasm);
 
         // Don't give false positives for variables in structs/unions
@@ -766,37 +767,37 @@ private:
                               "{\n"
                               "    int * i[2];\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    const int * i[2];\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    void * i[2];\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    const void * i[2];\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    struct A * i[2];\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    const struct A * i[2];\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
 
         functionVariableUsage("void foo(int n)\n"
                               "{\n"
@@ -1761,6 +1762,18 @@ private:
                               "    b(srcdata);\n"
                               "}");
         TODO_ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvaralias7() // ticket 1732
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char *c[10];\n"
+                              "    char **cp;\n"
+                              "    cp = c;\n"
+                              "    *cp = 0;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarasm()
