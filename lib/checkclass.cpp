@@ -1721,7 +1721,7 @@ bool CheckClass::sameFunc(int nest, const Token *firstEnd, const Token *secondEn
     bool firstDone = false;
     bool secondDone = false;
 
-    while (true)
+    for ( ; ; )
     {
         firstDone = false;
         secondDone = false;
@@ -1750,7 +1750,7 @@ bool CheckClass::sameFunc(int nest, const Token *firstEnd, const Token *secondEn
     firstStart = firstEnd->link()->next();
     secondStart = secondEnd->link()->next();
 
-    while (true)
+    for ( ; ; )
     {
         firstDone = false;
         secondDone = false;
