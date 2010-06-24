@@ -891,6 +891,29 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
     return next;
 }
 
+static bool nextIsStandardType(const Token *tok)
+{
+    tok = tok->next();
+
+    if (tok->str() == "static")
+        tok = tok->next();
+
+    return tok->isStandardType();
+}
+
+static bool nextIsStandardTypeOrVoid(const Token *tok)
+{
+    tok = tok->next();
+
+    if (tok->str() == "static")
+        tok = tok->next();
+
+    if (tok->str() == "const")
+        tok = tok->next();
+
+    return tok->isStandardType() || tok->str() == "void";
+}
+
 void CheckOther::functionVariableUsage()
 {
     if (!_settings->_checkCodingStyle)
@@ -940,72 +963,133 @@ void CheckOther::functionVariableUsage()
             }
 
             // standard type declaration with possible initialization
-            // int i; int j = 0;
-            if (Token::Match(tok, "[;{}] %type% %var% ;|=") &&
-                tok->next()->isStandardType())
+            // int i; int j = 0; static int k;
+            if (Token::Match(tok, "[;{}] static| %type% %var% ;|=") &&
+                nextIsStandardType(tok))
             {
-                variables.addVar(tok->tokAt(2), Variables::standard,
-                                 tok->tokAt(3)->str() == "=");
-                tok = tok->tokAt(2);
+                tok = tok->next();
+
+                if (tok->str() == "static")
+                    tok = tok->next();
+
+                variables.addVar(tok->next(), Variables::standard,
+                                 tok->tokAt(2)->str() == "=" ||
+                                 tok->previous()->str() == "static");
+                tok = tok->next();
             }
 
             // standard type declaration and initialization using constructor
-            // int i(0);
-            else if (Token::Match(tok, "[;{}] %type% %var% ( %any% ) ;") &&
-                     tok->next()->isStandardType())
+            // int i(0); static int j(0);
+            else if (Token::Match(tok, "[;{}] static| %type% %var% ( %any% ) ;") &&
+                     nextIsStandardType(tok))
             {
-                variables.addVar(tok->tokAt(2), Variables::standard, true);
+                tok = tok->next();
+
+                if (tok->str() == "static")
+                    tok = tok->next();
+
+                variables.addVar(tok->next(), Variables::standard, true);
 
                 // check if a local variable is used to initialize this variable
-                if (tok->tokAt(4)->varId() > 0)
-                    variables.readAll(tok->tokAt(4)->varId());
-                tok = tok->tokAt(5);
+                if (tok->tokAt(3)->varId() > 0)
+                    variables.readAll(tok->tokAt(3)->varId());
+                tok = tok->tokAt(4);
             }
 
             // standard type declaration of array of with possible initialization
-            // int i[10]; int j[2] = { 0, 1 };
-            else if (Token::Match(tok, "[;{}] %type% %var% [ %any% ] ;|=") &&
-                     tok->next()->isStandardType())
+            // int i[10]; int j[2] = { 0, 1 }; static int k[2] = { 2, 3 };
+            else if (Token::Match(tok, "[;{}] static| %type% %var% [ %any% ] ;|=") &&
+                     nextIsStandardType(tok))
             {
-                variables.addVar(tok->tokAt(2), Variables::array,
-                                 tok->tokAt(6)->str() == "=");
+                tok = tok->next();
+
+                if (tok->str() == "static")
+                    tok = tok->next();
+
+                variables.addVar(tok->tokAt(1), Variables::array,
+                                 tok->tokAt(5)->str() == "=" || tok->str() == "static");
 
                 // check for reading array size from local variable
-                if (tok->tokAt(4)->varId() != 0)
-                    variables.read(tok->tokAt(4)->varId());
+                if (tok->tokAt(3)->varId() != 0)
+                    variables.read(tok->tokAt(3)->varId());
 
                 // look at initializers
-                if (Token::Match(tok->tokAt(6), "= {"))
+                if (Token::Match(tok->tokAt(5), "= {"))
                 {
-                    tok = tok->tokAt(8);
-                    while (tok && tok->str() != "}")
+                    tok = tok->tokAt(7);
+                    while (tok->str() != "}")
                     {
                         if (Token::Match(tok, "%var%"))
                             variables.read(tok->varId());
                         tok = tok->next();
                     }
-                    tok = tok->next();
                 }
                 else
-                    tok = tok->tokAt(5);
+                    tok = tok->tokAt(4);
             }
 
             // pointer or reference declaration with possible initialization
-            // int * i; int * j = 0;
-            else if (Token::Match(tok, "[;{}] %type% *|& %var% ;|="))
+            // int * i; int * j = 0; static int * k = 0;
+            else if (Token::Match(tok, "[;{}] static| const| %type% *|& %var% ;|="))
             {
-                if (tok->next()->str() != "return")
+                bool isStatic = false;
+
+                tok = tok->next();
+
+                if (tok->str() == "static")
+                {
+                    tok = tok->next();
+                    isStatic = true;
+                }
+
+                if (tok->str() == "const")
+                    tok = tok->next();
+
+                if (tok->str() != "return")
                 {
                     Variables::VariableType type;
 
-                    if (tok->tokAt(2)->str() == "*")
+                    if (tok->next()->str() == "*")
                         type = Variables::pointer;
                     else
                         type = Variables::reference;
 
+                    bool written = tok->tokAt(3)->str() == "=";
+
+                    variables.addVar(tok->tokAt(2), type, written || isStatic);
+
+                    int offset = 0;
+
+                    // check for assignment
+                    if (written)
+                        offset = doAssignment(variables, tok->tokAt(2), false);
+
+                    tok = tok->tokAt(2 + offset);
+                }
+            }
+
+            // pointer to pointer declaration with possible initialization
+            // int ** i; int ** j = 0; static int ** k = 0;
+            else if (Token::Match(tok, "[;{}] static| const| %type% * * %var% ;|="))
+            {
+                bool isStatic = false;
+
+                tok = tok->next();
+
+                if (tok->str() == "static")
+                {
+                    tok = tok->next();
+                    isStatic = true;
+                }
+
+                if (tok->str() == "const")
+                    tok = tok->next();
+
+                if (tok->str() != "return")
+                {
                     bool written = tok->tokAt(4)->str() == "=";
 
-                    variables.addVar(tok->tokAt(3), type, written);
+                    variables.addVar(tok->tokAt(3), Variables::pointerPointer, written || isStatic);
 
                     int offset = 0;
 
@@ -1017,57 +1101,21 @@ void CheckOther::functionVariableUsage()
                 }
             }
 
-            // const pointer or reference declaration with possible initialization
-            // const int * i; const int * j = 0;
-            else if (Token::Match(tok, "[;{}] const %type% *|& %var% ;|="))
-            {
-                Variables::VariableType type;
-
-                if (tok->tokAt(3)->str() == "*")
-                    type = Variables::pointer;
-                else
-                    type = Variables::reference;
-
-                bool written = tok->tokAt(5)->str() == "=";
-
-                variables.addVar(tok->tokAt(4), type, written);
-
-                int offset = 0;
-
-                // check for assignment
-                if (written)
-                    offset = doAssignment(variables, tok->tokAt(4), false);
-
-                tok = tok->tokAt(4 + offset);
-            }
-
-            // pointer to pointer declaration with possible initialization
-            // int ** i; int ** j = 0;
-            else if (Token::Match(tok, "[;{}] %type% * * %var% ;|="))
-            {
-                if (tok->next()->str() != "return")
-                {
-                    bool written = tok->tokAt(5)->str() == "=";
-
-                    variables.addVar(tok->tokAt(4), Variables::pointerPointer, written);
-
-                    int offset = 0;
-
-                    // check for assignment
-                    if (written)
-                        offset = doAssignment(variables, tok->tokAt(4), false);
-
-                    tok = tok->tokAt(4 + offset);
-                }
-            }
-
             // pointer or reference of struct or union declaration with possible initialization
-            // struct s * i; struct s * j = 0;
-            else if (Token::Match(tok, "[;{}] const| struct|union %type% *|& %var% ;|="))
+            // struct s * i; struct s * j = 0; static struct s * k = 0;
+            else if (Token::Match(tok, "[;{}] static| const| struct|union %type% *|& %var% ;|="))
             {
                 Variables::VariableType type;
+                bool isStatic = false;
 
                 tok = tok->next();
+
+                if (tok->str() == "static")
+                {
+                    tok = tok->next();
+                    isStatic = true;
+                }
+
                 if (tok->str() == "const")
                     tok = tok->next();
 
@@ -1078,7 +1126,7 @@ void CheckOther::functionVariableUsage()
 
                 const bool written = tok->strAt(4) == "=";
 
-                variables.addVar(tok->tokAt(3), type, written);
+                variables.addVar(tok->tokAt(3), type, written || isStatic);
 
                 int offset = 0;
 
@@ -1090,13 +1138,21 @@ void CheckOther::functionVariableUsage()
             }
 
             // pointer or reference declaration with initialization using constructor
-            // int * i(j); int * k(i);
-            else if (Token::Match(tok, "[;{}] %type% &|* %var% ( %any% ) ;") &&
-                     (tok->next()->isStandardType() || tok->next()->str() == "void"))
+            // int * i(j); int * k(i); static int * l(i);
+            else if (Token::Match(tok, "[;{}] static| const| %type% &|* %var% ( %any% ) ;") &&
+                     nextIsStandardTypeOrVoid(tok))
             {
                 Variables::VariableType type;
 
-                if (tok->tokAt(2)->str() == "*")
+                tok = tok->next();
+
+                if (tok->str() == "static")
+                    tok = tok->next();
+
+                if (tok->str() == "const")
+                    tok = tok->next();
+
+                if (tok->next()->str() == "*")
                     type = Variables::pointer;
                 else
                     type = Variables::reference;
@@ -1104,10 +1160,10 @@ void CheckOther::functionVariableUsage()
                 unsigned int varid = 0;
 
                 // check for aliased variable
-                if (Token::Match(tok->tokAt(5), "%var%"))
-                    varid = tok->tokAt(5)->varId();
+                if (Token::Match(tok->tokAt(4), "%var%"))
+                    varid = tok->tokAt(4)->varId();
 
-                variables.addVar(tok->tokAt(3), type, true);
+                variables.addVar(tok->tokAt(2), type, true);
 
                 // check if a local variable is used to initialize this variable
                 if (varid > 0)
@@ -1116,7 +1172,7 @@ void CheckOther::functionVariableUsage()
 
                     if (type == Variables::pointer)
                     {
-                        variables.use(tok->tokAt(5)->varId());
+                        variables.use(tok->tokAt(4)->varId());
 
                         if (var && (var->_type == Variables::array ||
                                     var->_type == Variables::pointer))
@@ -1124,106 +1180,71 @@ void CheckOther::functionVariableUsage()
                     }
                     else
                     {
-                        variables.readAll(tok->tokAt(5)->varId());
+                        variables.readAll(tok->tokAt(4)->varId());
                         if (var)
                             var->_aliases.insert(tok->varId());
                     }
                 }
-                tok = tok->tokAt(6);
-            }
-
-            // const pointer or reference declaration with initialization using constructor
-            // const int * i(j); const int * k(i);
-            else if (Token::Match(tok, "[;{}] const %type% &|* %var% ( %any% ) ;") &&
-                     (tok->tokAt(2)->isStandardType() || tok->tokAt(2)->str() == "void"))
-            {
-                Variables::VariableType type;
-
-                if (tok->tokAt(3)->str() == "*")
-                    type = Variables::pointer;
-                else
-                    type = Variables::reference;
-
-                unsigned int varid = 0;
-
-                // check for aliased variable
-                if (Token::Match(tok->tokAt(6), "%var%"))
-                    varid = tok->tokAt(6)->varId();
-
-                variables.addVar(tok->tokAt(4), type, true);
-
-                // check if a local variable is used to initialize this variable
-                if (varid > 0)
-                {
-                    Variables::VariableUsage	*var = variables.find(varid);
-
-                    if (type == Variables::pointer)
-                    {
-                        variables.use(tok->tokAt(6)->varId());
-
-                        if (var && (var->_type == Variables::array ||
-                                    var->_type == Variables::pointer))
-                            var->_aliases.insert(tok->varId());
-                    }
-                    else
-                    {
-                        variables.readAll(tok->tokAt(6)->varId());
-                        if (var)
-                            var->_aliases.insert(tok->varId());
-                    }
-                }
-                tok = tok->tokAt(7);
+                tok = tok->tokAt(5);
             }
 
             // array of pointer or reference declaration with possible initialization
-            // int * p[10]; int * q[10] = { 0 };
-            else if (Token::Match(tok, "[;{}] %type% *|& %var% [ %any% ] ;|="))
+            // int * p[10]; int * q[10] = { 0 }; static int * * r[10] = { 0 };
+            else if (Token::Match(tok, "[;{}] static| const| %type% *|& %var% [ %any% ] ;|="))
             {
-                if (tok->next()->str() != "return")
+                bool isStatic = false;
+
+                tok = tok->next();
+
+                if (tok->str() == "static")
                 {
-                    variables.addVar(tok->tokAt(3),
-                                     tok->tokAt(2)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
-                                     tok->tokAt(7)->str() == "=");
+                    tok = tok->next();
+                    isStatic = true;
+                }
+
+                if (tok->str() == "const")
+                    tok = tok->next();
+
+                if (tok->str() != "return")
+                {
+                    variables.addVar(tok->tokAt(2),
+                                     tok->next()->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
+                                     tok->tokAt(6)->str() == "=" || isStatic);
 
                     // check for reading array size from local variable
-                    if (tok->tokAt(5)->varId() != 0)
-                        variables.read(tok->tokAt(5)->varId());
+                    if (tok->tokAt(4)->varId() != 0)
+                        variables.read(tok->tokAt(4)->varId());
 
-                    tok = tok->tokAt(6);
+                    tok = tok->tokAt(5);
                 }
             }
 
-            // const array of pointer or reference declaration with possible initialization
-            // const int * p[10]; const int * q[10] = { 0 };
-            else if (Token::Match(tok, "[;{}] const %type% *|& %var% [ %any% ] ;|="))
-            {
-                variables.addVar(tok->tokAt(4),
-                                 tok->tokAt(3)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
-                                 tok->tokAt(8)->str() == "=");
-
-                // check for reading array size from local variable
-                if (tok->tokAt(6)->varId() != 0)
-                    variables.read(tok->tokAt(6)->varId());
-
-                tok = tok->tokAt(7);
-            }
-
             // array of pointer or reference of struct or union declaration with possible initialization
-            // struct S * p[10]; struct T * q[10] = { 0 };
-            else if (Token::Match(tok, "[;{}] const| struct|union %type% *|& %var% [ %any% ] ;|="))
+            // struct S * p[10]; struct T * q[10] = { 0 }; static struct S * r[10] = { 0 };
+            else if (Token::Match(tok, "[;{}] static| const| struct|union %type% *|& %var% [ %any% ] ;|="))
             {
-                if (tok->next()->str() == "const")
+                bool isStatic = false;
+
+                tok = tok->next();
+
+                if (tok->str() == "static")
+                {
+                    tok = tok->next();
+                    isStatic = true;
+                }
+
+                if (tok->str() == "const")
                     tok = tok->next();
 
-                variables.addVar(tok->tokAt(4),
-                                 tok->tokAt(3)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
-                                 tok->tokAt(8)->str() == "=");
+                variables.addVar(tok->tokAt(3),
+                                 tok->tokAt(2)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
+                                 tok->tokAt(7)->str() == "=" || isStatic);
 
                 // check for reading array size from local variable
-                if (tok->tokAt(6)->varId() != 0)
-                    variables.read(tok->tokAt(6)->varId());
+                if (tok->tokAt(5)->varId() != 0)
+                    variables.read(tok->tokAt(5)->varId());
 
-                tok = tok->tokAt(7);
+                tok = tok->tokAt(6);
             }
 
             else if (Token::Match(tok, "delete|return|throw %var%"))

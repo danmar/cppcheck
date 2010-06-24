@@ -75,6 +75,7 @@ private:
         TEST_CASE(localvaralias6); // ticket #1729
         TEST_CASE(localvaralias7); // ticket #1732
         TEST_CASE(localvarasm);
+        TEST_CASE(localvarstatic);
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -1969,6 +1970,50 @@ private:
                               "  fn();\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarstatic()
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    static int i;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    static int i = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    static int i(0);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    static int i(a);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    static int j = 0;\n"
+                              "    static int i(j);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("int * foo(int x)\n"
+                              "{\n"
+                              "    static int a[] = { 3, 4, 5, 6 };\n"
+                              "    static int b[] = { 4, 5, 6, 7 };\n"
+                              "    static int c[] = { 5, 6, 7, 8 };\n"
+                              "    b[1] = 1;\n"
+                              "    return x ? a : c;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
     }
 };
 
