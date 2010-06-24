@@ -50,6 +50,7 @@ private:
         TEST_CASE(uninitVar4);
         TEST_CASE(uninitVar5);
         TEST_CASE(uninitVar6);
+        TEST_CASE(uninitVar7);
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1535,6 +1536,28 @@ private:
                        "private:\n"
                        "    int mi;\n"
                        "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar7()
+    {
+        checkUninitVar("class Foo {\n"
+                       "    int a;\n"
+                       "public:\n"
+                       "    Foo() : a(0) {}\n"
+                       "    Foo& operator=(const Foo&);\n"
+                       "    void Swap(Foo& rhs);\n"
+                       "};\n"
+                       "\n"
+                       "void Foo::Swap(Foo& rhs) {\n"
+                       "    std::swap(a,rhs.a);\n"
+                       "}\n"
+                       "\n"
+                       "Foo& Foo::operator=(const Foo& rhs) {\n"
+                       "    Foo copy(rhs);\n"
+                       "    copy.Swap(*this);\n"
+                       "    return *this;\n"
+                       "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

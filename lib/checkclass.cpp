@@ -283,6 +283,9 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             break;
         }
 
+        if (Token::Match(ftok->next(), "%var% . %var% ("))
+            ftok = ftok->tokAt(2);
+
         if (!Token::Match(ftok->next(), "%var%") &&
             !Token::Match(ftok->next(), "this . %var%") &&
             !Token::Match(ftok->next(), "* %var% =") &&
