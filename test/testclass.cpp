@@ -51,6 +51,7 @@ private:
         TEST_CASE(uninitVar5);
         TEST_CASE(uninitVar6);
         TEST_CASE(uninitVar7);
+        TEST_CASE(uninitVar8);
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1559,6 +1560,24 @@ private:
                        "    return *this;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar8()
+    {
+        checkUninitVar("class Foo {\n"
+                       "    int a;\n"
+                       "public:\n"
+                       "    Foo() : a(0) {}\n"
+                       "    Foo& operator=(const Foo&);\n"
+                       "};\n"
+                       "\n"
+                       "Foo& Foo::operator=(const Foo& rhs) {\n"
+                       "    if (&rhs != this)\n"
+                       "    {\n"
+                       "    }\n"
+                       "    return *this;\n"
+                       "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (style) Member variable 'Foo::a' is not assigned a value in 'Foo::operator='\n", errout.str());
     }
 
     void uninitVarArray1()
