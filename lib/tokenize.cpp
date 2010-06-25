@@ -4312,7 +4312,7 @@ bool Tokenizer::simplifyQuestionMark()
             {
                 if (endTok->str() == ";")
                 {
-                    Token::eraseTokens(semicolon->previous(), endTok->next());
+                    Token::eraseTokens(semicolon->previous(), endTok);
                     ret = true;
                     break;
                 }
