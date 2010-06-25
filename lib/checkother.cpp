@@ -2948,6 +2948,15 @@ private:
                             !Token::Match(tok2->previous(), "&|::") &&
                             !Token::simpleMatch(tok2->next(), "="))
                         {
+                            // Multiple assignments..
+                            if (Token::simpleMatch(tok2->next(), "["))
+                            {
+                                const Token * tok3 = tok2;
+                                while (Token::simpleMatch(tok3->next(), "["))
+                                    tok3 = tok3->next()->link();
+                                if (Token::simpleMatch(tok3, "] ="))
+                                    continue;
+                            }
                             bool foundError;
                             if (tok2->previous()->str() == "*" || tok2->next()->str() == "[")
                                 foundError = use_array_or_pointer_data(checks, tok2);

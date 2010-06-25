@@ -1819,6 +1819,13 @@ private:
 
         checkUninitVar("void f()\n"
                        "{\n"
+                       "    char a, b[10];\n"
+                       "    a = b[0] = 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
                        "    char a[10], b[10];\n"
                        "    a[0] = b[0] = 0;\n"
                        "}\n");
