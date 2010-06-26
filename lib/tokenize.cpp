@@ -3934,6 +3934,14 @@ void Tokenizer::simplifyIfAddBraces()
         {
             if (tempToken->str() == "{")
             {
+                if (Token::simpleMatch(tempToken->previous(),"else {"))
+                {
+                    if (innerIf)
+                        tempToken = tempToken->link();
+                    else
+                        tempToken = tempToken->tokAt(-2);
+                    break;
+                }
                 tempToken = tempToken->link();
                 if (tempToken->next()->isName() && tempToken->next()->str() != "else")
                     break;
