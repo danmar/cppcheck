@@ -5258,6 +5258,22 @@ void Tokenizer::simplifyInitVar()
     }
 }
 
+static bool isOp(const Token *tok)
+{
+    return bool(tok &&
+                (tok->str() == "&&" ||
+                 tok->str() == "||" ||
+                 tok->str() == "==" ||
+                 tok->str() == "!=" ||
+                 tok->str() == "<" ||
+                 tok->str() == "<=" ||
+                 tok->str() == ">" ||
+                 tok->str() == ">=" ||
+                 tok->str() == "<<" ||
+                 tok->str() == ">>" ||
+                 Token::Match(tok, "[;+-*/%&|^]")));
+}
+
 Token * Tokenizer::initVar(Token * tok)
 {
     // call constructor of class => no simplification
@@ -5344,6 +5360,7 @@ bool Tokenizer::simplifyKnownVariables()
                 const bool pointeralias(tok2->tokAt(2)->isName() || tok2->tokAt(2)->str() == "&");
 
                 std::string value;
+                unsigned int valueVarId = 0;
 
                 Token *tok3 = NULL;
                 bool valueIsPointer = false;
@@ -5375,7 +5392,10 @@ bool Tokenizer::simplifyKnownVariables()
                     // no break => the value of the counter value is known after the for loop..
                     const std::string compareop = tok2->strAt(5);
                     if (compareop == "<")
+                    {
                         value = tok2->strAt(6);
+                        valueVarId = tok2->tokAt(6)->varId();
+                    }
                     else
                         value = MathLib::toString(MathLib::toLongNumber(tok2->strAt(6)) + 1);
 
@@ -5385,11 +5405,16 @@ bool Tokenizer::simplifyKnownVariables()
                 else
                 {
                     value = tok2->strAt(2);
+                    valueVarId = tok2->tokAt(2)->varId();
                     if (value == "]")
+                    {
                         value = tok2->strAt(4);
+                        valueVarId = tok2->tokAt(4)->varId();
+                    }
                     else if (value == "&")
                     {
                         value = tok2->strAt(3);
+                        valueVarId = tok2->tokAt(3)->varId();
 
                         // *ptr = &var; *ptr = 5;
                         // equals
@@ -5513,6 +5538,7 @@ bool Tokenizer::simplifyKnownVariables()
                     {
                         tok3 = tok3->next();
                         tok3->str(value);
+                        tok3->varId(valueVarId);
                         ret = true;
                     }
 
@@ -5520,11 +5546,12 @@ bool Tokenizer::simplifyKnownVariables()
                     if (Token::Match(tok3, "[=+-*/[] %varid% [=?+-*/;])]", varid) ||
                         Token::Match(tok3, "[(=+-*/[] %varid% <<|>>", varid) ||
                         Token::Match(tok3, "<< %varid% [+-*/;])]", varid) ||
-                        Token::Match(tok3, ">> %varid% [+-*/])]", varid) ||
+                        Token::Match(tok3, ">> %varid% [+-*/;])]", varid) ||
                         Token::Match(tok3->previous(), "[=+-*/[] ( %varid%", varid))
                     {
                         tok3 = tok3->next();
                         tok3->str(value);
+                        tok3->varId(valueVarId);
                         if (tok3->previous()->str() == "*" && valueIsPointer)
                         {
                             tok3 = tok3->previous();
@@ -5553,11 +5580,13 @@ bool Tokenizer::simplifyKnownVariables()
                                 if (tok4->next()->varId() == varid)
                                 {
                                     tok4->next()->str(value);
+                                    tok4->next()->varId(valueVarId);
                                     ret = true;
                                 }
                                 if (tok4->tokAt(3)->varId() == varid)
                                 {
                                     tok4->tokAt(3)->str(value);
+                                    tok4->tokAt(3)->varId(valueVarId);
                                     ret = true;
                                 }
                             }
@@ -5566,11 +5595,13 @@ bool Tokenizer::simplifyKnownVariables()
                         if (tok3->next()->varId() == varid)
                         {
                             tok3->next()->str(value);
+                            tok3->next()->varId(valueVarId);
                             ret = true;
                         }
                         else if (tok3->tokAt(3)->varId() == varid)
                         {
                             tok3->tokAt(3)->str(value);
+                            tok3->tokAt(3)->varId(valueVarId);
                             ret = true;
                         }
                     }
@@ -5586,11 +5617,15 @@ bool Tokenizer::simplifyKnownVariables()
                         {
                             tok3 = tok3->next();
                             tok3->str(value);
+                            tok3->varId(valueVarId);
                             tok3->deleteNext();
                         }
                         incdec(value, op);
                         if (!Token::simpleMatch(tok2->tokAt(-2), "for ("))
+                        {
                             tok2->tokAt(2)->str(value);
+                            tok2->tokAt(2)->varId(valueVarId);
+                        }
                         ret = true;
                     }
 
@@ -5599,6 +5634,7 @@ bool Tokenizer::simplifyKnownVariables()
                     {
                         incdec(value, tok3->strAt(1));
                         tok2->tokAt(2)->str(value);
+                        tok2->tokAt(2)->varId(valueVarId);
                         if (Token::Match(tok3, "[;{}] %any% %any% ;"))
                         {
                             Token::eraseTokens(tok3, tok3->tokAt(3));
@@ -5607,21 +5643,25 @@ bool Tokenizer::simplifyKnownVariables()
                         {
                             tok3->deleteNext();
                             tok3->next()->str(value);
+                            tok3->next()->varId(valueVarId);
                         }
                         tok3 = tok3->next();
                         ret = true;
                     }
 
                     // return variable..
-                    if (Token::Match(tok3, "return %varid% ;", varid))
+                    if (Token::Match(tok3, "return %varid% %any%", varid) &&
+                        isOp(tok3->tokAt(2)))
                     {
                         tok3->next()->str(value);
+                        tok3->next()->varId(valueVarId);
                     }
 
                     else if (pointeralias && Token::Match(tok3, "return * %varid% ;", varid))
                     {
                         tok3->deleteNext();
                         tok3->next()->str(value);
+                        tok3->next()->varId(valueVarId);
                     }
                 }
             }

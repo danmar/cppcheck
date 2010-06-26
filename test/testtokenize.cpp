@@ -111,6 +111,7 @@ private:
         TEST_CASE(simplifyKnownVariables26);
         TEST_CASE(simplifyKnownVariables27);
         TEST_CASE(simplifyKnownVariables28);
+        TEST_CASE(simplifyKnownVariables29); // ticket #1811
 
         TEST_CASE(match1);
 
@@ -1358,6 +1359,314 @@ private:
             simplifyKnownVariables(code));
     }
 
+    void simplifyKnownVariables29() // ticket #1811
+    {
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h + i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 + v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h - i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 - v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h * i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 * v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h / i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 / v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h & i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 & v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h | i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 | v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h ^ i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 ^ v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h % i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 % v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h >> i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 >> v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h << i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 << v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h == i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 == v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h != i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 != v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h > i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 > v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h >= i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 >= v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h < i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 < v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h <= i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 <= v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h && i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 && v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h || i;\n"
+                                "}\n";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ; ;\n"
+                                    "4: ; ;\n"
+                                    "5: return u@1 || v@2 ;\n"
+                                    "6: }\n";
+            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+    }
 
     void match1()
     {
