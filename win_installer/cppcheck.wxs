@@ -71,7 +71,7 @@
         <ComponentRef Id='ProgramMenuDir' />
         <ComponentRef Id='InnoSetupCleanup' />
       </Feature>
-      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2009 Runtime Components ">
+      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2008 Runtime Components ">
         <MergeRef Id="CRT"/>
       </Feature>
     </Feature>
