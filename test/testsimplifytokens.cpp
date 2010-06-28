@@ -204,6 +204,7 @@ private:
         TEST_CASE(simplifyTypedef51);
         TEST_CASE(simplifyTypedef52); // ticket #1782
         TEST_CASE(simplifyTypedef53); // ticket #1801
+        TEST_CASE(simplifyTypedef54); // ticket #1814
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4204,6 +4205,25 @@ private:
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n", errout.str());
         }
+    }
+
+    void simplifyTypedef54() // ticket #1814
+    {
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    typedef std::basic_string<char, traits_type, allocator_type> string_type;\n"
+                            "    try\n"
+                            "    {\n"
+                            "        throw string_type(\"leak\");\n"
+                            "    }\n"
+                            "    catch (const string_type&)\n"
+                            "    {\n"
+                            "        pthread_exit (0);\n"
+                            "    }\n"
+                            "}";
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1()
