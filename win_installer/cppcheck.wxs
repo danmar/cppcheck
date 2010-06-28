@@ -40,6 +40,12 @@
               <Shortcut Id='startmenuManual' Directory="ProgramMenuDir" Name="Manual" Advertise="yes" />
             </File>
           </Component>
+          <!-- Cleanup runtime files installed by previous InnoSetup installer -->
+          <Component Id='InnoSetupCleanup' Guid='4A3F299D-1EE1-468b-814B-D6577F0698CA'>
+            <RemoveFile Id="msvcp90.dll" On="install" Name="msvcp90.dll" />
+            <RemoveFile Id="msvcr90.dll" On="install" Name="msvcr90.dll" />
+            <RemoveFile Id="Microsoft.VC90.CRT.manifest" On="install" Name="Microsoft.VC90.CRT.manifest" />
+          </Component>
         </Directory>
         <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
       </Directory>
@@ -63,6 +69,7 @@
         <ComponentRef Id='readme.txt' />
         <ComponentRef Id='HtmlHelp' />
         <ComponentRef Id='ProgramMenuDir' />
+        <ComponentRef Id='InnoSetupCleanup' />
       </Feature>
       <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2009 Runtime Components ">
         <MergeRef Id="CRT"/>
