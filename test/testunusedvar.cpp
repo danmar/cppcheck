@@ -68,6 +68,7 @@ private:
         TEST_CASE(localvar20); // ticket #1799
         TEST_CASE(localvar21); // ticket #1807
         TEST_CASE(localvar22); // ticket #1811
+        TEST_CASE(localvar23); // ticket #1808
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1200,6 +1201,18 @@ private:
                               "    i = 1 ? u : v;\n"
                               "    return h + i;\n"
                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar23() // ticket #1808
+    {
+        functionVariableUsage("int foo(int c)\n"
+                              "{\n"
+                              "    int a;\n"
+                              "    int b[10];\n"
+                              "    a = b[c] = 0;\n"
+                              "    return a;\n"
+                              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

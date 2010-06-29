@@ -1301,8 +1301,13 @@ void CheckOther::functionVariableUsage()
                         variables.write(varid1);
                 }
 
+                const Token *equal = tok->next();
+
+                if (Token::Match(tok->next(), "[ %any% ]"))
+                    equal = tok->tokAt(4);
+
                 // checked for chained assignments
-                if (tok != start && tok->next()->str() == "=")
+                if (tok != start && equal->str() == "=")
                 {
                     Variables::VariableUsage *var = variables.find(tok->varId());
 
