@@ -104,19 +104,23 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         if (next->str() == "__property")
             continue;
 
-        // Is it a static variable?
-        bool isStatic = false;
-        if (next->str() == "static")
+        // Is it const..?
+        if (next->str() == "const")
         {
-            isStatic = true;
+            next = next->next();
+        }
+
+        // Is it a static variable?
+        const bool isStatic(Token::simpleMatch(next, "static"));
+        if (isStatic)
+        {
             next = next->next();
         }
 
         // Is it a mutable variable?
-        bool isMutable = false;
-        if (next->str() == "mutable")
+        const bool isMutable(Token::simpleMatch(next, "mutable"));
+        if (isMutable)
         {
-            isMutable = true;
             next = next->next();
         }
 
