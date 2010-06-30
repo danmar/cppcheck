@@ -298,6 +298,7 @@ private:
         TEST_CASE(allocfunc3);
         TEST_CASE(allocfunc4);
         TEST_CASE(allocfunc5);
+        TEST_CASE(allocfunc6);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1808,10 +1809,28 @@ private:
               "   free(tmp);\n"
               "}\n");
         TODO_ASSERT_EQUALS(std::string(""), errout.str());
-
     }
 
 
+    void allocfunc6()
+    {
+        check("static FILE* data()\n"
+              "{\n"
+              "    return fopen(\"data.txt\",\"rt\");\n"
+              "}\n"
+              "\n"
+              "static void foo()\n"
+              "{\n"
+              "    char* expr;\n"
+              "    func(&expr);\n"
+              "\n"
+              "    FILE *f = data();\n"
+              "    fclose(f);\n"
+              "\n"
+              "    free(expr);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
 
 
 

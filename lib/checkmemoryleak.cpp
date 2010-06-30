@@ -694,6 +694,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     }
 
     // Check if this is a function that allocates memory..
+    if (Token::Match(tok->tokAt(-3), "[;{}] %varid% = %var% (", varid))
     {
         const Token *ftok = _tokenizer->getFunctionTokenByName(funcname.c_str());
         AllocType a = functionReturnType(ftok);
