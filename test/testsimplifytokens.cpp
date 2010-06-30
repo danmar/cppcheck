@@ -5295,6 +5295,12 @@ private:
         ASSERT_EQUALS("int foo ( ) { }", tok("__forceinline int foo ( ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( likely ( a ) ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( unlikely ( a ) ) { }", true));
+        ASSERT_EQUALS("int * p ;", tok("int * __restrict__ p;", true));
+        ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", true));
+        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * __restrict__ a, float * __restrict__ b);", true));
+        ASSERT_EQUALS("int * p ;", tok("int * restrict p;", true));
+        ASSERT_EQUALS("int * * p ;", tok("int * restrict * p;", true));
+        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", true));
     }
 
     void simplifyCallingConvention()

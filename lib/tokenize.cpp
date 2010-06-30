@@ -1684,101 +1684,13 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     simplifyEnum();
 
     // Remove __asm..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (Token::Match(tok->next(), "__asm|_asm|asm {") &&
-            tok->tokAt(2)->link() &&
-            tok->tokAt(2)->link()->next())
-        {
-            Token::eraseTokens(tok, tok->tokAt(2)->link()->next());
-        }
+    simplifyAsm();
 
-        else if (Token::Match(tok->next(), "__asm__ __volatile__ (") &&
-                 tok->tokAt(3)->link() &&
-                 tok->tokAt(3)->link()->next())
-        {
-            Token::eraseTokens(tok, tok->tokAt(3)->link()->next());
-        }
-
-        else if (Token::Match(tok->next(), "asm volatile (") &&
-                 tok->tokAt(3)->link() &&
-                 tok->tokAt(3)->link()->next())
-        {
-            Token::eraseTokens(tok, tok->tokAt(3)->link()->next());
-        }
-
-        else if (Token::simpleMatch(tok->next(), "__asm"))
-        {
-            const Token *tok2 = tok->next();
-            while (tok2 && (tok2->isNumber() || tok2->isName() || tok2->str() == ","))
-                tok2 = tok2->next();
-            if (tok2 && tok2->str() == ";")
-                Token::eraseTokens(tok, tok2);
-            else
-                continue;
-        }
-
-        else
-            continue;
-
-        // insert "asm ( )"
-        tok->insertToken(")");
-        tok->insertToken("(");
-        tok->insertToken("asm");
-
-        Token::createMutualLinks(tok->tokAt(2), tok->tokAt(3));
-    }
-
-    // Remove "volatile", "inline" and "register"
-    while (Token::Match(_tokens, "volatile|inline|__inline|__forceinline|register"))
-    {
-        _tokens->deleteThis();
-    }
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        while (Token::Match(tok->next(), "volatile|inline|__inline|__forceinline|register"))
-        {
-            tok->deleteNext();
-        }
-    }
+    // Remove "volatile", "inline", "register", and "restrict"
+    simplifyKeyword();
 
     // Remove __builtin_expect, likely and unlikely
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (Token::simpleMatch(tok->next(), "__builtin_expect ("))
-        {
-            unsigned int parlevel = 0;
-            for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "(")
-                    ++parlevel;
-                else if (tok2->str() == ")")
-                {
-                    if (parlevel <= 1)
-                        break;
-                    --parlevel;
-                }
-                if (parlevel == 1 && tok2->str() == ",")
-                {
-                    if (Token::Match(tok2, ", %num% )"))
-                    {
-                        tok->deleteNext();
-                        Token::eraseTokens(tok2->previous(), tok2->tokAt(2));
-                    }
-                    break;
-                }
-            }
-        }
-        else if (Token::Match(tok->next(), "likely|unlikely ("))
-        {
-            // remove closing ')'
-            tok->tokAt(2)->link()->previous()->deleteNext();
-
-            // remove "likely|unlikely ("
-            tok->deleteNext();
-            tok->deleteNext();
-        }
-    }
+    simplifyBuiltinExpect();
 
     // colapse compound standard types into a single token
     // unsigned long long int => long _isUnsigned=true,_isLong=true
@@ -7742,6 +7654,113 @@ void Tokenizer::simplifyAttribute()
 
             Token::eraseTokens(tok, tok->next()->link()->next());
             tok->deleteThis();
+        }
+    }
+}
+
+// Remove "volatile", "inline", "register", and "restrict"
+void Tokenizer::simplifyKeyword()
+{
+    const char pattern[] = "volatile|inline|__inline|__forceinline|register|restrict|__restrict__";
+    while (Token::Match(_tokens, pattern))
+    {
+        _tokens->deleteThis();
+    }
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        while (Token::Match(tok->next(), pattern))
+        {
+            tok->deleteNext();
+        }
+    }
+}
+
+// Remove __asm..
+void Tokenizer::simplifyAsm()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok->next(), "__asm|_asm|asm {") &&
+            tok->tokAt(2)->link() &&
+            tok->tokAt(2)->link()->next())
+        {
+            Token::eraseTokens(tok, tok->tokAt(2)->link()->next());
+        }
+
+        else if (Token::Match(tok->next(), "__asm__ __volatile__ (") &&
+                 tok->tokAt(3)->link() &&
+                 tok->tokAt(3)->link()->next())
+        {
+            Token::eraseTokens(tok, tok->tokAt(3)->link()->next());
+        }
+
+        else if (Token::Match(tok->next(), "asm volatile (") &&
+                 tok->tokAt(3)->link() &&
+                 tok->tokAt(3)->link()->next())
+        {
+            Token::eraseTokens(tok, tok->tokAt(3)->link()->next());
+        }
+
+        else if (Token::simpleMatch(tok->next(), "__asm"))
+        {
+            const Token *tok2 = tok->next();
+            while (tok2 && (tok2->isNumber() || tok2->isName() || tok2->str() == ","))
+                tok2 = tok2->next();
+            if (tok2 && tok2->str() == ";")
+                Token::eraseTokens(tok, tok2);
+            else
+                continue;
+        }
+
+        else
+            continue;
+
+        // insert "asm ( )"
+        tok->insertToken(")");
+        tok->insertToken("(");
+        tok->insertToken("asm");
+
+        Token::createMutualLinks(tok->tokAt(2), tok->tokAt(3));
+    }
+}
+
+// Remove __builtin_expect(...), likely(...), and unlikely(...)
+void Tokenizer::simplifyBuiltinExpect()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok->next(), "__builtin_expect ("))
+        {
+            unsigned int parlevel = 0;
+            for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+                else if (tok2->str() == ")")
+                {
+                    if (parlevel <= 1)
+                        break;
+                    --parlevel;
+                }
+                if (parlevel == 1 && tok2->str() == ",")
+                {
+                    if (Token::Match(tok2, ", %num% )"))
+                    {
+                        tok->deleteNext();
+                        Token::eraseTokens(tok2->previous(), tok2->tokAt(2));
+                    }
+                    break;
+                }
+            }
+        }
+        else if (Token::Match(tok->next(), "likely|unlikely ("))
+        {
+            // remove closing ')'
+            tok->tokAt(2)->link()->previous()->deleteNext();
+
+            // remove "likely|unlikely ("
+            tok->deleteNext();
+            tok->deleteNext();
         }
     }
 }

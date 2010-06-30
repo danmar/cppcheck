@@ -449,6 +449,21 @@ public:
     void simplifyAttribute();
 
     /**
+     * Remove keywords "volatile", "inline", "register", and "restrict"
+     */
+    void simplifyKeyword();
+
+    /**
+     * Remove __asm
+     */
+    void simplifyAsm();
+
+    /**
+     * Remove __builtin_expect(...), likely(...), and unlikely(...)
+     */
+    void simplifyBuiltinExpect();
+
+    /**
      * This will return a short name describing function parameters
      * e.g. parameters: (int a, char b) should get name "int,char,".
      * This should help to identify functions with the same name,
