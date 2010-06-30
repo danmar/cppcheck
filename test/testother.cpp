@@ -100,6 +100,8 @@ private:
         TEST_CASE(sizeofsizeof);
 
         TEST_CASE(emptyCatchBlock);
+
+        TEST_CASE(switchRedundantAssignmentTest);
     }
 
     void check(const char code[])
@@ -119,6 +121,7 @@ private:
 
         checkOther.sizeofsizeof();
         checkOther.checkEmptyCatchBlock();
+        checkOther.checkRedundantAssignmentInSwitch();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -2712,6 +2715,141 @@ private:
               "  {\n"
               "    prinf(\"File not found\");\n"
               "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void switchRedundantAssignmentTest()
+    {
+        check("void foo()\n"
+              "{\n"
+              "        int y = 1;\n"
+              "        switch (a)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            y = 2;\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Redundant assignment of \"y\" in switch\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int y = 1;\n"
+              "        switch (a)\n"
+              "        {\n"
+              "        case 2:\n"
+              "          {\n"
+              "            y = 2;\n"
+              "          }\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) Redundant assignment of \"y\" in switch\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int y = 1;\n"
+              "        switch (a)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            y = 2;\n"
+              "        case 3:\n"
+              "            if (x)\n"
+              "            {\n"
+              "                y = 3;\n"
+              "            }\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int y = 1;\n"
+              "        switch (a)\n"
+              "        {\n"
+              "        case 2:\n"
+              "          {\n"
+              "            y = 2;\n"
+              "            if (y)\n"
+              "                printf(\"%d\", y);\n"
+              "          }\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int x = a;\n"
+              "        int y = 1;\n"
+              "        switch (x)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            x = 2;\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int y = 1;\n"
+              "        switch (x)\n"
+              "        {\n"
+              "        case 2:\n"
+              "          {\n"
+              "            int y = 2;\n"
+              "          }\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int y = 1;\n"
+              "        switch (x)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            y = 2;\n"
+              "            break;\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int y = 1;\n"
+              "        switch (x)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            y = 2;\n"
+              "            printf(\"%d\", y);\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int y = 1;\n"
+              "        switch (x)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            y = 2;\n"
+              "            bar();\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

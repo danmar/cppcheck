@@ -62,6 +62,7 @@ public:
         checkOther.strPlusChar();
         checkOther.sizeofsizeof();
         checkOther.checkEmptyCatchBlock();
+        checkOther.checkRedundantAssignmentInSwitch();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -178,6 +179,9 @@ public:
     void sizeofsizeof();
     void sizeofsizeofError(const Token *tok);
 
+    /** @brief %Check for assigning to the same variable twice in a switch statement*/
+    void checkRedundantAssignmentInSwitch();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void redundantIfDelete0Error(const Token *tok);
@@ -205,6 +209,7 @@ public:
     void emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void emptyCatchBlockError(const Token *tok);
+    void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
 
     void getErrorMessages()
     {
@@ -234,6 +239,7 @@ public:
         strPlusChar(0);
         sizeofsizeofError(0);
         emptyCatchBlockError(0);
+        redundantAssignmentInSwitchError(0, "varname");
 
         // optimisations
         postIncrementError(0, "varname", true);
@@ -269,6 +275,7 @@ public:
                "* condition that is always true/false\n"
                "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
                "* empty catch() block\n"
+               "* redundant assignment in a switch statement\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n"

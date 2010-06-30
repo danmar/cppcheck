@@ -268,6 +268,89 @@ void CheckOther::checkFflushOnInputStream()
 }
 
 //---------------------------------------------------------------------------
+//    switch (x)
+//    {
+//        case 2:
+//            y = a;        // <- this assignment is redundant
+//        case 3:
+//            y = b;        // <- case 2 falls through and sets y twice
+//    }
+//---------------------------------------------------------------------------
+void CheckOther::checkRedundantAssignmentInSwitch()
+{
+    const char switchPattern[] = "switch ( %any% ) { case";
+    const char breakPattern[] = "break|return|exit|goto";
+    const char functionPattern[] = "%var% (";
+
+    // Find the beginning of a switch. E.g.:
+    //   switch (var) { ...
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), switchPattern);
+    while (tok)
+    {
+
+        // Check the contents of the switch statement
+        std::map<unsigned int, const Token*> varsAssigned;
+        int indentLevel = 0;
+        for (const Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "{")
+            {
+                // Inside a conditional or loop. Don't mark variable accesses as being redundant. E.g.:
+                //   case 3: b = 1;
+                //   case 4: if (a) { b = 2; }    // Doesn't make the b=1 redundant because it's conditional
+                if (Token::Match(tok2->previous(), ")|else {") && tok2->link())
+                {
+                    const Token* endOfConditional = tok2->link();
+                    for (const Token* tok3 = tok2; tok3 != endOfConditional; tok3 = tok3->next())
+                    {
+                        if (tok3->varId() != 0)
+                            varsAssigned.erase(tok3->varId());
+                        else if (Token::Match(tok3, functionPattern) || Token::Match(tok3, breakPattern))
+                            varsAssigned.clear();
+                    }
+                    tok2 = endOfConditional;
+                }
+                else
+                    ++ indentLevel;
+            }
+            else if (tok2->str() == "}")
+            {
+                -- indentLevel;
+
+                // End of the switch block
+                if (indentLevel < 0)
+                    break;
+            }
+
+            // Variable assignment. Report an error if it's assigned to twice before a break. E.g.:
+            //    case 3: b = 1;    // <== redundant
+            //    case 4: b = 2;
+            if (Token::Match(tok2->previous(), ";|{|}|: %var% = %any% ;") && tok2->varId() != 0)
+            {
+                std::map<unsigned int, const Token*>::iterator i = varsAssigned.find(tok2->varId());
+                if (i == varsAssigned.end())
+                    varsAssigned[tok2->varId()] = tok2;
+                else
+                    redundantAssignmentInSwitchError(i->second, i->second->str());
+            }
+            // Not a simple assignment so there may be good reason if this variable is assigned to twice. E.g.:
+            //    case 3: b = 1;
+            //    case 4: b++;
+            else if (tok2->varId() != 0)
+                varsAssigned.erase(tok2->varId());
+
+            // Reset our record of assignments if there is a break or function call. E.g.:
+            //    case 3: b = 1; break;
+            if (Token::Match(tok2, functionPattern) || Token::Match(tok2, breakPattern))
+                varsAssigned.clear();
+
+        }
+
+        tok = Token::findmatch(tok->next(), switchPattern);
+    }
+}
+
+//---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
 
@@ -3772,4 +3855,10 @@ void CheckOther::sizeofsizeofError(const Token *tok)
 {
     reportError(tok, Severity::style,
                 "sizeofsizeof", "Suspicious code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent to 'sizeof(size_t)'.");
+}
+
+void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::style,
+                "redundantAssignInSwitch", "Redundant assignment of \"" + varname + "\" in switch");
 }
