@@ -1681,6 +1681,16 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // ? :
+        checkUninitVar("static void foo(int v)\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    if (v > 0)\n"
+                       "        v = func(&x);\n"
+                       "    x = v <= 0 ? -1 : x;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // while..
         checkUninitVar("int f()\n"
                        "{\n"

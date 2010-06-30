@@ -2945,7 +2945,7 @@ private:
                     // check variable usages in rhs/index
                     for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
                     {
-                        if (Token::Match(tok2, ";|)|="))
+                        if (Token::Match(tok2, ";|)|=|?"))
                             break;
                         if (Token::Match(tok2, "%var% ("))
                             break;
