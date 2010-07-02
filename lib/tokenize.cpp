@@ -673,11 +673,18 @@ void Tokenizer::simplifyTypedef()
 
         // pull struct, union, enum or class definition out of typedef
         // use typedef name for unnamed struct, union, enum or class
-        if (Token::Match(tok->next(), "struct|enum|union|class %type% {") ||
-            Token::Match(tok->next(), "struct|enum|union|class {"))
+        if (Token::Match(tok->next(), "const| struct|enum|union|class %type% {") ||
+            Token::Match(tok->next(), "const| struct|enum|union|class {"))
         {
             Token *tok1;
             std::string name;
+            bool isConst = false;
+
+            if (tok->next()->str() == "const")
+            {
+                tok->next()->deleteThis();
+                isConst = true;
+            }
 
             if (tok->tokAt(2)->str() == "{") // unnamed
             {
@@ -713,13 +720,17 @@ void Tokenizer::simplifyTypedef()
             tok1->insertToken("typedef");
             tok1 = tok1->next();
             Token * tok3 = tok1;
+            if (isConst)
+            {
+                tok1->insertToken("const");
+                tok1 = tok1->next();
+            }
             tok1->insertToken(tok->next()->strAt(0)); // struct, union or enum
             tok1 = tok1->next();
             tok1->insertToken(name.c_str());
             tok->deleteThis();
             tok = tok3;
         }
-
         Token *typeName;
         std::list<std::string> pointers;
         Token *typeStart = 0;
@@ -1166,26 +1177,42 @@ void Tokenizer::simplifyTypedef()
 
                 if (simplifyType)
                 {
+                    // There are 2 catagories of typedef substitutions:
+                    // 1. variable declarations that preserve the variable name like
+                    //    global, local, and function parameters
+                    // 2. not variable declarations that have no name like derived
+                    //    classes, casts, and template parameters
+
+                    // try to determine which catagory this substitution is
                     bool isDerived = false;
+                    bool inCast = false;
+                    bool inTemplate = false;
+
+                    // check for derived class: class A : some_typedef {
                     isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
 
-                    bool inCast = false;
-
+                    // check for cast: (some_typedef) A or static_cast<some_typedef>(A)
+                    // todo: check for more complicated casts like: (const some_typedef *)A
                     if ((tok2->previous()->str() == "(" && tok2->next()->str() == ")") ||
-                        (Token::Match(tok2->tokAt(-1), "<") &&
-                         Token::Match(tok2->next(), "> (")))
+                        (tok2->previous()->str() == "<" && Token::simpleMatch(tok2->next(), "> (")))
                         inCast = true;
+
+                    // check for template parameters: t<some_typedef> t1
+                    else if (Token::Match(tok2->previous(), "<|,") &&
+                             Token::Match(tok2->next(), "&|*| &|*| >|,"))
+                        inTemplate = true;
 
                     // skip over class or struct in derived class declaration
                     if (isDerived && Token::Match(typeStart, "class|struct"))
                         typeStart = typeStart->next();
 
+                    // start substituting at the typedef name by replacing it with the type
                     tok2->str(typeStart->str());
                     Token * nextToken;
                     std::stack<Token *> links;
                     for (nextToken = typeStart->next(); nextToken != typeEnd->next(); nextToken = nextToken->next())
                     {
-                        tok2->insertToken(nextToken->strAt(0));
+                        tok2->insertToken(nextToken->str());
                         tok2 = tok2->next();
 
                         // Check for links and fix them up
@@ -1217,7 +1244,7 @@ void Tokenizer::simplifyTypedef()
                         // don't add parenthesis around function names because it
                         // confuses other simplifications
                         bool needParen = true;
-                        if (function && tok2->next()->str() != "*")
+                        if (!inTemplate && function && tok2->next()->str() != "*")
                             needParen = false;
                         if (needParen)
                         {
@@ -1239,10 +1266,15 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
                         }
                         if (functionPtr)
+                        {
                             tok2->insertToken("*");
+                            tok2 = tok2->next();
+                        }
                         else if (functionRef)
+                        {
                             tok2->insertToken("&");
-                        tok2 = tok2->next();
+                            tok2 = tok2->next();
+                        }
 
                         if (const1)
                         {
@@ -1257,7 +1289,8 @@ void Tokenizer::simplifyTypedef()
 
                         if (!inCast)
                         {
-                            if (tok2->next() && tok2->next()->str() != ")" && tok2->next()->str() != ",")
+                            if (tok2->next() && tok2->next()->str() != ")" &&
+                                tok2->next()->str() != ",")
                             {
                                 if (Token::Match(tok2->next(), "( * %type% ) ("))
                                     tok2 = tok2->tokAt(5)->link();
@@ -1268,8 +1301,8 @@ void Tokenizer::simplifyTypedef()
                                     else if (!Token::Match(tok2->next(), "[|>|;"))
                                     {
                                         tok2 = tok2->next();
-
-                                        while (Token::Match(tok2, "*|&") && tok2->next()->str() != ")")
+                                        while (Token::Match(tok2, "*|&") &&
+                                               !Token::Match(tok2->next(), ")|>"))
                                             tok2 = tok2->next();
 
                                         // skip over typedef parameter
@@ -1291,6 +1324,7 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
                             Token::createMutualLinks(tok2, tok3);
                         }
+
                         tok2->insertToken("(");
                         tok2 = tok2->next();
                         tok3 = tok2;
@@ -1317,6 +1351,10 @@ void Tokenizer::simplifyTypedef()
                         tok2->insertToken(")");
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok3);
+
+                        if (inTemplate)
+                            tok2 = tok2->next();
+
                         if (specStart)
                         {
                             Token *spec = specStart;
@@ -5810,7 +5848,7 @@ bool Tokenizer::simplifyCalculations()
         // Remove parantheses around variable..
         // keep parantheses here: dynamic_cast<Fred *>(p);
         // keep parantheses here: A operator * (int);
-        if (!tok->isName() && tok->str() != ">" && Token::Match(tok->next(), "( %var% ) [;),+-*/><]]") && !Token::simpleMatch(tok->previous(), "operator"))
+        if (!tok->isName() && tok->str() != ">" && Token::Match(tok->next(), "( %var% ) [;),+-*/><]]") && !Token::simpleMatch(tok->previous(), "operator") && !Token::Match(tok->tokAt(-1), "* )"))
         {
             tok->deleteNext();
             tok = tok->next();

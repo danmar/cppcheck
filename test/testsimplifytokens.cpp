@@ -196,7 +196,7 @@ private:
         TEST_CASE(simplifyTypedef43); // ticket #1588
         TEST_CASE(simplifyTypedef44);
         TEST_CASE(simplifyTypedef45); // ticket #1613
-        TEST_CASE(simplifyTypedef46); // ticket #1615
+        TEST_CASE(simplifyTypedef46);
         TEST_CASE(simplifyTypedef47);
         TEST_CASE(simplifyTypedef48); // ticket #1673
         TEST_CASE(simplifyTypedef49); // ticket #1691
@@ -4054,17 +4054,13 @@ private:
 
     void simplifyTypedef46()
     {
-        // ticket # 1615
-        const char code[] = "typedef void (*my_func)(arg_class*);\n"
-                            "std::queue<my_func> func_queue;";
+        const char code[] = "typedef const struct A { int a; } * AP;\n"
+                            "AP ap;\n";
 
         // The expected result..
-        const std::string expected("; "
-                                   "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
+        const std::string expected("struct A { int a ; } ; ; "
+                                   "const struct A * ap ;");
         ASSERT_EQUALS(expected, sizeof_(code));
-
-        checkSimplifyTypedef(code);
-        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef47()
@@ -4229,6 +4225,134 @@ private:
     void simplifyTypedefFunction1()
     {
         {
+            const char code[] = "typedef void (*my_func)();\n"
+                                "std::queue<my_func> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void (*my_func)(void);\n"
+                                "std::queue<my_func> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( void ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void (*my_func)(int);\n"
+                                "std::queue<my_func> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( int ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void (*my_func)(int*);\n"
+                                "std::queue<my_func> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( int * ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            // ticket # 1615
+            const char code[] = "typedef void (*my_func)(arg_class*);\n"
+                                "std::queue<my_func> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+
+        {
+            const char code[] = "typedef void (my_func)();\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void (my_func)(void);\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( void ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void (my_func)(int);\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( int ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void (my_func)(int*);\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( int * ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
             const char code[] = "typedef void (my_func)(arg_class*);\n"
                                 "std::queue<my_func *> func_queue;";
 
@@ -4236,6 +4360,67 @@ private:
             const std::string expected("; "
                                        "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+
+        {
+            const char code[] = "typedef void my_func();\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void my_func(void);\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( void ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void my_func(int);\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( int ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void my_func(int*);\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( int * ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
         }
 
         {
@@ -4246,6 +4431,67 @@ private:
             const std::string expected("; "
                                        "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+
+        {
+            const char code[] = "typedef void (my_func());\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void (my_func(void));\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( void ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void (my_func(int));\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( int ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef void (my_func(int*));\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( int * ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
         }
 
         {
@@ -4256,6 +4502,10 @@ private:
             const std::string expected("; "
                                        "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
         }
     }
 
