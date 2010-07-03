@@ -85,6 +85,7 @@
       <string>&amp;Toolbars</string>
      </property>
      <addaction name="mActionToolbar"/>
+     <addaction name="mActionToolBarView"/>
     </widget>
     <addaction name="mMenuToolbars"/>
     <addaction name="separator"/>
@@ -153,9 +154,9 @@
    <addaction name="mActionSettings"/>
    <addaction name="mActionAbout"/>
   </widget>
-  <widget class="QToolBar" name="mToolbarView">
+  <widget class="QToolBar" name="mToolBarView">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Categories</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -333,6 +334,17 @@
   <action name="actionToolbar">
    <property name="text">
     <string>Toolbar</string>
+   </property>
+  </action>
+  <action name="mActionToolBarView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Categories</string>
+   </property>
+   <property name="toolTip">
+    <string>Error categories</string>
    </property>
   </action>
  </widget>

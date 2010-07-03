@@ -72,6 +72,7 @@ MainWindow::MainWindow() :
     connect(mUI.mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
     connect(mUI.mActionLicense, SIGNAL(triggered()), this, SLOT(ShowLicense()));
     connect(mUI.mActionToolbar, SIGNAL(toggled(bool)), this, SLOT(ToggleToolbar()));
+    connect(mUI.mActionToolBarView, SIGNAL(toggled(bool)), this, SLOT(ToggleViewToolBar()));
 
     connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
     connect(mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
@@ -163,6 +164,7 @@ void MainWindow::LoadSettings()
 
     mUI.mActionToolbar->setChecked(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
     mUI.mToolBarMain->setVisible(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
+    mUI.mToolBarView->setVisible(mSettings->value(SETTINGS_TOOLBARS_VIEW_SHOW, true).toBool());
 
     mApplications->LoadSettings(mSettings);
 
@@ -181,6 +183,7 @@ void MainWindow::SaveSettings()
     mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
     mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
     mSettings->setValue(SETTINGS_TOOLBARS_SHOW, mUI.mToolBarMain->isVisible());
+    mSettings->setValue(SETTINGS_TOOLBARS_VIEW_SHOW, mUI.mToolBarView->isVisible());
 
     mApplications->SaveSettings(mSettings);
 
@@ -568,6 +571,11 @@ void MainWindow::ToggleToolbar()
     mUI.mToolBarMain->setVisible(mUI.mActionToolbar->isChecked());
 }
 
+void MainWindow::ToggleViewToolBar()
+{
+    mUI.mToolBarView->setVisible(mUI.mActionToolBarView->isChecked());
+}
+
 void MainWindow::FormatAndSetTitle(const QString &text)
 {
     QString title;
@@ -631,6 +639,7 @@ void MainWindow::MapLanguage(QAction *action)
 void MainWindow::AboutToShowViewMenu()
 {
     mUI.mActionToolbar->setChecked(mUI.mToolBarMain->isVisible());
+    mUI.mActionToolBarView->setChecked(mUI.mToolBarView->isVisible());
 }
 
 void MainWindow::StopChecking()

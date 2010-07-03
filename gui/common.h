@@ -57,6 +57,7 @@ ShowTypes;
 #define SETTINGS_RESULT_COLUMN_WIDTH    "Result column %1 width"
 #define SETTINGS_LANGUAGE               "Application language"
 #define SETTINGS_TOOLBARS_SHOW          "Toolbars/ShowStandard"
+#define SETTINGS_TOOLBARS_VIEW_SHOW     "Toolbars/ShowView"
 
 /// @}
 #endif

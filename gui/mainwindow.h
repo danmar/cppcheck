@@ -151,6 +151,11 @@ protected slots:
     void ToggleToolbar();
 
     /**
+    * @brief Slot for showing/hiding Categories toolbar
+    */
+    void ToggleViewToolBar();
+
+    /**
     * @brief Slot for updating View-menu before it is shown.
     */
     void AboutToShowViewMenu();
