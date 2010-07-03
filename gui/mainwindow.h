@@ -80,12 +80,6 @@ public slots:
     void ShowStyle(bool checked);
 
     /**
-    * @brief Show errors with type "possible style"
-    * @param checked Should errors be shown (true) or hidden (false)
-    */
-    void ShowAllStyle(bool checked);
-
-    /**
     * @brief Show errors with type "error"
     * @param checked Should errors be shown (true) or hidden (false)
     */

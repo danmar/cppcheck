@@ -59,7 +59,6 @@ MainWindow::MainWindow() :
 
     connect(mUI.mActionShowAll, SIGNAL(toggled(bool)), this, SLOT(ShowAll(bool)));
     connect(mUI.mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
-    connect(mUI.mActionShowAllStyle, SIGNAL(toggled(bool)), this, SLOT(ShowAllStyle(bool)));
     connect(mUI.mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
     connect(mUI.mActionCheckAll, SIGNAL(triggered()), this, SLOT(CheckAll()));
     connect(mUI.mActionUncheckAll, SIGNAL(triggered()), this, SLOT(UncheckAll()));
@@ -159,13 +158,11 @@ void MainWindow::LoadSettings()
 
     mUI.mActionShowAll->setChecked(mSettings->value(SETTINGS_SHOW_ALL, true).toBool());
     mUI.mActionShowStyle->setChecked(mSettings->value(SETTINGS_SHOW_STYLE, true).toBool());
-    mUI.mActionShowAllStyle->setChecked(mSettings->value(SETTINGS_SHOW_ALL_STYLE, true).toBool());
     mUI.mActionShowErrors->setChecked(mSettings->value(SETTINGS_SHOW_ERRORS, true).toBool());
 
     mUI.mResults->ShowResults(SHOW_ALL, mUI.mActionShowAll->isChecked());
     mUI.mResults->ShowResults(SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
     mUI.mResults->ShowResults(SHOW_STYLE, mUI.mActionShowStyle->isChecked());
-    mUI.mResults->ShowResults(SHOW_ALL_STYLE, mUI.mActionShowAllStyle->isChecked());
 
     mUI.mActionToolbar->setChecked(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
     mUI.mToolBar->setVisible(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
@@ -186,7 +183,6 @@ void MainWindow::SaveSettings()
 
     mSettings->setValue(SETTINGS_SHOW_ALL, mUI.mActionShowAll->isChecked());
     mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
-    mSettings->setValue(SETTINGS_SHOW_ALL_STYLE, mUI.mActionShowAllStyle->isChecked());
     mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
     mSettings->setValue(SETTINGS_TOOLBARS_SHOW, mUI.mToolBar->isVisible());
 
@@ -459,11 +455,6 @@ void MainWindow::ShowStyle(bool checked)
     mUI.mResults->ShowResults(SHOW_STYLE, checked);
 }
 
-void MainWindow::ShowAllStyle(bool checked)
-{
-    mUI.mResults->ShowResults(SHOW_ALL_STYLE, checked);
-}
-
 void MainWindow::ShowErrors(bool checked)
 {
     mUI.mResults->ShowResults(SHOW_ERRORS, checked);
@@ -509,9 +500,6 @@ void MainWindow::ToggleAllChecked(bool checked)
     ShowAll(checked);
 
     mUI.mActionShowStyle->setChecked(checked);
-    ShowStyle(checked);
-
-    mUI.mActionShowAllStyle->setChecked(checked);
     ShowStyle(checked);
 
     mUI.mActionShowErrors->setChecked(checked);

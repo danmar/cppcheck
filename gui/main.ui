@@ -268,14 +268,6 @@
     <string>Show style errors</string>
    </property>
   </action>
-  <action name="mActionShowAllStyle">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show possible style errors</string>
-   </property>
-  </action>
   <action name="mActionShowErrors">
    <property name="checkable">
     <bool>true</bool>

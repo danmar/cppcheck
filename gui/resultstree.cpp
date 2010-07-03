@@ -224,8 +224,6 @@ ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
         return SHOW_ERRORS;
     if (severity == "style")
         return SHOW_STYLE;
-    if (severity == "possible style")
-        return SHOW_ALL_STYLE;
 
     return SHOW_NONE;
 }
@@ -667,10 +665,6 @@ QString ResultsTree::ShowTypeToString(ShowTypes type)
 
     case SHOW_STYLE:
         return tr("style");
-        break;
-
-    case SHOW_ALL_STYLE:
-        return tr("possible style");
         break;
 
     case SHOW_ERRORS:
