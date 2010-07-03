@@ -148,7 +148,7 @@ protected slots:
     /**
     * @brief Slot for showing/hiding standard toolbar
     */
-    void ToggleToolbar();
+    void ToggleMainToolBar();
 
     /**
     * @brief Slot for showing/hiding Categories toolbar

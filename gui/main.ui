@@ -84,7 +84,7 @@
      <property name="title">
       <string>&amp;Toolbars</string>
      </property>
-     <addaction name="mActionToolbar"/>
+     <addaction name="mActionToolBarMain"/>
      <addaction name="mActionToolBarView"/>
     </widget>
     <addaction name="mMenuToolbars"/>
@@ -309,7 +309,7 @@
     <string>&amp;Expand all</string>
    </property>
   </action>
-  <action name="mActionToolbar">
+  <action name="mActionToolBarMain">
    <property name="checkable">
     <bool>true</bool>
    </property>
