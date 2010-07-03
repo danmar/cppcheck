@@ -3,11 +3,6 @@
 <!-- cppcheck project file -->
 
 <project version="1">
-    <autodealloc>
-        <class name="AboutDialog"/>
-        <class name="FileViewDialog"/>
-        <class name="ThreadHandler"/>
-    </autodealloc>
     <includedir>
         <dir name="../lib" />
     </includedir>

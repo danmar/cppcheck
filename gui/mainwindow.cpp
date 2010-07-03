@@ -304,14 +304,6 @@ Settings MainWindow::GetCppcheckSettings()
 
         if (projectRead)
         {
-            QStringList classes = pfile.GetDeAllocatedClasses();
-            QString classname;
-            foreach(classname, classes)
-            {
-                // the auto-dealloc is deprecated
-                //result.addAutoAllocClass(classname.toStdString());
-            }
-
             QStringList dirs = pfile.GetIncludeDirs();
             QString dir;
             foreach(dir, dirs)

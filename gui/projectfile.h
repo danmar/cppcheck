@@ -48,12 +48,6 @@ public:
     bool Read(const QString &filename = QString());
 
     /**
-    * @brief Get list of automatically deallocated classes.
-    * @return list of classes.
-    */
-    QStringList GetDeAllocatedClasses() const;
-
-    /**
     * @brief Get list of include directories.
     * @return list of directories.
     */
@@ -66,12 +60,6 @@ public:
     QStringList GetDefines() const;
 
 protected:
-    /**
-    * @brief Read list of automatically deallocated classes from XML.
-    * @param reader XML stream reader.
-    */
-    void ReadAutoAllocClasses(QXmlStreamReader &reader);
-
     /**
     * @brief Read list of include directories from XML.
     * @param reader XML stream reader.
@@ -90,11 +78,6 @@ private:
     * @brief Filename (+path) of the project file.
     */
     QString mFilename;
-
-    /**
-    * @brief List of automatically deallocated classes.
-    */
-    QStringList mDeAllocatedClasses;
 
     /**
     * @brief List of include directories used to search include files.
