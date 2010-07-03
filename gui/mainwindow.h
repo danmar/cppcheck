@@ -68,12 +68,6 @@ public slots:
     void ClearResults();
 
     /**
-    * @brief Show errors with type "possible error"
-    * @param checked Should errors be shown (true) or hidden (false)
-    */
-    void ShowAll(bool checked);
-
-    /**
     * @brief Show errors with type "style"
     * @param checked Should errors be shown (true) or hidden (false)
     */

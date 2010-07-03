@@ -209,7 +209,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
 ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
 {
     int value = data.toInt();
-    if (value < SHOW_ALL && value > SHOW_ERRORS)
+    if (value < SHOW_STYLE && value > SHOW_ERRORS)
     {
         return SHOW_NONE;
     }
@@ -218,8 +218,6 @@ ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
 
 ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
 {
-    if (severity == "possible error")
-        return SHOW_ALL;
     if (severity == "error")
         return SHOW_ERRORS;
     if (severity == "style")
@@ -659,10 +657,6 @@ QString ResultsTree::ShowTypeToString(ShowTypes type)
 {
     switch (type)
     {
-    case SHOW_ALL:
-        return tr("possible error");
-        break;
-
     case SHOW_STYLE:
         return tr("style");
         break;

@@ -57,7 +57,6 @@ MainWindow::MainWindow() :
     connect(mUI.mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
     connect(mUI.mActionClearResults, SIGNAL(triggered()), this, SLOT(ClearResults()));
 
-    connect(mUI.mActionShowAll, SIGNAL(toggled(bool)), this, SLOT(ShowAll(bool)));
     connect(mUI.mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
     connect(mUI.mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
     connect(mUI.mActionCheckAll, SIGNAL(triggered()), this, SLOT(CheckAll()));
@@ -156,11 +155,9 @@ void MainWindow::LoadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
-    mUI.mActionShowAll->setChecked(mSettings->value(SETTINGS_SHOW_ALL, true).toBool());
     mUI.mActionShowStyle->setChecked(mSettings->value(SETTINGS_SHOW_STYLE, true).toBool());
     mUI.mActionShowErrors->setChecked(mSettings->value(SETTINGS_SHOW_ERRORS, true).toBool());
 
-    mUI.mResults->ShowResults(SHOW_ALL, mUI.mActionShowAll->isChecked());
     mUI.mResults->ShowResults(SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
     mUI.mResults->ShowResults(SHOW_STYLE, mUI.mActionShowStyle->isChecked());
 
@@ -181,7 +178,6 @@ void MainWindow::SaveSettings()
     mSettings->setValue(SETTINGS_WINDOW_HEIGHT, size().height());
     mSettings->setValue(SETTINGS_WINDOW_MAXIMIZED, isMaximized());
 
-    mSettings->setValue(SETTINGS_SHOW_ALL, mUI.mActionShowAll->isChecked());
     mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
     mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
     mSettings->setValue(SETTINGS_TOOLBARS_SHOW, mUI.mToolBar->isVisible());
@@ -445,11 +441,6 @@ void MainWindow::EnableCheckButtons(bool enable)
     mUI.mActionCheckDirectory->setEnabled(enable);
 }
 
-void MainWindow::ShowAll(bool checked)
-{
-    mUI.mResults->ShowResults(SHOW_ALL, checked);
-}
-
 void MainWindow::ShowStyle(bool checked)
 {
     mUI.mResults->ShowResults(SHOW_STYLE, checked);
@@ -496,9 +487,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::ToggleAllChecked(bool checked)
 {
-    mUI.mActionShowAll->setChecked(checked);
-    ShowAll(checked);
-
     mUI.mActionShowStyle->setChecked(checked);
     ShowStyle(checked);
 

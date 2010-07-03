@@ -244,14 +244,6 @@
     <string>&amp;Preferences</string>
    </property>
   </action>
-  <action name="mActionShowAll">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show possible false positives</string>
-   </property>
-  </action>
   <action name="mActionShowStyle">
    <property name="checkable">
     <bool>true</bool>
