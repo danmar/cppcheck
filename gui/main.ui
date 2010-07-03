@@ -146,6 +146,19 @@
    <addaction name="mActionSettings"/>
    <addaction name="mActionAbout"/>
   </widget>
+  <widget class="QToolBar" name="mToolbarView">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="mActionShowErrors"/>
+   <addaction name="mActionShowStyle"/>
+  </widget>
   <action name="mActionLicense">
    <property name="text">
     <string>&amp;License...</string>
@@ -248,6 +261,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/showstylewarnings.png</normaloff>:/images/showstylewarnings.png</iconset>
+   </property>
    <property name="text">
     <string>Show style errors</string>
    </property>
@@ -255,6 +272,10 @@
   <action name="mActionShowErrors">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/showerrors.png</normaloff>:/images/showerrors.png</iconset>
    </property>
    <property name="text">
     <string>Show common errors</string>

@@ -175,132 +175,137 @@ kate -l(line) (file)</translation>
     </message>
     <message>
         <location filename="main.ui" line="151"/>
+        <source>toolBar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="164"/>
         <source>&amp;License...</source>
         <translation>&amp;License...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="156"/>
+        <location filename="main.ui" line="169"/>
         <source>A&amp;uthors...</source>
         <translation>A&amp;uthors...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="165"/>
+        <location filename="main.ui" line="178"/>
         <source>&amp;About...</source>
         <translation>&amp;About...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="170"/>
+        <location filename="main.ui" line="183"/>
         <source>&amp;Files...</source>
         <translation>&amp;Files...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="173"/>
+        <location filename="main.ui" line="186"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="main.ui" line="182"/>
+        <location filename="main.ui" line="195"/>
         <source>&amp;Directory...</source>
         <translation>&amp;Directory...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="185"/>
+        <location filename="main.ui" line="198"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="main.ui" line="194"/>
+        <location filename="main.ui" line="207"/>
         <source>&amp;Recheck files</source>
         <translation>&amp;Recheck files</translation>
     </message>
     <message>
-        <location filename="main.ui" line="197"/>
+        <location filename="main.ui" line="210"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="main.ui" line="206"/>
+        <location filename="main.ui" line="219"/>
         <source>&amp;Stop</source>
         <translation>&amp;Stop</translation>
     </message>
     <message>
-        <location filename="main.ui" line="209"/>
+        <location filename="main.ui" line="222"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="main.ui" line="218"/>
+        <location filename="main.ui" line="231"/>
         <source>&amp;Save results to file...</source>
         <translation>&amp;Save results to file...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="221"/>
+        <location filename="main.ui" line="234"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="main.ui" line="226"/>
+        <location filename="main.ui" line="239"/>
         <source>&amp;Quit</source>
         <translation>&amp;Quit</translation>
     </message>
     <message>
-        <location filename="main.ui" line="235"/>
+        <location filename="main.ui" line="248"/>
         <source>&amp;Clear results</source>
         <translation>&amp;Clear results</translation>
     </message>
     <message>
-        <location filename="main.ui" line="244"/>
+        <location filename="main.ui" line="257"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Preferences</translation>
     </message>
     <message>
-        <location filename="main.ui" line="252"/>
+        <location filename="main.ui" line="269"/>
         <source>Show style errors</source>
         <oldsource>Show security errors</oldsource>
         <translation type="unfinished">Show security errors</translation>
     </message>
     <message>
-        <location filename="main.ui" line="260"/>
+        <location filename="main.ui" line="281"/>
         <source>Show common errors</source>
         <translation>Show common errors</translation>
     </message>
     <message>
-        <location filename="main.ui" line="265"/>
+        <location filename="main.ui" line="286"/>
         <source>&amp;Check all</source>
         <translation>&amp;Check all</translation>
     </message>
     <message>
-        <location filename="main.ui" line="270"/>
+        <location filename="main.ui" line="291"/>
         <source>&amp;Uncheck all</source>
         <translation>&amp;Uncheck all</translation>
     </message>
     <message>
-        <location filename="main.ui" line="275"/>
+        <location filename="main.ui" line="296"/>
         <source>Collapse &amp;all</source>
         <translation>Collapse &amp;all</translation>
     </message>
     <message>
-        <location filename="main.ui" line="280"/>
+        <location filename="main.ui" line="301"/>
         <source>&amp;Expand all</source>
         <translation>&amp;Expand all</translation>
     </message>
     <message>
-        <location filename="main.ui" line="288"/>
+        <location filename="main.ui" line="309"/>
         <source>&amp;Toolbar</source>
         <translation>&amp;Toolbar</translation>
     </message>
     <message>
-        <location filename="main.ui" line="293"/>
+        <location filename="main.ui" line="314"/>
         <source>&amp;Contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="296"/>
+        <location filename="main.ui" line="317"/>
         <source>Open the help contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="299"/>
+        <location filename="main.ui" line="320"/>
         <source>F1</source>
         <translation type="unfinished"></translation>
     </message>
