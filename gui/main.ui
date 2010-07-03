@@ -128,7 +128,7 @@
    <addaction name="mMenuLanguage"/>
    <addaction name="mMenuHelp"/>
   </widget>
-  <widget class="QToolBar" name="mToolBar">
+  <widget class="QToolBar" name="mToolBarMain">
    <property name="windowTitle">
     <string>Standard</string>
    </property>

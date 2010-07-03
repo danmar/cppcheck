@@ -162,7 +162,7 @@ void MainWindow::LoadSettings()
     mUI.mResults->ShowResults(SHOW_STYLE, mUI.mActionShowStyle->isChecked());
 
     mUI.mActionToolbar->setChecked(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
-    mUI.mToolBar->setVisible(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
+    mUI.mToolBarMain->setVisible(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
 
     mApplications->LoadSettings(mSettings);
 
@@ -180,7 +180,7 @@ void MainWindow::SaveSettings()
 
     mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
     mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
-    mSettings->setValue(SETTINGS_TOOLBARS_SHOW, mUI.mToolBar->isVisible());
+    mSettings->setValue(SETTINGS_TOOLBARS_SHOW, mUI.mToolBarMain->isVisible());
 
     mApplications->SaveSettings(mSettings);
 
@@ -565,7 +565,7 @@ void MainWindow::ResultsAdded()
 
 void MainWindow::ToggleToolbar()
 {
-    mUI.mToolBar->setVisible(mUI.mActionToolbar->isChecked());
+    mUI.mToolBarMain->setVisible(mUI.mActionToolbar->isChecked());
 }
 
 void MainWindow::FormatAndSetTitle(const QString &text)
@@ -630,7 +630,7 @@ void MainWindow::MapLanguage(QAction *action)
 
 void MainWindow::AboutToShowViewMenu()
 {
-    mUI.mActionToolbar->setChecked(mUI.mToolBar->isVisible());
+    mUI.mActionToolbar->setChecked(mUI.mToolBarMain->isVisible());
 }
 
 void MainWindow::StopChecking()
