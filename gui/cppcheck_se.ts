@@ -260,57 +260,53 @@ kate -l(line) (file)</translation>
     </message>
     <message>
         <location filename="main.ui" line="260"/>
-        <source>Show security errors</source>
-        <translation>Säkerhetsvarningar</translation>
+        <source>Show style errors</source>
+        <oldsource>Show security errors</oldsource>
+        <translation type="unfinished">Säkerhetsvarningar</translation>
     </message>
     <message>
         <location filename="main.ui" line="268"/>
-        <source>Show style errors</source>
-        <translation>Stilvarningar</translation>
-    </message>
-    <message>
-        <location filename="main.ui" line="276"/>
         <source>Show common errors</source>
         <translation>Vanliga fel</translation>
     </message>
     <message>
-        <location filename="main.ui" line="281"/>
+        <location filename="main.ui" line="273"/>
         <source>&amp;Check all</source>
         <translation>&amp;Kryssa alla</translation>
     </message>
     <message>
-        <location filename="main.ui" line="286"/>
+        <location filename="main.ui" line="278"/>
         <source>&amp;Uncheck all</source>
         <translation>Kryssa &amp;ur alla</translation>
     </message>
     <message>
-        <location filename="main.ui" line="291"/>
+        <location filename="main.ui" line="283"/>
         <source>Collapse &amp;all</source>
         <translatorcomment>Ingen bra översättning!</translatorcomment>
         <translation>&amp;Fäll ihop alla</translation>
     </message>
     <message>
-        <location filename="main.ui" line="296"/>
+        <location filename="main.ui" line="288"/>
         <source>&amp;Expand all</source>
         <translation>&amp;Expandera alla</translation>
     </message>
     <message>
-        <location filename="main.ui" line="304"/>
+        <location filename="main.ui" line="296"/>
         <source>&amp;Toolbar</source>
         <translation>&amp;Verktyg</translation>
     </message>
     <message>
-        <location filename="main.ui" line="309"/>
+        <location filename="main.ui" line="301"/>
         <source>&amp;Contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="312"/>
+        <location filename="main.ui" line="304"/>
         <source>Open the help contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="315"/>
+        <location filename="main.ui" line="307"/>
         <source>F1</source>
         <translation type="unfinished"></translation>
     </message>

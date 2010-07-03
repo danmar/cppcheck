@@ -252,14 +252,6 @@
     <string>Show possible false positives</string>
    </property>
   </action>
-  <action name="mActionShowSecurity">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show security errors</string>
-   </property>
-  </action>
   <action name="mActionShowStyle">
    <property name="checkable">
     <bool>true</bool>
