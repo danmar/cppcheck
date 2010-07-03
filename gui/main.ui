@@ -80,6 +80,14 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <widget class="QMenu" name="mMenuToolbars">
+     <property name="title">
+      <string>&amp;Toolbars</string>
+     </property>
+     <addaction name="mActionToolbar"/>
+    </widget>
+    <addaction name="mMenuToolbars"/>
+    <addaction name="separator"/>
     <addaction name="mActionShowStyle"/>
     <addaction name="mActionShowErrors"/>
     <addaction name="mActionCheckAll"/>
@@ -88,7 +96,6 @@
     <addaction name="mActionCollapseAll"/>
     <addaction name="mActionExpandAll"/>
     <addaction name="separator"/>
-    <addaction name="mActionToolbar"/>
    </widget>
    <widget class="QMenu" name="mMenuLanguage">
     <property name="title">
@@ -306,7 +313,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Toolbar</string>
+    <string>&amp;Standard</string>
+   </property>
+   <property name="toolTip">
+    <string>Standard items</string>
    </property>
   </action>
   <action name="mActionHelpContents">
@@ -318,6 +328,11 @@
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+  </action>
+  <action name="actionToolbar">
+   <property name="text">
+    <string>Toolbar</string>
    </property>
   </action>
  </widget>

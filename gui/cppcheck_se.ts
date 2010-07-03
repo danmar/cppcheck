@@ -149,7 +149,7 @@ kate -l(line) (file)</translation>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="main.ui" line="133"/>
+        <location filename="main.ui" line="140"/>
         <source>Standard</source>
         <translation>Standard</translation>
     </message>
@@ -164,159 +164,174 @@ kate -l(line) (file)</translation>
         <translation>&amp;Visa</translation>
     </message>
     <message>
-        <location filename="main.ui" line="110"/>
+        <location filename="main.ui" line="85"/>
+        <source>&amp;Toolbars</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="117"/>
         <source>&amp;Check</source>
         <translation>&amp;Check</translation>
     </message>
     <message>
-        <location filename="main.ui" line="119"/>
+        <location filename="main.ui" line="126"/>
         <source>&amp;Edit</source>
         <translation>&amp;Redigera</translation>
     </message>
     <message>
-        <location filename="main.ui" line="151"/>
+        <location filename="main.ui" line="158"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="164"/>
+        <location filename="main.ui" line="171"/>
         <source>&amp;License...</source>
         <translation>&amp;Licens...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="169"/>
+        <location filename="main.ui" line="176"/>
         <source>A&amp;uthors...</source>
         <translation>&amp;Utvecklat av...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="178"/>
+        <location filename="main.ui" line="185"/>
         <source>&amp;About...</source>
         <translation>&amp;Om...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="183"/>
+        <location filename="main.ui" line="190"/>
         <source>&amp;Files...</source>
         <translation>&amp;Filer...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="186"/>
+        <location filename="main.ui" line="193"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="main.ui" line="195"/>
+        <location filename="main.ui" line="202"/>
         <source>&amp;Directory...</source>
         <translation>&amp;Katalog...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="198"/>
+        <location filename="main.ui" line="205"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="main.ui" line="207"/>
+        <location filename="main.ui" line="214"/>
         <source>&amp;Recheck files</source>
         <translation>Starta &amp;om check</translation>
     </message>
     <message>
-        <location filename="main.ui" line="210"/>
+        <location filename="main.ui" line="217"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="main.ui" line="219"/>
+        <location filename="main.ui" line="226"/>
         <source>&amp;Stop</source>
         <translation>&amp;Stoppa</translation>
     </message>
     <message>
-        <location filename="main.ui" line="222"/>
+        <location filename="main.ui" line="229"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="main.ui" line="231"/>
+        <location filename="main.ui" line="238"/>
         <source>&amp;Save results to file...</source>
         <translation>&amp;Spara resultat till fil...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="234"/>
+        <location filename="main.ui" line="241"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="main.ui" line="239"/>
+        <location filename="main.ui" line="246"/>
         <source>&amp;Quit</source>
         <translation>&amp;Avsluta</translation>
     </message>
     <message>
-        <location filename="main.ui" line="248"/>
+        <location filename="main.ui" line="255"/>
         <source>&amp;Clear results</source>
         <translation>&amp;Töm resultat</translation>
     </message>
     <message>
-        <location filename="main.ui" line="257"/>
+        <location filename="main.ui" line="264"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Inställningar</translation>
     </message>
     <message>
-        <location filename="main.ui" line="269"/>
+        <location filename="main.ui" line="276"/>
         <source>Show style errors</source>
         <oldsource>Show security errors</oldsource>
         <translation type="unfinished">Säkerhetsvarningar</translation>
     </message>
     <message>
-        <location filename="main.ui" line="281"/>
+        <location filename="main.ui" line="288"/>
         <source>Show common errors</source>
         <translation>Vanliga fel</translation>
     </message>
     <message>
-        <location filename="main.ui" line="286"/>
+        <location filename="main.ui" line="293"/>
         <source>&amp;Check all</source>
         <translation>&amp;Kryssa alla</translation>
     </message>
     <message>
-        <location filename="main.ui" line="291"/>
+        <location filename="main.ui" line="298"/>
         <source>&amp;Uncheck all</source>
         <translation>Kryssa &amp;ur alla</translation>
     </message>
     <message>
-        <location filename="main.ui" line="296"/>
+        <location filename="main.ui" line="303"/>
         <source>Collapse &amp;all</source>
         <translatorcomment>Ingen bra översättning!</translatorcomment>
         <translation>&amp;Fäll ihop alla</translation>
     </message>
     <message>
-        <location filename="main.ui" line="301"/>
+        <location filename="main.ui" line="308"/>
         <source>&amp;Expand all</source>
         <translation>&amp;Expandera alla</translation>
     </message>
     <message>
-        <location filename="main.ui" line="309"/>
-        <source>&amp;Toolbar</source>
-        <translation>&amp;Verktyg</translation>
+        <location filename="main.ui" line="316"/>
+        <source>&amp;Standard</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="314"/>
+        <location filename="main.ui" line="319"/>
+        <source>Standard items</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="335"/>
+        <source>Toolbar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="324"/>
         <source>&amp;Contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="317"/>
+        <location filename="main.ui" line="327"/>
         <source>Open the help contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="320"/>
+        <location filename="main.ui" line="330"/>
         <source>F1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="95"/>
+        <location filename="main.ui" line="102"/>
         <source>&amp;Language</source>
         <translation>&amp;Språk</translation>
     </message>
     <message>
-        <location filename="main.ui" line="100"/>
+        <location filename="main.ui" line="107"/>
         <source>&amp;Help</source>
         <translation>&amp;Hjälp</translation>
     </message>
