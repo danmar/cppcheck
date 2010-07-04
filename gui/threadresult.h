@@ -81,9 +81,8 @@ signals:
     /**
     * @brief Progress signal
     * @param value Current progress
-    * @param max Maximum progress
     */
-    void Progress(int value, int max);
+    void Progress(int value);
 
     /**
     * @brief Signal of a new error

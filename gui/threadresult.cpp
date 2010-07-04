@@ -40,7 +40,7 @@ void ThreadResult::FileChecked(const QString &file)
     QMutexLocker locker(&mutex);
     Q_UNUSED(file); //For later use maybe?
     mProgress++;
-    emit Progress(mProgress, mMaxProgress);
+    emit Progress(mProgress);
 }
 
 void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)

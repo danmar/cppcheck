@@ -92,9 +92,15 @@ public:
     /**
     * @brief Inform the view that checking has started
     *
-    * At the moment this only displays the progressbar
+    * @param count Count of files to be checked.
     */
-    void CheckingStarted();
+    void CheckingStarted(int count);
+
+    /**
+    * @brief Inform the view that checking finished.
+    *
+    */
+    void CheckingFinished();
 
     /**
     * @brief Do we have visible results to show?
@@ -138,9 +144,8 @@ public slots:
     * @brief Slot for updating the checking progress
     *
     * @param value Current progress value
-    * @param max Maximum progress value
     */
-    void Progress(int value, int max);
+    void Progress(int value);
 
     /**
     * @brief Slot for new error to be displayed

@@ -61,48 +61,9 @@ void ResultsView::Clear()
     mUI.mProgress->setValue(0);
 }
 
-
-
-void ResultsView::Progress(int value, int max)
+void ResultsView::Progress(int value)
 {
-    mUI.mProgress->setMaximum(max);
     mUI.mProgress->setValue(value);
-    if (value >= max)
-    {
-        mUI.mProgress->setVisible(false);
-        //Should we inform user of non visible/not found errors?
-        if (mShowNoErrorsMessage)
-        {
-            //Tell user that we found no errors
-            if (!mErrorsFound)
-            {
-                QMessageBox msg(QMessageBox::Information,
-                                tr("Cppcheck"),
-                                tr("No errors found."),
-                                QMessageBox::Ok,
-                                this);
-
-                msg.exec();
-            } //If we have errors but they aren't visible, tell user about it
-            else if (!mUI.mTree->HasVisibleResults())
-            {
-                QString text = tr("Errors were found, but they are configured to be hidden.\n"\
-                                  "To toggle what kind of errors are shown, open view menu.");
-                QMessageBox msg(QMessageBox::Information,
-                                tr("Cppcheck"),
-                                text,
-                                QMessageBox::Ok,
-                                this);
-
-                msg.exec();
-            }
-        }
-    }
-    else
-    {
-        mUI.mProgress->setVisible(true);
-        mUI.mProgress->setEnabled(true);
-    }
 }
 
 void ResultsView::Error(const QString &file,
@@ -194,9 +155,42 @@ void ResultsView::SetCheckDirectory(const QString &dir)
     mUI.mTree->SetCheckDirectory(dir);
 }
 
-void ResultsView::CheckingStarted()
+void ResultsView::CheckingStarted(int count)
 {
     mUI.mProgress->setVisible(true);
+    mUI.mProgress->setMaximum(count);
+}
+
+void ResultsView::CheckingFinished()
+{
+    mUI.mProgress->setVisible(false);
+    //Should we inform user of non visible/not found errors?
+    if (mShowNoErrorsMessage)
+    {
+        //Tell user that we found no errors
+        if (!mErrorsFound)
+        {
+            QMessageBox msg(QMessageBox::Information,
+                            tr("Cppcheck"),
+                            tr("No errors found."),
+                            QMessageBox::Ok,
+                            this);
+
+            msg.exec();
+        } //If we have errors but they aren't visible, tell user about it
+        else if (!mUI.mTree->HasVisibleResults())
+        {
+            QString text = tr("Errors were found, but they are configured to be hidden.\n"\
+                              "To toggle what kind of errors are shown, open view menu.");
+            QMessageBox msg(QMessageBox::Information,
+                            tr("Cppcheck"),
+                            text,
+                            QMessageBox::Ok,
+                            this);
+
+            msg.exec();
+        }
+    }
 }
 
 bool ResultsView::HasVisibleResults() const

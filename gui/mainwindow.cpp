@@ -221,7 +221,7 @@ void MainWindow::DoCheckFiles(const QStringList &files)
         return;
     }
 
-    mUI.mResults->CheckingStarted();
+    mUI.mResults->CheckingStarted(fileNames.count());
 
     mThread->SetFiles(RemoveUnacceptedFiles(fileNames));
     QFileInfo inf(fileNames[0]);
@@ -386,6 +386,7 @@ QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
 
 void MainWindow::CheckDone()
 {
+    mUI.mResults->CheckingFinished();
     EnableCheckButtons(true);
     mUI.mActionSettings->setEnabled(true);
     if (mUI.mResults->HasResults())
