@@ -2065,6 +2065,22 @@ private:
                        "    strncat(a, s, 20);\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always 0-terminate it)\n", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    char a[100];\n"
+                       "    strncpy(a, \"hello\", 3);\n"
+                       "    strncat(a, \"world\", 20);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always 0-terminate it)\n", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    char a[100];\n"
+                       "    strncpy(a, \"hello\", sizeof(a));\n"
+                       "    strncat(a, \"world\", 20);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

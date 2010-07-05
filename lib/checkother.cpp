@@ -3164,8 +3164,24 @@ private:
             // strncpy doesn't 0-terminate first parameter
             if (Token::Match(&tok, "strncpy ( %var% ,"))
             {
-                init_strncpy(checks, tok.tokAt(2));
-                return tok.next()->link();
+                if (Token::Match(tok.tokAt(4), "%str% ,"))
+                {
+                    if (Token::Match(tok.tokAt(6), "%num% )"))
+                    {
+                        const unsigned int len = Token::getStrLength(tok.tokAt(4));
+                        const unsigned int sz = MathLib::toLongNumber(tok.strAt(6));
+                        if (len>=sz)
+                        {
+                            init_strncpy(checks, tok.tokAt(2));
+                            return tok.next()->link();
+                        }
+                    }
+                }
+                else
+                {
+                    init_strncpy(checks, tok.tokAt(2));
+                    return tok.next()->link();
+                }
             }
 
             if (Token::simpleMatch(&tok, "asm ( )"))
