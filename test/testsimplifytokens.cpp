@@ -205,6 +205,7 @@ private:
         TEST_CASE(simplifyTypedef52); // ticket #1782
         TEST_CASE(simplifyTypedef53); // ticket #1801
         TEST_CASE(simplifyTypedef54); // ticket #1814
+        TEST_CASE(simplifyTypedef55);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4218,6 +4219,27 @@ private:
                             "    }\n"
                             "}";
 
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef55()
+    {
+        const char code[] = "typedef volatile unsigned long * const hwreg_t ;\n"
+                            "typedef void *const t1[2];\n"
+                            "typedef int*const *_Iterator;\n"
+                            "hwreg_t v1;\n"
+                            "t1 v2;\n"
+                            "_Iterator v3;\n";
+
+        // The expected result..
+        const std::string expected("; ; ; "
+                                   "long * v1 ; "
+                                   "void * v2 [ 2 ] ; "
+                                   "int * * v3 ;");
+        ASSERT_EQUALS(expected, sizeof_(code));
+
+        // Check for output..
         checkSimplifyTypedef(code);
         ASSERT_EQUALS("", errout.str());
     }

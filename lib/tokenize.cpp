@@ -842,7 +842,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         // check for pointers and references
-        while (Token::Match(tok->tokAt(offset), "*|&"))
+        while (Token::Match(tok->tokAt(offset), "*|&|const"))
             pointers.push_back(tok->tokAt(offset++)->str());
 
         if (Token::Match(tok->tokAt(offset), "%type%"))
