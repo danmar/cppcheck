@@ -943,6 +943,20 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             alloc = No;
                         }
                     }
+                    else if (Token::Match(tok->tokAt(2), "new ( nothrow ) %type%"))
+                    {
+                        if (isclass(_tokenizer, tok->tokAt(6)))
+                        {
+                            alloc = No;
+                        }
+                    }
+                    else if (Token::Match(tok->tokAt(2), "new ( std :: nothrow ) %type%"))
+                    {
+                        if (isclass(_tokenizer, tok->tokAt(8)))
+                        {
+                            alloc = No;
+                        }
+                    }
                 }
 
                 if (alloc != No)

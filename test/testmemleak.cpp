@@ -889,6 +889,18 @@ private:
               "    delete p;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: p\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    Fred *f = new(nothrow) Fred;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    Fred *f = new(std::nothrow) Fred;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
