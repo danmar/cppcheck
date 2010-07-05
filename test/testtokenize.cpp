@@ -520,6 +520,7 @@ private:
 
         ASSERT_EQUALS("( p1 || ! p2 )", tokenizeAndStringify("( p1 != NULL || p2 == NULL )", true));
         ASSERT_EQUALS("( p1 && ! p2 )", tokenizeAndStringify("( p1 != NULL && p2 == NULL )", true));
+        ASSERT_EQUALS("a & & b", tokenizeAndStringify("a & &b", true));
 
         ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == false )", true));
         ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0 )", true));
