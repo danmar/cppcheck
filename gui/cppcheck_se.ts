@@ -22,7 +22,7 @@
         <location filename="about.ui" line="81"/>
         <source>Copyright (C) 2007-2010 Daniel Marjamäki and cppcheck team.</source>
         <oldsource>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</translation>
+        <translation>Copyright (C) 2007-2010 Daniel Marjamäki and cppcheck team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -68,14 +68,14 @@ The following texts are replaced with appriproate values when application is exe
 
 Example opening a file with Kate and make Kate scroll to the correct line:
 kate -l(line) (file)</oldsource>
-        <translation type="unfinished">Här lägger du till program visar fel i filer.
+        <translation>Här anger du det program som visar fel i filer.
 Ange programmets namn och kommandorad.
 
-Följande dynamiska parametrar kan användas i kommandoraden:
+Följande parametrar kan användas i kommandoraden:
 (file) - Filnamnet
 (line) - Radnummer
 (message) - Felmeddelande
-(severity) - Error severity
+(severity) - Svårighetsgrad
 
 Exempel för att öppna filen och scrolla till rätt rad med programmet Kate:
 kate -l(line) (file)</translation>
@@ -166,7 +166,7 @@ kate -l(line) (file)</translation>
     <message>
         <location filename="main.ui" line="85"/>
         <source>&amp;Toolbars</source>
-        <translation type="unfinished"></translation>
+        <translation>Verktygsfält</translation>
     </message>
     <message>
         <location filename="main.ui" line="118"/>
@@ -292,47 +292,47 @@ kate -l(line) (file)</translation>
     <message>
         <location filename="main.ui" line="317"/>
         <source>&amp;Standard</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Standard</translation>
     </message>
     <message>
         <location filename="main.ui" line="320"/>
         <source>Standard items</source>
-        <translation type="unfinished"></translation>
+        <translation>Standard poster</translation>
     </message>
     <message>
         <location filename="main.ui" line="336"/>
         <source>Toolbar</source>
-        <translation type="unfinished"></translation>
+        <translation>Verktygsfält</translation>
     </message>
     <message>
         <location filename="main.ui" line="344"/>
         <source>&amp;Categories</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Kategorier</translation>
     </message>
     <message>
         <location filename="main.ui" line="347"/>
         <source>Error categories</source>
-        <translation type="unfinished"></translation>
+        <translation>Fel kategorier</translation>
     </message>
     <message>
         <location filename="main.ui" line="325"/>
         <source>&amp;Contents</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Innehåll</translation>
     </message>
     <message>
         <location filename="main.ui" line="159"/>
         <source>Categories</source>
-        <translation type="unfinished"></translation>
+        <translation>Kategorier</translation>
     </message>
     <message>
         <location filename="main.ui" line="328"/>
         <source>Open the help contents</source>
-        <translation type="unfinished"></translation>
+        <translation>Öppna hjälp</translation>
     </message>
     <message>
         <location filename="main.ui" line="331"/>
         <source>F1</source>
-        <translation type="unfinished"></translation>
+        <translation>F1</translation>
     </message>
     <message>
         <location filename="main.ui" line="103"/>
@@ -399,7 +399,7 @@ Stop the checking before exiting.</source>
     <message>
         <location filename="mainwindow.cpp" line="537"/>
         <source>CSV files (*.csv)</source>
-        <translation type="unfinished"></translation>
+        <translation>CSV filer (*.csv)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="577"/>
@@ -435,7 +435,7 @@ Stop the checking before exiting.</source>
     <message>
         <location filename="translationhandler.cpp" line="33"/>
         <source>Dutch</source>
-        <translation type="unfinished"></translation>
+        <translation>Nederländska</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="35"/>
@@ -522,7 +522,7 @@ Stop the checking before exiting.</source>
     <message>
         <location filename="resultstree.cpp" line="421"/>
         <source>Copy message</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopiera meddelande</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="459"/>
