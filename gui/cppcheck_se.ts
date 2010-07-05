@@ -261,12 +261,12 @@ kate -l(line) (file)</translation>
     <message>
         <location filename="main.ui" line="277"/>
         <source>Show style errors</source>
-        <translation>Stilvarningar</translation>
+        <translation>Visa stilvarningar</translation>
     </message>
     <message>
         <location filename="main.ui" line="289"/>
         <source>Show common errors</source>
-        <translation>Vanliga fel</translation>
+        <translation>Visa vanliga fel</translation>
     </message>
     <message>
         <location filename="main.ui" line="294"/>
