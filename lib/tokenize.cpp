@@ -4334,7 +4334,7 @@ void Tokenizer::simplifyCasts()
             }
         }
 
-        if (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <"))
+        while (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <"))
         {
             Token *tok2 = tok->next();
             unsigned int level = 0;
@@ -4359,6 +4359,14 @@ void Tokenizer::simplifyCasts()
                     Token::eraseTokens(tok, tok2->tokAt(2));
                     closeBracket->deleteThis();
                 }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                break;
             }
         }
     }

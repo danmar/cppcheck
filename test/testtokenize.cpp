@@ -57,6 +57,7 @@ private:
         TEST_CASE(removeCast2);
         TEST_CASE(removeCast3);
         TEST_CASE(removeCast4);
+        TEST_CASE(removeCast5);
 
         TEST_CASE(inlineasm);
 
@@ -426,6 +427,12 @@ private:
         const char code[] = "if (a >= (unsigned)(b)) {}";
         const char expected[] = "if ( a >= ( int ) b ) { }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void removeCast5()
+    {
+        // ticket #1817
+        ASSERT_EQUALS("a . data = f ;", tokenizeAndStringify("a->data = reinterpret_cast<void*>(static_cast<intptr_t>(f));", true));
     }
 
     void inlineasm()
