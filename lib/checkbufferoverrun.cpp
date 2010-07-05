@@ -1858,6 +1858,13 @@ private:
             return &tok;
         }
 
+        // Assign variable (unknown value = 0)..
+        if (Token::Match(tok.tokAt(-2), "(|, & %var% ,|)"))
+        {
+            assign_value(checks, tok.varId(), "0");
+            return &tok;
+        }
+
         // Array index..
         if (Token::Match(&tok, "%var% [ %var% ]"))
         {

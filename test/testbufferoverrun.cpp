@@ -172,6 +172,7 @@ private:
         TEST_CASE(crash);	// Ticket #1587 - crash
 
         TEST_CASE(executionPaths1);
+        TEST_CASE(executionPaths2);
 
         TEST_CASE(cmdLineArgs1);
     }
@@ -2321,6 +2322,18 @@ private:
                 "    buf[i][0] = 0;\n"
                 "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10][5]' index 1000 out of bounds\n", errout.str());
+    }
+
+    void executionPaths2()
+    {
+        epcheck("void foo()\n"
+                "{\n"
+                "    char a[64];\n"
+                "    int sz = sizeof(a);\n"
+                "    bar(&sz);\n"
+                "    a[sz] = 0;\n"
+                "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void cmdLineArgs1()
