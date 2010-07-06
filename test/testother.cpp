@@ -1174,6 +1174,7 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
 
         // Clear the error buffer..
         errout.str("");
@@ -1351,10 +1352,10 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("void a()\n"
+        checkUninitVar("int a()\n"
                        "{\n"
                        "    int x;\n"
-                       "    int y = x;\n"
+                       "    return x;\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
 
@@ -1614,6 +1615,24 @@ private:
                        "        p = new Foo;\n"
                        "    if (x)\n"
                        "        p->abcd();\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void foo(int a)\n"
+                       "{\n"
+                       "    int n;\n"
+                       "    int condition;\n"
+                       "    if(a == 1) {\n"
+                       "        n=0;\n"
+                       "        condition=0;\n"
+                       "    }\n"
+                       "    else {\n"
+                       "        n=1;\n"
+                       "    }\n"
+                       "\n"
+                       "    if( n == 0) {\n"
+                       "        a=condition;\n"
+                       "    }\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 

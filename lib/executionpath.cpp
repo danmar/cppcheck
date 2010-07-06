@@ -42,25 +42,27 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
                 break;
             --parlevel;
         }
-        else if (Token::Match(tok2, ";{}"))
+        else if (Token::Match(tok2, "[;{}]"))
             break;
         if (tok2->varId() != 0)
         {
             bailOutVar(checks, tok2->varId());
-            for (std::list<ExecutionPath *>::iterator it = checks.begin(); it != checks.end();)
-            {
-                if ((*it)->varId > 0 && (*it)->numberOfIf >= 1)
-                {
-                    delete *it;
-                    checks.erase(it++);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
         }
     }
+
+    for (std::list<ExecutionPath *>::iterator it = checks.begin(); it != checks.end();)
+    {
+        if ((*it)->varId > 0 && (*it)->numberOfIf >= 1)
+        {
+            delete *it;
+            checks.erase(it++);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
 
     return false;
 }
@@ -103,7 +105,8 @@ static void parseIfSwitchBody(const Token * const tok,
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
         {
-            c.push_back((*it)->copy());
+            if ((*it)->numberOfIf == 0)
+                c.push_back((*it)->copy());
             if ((*it)->varId != 0)
                 countif2.insert((*it)->varId);
         }
