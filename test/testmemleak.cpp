@@ -1820,7 +1820,7 @@ private:
               "   foo(&tmp);\n"
               "   free(tmp);\n"
               "}\n");
-        TODO_ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 

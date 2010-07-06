@@ -526,27 +526,33 @@ const char *CheckMemoryLeak::functionArgAlloc(const Token *tok, unsigned int tar
                 break;
             --indentlevel;
         }
-        if (Token::Match(tok, "free ( * %varid% )", varid))
+        else if (tok->varId() == varid)
         {
-            realloc = 1;
-            allocType = No;
-        }
-        if (Token::Match(tok, "* %varid% =", varid))
-        {
-            allocType = getAllocationType(tok->tokAt(3), varid);
-            if (allocType == No)
+            if (Token::Match(tok->tokAt(-3), "free ( * %varid% )", varid))
             {
-                allocType = getReallocationType(tok->tokAt(3), varid);
+                realloc = 1;
+                allocType = No;
             }
-            if (allocType != No)
+            else if (Token::Match(tok->previous(), "* %varid% =", varid))
             {
-                if (realloc)
-                    return "realloc";
-                return "alloc";
+                allocType = getAllocationType(tok->tokAt(2), varid);
+                if (allocType == No)
+                {
+                    allocType = getReallocationType(tok->tokAt(2), varid);
+                }
+                if (allocType != No)
+                {
+                    if (realloc)
+                        return "realloc";
+                    return "alloc";
+                }
+            }
+            else
+            {
+                // unhandled variable usage: bailout
+                return "";
             }
         }
-        if (tok->str() == "return")
-            return "";
     }
 
     return "";
