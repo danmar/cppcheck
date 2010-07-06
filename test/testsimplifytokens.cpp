@@ -4128,6 +4128,7 @@ private:
                             "typedef char (& type3)[x];\n"
                             "typedef char (& type4)[x + 2];\n"
                             "type1 t1;\n"
+                            "type1 (*tp1)[2];\n"
                             "type2 t2;\n"
                             "type3 t3;\n"
                             "type4 t4;";
@@ -4135,6 +4136,7 @@ private:
         // The expected result..
         const std::string expected("; ; ; ; "
                                    "char ( * t1 ) [ 10 ] ; "
+                                   "char ( * ( * tp1 ) [ 2 ] ) [ 10 ] ; "
                                    "char ( & t2 ) [ 10 ] ; "
                                    "char ( & t3 ) [ x ] ; "
                                    "char ( & t4 ) [ x + 2 ] ;");

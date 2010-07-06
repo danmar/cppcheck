@@ -1477,10 +1477,15 @@ void Tokenizer::simplifyTypedef()
                         // skip over name
                         if (tok2->next()->str() != ")")
                         {
-                            tok2 = tok2->next();
+                            if (tok2->next()->str() != "(")
+                                tok2 = tok2->next();
 
                             // check for function and skip over args
                             if (tok2->next()->str() == "(")
+                                tok2 = tok2->next()->link();
+
+                            // check for array
+                            if (tok2->next()->str() == "[")
                                 tok2 = tok2->next()->link();
                         }
                         else
