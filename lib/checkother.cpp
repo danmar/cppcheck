@@ -3600,7 +3600,8 @@ void CheckOther::checkMathFunctions()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // case log(-2)
-        if (Token::Match(tok, "log|log10 ( %num% )") &&
+        if (tok->varId() == 0 &&
+            Token::Match(tok, "log|log10 ( %num% )") &&
             MathLib::isNegative(tok->tokAt(2)->str()) &&
             MathLib::isInt(tok->tokAt(2)->str()) &&
             MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0)
@@ -3608,7 +3609,8 @@ void CheckOther::checkMathFunctions()
             mathfunctionCallError(tok);
         }
         // case log(-2.0)
-        else if (Token::Match(tok, "log|log10 ( %num% )") &&
+        else if (tok->varId() == 0 &&
+                 Token::Match(tok, "log|log10 ( %num% )") &&
                  MathLib::isNegative(tok->tokAt(2)->str()) &&
                  MathLib::isFloat(tok->tokAt(2)->str()) &&
                  MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.)
@@ -3617,7 +3619,8 @@ void CheckOther::checkMathFunctions()
         }
 
         // case log(0.0)
-        else if (Token::Match(tok, "log|log10 ( %num% )") &&
+        else if (tok->varId() == 0 &&
+                 Token::Match(tok, "log|log10 ( %num% )") &&
                  !MathLib::isNegative(tok->tokAt(2)->str()) &&
                  MathLib::isFloat(tok->tokAt(2)->str()) &&
                  MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.)
@@ -3626,7 +3629,8 @@ void CheckOther::checkMathFunctions()
         }
 
         // case log(0)
-        else if (Token::Match(tok, "log|log10 ( %num% )") &&
+        else if (tok->varId() == 0 &&
+                 Token::Match(tok, "log|log10 ( %num% )") &&
                  !MathLib::isNegative(tok->tokAt(2)->str()) &&
                  MathLib::isInt(tok->tokAt(2)->str()) &&
                  MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0)
@@ -3634,32 +3638,37 @@ void CheckOther::checkMathFunctions()
             mathfunctionCallError(tok);
         }
         // acos( x ), asin( x )  where x is defined for intervall [-1,+1], but not beyound
-        else if (Token::Match(tok, "acos|asin ( %num% )") &&
+        else if (tok->varId() == 0 &&
+                 Token::Match(tok, "acos|asin ( %num% )") &&
                  std::fabs(MathLib::toDoubleNumber(tok->tokAt(2)->str())) > 1.0)
         {
             mathfunctionCallError(tok);
         }
         // sqrt( x ): if x is negative the result is undefined
-        else if (Token::Match(tok, "sqrt ( %num% )") &&
+        else if (tok->varId() == 0 &&
+                 Token::Match(tok, "sqrt ( %num% )") &&
                  MathLib::isNegative(tok->tokAt(2)->str()))
         {
             mathfunctionCallError(tok);
         }
         // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
-        else if (Token::Match(tok, "atan2 ( %num% , %num% )") &&
+        else if (tok->varId() == 0 &&
+                 Token::Match(tok, "atan2 ( %num% , %num% )") &&
                  MathLib::isNullValue(tok->tokAt(2)->str()) &&
                  MathLib::isNullValue(tok->tokAt(4)->str()))
         {
             mathfunctionCallError(tok, 2);
         }
         // fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined).
-        else if (Token::Match(tok, "fmod ( %num% , %num% )") &&
+        else if (tok->varId() == 0 &&
+                 Token::Match(tok, "fmod ( %num% , %num% )") &&
                  MathLib::isNullValue(tok->tokAt(4)->str()))
         {
             mathfunctionCallError(tok, 2);
         }
         // pow ( x , y) If x is zero, and y is negative --> division by zero
-        else if (Token::Match(tok, "pow ( %num% , %num% )") &&
+        else if (tok->varId() == 0 &&
+                 Token::Match(tok, "pow ( %num% , %num% )") &&
                  MathLib::isNullValue(tok->tokAt(2)->str())  &&
                  MathLib::isNegative(tok->tokAt(4)->str()))
         {
