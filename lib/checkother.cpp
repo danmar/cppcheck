@@ -1128,7 +1128,7 @@ void CheckOther::functionVariableUsage()
                 if (tok->str() == "const")
                     tok = tok->next();
 
-                if (tok->str() != "return")
+                if (tok->str() != "return" && tok->str() != "throw")
                 {
                     Variables::VariableType type;
 

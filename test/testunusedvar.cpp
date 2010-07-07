@@ -69,6 +69,7 @@ private:
         TEST_CASE(localvar21); // ticket #1807
         TEST_CASE(localvar22); // ticket #1811
         TEST_CASE(localvar23); // ticket #1808
+        TEST_CASE(localvar24); // ticket #1803
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1213,6 +1214,18 @@ private:
                               "    a = b[c] = 0;\n"
                               "    return a;\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar24() // ticket #1803
+    {
+        functionVariableUsage("class MyException\n"
+                              "{\n"
+                              "    virtual void raise() const\n"
+                              "    {\n"
+                              "        throw *this;\n"
+                              "    }\n"
+                              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
