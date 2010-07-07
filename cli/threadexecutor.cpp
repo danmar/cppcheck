@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+#include <errno.h>
 #endif
 
 ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &errorLogger)
@@ -51,12 +52,15 @@ void ThreadExecutor::addFileContent(const std::string &path, const std::string &
 
 #if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 
-bool ThreadExecutor::handleRead(unsigned int &result)
+int ThreadExecutor::handleRead(unsigned int &result)
 {
     char type = 0;
     if (read(_pipe[0], &type, 1) <= 0)
     {
-        return false;
+        if( errno == EAGAIN )
+            return 0;
+
+        return -1;
     }
 
     if (type != '1' && type != '2' && type != '3')
@@ -104,10 +108,12 @@ bool ThreadExecutor::handleRead(unsigned int &result)
         iss >> fileResult;
         result += fileResult;
         _errorLogger.reportStatus(_fileCount, _filenames.size());
+        delete [] buf;
+        return -1;
     }
 
     delete [] buf;
-    return true;
+    return 1;
 }
 
 unsigned int ThreadExecutor::check()
@@ -134,65 +140,68 @@ unsigned int ThreadExecutor::check()
     }
 
     unsigned int childCount = 0;
-    for (unsigned int i = 0; i < _filenames.size(); i++)
+    unsigned int i = 0;
+    while( true )
     {
-        // Keep only wanted amount of child processes running at a time.
-        if (childCount >= _settings._jobs)
+        // Start a new child
+        if( i < _filenames.size() && childCount < _settings._jobs )
         {
-            while (handleRead(result))
+            pid_t pid = fork();
+            if (pid < 0)
             {
+                // Error
+                std::cerr << "Failed to create child process" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            else if (pid == 0)
+            {
+                CppCheck fileChecker(*this);
+                fileChecker.settings(_settings);
 
+                if (_fileContents.size() > 0 && _fileContents.find(_filenames[i]) != _fileContents.end())
+                {
+                    // File content was given as a string
+                    fileChecker.addFile(_filenames[i], _fileContents[ _filenames[i] ]);
+                }
+                else
+                {
+                    // Read file from a file
+                    fileChecker.addFile(_filenames[i]);
+                }
+
+                unsigned int resultOfCheck = fileChecker.check();
+                std::ostringstream oss;
+                oss << resultOfCheck;
+                writeToPipe('3', oss.str());
+                exit(0);
+            }
+
+            ++childCount;
+            ++i;
+        }
+        else if (childCount > 0)
+        {
+            // Wait for child to quit before stating new processes
+            while(true)
+            {
+                int readRes = handleRead(result);
+                if( readRes == -1 )
+                    break;
+                else if( readRes == 0 )
+                    usleep(5000); // 5 ms
             }
 
             int stat = 0;
             waitpid(0, &stat, 0);
             --childCount;
         }
-
-        pid_t pid = fork();
-        if (pid < 0)
+        else if(childCount == 0)
         {
-            // Error
-            std::cerr << "Failed to create child process" << std::endl;
-            exit(EXIT_FAILURE);
+            // All done
+            break;
         }
-        else if (pid == 0)
-        {
-            CppCheck fileChecker(*this);
-            fileChecker.settings(_settings);
-
-            if (_fileContents.size() > 0 && _fileContents.find(_filenames[i]) != _fileContents.end())
-            {
-                // File content was given as a string
-                fileChecker.addFile(_filenames[i], _fileContents[ _filenames[i] ]);
-            }
-            else
-            {
-                // Read file from a file
-                fileChecker.addFile(_filenames[i]);
-            }
-
-            unsigned int resultOfCheck = fileChecker.check();
-            std::ostringstream oss;
-            oss << resultOfCheck;
-            writeToPipe('3', oss.str());
-            exit(0);
-        }
-
-        ++childCount;
     }
 
-    while (childCount > 0)
-    {
-        int stat = 0;
-        waitpid(0, &stat, 0);
-        --childCount;
-    }
-
-    while (handleRead(result))
-    {
-
-    }
 
     return result;
 }
