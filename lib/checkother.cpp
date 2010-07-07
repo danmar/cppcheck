@@ -1382,6 +1382,20 @@ void CheckOther::functionVariableUsage()
                     }
                     else
                         variables.write(varid1);
+
+                    // pointer alias
+                    if (var &&
+                        var->_type == Variables::pointer &&
+                        Token::Match(tok->previous(), "= %var% ;"))
+                    {
+                        const unsigned int varid2 = tok->varId();
+                        Variables::VariableUsage *var2 = variables.find(varid2);
+                        if (var2 && var2->_type == Variables::array)
+                        {
+                            variables.read(varid2);
+                            variables.write(varid2);
+                        }
+                    }
                 }
 
                 const Token *equal = tok->next();
