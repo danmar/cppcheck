@@ -45,7 +45,7 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check( int jobs, int files, const std::string &data)
+    void check( int jobs, int files, int result, const std::string &data)
     {
         errout.str("");
         output.str("");
@@ -69,13 +69,18 @@ private:
         for(unsigned int i = 0; i < filenames.size(); ++i)
             executor.addFileContent(filenames[i], data );
 
-        ASSERT_EQUALS(files, executor.check());
+        ASSERT_EQUALS(result, executor.check());
     }
 
     void run()
     {
         // This is commented out, because it causes a deadlock
         // TEST_CASE(deadlock_with_many_errors);
+        TEST_CASE(no_errors_more_files);
+        TEST_CASE(no_errors_less_files);
+        TEST_CASE(no_errors_equal_amount_files);
+        TEST_CASE(one_error_less_files);
+        TEST_CASE(one_error_several_files);
     }
 
     void deadlock_with_many_errors()
@@ -87,7 +92,54 @@ private:
             oss << "  {char *a = malloc(10);}\n";
 
         oss << "}\n";
-        check( 2, 3, oss.str() );
+        check( 2, 3, 3, oss.str() );
+    }
+
+    void no_errors_more_files()
+    {
+        std::ostringstream oss;
+        oss << "int main()\n"
+            << "{\n";
+        oss << "}\n";
+        check( 2, 3, 0, oss.str() );
+    }
+
+    void no_errors_less_files()
+    {
+        std::ostringstream oss;
+        oss << "int main()\n"
+            << "{\n";
+        oss << "}\n";
+        check( 2, 1, 0, oss.str() );
+    }
+
+    void no_errors_equal_amount_files()
+    {
+        std::ostringstream oss;
+        oss << "int main()\n"
+            << "{\n";
+        oss << "}\n";
+        check( 2, 2, 0, oss.str() );
+    }
+
+    void one_error_less_files()
+    {
+        std::ostringstream oss;
+        oss << "int main()\n"
+            << "{\n";
+        oss << "  {char *a = malloc(10);}\n";
+        oss << "}\n";
+        check( 2, 1, 1, oss.str() );
+    }
+
+    void one_error_several_files()
+    {
+        std::ostringstream oss;
+        oss << "int main()\n"
+            << "{\n";
+        oss << "  {char *a = malloc(10);}\n";
+        oss << "}\n";
+        check( 2, 20, 20, oss.str());
     }
 };
 
