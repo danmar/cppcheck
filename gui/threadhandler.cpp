@@ -173,3 +173,8 @@ bool ThreadHandler::HasPreviousFiles() const
 
     return false;
 }
+
+int ThreadHandler::GetPreviousFilesCount() const
+{
+    return mLastFiles.size();
+}

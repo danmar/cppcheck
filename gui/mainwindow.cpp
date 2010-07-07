@@ -416,6 +416,11 @@ void MainWindow::ReCheck()
 {
     ClearResults();
     EnableCheckButtons(false);
+
+    const int filesCount = mThread->GetPreviousFilesCount();
+    Q_ASSERT(filesCount > 0); // If no files should not be able to recheck
+    mUI.mResults->CheckingStarted(filesCount);
+
     mThread->Check(GetCppcheckSettings(), true);
 }
 

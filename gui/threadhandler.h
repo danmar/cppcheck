@@ -103,6 +103,13 @@ public:
     */
     bool HasPreviousFiles() const;
 
+    /**
+    * @brief Return count of files we checked last time.
+    *
+    * @return count of files that were checked last time.
+    */
+    int GetPreviousFilesCount() const;
+
 signals:
     /**
     * @brief Signal that all threads are done
