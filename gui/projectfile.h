@@ -59,6 +59,24 @@ public:
     */
     QStringList GetDefines() const;
 
+    /**
+    * @brief Set list of includes.
+    * @param includes List of defines.
+    */
+    void SetIncludes(QStringList includes);
+
+    /**
+    * @brief Set list of defines.
+    * @param defines List of defines.
+    */
+    void SetDefines(QStringList defines);
+
+    /**
+    * @brief Write project file (to disk).
+    * @param filename Filename to use.
+    */
+    bool Write(const QString &filename = QString());
+
 protected:
     /**
     * @brief Read list of include directories from XML.

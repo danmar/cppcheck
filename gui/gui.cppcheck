@@ -1,9 +1,12 @@
-<?xml version="1.0"?>
-
-<!-- cppcheck project file -->
-
+<?xml version="1.0" encoding="UTF-8"?>
 <project version="1">
     <includedir>
-        <dir name="../lib" />
+        <dir name="../lib"/>
+        <dir name="C:\"/>
+        <dir name=""/>
     </includedir>
+    <defines>
+        <define name="WIN32"/>
+        <define name="UNICODE"/>
+    </defines>
 </project>

@@ -35,6 +35,12 @@ class ProjectFileDialog : public QDialog
 public:
     ProjectFileDialog(const QString &path, QWidget *parent = 0);
 
+protected slots:
+    void DialogFinished(int result);
+
+protected:
+    void UpdateProjectFileData();
+
 private:
     Ui::ProjectFile mUI;
     QString mFileName;

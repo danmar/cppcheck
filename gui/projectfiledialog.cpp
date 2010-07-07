@@ -50,4 +50,23 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     mUI.mEditDefines->setText(definestr);
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(this, SIGNAL(finished(int)), this, SLOT(DialogFinished(int)));
+}
+
+void ProjectFileDialog::DialogFinished(int result)
+{
+    if (result == QDialog::Accepted)
+    {
+        UpdateProjectFileData();
+        mPFile->Write();
+    }
+}
+
+void ProjectFileDialog::UpdateProjectFileData()
+{
+    QStringList includes = mUI.mEditIncludePaths->text().split(";");
+    mPFile->SetIncludes(includes);
+
+    QStringList defines = mUI.mEditDefines->text().split(";");
+    mPFile->SetDefines(defines);
 }
