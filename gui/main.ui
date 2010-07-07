@@ -73,6 +73,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="mActionProjectFile"/>
     <addaction name="mActionSave"/>
     <addaction name="mActionQuit"/>
    </widget>
@@ -345,6 +346,11 @@
    </property>
    <property name="toolTip">
     <string>Error categories</string>
+   </property>
+  </action>
+  <action name="mActionProjectFile">
+   <property name="text">
+    <string>P&amp;roject File...</string>
    </property>
   </action>
  </widget>

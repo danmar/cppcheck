@@ -125,6 +125,8 @@ public slots:
     */
     void Save();
 
+    void ShowProjectFileDialog();
+
 protected slots:
 
     /**

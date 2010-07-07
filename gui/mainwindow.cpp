@@ -31,6 +31,7 @@
 #include "threadhandler.h"
 #include "fileviewdialog.h"
 #include "projectfile.h"
+#include "projectfiledialog.h"
 #include "report.h"
 #include "../lib/filelister.h"
 
@@ -78,6 +79,8 @@ MainWindow::MainWindow() :
     connect(mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     connect(mUI.mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
     connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
+
+    connect(mUI.mActionProjectFile, SIGNAL(triggered()), this, SLOT(ShowProjectFileDialog()));
 
 #ifdef WIN32
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
@@ -660,4 +663,19 @@ void MainWindow::OpenHtmlHelpContents()
     exeFolder = QDir::toNativeSeparators(exeFolder);
     HtmlHelp(NULL, exeFolder.utf16(), HH_DISPLAY_TOPIC, NULL);
 #endif // WIN32
+}
+
+void MainWindow::ShowProjectFileDialog()
+{
+    const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
+    QString filepath = QFileDialog::getOpenFileName(this,
+                       tr("Select Project File"),
+                       QString(),
+                       filter);
+
+    if (!filepath.isEmpty())
+    {
+        ProjectFileDialog dlg(filepath, this);
+        dlg.exec();
+    }
 }
