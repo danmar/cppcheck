@@ -206,6 +206,7 @@ private:
         TEST_CASE(simplifyTypedef53); // ticket #1801
         TEST_CASE(simplifyTypedef54); // ticket #1814
         TEST_CASE(simplifyTypedef55);
+        TEST_CASE(simplifyTypedef56); // ticket #1829
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4239,6 +4240,27 @@ private:
                                    "long * v1 ; "
                                    "void * v2 [ 2 ] ; "
                                    "int * * v3 ;");
+        ASSERT_EQUALS(expected, sizeof_(code));
+
+        // Check for output..
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef56() // ticket #1829
+    {
+        const char code[] = "struct C {\n"
+                            "    typedef void (*fptr)();\n"
+                            "    const fptr pr;\n"
+                            "    operator const fptr& () { return pr; }\n"
+                            "};\n";
+
+        // The expected result..
+        const std::string expected("struct C { "
+                                   "; "
+                                   "const void * pr ; " // this gets simplified to a regular pointer
+                                   "operator const void ( * ) ( ) & ( ) { return pr ; } "
+                                   "} ;");
         ASSERT_EQUALS(expected, sizeof_(code));
 
         // Check for output..

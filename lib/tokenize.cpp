@@ -1188,12 +1188,13 @@ void Tokenizer::simplifyTypedef()
                     // 1. variable declarations that preserve the variable name like
                     //    global, local, and function parameters
                     // 2. not variable declarations that have no name like derived
-                    //    classes, casts, and template parameters
+                    //    classes, casts, operators, and template parameters
 
                     // try to determine which catagory this substitution is
                     bool isDerived = false;
                     bool inCast = false;
                     bool inTemplate = false;
+                    bool inOperator = false;
 
                     // check for derived class: class A : some_typedef {
                     isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
@@ -1208,6 +1209,11 @@ void Tokenizer::simplifyTypedef()
                     else if (Token::Match(tok2->previous(), "<|,") &&
                              Token::Match(tok2->next(), "&|*| &|*| >|,"))
                         inTemplate = true;
+
+                    // check for operator
+                    if (Token::Match(tok2->previous(), "operator") ||
+                        Token::Match(tok2->tokAt(-2), "operator const"))
+                        inOperator = true;
 
                     // skip over class or struct in derived class declaration
                     if (isDerived && Token::Match(typeStart, "class|struct"))
@@ -1305,7 +1311,7 @@ void Tokenizer::simplifyTypedef()
                                 {
                                     if (tok2->next()->str() == "(")
                                         tok2 = tok2->next()->link();
-                                    else if (!Token::Match(tok2->next(), "[|>|;"))
+                                    else if (!inOperator && !Token::Match(tok2->next(), "[|>|;"))
                                     {
                                         tok2 = tok2->next();
                                         while (Token::Match(tok2, "*|&") &&
@@ -7444,7 +7450,8 @@ void Tokenizer::simplifyConst()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "[;{}(,] %type% const") &&
-            tok->next()->str().find(":") == std::string::npos)
+            tok->next()->str().find(":") == std::string::npos &&
+            tok->next()->str() != "operator")
         {
             tok->tokAt(2)->str(tok->tokAt(1)->str());
             tok->tokAt(1)->str("const");
