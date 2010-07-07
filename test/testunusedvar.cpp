@@ -348,11 +348,14 @@ private:
                               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
 
+        // if a is undefined then Cppcheck can't determine if "int i(a)" is a
+        // * variable declaration
+        // * function declaration
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int i(a);\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2036,11 +2039,14 @@ private:
                               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
 
+        // If "a" is undefined then Cppcheck can't determine whether
+        // "static int i(a);" is a variable declaration or a function
+        // declaration.
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    static int i(a);\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"

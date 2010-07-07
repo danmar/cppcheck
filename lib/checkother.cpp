@@ -667,7 +667,8 @@ void Variables::addVar(const Token *name,
                        VariableType type,
                        bool write_)
 {
-    _varUsage.insert(std::make_pair(name->varId(), VariableUsage(name, type, false, write_, false)));
+    if (name->varId() > 0)
+        _varUsage.insert(std::make_pair(name->varId(), VariableUsage(name, type, false, write_, false)));
 }
 
 void Variables::read(unsigned int varid)
