@@ -201,6 +201,9 @@ void ProjectFile::SetDefines(QStringList defines)
 
 bool ProjectFile::Write(const QString &filename)
 {
+    if (!filename.isEmpty())
+        mFilename = filename;
+
     QFile file(mFilename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         return false;
