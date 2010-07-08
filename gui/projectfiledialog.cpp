@@ -114,9 +114,27 @@ void ProjectFileDialog::DialogAccepted()
 
 void ProjectFileDialog::UpdateProjectFileData()
 {
-    QStringList includes = mUI.mEditIncludePaths->text().split(";");
+    QString include = mUI.mEditIncludePaths->text();
+    QStringList includes;
+    if (!include.isEmpty())
+    {
+        include = include.trimmed();
+        if (include.indexOf(';') != -1)
+            includes = include.split(";");
+        else
+            includes.append(include);
+    }
     mPFile->SetIncludes(includes);
 
-    QStringList defines = mUI.mEditDefines->text().split(";");
+    QString define = mUI.mEditDefines->text();
+    QStringList defines;
+    if (!define.isEmpty())
+    {
+        define = define.trimmed();
+        if (define.indexOf(';') != -1)
+            defines = define.split(";");
+        else
+            defines.append(define);
+    }
     mPFile->SetDefines(defines);
 }
