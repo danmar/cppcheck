@@ -82,7 +82,3 @@ win32 {
     LIBS += -lshlwapi -lhtmlhelp
 }
 
-# run lrelease before build
-lrelease.commands = lrelease gui.pro
-QMAKE_EXTRA_TARGETS += lrelease
-PRE_TARGETDEPS += lrelease
