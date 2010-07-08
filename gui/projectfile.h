@@ -77,6 +77,15 @@ public:
     */
     bool Write(const QString &filename = QString());
 
+    /**
+    * @brief Set filename for the project file.
+    * @param filename Filename to use.
+    */
+    void SetFilename(const QString &filename)
+    {
+        mFilename = filename;
+    }
+
 protected:
     /**
     * @brief Read list of include directories from XML.

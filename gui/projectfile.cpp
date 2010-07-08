@@ -55,13 +55,17 @@ bool ProjectFile::Read(const QString &filename)
 
     QXmlStreamReader xmlReader(&file);
     bool insideProject = false;
+    bool projectTagFound = false;
     while (!xmlReader.atEnd())
     {
         switch (xmlReader.readNext())
         {
         case QXmlStreamReader::StartElement:
             if (xmlReader.name() == ProjectElementName)
+            {
                 insideProject = true;
+                projectTagFound = true;
+            }
 
             // Find include directory from inside project element
             if (insideProject && xmlReader.name() == IncludDirElementName)
@@ -93,7 +97,10 @@ bool ProjectFile::Read(const QString &filename)
     }
 
     file.close();
-    return true;
+    if (projectTagFound)
+        return true;
+    else
+        return false;
 }
 
 QStringList ProjectFile::GetIncludeDirs() const

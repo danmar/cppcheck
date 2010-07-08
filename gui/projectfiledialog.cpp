@@ -19,6 +19,7 @@
 #include <QStringList>
 #include <QFile>
 #include <QFileDialog>
+#include <QMessageBox>
 #include "projectfiledialog.h"
 #include "projectfile.h"
 
@@ -41,7 +42,17 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
 
 void ProjectFileDialog::ReadProjectFile()
 {
-    mPFile->Read();
+    if (!mPFile->Read())
+    {
+        QMessageBox msg(QMessageBox::Critical,
+                        tr("Cppcheck"),
+                        tr("Could not read the project file."),
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
+        mFileName = QString();
+        mPFile->SetFilename(mFileName);
+    }
 
     QStringList includes = mPFile->GetIncludeDirs();
     QString includestr;
@@ -70,6 +81,7 @@ void ProjectFileDialog::DialogAccepted()
         return;
 
     UpdateProjectFileData();
+    bool writesuccess = false;
     if (mFileName.isEmpty())
     {
         const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
@@ -80,12 +92,22 @@ void ProjectFileDialog::DialogAccepted()
 
         if (!filepath.isEmpty())
         {
-            mPFile->Write(filepath);
+            writesuccess = mPFile->Write(filepath);
         }
     }
     else
     {
-        mPFile->Write();
+        writesuccess = mPFile->Write();
+    }
+
+    if (!writesuccess)
+    {
+        QMessageBox msg(QMessageBox::Critical,
+                        tr("Cppcheck"),
+                        tr("Could not write the project file."),
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
     }
     mDataSaved = true;
 }
