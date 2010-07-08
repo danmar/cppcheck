@@ -903,6 +903,12 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                     next = start + 5 + offset;
             }
 
+            // check for var ? ...
+            else if (Token::Match(tok->tokAt(start), "%var% ?"))
+            {
+                next = start;
+            }
+
             // no cast
             else
             {
@@ -936,6 +942,13 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                             bool    replace = true;
 
                             variables.alias(varid1, varid2, replace);
+                        }
+                        else if (tok->tokAt(next + 1)->str() == "?")
+                        {
+                            if (var2->_type == Variables::reference)
+                                variables.readAliases(varid2);
+                            else
+                                variables.read(varid2);
                         }
                     }
                 }
