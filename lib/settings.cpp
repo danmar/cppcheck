@@ -22,6 +22,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
 
 Settings::Settings()
 {
@@ -71,6 +72,26 @@ bool Settings::Suppressions::parseFile(std::istream &istr)
 
 void Settings::Suppressions::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
 {
+    // Check that errorId is valid..
+    if (errorId.empty())
+    {
+        std::cerr << "Failed to add suppression. No id." << std::endl;
+        return;
+    }
+    for (std::string::size_type pos = 0; pos < errorId.length(); ++pos)
+    {
+        if (errorId[pos] < 0 || !std::isalnum(errorId[pos]))
+        {
+            std::cerr << "Failed to add suppression. Invalid id \"" << errorId << "\"" << std::endl;
+            return;
+        }
+        if (pos == 0 && std::isdigit(errorId[pos]))
+        {
+            std::cerr << "Failed to add suppression. Invalid id \"" << errorId << "\"" << std::endl;
+            return;
+        }
+    }
+
     _suppressions[errorId][file].push_back(line);
     _suppressions[errorId][file].sort();
 }
