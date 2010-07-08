@@ -162,17 +162,6 @@ public:
         return true;
     }
 
-    void unusedFunction(const std::string &filename, const std::string &funcname)
-    {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> loc;
-        ErrorLogger::ErrorMessage::FileLocation fileLoc;
-        fileLoc.file = filename;
-        fileLoc.line = 1;
-        loc.push_back(fileLoc);
-        reportErr(ErrorLogger::ErrorMessage(loc, "style", "The function '" + funcname + "' is never used", "unusedFunction"));
-    }
-
-
     static bool mismatchAllocDealloc()
     {
         return true;

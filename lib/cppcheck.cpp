@@ -624,7 +624,6 @@ unsigned int CppCheck::check()
 {
     exitcode = 0;
 
-    _checkUnusedFunctions.setErrorLogger(this);
     std::sort(_filenames.begin(), _filenames.end());
 
     // TODO: Should this be moved out to its own function so all the files can be
@@ -728,7 +727,7 @@ unsigned int CppCheck::check()
         if (_settings._errorsOnly == false)
             _errorLogger.reportOut("Checking usage of global functions..");
 
-        _checkUnusedFunctions.check();
+        _checkUnusedFunctions.check(this);
     }
 
     _errorList.clear();

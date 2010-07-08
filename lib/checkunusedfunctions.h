@@ -32,35 +32,33 @@
 class CheckUnusedFunctions: public Check
 {
 public:
-    CheckUnusedFunctions(ErrorLogger *errorLogger = 0);
-    ~CheckUnusedFunctions();
+    /** @brief This constructor is used when registering the CheckUnusedFunctions */
+    CheckUnusedFunctions() : Check()
+    { }
 
-    /**
-     * Errors found by this class are forwarded to the given
-     * errorlogger.
-     * @param errorLogger The errorlogger to be used.
-     */
-    void setErrorLogger(ErrorLogger *errorLogger);
+    /** @brief This constructor is used when running checks. */
+    CheckUnusedFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+        : Check(tokenizer, settings, errorLogger)
+    { }
 
     // Parse current tokens and determine..
     // * Check what functions are used
     // * What functions are declared
     void parseTokens(const Tokenizer &tokenizer);
 
-
-    void check();
+    void check(ErrorLogger * const errorLogger);
 
 private:
 
     void getErrorMessages()
     {
-        unusedFunctionError(0);
+        unusedFunctionError(0, "", "funcName");
     }
 
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
-    void unusedFunctionError(const Token *tok);
+    void unusedFunctionError(ErrorLogger * const errorLogger, const std::string &filename, const std::string &funcname);
 
     /**
      * Dummy implementation, just to provide error for --errorlist
@@ -79,9 +77,6 @@ private:
     {
         return "Check for functions that are never called\n";
     }
-
-    ErrorLogger *_errorLogger;
-
 
     class FunctionUsage
     {
