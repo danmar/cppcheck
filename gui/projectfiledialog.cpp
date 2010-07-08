@@ -17,16 +17,30 @@
  */
 
 #include <QStringList>
+#include <QFile>
+#include <QFileDialog>
 #include "projectfiledialog.h"
 #include "projectfile.h"
 
 ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     : QDialog(parent)
     , mFileName(path)
+    , mDataSaved(false)
 {
     mUI.setupUi(this);
 
+    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(this, SIGNAL(accepted()), this, SLOT(DialogAccepted()));
+
     mPFile = new ProjectFile(path, this);
+    if (QFile::exists(path))
+    {
+        ReadProjectFile();
+    }
+}
+
+void ProjectFileDialog::ReadProjectFile()
+{
     mPFile->Read();
 
     QStringList includes = mPFile->GetIncludeDirs();
@@ -48,18 +62,32 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
         definestr += ";";
     }
     mUI.mEditDefines->setText(definestr);
-
-    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(this, SIGNAL(finished(int)), this, SLOT(DialogFinished(int)));
 }
 
-void ProjectFileDialog::DialogFinished(int result)
+void ProjectFileDialog::DialogAccepted()
 {
-    if (result == QDialog::Accepted)
+    if (mDataSaved)
+        return;
+
+    UpdateProjectFileData();
+    if (mFileName.isEmpty())
     {
-        UpdateProjectFileData();
+        const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
+        QString filepath = QFileDialog::getSaveFileName(this,
+                           tr("Save Project File"),
+                           QString(),
+                           filter);
+
+        if (!filepath.isEmpty())
+        {
+            mPFile->Write(filepath);
+        }
+    }
+    else
+    {
         mPFile->Write();
     }
+    mDataSaved = true;
 }
 
 void ProjectFileDialog::UpdateProjectFileData()

@@ -80,7 +80,8 @@ MainWindow::MainWindow() :
     connect(mUI.mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
     connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
 
-    connect(mUI.mActionProjectFile, SIGNAL(triggered()), this, SLOT(ShowProjectFileDialog()));
+    connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFileDialog()));
+    connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(ShowProjectFileDialog()));
 
 #ifdef WIN32
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
@@ -678,4 +679,10 @@ void MainWindow::ShowProjectFileDialog()
         ProjectFileDialog dlg(filepath, this);
         dlg.exec();
     }
+}
+
+void MainWindow::NewProjectFileDialog()
+{
+    ProjectFileDialog dlg(QString(), this);
+    dlg.exec();
 }

@@ -36,15 +36,17 @@ public:
     ProjectFileDialog(const QString &path, QWidget *parent = 0);
 
 protected slots:
-    void DialogFinished(int result);
+    void DialogAccepted();
 
 protected:
+    void ReadProjectFile();
     void UpdateProjectFileData();
 
 private:
     Ui::ProjectFile mUI;
     QString mFileName;
     ProjectFile *mPFile;
+    bool mDataSaved;
 };
 
 /// @}

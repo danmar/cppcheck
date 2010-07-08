@@ -73,7 +73,8 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="mActionProjectFile"/>
+    <addaction name="mActionNewProjectFile"/>
+    <addaction name="mActionOpenProjectFile"/>
     <addaction name="mActionSave"/>
     <addaction name="mActionQuit"/>
    </widget>
@@ -348,9 +349,14 @@
     <string>Error categories</string>
    </property>
   </action>
-  <action name="mActionProjectFile">
+  <action name="mActionOpenProjectFile">
    <property name="text">
-    <string>P&amp;roject File...</string>
+    <string>Open P&amp;roject File...</string>
+   </property>
+  </action>
+  <action name="mActionNewProjectFile">
+   <property name="text">
+    <string>&amp;New Project File...</string>
    </property>
   </action>
  </widget>
