@@ -2,11 +2,5 @@
 <project version="1">
     <includedir>
         <dir name="../lib"/>
-        <dir name="C:\"/>
-        <dir name=""/>
     </includedir>
-    <defines>
-        <define name="WIN32"/>
-        <define name="UNICODE"/>
-    </defines>
 </project>
