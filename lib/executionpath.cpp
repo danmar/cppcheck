@@ -183,6 +183,13 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
             return;
         }
 
+        // ?: => bailout
+        if (tok->str() == "?")
+        {
+            ExecutionPath::bailOut(checks);
+            return;
+        }
+
         if (tok->str() == "switch")
         {
             const Token *tok2 = tok->next()->link();

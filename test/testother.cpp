@@ -1713,6 +1713,18 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "    const char *msgid1, *msgid2;\n"
+                       "    int ret = bar(&msgid1);\n"
+                       "    if (ret > 0) {\n"
+                       "        ret = bar(&msgid2);\n"
+                       "    }\n"
+                       "    ret = ret <= 0 ? -1 :\n"
+                       "          strcmp(msgid1, msgid2) == 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // while..
         checkUninitVar("int f()\n"
                        "{\n"
