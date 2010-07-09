@@ -45,8 +45,17 @@ Settings::Settings()
 
 bool Settings::Suppressions::parseFile(std::istream &istr)
 {
+    // Change '\r' to '\n' in the istr
+    std::string filedata;
     std::string line;
-    while (getline(istr, line))
+    while (std::getline(istr, line))
+        filedata += line + "\n";
+    while (filedata.find("\r") != std::string::npos)
+        filedata[filedata.find("\r")] = '\n';
+
+    // Parse filedata..
+    std::istringstream istr2(filedata);
+    while (std::getline(istr2, line))
     {
         // Skip empty lines
         if (line.empty())
