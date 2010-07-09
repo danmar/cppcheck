@@ -23,6 +23,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
+#include <cctype>   // std::isdigit, std::isalnum, etc
 
 Settings::Settings()
 {
