@@ -53,6 +53,8 @@ bool Settings::Suppressions::parseFile(std::istream &istr)
     while (filedata.find("\r") != std::string::npos)
         filedata[filedata.find("\r")] = '\n';
 
+    bool ret = true;
+
     // Parse filedata..
     std::istringstream istr2(filedata);
     while (std::getline(istr2, line))
@@ -74,36 +76,38 @@ bool Settings::Suppressions::parseFile(std::istream &istr)
         }
 
         // We could perhaps check if the id is valid and return error if it is not
-        addSuppression(id, file, lineNumber);
+        ret &= addSuppression(id, file, lineNumber);
     }
 
-    return true;
+    return ret;
 }
 
-void Settings::Suppressions::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
+bool Settings::Suppressions::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
 {
     // Check that errorId is valid..
     if (errorId.empty())
     {
         std::cerr << "Failed to add suppression. No id." << std::endl;
-        return;
+        return false;
     }
     for (std::string::size_type pos = 0; pos < errorId.length(); ++pos)
     {
         if (errorId[pos] < 0 || !std::isalnum(errorId[pos]))
         {
             std::cerr << "Failed to add suppression. Invalid id \"" << errorId << "\"" << std::endl;
-            return;
+            return false;
         }
         if (pos == 0 && std::isdigit(errorId[pos]))
         {
             std::cerr << "Failed to add suppression. Invalid id \"" << errorId << "\"" << std::endl;
-            return;
+            return false;
         }
     }
 
     _suppressions[errorId][file].push_back(line);
     _suppressions[errorId][file].sort();
+
+    return true;
 }
 
 bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std::string &file, unsigned int line)
