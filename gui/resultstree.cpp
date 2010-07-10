@@ -93,7 +93,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     ErrorLine line;
     line.file = realfile;
     line.id = item.id;
-    line.line = item.lines[0];
+    line.line = QString::number(item.lines[0]);
     line.msg = item.msg;
     line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
@@ -108,17 +108,17 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
 
     //Add user data to that item
     QMap<QString, QVariant> data;
-    data["severity"]  = SeverityToShowType(line.severity);
-    data["message"]  = line.msg;
-    data["file"]  = line.file;
-    data["line"]  = line.line;
-    data["id"]  = line.id;
+    data["severity"]  = SeverityToShowType(item.severity);
+    data["message"]  = item.msg;
+    data["file"]  = item.files[0];
+    data["line"]  = QString::number(item.lines[0]);
+    data["id"]  = item.id;
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
     for (int i = 1; i < item.files.size() && i < item.lines.size(); i++)
     {
-        line.file = item.files[i];
+        line.file = StripPath(item.files[i], false);
         line.line = item.lines[i];
         QStandardItem *child_item;
         child_item = AddBacktraceFiles(stditem,
@@ -130,7 +130,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
         QMap<QString, QVariant> child_data;
         child_data["severity"]  = SeverityToShowType(line.severity);
         child_data["message"]  = line.msg;
-        child_data["file"]  = line.file;
+        child_data["file"]  = item.files[i];
         child_data["line"]  = line.line;
         child_data["id"]  = line.id;
         child_item->setData(QVariant(child_data));
