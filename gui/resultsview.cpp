@@ -229,10 +229,11 @@ void ResultsView::DisableProgressbar()
 void ResultsView::ReadErrorsXml(const QString &filename)
 {
     XmlReport *report = new XmlReport(filename, this);
+    QList<ErrorLine> errors;
     if (report)
     {
         if (report->Open())
-            report->Read();
+            errors = report->Read();
         else
         {
             QMessageBox msgBox;
@@ -249,5 +250,12 @@ void ResultsView::ReadErrorsXml(const QString &filename)
         msgBox.setText(tr("Failed to read the report."));
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
+    }
+
+    ErrorLine line;
+    foreach(line, errors)
+    {
+        ErrorItem item(line);
+        mUI.mTree->AddErrorItem(item);
     }
 }

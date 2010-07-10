@@ -19,6 +19,7 @@
 #include <QFile>
 #include <QXmlStreamWriter>
 #include <qdebug>
+#include "erroritem.h"
 #include "xmlreport.h"
 
 static const char ResultElementName[] = "results";
@@ -96,13 +97,14 @@ void XmlReport::WriteError(const ErrorItem &error)
     mXmlWriter->writeEndElement();
 }
 
-void XmlReport::Read()
+QList<ErrorLine> XmlReport::Read()
 {
+    QList<ErrorLine> errors;
     bool insideResults = false;
     if (!mXmlReader)
     {
         qDebug() << "You must Open() the file before reading it!";
-        return;
+        return errors;
     }
     while (!mXmlReader->atEnd())
     {
@@ -114,7 +116,10 @@ void XmlReport::Read()
 
             // Read error element from inside result element
             if (insideResults && mXmlReader->name() == ErrorElementName)
-                ReadError(mXmlReader);
+            {
+                ErrorLine line = ReadError(mXmlReader);
+                errors.append(line);
+            }
             break;
 
         case QXmlStreamReader::EndElement:
@@ -135,18 +140,20 @@ void XmlReport::Read()
             break;
         }
     }
+    return errors;
 }
 
-void XmlReport::ReadError(QXmlStreamReader *reader)
+ErrorLine XmlReport::ReadError(QXmlStreamReader *reader)
 {
+    ErrorLine line;
     if (reader->name().toString() == ErrorElementName)
     {
         QXmlStreamAttributes attribs = reader->attributes();
-        QString filename = attribs.value("", FilenameAttribute).toString();
-        QString line = attribs.value("", LineAttribute).toString();
-        QString id = attribs.value("", IdAttribute).toString();
-        QString severity = attribs.value("", SeverityAttribute).toString();
-        QString msg = attribs.value("", MsgAttribute).toString();
-        qDebug() << "Error: " << filename << " " << line << " " << id << " " << severity << " " << msg;
+        line.file = attribs.value("", FilenameAttribute).toString();
+        line.line = attribs.value("", LineAttribute).toString();
+        line.id = attribs.value("", IdAttribute).toString();
+        line.severity = attribs.value("", SeverityAttribute).toString();
+        line.msg = attribs.value("", MsgAttribute).toString();
     }
+    return line;
 }
