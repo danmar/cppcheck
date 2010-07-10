@@ -88,7 +88,8 @@ void XmlReport::WriteError(const ErrorItem &error)
 
     mXmlWriter->writeStartElement(ErrorElementName);
     mXmlWriter->writeAttribute(FilenameAttribute, error.files[error.files.size() - 1]);
-    mXmlWriter->writeAttribute(LineAttribute, error.lines[error.lines.size() - 1]);
+    const QString line = QString::number(error.lines[error.lines.size() - 1]);
+    mXmlWriter->writeAttribute(LineAttribute, line);
     mXmlWriter->writeAttribute(IdAttribute, error.id);
     mXmlWriter->writeAttribute(SeverityAttribute, error.severity);
     mXmlWriter->writeAttribute(MsgAttribute, error.msg);

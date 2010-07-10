@@ -169,7 +169,7 @@ public slots:
                const QString &severity,
                const QString &message,
                const QStringList &files,
-               const QVariantList &lines,
+               const QList<unsigned int> &lines,
                const QString &id);
 
     /**

@@ -617,7 +617,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         item.msg = data["message"].toString();
         item.id = data["id"].toString();
         QString file = StripPath(data["file"].toString(), true);
-        QString line = data["line"].toString();
+        unsigned int line = data["line"].toUInt();
 
         item.files << file;
         item.lines << line;
@@ -631,7 +631,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
             QVariantMap child_data = child_userdata.toMap();
 
             file = StripPath(child_data["file"].toString(), true);
-            line = child_data["line"].toString();
+            line = child_data["line"].toUInt();
 
             item.files << file;
             item.lines << line;

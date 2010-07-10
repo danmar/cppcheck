@@ -33,7 +33,7 @@ class ErrorItem
 public:
     QString file;
     QStringList files;
-    QStringList lines;
+    QList<unsigned int> lines;
     QString id;
     QString severity;
     QString msg;
