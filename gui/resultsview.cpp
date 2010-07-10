@@ -74,7 +74,20 @@ void ResultsView::Error(const QString &file,
                         const QString &id)
 {
     mErrorsFound = true;
-    mUI.mTree->AddErrorItem(file, severity, message, files, lines, id);
+    ErrorItem item;
+    item.file = file;
+    item.files = files;
+    item.id = id;
+    item.msg = message;
+    item.severity = severity;
+
+    QVariant line;
+    foreach(line, lines)
+    {
+        item.lines.append(line.toString());
+    }
+
+    mUI.mTree->AddErrorItem(item);
     emit GotResults();
 }
 

@@ -50,6 +50,7 @@ HEADERS += mainwindow.h \
            applicationdialog.h \
            aboutdialog.h \
            common.h \
+           erroritem.h \
            fileviewdialog.h \
            projectfile.h \
            report.h \

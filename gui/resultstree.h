@@ -25,11 +25,13 @@
 #include <QStandardItem>
 #include <QSettings>
 #include <QContextMenuEvent>
+#include <QTextStream>
 #include "common.h"
 #include "applicationlist.h"
-#include <QTextStream>
 
 class Report;
+class ErrorItem;
+class ErrorLine;
 
 /// @addtogroup GUI
 /// @{
@@ -50,19 +52,9 @@ public:
     /**
     * @brief Add a new item to the tree
     *
-    * @param file filename
-    * @param severity error severity
-    * @param message error message
-    * @param files list of files affected by the error
-    * @param lines list of file line numers affected by the error
-    * @param id error id
+    * @param item Error item data
     */
-    void AddErrorItem(const QString &file,
-                      const QString &severity,
-                      const QString &message,
-                      const QStringList &files,
-                      const QVariantList &lines,
-                      const QString &id);
+    void AddErrorItem(const ErrorItem &item);
 
     /**
     * @brief Clear all errors from the tree
@@ -224,19 +216,13 @@ protected:
     * @brief Add a new error item beneath a file or a backtrace item beneath an error
     *
     * @param parent Parent for the item. Either a file item or an error item
-    * @param file Filename of the error
-    * @param line Line numer
-    * @param severity Error severity
-    * @param message Error message
+    * @param item Error line data
     * @param hide Should this be hidden (true) or shown (false)
     * @param icon Should a default backtrace item icon be added
     * @return newly created QStandardItem *
     */
     QStandardItem *AddBacktraceFiles(QStandardItem *parent,
-                                     const QString &file,
-                                     const int line,
-                                     const QString &severity,
-                                     const QString &message,
+                                     const ErrorLine &item,
                                      const bool hide,
                                      const QString &icon);
 

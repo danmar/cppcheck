@@ -23,22 +23,10 @@
 #include <QString>
 #include <QStringList>
 #include <QFile>
+#include "erroritem.h"
 
 /// @addtogroup GUI
 /// @{
-
-/**
-* @brief A class containing error data.
-*/
-class ErrorItem
-{
-public:
-    QStringList files;
-    QStringList lines;
-    QString id;
-    QString severity;
-    QString msg;
-};
 
 /**
 * @brief A base class for reports.
