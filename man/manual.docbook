@@ -3,9 +3,9 @@
 "/usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.43</title>
+    <title>Cppcheck 1.44</title>
 
-    <date>2010-05-08</date>
+    <date>2010-07-10</date>
   </bookinfo>
 
   <chapter>
@@ -165,9 +165,14 @@ Checking path/file2.cpp...
     <para>But if you want to manually limit the checking you can do so with
     <literal>-D</literal>.</para>
 
-    <para>For example, if you want to limit the checking so the only
-    configuration to check should be "DEBUG=1;__cplusplus" then something like
-    this can be used:</para>
+    <para>Beware that only the macros, which are given here and the macros
+    defined in source files and known header files are considered. That
+    excludes all the macros defined in some system header files, which are by
+    default not examined by cppcheck.</para>
+
+    <para>The usage: if you, for example, want to limit the checking so the
+    only configuration to check should be "DEBUG=1;__cplusplus" then something
+    like this can be used:</para>
 
     <programlisting>cppcheck -DDEBUG=1 -D__cplusplus path</programlisting>
   </chapter>
@@ -220,7 +225,7 @@ Checking path/file2.cpp...
         <term>severity</term>
 
         <listitem>
-          <para>one of: error / possible error / style / possible style</para>
+          <para>either error or style</para>
         </listitem>
       </varlistentry>
 
