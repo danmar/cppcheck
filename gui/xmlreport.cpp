@@ -21,12 +21,14 @@
 #include "xmlreport.h"
 
 XmlReport::XmlReport(const QString &filename, QObject * parent) :
-    Report(filename, parent)
+    Report(filename, parent),
+    mXmlWriter(NULL)
 {
 }
 
 XmlReport::~XmlReport()
 {
+    delete mXmlWriter;
     Close();
 }
 
@@ -35,7 +37,7 @@ bool XmlReport::Create()
     bool success = false;
     if (Report::Create())
     {
-        mXmlWriter.setDevice(Report::GetFile());
+        mXmlWriter = new QXmlStreamWriter(Report::GetFile());
         success = true;
     }
     return success;
@@ -43,15 +45,15 @@ bool XmlReport::Create()
 
 void XmlReport::WriteHeader()
 {
-    mXmlWriter.setAutoFormatting(true);
-    mXmlWriter.writeStartDocument();
-    mXmlWriter.writeStartElement("results");
+    mXmlWriter->setAutoFormatting(true);
+    mXmlWriter->writeStartDocument();
+    mXmlWriter->writeStartElement("results");
 }
 
 void XmlReport::WriteFooter()
 {
-    mXmlWriter.writeEndElement();
-    mXmlWriter.writeEndDocument();
+    mXmlWriter->writeEndElement();
+    mXmlWriter->writeEndDocument();
 }
 
 void XmlReport::WriteError(const QStringList &files, const QStringList &lines,
@@ -63,11 +65,11 @@ void XmlReport::WriteError(const QStringList &files, const QStringList &lines,
     The callstack seems to be ignored here aswell, instead last item of the stack is used
     */
 
-    mXmlWriter.writeStartElement("error");
-    mXmlWriter.writeAttribute("file", files[files.size() - 1]);
-    mXmlWriter.writeAttribute("line", lines[lines.size() - 1]);
-    mXmlWriter.writeAttribute("id", id);
-    mXmlWriter.writeAttribute("severity", severity);
-    mXmlWriter.writeAttribute("msg", msg);
-    mXmlWriter.writeEndElement();
+    mXmlWriter->writeStartElement("error");
+    mXmlWriter->writeAttribute("file", files[files.size() - 1]);
+    mXmlWriter->writeAttribute("line", lines[lines.size() - 1]);
+    mXmlWriter->writeAttribute("id", id);
+    mXmlWriter->writeAttribute("severity", severity);
+    mXmlWriter->writeAttribute("msg", msg);
+    mXmlWriter->writeEndElement();
 }

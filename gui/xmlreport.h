@@ -68,7 +68,7 @@ private:
     /**
     * @brief XML stream writer for writing the report in XML format.
     */
-    QXmlStreamWriter mXmlWriter;
+    QXmlStreamWriter *mXmlWriter;
 };
 /// @}
 #endif // XML_REPORT_H
