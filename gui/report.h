@@ -51,6 +51,12 @@ public:
     virtual bool Create();
 
     /**
+    * @brief Open the existing report (file).
+    * @return true if succeeded, false if file could not be created.
+    */
+    virtual bool Open();
+
+    /**
     * @brief Close the report (file).
     */
     virtual void Close();

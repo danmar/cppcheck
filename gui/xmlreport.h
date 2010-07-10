@@ -23,6 +23,7 @@
 #include <QString>
 #include <QStringList>
 #include <QFile>
+#include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include "report.h"
 
@@ -48,6 +49,11 @@ public:
     virtual bool Create();
 
     /**
+    * @brief Open existing report file.
+    */
+    bool Open();
+
+    /**
     * @brief Write report header.
     */
     virtual void WriteHeader();
@@ -63,7 +69,23 @@ public:
     virtual void WriteError(const QStringList &files, const QStringList &lines,
                             const QString &id, const QString &severity, const QString &msg);
 
+    /**
+    * @brief Read contents of the report file.
+    */
+    void Read();
+
+protected:
+    /**
+    * @brief Read and parse error item from XML stream.
+    * @param reader XML stream reader to use.
+    */
+    void ReadError(QXmlStreamReader *reader);
+
 private:
+    /**
+    * @brief XML stream reader for reading the report in XML format.
+    */
+    QXmlStreamReader *mXmlReader;
 
     /**
     * @brief XML stream writer for writing the report in XML format.

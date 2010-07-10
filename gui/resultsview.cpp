@@ -217,3 +217,29 @@ void ResultsView::DisableProgressbar()
 {
     mUI.mProgress->setEnabled(false);
 }
+
+void ResultsView::ReadErrorsXml(const QString &filename)
+{
+    XmlReport *report = new XmlReport(filename, this);
+    if (report)
+    {
+        if (report->Open())
+            report->Read();
+        else
+        {
+            QMessageBox msgBox;
+            msgBox.setText(tr("Failed to read the report."));
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
+        }
+        delete report;
+        report = NULL;
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText(tr("Failed to read the report."));
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+    }
+}

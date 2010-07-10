@@ -129,6 +129,14 @@ public:
     void Translate();
 
     void DisableProgressbar();
+
+    /**
+    * @brief Read errors from report XML file.
+    * @param filename Report file to read.
+    *
+    */
+    void ReadErrorsXml(const QString &filename);
+
 signals:
 
     /**

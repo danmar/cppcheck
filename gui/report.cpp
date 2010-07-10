@@ -41,6 +41,17 @@ bool Report::Create()
     return succeed;
 }
 
+bool Report::Open()
+{
+    bool succeed = false;
+    if (!mFile.isOpen())
+    {
+        mFile.setFileName(mFilename);
+        succeed = mFile.open(QIODevice::ReadOnly | QIODevice::Text);
+    }
+    return succeed;
+}
+
 void Report::Close()
 {
     if (mFile.isOpen())
