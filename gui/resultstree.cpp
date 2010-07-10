@@ -601,8 +601,6 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         return;
     }
 
-    //qDebug() << item->text() << "has" << item->rowCount() << "errors";
-
     for (int i = 0; i < item->rowCount(); i++)
     {
         QStandardItem *error = item->child(i, 0);
@@ -622,17 +620,15 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         //Convert it to QVariantMap
         QVariantMap data = userdata.toMap();
 
-        QString severity = ShowTypeToString(VariantToShowType(data["severity"]));
-        QString message = data["message"].toString();
-        QString id = data["id"].toString();
+        ErrorItem item;
+        item.severity = ShowTypeToString(VariantToShowType(data["severity"]));
+        item.msg = data["message"].toString();
+        item.id = data["id"].toString();
         QString file = StripPath(data["file"].toString(), true);
         QString line = data["line"].toString();
 
-        QStringList files;
-        QStringList lines;
-
-        files << file;
-        lines << line;
+        item.files << file;
+        item.lines << line;
 
         for (int j = 0; j < error->rowCount(); j++)
         {
@@ -645,11 +641,11 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
             file = StripPath(child_data["file"].toString(), true);
             line = child_data["line"].toString();
 
-            files << file;
-            lines << line;
+            item.files << file;
+            item.lines << line;
         }
 
-        report->WriteError(files, lines, id, severity, message);
+        report->WriteError(item);
     }
 }
 

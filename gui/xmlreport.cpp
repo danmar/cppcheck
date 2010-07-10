@@ -78,8 +78,7 @@ void XmlReport::WriteFooter()
     mXmlWriter->writeEndDocument();
 }
 
-void XmlReport::WriteError(const QStringList &files, const QStringList &lines,
-                           const QString &id, const QString &severity, const QString &msg)
+void XmlReport::WriteError(const ErrorItem &error)
 {
     /*
     Error example from the core program in xml
@@ -88,11 +87,11 @@ void XmlReport::WriteError(const QStringList &files, const QStringList &lines,
     */
 
     mXmlWriter->writeStartElement(ErrorElementName);
-    mXmlWriter->writeAttribute(FilenameAttribute, files[files.size() - 1]);
-    mXmlWriter->writeAttribute(LineAttribute, lines[lines.size() - 1]);
-    mXmlWriter->writeAttribute(IdAttribute, id);
-    mXmlWriter->writeAttribute(SeverityAttribute, severity);
-    mXmlWriter->writeAttribute(MsgAttribute, msg);
+    mXmlWriter->writeAttribute(FilenameAttribute, error.files[error.files.size() - 1]);
+    mXmlWriter->writeAttribute(LineAttribute, error.lines[error.lines.size() - 1]);
+    mXmlWriter->writeAttribute(IdAttribute, error.id);
+    mXmlWriter->writeAttribute(SeverityAttribute, error.severity);
+    mXmlWriter->writeAttribute(MsgAttribute, error.msg);
     mXmlWriter->writeEndElement();
 }
 

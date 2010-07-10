@@ -28,6 +28,19 @@
 /// @{
 
 /**
+* @brief A class containing error data.
+*/
+class ErrorItem
+{
+public:
+    QStringList files;
+    QStringList lines;
+    QString id;
+    QString severity;
+    QString msg;
+};
+
+/**
 * @brief A base class for reports.
 */
 class Report : public QObject
@@ -73,10 +86,9 @@ public:
 
     /**
     * @brief Write error to report.
+    * @param error Error data.
     */
-    virtual void WriteError(const QStringList &files, const QStringList &lines,
-                            const QString &id, const QString &severity,
-                            const QString &msg) = 0;
+    virtual void WriteError(const ErrorItem &error) = 0;
 
 protected:
 

@@ -65,9 +65,9 @@ public:
 
     /**
     * @brief Write error to report.
+    * @param error Error data.
     */
-    virtual void WriteError(const QStringList &files, const QStringList &lines,
-                            const QString &id, const QString &severity, const QString &msg);
+    virtual void WriteError(const ErrorItem &error);
 
     /**
     * @brief Read contents of the report file.
