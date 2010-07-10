@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjam√§ki and Cppcheck team.
+ * Copyright (C) 2007-2010 Daniel Marjam‰ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "erroritem.h"
 
-#include <QApplication>
-#include <QTextCodec>
-#include <QTranslator>
-#include <QMetaType>
-#include "mainwindow.h"
-
-int main(int argc, char *argv[])
+ErrorItem::ErrorItem(const ErrorItem &item)
 {
-    QApplication app(argc, argv);
-    app.setWindowIcon(QIcon(":icon.png"));
+    file = item.file;
+    files = item.files;
+    lines = item.lines;
+    id = item.id;
+    severity = item.severity;
+    msg = item.msg;
+}
 
-    // Register this metatype that is used to transfer error info
-    qRegisterMetaType<QList<unsigned int>>("QList<unsigned int>");
-
-    // Set codecs so that UTF-8 strings in sources are handled correctly.
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-
-    MainWindow window;
-    window.show();
-    return app.exec();
+ErrorItem::ErrorItem(const ErrorLine &line)
+{
+    file = line.file;
+    files.append(line.file);
+    lines.append(line.line.toUInt());
+    id = line.id;
+    severity = line.severity;
+    msg = line.msg;
 }

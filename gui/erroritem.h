@@ -22,6 +22,8 @@
 #include <QString>
 #include <QStringList>
 
+class ErrorLine;
+
 /// @addtogroup GUI
 /// @{
 
@@ -31,6 +33,10 @@
 class ErrorItem
 {
 public:
+    ErrorItem() { }
+    ErrorItem(const ErrorItem &item);
+    ErrorItem(const ErrorLine &line);
+
     QString file;
     QStringList files;
     QList<unsigned int> lines;

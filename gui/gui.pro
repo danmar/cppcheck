@@ -71,6 +71,7 @@ SOURCES += main.cpp \
            aboutdialog.cpp \
            fileviewdialog.cpp \
            projectfile.cpp \
+           erroritem.cpp \
            report.cpp \
            txtreport.cpp \
            xmlreport.cpp \
