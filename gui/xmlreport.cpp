@@ -150,7 +150,7 @@ ErrorLine XmlReport::ReadError(QXmlStreamReader *reader)
     {
         QXmlStreamAttributes attribs = reader->attributes();
         line.file = attribs.value("", FilenameAttribute).toString();
-        line.line = attribs.value("", LineAttribute).toString();
+        line.line = attribs.value("", LineAttribute).toString().toUInt();
         line.id = attribs.value("", IdAttribute).toString();
         line.severity = attribs.value("", SeverityAttribute).toString();
         line.msg = attribs.value("", MsgAttribute).toString();

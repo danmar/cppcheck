@@ -32,7 +32,7 @@ ErrorItem::ErrorItem(const ErrorLine &line)
 {
     file = line.file;
     files.append(line.file);
-    lines.append(line.line.toUInt());
+    lines.append(line.line);
     id = line.id;
     severity = line.severity;
     msg = line.msg;

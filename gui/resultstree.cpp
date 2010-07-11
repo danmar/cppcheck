@@ -93,7 +93,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     ErrorLine line;
     line.file = realfile;
     line.id = item.id;
-    line.line = QString::number(item.lines[0]);
+    line.line = item.lines[0];
     line.msg = item.msg;
     line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
@@ -111,7 +111,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     data["severity"]  = SeverityToShowType(item.severity);
     data["message"]  = item.msg;
     data["file"]  = item.files[0];
-    data["line"]  = QString::number(item.lines[0]);
+    data["line"]  = item.lines[0];
     data["id"]  = item.id;
     stditem->setData(QVariant(data));
 

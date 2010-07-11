@@ -52,7 +52,7 @@ class ErrorLine
 {
 public:
     QString file;
-    QString line;
+    unsigned int line;
     QString id;
     QString severity;
     QString msg;
