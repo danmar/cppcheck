@@ -47,6 +47,10 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
     QMutexLocker locker(&mutex);
 
+    // GUI doesn't know how to properly handle debug messages so lets ignore them.
+    if (msg._severity == "debug")
+        return;
+
     QList<unsigned int> lines;
     QStringList files;
 
@@ -64,9 +68,6 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
                files,
                lines,
                QString(msg._id.c_str()));
-
-
-
 }
 
 QString ThreadResult::GetNextFile()
