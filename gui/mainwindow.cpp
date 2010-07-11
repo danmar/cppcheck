@@ -230,6 +230,7 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     mSettings->setValue(SETTINGS_CHECK_PATH, absDirectory);
     EnableCheckButtons(false);
     mUI.mActionSettings->setEnabled(false);
+    mUI.mActionOpenXML->setEnabled(false);
 
     mUI.mResults->SetCheckDirectory(absDirectory);
 
@@ -390,6 +391,7 @@ void MainWindow::CheckDone()
     mUI.mResults->CheckingFinished();
     EnableCheckButtons(true);
     mUI.mActionSettings->setEnabled(true);
+    mUI.mActionOpenXML->setEnabled(true);
     if (mUI.mResults->HasResults())
     {
         mUI.mActionClearResults->setEnabled(true);
