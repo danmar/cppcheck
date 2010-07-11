@@ -2287,7 +2287,7 @@ void Tokenizer::simplifyTemplates()
                     locationList.push_back(loc);
 
                     const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                           "information",
+                                                           "debug",
                                                            "Failed to instantiate template. The checking continues anyway.",
                                                            "templateInstantiate");
 
