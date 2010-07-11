@@ -262,6 +262,12 @@ protected:
     */
     void LoadSettings();
 
+    /**
+    * @brief Ask directory where file is located.
+    * @param file File name.
+    * @return Directory user chose.
+    */
+    QString AskFileDir(const QString &file);
 
     /**
     * @brief Create a new QStandardItem

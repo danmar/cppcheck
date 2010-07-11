@@ -24,6 +24,7 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QFileDialog>
 #include <QClipboard>
 #include "erroritem.h"
 #include "resultstree.h"
@@ -444,7 +445,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
 void ResultsTree::StartApplication(QStandardItem *target, int application)
 {
-    //If there are now application's specified, tell the user about it
+    //If there are no applications specified, tell the user about it
     if (mApplications->GetApplicationCount() == 0)
     {
         QMessageBox msg(QMessageBox::Information,
@@ -468,6 +469,26 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
 
         //Replace (file) with filename
         QString file = data["file"].toString();
+
+        QFileInfo info(file);
+        if (!info.exists())
+        {
+            if (info.isAbsolute())
+            {
+                QMessageBox msgbox(this);
+                msgbox.setWindowTitle("Cppcheck");
+                msgbox.setText(tr("Could not find the file!"));
+                msgbox.setIcon(QMessageBox::Critical);
+                msgbox.exec();
+            }
+            else
+            {
+                QString dir = AskFileDir(file);
+                dir += '/';
+                file = dir + file;
+            }
+        }
+
         if (file.indexOf(" ") > -1)
         {
             file.insert(0, "\"");
@@ -496,6 +517,21 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
             msgbox.exec();
         }
     }
+}
+
+QString ResultsTree::AskFileDir(const QString &file)
+{
+    QString text = tr("Could not find file:\n%1\nPlease select the directory where file is located.").arg(file);
+    QMessageBox msgbox(this);
+    msgbox.setWindowTitle("Cppcheck");
+    msgbox.setText(text);
+    msgbox.setIcon(QMessageBox::Warning);
+    msgbox.exec();
+
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory"),
+                  "",
+                  QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    return dir;
 }
 
 void ResultsTree::CopyFilename()
