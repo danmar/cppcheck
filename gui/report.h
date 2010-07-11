@@ -23,6 +23,7 @@
 #include <QString>
 #include <QStringList>
 #include <QFile>
+#include "erroritem.h"
 
 /// @addtogroup GUI
 /// @{
@@ -51,6 +52,12 @@ public:
     virtual bool Create();
 
     /**
+    * @brief Open the existing report (file).
+    * @return true if succeeded, false if file could not be created.
+    */
+    virtual bool Open();
+
+    /**
     * @brief Close the report (file).
     */
     virtual void Close();
@@ -67,10 +74,9 @@ public:
 
     /**
     * @brief Write error to report.
+    * @param error Error data.
     */
-    virtual void WriteError(const QStringList &files, const QStringList &lines,
-                            const QString &id, const QString &severity,
-                            const QString &msg) = 0;
+    virtual void WriteError(const ErrorItem &error) = 0;
 
 protected:
 

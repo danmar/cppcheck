@@ -70,11 +70,19 @@ void ResultsView::Error(const QString &file,
                         const QString &severity,
                         const QString &message,
                         const QStringList &files,
-                        const QVariantList &lines,
+                        const QList<unsigned int> &lines,
                         const QString &id)
 {
     mErrorsFound = true;
-    mUI.mTree->AddErrorItem(file, severity, message, files, lines, id);
+    ErrorItem item;
+    item.file = file;
+    item.files = files;
+    item.id = id;
+    item.lines = lines;
+    item.msg = message;
+    item.severity = severity;
+
+    mUI.mTree->AddErrorItem(item);
     emit GotResults();
 }
 
@@ -216,4 +224,39 @@ void ResultsView::Translate()
 void ResultsView::DisableProgressbar()
 {
     mUI.mProgress->setEnabled(false);
+}
+
+void ResultsView::ReadErrorsXml(const QString &filename)
+{
+    XmlReport *report = new XmlReport(filename, this);
+    QList<ErrorLine> errors;
+    if (report)
+    {
+        if (report->Open())
+            errors = report->Read();
+        else
+        {
+            QMessageBox msgBox;
+            msgBox.setText(tr("Failed to read the report."));
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
+        }
+        delete report;
+        report = NULL;
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText(tr("Failed to read the report."));
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+    }
+
+    ErrorLine line;
+    foreach(line, errors)
+    {
+        ErrorItem item(line);
+        mUI.mTree->AddErrorItem(item);
+    }
+    mUI.mTree->SetCheckDirectory("");
 }

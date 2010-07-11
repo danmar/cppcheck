@@ -17,6 +17,7 @@
  */
 
 #include <QFile>
+#include "erroritem.h"
 #include "report.h"
 
 Report::Report(const QString &filename, QObject * parent) :
@@ -37,6 +38,17 @@ bool Report::Create()
     {
         mFile.setFileName(mFilename);
         succeed = mFile.open(QIODevice::WriteOnly | QIODevice::Text);
+    }
+    return succeed;
+}
+
+bool Report::Open()
+{
+    bool succeed = false;
+    if (!mFile.isOpen())
+    {
+        mFile.setFileName(mFilename);
+        succeed = mFile.open(QIODevice::ReadOnly | QIODevice::Text);
     }
     return succeed;
 }

@@ -129,6 +129,14 @@ public:
     void Translate();
 
     void DisableProgressbar();
+
+    /**
+    * @brief Read errors from report XML file.
+    * @param filename Report file to read.
+    *
+    */
+    void ReadErrorsXml(const QString &filename);
+
 signals:
 
     /**
@@ -161,7 +169,7 @@ public slots:
                const QString &severity,
                const QString &message,
                const QStringList &files,
-               const QVariantList &lines,
+               const QList<unsigned int> &lines,
                const QString &id);
 
     /**
