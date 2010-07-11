@@ -42,7 +42,7 @@ endif (WIN32 AND NOT CYGWIN)
 if (CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS
     ${CMAKE_CXX_FLAGS}
-    "-Wall -Wextra -pedantic"
+    "-Wall -Wextra -pedantic -Wshadow -Wno-long-long -Wfloat-equal -Wcast-qual"
   )
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
