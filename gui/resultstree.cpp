@@ -33,7 +33,6 @@
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mContextItem(0),
-    mCheckPath(""),
     mVisibleErrors(false)
 {
     for (int i = 0; i < SHOW_NONE; i++)
@@ -483,9 +482,17 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
             }
             else
             {
-                QString dir = AskFileDir(file);
-                dir += '/';
-                file = dir + file;
+                QDir checkdir(mCheckPath);
+                if (checkdir.isAbsolute() && checkdir.exists())
+                {
+                    file = mCheckPath + "/" + file;
+                }
+                else
+                {
+                    QString dir = AskFileDir(file);
+                    dir += '/';
+                    file = dir + file;
+                }
             }
         }
 
@@ -531,6 +538,7 @@ QString ResultsTree::AskFileDir(const QString &file)
     QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory"),
                   "",
                   QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    mCheckPath = dir;
     return dir;
 }
 

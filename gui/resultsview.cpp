@@ -258,4 +258,5 @@ void ResultsView::ReadErrorsXml(const QString &filename)
         ErrorItem item(line);
         mUI.mTree->AddErrorItem(item);
     }
+    mUI.mTree->SetCheckDirectory("");
 }
