@@ -123,6 +123,10 @@ void CheckStl::iterators()
             {
                 eraseByValueError(tok2, tok2->strAt(0), tok2->strAt(5));
             }
+            else if (Token::Match(tok2, "return|break ;"))
+            {
+                validIterator = true;
+            }
         }
     }
 }

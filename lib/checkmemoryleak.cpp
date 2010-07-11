@@ -340,7 +340,7 @@ void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname)
 
 void CheckMemoryLeak::memleakUponReallocFailureError(const Token *tok, const std::string &varname)
 {
-    reportErr(tok, Severity::error, "memleakOnRealloc", "Memory leak: \"" + varname + "\" nulled but not freed upon failure");
+    reportErr(tok, Severity::error, "memleakOnRealloc", "Common realloc mistake: \"" + varname + "\" nulled but not freed upon failure");
 }
 
 void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname)

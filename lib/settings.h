@@ -145,8 +145,9 @@ public:
          * @param errorId the id for the error, e.g. "arrayIndexOutOfBounds"
          * @param file File name with the path, e.g. "src/main.cpp"
          * @param line number, e.g. "123"
+         * @return true on success, false in syntax error is noticed.
          */
-        void addSuppression(const std::string &errorId, const std::string &file = "", unsigned int line = 0);
+        bool addSuppression(const std::string &errorId, const std::string &file = "", unsigned int line = 0);
 
         /**
          * @brief Returns true if this message should not be shown to the user.

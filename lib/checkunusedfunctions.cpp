@@ -30,21 +30,6 @@
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-CheckUnusedFunctions::CheckUnusedFunctions(ErrorLogger *errorLogger)
-{
-    _errorLogger = errorLogger;
-}
-
-CheckUnusedFunctions::~CheckUnusedFunctions()
-{
-
-}
-
-void CheckUnusedFunctions::setErrorLogger(ErrorLogger *errorLogger)
-{
-    _errorLogger = errorLogger;
-}
-
 void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 {
     // Function declarations..
@@ -166,7 +151,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 
 
 
-void CheckUnusedFunctions::check()
+void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
 {
     for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it)
     {
@@ -182,7 +167,7 @@ void CheckUnusedFunctions::check()
                 filename = "";
             else
                 filename = func.filename;
-            _errorLogger->unusedFunction(filename, it->first);
+            unusedFunctionError(errorLogger, filename, it->first);
         }
         else if (! func.usedOtherFile)
         {
@@ -196,7 +181,20 @@ void CheckUnusedFunctions::check()
     }
 }
 
-void CheckUnusedFunctions::unusedFunctionError(const Token *tok)
+void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger, const std::string &filename, const std::string &funcname)
 {
-    reportError(tok, Severity::style, "unusedFunction", "The function 'funcName' is never used");
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    if (!filename.empty())
+    {
+        ErrorLogger::ErrorMessage::FileLocation fileLoc;
+        fileLoc.file = filename;
+        fileLoc.line = 1;
+        locationList.push_back(fileLoc);
+    }
+
+    const ErrorLogger::ErrorMessage errmsg(locationList, Severity::stringify(Severity::style), "The function '" + funcname + "' is never used", "unusedFunction");
+    if (errorLogger)
+        errorLogger->reportErr(errmsg);
+    else
+        reportError(errmsg);
 }

@@ -24,14 +24,15 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QFileDialog>
 #include <QClipboard>
+#include "erroritem.h"
 #include "resultstree.h"
 #include "xmlreport.h"
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mContextItem(0),
-    mCheckPath(""),
     mVisibleErrors(false)
 {
     for (int i = 0; i < SHOW_NONE; i++)
@@ -67,28 +68,21 @@ QStandardItem *ResultsTree::CreateItem(const QString &name)
     return item;
 }
 
-void ResultsTree::AddErrorItem(const QString &file,
-                               const QString &severity,
-                               const QString &message,
-                               const QStringList &files,
-                               const QVariantList &lines,
-                               const QString &id)
+void ResultsTree::AddErrorItem(const ErrorItem &item)
 {
-    Q_UNUSED(file);
-
-    if (files.isEmpty())
+    if (item.files.isEmpty())
     {
         return;
     }
 
-    QString realfile = StripPath(files[0], false);
+    QString realfile = StripPath(item.files[0], false);
 
     if (realfile.isEmpty())
     {
         realfile = tr("Undefined file");
     }
 
-    bool hide = !mShowTypes[SeverityToShowType(severity)];
+    bool hide = !mShowTypes[SeverityToShowType(item.severity)];
 
     //if there is at least one error that is not hidden, we have a visible error
     if (!hide)
@@ -96,48 +90,49 @@ void ResultsTree::AddErrorItem(const QString &file,
         mVisibleErrors = true;
     }
 
+    ErrorLine line;
+    line.file = realfile;
+    line.id = item.id;
+    line.line = QString::number(item.lines[0]);
+    line.msg = item.msg;
+    line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
-    QStandardItem *item = AddBacktraceFiles(EnsureFileItem(files[0], hide),
-                                            realfile,
-                                            lines[0].toInt(),
-                                            severity,
-                                            message,
-                                            hide,
-                                            SeverityToIcon(severity));
+    QStandardItem *stditem = AddBacktraceFiles(EnsureFileItem(line.file, hide),
+                             line,
+                             hide,
+                             SeverityToIcon(line.severity));
 
-    if (!item)
+    if (!stditem)
         return;
 
     //Add user data to that item
     QMap<QString, QVariant> data;
-    data["severity"]  = SeverityToShowType(severity);
-    data["message"]  = message;
-    data["file"]  = files[0];
-    data["line"]  = lines[0];
-    data["id"]  = id;
-    item->setData(QVariant(data));
+    data["severity"]  = SeverityToShowType(item.severity);
+    data["message"]  = item.msg;
+    data["file"]  = item.files[0];
+    data["line"]  = QString::number(item.lines[0]);
+    data["id"]  = item.id;
+    stditem->setData(QVariant(data));
 
     //Add backtrace files as children
-    for (int i = 1; i < files.size() && i < lines.size(); i++)
+    for (int i = 1; i < item.files.size() && i < item.lines.size(); i++)
     {
+        line.file = StripPath(item.files[i], false);
+        line.line = item.lines[i];
         QStandardItem *child_item;
-
-        child_item = AddBacktraceFiles(item,
-                                       StripPath(files[i], false),
-                                       lines[i].toInt(),
-                                       severity,
-                                       message,
+        child_item = AddBacktraceFiles(stditem,
+                                       line,
                                        hide,
                                        ":images/go-down.png");
 
         //Add user data to that item
         QMap<QString, QVariant> child_data;
-        child_data["severity"]  = SeverityToShowType(severity);
-        child_data["message"]  = message;
-        child_data["file"]  = files[i];
-        child_data["line"]  = lines[i];
-        child_data["id"]  = id;
+        child_data["severity"]  = SeverityToShowType(line.severity);
+        child_data["message"]  = line.msg;
+        child_data["file"]  = item.files[i];
+        child_data["line"]  = line.line;
+        child_data["id"]  = line.id;
         child_item->setData(QVariant(child_data));
     }
 
@@ -150,10 +145,7 @@ void ResultsTree::AddErrorItem(const QString &file,
 }
 
 QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
-        const QString &file,
-        const int line,
-        const QString &severity,
-        const QString &message,
+        const ErrorLine &item,
         const bool hide,
         const QString &icon)
 
@@ -164,12 +156,12 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     }
 
     QList<QStandardItem*> list;
-    list << CreateItem(file);
-    list << CreateItem(tr(severity.toLatin1()));
-    list << CreateItem(QString("%1").arg(line));
+    list << CreateItem(item.file);
+    list << CreateItem(tr(item.severity.toLatin1()));
+    list << CreateItem(QString("%1").arg(item.line));
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
-    list << CreateItem(tr(message.toLatin1()));
+    list << CreateItem(tr(item.msg.toLatin1()));
 
     // Check for duplicate rows and don't add them if found
     for (int i = 0; i < parent->rowCount(); i++)
@@ -452,7 +444,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
 void ResultsTree::StartApplication(QStandardItem *target, int application)
 {
-    //If there are now application's specified, tell the user about it
+    //If there are no applications specified, tell the user about it
     if (mApplications->GetApplicationCount() == 0)
     {
         QMessageBox msg(QMessageBox::Information,
@@ -476,6 +468,34 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
 
         //Replace (file) with filename
         QString file = data["file"].toString();
+
+        QFileInfo info(file);
+        if (!info.exists())
+        {
+            if (info.isAbsolute())
+            {
+                QMessageBox msgbox(this);
+                msgbox.setWindowTitle("Cppcheck");
+                msgbox.setText(tr("Could not find the file!"));
+                msgbox.setIcon(QMessageBox::Critical);
+                msgbox.exec();
+            }
+            else
+            {
+                QDir checkdir(mCheckPath);
+                if (checkdir.isAbsolute() && checkdir.exists())
+                {
+                    file = mCheckPath + "/" + file;
+                }
+                else
+                {
+                    QString dir = AskFileDir(file);
+                    dir += '/';
+                    file = dir + file;
+                }
+            }
+        }
+
         if (file.indexOf(" ") > -1)
         {
             file.insert(0, "\"");
@@ -504,6 +524,22 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
             msgbox.exec();
         }
     }
+}
+
+QString ResultsTree::AskFileDir(const QString &file)
+{
+    QString text = tr("Could not find file:\n%1\nPlease select the directory where file is located.").arg(file);
+    QMessageBox msgbox(this);
+    msgbox.setWindowTitle("Cppcheck");
+    msgbox.setText(text);
+    msgbox.setIcon(QMessageBox::Warning);
+    msgbox.exec();
+
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory"),
+                  "",
+                  QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    mCheckPath = dir;
+    return dir;
 }
 
 void ResultsTree::CopyFilename()
@@ -601,8 +637,6 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         return;
     }
 
-    //qDebug() << item->text() << "has" << item->rowCount() << "errors";
-
     for (int i = 0; i < item->rowCount(); i++)
     {
         QStandardItem *error = item->child(i, 0);
@@ -622,17 +656,15 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         //Convert it to QVariantMap
         QVariantMap data = userdata.toMap();
 
-        QString severity = ShowTypeToString(VariantToShowType(data["severity"]));
-        QString message = data["message"].toString();
-        QString id = data["id"].toString();
+        ErrorItem item;
+        item.severity = ShowTypeToString(VariantToShowType(data["severity"]));
+        item.msg = data["message"].toString();
+        item.id = data["id"].toString();
         QString file = StripPath(data["file"].toString(), true);
-        QString line = data["line"].toString();
+        unsigned int line = data["line"].toUInt();
 
-        QStringList files;
-        QStringList lines;
-
-        files << file;
-        lines << line;
+        item.files << file;
+        item.lines << line;
 
         for (int j = 0; j < error->rowCount(); j++)
         {
@@ -643,13 +675,13 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
             QVariantMap child_data = child_userdata.toMap();
 
             file = StripPath(child_data["file"].toString(), true);
-            line = child_data["line"].toString();
+            line = child_data["line"].toUInt();
 
-            files << file;
-            lines << line;
+            item.files << file;
+            item.lines << line;
         }
 
-        report->WriteError(files, lines, id, severity, message);
+        report->WriteError(item);
     }
 }
 

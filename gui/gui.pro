@@ -51,6 +51,7 @@ HEADERS += mainwindow.h \
            applicationdialog.h \
            aboutdialog.h \
            common.h \
+           erroritem.h \
            fileviewdialog.h \
            projectfile.h \
            projectfiledialog.h \
@@ -73,6 +74,7 @@ SOURCES += main.cpp \
            fileviewdialog.cpp \
            projectfile.cpp \
            projectfiledialog.cpp \
+           erroritem.cpp \
            report.cpp \
            txtreport.cpp \
            xmlreport.cpp \
@@ -85,7 +87,3 @@ win32 {
     LIBS += -lshlwapi -lhtmlhelp
 }
 
-# run lrelease before build
-lrelease.commands = lrelease gui.pro
-QMAKE_EXTRA_TARGETS += lrelease
-PRE_TARGETDEPS += lrelease

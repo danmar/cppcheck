@@ -565,7 +565,7 @@ public:
     void use(unsigned int varid);
     void modified(unsigned int varid);
     VariableUsage *find(unsigned int varid);
-    void alias(unsigned int varid1, unsigned int varid2);
+    void alias(unsigned int varid1, unsigned int varid2, bool replace);
     void erase(unsigned int varid)
     {
         _varUsage.erase(varid);
@@ -578,34 +578,42 @@ private:
     VariableMap _varUsage;
 };
 
-void Variables::alias(unsigned int varid1, unsigned int varid2)
+/**
+ * Alias the 2 given variables. Either replace the existing aliases if
+ * they exist or merge them.  You would replace an existing alias when this
+ * assignment is in the same scope as the previous assignment.  You might
+ * merge the aliases when this assignment is in a different scope from the
+ * previous assignment depending on the relationship of the 2 scopes.
+ */
+void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
 {
+    VariableUsage *var1 = find(varid1);
+    VariableUsage *var2 = find(varid2);
+
     // alias to self
     if (varid1 == varid2)
     {
-        VariableUsage *var = find(varid1);
-        if (var)
-            var->use();
+        if (var1)
+            var1->use();
         return;
     }
 
     std::set<unsigned int>::iterator i;
 
-    VariableUsage *var1 = find(varid1);
-
-    // remove var1 from all aliases
-    for (i = var1->_aliases.begin(); i != var1->_aliases.end(); ++i)
+    if (replace)
     {
-        VariableUsage *temp = find(*i);
+        // remove var1 from all aliases
+        for (i = var1->_aliases.begin(); i != var1->_aliases.end(); ++i)
+        {
+            VariableUsage *temp = find(*i);
 
-        if (temp)
-            temp->_aliases.erase(var1->_name->varId());
+            if (temp)
+                temp->_aliases.erase(var1->_name->varId());
+        }
+
+        // remove all aliases from var1
+        var1->_aliases.clear();
     }
-
-    // remove all aliases from var1
-    var1->_aliases.clear();
-
-    VariableUsage *var2 = find(varid2);
 
     // var1 gets all var2s aliases
     for (i = var2->_aliases.begin(); i != var2->_aliases.end(); ++i)
@@ -895,6 +903,12 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                     next = start + 5 + offset;
             }
 
+            // check for var ? ...
+            else if (Token::Match(tok->tokAt(start), "%var% ?"))
+            {
+                next = start;
+            }
+
             // no cast
             else
             {
@@ -925,13 +939,22 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                             var2->_type == Variables::array ||
                             var2->_type == Variables::pointer)
                         {
-                            variables.alias(varid1, varid2);
+                            bool    replace = true;
+
+                            variables.alias(varid1, varid2, replace);
+                        }
+                        else if (tok->tokAt(next + 1)->str() == "?")
+                        {
+                            if (var2->_type == Variables::reference)
+                                variables.readAliases(varid2);
+                            else
+                                variables.read(varid2);
                         }
                     }
                 }
                 else if (var1->_type == Variables::reference)
                 {
-                    variables.alias(varid1, varid2);
+                    variables.alias(varid1, varid2, true);
                 }
                 else
                 {

@@ -68,6 +68,12 @@ public slots:
     void ClearResults();
 
     /**
+    * @brief Slot to open XML report file
+    *
+    */
+    void OpenXML();
+
+    /**
     * @brief Show errors with type "style"
     * @param checked Should errors be shown (true) or hidden (false)
     */

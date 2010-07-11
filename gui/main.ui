@@ -73,6 +73,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="mActionOpenXML"/>
     <addaction name="mActionNewProjectFile"/>
     <addaction name="mActionOpenProjectFile"/>
     <addaction name="mActionSave"/>
@@ -347,6 +348,11 @@
    </property>
    <property name="toolTip">
     <string>Error categories</string>
+   </property>
+  </action>
+  <action name="mActionOpenXML">
+   <property name="text">
+    <string>&amp;Open XML...</string>
    </property>
   </action>
   <action name="mActionOpenProjectFile">

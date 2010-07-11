@@ -1089,7 +1089,7 @@ private:
               "        ;\n"
               "    free(buf);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: \"buf\" nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Common realloc mistake: \"buf\" nulled but not freed upon failure\n", errout.str());
     }
 
     void if11()
@@ -1178,7 +1178,7 @@ private:
               "\n"
               "    return a;\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: \"a\" nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Common realloc mistake: \"a\" nulled but not freed upon failure\n", errout.str());
     }
 
 
@@ -1199,7 +1199,7 @@ private:
               "\n"
               "    return a;\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: \"a\" nulled but not freed upon failure\n"
+        ASSERT_EQUALS("[test.cpp:9]: (error) Common realloc mistake: \"a\" nulled but not freed upon failure\n"
                       "[test.cpp:11]: (error) Memory leak: a\n", errout.str());
     }
 
@@ -1932,7 +1932,7 @@ private:
               "    char *a = (char *)malloc(10);\n"
               "    a = realloc(a, 100);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: \"a\" nulled but not freed upon failure\n"
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \"a\" nulled but not freed upon failure\n"
                       "[test.cpp:5]: (error) Memory leak: a\n", errout.str());
     }
 
@@ -1945,7 +1945,7 @@ private:
               "    free(a);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: \"a\" nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \"a\" nulled but not freed upon failure\n", errout.str());
     }
 
     void realloc3()

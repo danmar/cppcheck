@@ -70,6 +70,7 @@ private:
         TEST_CASE(localvar22); // ticket #1811
         TEST_CASE(localvar23); // ticket #1808
         TEST_CASE(localvar24); // ticket #1803
+        TEST_CASE(localvar25); // ticket #1729
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1232,6 +1233,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvar25() // ticket #1729
+    {
+        functionVariableUsage("int main() {\n"
+                              "    int ppos = 1;\n"
+                              "    int pneg = 0;\n"
+                              "    const char*edge = ppos? \" +\" : pneg ? \" -\" : \"\";\n"
+                              "    printf(\"This should be a '+' -> %s\n\", edge);\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvaralias1()
     {
         functionVariableUsage("void foo()\n"
@@ -1800,6 +1813,56 @@ private:
                               "{\n"
                               "    char buf[8];\n"
                               "    char *srcdata;\n"
+                              "    if (a()) {\n"
+                              "        buf[0] = 1;\n"
+                              "        srcdata = buf;\n"
+                              "        srcdata = vdata;\n"
+                              "    }\n"
+                              "    b(srcdata);\n"
+                              "}");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n"), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *srcdata;\n"
+                              "    if (a()) {\n"
+                              "        buf[0] = 1;\n"
+                              "        srcdata = buf;\n"
+                              "    }\n"
+                              "    srcdata = vdata;\n"
+                              "    b(srcdata);\n"
+                              "}");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n"), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *srcdata;\n"
+                              "    if (a()) {\n"
+                              "        srcdata = buf;\n"
+                              "    }\n"
+                              "    srcdata = vdata;\n"
+                              "    b(srcdata);\n"
+                              "}");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Unused variable: buf\n"), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *srcdata;\n"
+                              "    if (a()) {\n"
+                              "        srcdata = vdata;\n"
+                              "    }\n"
+                              "    srcdata = buf;\n"
+                              "    b(srcdata);\n"
+                              "}");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *srcdata;\n"
                               "    char vdata[8];\n"
                               "    if (a()) {\n"
                               "        buf[0] = 1;\n"
@@ -1810,6 +1873,60 @@ private:
                               "    b(srcdata);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *srcdata;\n"
+                              "    char vdata[8];\n"
+                              "    if (a()) {\n"
+                              "        buf[0] = 1;\n"
+                              "        srcdata = buf;\n"
+                              "        srcdata = vdata;\n"
+                              "    }\n"
+                              "    b(srcdata);\n"
+                              "}");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n"), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *srcdata;\n"
+                              "    char vdata[8];\n"
+                              "    if (a()) {\n"
+                              "        buf[0] = 1;\n"
+                              "        srcdata = buf;\n"
+                              "    }\n"
+                              "    srcdata = vdata;\n"
+                              "    b(srcdata);\n"
+                              "}");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n"), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *srcdata;\n"
+                              "    char vdata[8];\n"
+                              "    if (a()) {\n"
+                              "        srcdata = buf;\n"
+                              "    }\n"
+                              "    srcdata = vdata;\n"
+                              "    b(srcdata);\n"
+                              "}");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Unused variable: buf\n"), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *srcdata;\n"
+                              "    char vdata[8];\n"
+                              "    if (a()) {\n"
+                              "        srcdata = vdata;\n"
+                              "    }\n"
+                              "    srcdata = buf;\n"
+                              "    b(srcdata);\n"
+                              "}");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:5]: (style) Unused variable: vdata\n"), errout.str());
     }
 
     void localvaralias7() // ticket 1732

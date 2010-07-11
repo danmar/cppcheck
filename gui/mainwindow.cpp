@@ -57,6 +57,7 @@ MainWindow::MainWindow() :
     connect(mUI.mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
     connect(mUI.mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
     connect(mUI.mActionClearResults, SIGNAL(triggered()), this, SLOT(ClearResults()));
+    connect(mUI.mActionOpenXML, SIGNAL(triggered()), this, SLOT(OpenXML()));
 
     connect(mUI.mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
     connect(mUI.mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
@@ -433,6 +434,22 @@ void MainWindow::ClearResults()
     mUI.mResults->Clear();
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
+}
+
+void MainWindow::OpenXML()
+{
+    QString selectedFilter;
+    QString filter(tr("XML files (*.xml)"));
+    QString selectedFile = QFileDialog::getOpenFileName(this,
+                           tr("Open the report file"),
+                           QString(),
+                           filter,
+                           &selectedFilter);
+
+    if (!selectedFile.isEmpty())
+    {
+        mUI.mResults->ReadErrorsXml(selectedFile);
+    }
 }
 
 void MainWindow::EnableCheckButtons(bool enable)

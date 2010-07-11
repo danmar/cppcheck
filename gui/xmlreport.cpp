@@ -18,15 +18,29 @@
 
 #include <QFile>
 #include <QXmlStreamWriter>
+#include <qdebug>
+#include "erroritem.h"
 #include "xmlreport.h"
 
+static const char ResultElementName[] = "results";
+static const char ErrorElementName[] = "error";
+static const char FilenameAttribute[] = "file";
+static const char LineAttribute[] = "line";
+static const char IdAttribute[] = "id";
+static const char SeverityAttribute[] = "severity";
+static const char MsgAttribute[] = "msg";
+
 XmlReport::XmlReport(const QString &filename, QObject * parent) :
-    Report(filename, parent)
+    Report(filename, parent),
+    mXmlReader(NULL),
+    mXmlWriter(NULL)
 {
 }
 
 XmlReport::~XmlReport()
 {
+    delete mXmlReader;
+    delete mXmlWriter;
     Close();
 }
 
@@ -35,7 +49,18 @@ bool XmlReport::Create()
     bool success = false;
     if (Report::Create())
     {
-        mXmlWriter.setDevice(Report::GetFile());
+        mXmlWriter = new QXmlStreamWriter(Report::GetFile());
+        success = true;
+    }
+    return success;
+}
+
+bool XmlReport::Open()
+{
+    bool success = false;
+    if (Report::Open())
+    {
+        mXmlReader = new QXmlStreamReader(Report::GetFile());
         success = true;
     }
     return success;
@@ -43,19 +68,18 @@ bool XmlReport::Create()
 
 void XmlReport::WriteHeader()
 {
-    mXmlWriter.setAutoFormatting(true);
-    mXmlWriter.writeStartDocument();
-    mXmlWriter.writeStartElement("results");
+    mXmlWriter->setAutoFormatting(true);
+    mXmlWriter->writeStartDocument();
+    mXmlWriter->writeStartElement(ResultElementName);
 }
 
 void XmlReport::WriteFooter()
 {
-    mXmlWriter.writeEndElement();
-    mXmlWriter.writeEndDocument();
+    mXmlWriter->writeEndElement();
+    mXmlWriter->writeEndDocument();
 }
 
-void XmlReport::WriteError(const QStringList &files, const QStringList &lines,
-                           const QString &id, const QString &severity, const QString &msg)
+void XmlReport::WriteError(const ErrorItem &error)
 {
     /*
     Error example from the core program in xml
@@ -63,11 +87,73 @@ void XmlReport::WriteError(const QStringList &files, const QStringList &lines,
     The callstack seems to be ignored here aswell, instead last item of the stack is used
     */
 
-    mXmlWriter.writeStartElement("error");
-    mXmlWriter.writeAttribute("file", files[files.size() - 1]);
-    mXmlWriter.writeAttribute("line", lines[lines.size() - 1]);
-    mXmlWriter.writeAttribute("id", id);
-    mXmlWriter.writeAttribute("severity", severity);
-    mXmlWriter.writeAttribute("msg", msg);
-    mXmlWriter.writeEndElement();
+    mXmlWriter->writeStartElement(ErrorElementName);
+    mXmlWriter->writeAttribute(FilenameAttribute, error.files[error.files.size() - 1]);
+    const QString line = QString::number(error.lines[error.lines.size() - 1]);
+    mXmlWriter->writeAttribute(LineAttribute, line);
+    mXmlWriter->writeAttribute(IdAttribute, error.id);
+    mXmlWriter->writeAttribute(SeverityAttribute, error.severity);
+    mXmlWriter->writeAttribute(MsgAttribute, error.msg);
+    mXmlWriter->writeEndElement();
+}
+
+QList<ErrorLine> XmlReport::Read()
+{
+    QList<ErrorLine> errors;
+    bool insideResults = false;
+    if (!mXmlReader)
+    {
+        qDebug() << "You must Open() the file before reading it!";
+        return errors;
+    }
+    while (!mXmlReader->atEnd())
+    {
+        switch (mXmlReader->readNext())
+        {
+        case QXmlStreamReader::StartElement:
+            if (mXmlReader->name() == ResultElementName)
+                insideResults = true;
+
+            // Read error element from inside result element
+            if (insideResults && mXmlReader->name() == ErrorElementName)
+            {
+                ErrorLine line = ReadError(mXmlReader);
+                errors.append(line);
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (mXmlReader->name() == ResultElementName)
+                insideResults = false;
+            break;
+
+            // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    }
+    return errors;
+}
+
+ErrorLine XmlReport::ReadError(QXmlStreamReader *reader)
+{
+    ErrorLine line;
+    if (reader->name().toString() == ErrorElementName)
+    {
+        QXmlStreamAttributes attribs = reader->attributes();
+        line.file = attribs.value("", FilenameAttribute).toString();
+        line.line = attribs.value("", LineAttribute).toString();
+        line.id = attribs.value("", IdAttribute).toString();
+        line.severity = attribs.value("", SeverityAttribute).toString();
+        line.msg = attribs.value("", MsgAttribute).toString();
+    }
+    return line;
 }

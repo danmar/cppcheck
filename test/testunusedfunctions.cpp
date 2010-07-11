@@ -58,9 +58,11 @@ private:
         errout.str("");
 
         // Check for unused functions..
-        CheckUnusedFunctions checkUnusedFunctions(this);
+        Settings settings;
+        settings._checkCodingStyle = true;
+        CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
         checkUnusedFunctions.parseTokens(tokenizer);
-        checkUnusedFunctions.check();
+        checkUnusedFunctions.check(this);
     }
 
     void incondition()

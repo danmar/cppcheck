@@ -51,19 +51,16 @@ void CsvReport::WriteFooter()
     // No footer for CSV report
 }
 
-void CsvReport::WriteError(const QStringList &files, const QStringList &lines,
-                           const QString &id, const QString &severity, const QString &msg)
+void CsvReport::WriteError(const ErrorItem &error)
 {
-    Q_UNUSED(id);
-
     /*
     Error as CSV line
     gui/test.cpp,23,error,Mismatching allocation and deallocation: k
     */
 
     QString line;
-    line += QString("%1,%2,").arg(files[files.size() - 1]).arg(lines[lines.size() - 1]);
-    line += QString("%1,%2").arg(severity).arg(msg);
+    line += QString("%1,%2,").arg(error.files[error.files.size() - 1]).arg(error.lines[error.lines.size() - 1]);
+    line += QString("%1,%2").arg(error.severity).arg(error.msg);
 
     mTxtWriter << line << endl;
 }

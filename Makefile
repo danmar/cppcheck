@@ -52,6 +52,7 @@ TESTOBJ =     test/testautovariables.o \
               test/testpreprocessor.o \
               test/testredundantif.o \
               test/testrunner.o \
+              test/testsettings.o \
               test/testsimplifytokens.o \
               test/teststl.o \
               test/testsuite.o \
@@ -212,6 +213,9 @@ test/testredundantif.o: test/testredundantif.cpp lib/tokenize.h lib/classinfo.h 
 
 test/testrunner.o: test/testrunner.cpp test/testsuite.h lib/errorlogger.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testrunner.o test/testrunner.cpp
+
+test/testsettings.o: test/testsettings.cpp lib/settings.h test/testsuite.h lib/errorlogger.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testsettings.o test/testsettings.cpp
 
 test/testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp

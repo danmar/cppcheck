@@ -53,7 +53,8 @@ private:
         TEST_CASE(erase3);
         TEST_CASE(erase4);
         TEST_CASE(eraseBreak);
-        TEST_CASE(eraseReturn);
+        TEST_CASE(eraseReturn1);
+        TEST_CASE(eraseReturn2);
         TEST_CASE(eraseGoto);
         TEST_CASE(eraseAssign);
         TEST_CASE(eraseErase);
@@ -442,14 +443,37 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void eraseReturn()
+    void eraseReturn1()
     {
         check("void f()\n"
               "{\n"
+              "    std::vector<int> foo;\n"
+              "    std::vector<int>::iterator it;\n"
               "    for (it = foo.begin(); it != foo.end(); ++it)\n"
               "    {\n"
               "        foo.erase(it);\n"
               "        return;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void eraseReturn2()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int> foo;\n"
+              "    std::vector<int>::iterator it;\n"
+              "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "    {\n"
+              "        if (*it == 1) {\n"
+              "            foo.erase(it);\n"
+              "            return;\n"
+              "        }\n"
+              "        else {\n"
+              "            foo.erase(it);\n"
+              "            return;\n"
+              "        }\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());

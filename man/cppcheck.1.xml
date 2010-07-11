@@ -97,25 +97,26 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   </refmeta>
   <refnamediv>
     <refname>&dhpackage;</refname>
-    <refpurpose>Simple syntax checking of C/C++.</refpurpose>
+    <refpurpose>Tool for static C/C++ code analysis</refpurpose>
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <arg choice="opt"><option>--append [file]</option></arg>
+      <arg choice="opt"><option>--append=[file]</option></arg>
       <arg choice="opt"><option>-D[id]</option></arg>
       <arg choice="opt"><option>--enable=[id]</option></arg>
       <arg choice="opt"><option>--error-exitcode=[n]</option></arg>
       <arg choice="opt"><option>--exitcode-suppressions [file]</option></arg>
+      <arg choice="opt"><option>--file-list=file</option></arg>
       <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>--help</option></arg>
       <arg choice="opt"><option>-I[dir]</option></arg>
+      <arg choice="opt"><option>--inline-suppr</option></arg>
       <arg choice="opt"><option>-j[jobs]</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--suppressions [file]</option></arg>
-      <arg choice="opt"><option>--template ['text']</option></arg>
-      <arg choice="opt"><option>--unused-functions</option></arg>
+      <arg choice="opt"><option>--template '[text]'</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>--version</option></arg>
       <arg choice="opt"><option>--xml</option></arg>
@@ -125,10 +126,13 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   </refsynopsisdiv>
   <refsect1 id="description">
     <title>DESCRIPTION</title>
-    <para>Tool for static C/C++ code analysis
-      intended to complement the checking of the compiler.
-      Checks for: memory leaks, mismatching allocation-deallocation,
-      buffer overrun, and many more.</para>
+    <para>Cppcheck is a command-line tool that tries to detect bugs that your C/C++ 
+      compiler doesn't see. It is versatile, and can check non-standard code 
+      including various compiler extensions, inline assembly code, etc. 
+      Its internal preprocessor can handle includes, macros, and several 
+      preprocessor commands. While Cppcheck is highly configurable, 
+      you can start using it just by giving it a path to the source code.
+    </para>
   </refsect1>
   <refsect1 id="options">
     <title>OPTIONS</title>
@@ -262,11 +266,12 @@ files, this is not needed.</para>
       <varlistentry>
         <term><option>--suppressions [file]</option></term>
         <listitem>
-          <para>Suppress warnings listed in the file. Filename and line are optional. The format of the single line in file is: [error id]:[filename]:[line]</para>
+          <para>Suppress warnings listed in the file. Filename and line are optional. The format of the single line in file is: [error id]:[filename]:[line].
+          You can use --template or --xml to see the error id.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--template ['text']</option></term>
+        <term><option>--template '[text]'</option></term>
         <listitem>
           <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'. Pre-defined templates: gcc, vs</para>
         </listitem>
@@ -300,7 +305,7 @@ files, this is not needed.</para>
   </refsect1>
   <refsect1 id="author">
     <title>AUTHOR</title>
-    <para>The program was written by Bill Egert, Daniel Marjamäki, Gianluca Scacco, Hoang Tuan Su, Kimmo Varis, Leandro Penz, Nicolas Le Cam, Reijo Tomperi, Slava Semushin and Vesa Pikki</para>
+    <para>The program was written by Bill Egert, Daniel Marjamäki, Gianluca Scacco, Hoang Tuan Su, Kimmo Varis, Leandro Penz, Martin Ettl, Nguyen Duong Tuan, Nicolas Le Cam, Reijo Tomperi, Robert Reif, Slava Semushin, Vesa Pikki and Zachary Blair</para>
   </refsect1>
   <refsect1 id="see_also">
     <title>SEE ALSO</title>

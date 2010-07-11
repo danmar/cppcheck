@@ -58,7 +58,13 @@ private:
 
 #if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 private:
-    bool handleRead(unsigned int &result);
+    /**
+     * Read from the pipe, parse and handle what ever is in there.
+     *@return -1 in case of error
+     *         0 if there is nothing in the pipe to be read
+     *         1 if we did read something
+     */
+    int handleRead(unsigned int &result);
     void writeToPipe(char type, const std::string &data);
     int _pipe[2];
     std::list<std::string> _errorList;

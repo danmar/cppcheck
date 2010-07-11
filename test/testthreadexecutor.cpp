@@ -74,8 +74,7 @@ private:
 
     void run()
     {
-        // This is commented out, because it causes a deadlock
-        // TEST_CASE(deadlock_with_many_errors);
+        TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(no_errors_more_files);
         TEST_CASE(no_errors_less_files);
         TEST_CASE(no_errors_equal_amount_files);
