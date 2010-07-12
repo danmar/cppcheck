@@ -31,7 +31,7 @@
 /**
 * @brief A class that reads and writes (TODO) project files.
 * The project files contain project-specific settings for checking. For
-* example a list of automatically deallocated classes.
+* example a list of include paths.
 */
 class ProjectFile : public QObject
 {
