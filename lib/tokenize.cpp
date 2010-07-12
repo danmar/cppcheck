@@ -2667,7 +2667,7 @@ void Tokenizer::setVarId()
                 continue;
             if (tok->strAt(-1) == "return")
                 continue;
-            if (!Token::Match(tok->tokAt(5), "const|{|;"))
+            if (!Token::Match(tok->tokAt(5), "const|{"))
                 continue;
         }
 
