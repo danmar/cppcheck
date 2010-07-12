@@ -17,12 +17,18 @@
  */
 
 #include <QStringList>
+#include <QFileInfo>
 #include "projectfiledialog.h"
 
 ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     : QDialog(parent)
 {
     mUI.setupUi(this);
+
+    QFileInfo inf(path);
+    QString filename = inf.fileName();
+    QString title = tr("Project file: %1").arg(filename);
+    setWindowTitle(title);
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
 }

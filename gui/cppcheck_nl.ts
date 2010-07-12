@@ -444,12 +444,18 @@ Stop de controle alvorens te sluiten.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="688"/>
+        <location filename="mainwindow.cpp" line="704"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="690"/>
         <source>Select Project File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="706"/>
+        <source>Select Project Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -489,6 +495,25 @@ Stop de controle alvorens te sluiten.</translation>
     </message>
 </context>
 <context>
+    <name>Project</name>
+    <message>
+        <location filename="project.cpp" line="63"/>
+        <location filename="project.cpp" line="96"/>
+        <source>Cppcheck</source>
+        <translation type="unfinished">Cppcheck</translation>
+    </message>
+    <message>
+        <location filename="project.cpp" line="64"/>
+        <source>Could not read the project file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="project.cpp" line="97"/>
+        <source>Could not write the project file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ProjectFile</name>
     <message>
         <location filename="projectfile.ui" line="14"/>
@@ -509,29 +534,8 @@ Stop de controle alvorens te sluiten.</translation>
 <context>
     <name>ProjectFileDialog</name>
     <message>
-        <location filename="projectfiledialog.cpp" line="48"/>
-        <location filename="projectfiledialog.cpp" line="106"/>
-        <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="49"/>
-        <source>Could not read the project file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="87"/>
-        <source>Project files (*.cppcheck);;All files(*.*)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="89"/>
-        <source>Save Project File</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="107"/>
-        <source>Could not write the project file.</source>
+        <location filename="projectfiledialog.cpp" line="30"/>
+        <source>Project file: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
