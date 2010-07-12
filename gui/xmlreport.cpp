@@ -18,7 +18,7 @@
 
 #include <QFile>
 #include <QXmlStreamWriter>
-#include <qdebug>
+#include <QDebug>
 #include "erroritem.h"
 #include "xmlreport.h"
 
