@@ -31,7 +31,7 @@
 #include "threadhandler.h"
 #include "fileviewdialog.h"
 #include "projectfile.h"
-#include "projectfiledialog.h"
+#include "project.h"
 #include "report.h"
 #include "../lib/filelister.h"
 
@@ -693,13 +693,24 @@ void MainWindow::ShowProjectFileDialog()
 
     if (!filepath.isEmpty())
     {
-        ProjectFileDialog dlg(filepath, this);
-        dlg.exec();
+        Project prj(filepath, this);
+        if (prj.Open())
+            prj.Edit();
     }
 }
 
 void MainWindow::NewProjectFileDialog()
 {
-    ProjectFileDialog dlg(QString(), this);
-    dlg.exec();
+    const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
+    QString filepath = QFileDialog::getSaveFileName(this,
+                       tr("Select Project Filename"),
+                       QString(),
+                       filter);
+
+    if (!filepath.isEmpty())
+    {
+        Project prj(filepath, this);
+        prj.Create();
+        prj.Edit();
+    }
 }

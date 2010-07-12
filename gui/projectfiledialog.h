@@ -29,24 +29,42 @@ class ProjectFile;
 /// @addtogroup GUI
 /// @{
 
+
+/**
+* @brief A dialog for editing project file data.
+*/
 class ProjectFileDialog : public QDialog
 {
     Q_OBJECT
 public:
     ProjectFileDialog(const QString &path, QWidget *parent = 0);
 
-protected slots:
-    void DialogAccepted();
+    /**
+    * @brief Return include paths from the dialog control.
+    * @return List of include paths.
+    */
+    QStringList GetIncludePaths() const;
 
-protected:
-    void ReadProjectFile();
-    void UpdateProjectFileData();
+    /**
+    * @brief Return define names from the dialog control.
+    * @return List of define names.
+    */
+    QStringList GetDefines() const;
+
+    /**
+    * @brief Set include paths to dialog control.
+    * @param includes List of include paths to set to dialog control.
+    */
+    void SetIncludepaths(const QStringList &includes);
+
+    /**
+    * @brief Set define names to dialog control.
+    * @param defines List of define names to set to dialog control.
+    */
+    void SetDefines(const QStringList &defines);
 
 private:
     Ui::ProjectFile mUI;
-    QString mFileName;
-    ProjectFile *mPFile;
-    bool mDataSaved;
 };
 
 /// @}

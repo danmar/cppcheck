@@ -53,6 +53,7 @@ HEADERS += mainwindow.h \
            common.h \
            erroritem.h \
            fileviewdialog.h \
+           project.h \
            projectfile.h \
            projectfiledialog.h \
            report.h \
@@ -72,6 +73,7 @@ SOURCES += main.cpp \
            applicationdialog.cpp \
            aboutdialog.cpp \
            fileviewdialog.cpp \
+           project.cpp \
            projectfile.cpp \
            projectfiledialog.cpp \
            erroritem.cpp \

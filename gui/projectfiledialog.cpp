@@ -17,102 +17,17 @@
  */
 
 #include <QStringList>
-#include <QFile>
-#include <QFileDialog>
-#include <QMessageBox>
 #include "projectfiledialog.h"
-#include "projectfile.h"
 
 ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     : QDialog(parent)
-    , mFileName(path)
-    , mDataSaved(false)
 {
     mUI.setupUi(this);
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(this, SIGNAL(accepted()), this, SLOT(DialogAccepted()));
-
-    mPFile = new ProjectFile(path, this);
-    if (QFile::exists(path))
-    {
-        ReadProjectFile();
-    }
 }
 
-void ProjectFileDialog::ReadProjectFile()
-{
-    if (!mPFile->Read())
-    {
-        QMessageBox msg(QMessageBox::Critical,
-                        tr("Cppcheck"),
-                        tr("Could not read the project file."),
-                        QMessageBox::Ok,
-                        this);
-        msg.exec();
-        mFileName = QString();
-        mPFile->SetFilename(mFileName);
-    }
-
-    QStringList includes = mPFile->GetIncludeDirs();
-    QString includestr;
-    QString dir;
-    foreach(dir, includes)
-    {
-        includestr += dir;
-        includestr += ";";
-    }
-    mUI.mEditIncludePaths->setText(includestr);
-
-    QStringList defines = mPFile->GetDefines();
-    QString definestr;
-    QString define;
-    foreach(define, defines)
-    {
-        definestr += define;
-        definestr += ";";
-    }
-    mUI.mEditDefines->setText(definestr);
-}
-
-void ProjectFileDialog::DialogAccepted()
-{
-    if (mDataSaved)
-        return;
-
-    UpdateProjectFileData();
-    bool writesuccess = false;
-    if (mFileName.isEmpty())
-    {
-        const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
-        QString filepath = QFileDialog::getSaveFileName(this,
-                           tr("Save Project File"),
-                           QString(),
-                           filter);
-
-        if (!filepath.isEmpty())
-        {
-            writesuccess = mPFile->Write(filepath);
-        }
-    }
-    else
-    {
-        writesuccess = mPFile->Write();
-    }
-
-    if (!writesuccess)
-    {
-        QMessageBox msg(QMessageBox::Critical,
-                        tr("Cppcheck"),
-                        tr("Could not write the project file."),
-                        QMessageBox::Ok,
-                        this);
-        msg.exec();
-    }
-    mDataSaved = true;
-}
-
-void ProjectFileDialog::UpdateProjectFileData()
+QStringList ProjectFileDialog::GetIncludePaths() const
 {
     QString include = mUI.mEditIncludePaths->text();
     QStringList includes;
@@ -124,8 +39,11 @@ void ProjectFileDialog::UpdateProjectFileData()
         else
             includes.append(include);
     }
-    mPFile->SetIncludes(includes);
+    return includes;
+}
 
+QStringList ProjectFileDialog::GetDefines() const
+{
     QString define = mUI.mEditDefines->text();
     QStringList defines;
     if (!define.isEmpty())
@@ -136,5 +54,29 @@ void ProjectFileDialog::UpdateProjectFileData()
         else
             defines.append(define);
     }
-    mPFile->SetDefines(defines);
+    return defines;
+}
+
+void ProjectFileDialog::SetIncludepaths(const QStringList &includes)
+{
+    QString includestr;
+    QString dir;
+    foreach(dir, includes)
+    {
+        includestr += dir;
+        includestr += ";";
+    }
+    mUI.mEditIncludePaths->setText(includestr);
+}
+
+void ProjectFileDialog::SetDefines(const QStringList &defines)
+{
+    QString definestr;
+    QString define;
+    foreach(define, defines)
+    {
+        definestr += define;
+        definestr += ";";
+    }
+    mUI.mEditDefines->setText(definestr);
 }
