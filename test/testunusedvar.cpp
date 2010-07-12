@@ -78,6 +78,7 @@ private:
         TEST_CASE(localvaralias5); // ticket #1647
         TEST_CASE(localvaralias6); // ticket #1729
         TEST_CASE(localvaralias7); // ticket #1732
+        TEST_CASE(localvaralias8);
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
 
@@ -1260,7 +1261,8 @@ private:
                               "    int a[10];\n"
                               "    int *b = a;\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n"
+                      "[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1376,8 +1378,7 @@ private:
                               "    int *b = a;\n"
                               "    *b = 0;\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1532,8 +1533,7 @@ private:
                               "    int *c = b;\n"
                               "    *c = 0;\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1543,10 +1543,9 @@ private:
                               "    int *d = b;\n"
                               "    *d = 0;\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n"
-                           "[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n"
-                           "[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used\n", errout.str());
-        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n"
+                      "[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n"
+                      "[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1556,9 +1555,8 @@ private:
                               "    c = b;\n"
                               "    *c = 0;\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n"
-                           "[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n"
+                      "[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1570,9 +1568,8 @@ private:
                               "    c = a;\n"
                               "    *c = 0;\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n"
-                           "[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n"
+                      "[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1679,8 +1676,8 @@ private:
                               "    d = c;\n"
                               "    *d = 0;\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: b\n"
+                      "[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("int a[10];\n"
                               "void foo()\n"
@@ -1692,9 +1689,8 @@ private:
                               "    d = a; *d = 0;\n"
                               "    d = c; *d = 0;\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n"
-                           "[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n"
+                      "[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used\n", errout.str());
     }
 
     void localvaralias2() // ticket 1637
@@ -1820,7 +1816,7 @@ private:
                               "    }\n"
                               "    b(srcdata);\n"
                               "}");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1833,7 +1829,7 @@ private:
                               "    srcdata = vdata;\n"
                               "    b(srcdata);\n"
                               "}");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1845,7 +1841,7 @@ private:
                               "    srcdata = vdata;\n"
                               "    b(srcdata);\n"
                               "}");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Unused variable: buf\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: buf\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1857,7 +1853,7 @@ private:
                               "    srcdata = buf;\n"
                               "    b(srcdata);\n"
                               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1886,7 +1882,7 @@ private:
                               "    }\n"
                               "    b(srcdata);\n"
                               "}");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1900,7 +1896,7 @@ private:
                               "    srcdata = vdata;\n"
                               "    b(srcdata);\n"
                               "}");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1913,7 +1909,7 @@ private:
                               "    srcdata = vdata;\n"
                               "    b(srcdata);\n"
                               "}");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Unused variable: buf\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: buf\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1926,7 +1922,7 @@ private:
                               "    srcdata = buf;\n"
                               "    b(srcdata);\n"
                               "}");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:5]: (style) Unused variable: vdata\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Unused variable: vdata\n", errout.str());
     }
 
     void localvaralias7() // ticket 1732
@@ -1939,6 +1935,192 @@ private:
                               "    *cp = 0;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvaralias8()
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char b1[8];\n"
+                              "    char b2[8];\n"
+                              "    char b3[8];\n"
+                              "    char b4[8];\n"
+                              "    char *pb;\n"
+                              "    if (a == 1)\n"
+                              "        pb = b1;\n"
+                              "    else if (a == 2)\n"
+                              "        pb = b2;\n"
+                              "    else if (a == 3)\n"
+                              "        pb = b3;\n"
+                              "    else\n"
+                              "        pb = b4;\n"
+                              "    b(pb);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char b1[8];\n"
+                              "    char b2[8];\n"
+                              "    char b3[8];\n"
+                              "    char b4[8];\n"
+                              "    char *pb;\n"
+                              "    if (a == 1)\n"
+                              "        pb = b1;\n"
+                              "    else if (a == 2)\n"
+                              "        pb = b2;\n"
+                              "    else if (a == 3)\n"
+                              "        pb = b3;\n"
+                              "    else {\n"
+                              "        pb = b1;\n"
+                              "        pb = b4;\n"
+                              "    }\n"
+                              "    b(pb);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char b1[8];\n"
+                              "    char b2[8];\n"
+                              "    char b3[8];\n"
+                              "    char b4[8];\n"
+                              "    char *pb;\n"
+                              "    if (a == 1)\n"
+                              "        pb = b1;\n"
+                              "    else if (a == 2)\n"
+                              "        pb = b2;\n"
+                              "    else if (a == 3)\n"
+                              "        pb = b3;\n"
+                              "    else {\n"
+                              "        pb = b1;\n"
+                              "        pb = b2;\n"
+                              "        pb = b3;\n"
+                              "        pb = b4;\n"
+                              "    }\n"
+                              "    b(pb);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char b1[8];\n"
+                              "    char b2[8];\n"
+                              "    char b3[8];\n"
+                              "    char b4[8];\n"
+                              "    char *pb;\n"
+                              "    if (a == 1)\n"
+                              "        pb = b1;\n"
+                              "    else if (a == 2)\n"
+                              "        pb = b2;\n"
+                              "    else if (a == 3)\n"
+                              "        pb = b3;\n"
+                              "    pb = b4;\n"
+                              "    b(pb);\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: b1\n"
+                      "[test.cpp:4]: (style) Unused variable: b2\n"
+                      "[test.cpp:5]: (style) Unused variable: b3\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char b1[8];\n"
+                              "    char b2[8];\n"
+                              "    char b3[8];\n"
+                              "    char b4[8];\n"
+                              "    char *pb;\n"
+                              "    if (a == 1)\n"
+                              "        pb = b1;\n"
+                              "    else {\n"
+                              "        if (a == 2)\n"
+                              "            pb = b2;\n"
+                              "        else {\n"
+                              "            if (a == 3)\n"
+                              "                pb = b3;\n"
+                              "            else\n"
+                              "                pb = b4;\n"
+                              "        }\n"
+                              "    }\n"
+                              "    b(pb);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char b1[8];\n"
+                              "    char b2[8];\n"
+                              "    char b3[8];\n"
+                              "    char b4[8];\n"
+                              "    char *pb;\n"
+                              "    if (a == 1)\n"
+                              "        pb = b1;\n"
+                              "    else {\n"
+                              "        if (a == 2)\n"
+                              "            pb = b2;\n"
+                              "        else {\n"
+                              "            if (a == 3)\n"
+                              "                pb = b3;\n"
+                              "            else {\n"
+                              "                pb = b1;\n"
+                              "                pb = b4;\n"
+                              "            }\n"
+                              "        }\n"
+                              "    }\n"
+                              "    b(pb);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char b1[8];\n"
+                              "    char b2[8];\n"
+                              "    char b3[8];\n"
+                              "    char b4[8];\n"
+                              "    char *pb;\n"
+                              "    if (a == 1)\n"
+                              "        pb = b1;\n"
+                              "    else {\n"
+                              "        if (a == 2)\n"
+                              "            pb = b2;\n"
+                              "        else {\n"
+                              "            if (a == 3)\n"
+                              "                pb = b3;\n"
+                              "            else {\n"
+                              "                pb = b1;\n"
+                              "                pb = b2;\n"
+                              "                pb = b3;\n"
+                              "                pb = b4;\n"
+                              "            }\n"
+                              "        }\n"
+                              "    }\n"
+                              "    b(pb);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char b1[8];\n"
+                              "    char b2[8];\n"
+                              "    char b3[8];\n"
+                              "    char b4[8];\n"
+                              "    char *pb;\n"
+                              "    if (a == 1)\n"
+                              "        pb = b1;\n"
+                              "    else {\n"
+                              "        if (a == 2)\n"
+                              "            pb = b2;\n"
+                              "        else {\n"
+                              "            if (a == 3)\n"
+                              "                pb = b3;\n"
+                              "        }\n"
+                              "    }\n"
+                              "    pb = b4;\n"
+                              "    b(pb);\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: b1\n"
+                      "[test.cpp:4]: (style) Unused variable: b2\n"
+                      "[test.cpp:5]: (style) Unused variable: b3\n", errout.str());
     }
 
     void localvarasm()

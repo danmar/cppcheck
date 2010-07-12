@@ -502,6 +502,65 @@ static bool isOp(const Token *tok)
                  Token::Match(tok, "[+-*/%&!~|^,[])?:]")));
 }
 
+/**
+ * @brief This class is used to capture the control flow within a function.
+ */
+class Scope
+{
+public:
+    Scope() : _token(NULL), _parent(NULL) { }
+    Scope(const Token *token, Scope *parent_) : _token(token), _parent(parent_) { }
+    ~Scope();
+
+    Scope *parent()
+    {
+        return _parent;
+    }
+    Scope *addChild(const Token *token);
+    void remove(Scope *scope);
+
+private:
+    const Token *_token;
+    Scope *_parent;
+    std::list<Scope *> _children;
+};
+
+Scope::~Scope()
+{
+    while (!_children.empty())
+    {
+        delete *_children.begin();
+        _children.pop_front();
+    }
+}
+
+Scope *Scope::addChild(const Token *token)
+{
+    Scope *temp = new Scope(token, this);
+
+    _children.push_back(temp);
+
+    return temp;
+}
+
+void Scope::remove(Scope *scope)
+{
+    std::list<Scope *>::iterator it;
+
+    for (it = _children.begin(); it != _children.end(); ++it)
+    {
+        if (*it == scope)
+        {
+            delete *it;
+            _children.erase(it);
+            break;
+        }
+    }
+}
+
+/**
+ * @brief This class is used create a list of variables within a function.
+ */
 class Variables
 {
 public:
@@ -513,11 +572,13 @@ public:
     public:
         VariableUsage(const Token *name = 0,
                       VariableType type = standard,
+                      Scope *scope = NULL,
                       bool read = false,
                       bool write = false,
                       bool modified = false) :
             _name(name),
             _type(type),
+            _scope(scope),
             _read(read),
             _write(write),
             _modified(modified)
@@ -539,10 +600,12 @@ public:
 
         const Token *_name;
         VariableType _type;
+        Scope *_scope;
         bool _read;
         bool _write;
         bool _modified; // read/modify/write
         std::set<unsigned int> _aliases;
+        std::set<Scope *> _assignments;
     };
 
     typedef std::map<unsigned int, VariableUsage> VariableMap;
@@ -555,7 +618,7 @@ public:
     {
         return _varUsage;
     }
-    void addVar(const Token *name, VariableType type, bool write_);
+    void addVar(const Token *name, VariableType type, Scope *scope, bool write_);
     void read(unsigned int varid);
     void readAliases(unsigned int varid);
     void readAll(unsigned int varid);
@@ -673,10 +736,11 @@ void Variables::eraseAll(unsigned int varid)
 
 void Variables::addVar(const Token *name,
                        VariableType type,
+                       Scope *scope,
                        bool write_)
 {
     if (name->varId() > 0)
-        _varUsage.insert(std::make_pair(name->varId(), VariableUsage(name, type, false, write_, false)));
+        _varUsage.insert(std::make_pair(name->varId(), VariableUsage(name, type, scope, false, write_, false)));
 }
 
 void Variables::read(unsigned int varid)
@@ -822,7 +886,7 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
     return 0;
 }
 
-static int doAssignment(Variables &variables, const Token *tok, bool dereference)
+static int doAssignment(Variables &variables, const Token *tok, bool dereference, Scope *scope)
 {
     int next = 0;
 
@@ -941,6 +1005,49 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                         {
                             bool    replace = true;
 
+                            // check if variable declared in same scope
+                            if (scope == var1->_scope)
+                                replace = true;
+
+                            // not in same scope as decelaration
+                            else
+                            {
+                                std::set<Scope *>::iterator assignment;
+
+                                // check for an assignment in this scope
+                                assignment = var1->_assignments.find(scope);
+
+                                // no other assignment in this scope
+                                if (assignment == var1->_assignments.end())
+                                {
+                                    // nothing to replace
+                                    if (var1->_assignments.empty())
+                                        replace = false;
+
+                                    // this variable has previous assignments
+                                    else
+                                    {
+                                        /**
+                                         * @todo determine if existing aliases should be replaced or merged
+                                         */
+
+                                        replace = false;
+                                    }
+                                }
+
+                                // assignment in this scope
+                                else
+                                {
+                                    // replace when only one other assingnment
+                                    if (var1->_assignments.size() == 1)
+                                        replace = true;
+
+                                    // otherwise, merge them
+                                    else
+                                        replace = false;
+                                }
+                            }
+
                             variables.alias(varid1, varid2, replace);
                         }
                         else if (tok->tokAt(next + 1)->str() == "?")
@@ -968,11 +1075,37 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
             {
                 if (var1->_type == Variables::pointer && !dereference)
                 {
-                    // aliased variables in a larger scope are not supported
-                    variables.clearAliases(varid1);
+                    // check if variable decelaration is in this scope
+                    if (var1->_scope == scope)
+                        variables.clearAliases(varid1);
+                    else
+                    {
+                        std::set<Scope *>::iterator assignment;
+
+                        // check for an assignment in this scope
+                        assignment = var1->_assignments.find(scope);
+
+                        // no other assignment in this scope
+                        if (assignment == var1->_assignments.end())
+                        {
+                            /**
+                             * @todo determine if existing aliases should be discarded
+                             */
+                        }
+
+                        // this assignment replaces the last assignment in this scope
+                        else
+                        {
+                            // aliased variables in a larger scope are not supported
+                            // remove all aliases
+                            variables.clearAliases(varid1);
+                        }
+                    }
                 }
             }
         }
+
+        var1->_assignments.insert(scope);
     }
 
     // check for alias to struct member
@@ -1042,14 +1175,29 @@ void CheckOther::functionVariableUsage()
         // varId, usage {read, write, modified}
         Variables variables;
 
+        // scopes
+        Scope scopes;
+        Scope *scope = &scopes;
+
         unsigned int indentlevel = 0;
         for (const Token *tok = tok1; tok; tok = tok->next())
         {
             if (tok->str() == "{")
+            {
+                // replace the head node when found
+                if (indentlevel == 0)
+                    scopes = Scope(tok, NULL);
+                // add the new scope
+                else
+                    scope = scope->addChild(tok);
                 ++indentlevel;
+            }
             else if (tok->str() == "}")
             {
                 --indentlevel;
+
+                scope = scope->parent();
+
                 if (indentlevel == 0)
                     break;
             }
@@ -1079,7 +1227,7 @@ void CheckOther::functionVariableUsage()
                 if (tok->str() == "static")
                     tok = tok->next();
 
-                variables.addVar(tok->next(), Variables::standard,
+                variables.addVar(tok->next(), Variables::standard, scope,
                                  tok->tokAt(2)->str() == "=" ||
                                  tok->previous()->str() == "static");
                 tok = tok->next();
@@ -1095,7 +1243,7 @@ void CheckOther::functionVariableUsage()
                 if (tok->str() == "static")
                     tok = tok->next();
 
-                variables.addVar(tok->next(), Variables::standard, true);
+                variables.addVar(tok->next(), Variables::standard, scope, true);
 
                 // check if a local variable is used to initialize this variable
                 if (tok->tokAt(3)->varId() > 0)
@@ -1113,7 +1261,7 @@ void CheckOther::functionVariableUsage()
                 if (tok->str() == "static")
                     tok = tok->next();
 
-                variables.addVar(tok->tokAt(1), Variables::array,
+                variables.addVar(tok->tokAt(1), Variables::array, scope,
                                  tok->tokAt(5)->str() == "=" || tok->str() == "static");
 
                 // check for reading array size from local variable
@@ -1163,13 +1311,13 @@ void CheckOther::functionVariableUsage()
 
                     bool written = tok->tokAt(3)->str() == "=";
 
-                    variables.addVar(tok->tokAt(2), type, written || isStatic);
+                    variables.addVar(tok->tokAt(2), type, scope, written || isStatic);
 
                     int offset = 0;
 
                     // check for assignment
                     if (written)
-                        offset = doAssignment(variables, tok->tokAt(2), false);
+                        offset = doAssignment(variables, tok->tokAt(2), false, scope);
 
                     tok = tok->tokAt(2 + offset);
                 }
@@ -1196,13 +1344,13 @@ void CheckOther::functionVariableUsage()
                 {
                     bool written = tok->tokAt(4)->str() == "=";
 
-                    variables.addVar(tok->tokAt(3), Variables::pointerPointer, written || isStatic);
+                    variables.addVar(tok->tokAt(3), Variables::pointerPointer, scope, written || isStatic);
 
                     int offset = 0;
 
                     // check for assignment
                     if (written)
-                        offset = doAssignment(variables, tok->tokAt(3), false);
+                        offset = doAssignment(variables, tok->tokAt(3), false, scope);
 
                     tok = tok->tokAt(3 + offset);
                 }
@@ -1233,13 +1381,13 @@ void CheckOther::functionVariableUsage()
 
                 const bool written = tok->strAt(4) == "=";
 
-                variables.addVar(tok->tokAt(3), type, written || isStatic);
+                variables.addVar(tok->tokAt(3), type, scope, written || isStatic);
 
                 int offset = 0;
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(3), false);
+                    offset = doAssignment(variables, tok->tokAt(3), false, scope);
 
                 tok = tok->tokAt(3 + offset);
             }
@@ -1270,7 +1418,7 @@ void CheckOther::functionVariableUsage()
                 if (Token::Match(tok->tokAt(4), "%var%"))
                     varid = tok->tokAt(4)->varId();
 
-                variables.addVar(tok->tokAt(2), type, true);
+                variables.addVar(tok->tokAt(2), type, scope, true);
 
                 // check if a local variable is used to initialize this variable
                 if (varid > 0)
@@ -1315,7 +1463,7 @@ void CheckOther::functionVariableUsage()
                 if (tok->str() != "return")
                 {
                     variables.addVar(tok->tokAt(2),
-                                     tok->next()->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
+                                     tok->next()->str() == "*" ? Variables::pointerArray : Variables::referenceArray, scope,
                                      tok->tokAt(6)->str() == "=" || isStatic);
 
                     // check for reading array size from local variable
@@ -1344,7 +1492,7 @@ void CheckOther::functionVariableUsage()
                     tok = tok->next();
 
                 variables.addVar(tok->tokAt(3),
-                                 tok->tokAt(2)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
+                                 tok->tokAt(2)->str() == "*" ? Variables::pointerArray : Variables::referenceArray, scope,
                                  tok->tokAt(7)->str() == "=" || isStatic);
 
                 // check for reading array size from local variable
@@ -1385,7 +1533,7 @@ void CheckOther::functionVariableUsage()
                 unsigned int varid1 = tok->varId();
                 const Token *start = tok;
 
-                tok = tok->tokAt(doAssignment(variables, tok, dereference));
+                tok = tok->tokAt(doAssignment(variables, tok, dereference, scope));
 
                 if (pre || post)
                     variables.use(varid1);
@@ -1406,20 +1554,6 @@ void CheckOther::functionVariableUsage()
                     }
                     else
                         variables.write(varid1);
-
-                    // pointer alias
-                    if (var &&
-                        var->_type == Variables::pointer &&
-                        Token::Match(tok->previous(), "= %var% ;"))
-                    {
-                        const unsigned int varid2 = tok->varId();
-                        Variables::VariableUsage *var2 = variables.find(varid2);
-                        if (var2 && var2->_type == Variables::array)
-                        {
-                            variables.read(varid2);
-                            variables.write(varid2);
-                        }
-                    }
                 }
 
                 const Token *equal = tok->next();
