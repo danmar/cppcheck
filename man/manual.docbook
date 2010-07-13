@@ -175,6 +175,33 @@ Checking path/file2.cpp...
     like this can be used:</para>
 
     <programlisting>cppcheck -DDEBUG=1 -D__cplusplus path</programlisting>
+
+    <para>An alternative for -D is to use #error.</para>
+
+    <programlisting>#if LIB_VERSION &lt;= 3
+#error "lib version must be greater than 3"
+#endif</programlisting>
+
+    <para>Using #error instead of -D have some advantages:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>the compiler will not be able to compile the code when invalid
+        defines are given. So #error makes your source code
+        safer/better.</para>
+      </listitem>
+
+      <listitem>
+        <para>Cppcheck will check all valid configurations instead of a single
+        configuration.</para>
+      </listitem>
+
+      <listitem>
+        <para>This information is added to the source code which means you
+        don't need to provide this information to Cppcheck (makes it simpler
+        to use Cppcheck)</para>
+      </listitem>
+    </itemizedlist>
   </chapter>
 
   <chapter>
@@ -442,7 +469,73 @@ Options:
 
     <programlisting>./cppcheck gui/test.cpp --xml 2&gt; err.xml
 htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.</programlisting>
+  </chapter>
 
-    <para></para>
+  <chapter>
+    <title>Graphical user interface</title>
+
+    <section>
+      <title>Introduction</title>
+
+      <para>A Cppcheck GUI is available.</para>
+
+      <para>The main screen is shown immediately when the GUI is
+      started.</para>
+    </section>
+
+    <section>
+      <title>Check source code</title>
+
+      <para>Use the <literal>Check</literal> menu.</para>
+    </section>
+
+    <section>
+      <title>Inspecting results</title>
+
+      <para>The results are shown in a list.</para>
+
+      <para>You can show/hide certain types of messages through the
+      <literal>View</literal> menu.</para>
+
+      <para>Results can be saved to an xml file that can later be opened. See
+      <literal>Save results to file</literal> and <literal>Open
+      XML</literal>.</para>
+    </section>
+
+    <section>
+      <title>Settings</title>
+
+      <para>The language can be changed at any time by using the
+      <literal>Language</literal> menu.</para>
+
+      <para>More settings are available in
+      <literal>Edit</literal>&gt;<literal>Preferences</literal>.</para>
+    </section>
+
+    <section>
+      <title>Project files</title>
+
+      <para>The project files are used to store project specific settings.
+      These settings are:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>include folders</para>
+        </listitem>
+
+        <listitem>
+          <para>preprocessor defines</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>It isn't recommended to provide the paths to the standard C/C++
+      headers - Cppcheck has internal knowledge about ANSI C/C++ and it isn't
+      recommended that this known functionality is redefined. But feel free to
+      try it.</para>
+
+      <para>As you can read in chapter 3 in this manual the default is that
+      Cppcheck checks all configurations. So only provide preprocessor defines
+      if you want to limit the checking.</para>
+    </section>
   </chapter>
 </book>
