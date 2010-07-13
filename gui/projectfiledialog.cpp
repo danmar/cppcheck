@@ -72,6 +72,9 @@ void ProjectFileDialog::SetIncludepaths(const QStringList &includes)
         includestr += dir;
         includestr += ";";
     }
+    // Remove ; from the end of the string
+    if (includestr.endsWith(';'))
+        includestr = includestr.left(includestr.length() - 1);
     mUI.mEditIncludePaths->setText(includestr);
 }
 
@@ -84,5 +87,8 @@ void ProjectFileDialog::SetDefines(const QStringList &defines)
         definestr += define;
         definestr += ";";
     }
+    // Remove ; from the end of the string
+    if (definestr.endsWith(';'))
+        definestr = definestr.left(definestr.length() - 1);
     mUI.mEditDefines->setText(definestr);
 }
