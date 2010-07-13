@@ -2287,7 +2287,7 @@ void Tokenizer::simplifyTemplates()
                     locationList.push_back(loc);
 
                     const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                           "information",
+                                                           "debug",
                                                            "Failed to instantiate template. The checking continues anyway.",
                                                            "templateInstantiate");
 
@@ -2667,7 +2667,7 @@ void Tokenizer::setVarId()
                 continue;
             if (tok->strAt(-1) == "return")
                 continue;
-            if (!Token::Match(tok->tokAt(5), "const|{|;"))
+            if (!Token::Match(tok->tokAt(5), "const|{"))
                 continue;
         }
 
