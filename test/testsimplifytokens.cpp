@@ -207,6 +207,7 @@ private:
         TEST_CASE(simplifyTypedef54); // ticket #1814
         TEST_CASE(simplifyTypedef55);
         TEST_CASE(simplifyTypedef56); // ticket #1829
+        TEST_CASE(simplifyTypedef57); // ticket #1846
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4260,6 +4261,25 @@ private:
                                    "; "
                                    "const void * pr ; " // this gets simplified to a regular pointer
                                    "operator const void ( * ) ( ) & ( ) { return pr ; } "
+                                   "} ;");
+        ASSERT_EQUALS(expected, sizeof_(code));
+
+        // Check for output..
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef57() // ticket #1846
+    {
+        const char code[] = "void foo {\n"
+                            "    typedef int A;\n"
+                            "    A a = A(1) * A(2);\n"
+                            "};\n";
+
+        // The expected result..
+        const std::string expected("void foo { "
+                                   "; "
+                                   "int a ; a = int ( 1 ) * int ( 2 ) ; "
                                    "} ;");
         ASSERT_EQUALS(expected, sizeof_(code));
 

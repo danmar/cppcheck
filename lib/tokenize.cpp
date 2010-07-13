@@ -555,7 +555,8 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
             else
             {
                 // look backwards
-                if (Token::Match(tok->previous(), "typedef|}|>|*") ||
+                if (Token::Match(tok->previous(), "typedef|}|>") ||
+                    (tok->previous()->str() == "*" && tok->next()->str() != "(") ||
                     (Token::Match(tok->previous(), "%type%") &&
                      (!Token::Match(tok->previous(), "return|new|const|friend|public|private|protected|throw") &&
                       !Token::Match(tok->tokAt(-2), "friend class"))))
