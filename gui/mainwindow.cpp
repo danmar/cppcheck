@@ -81,8 +81,8 @@ MainWindow::MainWindow() :
     connect(mUI.mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
     connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
 
-    connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFileDialog()));
-    connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(ShowProjectFileDialog()));
+    connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFile()));
+    connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(OpenProjectFile()));
 
 #ifdef WIN32
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
@@ -685,7 +685,7 @@ void MainWindow::OpenHtmlHelpContents()
 #endif // WIN32
 }
 
-void MainWindow::ShowProjectFileDialog()
+void MainWindow::OpenProjectFile()
 {
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     QString filepath = QFileDialog::getOpenFileName(this,
@@ -701,7 +701,7 @@ void MainWindow::ShowProjectFileDialog()
     }
 }
 
-void MainWindow::NewProjectFileDialog()
+void MainWindow::NewProjectFile()
 {
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     QString filepath = QFileDialog::getSaveFileName(this,
