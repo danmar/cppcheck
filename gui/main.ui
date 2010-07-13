@@ -74,6 +74,8 @@
      <string>&amp;File</string>
     </property>
     <addaction name="mActionOpenXML"/>
+    <addaction name="mActionNewProjectFile"/>
+    <addaction name="mActionOpenProjectFile"/>
     <addaction name="mActionSave"/>
     <addaction name="mActionQuit"/>
    </widget>
@@ -351,6 +353,16 @@
   <action name="mActionOpenXML">
    <property name="text">
     <string>&amp;Open XML...</string>
+   </property>
+  </action>
+  <action name="mActionOpenProjectFile">
+   <property name="text">
+    <string>Open P&amp;roject File...</string>
+   </property>
+  </action>
+  <action name="mActionNewProjectFile">
+   <property name="text">
+    <string>&amp;New Project File...</string>
    </property>
   </action>
  </widget>

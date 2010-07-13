@@ -4,20 +4,15 @@ Project files
 cppcheck GUI handles per-project settings in project files instead of global
 program settings. This allows customizing cppcheck for each project's needs.
 
-Currently there is no GUI to edit the project file. The cppcheck automatically
-loads a project file which has same name than selected directory and extension
-".cppcheck". For example in "gui"-directory cppcheck loads "gui.cppcheck"
-project file.
+The cppcheck automatically loads a project file which has same name than
+selected directory and extension ".cppcheck". For example in "gui"-directory
+cppcheck loads "gui.cppcheck" project file.
 
 The project file is simple XML file easy to edit with your favourite editor
 program. The format is:
 
 <?xml version="1.0"?>
 <project version="1">
-    <autodealloc>
-        <class name="MyClass"/>
-        <class name="MyClass2"/>
-    </autodealloc>
     <includedir>
         <dir name="c:/projects/framework/" />
         <dir name="c:/Program Files/Visual Studio 8/VC/include/" />

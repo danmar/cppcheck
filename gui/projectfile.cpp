@@ -19,10 +19,13 @@
 #include <QObject>
 #include <QString>
 #include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 #include <QFile>
 #include "projectfile.h"
 
 static const char ProjectElementName[] = "project";
+static const char ProjectVersionAttrib[] = "version";
+static const char ProjectFileVersion[] = "1";
 static const char IncludDirElementName[] = "includedir";
 static const char DirElementName[] = "dir";
 static const char DirNameAttrib[] = "name";
@@ -52,13 +55,17 @@ bool ProjectFile::Read(const QString &filename)
 
     QXmlStreamReader xmlReader(&file);
     bool insideProject = false;
+    bool projectTagFound = false;
     while (!xmlReader.atEnd())
     {
         switch (xmlReader.readNext())
         {
         case QXmlStreamReader::StartElement:
             if (xmlReader.name() == ProjectElementName)
+            {
                 insideProject = true;
+                projectTagFound = true;
+            }
 
             // Find include directory from inside project element
             if (insideProject && xmlReader.name() == IncludDirElementName)
@@ -90,7 +97,10 @@ bool ProjectFile::Read(const QString &filename)
     }
 
     file.close();
-    return true;
+    if (projectTagFound)
+        return true;
+    else
+        return false;
 }
 
 QStringList ProjectFile::GetIncludeDirs() const
@@ -184,4 +194,59 @@ void ProjectFile::ReadDefines(QXmlStreamReader &reader)
         }
     }
     while (!allRead);
+}
+
+void ProjectFile::SetIncludes(QStringList includes)
+{
+    mIncludeDirs = includes;
+}
+
+void ProjectFile::SetDefines(QStringList defines)
+{
+    mDefines = defines;
+}
+
+bool ProjectFile::Write(const QString &filename)
+{
+    if (!filename.isEmpty())
+        mFilename = filename;
+
+    QFile file(mFilename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+
+    QXmlStreamWriter xmlWriter(&file);
+    xmlWriter.setAutoFormatting(true);
+    xmlWriter.writeStartDocument("1.0");
+    xmlWriter.writeStartElement(ProjectElementName);
+    xmlWriter.writeAttribute(ProjectVersionAttrib, ProjectFileVersion);
+
+    if (!mIncludeDirs.isEmpty())
+    {
+        xmlWriter.writeStartElement(IncludDirElementName);
+        QString incdir;
+        foreach(incdir, mIncludeDirs)
+        {
+            xmlWriter.writeStartElement(DirElementName);
+            xmlWriter.writeAttribute(DirNameAttrib, incdir);
+            xmlWriter.writeEndElement();
+        }
+        xmlWriter.writeEndElement();
+    }
+
+    if (!mDefines.isEmpty())
+    {
+        xmlWriter.writeStartElement(DefinesElementName);
+        QString define;
+        foreach(define, mDefines)
+        {
+            xmlWriter.writeStartElement(DefineName);
+            xmlWriter.writeAttribute(DefineNameAttrib, define);
+            xmlWriter.writeEndElement();
+        }
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndDocument();
+    file.close();
+    return true;
 }

@@ -31,7 +31,7 @@
 /**
 * @brief A class that reads and writes (TODO) project files.
 * The project files contain project-specific settings for checking. For
-* example a list of automatically deallocated classes.
+* example a list of include paths.
 */
 class ProjectFile : public QObject
 {
@@ -58,6 +58,33 @@ public:
     * @return list of defines.
     */
     QStringList GetDefines() const;
+
+    /**
+    * @brief Set list of includes.
+    * @param includes List of defines.
+    */
+    void SetIncludes(QStringList includes);
+
+    /**
+    * @brief Set list of defines.
+    * @param defines List of defines.
+    */
+    void SetDefines(QStringList defines);
+
+    /**
+    * @brief Write project file (to disk).
+    * @param filename Filename to use.
+    */
+    bool Write(const QString &filename = QString());
+
+    /**
+    * @brief Set filename for the project file.
+    * @param filename Filename to use.
+    */
+    void SetFilename(const QString &filename)
+    {
+        mFilename = filename;
+    }
 
 protected:
     /**

@@ -31,6 +31,7 @@
 #include "threadhandler.h"
 #include "fileviewdialog.h"
 #include "projectfile.h"
+#include "project.h"
 #include "report.h"
 #include "../lib/filelister.h"
 
@@ -79,6 +80,9 @@ MainWindow::MainWindow() :
     connect(mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     connect(mUI.mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
     connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
+
+    connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFile()));
+    connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(OpenProjectFile()));
 
 #ifdef WIN32
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
@@ -231,6 +235,8 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     EnableCheckButtons(false);
     mUI.mActionSettings->setEnabled(false);
     mUI.mActionOpenXML->setEnabled(false);
+    mUI.mActionNewProjectFile->setEnabled(false);
+    mUI.mActionOpenProjectFile->setEnabled(false);
 
     mUI.mResults->SetCheckDirectory(absDirectory);
 
@@ -392,6 +398,9 @@ void MainWindow::CheckDone()
     EnableCheckButtons(true);
     mUI.mActionSettings->setEnabled(true);
     mUI.mActionOpenXML->setEnabled(true);
+    mUI.mActionNewProjectFile->setEnabled(false);
+    mUI.mActionOpenProjectFile->setEnabled(false);
+
     if (mUI.mResults->HasResults())
     {
         mUI.mActionClearResults->setEnabled(true);
@@ -679,4 +688,36 @@ void MainWindow::OpenHtmlHelpContents()
     exeFolder = QDir::toNativeSeparators(exeFolder);
     HtmlHelp(NULL, exeFolder.utf16(), HH_DISPLAY_TOPIC, NULL);
 #endif // WIN32
+}
+
+void MainWindow::OpenProjectFile()
+{
+    const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
+    QString filepath = QFileDialog::getOpenFileName(this,
+                       tr("Select Project File"),
+                       QString(),
+                       filter);
+
+    if (!filepath.isEmpty())
+    {
+        Project prj(filepath, this);
+        if (prj.Open())
+            prj.Edit();
+    }
+}
+
+void MainWindow::NewProjectFile()
+{
+    const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
+    QString filepath = QFileDialog::getSaveFileName(this,
+                       tr("Select Project Filename"),
+                       QString(),
+                       filter);
+
+    if (!filepath.isEmpty())
+    {
+        Project prj(filepath, this);
+        prj.Create();
+        prj.Edit();
+    }
 }

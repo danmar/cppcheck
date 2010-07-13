@@ -25,6 +25,7 @@ FORMS = main.ui \
     application.ui \
     settings.ui \
     file.ui \
+    projectfile.ui \
     about.ui
 
 TRANSLATIONS =  cppcheck_fi.ts \
@@ -52,7 +53,9 @@ HEADERS += mainwindow.h \
            common.h \
            erroritem.h \
            fileviewdialog.h \
+           project.h \
            projectfile.h \
+           projectfiledialog.h \
            report.h \
            txtreport.h \
            xmlreport.h \
@@ -70,7 +73,9 @@ SOURCES += main.cpp \
            applicationdialog.cpp \
            aboutdialog.cpp \
            fileviewdialog.cpp \
+           project.cpp \
            projectfile.cpp \
+           projectfiledialog.cpp \
            erroritem.cpp \
            report.cpp \
            txtreport.cpp \

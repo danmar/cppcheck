@@ -1,9 +1,6 @@
-<?xml version="1.0"?>
-
-<!-- cppcheck project file -->
-
+<?xml version="1.0" encoding="UTF-8"?>
 <project version="1">
     <includedir>
-        <dir name="../lib" />
+        <dir name="../lib"/>
     </includedir>
 </project>

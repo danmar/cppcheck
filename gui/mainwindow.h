@@ -131,6 +131,18 @@ public slots:
     */
     void Save();
 
+    /**
+    * @brief Slot to create new project file..
+    *
+    */
+    void NewProjectFile();
+
+    /**
+    * @brief Slot to edit existing project file.
+    *
+    */
+    void OpenProjectFile();
+
 protected slots:
 
     /**
