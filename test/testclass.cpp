@@ -126,6 +126,7 @@ private:
         TEST_CASE(const23); // ticket #1699
         TEST_CASE(const24); // ticket #1708
         TEST_CASE(const25); // ticket #1724
+        TEST_CASE(const26); // ticket #1847
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3567,6 +3568,19 @@ private:
                    "};\n"
                   );
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetSize' can be const\n", errout.str());
+    }
+
+    void const26() // ticket #1847
+    {
+        checkConst("class DelayBase {\n"
+                   "public:\n"
+                   "void swapSpecificDelays(int index1, int index2) {\n"
+                   "    std::swap<float>(delays_[index1], delays_[index2]);\n"
+                   "}\n"
+                   "float delays_[4];\n"
+                   "};\n"
+                  );
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const
