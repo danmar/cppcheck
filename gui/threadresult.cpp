@@ -49,7 +49,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
     QMutexLocker locker(&mutex);
 
     // GUI doesn't know how to properly handle debug messages so lets ignore them.
-    if (msg._severity == "debug")
+    if (msg._severity == Severity::debug)
         return;
 
     QList<unsigned int> lines;
@@ -69,7 +69,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
     item.id = QString(msg._id.c_str());
     item.lines = lines;
     item.msg = QString(msg._msg.c_str());
-    item.severity = QString(msg._severity.c_str());
+    item.severity = QString::fromStdString(Severity::toString(msg._severity));
 
     emit Error(item);
 }
