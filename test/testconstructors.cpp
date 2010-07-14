@@ -72,6 +72,7 @@ private:
         TEST_CASE(initvar_staticvar);
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
+        TEST_CASE(initvar_copy_constructor); // ticket #1611
 
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
 
@@ -675,6 +676,31 @@ private:
               "Fred::Fred()\n"
               "{ }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void initvar_copy_constructor() // ticket #1611
+    {
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    std::string var;\n"
+              "public:\n"
+              "    Fred() { };\n"
+              "    Fred(const Fred &) { };\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Fred::var'\n", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    std::string var;\n"
+              "public:\n"
+              "    Fred();\n"
+              "    Fred(const Fred &);\n"
+              "};\n"
+              "Fred::Fred() { };\n"
+              "Fred::Fred(const Fred &) { };\n");
+        ASSERT_EQUALS("[test.cpp:10]: (style) Member variable not initialized in the constructor 'Fred::var'\n", errout.str());
     }
 
     void initvar_destructor()

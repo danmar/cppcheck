@@ -1580,7 +1580,7 @@ private:
                        "    }\n"
                        "    return *this;\n"
                        "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:8]: (style) Member variable 'Foo::a' is not assigned a value in 'Foo::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Member variable 'Foo::a' is not assigned a value in 'Foo::operator='\n", errout.str());
     }
 
     void uninitVarArray1()
@@ -1853,11 +1853,7 @@ private:
                        "    Foo(int _i) { }\n"
                        "};\n");
 
-        // actual results
-        ASSERT_EQUALS("", errout.str());
-
-        // wanted results - warning for the public constructor
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
     }
 
 

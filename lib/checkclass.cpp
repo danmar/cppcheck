@@ -333,7 +333,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         }
 
         // Calling member function?
-        else if (Token::Match(ftok, "%var% ("))
+        else if (Token::Match(ftok, "%var% (") && ftok->str() != "if")
         {
             // Passing "this" => assume that everything is initialized
             for (const Token * tok2 = ftok->next()->link(); tok2 && tok2 != ftok; tok2 = tok2->previous())
@@ -345,9 +345,6 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
                     return;
                 }
             }
-
-            if (ftok->str() == "if")
-                continue;
 
             // recursive call / calling overloaded function
             // assume that all variables are initialized
@@ -369,7 +366,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             else  // there is a called member function, but it is not defined where we can find it, so we assume it initializes everything
             {
                 // check if the function is part of this class..
-                const Token *tok = Token::findmatch(_tokenizer->tokens(), (std::string("class ") + classname + " {").c_str());
+                const Token *tok = Token::findmatch(_tokenizer->tokens(), ((isStruct ? std::string("struct ") : std::string("class ")) + classname + " {").c_str());
                 for (tok = tok ? tok->tokAt(3) : 0; tok; tok = tok->next())
                 {
                     if (tok->str() == "{")
@@ -457,14 +454,75 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
     }
 }
 
-
-
-
-
-
 //---------------------------------------------------------------------------
 // ClassCheck: Check that all class constructors are ok.
 //---------------------------------------------------------------------------
+
+struct Constructor
+{
+    enum AccessControl { Public, Protected, Private };
+
+    Constructor(const Token * tok, AccessControl acc, bool body, bool equal, bool copy) :
+        token(tok), access(acc), hasBody(body), isOperatorEqual(equal), isCopyConstructor(copy)
+    {
+    }
+
+    const Token *token;
+    AccessControl access;
+    bool hasBody;
+    bool isOperatorEqual;
+    bool isCopyConstructor;
+};
+
+static bool argsMatch(const Token *first, const Token *second)
+{
+    bool match = false;
+    while (first->str() == second->str())
+    {
+        // at end of argument list
+        if (first->str() == ")")
+        {
+            match = true;
+            break;
+        }
+
+        // skip default value assignment
+        else if (first->next()->str() == "=")
+        {
+            first = first->tokAt(2);
+            continue;
+        }
+
+        // definition missing variable name
+        else if (first->next()->str() == "," && second->next()->str() != ",")
+            second = second->next();
+        else if (first->next()->str() == ")" && second->next()->str() != ")")
+            second = second->next();
+
+        // argument list has different number of arguments
+        else if (second->str() == ")")
+            break;
+
+        // variable names are different
+        else if ((Token::Match(first->next(), "%var% ,|)|=") &&
+                  Token::Match(second->next(), "%var% ,|)")) &&
+                 (first->next()->str() != second->next()->str()))
+        {
+            // skip variable names
+            first = first->next();
+            second = second->next();
+
+            // skip default value assignment
+            if (first->next()->str() == "=")
+                first = first->tokAt(2);
+        }
+
+        first = first->next();
+        second = second->next();
+    }
+
+    return match;
+}
 
 void CheckClass::constructors()
 {
@@ -475,81 +533,165 @@ void CheckClass::constructors()
 
     // Locate class
     const Token *tok1 = Token::findmatch(_tokenizer->tokens(), pattern_class);
-    while (tok1)
+    for (; tok1; tok1 = Token::findmatch(tok1->next(), pattern_class))
     {
         const std::string className = tok1->strAt(1);
-        const Token *classNameToken = tok1->tokAt(1);
         bool isStruct = tok1->str() == "struct";
 
-        /** @todo handling of private constructors should be improved */
-        bool hasPrivateConstructor = false;
+        const Token *end = tok1;
+        while (end->str() != "{")
+            end = end->next();
+        end = end->link();
+
+        int indentlevel = 0;
+        Constructor::AccessControl access = isStruct ? Constructor::Public : Constructor::Private;
+        std::list<Constructor> constructorList;
+        unsigned int numConstructors = 0;
+
+        // check to end of class definition
+        for (const Token *tok = tok1; tok; tok = tok->next())
         {
-            int indentlevel = 0;
-            bool isPrivate = !isStruct;
-            for (const Token *tok = tok1; tok; tok = tok->next())
+            // Indentation
+            if (tok->str() == "{")
+                ++indentlevel;
+
+            else if (tok->str() == "}")
             {
-                // Indentation
-                if (tok->str() == "{")
-                    ++indentlevel;
+                --indentlevel;
+                if (indentlevel <= 0)
+                    break;
+            }
 
-                else if (tok->str() == "}")
+            // Parse class contents (indentlevel == 1)..
+            if (indentlevel == 1)
+            {
+                // What section are we in..
+                if (tok->str() == "private:")
+                    access = Constructor::Private;
+                else if (tok->str() == "protected:")
+                    access = Constructor::Protected;
+                else if (tok->str() == "public:")
+                    access = Constructor::Public;
+
+                // Is there a constructor?
+                else if (Token::simpleMatch(tok, (className + " (").c_str()) ||
+                         Token::simpleMatch(tok, "operator = ("))
                 {
-                    --indentlevel;
-                    if (indentlevel <= 0)
-                        break;
-                }
+                    bool operatorEqual = tok->str() == "operator";
+                    bool copyConstructor = Token::Match(tok, "%var% ( const %var% & %var%| )");
+                    const Token *next = operatorEqual ? tok->tokAt(2)->link() : tok->next()->link();
 
-                // Parse class contents (indentlevel == 1)..
-                if (indentlevel == 1)
-                {
-                    // What section are we in.. private/non-private
-                    if (tok->str() == "private:")
-                        isPrivate = true;
-                    else if (tok->str() == "protected:" || tok->str() == "public:")
-                        isPrivate = false;
+                    if (!operatorEqual)
+                        numConstructors++;
 
-                    // Is there a private constructor?
-                    else if (isPrivate && Token::simpleMatch(tok, (classNameToken->str() + " (").c_str()))
+                    // out of line function
+                    if (Token::Match(next, ") ;"))
                     {
-                        hasPrivateConstructor = true;
+                        std::string classPattern;
+                        int offset;
+                        if (operatorEqual)
+                        {
+                            classPattern = className + " :: operator = (";
+                            offset = 5;
+                        }
+                        else
+                        {
+                            classPattern = className + " :: " + className + " (";
+                            offset = 4;
+                        }
+
+                        bool hasBody = false;
+
+                        // start looking at end of class
+                        const Token *constructor_token = end;
+                        while ((constructor_token = Token::findmatch(constructor_token, classPattern.c_str())) != NULL)
+                        {
+                            // skip destructor and other classes
+                            if (!Token::Match(constructor_token->previous(), "~|::"))
+                            {
+                                if (argsMatch(tok->tokAt(offset - 2), constructor_token->tokAt(offset)))
+                                {
+                                    if (operatorEqual || copyConstructor)
+                                        constructorList.push_back(Constructor(constructor_token, access, true, operatorEqual, copyConstructor));
+                                    else
+                                        constructorList.push_front(Constructor(constructor_token, access, true, false, false));
+
+                                    hasBody = true;
+                                    break;
+                                }
+                            }
+
+                            // skip function body
+                            while (constructor_token->str() != "{")
+                                constructor_token = constructor_token->next();
+                            constructor_token = constructor_token->link();
+                        }
+
+                        // function body found?
+                        if (!hasBody)
+                        {
+                            if (operatorEqual || copyConstructor)
+                                constructorList.push_back(Constructor(tok, access, false, operatorEqual, copyConstructor));
+                            else
+                                constructorList.push_front(Constructor(tok, access, false, false, false));
+                        }
+
+                        tok = next->next();
+                    }
+
+                    // inline function
+                    else
+                    {
+                        // skip destructor and other classes
+                        if (!Token::Match(tok->previous(), "~|::"))
+                        {
+                            if (operatorEqual || copyConstructor)
+                                constructorList.push_back(Constructor(tok, access, true, operatorEqual, copyConstructor));
+                            else
+                                constructorList.push_front(Constructor(tok, access, true, false, false));
+                        }
+
+                        // skip over function body
+                        tok = next->next();
+                        while (tok->str() != "{")
+                            tok = tok->next();
+                        tok = tok->link();
+                    }
+                }
+            }
+        }
+
+        // Get variables that are not classes...
+        Var *varlist = getVarList(tok1, false, isStruct);
+
+        // There are no constructors.
+        if (numConstructors == 0)
+        {
+            // If "--style" has been given, give a warning
+            if (_settings->_checkCodingStyle)
+            {
+                // If there is a private variable, there should be a constructor..
+                for (const Var *var = varlist; var; var = var->next)
+                {
+                    if (var->priv && !var->isStatic)
+                    {
+                        noConstructorError(tok1, className, isStruct);
                         break;
                     }
                 }
             }
         }
 
-        if (hasPrivateConstructor && !_settings->inconclusive)
-        {
-            /** @todo Handle private constructors. Right now to avoid
-             * false positives we just bail out */
-            tok1 = Token::findmatch(tok1->next(), pattern_class);
-            continue;
-        }
+        std::list<Constructor>::const_iterator it;
+        bool hasClasses = false;
 
-        // Are there a class constructor?
-        std::string tempPattern = "%any% " + classNameToken->str() + " (";
-        const Token *constructor_token = Token::findmatch(tok1, tempPattern.c_str());
-        while (constructor_token && constructor_token->str() == "~")
-            constructor_token = Token::findmatch(constructor_token->next(), tempPattern.c_str());
-
-        // There are no constructor.
-        if (! constructor_token)
+        for (it = constructorList.begin(); it != constructorList.end(); ++it)
         {
-            // If "--style" has been given, give a warning
-            if (_settings->_checkCodingStyle)
+            // check for end of regular constructors and start of copy constructors
+            bool needClasses = it->isCopyConstructor || it->isOperatorEqual;
+            if (needClasses != hasClasses)
             {
-                // Get class variables...
-                Var *varlist = getVarList(tok1, false, isStruct);
-
-                // If there is a private variable, there should be a constructor..
-                for (const Var *var = varlist; var; var = var->next)
-                {
-                    if (var->priv && !var->isStatic)
-                    {
-                        noConstructorError(tok1, classNameToken->str(), isStruct);
-                        break;
-                    }
-                }
+                hasClasses = needClasses;
 
                 // Delete the varlist..
                 while (varlist)
@@ -558,86 +700,63 @@ void CheckClass::constructors()
                     delete varlist;
                     varlist = nextvar;
                 }
+
+                // Get variables including classes
+                varlist = getVarList(tok1, true, isStruct);
             }
 
-            tok1 = Token::findmatch(tok1->next(), pattern_class);
-            continue;
-        }
-
-        // Check constructors
-        checkConstructors(tok1, className, hasPrivateConstructor, isStruct);
-
-        // Check assignment operators
-        checkConstructors(tok1, "operator =", hasPrivateConstructor, isStruct);
-
-        tok1 = Token::findmatch(tok1->next(), pattern_class);
-    }
-}
-
-void CheckClass::checkConstructors(const Token *tok1, const std::string &funcname, bool hasPrivateConstructor, bool isStruct)
-{
-    const std::string className = tok1->strAt(1);
-
-    // Check that all member variables are initialized..
-    const bool withClasses = bool(_settings->inconclusive && funcname == "operator =");
-    Var *varlist = getVarList(tok1, withClasses, isStruct);
-
-    int indentlevel = 0;
-    const Token *constructor_token = _tokenizer->findClassFunction(tok1, className, funcname, indentlevel, isStruct);
-    std::list<std::string> callstack;
-    initializeVarList(tok1, constructor_token, varlist, className, callstack, isStruct);
-    while (constructor_token)
-    {
-        // Check if any variables are uninitialized
-        for (Var *var = varlist; var; var = var->next)
-        {
-            if (var->init || var->isStatic)
+            if (!it->hasBody)
                 continue;
 
-            // It's non-static and it's not initialized => error
-            if (Token::simpleMatch(constructor_token, "operator = (") ||
-                Token::simpleMatch(constructor_token->tokAt(2), "operator = ("))
+            std::list<std::string> callstack;
+            initializeVarList(tok1, it->token, varlist, className, callstack, isStruct);
+
+            // Check if any variables are uninitialized
+            for (Var *var = varlist; var; var = var->next)
             {
-                const Token *operStart = 0;
-                if (Token::simpleMatch(constructor_token, "operator = ("))
-                    operStart = constructor_token->tokAt(2);
-                else
-                    operStart = constructor_token->tokAt(4);
+                if (var->init || var->isStatic)
+                    continue;
 
-                bool classNameUsed = false;
-                for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next())
+                // It's non-static and it's not initialized => error
+                if (it->isOperatorEqual)
                 {
-                    if (operTok->str() == className)
-                    {
-                        classNameUsed = true;
-                        break;
-                    }
-                }
+                    const Token *operStart = 0;
+                    if (Token::simpleMatch(it->token, "operator = ("))
+                        operStart = it->token->tokAt(2);
+                    else
+                        operStart = it->token->tokAt(4);
 
-                if (classNameUsed)
-                    operatorEqVarError(constructor_token, className, var->name);
+                    bool classNameUsed = false;
+                    for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next())
+                    {
+                        if (operTok->str() == className)
+                        {
+                            classNameUsed = true;
+                            break;
+                        }
+                    }
+
+                    if (classNameUsed)
+                        operatorEqVarError(it->token, className, var->name);
+                }
+                else if (it->access != Constructor::Private && !var->isStatic)
+                    uninitVarError(it->token, className, var->name);
             }
-            else if (!hasPrivateConstructor && !var->isStatic)
-                uninitVarError(constructor_token, className, var->name);
+
+            // Mark all variables not used
+            for (Var *var = varlist; var; var = var->next)
+                var->init = false;
         }
 
-        for (Var *var = varlist; var; var = var->next)
-            var->init = false;
-
-        constructor_token = _tokenizer->findClassFunction(constructor_token->next(), className, funcname, indentlevel, isStruct);
-        callstack.clear();
-        initializeVarList(tok1, constructor_token, varlist, className, callstack, isStruct);
-    }
-
-    // Delete the varlist..
-    while (varlist)
-    {
-        Var *nextvar = varlist->next;
-        delete varlist;
-        varlist = nextvar;
+        // Delete the varlist..
+        while (varlist)
+        {
+            Var *nextvar = varlist->next;
+            delete varlist;
+            varlist = nextvar;
+        }
     }
 }
-
 
 //---------------------------------------------------------------------------
 // ClassCheck: Unused private functions

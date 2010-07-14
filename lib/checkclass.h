@@ -163,9 +163,6 @@ private:
      */
     Var *getVarList(const Token *tok1, bool withClasses, bool isStruct);
 
-    // Check constructors for a specified class
-    void checkConstructors(const Token *tok1, const std::string &funcname, bool hasPrivateConstructor, bool isStruct);
-
     bool sameFunc(int nest, const Token *firstEnd, const Token *secondEnd);
     bool isMemberFunc(const Token *tok);
     bool isMemberVar(const std::string &classname, const Var *varlist, const Token *tok);
