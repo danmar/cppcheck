@@ -63,20 +63,21 @@ private:
         TEST_CASE(uninitVarArray5);
         TEST_CASE(uninitVarArray6);
         TEST_CASE(uninitVarArray2D);
-        TEST_CASE(uninitMissingFuncDef);// can't expand function in constructor
-        TEST_CASE(privateCtor1);        // If constructor is private..
-        TEST_CASE(privateCtor2);        // If constructor is private..
-        TEST_CASE(function);            // Function is not variable
-        TEST_CASE(uninitVarHeader1);    // Class is defined in header
-        TEST_CASE(uninitVarHeader2);    // Class is defined in header
-        TEST_CASE(uninitVarHeader3);    // Class is defined in header
-        TEST_CASE(uninitVarPublished);  // Borland C++: Variables in the published section are auto-initialized
-        TEST_CASE(uninitProperty);		// Borland C++: No FP for properties
-        TEST_CASE(uninitOperator);      // No FP about uninitialized 'operator[]'
-        TEST_CASE(uninitFunction1);		// No FP when initialized in function
-        TEST_CASE(uninitFunction2);		// No FP when initialized in function
-        TEST_CASE(uninitSameClassName);	// No FP when two classes have the same name
-        TEST_CASE(uninitFunctionOverload);  // No FP when there are overloaded functions
+        TEST_CASE(uninitMissingFuncDef);	// can't expand function in constructor
+        TEST_CASE(privateCtor1);        	// If constructor is private..
+        TEST_CASE(privateCtor2);        	// If constructor is private..
+        TEST_CASE(function);            	// Function is not variable
+        TEST_CASE(uninitVarHeader1);    	// Class is defined in header
+        TEST_CASE(uninitVarHeader2);    	// Class is defined in header
+        TEST_CASE(uninitVarHeader3);    	// Class is defined in header
+        TEST_CASE(uninitVarPublished);  	// Borland C++: Variables in the published section are auto-initialized
+        TEST_CASE(uninitProperty);			// Borland C++: No FP for properties
+        TEST_CASE(uninitOperator);      	// No FP about uninitialized 'operator[]'
+        TEST_CASE(uninitFunction1);			// No FP when initialized in function
+        TEST_CASE(uninitFunction2);			// No FP when initialized in function
+        TEST_CASE(uninitFunction3);			// No FP when initialized in function
+        TEST_CASE(uninitSameClassName);		// No FP when two classes have the same name
+        TEST_CASE(uninitFunctionOverload); 	// No FP when there are overloaded functions
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -1996,6 +1997,21 @@ private:
                        "\n"
                        "    static bool init(Fred &f)\n"
                        "    { f.d = 0; return true; }\n"
+                       "\n"
+                       "    double d;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitFunction3()
+    {
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { if (!init()); }\n"
+                       "\n"
+                       "    bool init()\n"
+                       "    { d = 0; return true; }\n"
                        "\n"
                        "    double d;\n"
                        "}\n");

@@ -275,9 +275,12 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             initVar(varlist, ftok->strAt(1));
         }
 
-        // Before a new statement there is "[{};)=]" or "else"
-        if (! Token::Match(ftok, "[{};()=]") && ftok->str() != "else")
+        // Before a new statement there is "[{};)=]"
+        if (! Token::Match(ftok, "[{};()=]"))
             continue;
+
+        if (Token::simpleMatch(ftok, "( !"))
+            ftok = ftok->next();
 
         // Using the operator= function to initialize all variables..
         if (Token::simpleMatch(ftok->next(), "* this = "))
