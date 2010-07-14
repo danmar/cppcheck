@@ -38,6 +38,8 @@ public:
     {
         switch (severity)
         {
+        case none:
+            return "";
         case error:
             return "error";
         case style:
@@ -47,6 +49,10 @@ public:
     }
     static SeverityType fromString(const std::string &severity)
     {
+        if (severity.empty())
+            return none;
+        if (severity == "none")
+            return none;
         if (severity == "error")
             return error;
         if (severity == "style")
