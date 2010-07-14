@@ -169,7 +169,7 @@ void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::s
     }
 }
 
-std::string ErrorLogger::ErrorMessage::toText(const std::string &outputFormat) const
+std::string ErrorLogger::ErrorMessage::toString(const std::string &outputFormat) const
 {
     if (outputFormat.length() == 0)
     {

@@ -89,7 +89,7 @@ public:
          * @param outputFormat Empty string to use default output format
          * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
          */
-        std::string toText(const std::string &outputFormat = "") const;
+        std::string toString(const std::string &outputFormat = "") const;
 
         /**
          * Replace all occurances of searchFor with replaceWith in the
