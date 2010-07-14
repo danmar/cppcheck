@@ -26,6 +26,8 @@
 #include <QVariant>
 #include "../lib/errorlogger.h"
 
+class ErrorItem;
+
 /// @addtogroup GUI
 /// @{
 
@@ -87,19 +89,9 @@ signals:
     /**
     * @brief Signal of a new error
     *
-    * @param file filename
-    * @param severity error severity
-    * @param message error message
-    * @param files list of files affected by the error
-    * @param lines list of file line numers affected by the error
-    * @param id error id
+    * @param item Error data
     */
-    void Error(const QString &file,
-               const QString &severity,
-               const QString &message,
-               const QStringList &files,
-               const QList<unsigned int> &lines,
-               const QString &id);
+    void Error(const ErrorItem &item);
 
 protected:
 

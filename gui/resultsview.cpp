@@ -20,6 +20,7 @@
 #include <QVBoxLayout>
 #include <QFile>
 #include <QMessageBox>
+#include "erroritem.h"
 #include "resultsview.h"
 #include "report.h"
 #include "txtreport.h"
@@ -66,22 +67,9 @@ void ResultsView::Progress(int value)
     mUI.mProgress->setValue(value);
 }
 
-void ResultsView::Error(const QString &file,
-                        const QString &severity,
-                        const QString &message,
-                        const QStringList &files,
-                        const QList<unsigned int> &lines,
-                        const QString &id)
+void ResultsView::Error(const ErrorItem &item)
 {
     mErrorsFound = true;
-    ErrorItem item;
-    item.file = file;
-    item.files = files;
-    item.id = id;
-    item.lines = lines;
-    item.msg = message;
-    item.severity = severity;
-
     mUI.mTree->AddErrorItem(item);
     emit GotResults();
 }

@@ -17,8 +17,9 @@
  */
 
 
-#include "threadresult.h"
 #include <QDebug>
+#include "erroritem.h"
+#include "threadresult.h"
 
 ThreadResult::ThreadResult() : mMaxProgress(0), mProgress(0)
 {
@@ -62,12 +63,15 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
         lines << (*tok).line;
     }
 
-    emit Error(QString(callStackToString(msg._callStack).c_str()),
-               QString(msg._severity.c_str()),
-               QString(msg._msg.c_str()),
-               files,
-               lines,
-               QString(msg._id.c_str()));
+    ErrorItem item;
+    item.file = QString(callStackToString(msg._callStack).c_str());
+    item.files = files;
+    item.id = QString(msg._id.c_str());
+    item.lines = lines;
+    item.msg = QString(msg._msg.c_str());
+    item.severity = QString(msg._severity.c_str());
+
+    emit Error(item);
 }
 
 QString ThreadResult::GetNextFile()

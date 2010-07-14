@@ -22,6 +22,7 @@
 #include <QTranslator>
 #include <QMetaType>
 #include "mainwindow.h"
+#include "erroritem.h"
 
 int main(int argc, char *argv[])
 {
@@ -29,7 +30,7 @@ int main(int argc, char *argv[])
     app.setWindowIcon(QIcon(":icon.png"));
 
     // Register this metatype that is used to transfer error info
-    qRegisterMetaType< QList<unsigned int> >("QList<unsigned int>");
+    qRegisterMetaType<ErrorItem>("ErrorItem");
 
     // Set codecs so that UTF-8 strings in sources are handled correctly.
     QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));

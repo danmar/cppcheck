@@ -141,18 +141,8 @@ void ThreadHandler::Initialize(ResultsView *view)
     connect(&mResults, SIGNAL(Progress(int)),
             view, SLOT(Progress(int)));
 
-    connect(&mResults, SIGNAL(Error(const QString &,
-                                    const QString &,
-                                    const QString &,
-                                    const QStringList &,
-                                    const QList<unsigned int> &,
-                                    const QString &)),
-            view, SLOT(Error(const QString &,
-                             const QString &,
-                             const QString &,
-                             const QStringList &,
-                             const QList<unsigned int> &,
-                             const QString &)));
+    connect(&mResults, SIGNAL(Error(const ErrorItem &)),
+            view, SLOT(Error(const ErrorItem &)));
 
 }
 

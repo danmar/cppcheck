@@ -21,6 +21,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QMetaType>
 
 class ErrorLine;
 
@@ -36,6 +37,7 @@ public:
     ErrorItem() { }
     ErrorItem(const ErrorItem &item);
     ErrorItem(const ErrorLine &line);
+    ~ErrorItem() { }
 
     QString file;
     QStringList files;
@@ -44,6 +46,8 @@ public:
     QString severity;
     QString msg;
 };
+
+Q_DECLARE_METATYPE(ErrorItem);
 
 /**
 * @brief A class containing error data for one shown error line.
