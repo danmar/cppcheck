@@ -1155,6 +1155,13 @@ private:
               "    if (p[-1]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #1850
+        check("int f(const std::map<int, std::map<int,int> > &m)\n"
+              "{\n"
+              "    return m[0][-1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_for_decr()

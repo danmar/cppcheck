@@ -1596,15 +1596,15 @@ void CheckBufferOverrun::negativeIndex()
         const long index = MathLib::toLongNumber(tok->next()->str());
         if (index < 0)
         {
-            // Multidimensional index => error
-            if (Token::simpleMatch(tok->previous(), "]") || Token::simpleMatch(tok->tokAt(3), "["))
-                negativeIndexError(tok, index);
+            // Negative index. Check if it's an array.
+            const Token *tok2 = tok;
+            while (Token::simpleMatch(tok2->previous(), "]"))
+                tok2 = tok2->previous()->link();
 
-            // 1-dimensional array => error
-            else if (tok->previous() && tok->previous()->varId())
+            if (tok2->previous() && tok2->previous()->varId())
             {
-                const Token *tok2 = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->previous()->varId());
-                if (tok2 && Token::Match(tok2->next(), "[ %any% ] ;"))
+                const Token *tok3 = Token::findmatch(_tokenizer->tokens(), "%varid%", tok2->previous()->varId());
+                if (tok3 && Token::Match(tok3->next(), "[ %any% ] ;|["))
                     negativeIndexError(tok, index);
             }
         }
