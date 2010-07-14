@@ -150,7 +150,7 @@ protected:
             locationList.push_back(loc);
         }
 
-        const ErrorLogger::ErrorMessage errmsg(locationList, Severity::stringify(severity), msg, id);
+        const ErrorLogger::ErrorMessage errmsg(locationList, Severity::toString(severity), msg, id);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else

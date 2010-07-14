@@ -34,7 +34,7 @@ class Severity
 {
 public:
     enum SeverityType { error, style };
-    static std::string stringify(SeverityType severity)
+    static std::string toString(SeverityType severity)
     {
         switch (severity)
         {
