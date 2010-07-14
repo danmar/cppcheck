@@ -93,7 +93,7 @@ int ThreadExecutor::handleRead(unsigned int &result)
         msg.deserialize(buf);
 
         // Alert only about unique errors
-        std::string errmsg = msg.toText();
+        std::string errmsg = msg.toString();
         if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end())
         {
             _errorList.push_back(errmsg);

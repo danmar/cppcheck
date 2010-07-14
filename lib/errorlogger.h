@@ -29,6 +29,42 @@ class Tokenizer;
 /// @addtogroup Core
 /// @{
 
+/** @brief enum class for severity. Used when reporting errors. */
+class Severity
+{
+public:
+    enum SeverityType { none, error, style, debug };
+    static std::string toString(SeverityType severity)
+    {
+        switch (severity)
+        {
+        case none:
+            return "";
+        case error:
+            return "error";
+        case style:
+            return "style";
+        case debug:
+            return "debug";
+        };
+        return "???";
+    }
+    static SeverityType fromString(const std::string &severity)
+    {
+        if (severity.empty())
+            return none;
+        if (severity == "none")
+            return none;
+        if (severity == "error")
+            return error;
+        if (severity == "style")
+            return style;
+        if (severity == "debug")
+            return debug;
+        return none;
+    }
+};
+
 /**
  * @brief This is an interface, which the class responsible of error logging
  * should implement.
@@ -71,7 +107,7 @@ public:
          * @param outputFormat Empty string to use default output format
          * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
          */
-        std::string toText(const std::string &outputFormat = "") const;
+        std::string toString(const std::string &outputFormat = "") const;
 
         /**
          * Replace all occurances of searchFor with replaceWith in the
@@ -84,7 +120,7 @@ public:
         std::string serialize() const;
         bool deserialize(const std::string &data);
         std::list<FileLocation> _callStack;
-        std::string _severity;
+        Severity::SeverityType _severity;
         std::string _msg;
         std::string _id;
     };
@@ -305,24 +341,6 @@ public:
 private:
     void _writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string &msg, const std::string &id);
     void _writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string &msg, const std::string &id);
-};
-
-/** @brief enum class for severity. Used when reporting errors. */
-class Severity
-{
-public:
-    enum e { error, style };
-    static std::string stringify(e severity)
-    {
-        switch (severity)
-        {
-        case error:
-            return "error";
-        case style:
-            return "style";
-        };
-        return "???";
-    }
 };
 
 

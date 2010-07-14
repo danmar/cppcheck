@@ -71,7 +71,7 @@ private:
      * @param id type of message
      * @param msg text
      */
-    void reportErr(const Token *location, Severity::e severity, const std::string &id, const std::string &msg) const;
+    void reportErr(const Token *location, Severity::SeverityType severity, const std::string &id, const std::string &msg) const;
 
     /**
      * Report error. Similar with the function Check::reportError
@@ -80,7 +80,7 @@ private:
      * @param id type of message
      * @param msg text
      */
-    void reportErr(const std::list<const Token *> &callstack, Severity::e severity, const std::string &id, const std::string &msg) const;
+    void reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) const;
 
 public:
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e)

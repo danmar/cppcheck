@@ -836,7 +836,7 @@ Settings CppCheck::settings() const
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    std::string errmsg = msg.toText();
+    std::string errmsg = msg.toString();
 
     // Alert only about unique errors
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())

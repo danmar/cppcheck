@@ -108,6 +108,6 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     }
     else
     {
-        reportErr(msg.toText(_settings._outputFormat));
+        reportErr(msg.toString(_settings._outputFormat));
     }
 }

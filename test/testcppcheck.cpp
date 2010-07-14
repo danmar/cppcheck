@@ -385,7 +385,7 @@ private:
         loc.file = "ab/cd/../ef.h";
         errorMessage._callStack.push_back(loc);
         ASSERT_EQUALS("<error file=\"ab/ef.h\" line=\"0\" id=\"\" severity=\"\" msg=\"\"/>", errorMessage.toXML());
-        ASSERT_EQUALS("[ab/ef.h:0]: ", errorMessage.toText());
+        ASSERT_EQUALS("[ab/ef.h:0]: ", errorMessage.toString());
     }
 
     void templateFormat()
@@ -396,11 +396,11 @@ private:
         loc.line = 10;
         errorMessage._callStack.push_back(loc);
         errorMessage._id = "testId";
-        errorMessage._severity = "testSeverity";
+        errorMessage._severity = Severity::fromString("error");
         errorMessage._msg = "long testMessage";
-        ASSERT_EQUALS("<error file=\"some/{file}file.cpp\" line=\"10\" id=\"testId\" severity=\"testSeverity\" msg=\"long testMessage\"/>", errorMessage.toXML());
-        ASSERT_EQUALS("[some/{file}file.cpp:10]: (testSeverity) long testMessage", errorMessage.toText());
-        ASSERT_EQUALS("testId-some/{file}file.cpp,testSeverity.10?{long testMessage}", errorMessage.toText("{id}-{file},{severity}.{line}?{{message}}"));
+        ASSERT_EQUALS("<error file=\"some/{file}file.cpp\" line=\"10\" id=\"testId\" severity=\"error\" msg=\"long testMessage\"/>", errorMessage.toXML());
+        ASSERT_EQUALS("[some/{file}file.cpp:10]: (error) long testMessage", errorMessage.toString());
+        ASSERT_EQUALS("testId-some/{file}file.cpp,error.10?{long testMessage}", errorMessage.toString("{id}-{file},{severity}.{line}?{{message}}"));
     }
 
     void getErrorMessages()

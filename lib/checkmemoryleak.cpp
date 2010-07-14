@@ -300,7 +300,7 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, A
 //---------------------------------------------------------------------------
 
 
-void CheckMemoryLeak::reportErr(const Token *tok, Severity::e severity, const std::string &id, const std::string &msg) const
+void CheckMemoryLeak::reportErr(const Token *tok, Severity::SeverityType severity, const std::string &id, const std::string &msg) const
 {
     std::list<const Token *> callstack;
 
@@ -310,7 +310,7 @@ void CheckMemoryLeak::reportErr(const Token *tok, Severity::e severity, const st
     reportErr(callstack, severity, id, msg);
 }
 
-void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Severity::e severity, const std::string &id, const std::string &msg) const
+void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) const
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locations;
 
@@ -325,7 +325,7 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
         locations.push_back(loc);
     }
 
-    const ErrorLogger::ErrorMessage errmsg(locations, Severity::stringify(severity), msg, id);
+    const ErrorLogger::ErrorMessage errmsg(locations, Severity::toString(severity), msg, id);
 
     if (errorLogger)
         errorLogger->reportErr(errmsg);

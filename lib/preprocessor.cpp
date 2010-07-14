@@ -757,7 +757,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 loc.file = filename;
                 loc.line = linenr;
                 errmsg._callStack.push_back(loc);
-                errmsg._severity = "error";
+                errmsg._severity = Severity::fromString("error");
                 errmsg._msg = "mismatching number of '(' and ')' in this line: " + def;
                 errmsg._id  = "preprocessor" + lineStream.str();
                 _errorLogger->reportErr(errmsg);
@@ -902,7 +902,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 loc.file = filename;
                 loc.line = 1;
                 errmsg._callStack.push_back(loc);
-                errmsg._severity = "error";
+                errmsg._severity = Severity::fromString("error");
                 errmsg._msg = "Error parsing this: " + s;
                 errmsg._id  = "preprocessor" + lineStream.str();
                 _errorLogger->reportErr(errmsg);
