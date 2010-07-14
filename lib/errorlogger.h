@@ -29,6 +29,24 @@ class Tokenizer;
 /// @addtogroup Core
 /// @{
 
+/** @brief enum class for severity. Used when reporting errors. */
+class Severity
+{
+public:
+    enum SeverityType { error, style };
+    static std::string stringify(SeverityType severity)
+    {
+        switch (severity)
+        {
+        case error:
+            return "error";
+        case style:
+            return "style";
+        };
+        return "???";
+    }
+};
+
 /**
  * @brief This is an interface, which the class responsible of error logging
  * should implement.
@@ -305,24 +323,6 @@ public:
 private:
     void _writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string &msg, const std::string &id);
     void _writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string &msg, const std::string &id);
-};
-
-/** @brief enum class for severity. Used when reporting errors. */
-class Severity
-{
-public:
-    enum e { error, style };
-    static std::string stringify(e severity)
-    {
-        switch (severity)
-        {
-        case error:
-            return "error";
-        case style:
-            return "style";
-        };
-        return "???";
-    }
 };
 
 

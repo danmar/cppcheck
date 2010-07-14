@@ -118,7 +118,7 @@ protected:
     ErrorLogger * const _errorLogger;
 
     /** report an error */
-    void reportError(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg)
+    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg)
     {
         std::list<const Token *> callstack;
         if (tok)
@@ -127,7 +127,7 @@ protected:
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, std::string msg)
+    void reportError(const std::list<const Token *> &callstack, const Severity::SeverityType severity, const std::string &id, std::string msg)
     {
         // If the verbose flag hasn't been given, don't show verbose information
         if (!_settings || !_settings->_verbose)
