@@ -335,6 +335,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\cppcheckexecutor.h"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\errorlogger.h"
 				>
 			</File>
