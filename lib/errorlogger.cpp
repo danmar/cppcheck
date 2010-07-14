@@ -23,6 +23,7 @@
 #include <sstream>
 
 ErrorLogger::ErrorMessage::ErrorMessage()
+	:_severity(Severity::none)
 {
 
 }
@@ -30,7 +31,7 @@ ErrorLogger::ErrorMessage::ErrorMessage()
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string &severity, const std::string &msg, const std::string &id)
 {
     _callStack = callStack;
-    _severity = severity;
+    _severity = Severity::fromString(severity);
     _msg = msg;
     _id = id;
 }
@@ -39,7 +40,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
 {
     std::ostringstream oss;
     oss << _id.length() << " " << _id;
-    oss << _severity.length() << " " << _severity;
+    oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
     oss << _msg.length() << " " << _msg;
     oss << _callStack.size() << " ";
 
@@ -77,7 +78,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     }
 
     _id = results[0];
-    _severity = results[1];
+    _severity = Severity::fromString(results[1]);
     _msg = results[2];
 
     unsigned int stackSize = 0;
@@ -153,7 +154,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
         xml << " line=\"" << _callStack.back().line << "\"";
     }
     xml << " id=\"" << _id << "\"";
-    xml << " severity=\"" << _severity << "\"";
+    xml << " severity=\"" << Severity::toString(_severity) << "\"";
     xml << " msg=\"" << stringToXml(_msg) << "\"";
     xml << "/>";
     return xml.str();
@@ -176,8 +177,8 @@ std::string ErrorLogger::ErrorMessage::toString(const std::string &outputFormat)
         std::ostringstream text;
         if (!_callStack.empty())
             text << callStackToString(_callStack) << ": ";
-        if (!_severity.empty())
-            text << "(" << _severity << ") ";
+        if (_severity != Severity::none)
+            text << "(" << Severity::toString(_severity) << ") ";
         text << _msg;
         return text.str();
     }
@@ -185,7 +186,7 @@ std::string ErrorLogger::ErrorMessage::toString(const std::string &outputFormat)
     {
         std::string result = outputFormat;
         findAndReplace(result, "{id}", _id);
-        findAndReplace(result, "{severity}", _severity);
+        findAndReplace(result, "{severity}", Severity::toString(_severity));
         findAndReplace(result, "{message}", _msg);
 
         if (!_callStack.empty())

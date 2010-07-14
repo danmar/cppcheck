@@ -33,7 +33,7 @@ class Tokenizer;
 class Severity
 {
 public:
-    enum SeverityType { error, style };
+    enum SeverityType { none, error, style };
     static std::string toString(SeverityType severity)
     {
         switch (severity)
@@ -44,6 +44,14 @@ public:
             return "style";
         };
         return "???";
+    }
+    static SeverityType fromString(const std::string &severity)
+    {
+        if (severity == "error")
+            return error;
+        if (severity == "style")
+            return style;
+        return none;
     }
 };
 
@@ -102,7 +110,7 @@ public:
         std::string serialize() const;
         bool deserialize(const std::string &data);
         std::list<FileLocation> _callStack;
-        std::string _severity;
+        Severity::SeverityType _severity;
         std::string _msg;
         std::string _id;
     };
