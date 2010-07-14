@@ -396,11 +396,11 @@ private:
         loc.line = 10;
         errorMessage._callStack.push_back(loc);
         errorMessage._id = "testId";
-        errorMessage._severity = "testSeverity";
+        errorMessage._severity = Severity::fromString("error");
         errorMessage._msg = "long testMessage";
-        ASSERT_EQUALS("<error file=\"some/{file}file.cpp\" line=\"10\" id=\"testId\" severity=\"testSeverity\" msg=\"long testMessage\"/>", errorMessage.toXML());
-        ASSERT_EQUALS("[some/{file}file.cpp:10]: (testSeverity) long testMessage", errorMessage.toString());
-        ASSERT_EQUALS("testId-some/{file}file.cpp,testSeverity.10?{long testMessage}", errorMessage.toString("{id}-{file},{severity}.{line}?{{message}}"));
+        ASSERT_EQUALS("<error file=\"some/{file}file.cpp\" line=\"10\" id=\"testId\" severity=\"error\" msg=\"long testMessage\"/>", errorMessage.toXML());
+        ASSERT_EQUALS("[some/{file}file.cpp:10]: (error) long testMessage", errorMessage.toString());
+        ASSERT_EQUALS("testId-some/{file}file.cpp,error.10?{long testMessage}", errorMessage.toString("{id}-{file},{severity}.{line}?{{message}}"));
     }
 
     void getErrorMessages()
