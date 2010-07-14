@@ -49,7 +49,7 @@ void Preprocessor::writeError(const std::string &fileName, const int linenr, Err
     loc.file = fileName;
     locationList.push_back(loc);
     errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
-                           "error",
+                           Severity::error,
                            errorText,
                            errorType));
 }

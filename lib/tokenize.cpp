@@ -415,7 +415,7 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
     locationList.push_back(loc);
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           "style",
+                                           Severity::style,
                                            std::string(type + " '" + tok2->str() +
                                                    "' hides typedef with same name"),
                                            "variableHidingTypedef");
@@ -441,7 +441,7 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
     locationList.push_back(loc);
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           "style",
+                                           Severity::style,
                                            std::string(type + " '" + tok2->str() +
                                                    "' forward declaration unnecessary, already declared"),
                                            "unnecessaryForwardDeclaration");
@@ -2288,7 +2288,7 @@ void Tokenizer::simplifyTemplates()
                     locationList.push_back(loc);
 
                     const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                           "debug",
+                                                           Severity::debug,
                                                            "Failed to instantiate template. The checking continues anyway.",
                                                            "templateInstantiate");
 
@@ -6184,7 +6184,7 @@ void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const
     locationList.push_back(loc);
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           "style",
+                                           Severity::style,
                                            std::string(type + " '" + tok2->str() +
                                                    "' hides enumerator with same name"),
                                            "variableHidingEnum");
@@ -6931,7 +6931,7 @@ void Tokenizer::syntaxError(const Token *tok, char c)
     }
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           "error",
+                                           Severity::error,
                                            std::string("Invalid number of character (") +
                                            c +
                                            ") " +
@@ -6974,7 +6974,7 @@ void Tokenizer::cppcheckError(const Token *tok) const
     }
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           "error",
+                                           Severity::error,
                                            "### Internal error in Cppcheck. Please report it.",
                                            "cppcheckError");
 

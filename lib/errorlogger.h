@@ -95,7 +95,7 @@ public:
             unsigned int line;
         };
 
-        ErrorMessage(const std::list<FileLocation> &callStack, const std::string &severity, const std::string &msg, const std::string &id);
+        ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id);
         ErrorMessage();
         std::string toXML() const;
 

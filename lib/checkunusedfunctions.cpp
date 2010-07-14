@@ -192,7 +192,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger, 
         locationList.push_back(fileLoc);
     }
 
-    const ErrorLogger::ErrorMessage errmsg(locationList, Severity::toString(Severity::style), "The function '" + funcname + "' is never used", "unusedFunction");
+    const ErrorLogger::ErrorMessage errmsg(locationList, Severity::style, "The function '" + funcname + "' is never used", "unusedFunction");
     if (errorLogger)
         errorLogger->reportErr(errmsg);
     else

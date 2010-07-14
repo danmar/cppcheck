@@ -127,7 +127,7 @@ protected:
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, const Severity::SeverityType severity, const std::string &id, std::string msg)
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg)
     {
         // If the verbose flag hasn't been given, don't show verbose information
         if (!_settings || !_settings->_verbose)
@@ -150,7 +150,7 @@ protected:
             locationList.push_back(loc);
         }
 
-        const ErrorLogger::ErrorMessage errmsg(locationList, Severity::toString(severity), msg, id);
+        const ErrorLogger::ErrorMessage errmsg(locationList, severity, msg, id);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else

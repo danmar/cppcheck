@@ -23,15 +23,15 @@
 #include <sstream>
 
 ErrorLogger::ErrorMessage::ErrorMessage()
-	:_severity(Severity::none)
+    :_severity(Severity::none)
 {
 
 }
 #include <iostream>
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string &severity, const std::string &msg, const std::string &id)
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id)
 {
     _callStack = callStack;
-    _severity = Severity::fromString(severity);
+    _severity = severity;
     _msg = msg;
     _id = id;
 }
@@ -224,11 +224,9 @@ void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const To
         locationList.push_back(loc);
     }
 
-    reportErr(ErrorLogger::ErrorMessage(locationList, severity, msg, id));
+    std::string strseverity(severity);
+    reportErr(ErrorLogger::ErrorMessage(locationList, Severity::fromString(strseverity), msg, id));
 }
-
-
-
 
 std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack)
 {
