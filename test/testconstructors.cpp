@@ -73,6 +73,7 @@ private:
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
         TEST_CASE(initvar_copy_constructor); // ticket #1611
+        TEST_CASE(initvar_nested_constructor); // ticket #1375
 
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
 
@@ -701,6 +702,37 @@ private:
               "Fred::Fred() { };\n"
               "Fred::Fred(const Fred &) { };\n");
         ASSERT_EQUALS("[test.cpp:10]: (style) Member variable not initialized in the constructor 'Fred::var'\n", errout.str());
+    }
+
+    void initvar_nested_constructor() // ticket #1375
+    {
+        check("class A {\n"
+              "public:\n"
+              "    A();\n"
+              "    struct B {\n"
+              "        B();\n"
+              "        struct C {\n"
+              "            C();\n"
+              "            struct D {\n"
+              "                int d;\n"
+              "                D();\n"
+              "            };\n"
+              "            int c;\n"
+              "        };\n"
+              "        int b;\n"
+              "    };\n"
+              "private:\n"
+              "    int a;\n"
+              "    B b;\n"
+              "};\n"
+              "A::A(){}\n"
+              "A::B::B(){}\n"
+              "A::B::C::C(){}\n"
+              "A::B::C::D::D(){}\n");
+        ASSERT_EQUALS("[test.cpp:20]: (style) Member variable not initialized in the constructor 'A::a'\n"
+                      "[test.cpp:21]: (style) Member variable not initialized in the constructor 'B::b'\n"
+                      "[test.cpp:22]: (style) Member variable not initialized in the constructor 'C::c'\n"
+                      "[test.cpp:23]: (style) Member variable not initialized in the constructor 'D::d'\n", errout.str());
     }
 
     void initvar_destructor()

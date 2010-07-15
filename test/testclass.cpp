@@ -2061,7 +2061,7 @@ private:
 
         checkUninitVar("namespace n1\n"
                        "{\n"
-                       "class Foo {"
+                       "class Foo {\n"
                        "public:\n"
                        "    Foo();\n"
                        "private:\n"
@@ -2074,13 +2074,12 @@ private:
                        "\n"
                        "namespace n2\n"
                        "{\n"
-                       "class Foo {"
+                       "class Foo {\n"
                        "public:\n"
                        "    Foo() { }\n"
                        "};\n"
                        "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("uninitialized variable n1::i", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (style) Member variable not initialized in the constructor 'Foo::i'\n", errout.str());
 
         checkUninitVar("namespace n1\n"
                        "{\n"
