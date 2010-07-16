@@ -22,6 +22,8 @@
 #include <QWidget>
 #include "ui_logview.h"
 
+class QSettings;
+
 /// @addtogroup GUI
 /// @{
 
@@ -33,7 +35,8 @@ class LogView : public QWidget
 {
     Q_OBJECT
 public:
-    LogView(QWidget *parent = 0);
+    LogView(QSettings *programSettings, QWidget *parent = 0);
+    ~LogView();
 
     /**
     * @brief Append new log file to view.
@@ -58,6 +61,13 @@ protected slots:
 
 private:
     Ui::LogView mUI;
+
+    /**
+    * @brief Settings
+    *
+    */
+    QSettings *mSettings;
+
 };
 
 /// @}

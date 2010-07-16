@@ -53,7 +53,7 @@ MainWindow::MainWindow() :
     mUI.mResults->Initialize(mSettings, mApplications);
 
     mThread = new ThreadHandler(this);
-    mLogView = new LogView(this);
+    mLogView = new LogView(mSettings);
 
     connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
     connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
@@ -740,7 +740,7 @@ void MainWindow::NewProjectFile()
 void MainWindow::ShowLogView()
 {
     if (mLogView == NULL)
-        mLogView = new LogView(this);
+        mLogView = new LogView(mSettings);
 
     mLogView->show();
     if (!mLogView->isActiveWindow())

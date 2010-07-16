@@ -16,9 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QSettings>
+#include "common.h"
 #include "logview.h"
 
-LogView::LogView(QWidget *parent)
+LogView::LogView(QSettings *programSettings, QWidget *parent)
+    : mSettings(programSettings)
 {
     Q_UNUSED(parent);
     mUI.setupUi(this);
@@ -26,6 +29,15 @@ LogView::LogView(QWidget *parent)
 
     connect(mUI.mCloseButton, SIGNAL(clicked()), this, SLOT(CloseButtonClicked()));
     connect(mUI.mClearButton, SIGNAL(clicked()), this, SLOT(ClearButtonClicked()));
+
+    resize(mSettings->value(SETTINGS_LOG_VIEW_WIDTH, 400).toInt(),
+           mSettings->value(SETTINGS_LOG_VIEW_HEIGHT, 300).toInt());
+}
+
+LogView::~LogView()
+{
+    mSettings->setValue(SETTINGS_LOG_VIEW_WIDTH, size().width());
+    mSettings->setValue(SETTINGS_LOG_VIEW_HEIGHT, size().height());
 }
 
 void LogView::AppendLine(const QString &line)
