@@ -91,8 +91,11 @@ public:
             }
 
             std::string getfile() const;
-            std::string file;
+            void setfile(const std::string &file);
             unsigned int line;
+        private:
+            std::string _file;
+
         };
 
         ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id);

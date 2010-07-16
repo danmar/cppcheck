@@ -100,7 +100,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         }
 
         ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.file = temp.substr(temp.find(':') + 1);
+        loc.setfile(temp.substr(temp.find(':') + 1));
         temp = temp.substr(0, temp.find(':'));
         std::istringstream fiss(temp);
         fiss >> loc.line;
@@ -217,7 +217,7 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 
 std::string ErrorLogger::ErrorMessage::FileLocation::getfile() const
 {
-    std::string f(file);
+    std::string f(_file);
 
     // replace "/ab/../" with "/"..
     std::string::size_type pos = 0;
@@ -228,15 +228,15 @@ std::string ErrorLogger::ErrorMessage::FileLocation::getfile() const
             continue;
 
         // Previous char must be a separator..
-        if (f[pos-1] != '/' && f[pos-2] != '\\')
+        if (f[pos-1] != '/')
             continue;
 
         // Next char must be a separator..
-        if (f[pos+2] != '/' && f[pos+2] != '\\')
+        if (f[pos+2] != '/')
             continue;
 
         // Locate previous separator..
-        std::string::size_type sep = f.find_last_of("/\\", pos - 2);
+        std::string::size_type sep = f.find_last_of("/", pos - 2);
         if (sep == std::string::npos)
             continue;
 
@@ -245,6 +245,36 @@ std::string ErrorLogger::ErrorMessage::FileLocation::getfile() const
         pos = sep;
     }
 
+#if defined(_WIN32)
+    {
+        std::string::iterator iter = f.begin();
+        std::string::iterator end = f.end();
+        while (iter != end)
+        {
+            if (*iter == '/')
+                *iter = '\\';
+            ++iter;
+        }
+    }
+#endif
+
     return f;
 }
 
+void ErrorLogger::ErrorMessage::FileLocation::setfile(const std::string &file)
+{
+    _file = file;
+    std::cout << "Setting file: " << file << std::endl;
+#if defined(_WIN32)
+    {
+        std::string::iterator iter = _file.begin();
+        std::string::iterator end = _file.end();
+        while (iter != end)
+        {
+            if (*iter == '\\')
+                *iter = '/';
+            ++iter;
+        }
+    }
+#endif
+}

@@ -187,7 +187,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger, 
     if (!filename.empty())
     {
         ErrorLogger::ErrorMessage::FileLocation fileLoc;
-        fileLoc.file = filename;
+        fileLoc.setfile(filename);
         fileLoc.line = 1;
         locationList.push_back(fileLoc);
     }

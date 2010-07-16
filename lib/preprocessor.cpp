@@ -46,7 +46,7 @@ void Preprocessor::writeError(const std::string &fileName, const int linenr, Err
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     ErrorLogger::ErrorMessage::FileLocation loc;
     loc.line = linenr;
-    loc.file = fileName;
+    loc.setfile(fileName);
     locationList.push_back(loc);
     errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
                            Severity::error,
@@ -754,7 +754,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
                 ErrorLogger::ErrorMessage errmsg;
                 ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.file = filename;
+                loc.setfile(filename);
                 loc.line = linenr;
                 errmsg._callStack.push_back(loc);
                 errmsg._severity = Severity::fromString("error");
@@ -899,7 +899,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
                 ErrorLogger::ErrorMessage errmsg;
                 ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.file = filename;
+                loc.setfile(filename);
                 loc.line = 1;
                 errmsg._callStack.push_back(loc);
                 errmsg._severity = Severity::fromString("error");

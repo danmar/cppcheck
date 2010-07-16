@@ -382,7 +382,7 @@ private:
     {
         ErrorLogger::ErrorMessage errorMessage;
         ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.file = "ab/cd/../ef.h";
+        loc.setfile("ab/cd/../ef.h");
         errorMessage._callStack.push_back(loc);
         ASSERT_EQUALS("<error file=\"ab/ef.h\" line=\"0\" id=\"\" severity=\"\" msg=\"\"/>", errorMessage.toXML());
         ASSERT_EQUALS("[ab/ef.h:0]: ", errorMessage.toString());
@@ -392,7 +392,7 @@ private:
     {
         ErrorLogger::ErrorMessage errorMessage;
         ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.file = "some/{file}file.cpp";
+        loc.setfile("some/{file}file.cpp");
         loc.line = 10;
         errorMessage._callStack.push_back(loc);
         errorMessage._id = "testId";

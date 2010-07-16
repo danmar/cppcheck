@@ -146,7 +146,7 @@ protected:
 
             ErrorLogger::ErrorMessage::FileLocation loc;
             loc.line = (*it)->linenr();
-            loc.file = _tokenizer->file(*it);
+            loc.setfile(_tokenizer->file(*it));
             locationList.push_back(loc);
         }
 

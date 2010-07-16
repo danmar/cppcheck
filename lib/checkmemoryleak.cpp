@@ -320,7 +320,7 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
 
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.line = tok->linenr();
-        loc.file = tokenizer->file(tok);
+        loc.setfile(tokenizer->file(tok));
 
         locations.push_back(loc);
     }

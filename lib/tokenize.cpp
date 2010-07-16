@@ -408,10 +408,10 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     ErrorLogger::ErrorMessage::FileLocation loc;
     loc.line = tok1->linenr();
-    loc.file = file(tok1);
+    loc.setfile(file(tok1));
     locationList.push_back(loc);
     loc.line = tok2->linenr();
-    loc.file = file(tok2);
+    loc.setfile(file(tok2));
     locationList.push_back(loc);
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
@@ -434,10 +434,10 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     ErrorLogger::ErrorMessage::FileLocation loc;
     loc.line = tok1->linenr();
-    loc.file = file(tok1);
+    loc.setfile(file(tok1));
     locationList.push_back(loc);
     loc.line = tok2->linenr();
-    loc.file = file(tok2);
+    loc.setfile(file(tok2));
     locationList.push_back(loc);
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
@@ -2284,7 +2284,7 @@ void Tokenizer::simplifyTemplates()
                     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                     ErrorLogger::ErrorMessage::FileLocation loc;
                     loc.line = tok2->linenr();
-                    loc.file = file(tok2);
+                    loc.setfile(file(tok2));
                     locationList.push_back(loc);
 
                     const ErrorLogger::ErrorMessage errmsg(locationList,
@@ -6177,10 +6177,10 @@ void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     ErrorLogger::ErrorMessage::FileLocation loc;
     loc.line = tok1->linenr();
-    loc.file = file(tok1);
+    loc.setfile(file(tok1));
     locationList.push_back(loc);
     loc.line = tok2->linenr();
-    loc.file = file(tok2);
+    loc.setfile(file(tok2));
     locationList.push_back(loc);
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
@@ -6926,7 +6926,7 @@ void Tokenizer::syntaxError(const Token *tok, char c)
     {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.line = tok->linenr();
-        loc.file = file(tok);
+        loc.setfile(file(tok));
         locationList.push_back(loc);
     }
 
@@ -6969,7 +6969,7 @@ void Tokenizer::cppcheckError(const Token *tok) const
     {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.line = tok->linenr();
-        loc.file = file(tok);
+        loc.setfile(file(tok));
         locationList.push_back(loc);
     }
 
