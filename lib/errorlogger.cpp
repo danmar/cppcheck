@@ -206,28 +206,6 @@ std::string ErrorLogger::ErrorMessage::toString(const std::string &outputFormat)
     }
 }
 
-void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string &msg, const std::string &id)
-{
-    std::list<const Token *> callstack;
-    callstack.push_back(tok);
-    _writemsg(tokenizer, callstack, severity, msg, id);
-}
-
-void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string &msg, const std::string &id)
-{
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
-    {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.file = tokenizer->file(*tok);
-        loc.line = (*tok)->linenr();
-        locationList.push_back(loc);
-    }
-
-    std::string strseverity(severity);
-    reportErr(ErrorLogger::ErrorMessage(locationList, Severity::fromString(strseverity), msg, id));
-}
-
 std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack)
 {
     std::ostringstream ostr;
