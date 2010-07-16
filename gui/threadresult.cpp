@@ -33,7 +33,7 @@ ThreadResult::~ThreadResult()
 
 void ThreadResult::reportOut(const std::string &outmsg)
 {
-    Q_UNUSED(outmsg);
+    emit Log(QString::fromStdString(outmsg));
 }
 
 void ThreadResult::FileChecked(const QString &file)
