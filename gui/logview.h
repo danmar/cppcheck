@@ -42,6 +42,14 @@ public:
     */
     void AppendLine(const QString &line);
 
+protected slots:
+
+    /**
+    * @brief Called when close button is clicked.
+    *
+    */
+    void CloseButtonClicked();
+
 private:
     Ui::LogView mUI;
 };

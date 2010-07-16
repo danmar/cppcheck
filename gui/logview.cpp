@@ -22,9 +22,16 @@ LogView::LogView(QWidget *parent)
 {
     mUI.setupUi(this);
     setWindowFlags(Qt::Tool);
+
+    connect(mUI.mCloseButton, SIGNAL(clicked()), this, SLOT(CloseButtonClicked()));
 }
 
 void LogView::AppendLine(const QString &line)
 {
     mUI.mLogEdit->appendPlainText(line);
+}
+
+void LogView::CloseButtonClicked()
+{
+    close();
 }
