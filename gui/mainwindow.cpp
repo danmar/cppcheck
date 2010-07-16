@@ -500,17 +500,27 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
     else
     {
-        QString text(tr("Cannot exit while checking.\n\n" \
-                        "Stop the checking before exiting."));
+        QString text(tr("Checking is running.\n\n" \
+                        "Do you want to stop the checking and exit Cppcheck?."));
 
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
                         text,
-                        QMessageBox::Ok,
+                        QMessageBox::Yes | QMessageBox::No,
                         this);
 
-        msg.exec();
-        event->ignore();
+        msg.setDefaultButton(QMessageBox::No);
+        int rv = msg.exec();
+        if (rv == QMessageBox::Yes)
+        {
+            // This isn't really very clean way to close threads but since the app is
+            // exiting it doesn't matter.
+            mThread->Stop();
+            SaveSettings();
+            event->accept();
+        }
+        else
+            event->ignore();
     }
 }
 
