@@ -219,7 +219,7 @@ std::string ErrorLogger::ErrorMessage::FileLocation::getfile() const
 {
     std::string f(file);
 
-    // replace "/ab/.." with "/"..
+    // replace "/ab/../" with "/"..
     std::string::size_type pos = 0;
     while ((pos = f.find("..", pos + 1)) != std::string::npos)
     {
