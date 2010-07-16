@@ -20,10 +20,12 @@
 
 LogView::LogView(QWidget *parent)
 {
+    Q_UNUSED(parent);
     mUI.setupUi(this);
     setWindowFlags(Qt::Tool);
 
     connect(mUI.mCloseButton, SIGNAL(clicked()), this, SLOT(CloseButtonClicked()));
+    connect(mUI.mClearButton, SIGNAL(clicked()), this, SLOT(ClearButtonClicked()));
 }
 
 void LogView::AppendLine(const QString &line)
@@ -34,4 +36,9 @@ void LogView::AppendLine(const QString &line)
 void LogView::CloseButtonClicked()
 {
     close();
+}
+
+void LogView::ClearButtonClicked()
+{
+    mUI.mLogEdit->clear();
 }

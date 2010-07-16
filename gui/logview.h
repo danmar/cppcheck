@@ -50,6 +50,12 @@ protected slots:
     */
     void CloseButtonClicked();
 
+    /**
+    * @brief Called when clear button is clicked.
+    *
+    */
+    void ClearButtonClicked();
+
 private:
     Ui::LogView mUI;
 };
