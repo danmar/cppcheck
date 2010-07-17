@@ -109,12 +109,13 @@ private:
     class Var
     {
     public:
-        Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, Var *next_ = 0)
+        Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, bool class_ = false, Var *next_ = 0)
             : name(name_),
               init(init_),
               priv(priv_),
               isMutable(mutable_),
               isStatic(static_),
+              isClass(class_),
               next(next_)
         {
         }
@@ -133,6 +134,9 @@ private:
 
         /** @brief is this variable static? */
         bool        isStatic;
+
+        /** @brief is this variable a class (or unknown type)? */
+        bool        isClass;
 
         /** @brief next Var item */
         Var *next;
@@ -158,10 +162,8 @@ private:
     /**
      * @brief get varlist from a class definition
      * @param tok1 pointer to class definition
-     * @param withClasses if class variables should be extracted too.
-     * @param isStruct is this a struct?
      */
-    Var *getVarList(const Token *tok1, bool withClasses, bool isStruct);
+    Var *getVarList(const Token *tok1);
 
     bool sameFunc(int nest, const Token *firstEnd, const Token *secondEnd);
     bool isMemberFunc(const Token *tok);

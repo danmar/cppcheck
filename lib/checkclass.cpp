@@ -41,11 +41,12 @@ CheckClass instance;
 
 //---------------------------------------------------------------------------
 
-CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, bool isStruct)
+CheckClass::Var *CheckClass::getVarList(const Token *tok1)
 {
     // Get variable list..
     Var *varlist = NULL;
     unsigned int indentlevel = 0;
+    bool isStruct = tok1->str() == "struct";
     bool priv = !isStruct;
     for (const Token *tok = tok1; tok; tok = tok->next())
     {
@@ -131,14 +132,13 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         }
 
         // Is it a variable declaration?
+        bool isClass = false;
         if (Token::Match(next, "%type% %var% ;|:"))
         {
-            if (withClasses)
-                varname = next->strAt(1);
-            else if (next->isStandardType())
-                varname = next->strAt(1);
-            else if (Token::findmatch(_tokenizer->tokens(), ("enum " + next->str()).c_str()))
-                varname = next->strAt(1);
+            if (!next->isStandardType())
+                isClass = true;
+
+            varname = next->strAt(1);
         }
 
         // Structure?
@@ -158,10 +158,9 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         // Array?
         else if (Token::Match(next, "%type% %var% [") && next->next()->str() != "operator")
         {
-            if (!withClasses && !next->isStandardType())
-            {
-                continue;
-            }
+            if (!next->isStandardType())
+                isClass = true;
+
             varname = next->strAt(1);
         }
 
@@ -172,15 +171,17 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
             varname = next->strAt(4);
 
         // std::string..
-        else if (withClasses && Token::Match(next, "%type% :: %type% %var% ;"))
+        else if (Token::Match(next, "%type% :: %type% %var% ;"))
         {
+            isClass = true;
             varname = next->strAt(3);
         }
 
         // Container..
-        else if (withClasses && (Token::Match(next, "%type% :: %type% <") ||
-                                 Token::Match(next, "%type% <")))
+        else if (Token::Match(next, "%type% :: %type% <") ||
+                 Token::Match(next, "%type% <"))
         {
+            isClass = true;
             // find matching ">"
             int level = 0;
             for (; next; next = next->next())
@@ -203,7 +204,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         // If the varname was set in the if-blocks above, create a entry for this variable..
         if (!varname.empty() && varname != "operator")
         {
-            Var *var = new Var(varname, false, priv, isMutable, isStatic, varlist);
+            Var *var = new Var(varname, false, priv, isMutable, isStatic, isClass, varlist);
             varlist  = var;
         }
     }
@@ -647,10 +648,7 @@ void CheckClass::constructors()
                                     {
                                         if (argsMatch(tok->tokAt(offset1), constructor_token->tokAt(offset2)))
                                         {
-                                            if (operatorEqual || copyConstructor)
-                                                constructorList.push_back(Constructor(constructor_token, access, true, operatorEqual, copyConstructor));
-                                            else
-                                                constructorList.push_front(Constructor(constructor_token, access, true, false, false));
+                                            constructorList.push_back(Constructor(constructor_token, access, true, operatorEqual, copyConstructor));
 
                                             hasBody = true;
                                             break;
@@ -669,10 +667,7 @@ void CheckClass::constructors()
                             // function body found?
                             if (!hasBody)
                             {
-                                if (operatorEqual || copyConstructor)
-                                    constructorList.push_back(Constructor(tok, access, false, operatorEqual, copyConstructor));
-                                else
-                                    constructorList.push_front(Constructor(tok, access, false, false, false));
+                                constructorList.push_back(Constructor(tok, access, false, operatorEqual, copyConstructor));
                             }
 
                             tok = next->next();
@@ -684,10 +679,7 @@ void CheckClass::constructors()
                             // skip destructor and other classes
                             if (!Token::Match(tok->previous(), "~|::"))
                             {
-                                if (operatorEqual || copyConstructor)
-                                    constructorList.push_back(Constructor(tok, access, true, operatorEqual, copyConstructor));
-                                else
-                                    constructorList.push_front(Constructor(tok, access, true, false, false));
+                                constructorList.push_back(Constructor(tok, access, true, operatorEqual, copyConstructor));
                             }
 
                             // skip over function body
@@ -700,8 +692,8 @@ void CheckClass::constructors()
                 }
             }
 
-            // Get variables that are not classes...
-            Var *varlist = getVarList(tok1, false, isStruct);
+            // Get variables...
+            Var *varlist = getVarList(tok1);
 
             // There are no constructors.
             if (numConstructors == 0)
@@ -709,7 +701,7 @@ void CheckClass::constructors()
                 // If there is a private variable, there should be a constructor..
                 for (const Var *var = varlist; var; var = var->next)
                 {
-                    if (var->priv && !var->isStatic)
+                    if (var->priv && !var->isClass && !var->isStatic)
                     {
                         noConstructorError(tok1, className, isStruct);
                         break;
@@ -718,28 +710,9 @@ void CheckClass::constructors()
             }
 
             std::list<Constructor>::const_iterator it;
-            bool hasClasses = false;
 
             for (it = constructorList.begin(); it != constructorList.end(); ++it)
             {
-                // check for end of regular constructors and start of copy constructors
-                bool needClasses = it->isCopyConstructor || it->isOperatorEqual;
-                if (needClasses != hasClasses)
-                {
-                    hasClasses = needClasses;
-
-                    // Delete the varlist..
-                    while (varlist)
-                    {
-                        Var *nextvar = varlist->next;
-                        delete varlist;
-                        varlist = nextvar;
-                    }
-
-                    // Get variables including classes
-                    varlist = getVarList(tok1, true, isStruct);
-                }
-
                 if (!it->hasBody)
                     continue;
 
@@ -749,6 +722,10 @@ void CheckClass::constructors()
                 // Check if any variables are uninitialized
                 for (Var *var = varlist; var; var = var->next)
                 {
+                    // skip classes for regular constructor
+                    if (var->isClass && !(it->isCopyConstructor || it->isOperatorEqual))
+                        continue;
+
                     if (var->init || var->isStatic)
                         continue;
 
@@ -1752,7 +1729,7 @@ void CheckClass::checkConst()
             }
 
             // Get class variables...
-            varlist = getVarList(classTok, true, classTok->str() == "struct");
+            varlist = getVarList(classTok);
 
             // parse in this class definition to see if there are any simple getter functions
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
