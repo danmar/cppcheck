@@ -93,6 +93,13 @@ signals:
     */
     void Error(const ErrorItem &item);
 
+    /**
+    * @brief Signal of a new log message
+    *
+    * @param logline Log line
+    */
+    void Log(const QString &logline);
+
 protected:
 
     /**

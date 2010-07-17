@@ -26,7 +26,8 @@ FORMS = main.ui \
     settings.ui \
     file.ui \
     projectfile.ui \
-    about.ui
+    about.ui \
+    logview.ui
 
 TRANSLATIONS =  cppcheck_fi.ts \
                 cppcheck_nl.ts \
@@ -60,7 +61,9 @@ HEADERS += mainwindow.h \
            txtreport.h \
            xmlreport.h \
            translationhandler.h \
-           csvreport.h
+           csvreport.h \
+           logview.h
+
 SOURCES += main.cpp \
            mainwindow.cpp\
            checkthread.cpp \
@@ -81,7 +84,8 @@ SOURCES += main.cpp \
            txtreport.cpp \
            xmlreport.cpp \
            translationhandler.cpp \
-           csvreport.cpp
+           csvreport.cpp \
+           logview.cpp
 
 win32 {
     RC_FILE = cppcheck-gui.rc
