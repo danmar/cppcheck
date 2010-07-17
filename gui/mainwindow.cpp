@@ -47,7 +47,8 @@ MainWindow::MainWindow() :
     mApplications(new ApplicationList(this)),
     mTranslation(new TranslationHandler(this)),
     mLanguages(new QActionGroup(this)),
-    mLogView(NULL)
+    mLogView(NULL),
+    mExiting(false)
 {
     mUI.setupUi(this);
     mUI.mResults->Initialize(mSettings, mApplications);
@@ -399,6 +400,12 @@ QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
 
 void MainWindow::CheckDone()
 {
+    if (mExiting)
+    {
+        close();
+        return;
+    }
+
     mUI.mResults->CheckingFinished();
     EnableCheckButtons(true);
     mUI.mActionSettings->setEnabled(true);
@@ -522,10 +529,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
             // exiting it doesn't matter.
             mThread->Stop();
             SaveSettings();
-            event->accept();
+            mExiting = true;
         }
-        else
-            event->ignore();
+        event->ignore();
     }
 }
 
