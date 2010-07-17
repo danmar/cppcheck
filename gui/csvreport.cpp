@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QDir>
 #include <QFile>
 #include <QTextStream>
 #include "csvreport.h"
@@ -59,7 +60,8 @@ void CsvReport::WriteError(const ErrorItem &error)
     */
 
     QString line;
-    line += QString("%1,%2,").arg(error.files[error.files.size() - 1]).arg(error.lines[error.lines.size() - 1]);
+    const QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
+    line += QString("%1,%2,").arg(file).arg(error.lines[error.lines.size() - 1]);
     line += QString("%1,%2").arg(error.severity).arg(error.msg);
 
     mTxtWriter << line << endl;

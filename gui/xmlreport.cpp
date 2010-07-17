@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QDir>
 #include <QFile>
 #include <QXmlStreamWriter>
 #include <QDebug>
@@ -88,7 +89,8 @@ void XmlReport::WriteError(const ErrorItem &error)
     */
 
     mXmlWriter->writeStartElement(ErrorElementName);
-    mXmlWriter->writeAttribute(FilenameAttribute, error.files[error.files.size() - 1]);
+    const QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
+    mXmlWriter->writeAttribute(FilenameAttribute, file);
     const QString line = QString::number(error.lines[error.lines.size() - 1]);
     mXmlWriter->writeAttribute(LineAttribute, line);
     mXmlWriter->writeAttribute(IdAttribute, error.id);
