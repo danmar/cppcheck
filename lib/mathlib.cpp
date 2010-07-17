@@ -194,7 +194,7 @@ bool MathLib::isInt(const std::string & s)
         // unsigned or long
         while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n;
 
-        if(bStartsWithDigit==false)
+        if (bStartsWithDigit==false)
             return false;
     }
     // eat up whitespace

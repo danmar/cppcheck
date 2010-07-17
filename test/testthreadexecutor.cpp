@@ -56,7 +56,7 @@ private:
         }
 
         std::vector<std::string> filenames;
-        for( int i = 1; i <= files; ++i )
+        for ( int i = 1; i <= files; ++i )
         {
             std::ostringstream oss;
             oss << "file_" << i << ".cpp";
@@ -66,7 +66,7 @@ private:
         Settings settings;
         settings._jobs = jobs;
         ThreadExecutor executor(filenames, settings, *this);
-        for(unsigned int i = 0; i < filenames.size(); ++i)
+        for (unsigned int i = 0; i < filenames.size(); ++i)
             executor.addFileContent(filenames[i], data );
 
         ASSERT_EQUALS(result, executor.check());
@@ -87,7 +87,7 @@ private:
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
-        for( int i = 0; i < 500; i++ )
+        for ( int i = 0; i < 500; i++ )
             oss << "  {char *a = malloc(10);}\n";
 
         oss << "}\n";

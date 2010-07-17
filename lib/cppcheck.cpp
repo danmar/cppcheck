@@ -703,7 +703,7 @@ unsigned int CppCheck::check()
                     _errorLogger.reportOut(std::string("Checking ") + fname + ": " + cfg + std::string("..."));
 
                 std::string appendCode = _settings.append();
-                if( !appendCode.empty() )
+                if ( !appendCode.empty() )
                     Preprocessor::preprocessWhitespaces(appendCode);
 
                 checkFile(codeWithoutCfg + appendCode, _filenames[c].c_str());
