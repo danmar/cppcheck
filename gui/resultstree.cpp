@@ -156,7 +156,9 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     }
 
     QList<QStandardItem*> list;
-    list << CreateItem(item.file);
+    // Ensure shown path is with native separators
+    const QString file = QDir::toNativeSeparators(item.file);
+    list << CreateItem(file);
     list << CreateItem(tr(item.severity.toLatin1()));
     list << CreateItem(QString("%1").arg(item.line));
     //TODO message has parameter names so we'll need changes to the core
@@ -334,6 +336,8 @@ QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, bool hide)
         return item;
     }
 
+    // Ensure shown path is with native separators
+    name = QDir::toNativeSeparators(name);
     item = CreateItem(name);
     item->setIcon(QIcon(":images/text-x-generic.png"));
 
