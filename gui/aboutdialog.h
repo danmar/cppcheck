@@ -21,8 +21,9 @@
 
 #include <QDialog>
 #include <QString>
-
 #include "ui_about.h"
+
+class QWidget;
 
 /// @addtogroup GUI
 /// @{

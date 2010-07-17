@@ -17,11 +17,11 @@
  */
 
 #include <QDebug>
-#include <QVBoxLayout>
 #include <QFile>
 #include <QMessageBox>
 #include "erroritem.h"
 #include "resultsview.h"
+#include "resultstree.h"
 #include "report.h"
 #include "txtreport.h"
 #include "xmlreport.h"

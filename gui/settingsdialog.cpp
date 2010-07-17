@@ -17,13 +17,15 @@
  */
 
 
-#include "settingsdialog.h"
 #include <QDialog>
 #include <QWidget>
 #include <QLabel>
 #include <QDebug>
 #include <QTabWidget>
+#include <QSettings>
+#include "settingsdialog.h"
 #include "applicationdialog.h"
+#include "applicationlist.h"
 #include "common.h"
 
 SettingsDialog::SettingsDialog(QSettings *programSettings,

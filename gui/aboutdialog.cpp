@@ -15,11 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <QDialog>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QPushButton>
+#include <QWidget>
 #include "aboutdialog.h"
 
 AboutDialog::AboutDialog(const QString &version, QWidget *parent)

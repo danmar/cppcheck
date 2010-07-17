@@ -23,6 +23,9 @@
 #include <QString>
 #include "ui_file.h"
 
+class QWidget;
+class QTextEdit;
+
 /// @addtogroup GUI
 /// @{
 

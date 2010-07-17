@@ -24,7 +24,6 @@
 #include <QWidget>
 #include <QProgressBar>
 #include "../lib/errorlogger.h"
-#include "resultstree.h"
 #include "common.h"
 #include "report.h"
 #include "ui_resultsview.h"

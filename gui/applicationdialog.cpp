@@ -16,14 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "applicationdialog.h"
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QLabel>
+#include <QWidget>
 #include <QFileDialog>
 #include <QDebug>
 #include <QMessageBox>
+#include "applicationdialog.h"
 
 
 ApplicationDialog::ApplicationDialog(const QString &name,
