@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="test"
 	ProjectGUID="{BA98E531-D8B3-39CB-8171-064854404B81}"
 	Keyword="Qt4VSv1.0"
@@ -251,6 +251,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\path.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\preprocessor.cpp"
 				>
 			</File>
@@ -454,6 +458,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\mathlib.h"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\path.h"
 				>
 			</File>
 			<File

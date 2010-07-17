@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="lib"
 	ProjectGUID="{ACE2ABB0-1027-44DF-8E14-8B4DAF88590F}"
 	RootNamespace="lib"
@@ -215,6 +215,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\path.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\preprocessor.cpp"
 				>
 			</File>
@@ -302,6 +306,10 @@
 			</File>
 			<File
 				RelativePath=".\mathlib.h"
+				>
+			</File>
+			<File
+				RelativePath=".\path.h"
 				>
 			</File>
 			<File
