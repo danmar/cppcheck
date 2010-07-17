@@ -26,6 +26,7 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/filelister_unix.o \
               lib/filelister_win32.o \
               lib/mathlib.o \
+              lib/path.o \
               lib/preprocessor.o \
               lib/settings.o \
               lib/token.o \
@@ -124,7 +125,7 @@ lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunction
 lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/preprocessor.h lib/filelister.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/cppcheck.o lib/cppcheck.cpp
 
-lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h
+lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h lib/path.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/errorlogger.o lib/errorlogger.cpp
 
 lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h
@@ -141,6 +142,9 @@ lib/filelister_win32.o: lib/filelister_win32.cpp lib/filelister.h lib/filelister
 
 lib/mathlib.o: lib/mathlib.cpp lib/mathlib.h lib/token.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/mathlib.o lib/mathlib.cpp
+
+lib/path.o: lib/path.cpp lib/path.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/path.o lib/path.cpp
 
 lib/preprocessor.o: lib/preprocessor.cpp lib/preprocessor.h lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h lib/filelister.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/preprocessor.o lib/preprocessor.cpp

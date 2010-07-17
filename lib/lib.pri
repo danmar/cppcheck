@@ -17,6 +17,7 @@ HEADERS += $$PWD/check.h \
            $$PWD/filelister_unix.h \
            $$PWD/filelister_win32.h \
            $$PWD/mathlib.h \
+           $$PWD/path.h \
            $$PWD/preprocessor.h \
            $$PWD/settings.h \
            $$PWD/token.h \
@@ -38,6 +39,7 @@ SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/filelister_unix.cpp \
            $$PWD/filelister_win32.cpp \
            $$PWD/mathlib.cpp \
+           $$PWD/path.cpp \
            $$PWD/preprocessor.cpp \
            $$PWD/settings.cpp \
            $$PWD/token.cpp \

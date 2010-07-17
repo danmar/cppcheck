@@ -19,6 +19,7 @@
 #include "errorlogger.h"
 #include "tokenize.h"
 #include "token.h"
+#include "path.h"
 
 #include <sstream>
 
@@ -245,36 +246,12 @@ std::string ErrorLogger::ErrorMessage::FileLocation::getfile() const
         pos = sep;
     }
 
-#if defined(_WIN32)
-    {
-        std::string::iterator iter = f.begin();
-        std::string::iterator end = f.end();
-        while (iter != end)
-        {
-            if (*iter == '/')
-                *iter = '\\';
-            ++iter;
-        }
-    }
-#endif
-
+    f = Path::toNativeSeparators(f);
     return f;
 }
 
 void ErrorLogger::ErrorMessage::FileLocation::setfile(const std::string &file)
 {
     _file = file;
-    std::cout << "Setting file: " << file << std::endl;
-#if defined(_WIN32)
-    {
-        std::string::iterator iter = _file.begin();
-        std::string::iterator end = _file.end();
-        while (iter != end)
-        {
-            if (*iter == '\\')
-                *iter = '/';
-            ++iter;
-        }
-    }
-#endif
+    _file = Path::fromNativeSeparators(_file);
 }
