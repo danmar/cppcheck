@@ -367,8 +367,16 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             else  // there is a called member function, but it is not defined where we can find it, so we assume it initializes everything
             {
                 // check if the function is part of this class..
-                const Token *tok = Token::findmatch(_tokenizer->tokens(), ((isStruct ? std::string("struct ") : std::string("class ")) + classname + " {").c_str());
-                for (tok = tok ? tok->tokAt(3) : 0; tok; tok = tok->next())
+                const Token *tok = Token::findmatch(_tokenizer->tokens(), ((isStruct ? std::string("struct ") : std::string("class ")) + classname + " {|:").c_str());
+                bool derived = false;
+                while (tok && tok->str() != "{")
+                {
+                    if (tok->str() == ":")
+                        derived = true;
+                    tok = tok->next();
+                }
+
+                for (tok = tok ? tok->next() : 0; tok; tok = tok->next())
                 {
                     if (tok->str() == "{")
                     {
@@ -382,13 +390,15 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
                     }
                     else if (tok->str() == ftok->str() || tok->str() == "friend")
                     {
-                        tok = 0;
-                        break;
+                        if (tok->next()->str() == "(" || tok->str() == "friend")
+                        {
+                            tok = 0;
+                            break;
+                        }
                     }
                 }
-
                 // bail out..
-                if (!tok)
+                if (!tok || derived)
                 {
                     for (Var *var = varlist; var; var = var->next)
                         var->init = true;
