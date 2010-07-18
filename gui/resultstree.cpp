@@ -329,7 +329,9 @@ void ResultsTree::RefreshTree()
 QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, bool hide)
 {
     QString name = StripPath(fullpath, false);
-    QStandardItem *item = FindFileItem(name);
+    // Since item has path with native separators we must use path with
+    // native separators to find it.
+    QStandardItem *item = FindFileItem(QDir::toNativeSeparators(name));
 
     if (item)
     {
