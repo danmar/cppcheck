@@ -1683,11 +1683,123 @@ void CheckClass::thisSubtraction()
 }
 //---------------------------------------------------------------------------
 
+// check if this function is defined virtual in the base classes
+bool CheckClass::isVirtual(const std::vector<std::string> &derivedFrom, const Token *functionToken) const
+{
+    // check each base class
+    for (unsigned int i = 0; i < derivedFrom.size(); ++i)
+    {
+        std::string className;
+
+        if (derivedFrom[i].find("::") != std::string::npos)
+        {
+            /** @todo handle nested base classes and namespaces */
+        }
+        else
+            className = derivedFrom[i];
+
+        std::string classPattern = std::string("class|struct ") + className + std::string(" {|:");
+
+        // find the base class
+        const Token *classToken = Token::findmatch(_tokenizer->tokens(), classPattern.c_str());
+
+        // find the function in the base class
+        if (classToken)
+        {
+            std::vector<std::string> baseList;
+            const Token * tok = classToken;
+
+            while (tok->str() != "{")
+            {
+                // check for base classes
+                if (Token::Match(tok, ":|, public|protected|private"))
+                {
+                    // jump to base class name
+                    tok = tok->tokAt(2);
+
+                    std::string    base;
+
+                    // handle nested base classea and namespacess
+                    while (Token::Match(tok, "%var% ::"))
+                    {
+                        base += tok->str();
+                        base += " :: ";
+                        tok = tok->tokAt(2);
+                    }
+
+                    base += tok->str();
+
+                    // save pattern for base class name
+                    baseList.push_back(base);
+                }
+                tok = tok->next();
+            }
+
+            tok = tok->next();
+
+            for (; tok; tok = tok->next())
+            {
+                if (tok->str() == "{")
+                    tok = tok->link();
+                else if (tok->str() == "}")
+                    break;
+                else if (Token::Match(tok, "public:|protected:|private:"))
+                    continue;
+                else if (tok->str() == "(")
+                    tok = tok->link();
+                else if (tok->str() == "virtual")
+                {
+                    // goto the function name
+                    while (tok->next()->str() != "(")
+                        tok = tok->next();
+
+                    // do the function names match?
+                    if (tok->str() == functionToken->str())
+                    {
+                        const Token *temp1 = tok->previous();
+                        const Token *temp2 = functionToken->previous();
+                        bool returnMatch = true;
+
+                        // check for matching return parameters
+                        while (temp1->str() != "virtual")
+                        {
+                            if (temp1->str() != temp2->str())
+                            {
+                                returnMatch = false;
+                                break;
+                            }
+
+                            temp1 = temp1->previous();
+                            temp2 = temp2->previous();
+                        }
+
+                        // check for matching function parameters
+                        if (returnMatch && argsMatch(tok->tokAt(2), functionToken->tokAt(2)))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            if (!baseList.empty())
+            {
+                if (isVirtual(baseList, functionToken))
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 struct NestInfo
 {
     std::string className;
-    const Token * classEnd;
+    const Token *classStart;
+    const Token *classEnd;
     int levelEnd;
+    std::vector<std::string> derivedFrom;
 };
 
 // Can a function be const?
@@ -1709,23 +1821,47 @@ void CheckClass::checkConst()
             if (level == nestInfo.back().levelEnd)
                 nestInfo.pop_back();
         }
-        else if (Token::Match(tok, "class|struct %var% {"))
+        else if (Token::Match(tok, "class|struct %var% {|:"))
         {
             const Token *classTok = tok;
+            NestInfo info;
 
             // get class name..
             std::string classname(tok->strAt(1));
+            info.className = classname;
+            info.classStart = tok;
 
-            // goto initial {'
+            // goto initial '{'
             while (tok && tok->str() != "{")
+            {
+                // check for base classes
+                if (Token::Match(tok, ":|, public|protected|private"))
+                {
+                    // jump to base class name
+                    tok = tok->tokAt(2);
+
+                    std::string    derivedFrom;
+
+                    // handle derived base classes
+                    while (Token::Match(tok, "%var% ::"))
+                    {
+                        derivedFrom += tok->str();
+                        derivedFrom += " :: ";
+                        tok = tok->tokAt(2);
+                    }
+
+                    derivedFrom += tok->str();
+
+                    // save pattern for base class name
+                    info.derivedFrom.push_back(derivedFrom);
+                }
                 tok = tok->next();
+            }
             if (!tok)
                 break;
 
             const Token *classEnd = tok->link();
 
-            NestInfo info;
-            info.className = classname;
             info.classEnd = classEnd;
             info.levelEnd = level++;
             nestInfo.push_back(info);
@@ -1800,6 +1936,8 @@ void CheckClass::checkConst()
                     if (functionName == classname)
                         continue;
 
+                    const Token *functionToken = tok2;
+
                     // goto the ')'
                     tok2 = tok2->next()->link();
                     if (!tok2)
@@ -1809,6 +1947,13 @@ void CheckClass::checkConst()
                     if (Token::simpleMatch(tok2, ") {"))
                     {
                         const Token *paramEnd = tok2;
+
+                        // check if base class function is virtual
+                        if (!info.derivedFrom.empty())
+                        {
+                            if (isVirtual(info.derivedFrom, functionToken))
+                                continue;
+                        }
 
                         // if nothing non-const was found. write error..
                         if (checkConstFunc(classname, varlist, paramEnd))
@@ -1821,6 +1966,13 @@ void CheckClass::checkConst()
                     }
                     else if (Token::simpleMatch(tok2, ") ;")) // not inline
                     {
+                        // check if base class function is virtual
+                        if (!info.derivedFrom.empty())
+                        {
+                            if (isVirtual(info.derivedFrom, functionToken))
+                                continue;
+                        }
+
                         for (int i = nestInfo.size() - 1; i >= 0; i--)
                         {
                             const Token *found = nestInfo[i].classEnd;

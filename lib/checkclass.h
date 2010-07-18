@@ -170,6 +170,9 @@ private:
     bool isMemberVar(const std::string &classname, const Var *varlist, const Token *tok);
     bool checkConstFunc(const std::string &classname, const Var *varlist, const Token *tok);
 
+    /** @brief check if this function is virtual in the base classes */
+    bool isVirtual(const std::vector<std::string> &derivedFrom, const Token *functionToken) const;
+
     /**
      * @brief Helper function for operatorEqRetRefThis that checks if there are errors
      * @param tok The "operator" token in a operator=(.. function
