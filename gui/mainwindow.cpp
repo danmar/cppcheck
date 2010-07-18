@@ -229,8 +229,8 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     mUI.mResults->CheckingStarted(fileNames.count());
 
     mThread->SetFiles(RemoveUnacceptedFiles(fileNames));
-    QFileInfo inf(fileNames[0]);
-    QString absDirectory = inf.absoluteDir().path();
+    QDir inf(mCurrentDirectory);
+    const QString absDirectory = inf.absolutePath();
     mSettings->setValue(SETTINGS_CHECK_PATH, absDirectory);
     EnableCheckButtons(false);
     mUI.mActionSettings->setEnabled(false);
@@ -272,6 +272,7 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
                       mSettings->value(SETTINGS_CHECK_PATH, "").toString());
         if (!dir.isEmpty())
         {
+            qDebug() << "Setting current directory to: " << dir;
             mCurrentDirectory = dir;
             selected.append(dir);
             dir = QDir::toNativeSeparators(dir);
