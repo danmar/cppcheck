@@ -81,6 +81,8 @@ public:
     public:
         /**
          * File name and line number.
+         * Internally paths are stored with / separator. When getting the filename
+         * it is by default converted to native separators.
          */
         class FileLocation
         {
@@ -90,7 +92,17 @@ public:
                 line = 0;
             }
 
-            std::string getfile() const;
+            /**
+             * Return the filename.
+             * @param convert If true convert path to native separators.
+             * @return filename.
+             */
+            std::string getfile(bool convert = true) const;
+
+            /**
+             * Set the filename.
+             * @param file Filename to set.
+             */
             void setfile(const std::string &file);
             unsigned int line;
         private:

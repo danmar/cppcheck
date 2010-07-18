@@ -216,7 +216,7 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 }
 
 
-std::string ErrorLogger::ErrorMessage::FileLocation::getfile() const
+std::string ErrorLogger::ErrorMessage::FileLocation::getfile(bool convert) const
 {
     std::string f(_file);
 
@@ -246,7 +246,8 @@ std::string ErrorLogger::ErrorMessage::FileLocation::getfile() const
         pos = sep;
     }
 
-    f = Path::toNativeSeparators(f);
+    if (convert)
+        f = Path::toNativeSeparators(f);
     return f;
 }
 

@@ -59,7 +59,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
          tok != msg._callStack.end();
          ++tok)
     {
-        files << QString((*tok).getfile().c_str());
+        files << QString((*tok).getfile(false).c_str());
         lines << (*tok).line;
     }
 
