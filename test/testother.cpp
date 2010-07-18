@@ -1921,6 +1921,16 @@ private:
                        "    strchr(s, ' ');\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
+
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "        int y[2];\n"
+                       "        int s;\n"
+                       "        GetField( y + 0, \n"
+                       "                       y + 1 );\n"
+                       "        s = y[0]*y[1];\n"
+                       "}\n");
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
     // alloc..
