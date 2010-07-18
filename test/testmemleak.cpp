@@ -40,6 +40,7 @@ private:
         TEST_CASE(test2);
         TEST_CASE(test3);
         TEST_CASE(test4);
+        TEST_CASE(test5);
     }
 
     void check(const char code[])
@@ -103,6 +104,21 @@ private:
               "        delete [] p;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void test5() //#ticket 1879
+    {
+        check("void test()\n"
+              "{\n"
+              "   int *a = new int[10];\n"
+              "   try\n"
+              "   {\n"
+              "   }\n"
+              "   catch(...)\n"
+              "   {\n"
+              "   }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: a\n",errout.str());
     }
 };
 
