@@ -360,7 +360,8 @@ void Tokenizer::createTokens(std::istream &code)
                     if (lineNumbers.empty() || fileIndexes.empty())
                     {
                         std::cerr << "####### Preprocessor bug! #######\n";
-                        std::exit(0);
+                        deallocateTokens();
+                        return;
                     }
 
                     lineno = lineNumbers.back();
