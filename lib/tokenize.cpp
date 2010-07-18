@@ -359,7 +359,7 @@ void Tokenizer::createTokens(std::istream &code)
                 {
                     if (lineNumbers.empty() || fileIndexes.empty())
                     {
-                        std::cerr << "####### Preprocessor bug! #######\n";
+                        cppcheckError(0);
                         deallocateTokens();
                         return;
                     }
