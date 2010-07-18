@@ -226,8 +226,10 @@ void CheckClass::initVar(Var *varlist, const std::string &varname)
 }
 //---------------------------------------------------------------------------
 
-void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const std::string &classname, std::list<std::string> &callstack, bool isStruct)
+void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, std::list<std::string> &callstack)
 {
+    const std::string &classname = tok1->next()->str();
+    bool isStruct = tok1->str() == "struct";
     bool Assign = false;
     unsigned int indentlevel = 0;
 
@@ -361,13 +363,13 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             if (ftok2)
             {
                 callstack.push_back(ftok->str());
-                initializeVarList(tok1, ftok2, varlist, classname, callstack, isStruct);
+                initializeVarList(tok1, ftok2, varlist, callstack);
                 callstack.pop_back();
             }
             else  // there is a called member function, but it is not defined where we can find it, so we assume it initializes everything
             {
                 // check if the function is part of this class..
-                const Token *tok = Token::findmatch(_tokenizer->tokens(), ((isStruct ? std::string("struct ") : std::string("class ")) + classname + " {|:").c_str());
+                const Token *tok = Token::findmatch(_tokenizer->tokens(), (tok1->str() + " " + classname + " {|:").c_str());
                 bool derived = false;
                 while (tok && tok->str() != "{")
                 {
@@ -761,7 +763,7 @@ void CheckClass::constructors()
                     continue;
 
                 std::list<std::string> callstack;
-                initializeVarList(tok1, it->token, varlist, className, callstack, isStruct);
+                initializeVarList(tok1, it->token, varlist, callstack);
 
                 // Check if any variables are uninitialized
                 for (Var *var = varlist; var; var = var->next)

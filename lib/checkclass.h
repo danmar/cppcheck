@@ -150,11 +150,9 @@ private:
      * @param tok1 pointer to class declaration
      * @param ftok pointer to the function that should be checked
      * @param varlist variable list (the "init" flag will be set in these variables)
-     * @param classname name of class
      * @param callstack the function doesn't look into recursive function calls.
-     * @param isStruct if this is a struct instead of a class
      */
-    void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const std::string &classname, std::list<std::string> &callstack, bool isStruct);
+    void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, std::list<std::string> &callstack);
 
     /** @brief initialize a variable in the varlist */
     void initVar(Var *varlist, const std::string &varname);
