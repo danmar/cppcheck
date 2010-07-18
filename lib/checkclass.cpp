@@ -485,7 +485,7 @@ struct Constructor
     bool isCopyConstructor;
 };
 
-static bool argsMatch(const Token *first, const Token *second)
+static bool argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth)
 {
     bool match = false;
     while (first->str() == second->str())
@@ -526,6 +526,35 @@ static bool argsMatch(const Token *first, const Token *second)
             // skip default value assignment
             if (first->next()->str() == "=")
                 first = first->tokAt(2);
+        }
+
+        // variable with class path
+        else if (depth && Token::Match(first->next(), "%var%"))
+        {
+            std::string param = path + first->next()->str();
+
+            if (Token::Match(second->next(), param.c_str()))
+            {
+                second = second->tokAt(depth * 2);
+            }
+            else if (depth > 1)
+            {
+                std::string    short_path = path;
+
+                // remove last " :: "
+                short_path.resize(short_path.size() - 4);
+
+                // remove last name
+                while (!short_path.empty() && short_path[short_path.size() - 1] != ' ')
+                    short_path.resize(short_path.size() - 1);
+
+                param = short_path + first->next()->str();
+
+                if (Token::Match(second->next(), param.c_str()))
+                {
+                    second = second->tokAt((depth - 1) * 2);
+                }
+            }
         }
 
         first = first->next();
@@ -630,6 +659,8 @@ void CheckClass::constructors()
                             int stack_index = spaceInfo.size() - 1;
 
                             std::string classPattern;
+                            std::string classPath;
+                            std::string searchPattern;
                             int offset1, offset2;
                             if (operatorEqual)
                             {
@@ -643,20 +674,23 @@ void CheckClass::constructors()
                             }
 
                             bool hasBody = false;
+                            unsigned int depth = 0;
                             while (!hasBody && stack_index >= 0)
                             {
-                                classPattern = spaceInfo[stack_index].className + std::string(" :: ") + classPattern;
+                                classPath = spaceInfo[stack_index].className + std::string(" :: ") + classPath;
+                                searchPattern = classPath + classPattern;
                                 offset2 += 2;
+                                depth++;
 
                                 // start looking at end of class
                                 const Token *constructor_token = spaceInfo[stack_index].classEnd;
 
-                                while ((constructor_token = Token::findmatch(constructor_token, classPattern.c_str())) != NULL)
+                                while ((constructor_token = Token::findmatch(constructor_token, searchPattern.c_str())) != NULL)
                                 {
                                     // skip destructor and other classes
                                     if (!Token::Match(constructor_token->previous(), "~|::"))
                                     {
-                                        if (argsMatch(tok->tokAt(offset1), constructor_token->tokAt(offset2)))
+                                        if (argsMatch(tok->tokAt(offset1), constructor_token->tokAt(offset2), classPath, depth))
                                         {
                                             constructorList.push_back(Constructor(constructor_token, access, true, operatorEqual, copyConstructor));
 
@@ -1774,7 +1808,7 @@ bool CheckClass::isVirtual(const std::vector<std::string> &derivedFrom, const To
                         }
 
                         // check for matching function parameters
-                        if (returnMatch && argsMatch(tok->tokAt(2), functionToken->tokAt(2)))
+                        if (returnMatch && argsMatch(tok->tokAt(2), functionToken->tokAt(2), std::string(""), 0))
                         {
                             return true;
                         }
