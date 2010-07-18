@@ -1834,6 +1834,18 @@ private:
                        "    } catch (...) {\n"
                        "    }\n"
                        "}\n");
+
+        // #1855 - switch(foo(&x))
+        checkUninitVar("int a()\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    switch (foo(&x))\n"
+                       "    {\n"
+                       "        case 1:\n"
+                       "            return x;\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // arrays..
