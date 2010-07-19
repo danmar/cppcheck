@@ -18,82 +18,82 @@
     <CfgParent>Base</CfgParent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
-    <OutputExt>exe</OutputExt>
     <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
-    <BCC_wamb>true</BCC_wamb>
-    <Defines>NO_STRICT</Defines>
+    <OutputExt>exe</OutputExt>
     <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
-    <BCC_wexc>true</BCC_wexc>
+    <Defines>NO_STRICT</Defines>
+    <BCC_wamb>true</BCC_wamb>
     <BCC_wprc>true</BCC_wprc>
-    <BCC_wnod>true</BCC_wnod>
+    <BCC_wexc>true</BCC_wexc>
     <DynamicRTL>true</DynamicRTL>
+    <BCC_wnod>true</BCC_wnod>
     <BCC_wuse>true</BCC_wuse>
-    <BCC_wdef>true</BCC_wdef>
     <BCC_wbbf>true</BCC_wbbf>
+    <BCC_wdef>true</BCC_wdef>
     <BCC_wsig>true</BCC_wsig>
     <ILINK_SelectedWarnings>false</ILINK_SelectedWarnings>
-    <BCC_wnak>true</BCC_wnak>
-    <ILINK_ObjectSearchPath>C:\cppcheck;src;cli;lib</ILINK_ObjectSearchPath>
     <ILINK_AllWarnings>true</ILINK_AllWarnings>
-    <BCC_wstl>true</BCC_wstl>
-    <BCC_winl>true</BCC_winl>
-    <NoVCL>true</NoVCL>
+    <ILINK_ObjectSearchPath>C:\cppcheck;src;cli;lib</ILINK_ObjectSearchPath>
+    <BCC_wnak>true</BCC_wnak>
     <ProjectType>CppConsoleApplication</ProjectType>
-    <BCC_wasm>true</BCC_wasm>
+    <NoVCL>true</NoVCL>
+    <BCC_winl>true</BCC_winl>
+    <BCC_wstl>true</BCC_wstl>
     <FinalOutputDir>.\</FinalOutputDir>
-    <BCC_wpin>true</BCC_wpin>
+    <BCC_wasm>true</BCC_wasm>
     <BCC_wcln>true</BCC_wcln>
-    <PackageImports>vcl.bpi;rtl.bpi;bcbie.bpi;vclx.bpi;vclactnband.bpi;xmlrtl.bpi;bcbsmp.bpi;dbrtl.bpi;vcldb.bpi;vcldbx.bpi;bdertl.bpi;A407_R110.bpi;DreamEdit_C6.bpi</PackageImports>
+    <BCC_wpin>true</BCC_wpin>
     <DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
-    <BCC_wimp>true</BCC_wimp>
-    <BCC_wucp>true</BCC_wucp>
+    <PackageImports>vcl.bpi;rtl.bpi;bcbie.bpi;vclx.bpi;vclactnband.bpi;xmlrtl.bpi;bcbsmp.bpi;dbrtl.bpi;vcldb.bpi;vcldbx.bpi;bdertl.bpi;A407_R110.bpi;DreamEdit_C6.bpi</PackageImports>
     <BCC_wamp>true</BCC_wamp>
-    <BCC_wstu>true</BCC_wstu>
+    <BCC_wucp>true</BCC_wucp>
+    <BCC_wimp>true</BCC_wimp>
     <IncludePath>$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;src;cli;lib</IncludePath>
+    <BCC_wstu>true</BCC_wstu>
     <BCC_wstv>true</BCC_wstv>
     <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;src;cli;lib</ILINK_LibraryPath>
-    <DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
     <DCC_UNSAFE_CODE>true</DCC_UNSAFE_CODE>
+    <DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_1)'!=''">
-    <DCC_Optimize>false</DCC_Optimize>
     <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
-    <BCC_wamb>true</BCC_wamb>
-    <Defines>_DEBUG;_HAS_ITERATOR_DEBUGGING=1;$(Defines)</Defines>
+    <DCC_Optimize>false</DCC_Optimize>
     <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
-    <BCC_wexc>true</BCC_wexc>
+    <Defines>_DEBUG;_HAS_ITERATOR_DEBUGGING=1;$(Defines)</Defines>
+    <BCC_wamb>true</BCC_wamb>
     <BCC_wprc>true</BCC_wprc>
-    <BCC_wnod>true</BCC_wnod>
+    <BCC_wexc>true</BCC_wexc>
     <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
+    <BCC_wnod>true</BCC_wnod>
     <BCC_wuse>true</BCC_wuse>
-    <BCC_wdef>true</BCC_wdef>
-    <BCC_wbbf>true</BCC_wbbf>
     <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
+    <BCC_wbbf>true</BCC_wbbf>
+    <BCC_wdef>true</BCC_wdef>
     <BCC_wsig>true</BCC_wsig>
     <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
     <BCC_UseRegisterVariables>None</BCC_UseRegisterVariables>
     <DCC_Define>DEBUG</DCC_Define>
-    <BCC_wnak>true</BCC_wnak>
     <BCC_DebugLineNumbers>true</BCC_DebugLineNumbers>
-    <BCC_wstl>true</BCC_wstl>
+    <BCC_wnak>true</BCC_wnak>
     <BCC_winl>true</BCC_winl>
-    <BCC_wasm>true</BCC_wasm>
-    <FinalOutputDir>.\</FinalOutputDir>
+    <BCC_wstl>true</BCC_wstl>
     <BCC_SelectedWarnings>true</BCC_SelectedWarnings>
-    <BCC_wpin>true</BCC_wpin>
+    <FinalOutputDir>.\</FinalOutputDir>
+    <BCC_wasm>true</BCC_wasm>
     <BCC_wcln>true</BCC_wcln>
+    <BCC_wpin>true</BCC_wpin>
     <IntermediateOutputDir>bcb_Debug</IntermediateOutputDir>
-    <BCC_wimp>true</BCC_wimp>
-    <BCC_wucp>true</BCC_wucp>
     <BCC_wamp>true</BCC_wamp>
+    <BCC_wucp>true</BCC_wucp>
+    <BCC_wimp>true</BCC_wimp>
     <BCC_AllWarnings>false</BCC_AllWarnings>
-    <BCC_wpar>true</BCC_wpar>
     <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
+    <BCC_wpar>true</BCC_wpar>
     <BCC_StackFrames>true</BCC_StackFrames>
     <BCC_wstu>true</BCC_wstu>
     <BCC_wstv>true</BCC_wstv>
-    <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
+    <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     <TASM_Debugging>Full</TASM_Debugging>
     <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
   </PropertyGroup>
@@ -128,63 +128,66 @@
     </CppCompile>
     <CppCompile Include="lib\checkautovariables.cpp">
       <DependentOn>lib\checkautovariables.h</DependentOn>
-      <BuildOrder>4</BuildOrder>
+      <BuildOrder>3</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkbufferoverrun.cpp">
       <DependentOn>lib\checkbufferoverrun.h</DependentOn>
-      <BuildOrder>5</BuildOrder>
+      <BuildOrder>4</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkclass.cpp">
       <DependentOn>lib\checkclass.h</DependentOn>
-      <BuildOrder>6</BuildOrder>
+      <BuildOrder>5</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkdangerousfunctions.cpp">
       <DependentOn>lib\checkdangerousfunctions.h</DependentOn>
-      <BuildOrder>7</BuildOrder>
+      <BuildOrder>6</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkexceptionsafety.cpp">
       <DependentOn>lib\checkexceptionsafety.h</DependentOn>
-      <BuildOrder>8</BuildOrder>
+      <BuildOrder>7</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkmemoryleak.cpp">
       <DependentOn>lib\checkmemoryleak.h</DependentOn>
-      <BuildOrder>9</BuildOrder>
+      <BuildOrder>8</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkother.cpp">
       <DependentOn>lib\checkother.h</DependentOn>
-      <BuildOrder>10</BuildOrder>
+      <BuildOrder>9</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkstl.cpp">
       <DependentOn>lib\checkstl.h</DependentOn>
-      <BuildOrder>11</BuildOrder>
+      <BuildOrder>10</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkunusedfunctions.cpp">
       <DependentOn>lib\checkunusedfunctions.h</DependentOn>
-      <BuildOrder>12</BuildOrder>
+      <BuildOrder>11</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\cppcheck.cpp">
-      <BuildOrder>13</BuildOrder>
+      <BuildOrder>12</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\errorlogger.cpp">
       <DependentOn>lib\errorlogger.h</DependentOn>
-      <BuildOrder>14</BuildOrder>
+      <BuildOrder>13</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\executionpath.cpp">
       <DependentOn>lib\executionpath.h</DependentOn>
-      <BuildOrder>15</BuildOrder>
+      <BuildOrder>14</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\filelister.cpp">
       <DependentOn>lib\filelister.h</DependentOn>
-      <BuildOrder>16</BuildOrder>
+      <BuildOrder>15</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\filelister_unix.cpp">
-      <BuildOrder>17</BuildOrder>
+      <BuildOrder>16</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\filelister_win32.cpp">
-      <BuildOrder>18</BuildOrder>
+      <BuildOrder>17</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\mathlib.cpp">
       <DependentOn>lib\mathlib.h</DependentOn>
+      <BuildOrder>18</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="lib\path.cpp">
       <BuildOrder>19</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\preprocessor.cpp">
@@ -192,6 +195,7 @@
       <BuildOrder>20</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\settings.cpp">
+      <DependentOn>lib\settings.h</DependentOn>
       <BuildOrder>21</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\token.cpp">
@@ -200,7 +204,7 @@
     </CppCompile>
     <CppCompile Include="lib\tokenize.cpp">
       <DependentOn>lib\tokenize.h</DependentOn>
-      <BuildOrder>3</BuildOrder>
+      <BuildOrder>23</BuildOrder>
     </CppCompile>
     <BuildConfiguration Include="Debug">
       <Key>Cfg_1</Key>
