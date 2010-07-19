@@ -3961,7 +3961,11 @@ void CheckOther::charBitOpError(const Token *tok)
 
 void CheckOther::variableScopeError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style, "variableScope", "The scope of the variable " + varname + " can be reduced");
+    reportError(tok,
+                Severity::style,
+                "variableScope",
+                "The scope of the variable " + varname + " can be reduced\n"
+                "Be very careful when you reduce the scope! The logical behaviour can be changed by mistake, for example when reducing the scope in a loop.");
 }
 
 void CheckOther::conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse)
