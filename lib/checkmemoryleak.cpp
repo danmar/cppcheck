@@ -2186,11 +2186,32 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 void CheckMemoryLeakInFunction::checkReallocUsage()
 {
     const Token *tok = _tokenizer->tokens();
-    for (; tok; tok = tok->next())
+    while ((tok = Token::findmatch(tok, ") const| {")))
     {
-        if (Token::Match(tok, "%var% = realloc|g_try_realloc ( %var% ,"))
+        // Record the varid's of the function parameters
+        std::set<unsigned int> parameterVarIds;
+        for (tok = tok->link(); tok && tok->str() != "{"; tok = tok->next())
         {
-            if (tok->varId() == tok->tokAt(4)->varId())
+            if (tok->varId() != 0)
+                parameterVarIds.insert(tok->varId());
+        }
+
+        // Search for the "var = realloc(var, 100);" pattern within this function
+        unsigned int indentlevel = 0;
+        for (tok = tok->next(); tok; tok = tok->next())
+        {
+            if (tok->str() == "{")
+                ++indentlevel;
+            else if (tok->str() == "}")
+            {
+                if (indentlevel == 0)
+                    break;
+                --indentlevel;
+            }
+
+            if (Token::Match(tok, "%var% = realloc|g_try_realloc ( %var% ,") &&
+                tok->varId() == tok->tokAt(4)->varId() &&
+                parameterVarIds.find(tok->varId()) == parameterVarIds.end())
             {
                 memleakUponReallocFailureError(tok, tok->str());
             }

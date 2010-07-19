@@ -329,6 +329,7 @@ private:
         TEST_CASE(realloc4);
         TEST_CASE(realloc5);
         TEST_CASE(realloc6);
+        TEST_CASE(realloc7);
 
         TEST_CASE(assign);
 
@@ -2010,6 +2011,21 @@ private:
     {
         ASSERT_EQUALS(";;realloc;;", getcode("char *buf; buf=realloc(buf,100);", "buf"));
         ASSERT_EQUALS(";;alloc;", getcode("char *buf; buf=realloc(0,100);", "buf"));
+    }
+
+    void realloc7()
+    {
+        check("bool foo(size_t nLen, char* pData)\n"
+              "{\n"
+              "    pData = (char*) realloc(pData, sizeof(char) + (nLen + 1)*sizeof(char));\n"
+              "    if ( pData == NULL )\n"
+              "    {\n"
+              "        return false;\n"
+              "    }\n"
+              "    free(pData);\n"
+              "    return true;\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void assign()
