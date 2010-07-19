@@ -129,6 +129,7 @@ private:
         TEST_CASE(const24); // ticket #1708
         TEST_CASE(const25); // ticket #1724
         TEST_CASE(const26); // ticket #1847
+        TEST_CASE(const27); // ticket #1882
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3609,6 +3610,26 @@ private:
                    "};\n"
                   );
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const27() // ticket #1882
+    {
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){m_d=1.0; m_iRealVal=2.0;}\n"
+                   "    double dGetValue();\n"
+                   "private:\n"
+                   "    double m_d;\n"
+                   "    double m_iRealVal;\n"
+                   "};\n"
+                   "double  A::dGetValue() {\n"
+                   "    double dRet = m_iRealVal;\n"
+                   "    if( m_d != 0 )\n"
+                   "        return dRet / m_d;\n"
+                   "    return dRet;\n"
+                   "};\n"
+                  );
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (style) The function 'A::dGetValue' can be const\n", errout.str());
     }
 
     // increment/decrement => not const
