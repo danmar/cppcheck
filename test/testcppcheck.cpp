@@ -23,6 +23,7 @@
 
 #include "cppcheck.h"
 #include "testsuite.h"
+#include "path.h"
 
 #include <algorithm>
 #include <map>
@@ -384,8 +385,9 @@ private:
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("ab/cd/../ef.h");
         errorMessage._callStack.push_back(loc);
-        ASSERT_EQUALS("<error file=\"ab/ef.h\" line=\"0\" id=\"\" severity=\"\" msg=\"\"/>", errorMessage.toXML());
-        ASSERT_EQUALS("[ab/ef.h:0]: ", errorMessage.toString());
+        const std::string fname(Path::toNativeSeparators("ab/ef.h"));
+        ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"0\" id=\"\" severity=\"\" msg=\"\"/>", errorMessage.toXML());
+        ASSERT_EQUALS("[" + fname + ":0]: ", errorMessage.toString());
     }
 
     void templateFormat()
@@ -398,9 +400,10 @@ private:
         errorMessage._id = "testId";
         errorMessage._severity = Severity::fromString("error");
         errorMessage._msg = "long testMessage";
-        ASSERT_EQUALS("<error file=\"some/{file}file.cpp\" line=\"10\" id=\"testId\" severity=\"error\" msg=\"long testMessage\"/>", errorMessage.toXML());
-        ASSERT_EQUALS("[some/{file}file.cpp:10]: (error) long testMessage", errorMessage.toString());
-        ASSERT_EQUALS("testId-some/{file}file.cpp,error.10?{long testMessage}", errorMessage.toString("{id}-{file},{severity}.{line}?{{message}}"));
+        const std::string fname(Path::toNativeSeparators("some/{file}file.cpp"));
+        ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"10\" id=\"testId\" severity=\"error\" msg=\"long testMessage\"/>", errorMessage.toXML());
+        ASSERT_EQUALS("[" + fname + ":10]: (error) long testMessage", errorMessage.toString());
+        ASSERT_EQUALS("testId-" + fname + ",error.10?{long testMessage}", errorMessage.toString("{id}-{file},{severity}.{line}?{{message}}"));
     }
 
     void getErrorMessages()
