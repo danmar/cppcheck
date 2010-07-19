@@ -16,25 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include "path.h"
-
-static std::string replace_chars(const std::string &str, char from, char to)
-{
-    std::string modified(str);
-    size_t pos = modified.find(from);
-    if (pos!= std::string::npos)
-    {
-        std::string::iterator iter = modified.begin() + pos;
-        std::string::iterator end = modified.end();
-        while (iter != end)
-        {
-            if (*iter == from)
-                *iter = to;
-            ++iter;
-        }
-    }
-    return modified;
-}
 
 std::string Path::toNativeSeparators(const std::string &path)
 {
@@ -45,12 +28,16 @@ std::string Path::toNativeSeparators(const std::string &path)
     char separ = '\\';
     char native = '/';
 #endif
-    return replace_chars(path, separ, native);
+    std::string modified(path);
+    std::replace(modified.begin(), modified.end(), separ, native);
+    return modified;
 }
 
 std::string Path::fromNativeSeparators(const std::string &path)
 {
     char nonnative = '\\';
-    char internal = '/';
-    return replace_chars(path, nonnative, internal);
+    char newsepar = '/';
+    std::string modified(path);
+    std::replace(modified.begin(), modified.end(), nonnative, newsepar);
+    return modified;
 }
