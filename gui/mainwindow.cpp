@@ -33,6 +33,7 @@
 #include "projectfile.h"
 #include "project.h"
 #include "report.h"
+#include "logview.h"
 #include "../lib/filelister.h"
 
 // HTMLHelp is only available in Windows
@@ -45,12 +46,15 @@ MainWindow::MainWindow() :
     mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
     mApplications(new ApplicationList(this)),
     mTranslation(new TranslationHandler(this)),
-    mLanguages(new QActionGroup(this))
+    mLanguages(new QActionGroup(this)),
+    mLogView(NULL),
+    mExiting(false)
 {
     mUI.setupUi(this);
     mUI.mResults->Initialize(mSettings, mApplications);
 
     mThread = new ThreadHandler(this);
+    mLogView = new LogView(mSettings);
 
     connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
     connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
@@ -65,6 +69,7 @@ MainWindow::MainWindow() :
     connect(mUI.mActionUncheckAll, SIGNAL(triggered()), this, SLOT(UncheckAll()));
     connect(mUI.mActionCollapseAll, SIGNAL(triggered()), mUI.mResults, SLOT(CollapseAllResults()));
     connect(mUI.mActionExpandAll, SIGNAL(triggered()), mUI.mResults, SLOT(ExpandAllResults()));
+    connect(mUI.mActionViewLog, SIGNAL(triggered()), this, SLOT(ShowLogView()));
 
     connect(mUI.mActionRecheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
 
@@ -114,6 +119,7 @@ MainWindow::MainWindow() :
 
 MainWindow::~MainWindow()
 {
+    delete mLogView;
 }
 
 void MainWindow::CreateLanguageMenuItems()
@@ -395,6 +401,12 @@ QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
 
 void MainWindow::CheckDone()
 {
+    if (mExiting)
+    {
+        close();
+        return;
+    }
+
     mUI.mResults->CheckingFinished();
     EnableCheckButtons(true);
     mUI.mActionSettings->setEnabled(true);
@@ -518,10 +530,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
             // exiting it doesn't matter.
             mThread->Stop();
             SaveSettings();
-            event->accept();
+            mExiting = true;
         }
-        else
-            event->ignore();
+        event->ignore();
     }
 }
 
@@ -730,5 +741,23 @@ void MainWindow::NewProjectFile()
         Project prj(filepath, this);
         prj.Create();
         prj.Edit();
+    }
+}
+
+void MainWindow::ShowLogView()
+{
+    if (mLogView == NULL)
+        mLogView = new LogView(mSettings);
+
+    mLogView->show();
+    if (!mLogView->isActiveWindow())
+        mLogView->activateWindow();
+}
+
+void MainWindow::Log(const QString &logline)
+{
+    if (mLogView)
+    {
+        mLogView->AppendLine(logline);
     }
 }

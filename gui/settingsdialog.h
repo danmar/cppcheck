@@ -21,17 +21,12 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QSettings>
-#include <QCheckBox>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include "applicationlist.h"
-
-#include <QListWidget>
 #include <QKeyEvent>
 #include "ui_settings.h"
+
+class QSettings;
+class QWidget;
+class ApplicationList;
 
 /// @addtogroup GUI
 /// @{

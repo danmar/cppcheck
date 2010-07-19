@@ -109,12 +109,13 @@ private:
     class Var
     {
     public:
-        Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, Var *next_ = 0)
+        Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, bool class_ = false, Var *next_ = 0)
             : name(name_),
               init(init_),
               priv(priv_),
               isMutable(mutable_),
               isStatic(static_),
+              isClass(class_),
               next(next_)
         {
         }
@@ -134,6 +135,9 @@ private:
         /** @brief is this variable static? */
         bool        isStatic;
 
+        /** @brief is this variable a class (or unknown type)? */
+        bool        isClass;
+
         /** @brief next Var item */
         Var *next;
 
@@ -146,11 +150,9 @@ private:
      * @param tok1 pointer to class declaration
      * @param ftok pointer to the function that should be checked
      * @param varlist variable list (the "init" flag will be set in these variables)
-     * @param classname name of class
      * @param callstack the function doesn't look into recursive function calls.
-     * @param isStruct if this is a struct instead of a class
      */
-    void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const std::string &classname, std::list<std::string> &callstack, bool isStruct);
+    void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, std::list<std::string> &callstack);
 
     /** @brief initialize a variable in the varlist */
     void initVar(Var *varlist, const std::string &varname);
@@ -158,15 +160,16 @@ private:
     /**
      * @brief get varlist from a class definition
      * @param tok1 pointer to class definition
-     * @param withClasses if class variables should be extracted too.
-     * @param isStruct is this a struct?
      */
-    Var *getVarList(const Token *tok1, bool withClasses, bool isStruct);
+    Var *getVarList(const Token *tok1);
 
     bool sameFunc(int nest, const Token *firstEnd, const Token *secondEnd);
     bool isMemberFunc(const Token *tok);
-    bool isMemberVar(const std::string &classname, const Var *varlist, const Token *tok);
-    bool checkConstFunc(const std::string &classname, const Var *varlist, const Token *tok);
+    bool isMemberVar(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok);
+    bool checkConstFunc(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok);
+
+    /** @brief check if this function is virtual in the base classes */
+    bool isVirtual(const std::vector<std::string> &derivedFrom, const Token *functionToken) const;
 
     /**
      * @brief Helper function for operatorEqRetRefThis that checks if there are errors

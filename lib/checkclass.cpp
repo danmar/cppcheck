@@ -41,11 +41,12 @@ CheckClass instance;
 
 //---------------------------------------------------------------------------
 
-CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, bool isStruct)
+CheckClass::Var *CheckClass::getVarList(const Token *tok1)
 {
     // Get variable list..
     Var *varlist = NULL;
     unsigned int indentlevel = 0;
+    bool isStruct = tok1->str() == "struct";
     bool priv = !isStruct;
     for (const Token *tok = tok1; tok; tok = tok->next())
     {
@@ -131,14 +132,13 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         }
 
         // Is it a variable declaration?
+        bool isClass = false;
         if (Token::Match(next, "%type% %var% ;|:"))
         {
-            if (withClasses)
-                varname = next->strAt(1);
-            else if (next->isStandardType())
-                varname = next->strAt(1);
-            else if (Token::findmatch(_tokenizer->tokens(), ("enum " + next->str()).c_str()))
-                varname = next->strAt(1);
+            if (!next->isStandardType())
+                isClass = true;
+
+            varname = next->strAt(1);
         }
 
         // Structure?
@@ -158,10 +158,9 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         // Array?
         else if (Token::Match(next, "%type% %var% [") && next->next()->str() != "operator")
         {
-            if (!withClasses && !next->isStandardType())
-            {
-                continue;
-            }
+            if (!next->isStandardType())
+                isClass = true;
+
             varname = next->strAt(1);
         }
 
@@ -172,15 +171,17 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
             varname = next->strAt(4);
 
         // std::string..
-        else if (withClasses && Token::Match(next, "%type% :: %type% %var% ;"))
+        else if (Token::Match(next, "%type% :: %type% %var% ;"))
         {
+            isClass = true;
             varname = next->strAt(3);
         }
 
         // Container..
-        else if (withClasses && (Token::Match(next, "%type% :: %type% <") ||
-                                 Token::Match(next, "%type% <")))
+        else if (Token::Match(next, "%type% :: %type% <") ||
+                 Token::Match(next, "%type% <"))
         {
+            isClass = true;
             // find matching ">"
             int level = 0;
             for (; next; next = next->next())
@@ -203,7 +204,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         // If the varname was set in the if-blocks above, create a entry for this variable..
         if (!varname.empty() && varname != "operator")
         {
-            Var *var = new Var(varname, false, priv, isMutable, isStatic, varlist);
+            Var *var = new Var(varname, false, priv, isMutable, isStatic, isClass, varlist);
             varlist  = var;
         }
     }
@@ -225,8 +226,10 @@ void CheckClass::initVar(Var *varlist, const std::string &varname)
 }
 //---------------------------------------------------------------------------
 
-void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const std::string &classname, std::list<std::string> &callstack, bool isStruct)
+void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, std::list<std::string> &callstack)
 {
+    const std::string &classname = tok1->next()->str();
+    bool isStruct = tok1->str() == "struct";
     bool Assign = false;
     unsigned int indentlevel = 0;
 
@@ -360,14 +363,22 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             if (ftok2)
             {
                 callstack.push_back(ftok->str());
-                initializeVarList(tok1, ftok2, varlist, classname, callstack, isStruct);
+                initializeVarList(tok1, ftok2, varlist, callstack);
                 callstack.pop_back();
             }
             else  // there is a called member function, but it is not defined where we can find it, so we assume it initializes everything
             {
                 // check if the function is part of this class..
-                const Token *tok = Token::findmatch(_tokenizer->tokens(), ((isStruct ? std::string("struct ") : std::string("class ")) + classname + " {").c_str());
-                for (tok = tok ? tok->tokAt(3) : 0; tok; tok = tok->next())
+                const Token *tok = Token::findmatch(_tokenizer->tokens(), (tok1->str() + " " + classname + " {|:").c_str());
+                bool derived = false;
+                while (tok && tok->str() != "{")
+                {
+                    if (tok->str() == ":")
+                        derived = true;
+                    tok = tok->next();
+                }
+
+                for (tok = tok ? tok->next() : 0; tok; tok = tok->next())
                 {
                     if (tok->str() == "{")
                     {
@@ -381,13 +392,15 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
                     }
                     else if (tok->str() == ftok->str() || tok->str() == "friend")
                     {
-                        tok = 0;
-                        break;
+                        if (tok->next()->str() == "(" || tok->str() == "friend")
+                        {
+                            tok = 0;
+                            break;
+                        }
                     }
                 }
-
                 // bail out..
-                if (!tok)
+                if (!tok || derived)
                 {
                     for (Var *var = varlist; var; var = var->next)
                         var->init = true;
@@ -474,7 +487,7 @@ struct Constructor
     bool isCopyConstructor;
 };
 
-static bool argsMatch(const Token *first, const Token *second)
+static bool argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth)
 {
     bool match = false;
     while (first->str() == second->str())
@@ -515,6 +528,35 @@ static bool argsMatch(const Token *first, const Token *second)
             // skip default value assignment
             if (first->next()->str() == "=")
                 first = first->tokAt(2);
+        }
+
+        // variable with class path
+        else if (depth && Token::Match(first->next(), "%var%"))
+        {
+            std::string param = path + first->next()->str();
+
+            if (Token::Match(second->next(), param.c_str()))
+            {
+                second = second->tokAt(depth * 2);
+            }
+            else if (depth > 1)
+            {
+                std::string    short_path = path;
+
+                // remove last " :: "
+                short_path.resize(short_path.size() - 4);
+
+                // remove last name
+                while (!short_path.empty() && short_path[short_path.size() - 1] != ' ')
+                    short_path.resize(short_path.size() - 1);
+
+                param = short_path + first->next()->str();
+
+                if (Token::Match(second->next(), param.c_str()))
+                {
+                    second = second->tokAt((depth - 1) * 2);
+                }
+            }
         }
 
         first = first->next();
@@ -619,6 +661,8 @@ void CheckClass::constructors()
                             int stack_index = spaceInfo.size() - 1;
 
                             std::string classPattern;
+                            std::string classPath;
+                            std::string searchPattern;
                             int offset1, offset2;
                             if (operatorEqual)
                             {
@@ -632,25 +676,25 @@ void CheckClass::constructors()
                             }
 
                             bool hasBody = false;
+                            unsigned int depth = 0;
                             while (!hasBody && stack_index >= 0)
                             {
-                                classPattern = spaceInfo[stack_index].className + std::string(" :: ") + classPattern;
+                                classPath = spaceInfo[stack_index].className + std::string(" :: ") + classPath;
+                                searchPattern = classPath + classPattern;
                                 offset2 += 2;
+                                depth++;
 
                                 // start looking at end of class
                                 const Token *constructor_token = spaceInfo[stack_index].classEnd;
 
-                                while ((constructor_token = Token::findmatch(constructor_token, classPattern.c_str())) != NULL)
+                                while ((constructor_token = Token::findmatch(constructor_token, searchPattern.c_str())) != NULL)
                                 {
                                     // skip destructor and other classes
                                     if (!Token::Match(constructor_token->previous(), "~|::"))
                                     {
-                                        if (argsMatch(tok->tokAt(offset1), constructor_token->tokAt(offset2)))
+                                        if (argsMatch(tok->tokAt(offset1), constructor_token->tokAt(offset2), classPath, depth))
                                         {
-                                            if (operatorEqual || copyConstructor)
-                                                constructorList.push_back(Constructor(constructor_token, access, true, operatorEqual, copyConstructor));
-                                            else
-                                                constructorList.push_front(Constructor(constructor_token, access, true, false, false));
+                                            constructorList.push_back(Constructor(constructor_token, access, true, operatorEqual, copyConstructor));
 
                                             hasBody = true;
                                             break;
@@ -669,10 +713,7 @@ void CheckClass::constructors()
                             // function body found?
                             if (!hasBody)
                             {
-                                if (operatorEqual || copyConstructor)
-                                    constructorList.push_back(Constructor(tok, access, false, operatorEqual, copyConstructor));
-                                else
-                                    constructorList.push_front(Constructor(tok, access, false, false, false));
+                                constructorList.push_back(Constructor(tok, access, false, operatorEqual, copyConstructor));
                             }
 
                             tok = next->next();
@@ -684,10 +725,7 @@ void CheckClass::constructors()
                             // skip destructor and other classes
                             if (!Token::Match(tok->previous(), "~|::"))
                             {
-                                if (operatorEqual || copyConstructor)
-                                    constructorList.push_back(Constructor(tok, access, true, operatorEqual, copyConstructor));
-                                else
-                                    constructorList.push_front(Constructor(tok, access, true, false, false));
+                                constructorList.push_back(Constructor(tok, access, true, operatorEqual, copyConstructor));
                             }
 
                             // skip over function body
@@ -700,8 +738,8 @@ void CheckClass::constructors()
                 }
             }
 
-            // Get variables that are not classes...
-            Var *varlist = getVarList(tok1, false, isStruct);
+            // Get variables...
+            Var *varlist = getVarList(tok1);
 
             // There are no constructors.
             if (numConstructors == 0)
@@ -709,7 +747,7 @@ void CheckClass::constructors()
                 // If there is a private variable, there should be a constructor..
                 for (const Var *var = varlist; var; var = var->next)
                 {
-                    if (var->priv && !var->isStatic)
+                    if (var->priv && !var->isClass && !var->isStatic)
                     {
                         noConstructorError(tok1, className, isStruct);
                         break;
@@ -718,37 +756,22 @@ void CheckClass::constructors()
             }
 
             std::list<Constructor>::const_iterator it;
-            bool hasClasses = false;
 
             for (it = constructorList.begin(); it != constructorList.end(); ++it)
             {
-                // check for end of regular constructors and start of copy constructors
-                bool needClasses = it->isCopyConstructor || it->isOperatorEqual;
-                if (needClasses != hasClasses)
-                {
-                    hasClasses = needClasses;
-
-                    // Delete the varlist..
-                    while (varlist)
-                    {
-                        Var *nextvar = varlist->next;
-                        delete varlist;
-                        varlist = nextvar;
-                    }
-
-                    // Get variables including classes
-                    varlist = getVarList(tok1, true, isStruct);
-                }
-
                 if (!it->hasBody)
                     continue;
 
                 std::list<std::string> callstack;
-                initializeVarList(tok1, it->token, varlist, className, callstack, isStruct);
+                initializeVarList(tok1, it->token, varlist, callstack);
 
                 // Check if any variables are uninitialized
                 for (Var *var = varlist; var; var = var->next)
                 {
+                    // skip classes for regular constructor
+                    if (var->isClass && !(it->isCopyConstructor || it->isOperatorEqual))
+                        continue;
+
                     if (var->init || var->isStatic)
                         continue;
 
@@ -1696,11 +1719,123 @@ void CheckClass::thisSubtraction()
 }
 //---------------------------------------------------------------------------
 
+// check if this function is defined virtual in the base classes
+bool CheckClass::isVirtual(const std::vector<std::string> &derivedFrom, const Token *functionToken) const
+{
+    // check each base class
+    for (unsigned int i = 0; i < derivedFrom.size(); ++i)
+    {
+        std::string className;
+
+        if (derivedFrom[i].find("::") != std::string::npos)
+        {
+            /** @todo handle nested base classes and namespaces */
+        }
+        else
+            className = derivedFrom[i];
+
+        std::string classPattern = std::string("class|struct ") + className + std::string(" {|:");
+
+        // find the base class
+        const Token *classToken = Token::findmatch(_tokenizer->tokens(), classPattern.c_str());
+
+        // find the function in the base class
+        if (classToken)
+        {
+            std::vector<std::string> baseList;
+            const Token * tok = classToken;
+
+            while (tok->str() != "{")
+            {
+                // check for base classes
+                if (Token::Match(tok, ":|, public|protected|private"))
+                {
+                    // jump to base class name
+                    tok = tok->tokAt(2);
+
+                    std::string    base;
+
+                    // handle nested base classea and namespacess
+                    while (Token::Match(tok, "%var% ::"))
+                    {
+                        base += tok->str();
+                        base += " :: ";
+                        tok = tok->tokAt(2);
+                    }
+
+                    base += tok->str();
+
+                    // save pattern for base class name
+                    baseList.push_back(base);
+                }
+                tok = tok->next();
+            }
+
+            tok = tok->next();
+
+            for (; tok; tok = tok->next())
+            {
+                if (tok->str() == "{")
+                    tok = tok->link();
+                else if (tok->str() == "}")
+                    break;
+                else if (Token::Match(tok, "public:|protected:|private:"))
+                    continue;
+                else if (tok->str() == "(")
+                    tok = tok->link();
+                else if (tok->str() == "virtual")
+                {
+                    // goto the function name
+                    while (tok->next()->str() != "(")
+                        tok = tok->next();
+
+                    // do the function names match?
+                    if (tok->str() == functionToken->str())
+                    {
+                        const Token *temp1 = tok->previous();
+                        const Token *temp2 = functionToken->previous();
+                        bool returnMatch = true;
+
+                        // check for matching return parameters
+                        while (temp1->str() != "virtual")
+                        {
+                            if (temp1->str() != temp2->str())
+                            {
+                                returnMatch = false;
+                                break;
+                            }
+
+                            temp1 = temp1->previous();
+                            temp2 = temp2->previous();
+                        }
+
+                        // check for matching function parameters
+                        if (returnMatch && argsMatch(tok->tokAt(2), functionToken->tokAt(2), std::string(""), 0))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            if (!baseList.empty())
+            {
+                if (isVirtual(baseList, functionToken))
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 struct NestInfo
 {
     std::string className;
-    const Token * classEnd;
+    const Token *classStart;
+    const Token *classEnd;
     int levelEnd;
+    std::vector<std::string> derivedFrom;
 };
 
 // Can a function be const?
@@ -1722,23 +1857,47 @@ void CheckClass::checkConst()
             if (level == nestInfo.back().levelEnd)
                 nestInfo.pop_back();
         }
-        else if (Token::Match(tok, "class|struct %var% {"))
+        else if (Token::Match(tok, "class|struct %var% {|:"))
         {
             const Token *classTok = tok;
+            NestInfo info;
 
             // get class name..
             std::string classname(tok->strAt(1));
+            info.className = classname;
+            info.classStart = tok;
 
-            // goto initial {'
+            // goto initial '{'
             while (tok && tok->str() != "{")
+            {
+                // check for base classes
+                if (Token::Match(tok, ":|, public|protected|private"))
+                {
+                    // jump to base class name
+                    tok = tok->tokAt(2);
+
+                    std::string    derivedFrom;
+
+                    // handle derived base classes
+                    while (Token::Match(tok, "%var% ::"))
+                    {
+                        derivedFrom += tok->str();
+                        derivedFrom += " :: ";
+                        tok = tok->tokAt(2);
+                    }
+
+                    derivedFrom += tok->str();
+
+                    // save pattern for base class name
+                    info.derivedFrom.push_back(derivedFrom);
+                }
                 tok = tok->next();
+            }
             if (!tok)
                 break;
 
             const Token *classEnd = tok->link();
 
-            NestInfo info;
-            info.className = classname;
             info.classEnd = classEnd;
             info.levelEnd = level++;
             nestInfo.push_back(info);
@@ -1752,7 +1911,7 @@ void CheckClass::checkConst()
             }
 
             // Get class variables...
-            varlist = getVarList(classTok, true, classTok->str() == "struct");
+            varlist = getVarList(classTok);
 
             // parse in this class definition to see if there are any simple getter functions
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
@@ -1813,6 +1972,8 @@ void CheckClass::checkConst()
                     if (functionName == classname)
                         continue;
 
+                    const Token *functionToken = tok2;
+
                     // goto the ')'
                     tok2 = tok2->next()->link();
                     if (!tok2)
@@ -1823,8 +1984,15 @@ void CheckClass::checkConst()
                     {
                         const Token *paramEnd = tok2;
 
+                        // check if base class function is virtual
+                        if (!info.derivedFrom.empty())
+                        {
+                            if (isVirtual(info.derivedFrom, functionToken))
+                                continue;
+                        }
+
                         // if nothing non-const was found. write error..
-                        if (checkConstFunc(classname, varlist, paramEnd))
+                        if (checkConstFunc(info.className, info.derivedFrom, varlist, paramEnd))
                         {
                             for (int i = nestInfo.size() - 2; i >= 0; i--)
                                 classname = std::string(nestInfo[i].className + "::" + classname);
@@ -1834,6 +2002,13 @@ void CheckClass::checkConst()
                     }
                     else if (Token::simpleMatch(tok2, ") ;")) // not inline
                     {
+                        // check if base class function is virtual
+                        if (!info.derivedFrom.empty())
+                        {
+                            if (isVirtual(info.derivedFrom, functionToken))
+                                continue;
+                        }
+
                         for (int i = nestInfo.size() - 1; i >= 0; i--)
                         {
                             const Token *found = nestInfo[i].classEnd;
@@ -1852,7 +2027,7 @@ void CheckClass::checkConst()
                                 if (sameFunc(namespaceLevel, tok2, paramEnd))
                                 {
                                     // if nothing non-const was found. write error..
-                                    if (checkConstFunc(classname, varlist, paramEnd))
+                                    if (checkConstFunc(info.className, info.derivedFrom, varlist, paramEnd))
                                     {
                                         for (int k = nestInfo.size() - 2; k >= 0; k--)
                                             classname = std::string(nestInfo[k].className + "::" + classname);
@@ -2079,7 +2254,7 @@ bool CheckClass::isMemberFunc(const Token *tok)
     return false;
 }
 
-bool CheckClass::isMemberVar(const std::string &classname, const Var *varlist, const Token *tok)
+bool CheckClass::isMemberVar(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok)
 {
     while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:|return|:|?"))
     {
@@ -2107,10 +2282,71 @@ bool CheckClass::isMemberVar(const std::string &classname, const Var *varlist, c
         }
     }
 
+    // not found in this class
+    if (!derivedFrom.empty())
+    {
+        // check each base class
+        for (unsigned int i = 0; i < derivedFrom.size(); ++i)
+        {
+            std::string className;
+
+            if (derivedFrom[i].find("::") != std::string::npos)
+            {
+                /** @todo handle nested base classes and namespaces */
+            }
+            else
+                className = derivedFrom[i];
+
+            std::string classPattern = std::string("class|struct ") + className + std::string(" {|:");
+
+            // find the base class
+            const Token *classToken = Token::findmatch(_tokenizer->tokens(), classPattern.c_str());
+
+            // find the function in the base class
+            if (classToken)
+            {
+                std::vector<std::string> baseList;
+                const Token * tok1 = classToken;
+
+                while (tok1->str() != "{")
+                {
+                    // check for base classes
+                    if (Token::Match(tok1, ":|, public|protected|private"))
+                    {
+                        // jump to base class name
+                        tok1 = tok1->tokAt(2);
+
+                        std::string    base;
+
+                        // handle nested base classea and namespacess
+                        while (Token::Match(tok1, "%var% ::"))
+                        {
+                            base += tok1->str();
+                            base += " :: ";
+                            tok1 = tok1->tokAt(2);
+                        }
+
+                        base += tok1->str();
+
+                        // save pattern for base class name
+                        baseList.push_back(base);
+                    }
+                    tok1 = tok1->next();
+                }
+
+                // Get class variables...
+                Var *varlist1 = getVarList(classToken);
+
+                if (isMemberVar(classToken->next()->str(), baseList, varlist1, tok))
+                    return true;
+            }
+        }
+    }
+
     return false;
 }
 
-bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist, const Token *tok)
+bool CheckClass::checkConstFunc(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok)
 {
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
@@ -2132,7 +2368,7 @@ bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist
                  (tok1->str().find("=") == 1 &&
                   tok1->str().find_first_of("<!>") == std::string::npos))
         {
-            if (isMemberVar(classname, varlist, tok1->previous()))
+            if (isMemberVar(classname, derivedFrom, varlist, tok1->previous()))
             {
                 isconst = false;
                 break;
@@ -2140,7 +2376,7 @@ bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist
         }
 
         // streaming: <<
-        else if (tok1->str() == "<<" && isMemberVar(classname, varlist, tok1->previous()))
+        else if (tok1->str() == "<<" && isMemberVar(classname, derivedFrom, varlist, tok1->previous()))
         {
             isconst = false;
             break;
@@ -2154,7 +2390,7 @@ bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist
         }
 
         // function call..
-        else if ((tok1->str() != "return" && Token::Match(tok1, "%var% (") && tok1->str() != "c_str") ||
+        else if ((Token::Match(tok1, "%var% (") && !Token::Match(tok1, "return|c_str|if")) ||
                  Token::Match(tok1, "%var% < %any% > ("))
         {
             isconst = false;

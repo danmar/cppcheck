@@ -90,7 +90,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
             // Multiple files => filename = "+"
             else if (func.filename != tokenizer.getFiles()->at(0))
             {
-                func.filename = "+";
+                //func.filename = "+";
                 func.usedOtherFile |= func.usedSameFile;
             }
         }

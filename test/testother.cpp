@@ -1834,6 +1834,18 @@ private:
                        "    } catch (...) {\n"
                        "    }\n"
                        "}\n");
+
+        // #1855 - switch(foo(&x))
+        checkUninitVar("int a()\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    switch (foo(&x))\n"
+                       "    {\n"
+                       "        case 1:\n"
+                       "            return x;\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // arrays..
@@ -1909,6 +1921,16 @@ private:
                        "    strchr(s, ' ');\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
+
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "        int y[2];\n"
+                       "        int s;\n"
+                       "        GetField( y + 0, \n"
+                       "                       y + 1 );\n"
+                       "        s = y[0]*y[1];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // alloc..

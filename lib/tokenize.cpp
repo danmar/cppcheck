@@ -359,8 +359,9 @@ void Tokenizer::createTokens(std::istream &code)
                 {
                     if (lineNumbers.empty() || fileIndexes.empty())
                     {
-                        std::cerr << "####### Preprocessor bug! #######\n";
-                        std::exit(0);
+                        cppcheckError(0);
+                        deallocateTokens();
+                        return;
                     }
 
                     lineno = lineNumbers.back();
@@ -5734,8 +5735,9 @@ bool Tokenizer::simplifyRedundantParanthesis()
             ret = true;
         }
 
-        if ((Token::simpleMatch(tok->previous(), "delete (") && Token::Match(tok->link(), ") ;|,")) ||
-            (Token::simpleMatch(tok->previous(), "; (") && Token::Match(tok->link(), ") ;")))
+        if (!Token::simpleMatch(tok->tokAt(-2), "operator delete") &&
+            Token::Match(tok->previous(), "delete|; (") &&
+            Token::Match(tok->link(), ") ;|,"))
         {
             tok->link()->deleteThis();
             tok->deleteThis();

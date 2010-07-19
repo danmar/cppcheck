@@ -165,13 +165,14 @@ private:
 
         TEST_CASE(simplify_function_parameters);
 
-        TEST_CASE(removeParantheses1);        // Ticket #61
+        TEST_CASE(removeParantheses1);       // Ticket #61
         TEST_CASE(removeParantheses2);
         TEST_CASE(removeParantheses3);
         TEST_CASE(removeParantheses4);       // Ticket #390
         TEST_CASE(removeParantheses5);       // Ticket #392
         TEST_CASE(removeParantheses6);
         TEST_CASE(removeParantheses7);
+        TEST_CASE(removeParantheses8);       // Ticket #1865
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -3012,6 +3013,20 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(" ; delete p ; ( p ) = 0 ;", ostr.str());
+    }
+
+    void removeParantheses8()
+    {
+        const char code[] = "struct foo {\n"
+                            "    void operator delete(void *obj, size_t sz);\n"
+                            "}\n";
+        const std::string actual(tokenizeAndStringify(code));
+
+        const char expected[] = "struct foo {\n"
+                                "void operator delete ( void * obj , size_t sz ) ;\n"
+                                "}";
+
+        ASSERT_EQUALS(expected, actual);
     }
 
     void tokenize_double()

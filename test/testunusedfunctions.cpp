@@ -45,6 +45,8 @@ private:
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(initializationIsNotAFunction);
+
+        TEST_CASE(multipleFiles);   // same function name in multiple files
     }
 
     void check(const char code[])
@@ -180,6 +182,33 @@ private:
               "  B(): N::A() {};\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void multipleFiles()
+    {
+        CheckUnusedFunctions c;
+
+        // Clear the error buffer..
+        errout.str("");
+
+        const char code[] = "static void f() { }";
+
+        for (int i = 1; i <= 2; ++i)
+        {
+            std::ostringstream fname;
+            fname << "test" << i << ".cpp";
+
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, fname.str().c_str());
+
+            c.parseTokens(tokenizer);
+        }
+
+        // Check for unused functions..
+        c.check(this);
+
+        ASSERT_EQUALS("[test1.cpp:1]: (style) The function 'f' is never used\n",errout.str());
     }
 };
 

@@ -192,6 +192,13 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
 
         if (tok->str() == "switch")
         {
+            // parse condition
+            if (checks.size() > 10 || check->parseCondition(*tok->next(), checks))
+            {
+                ExecutionPath::bailOut(checks);
+                return;
+            }
+
             const Token *tok2 = tok->next()->link();
             if (Token::simpleMatch(tok2, ") { case"))
             {

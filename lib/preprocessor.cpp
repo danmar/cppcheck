@@ -1397,7 +1397,11 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         if (headerType == 1 && !fileOpened)
         {
             filename = paths.back() + filename;
-            fin.open(filename.c_str());
+
+            // Linux can't open include paths with \ separator, so fix them
+            std::string fixedname(filename);
+            std::replace(fixedname.begin(), fixedname.end(), '\\', '/');
+            fin.open(fixedname.c_str());
             if (fin.is_open())
             {
                 fileOpened = true;

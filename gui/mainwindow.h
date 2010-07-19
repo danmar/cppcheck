@@ -32,6 +32,7 @@
 
 #include "ui_main.h"
 class ThreadHandler;
+class LogView;
 
 /// @addtogroup GUI
 /// @{
@@ -143,6 +144,12 @@ public slots:
     */
     void OpenProjectFile();
 
+    /**
+    * @brief Slot for showing the log view.
+    *
+    */
+    void ShowLogView();
+
 protected slots:
 
     /**
@@ -189,6 +196,12 @@ protected slots:
     *
     */
     void OpenHelpContents();
+
+    /**
+    * @brief Add new line to log.
+    *
+    */
+    void Log(const QString &logline);
 
 protected:
 
@@ -324,6 +337,20 @@ protected:
     * @brief Current checked directory.
     */
     QString mCurrentDirectory;
+
+    /**
+    * @brief Log view..
+    */
+    LogView *mLogView;
+
+private:
+
+    /**
+    * @brief Are we exiting the cppcheck?
+    * If this is true then the cppcheck is waiting for check threads to exit
+    * so that the application can be closed.
+    */
+    bool mExiting;
 
 };
 /// @}

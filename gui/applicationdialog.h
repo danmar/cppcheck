@@ -21,7 +21,10 @@
 
 #include <QDialog>
 #include <QLineEdit>
+#include <QString>
 #include "ui_application.h"
+
+class QWidget;
 
 /// @addtogroup GUI
 /// @{

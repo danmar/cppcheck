@@ -29,8 +29,8 @@ gui/*.qm
 # Doxygen output folder
 doxyoutput/
 # qmake generated
-src/Makefile
 
 *.sdf
 ipch
 *.opensdf
+*.orig

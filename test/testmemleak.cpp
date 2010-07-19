@@ -40,6 +40,7 @@ private:
         TEST_CASE(test2);
         TEST_CASE(test3);
         TEST_CASE(test4);
+        TEST_CASE(test5);
     }
 
     void check(const char code[])
@@ -103,6 +104,21 @@ private:
               "        delete [] p;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void test5() //#ticket 1879
+    {
+        check("void test()\n"
+              "{\n"
+              "   int *a = new int[10];\n"
+              "   try\n"
+              "   {\n"
+              "   }\n"
+              "   catch(...)\n"
+              "   {\n"
+              "   }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: a\n",errout.str());
     }
 };
 
@@ -313,6 +329,7 @@ private:
         TEST_CASE(realloc4);
         TEST_CASE(realloc5);
         TEST_CASE(realloc6);
+        TEST_CASE(realloc7);
 
         TEST_CASE(assign);
 
@@ -1994,6 +2011,21 @@ private:
     {
         ASSERT_EQUALS(";;realloc;;", getcode("char *buf; buf=realloc(buf,100);", "buf"));
         ASSERT_EQUALS(";;alloc;", getcode("char *buf; buf=realloc(0,100);", "buf"));
+    }
+
+    void realloc7()
+    {
+        check("bool foo(size_t nLen, char* pData)\n"
+              "{\n"
+              "    pData = (char*) realloc(pData, sizeof(char) + (nLen + 1)*sizeof(char));\n"
+              "    if ( pData == NULL )\n"
+              "    {\n"
+              "        return false;\n"
+              "    }\n"
+              "    free(pData);\n"
+              "    return true;\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void assign()
