@@ -130,6 +130,7 @@ private:
         TEST_CASE(const25); // ticket #1724
         TEST_CASE(const26); // ticket #1847
         TEST_CASE(const27); // ticket #1882
+        TEST_CASE(const28); // ticket #1883
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3607,6 +3608,25 @@ private:
                    "    std::swap<float>(delays_[index1], delays_[index2]);\n"
                    "}\n"
                    "float delays_[4];\n"
+                   "};\n"
+                  );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const28() // ticket #1883
+    {
+        checkConst("class P {\n"
+                   "public:\n"
+                   "    P() { x=0.0; y=0.0; }\n"
+                   "    double x,y;\n"
+                   "};\n"
+                   "class A : public P {\n"
+                   "public:\n"
+                   "    A():P(){}\n"
+                   "    void SetPos(double xPos, double yPos) {\n"
+                   "        x=xPos;\n"
+                   "        y=yPos;\n"
+                   "    }\n"
                    "};\n"
                   );
         ASSERT_EQUALS("", errout.str());

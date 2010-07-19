@@ -165,8 +165,8 @@ private:
 
     bool sameFunc(int nest, const Token *firstEnd, const Token *secondEnd);
     bool isMemberFunc(const Token *tok);
-    bool isMemberVar(const std::string &classname, const Var *varlist, const Token *tok);
-    bool checkConstFunc(const std::string &classname, const Var *varlist, const Token *tok);
+    bool isMemberVar(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok);
+    bool checkConstFunc(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok);
 
     /** @brief check if this function is virtual in the base classes */
     bool isVirtual(const std::vector<std::string> &derivedFrom, const Token *functionToken) const;
