@@ -219,32 +219,7 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 std::string ErrorLogger::ErrorMessage::FileLocation::getfile(bool convert) const
 {
     std::string f(_file);
-
-    // replace "/ab/../" with "/"..
-    std::string::size_type pos = 0;
-    while ((pos = f.find("..", pos + 1)) != std::string::npos)
-    {
-        // position must be at least 4..
-        if (pos < 4)
-            continue;
-
-        // Previous char must be a separator..
-        if (f[pos-1] != '/')
-            continue;
-
-        // Next char must be a separator..
-        if (f[pos+2] != '/')
-            continue;
-
-        // Locate previous separator..
-        std::string::size_type sep = f.find_last_of("/", pos - 2);
-        if (sep == std::string::npos)
-            continue;
-
-        // Delete substring..
-        f.erase(sep, pos + 2 - sep);
-        pos = sep;
-    }
+    f = Path::simplifyPath(f);
 
     if (convert)
         f = Path::toNativeSeparators(f);
