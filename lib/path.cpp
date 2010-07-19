@@ -45,6 +45,11 @@ std::string Path::fromNativeSeparators(const std::string &path)
 std::string Path::simplifyPath(const std::string &path)
 {
     std::string f(path);
+
+    // Remove './' from begin of the path
+    if (f.size() > 2 && f[0] == '.' && f[1] == '/')
+        f = f.erase(0, 2);
+
     // replace "/ab/../" with "/"..
     std::string::size_type pos = 0;
     while ((pos = f.find("..", pos + 1)) != std::string::npos)
