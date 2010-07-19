@@ -1992,7 +1992,7 @@ void CheckClass::checkConst()
                         }
 
                         // if nothing non-const was found. write error..
-                        if (checkConstFunc(classname, varlist, paramEnd))
+                        if (checkConstFunc(info.className, info.derivedFrom, varlist, paramEnd))
                         {
                             for (int i = nestInfo.size() - 2; i >= 0; i--)
                                 classname = std::string(nestInfo[i].className + "::" + classname);
@@ -2027,7 +2027,7 @@ void CheckClass::checkConst()
                                 if (sameFunc(namespaceLevel, tok2, paramEnd))
                                 {
                                     // if nothing non-const was found. write error..
-                                    if (checkConstFunc(classname, varlist, paramEnd))
+                                    if (checkConstFunc(info.className, info.derivedFrom, varlist, paramEnd))
                                     {
                                         for (int k = nestInfo.size() - 2; k >= 0; k--)
                                             classname = std::string(nestInfo[k].className + "::" + classname);
@@ -2254,7 +2254,7 @@ bool CheckClass::isMemberFunc(const Token *tok)
     return false;
 }
 
-bool CheckClass::isMemberVar(const std::string &classname, const Var *varlist, const Token *tok)
+bool CheckClass::isMemberVar(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok)
 {
     while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:|return|:|?"))
     {
@@ -2282,10 +2282,71 @@ bool CheckClass::isMemberVar(const std::string &classname, const Var *varlist, c
         }
     }
 
+    // not found in this class
+    if (!derivedFrom.empty())
+    {
+        // check each base class
+        for (unsigned int i = 0; i < derivedFrom.size(); ++i)
+        {
+            std::string className;
+
+            if (derivedFrom[i].find("::") != std::string::npos)
+            {
+                /** @todo handle nested base classes and namespaces */
+            }
+            else
+                className = derivedFrom[i];
+
+            std::string classPattern = std::string("class|struct ") + className + std::string(" {|:");
+
+            // find the base class
+            const Token *classToken = Token::findmatch(_tokenizer->tokens(), classPattern.c_str());
+
+            // find the function in the base class
+            if (classToken)
+            {
+                std::vector<std::string> baseList;
+                const Token * tok1 = classToken;
+
+                while (tok1->str() != "{")
+                {
+                    // check for base classes
+                    if (Token::Match(tok1, ":|, public|protected|private"))
+                    {
+                        // jump to base class name
+                        tok1 = tok1->tokAt(2);
+
+                        std::string    base;
+
+                        // handle nested base classea and namespacess
+                        while (Token::Match(tok1, "%var% ::"))
+                        {
+                            base += tok1->str();
+                            base += " :: ";
+                            tok1 = tok1->tokAt(2);
+                        }
+
+                        base += tok1->str();
+
+                        // save pattern for base class name
+                        baseList.push_back(base);
+                    }
+                    tok1 = tok1->next();
+                }
+
+                // Get class variables...
+                Var *varlist1 = getVarList(classToken);
+
+                if (isMemberVar(classToken->next()->str(), baseList, varlist1, tok))
+                    return true;
+            }
+        }
+    }
+
     return false;
 }
 
-bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist, const Token *tok)
+bool CheckClass::checkConstFunc(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok)
 {
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
@@ -2307,7 +2368,7 @@ bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist
                  (tok1->str().find("=") == 1 &&
                   tok1->str().find_first_of("<!>") == std::string::npos))
         {
-            if (isMemberVar(classname, varlist, tok1->previous()))
+            if (isMemberVar(classname, derivedFrom, varlist, tok1->previous()))
             {
                 isconst = false;
                 break;
@@ -2315,7 +2376,7 @@ bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist
         }
 
         // streaming: <<
-        else if (tok1->str() == "<<" && isMemberVar(classname, varlist, tok1->previous()))
+        else if (tok1->str() == "<<" && isMemberVar(classname, derivedFrom, varlist, tok1->previous()))
         {
             isconst = false;
             break;
@@ -2329,7 +2390,7 @@ bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist
         }
 
         // function call..
-        else if ((tok1->str() != "return" && Token::Match(tok1, "%var% (") && tok1->str() != "c_str") ||
+        else if ((Token::Match(tok1, "%var% (") && !Token::Match(tok1, "return|c_str|if")) ||
                  Token::Match(tok1, "%var% < %any% > ("))
         {
             isconst = false;

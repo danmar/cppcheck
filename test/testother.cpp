@@ -1930,7 +1930,7 @@ private:
                        "                       y + 1 );\n"
                        "        s = y[0]*y[1];\n"
                        "}\n");
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     // alloc..
