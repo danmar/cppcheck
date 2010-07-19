@@ -3395,6 +3395,22 @@ private:
                     // it is possible that the variable is initialized here
                     if (Token::Match(tok2->previous(), "[(,] %var% [,)]"))
                         bailouts.insert(tok2->varId());
+
+                    // array initialization..
+                    if (Token::Match(tok2->previous(), "[,(] %var% +"))
+                    {
+                        // if var is array, bailout
+                        for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
+                        {
+                            if ((*it)->varId == tok2->varId())
+                            {
+                                const CheckUninitVar *c = dynamic_cast<const CheckUninitVar *>(*it);
+                                if (c && c->array)
+                                    bailouts.insert(tok2->varId());
+                                break;
+                            }
+                        }
+                    }
                 }
             }
 
