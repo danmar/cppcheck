@@ -3630,6 +3630,27 @@ private:
                    "};\n"
                   );
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("class AA : public P {\n"
+                   "public:\n"
+                   "    AA():P(){}\n"
+                   "    inline void vSetXPos(int x_)\n"
+                   "    {\n"
+                   "        UnknownScope::x = x_;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class AA {\n"
+                   "public:\n"
+                   "    AA():P(){}\n"
+                   "    inline void vSetXPos(int x_)\n"
+                   "    {\n"
+                   "        UnknownScope::x = x_;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'AA::vSetXPos' can be const\n", errout.str());
+
     }
 
     void const27() // ticket #1882

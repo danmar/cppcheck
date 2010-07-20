@@ -2368,7 +2368,12 @@ bool CheckClass::checkConstFunc(const std::string &classname, const std::vector<
                  (tok1->str().find("=") == 1 &&
                   tok1->str().find_first_of("<!>") == std::string::npos))
         {
-            if (isMemberVar(classname, derivedFrom, varlist, tok1->previous()))
+            if (tok1->previous()->varId() == 0 && !derivedFrom.empty())
+            {
+                isconst = false;
+                break;
+            }
+            else if (isMemberVar(classname, derivedFrom, varlist, tok1->previous()))
             {
                 isconst = false;
                 break;
