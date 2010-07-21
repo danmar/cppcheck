@@ -31,10 +31,25 @@
 /// @addtogroup Core
 /// @{
 
-/** @brief The cppcheck preprocessor. It has special functionality for extracting the various ifdef configurations that exist in a source file. */
+/**
+ * @brief The cppcheck preprocessor.
+ * The preprocessor has special functionality for extracting the various ifdef
+ * configurations that exist in a source file.
+ */
 class Preprocessor
 {
 public:
+
+    /**
+     * Include file types.
+     */
+    enum HeaderTypes
+    {
+        NoHeader = 0,
+        UserHeader,
+        SystemHeader
+    };
+
     Preprocessor(Settings *settings = 0, ErrorLogger *errorLogger = 0);
 
     /**
@@ -147,11 +162,11 @@ protected:
      * Returns the string between double quote characters or \< \> characters.
      * @param str e.g. \code#include "menu.h"\endcode or \code#include <menu.h>\endcode
      * After function call it will contain e.g. "menu.h" without double quotes.
-     * @return 0 empty string if double quotes or \< \> were not found.
-     *         1 if file surrounded with "" was found
-     *         2 if file surrounded with \<\> was found
+     * @return NoHeader empty string if double quotes or \< \> were not found.
+     *         UserHeader if file surrounded with "" was found
+     *         SystemHeader if file surrounded with \<\> was found
      */
-    static int getHeaderFileName(std::string &str);
+    static Preprocessor::HeaderTypes getHeaderFileName(std::string &str);
 private:
 
     /**

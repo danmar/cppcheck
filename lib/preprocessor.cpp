@@ -1300,14 +1300,14 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
     return expandMacros(ret.str(), filename, errorLogger);
 }
 
-int Preprocessor::getHeaderFileName(std::string &str)
+Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
 {
     std::string result;
     std::string::size_type i = str.find_first_of("<\"");
     if (i == std::string::npos)
     {
         str = "";
-        return 0;
+        return NoHeader;
     }
 
     unsigned char c = str[i];
@@ -1324,9 +1324,9 @@ int Preprocessor::getHeaderFileName(std::string &str)
 
     str = result;
     if (c == '"')
-        return 1;
+        return UserHeader;
     else
-        return 2;
+        return SystemHeader;
 }
 
 
@@ -1373,8 +1373,8 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         // Remove #include clause
         code.erase(pos, end - pos);
 
-        int headerType = getHeaderFileName(filename);
-        if (headerType == 0)
+        HeaderTypes headerType = getHeaderFileName(filename);
+        if (headerType == NoHeader)
             continue;
 
         // filename contains now a file name e.g. "menu.h"
@@ -1394,7 +1394,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
             fin.clear();
         }
 
-        if (headerType == 1 && !fileOpened)
+        if (headerType == UserHeader && !fileOpened)
         {
             filename = paths.back() + filename;
 
@@ -1445,7 +1445,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         }
         else if (!fileOpened)
         {
-            if (headerType == 1 && _errorLogger && _settings && _settings->_verbose)
+            if (headerType == UserHeader && _errorLogger && _settings && _settings->_verbose)
             {
                 _errorLogger->reportOut("Include file: \"" + filename + "\" not found.");
             }

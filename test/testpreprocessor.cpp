@@ -2015,19 +2015,19 @@ private:
     {
         {
             std::string src = "#include a.h";
-            ASSERT_EQUALS(0, OurPreprocessor::getHeaderFileName(src));
+            ASSERT_EQUALS(OurPreprocessor::NoHeader, OurPreprocessor::getHeaderFileName(src));
             ASSERT_EQUALS("", src);
         }
 
         {
             std::string src = "#include \"b.h\"";
-            ASSERT_EQUALS(1, OurPreprocessor::getHeaderFileName(src));
+            ASSERT_EQUALS(OurPreprocessor::UserHeader, OurPreprocessor::getHeaderFileName(src));
             ASSERT_EQUALS("b.h", src);
         }
 
         {
             std::string src = "#include <c.h>";
-            ASSERT_EQUALS(2, OurPreprocessor::getHeaderFileName(src));
+            ASSERT_EQUALS(OurPreprocessor::SystemHeader, OurPreprocessor::getHeaderFileName(src));
             ASSERT_EQUALS("c.h", src);
         }
     }
