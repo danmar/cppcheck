@@ -2030,6 +2030,18 @@ private:
             ASSERT_EQUALS(OurPreprocessor::SystemHeader, OurPreprocessor::getHeaderFileName(src));
             ASSERT_EQUALS("c.h", src);
         }
+
+        {
+            std::string src = "#include \"d/d.h\"";
+            ASSERT_EQUALS(OurPreprocessor::UserHeader, OurPreprocessor::getHeaderFileName(src));
+            ASSERT_EQUALS("d/d.h", src);
+        }
+
+        {
+            std::string src = "#include \"e\\e.h\"";
+            ASSERT_EQUALS(OurPreprocessor::UserHeader, OurPreprocessor::getHeaderFileName(src));
+            ASSERT_EQUALS("e/e.h", src);
+        }
     }
 
     void ifdef_ifdefined()

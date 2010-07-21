@@ -1322,6 +1322,9 @@ Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
         result.append(1, str[i]);
     }
 
+    // Linux can't open include paths with \ separator, so fix them
+    std::replace(result.begin(), result.end(), '\\', '/');
+
     str = result;
     if (c == '"')
         return UserHeader;
@@ -1397,11 +1400,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         if (headerType == UserHeader && !fileOpened)
         {
             filename = paths.back() + filename;
-
-            // Linux can't open include paths with \ separator, so fix them
-            std::string fixedname(filename);
-            std::replace(fixedname.begin(), fixedname.end(), '\\', '/');
-            fin.open(fixedname.c_str());
+            fin.open(filename.c_str());
             if (fin.is_open())
             {
                 fileOpened = true;
