@@ -21,6 +21,7 @@
 #include "tokenize.h"
 #include "token.h"
 #include "filelister.h"
+#include "path.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -1446,7 +1447,8 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         {
             if (headerType == UserHeader && _errorLogger && _settings && _settings->_verbose)
             {
-                _errorLogger->reportOut("Include file: \"" + filename + "\" not found.");
+                std::string fixedpath = Path::toNativeSeparators(filename);
+                _errorLogger->reportOut("Include file: \"" + fixedpath + "\" not found.");
             }
         }
     }
