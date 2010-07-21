@@ -733,6 +733,7 @@ unsigned int CppCheck::check()
     }
 
     // This generates false positives - especially for libraries
+    const bool verbose_orig = _settings._verbose;
     _settings._verbose = false;
     if (_settings.isEnabled("unusedFunctions") && _settings._jobs == 1)
     {
@@ -742,6 +743,7 @@ unsigned int CppCheck::check()
 
         _checkUnusedFunctions.check(this);
     }
+    _settings._verbose = verbose_orig;
 
     _errorList.clear();
     return exitcode;
