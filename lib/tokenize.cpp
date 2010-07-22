@@ -3173,6 +3173,28 @@ void Tokenizer::simplifySizeof()
         if (Token::simpleMatch(tok->next(), "sizeof"))
             continue;
 
+        // sizeof 'x'
+        if (tok->strAt(1)[0] == '\'')
+        {
+            tok->deleteThis();
+            std::ostringstream sz;
+            sz << sizeof 'x';
+            tok->str(sz.str());
+            continue;
+        }
+
+        // sizeof('x')
+        if (Token::Match(tok, "sizeof ( %any% )") && tok->strAt(2)[0] == '\'')
+        {
+            tok->deleteThis();
+            tok->deleteThis();
+            tok->deleteNext();
+            std::ostringstream sz;
+            sz << sizeof 'x';
+            tok->str(sz.str());
+            continue;
+        }
+
         // sizeof "text"
         if (Token::Match(tok->next(), "%str%"))
         {

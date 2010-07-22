@@ -79,6 +79,7 @@ private:
         TEST_CASE(sizeof16);
         TEST_CASE(sizeof17);
         TEST_CASE(sizeof18);
+        TEST_CASE(sizeof19);    // #1891 - sizeof 'x'
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
@@ -1284,6 +1285,32 @@ private:
             std::ostringstream expected;
             expected << sizeof(int*);
             ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void sizeof19()
+    {
+        // ticket #1891 - sizeof 'x'
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    sizeof 'x';\n"
+                                "}\n";
+            std::ostringstream sz;
+            sz << sizeof('x');
+            ASSERT_EQUALS("void f ( ) { " + sz.str() + " ; }", tok(code));
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    sizeof('x');\n"
+                                "}\n";
+            std::ostringstream sz;
+            sz << sizeof('x');
+            ASSERT_EQUALS("void f ( ) { " + sz.str() + " ; }", tok(code));
             ASSERT_EQUALS("", errout.str());
         }
     }
