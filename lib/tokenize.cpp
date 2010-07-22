@@ -1660,6 +1660,18 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         return false;
     }
 
+    // check for simple syntax errors..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "> struct {") &&
+            Token::simpleMatch(tok->tokAt(2)->link(), "} ;"))
+        {
+            syntaxError(tok);
+            deallocateTokens();
+            return false;
+        }
+    }
+
     // specify array size..
     arraySize();
 
@@ -6899,7 +6911,26 @@ const Token * Tokenizer::findClassFunction(const Token *tok, const std::string &
     return NULL;
 }
 //---------------------------------------------------------------------------
-// Error message for bad iterator usage..
+
+void Tokenizer::syntaxError(const Token *tok)
+{
+    if (tok)
+    {
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok->linenr();
+        loc.setfile(file(tok));
+        locationList.push_back(loc);
+        const ErrorLogger::ErrorMessage errmsg(locationList,
+                                               Severity::error,
+                                               "syntax error",
+                                               "syntaxError");
+        if (_errorLogger)
+            _errorLogger->reportErr(errmsg);
+        else
+            Check::reportError(errmsg);
+    }
+}
 
 void Tokenizer::syntaxError(const Token *tok, char c)
 {

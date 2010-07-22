@@ -248,7 +248,7 @@ private:
     std::string tokenizeAndStringify(const char code[], bool simplify = false)
     {
         // tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         if (simplify)
@@ -348,10 +348,19 @@ private:
 
     void wrong_syntax()
     {
-        errout.str("");
-        const std::string code("TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))");
-        ASSERT_EQUALS("TR ( kvmpio , PROTO ( int rw ) , ARGS ( rw ) , TP_ ( aa . rw ; ) )", tokenizeAndStringify(code.c_str(), true));
-        ASSERT_EQUALS("", errout.str());
+        {
+            errout.str("");
+            const std::string code("TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))");
+            ASSERT_EQUALS("TR ( kvmpio , PROTO ( int rw ) , ARGS ( rw ) , TP_ ( aa . rw ; ) )", tokenizeAndStringify(code.c_str(), true));
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            errout.str("");
+            const std::string code("struct A { template<int> struct { }; };");
+            ASSERT_EQUALS("", tokenizeAndStringify(code.c_str(), true));
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        }
     }
 
     void minus()

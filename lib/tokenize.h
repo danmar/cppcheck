@@ -411,6 +411,10 @@ public:
      */
     bool createLinks();
 
+    /** Syntax error */
+    void syntaxError(const Token *tok);
+
+    /** Syntax error. Example: invalid number of ')' */
     void syntaxError(const Token *tok, char c);
 
     /**
