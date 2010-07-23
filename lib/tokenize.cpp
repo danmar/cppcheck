@@ -6965,14 +6965,7 @@ void Tokenizer::syntaxError(const Token *tok, char c)
     {
         std::ostringstream err;
         err << "### Unlogged error at Tokenizer::syntaxError: Invalid number of character (" << c << ")";
-        if (_settings && _settings->_debug)
-        {
-            throw std::runtime_error(err.str());
-        }
-        else
-        {
-            std::cerr << err.str() << std::endl;
-        }
+        std::cerr << err.str() << std::endl;
         return;
     }
 
@@ -7008,14 +7001,7 @@ void Tokenizer::cppcheckError(const Token *tok) const
     {
         std::ostringstream err;
         err << "### Unlogged error at Tokenizer::cppcheckError";
-        if (_settings && _settings->_debug)
-        {
-            throw std::runtime_error(err.str());
-        }
-        else
-        {
-            std::cerr << err.str() << std::endl;
-        }
+        std::cerr << err.str() << std::endl;
         return;
     }
 
