@@ -41,14 +41,14 @@ private:
     {
         Settings::Suppressions suppressions;
         std::istringstream s("123");
-        ASSERT_EQUALS(false, suppressions.parseFile(s));
+        ASSERT_EQUALS("Failed to add suppression. Invalid id \"123\"", suppressions.parseFile(s));
     }
 
     void suppressionsDosFormat()
     {
         Settings::Suppressions suppressions;
         std::istringstream s("abc\r\ndef\r\n");
-        ASSERT_EQUALS(true, suppressions.parseFile(s));
+        ASSERT_EQUALS("", suppressions.parseFile(s));
         ASSERT_EQUALS(true, suppressions.isSuppressed("abc", "test.cpp", 1));
         ASSERT_EQUALS(true, suppressions.isSuppressed("def", "test.cpp", 1));
     }

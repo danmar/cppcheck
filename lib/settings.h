@@ -136,9 +136,9 @@ public:
         /**
          * @brief Don't show errors listed in the file.
          * @param istr Open file stream where errors can be read.
-         * @return true on success, false in syntax error is noticed.
+         * @return error message. empty upon success
          */
-        bool parseFile(std::istream &istr);
+        std::string parseFile(std::istream &istr);
 
         /**
          * @brief Don't show this error. If file and/or line are optional. In which case
@@ -146,9 +146,9 @@ public:
          * @param errorId the id for the error, e.g. "arrayIndexOutOfBounds"
          * @param file File name with the path, e.g. "src/main.cpp"
          * @param line number, e.g. "123"
-         * @return true on success, false in syntax error is noticed.
+         * @return error message. empty upon success
          */
-        bool addSuppression(const std::string &errorId, const std::string &file = "", unsigned int line = 0);
+        std::string addSuppression(const std::string &errorId, const std::string &file = "", unsigned int line = 0);
 
         /**
          * @brief Returns true if this message should not be shown to the user.

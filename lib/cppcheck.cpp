@@ -285,7 +285,12 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
                 reportOut("cppcheck: Couldn't open the file \"" + std::string(argv[i]) + "\"");
                 return false;
             }
-            _settings.nomsg.parseFile(f);
+            const std::string errmsg(_settings.nomsg.parseFile(f));
+            if (!errmsg.empty())
+            {
+                reportOut(errmsg);
+                return false;
+            }
         }
 
         // Filter errors
@@ -305,7 +310,12 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
                 reportOut("cppcheck: Couldn't open the file \"" + std::string(argv[i]) + "\"");
                 return false;
             }
-            _settings.nofail.parseFile(f);
+            const std::string errmsg(_settings.nofail.parseFile(f));
+            if (!errmsg.empty())
+            {
+                reportOut(errmsg);
+                return false;
+            }
         }
 
         // Enables inline suppressions.

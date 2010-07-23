@@ -238,7 +238,13 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         {
             // Add the suppressions.
             for (size_t j(0); j < suppressionIDs.size(); ++j)
-                settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno);
+            {
+                const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
+                if (!errmsg.empty())
+                {
+                    writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
+                }
+            }
             suppressionIDs.clear();
         }
 

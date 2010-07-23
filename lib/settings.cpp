@@ -43,7 +43,7 @@ Settings::Settings()
     test_2_pass = false;
 }
 
-bool Settings::Suppressions::parseFile(std::istream &istr)
+std::string Settings::Suppressions::parseFile(std::istream &istr)
 {
     // Change '\r' to '\n' in the istr
     std::string filedata;
@@ -52,8 +52,6 @@ bool Settings::Suppressions::parseFile(std::istream &istr)
         filedata += line + "\n";
     while (filedata.find("\r") != std::string::npos)
         filedata[filedata.find("\r")] = '\n';
-
-    bool ret = true;
 
     // Parse filedata..
     std::istringstream istr2(filedata);
@@ -76,38 +74,37 @@ bool Settings::Suppressions::parseFile(std::istream &istr)
         }
 
         // We could perhaps check if the id is valid and return error if it is not
-        ret &= addSuppression(id, file, lineNumber);
+        const std::string errmsg(addSuppression(id, file, lineNumber));
+        if (!errmsg.empty())
+            return errmsg;
     }
 
-    return ret;
+    return "";
 }
 
-bool Settings::Suppressions::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
+std::string Settings::Suppressions::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
 {
     // Check that errorId is valid..
     if (errorId.empty())
     {
-        std::cerr << "Failed to add suppression. No id." << std::endl;
-        return false;
+        return "Failed to add suppression. No id.";
     }
     for (std::string::size_type pos = 0; pos < errorId.length(); ++pos)
     {
         if (errorId[pos] < 0 || !std::isalnum(errorId[pos]))
         {
-            std::cerr << "Failed to add suppression. Invalid id \"" << errorId << "\"" << std::endl;
-            return false;
+            return "Failed to add suppression. Invalid id \"" + errorId + "\"";
         }
         if (pos == 0 && std::isdigit(errorId[pos]))
         {
-            std::cerr << "Failed to add suppression. Invalid id \"" << errorId << "\"" << std::endl;
-            return false;
+            return "Failed to add suppression. Invalid id \"" + errorId + "\"";
         }
     }
 
     _suppressions[errorId][file].push_back(line);
     _suppressions[errorId][file].sort();
 
-    return true;
+    return "";
 }
 
 bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std::string &file, unsigned int line)
