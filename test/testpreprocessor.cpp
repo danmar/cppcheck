@@ -188,9 +188,9 @@ private:
     {
         const char code[] = " \t a //\n"
                             "  #aa\t /* remove this */\tb  \r\n";
-        Preprocessor p;
+        Preprocessor preprocessor(0,this);
         std::istringstream istr(code);
-        std::string codestr(p.read(istr));
+        std::string codestr(preprocessor.read(istr,"test.c",0));
         ASSERT_EQUALS("a \n#aa b \n", codestr);
     }
 
@@ -374,7 +374,8 @@ private:
                                 "#elif defined (A)\n";
 
         std::istringstream istr(filedata);
-        const std::string actual(Preprocessor::read(istr));
+        Preprocessor preprocessor(0,this);
+        const std::string actual(preprocessor.read(istr, "test.c", 0));
 
         // Compare results..
         ASSERT_EQUALS("#if A\n#if A\n#if A\n#if defined(A)\n#elif defined(A)\n", actual);
@@ -438,7 +439,8 @@ private:
 
         // Read string..
         std::istringstream istr(filedata);
-        ASSERT_EQUALS("#error\n\n123", Preprocessor::read(istr));
+        Preprocessor preprocessor(0,this);
+        ASSERT_EQUALS("#error\n\n123", preprocessor.read(istr,"test.c",0));
     }
 
 
@@ -520,8 +522,8 @@ private:
 
         // Preprocess
         std::istringstream istr(filedata);
-        Preprocessor preprocessor;
-        ASSERT_EQUALS("\n\n\n", preprocessor.read(istr));
+        Preprocessor preprocessor(0, this);
+        ASSERT_EQUALS("\n\n\n", preprocessor.read(istr, "test.c", 0));
     }
 
 
@@ -1085,8 +1087,8 @@ private:
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
-        Preprocessor preprocessor;
-        ASSERT_EQUALS("#define str \"abc\" \"def\" \n\nabcdef = str;\n", preprocessor.read(istr));
+        Preprocessor preprocessor(0, this);
+        ASSERT_EQUALS("#define str \"abc\" \"def\" \n\nabcdef = str;\n", preprocessor.read(istr, "test.c", 0));
     }
 
     void multiline2()
@@ -1097,8 +1099,8 @@ private:
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
-        Preprocessor preprocessor;
-        ASSERT_EQUALS("#define sqr(aa) aa * aa\n\nsqr(5);\n", preprocessor.read(istr));
+        Preprocessor preprocessor(0, this);
+        ASSERT_EQUALS("#define sqr(aa) aa * aa\n\nsqr(5);\n", preprocessor.read(istr, "test.c", 0));
     }
 
     void multiline3()
@@ -1109,8 +1111,8 @@ private:
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
-        Preprocessor preprocessor;
-        ASSERT_EQUALS("const char *str = \"abcdefghi\"\n\n\n", preprocessor.read(istr));
+        Preprocessor preprocessor(0, this);
+        ASSERT_EQUALS("const char *str = \"abcdefghi\"\n\n\n", preprocessor.read(istr, "test.c", 0));
     }
 
     void multiline4()
@@ -1887,21 +1889,26 @@ private:
     {
         const std::string filedata("a\xC8");
         std::istringstream istr(filedata);
-        ASSERT_THROW(Preprocessor::read(istr), std::runtime_error);
+        errout.str("");
+        Preprocessor preprocessor(0, this);
+        preprocessor.read(istr, "test.cpp", 0);
+        ASSERT_EQUALS("[test.cpp:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ascii are supported. (line=1, character code=c8)\n", errout.str());
     }
 
     void unicodeInComment()
     {
         const std::string filedata("//\xC8");
         std::istringstream istr(filedata.c_str());
-        ASSERT_EQUALS("", Preprocessor::read(istr));
+        Preprocessor preprocessor(0, this);
+        ASSERT_EQUALS("", preprocessor.read(istr, "test.cpp", 0));
     }
 
     void unicodeInString()
     {
         const std::string filedata("\"\xC8\"");
         std::istringstream istr(filedata.c_str());
-        ASSERT_EQUALS(filedata, Preprocessor::read(istr));
+        Preprocessor preprocessor(0, this);
+        ASSERT_EQUALS(filedata, preprocessor.read(istr, "test.cpp", 0));
     }
 
 

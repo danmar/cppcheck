@@ -85,13 +85,7 @@ public:
     void preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths);
 
     /** Just read the code into a string. Perform simple cleanup of the code */
-    static std::string read(std::istream &istr, const std::string &filename, Settings *settings);
-
-    /** Just read the code into a string. Perform simple cleanup of the code */
-    static std::string read(std::istream &istr)
-    {
-        return read(istr, "", 0);
-    }
+    std::string read(std::istream &istr, const std::string &filename, Settings *settings);
 
     /**
      * Get preprocessed code for a given configuration
@@ -147,9 +141,8 @@ protected:
      * @param filename filename
      * @param settings Settings. If there are inline suppressions these will be added to the settings
      * @return code without comments
-     * @throws std::runtime_error when code contains unhandled characters
      */
-    static std::string removeComments(const std::string &str, const std::string &filename, Settings *settings);
+    std::string removeComments(const std::string &str, const std::string &filename, Settings *settings);
 
     /**
      * Remove redundant parantheses from preprocessor commands. This should only be called from read().
