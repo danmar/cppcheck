@@ -3965,7 +3965,21 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
                 Severity::style,
                 "variableScope",
                 "The scope of the variable " + varname + " can be reduced\n"
-                "Be very careful when you reduce the scope! The logical behaviour can be changed by mistake, for example when reducing the scope in a loop.");
+                "Warning: It can be unsafe to fix this message. Be careful. Especially when there are inner loops.\n"
+                "Here is an example where cppcheck will write that the scope for 'i' can be reduced:\n"
+                "void f(int x)\n"
+                "{\n"
+                "    int i = 0;\n"
+                "    if (x) {\n"
+                "        // it's safe to move 'int i = 0' here\n"
+                "        for (int n = 0; n < 10; ++n) {\n"
+                "            // it is possible but not safe to move 'int i = 0' here\n"
+                "            do_something(&i);\n"
+                "        }\n"
+                "    }\n"
+                "}\n"
+                "\n"
+                "When you see this message it is always safe to reduce the variable scope 1 level.");
 }
 
 void CheckOther::conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse)
