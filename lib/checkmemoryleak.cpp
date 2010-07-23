@@ -330,7 +330,7 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
     if (errorLogger)
         errorLogger->reportErr(errmsg);
     else
-        std::cout << errmsg.toXML() << std::endl;
+        Check::reportError(errmsg);
 }
 
 void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname)
