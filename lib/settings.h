@@ -122,8 +122,9 @@ public:
      * @brief Enable extra checks by id. See isEnabled()
      * @param str single id or list of id values to be enabled
      * or empty string to enable all. e.g. "style,possibleError"
+     * @return error message. empty upon success
      */
-    void addEnabled(const std::string &str);
+    std::string addEnabled(const std::string &str);
 
     /** @brief class for handling suppressions */
     class Suppressions

@@ -259,7 +259,14 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
 
         // Checking coding style
         else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--style") == 0)
-            _settings.addEnabled("style");
+        {
+            const std::string errmsg = _settings.addEnabled("style");
+            if (!errmsg.empty())
+            {
+                reportOut(errmsg);
+                return false;
+            }
+        }
 
         // Filter errors
         else if (strcmp(argv[i], "--suppressions") == 0)
@@ -319,7 +326,14 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
 
         // Check if there are unused functions
         else if (strcmp(argv[i], "--unused-functions") == 0)
-            _settings.addEnabled("unusedFunctions");
+        {
+            const std::string errmsg = _settings.addEnabled("unusedFunctions");
+            if (!errmsg.empty())
+            {
+                reportOut(errmsg);
+                return false;
+            }
+        }
 
         // Append userdefined code to checked source code
         else if (strncmp(argv[i], "--append=", 9) == 0)
@@ -351,7 +365,12 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
 
         else if (strncmp(argv[i], "--enable=", 9) == 0)
         {
-            _settings.addEnabled(argv[i] + 9);
+            const std::string errmsg = _settings.addEnabled(argv[i] + 9);
+            if (!errmsg.empty())
+            {
+                reportOut(errmsg);
+                return false;
+            }
         }
 
         // --error-exitcode=1

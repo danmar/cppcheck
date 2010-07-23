@@ -132,7 +132,7 @@ bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std:
     return true;
 }
 
-void Settings::addEnabled(const std::string &str)
+std::string Settings::addEnabled(const std::string &str)
 {
     // Enable parameters may be comma separated...
     if (str.find(",") != std::string::npos)
@@ -142,15 +142,16 @@ void Settings::addEnabled(const std::string &str)
         while ((pos = str.find(",", pos)) != std::string::npos)
         {
             if (pos == prevPos)
-                throw std::runtime_error("cppcheck: --enable parameter is empty");
-            addEnabled(str.substr(prevPos, pos - prevPos));
+                return std::string("cppcheck: --enable parameter is empty");
+            const std::string errmsg(addEnabled(str.substr(prevPos, pos - prevPos)));
+            if (!errmsg.empty())
+                return errmsg;
             ++pos;
             prevPos = pos;
         }
         if (prevPos >= str.length())
-            throw std::runtime_error("cppcheck: --enable parameter is empty");
-        addEnabled(str.substr(prevPos));
-        return;
+            return std::string("cppcheck: --enable parameter is empty");
+        return addEnabled(str.substr(prevPos));
     }
 
     bool handled = false;
@@ -178,10 +179,12 @@ void Settings::addEnabled(const std::string &str)
     else if (!handled)
     {
         if (str.empty())
-            throw std::runtime_error("cppcheck: --enable parameter is empty");
+            return std::string("cppcheck: --enable parameter is empty");
         else
-            throw std::runtime_error("cppcheck: there is no --enable parameter with the name '" + str + "'");
+            return std::string("cppcheck: there is no --enable parameter with the name '" + str + "'");
     }
+
+    return std::string("");
 }
 
 bool Settings::isEnabled(const std::string &str) const
