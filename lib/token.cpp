@@ -17,6 +17,8 @@
  */
 
 #include "token.h"
+#include "errorlogger.h"
+#include "check.h"
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -417,9 +419,12 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             {
                 if (varid == 0)
                 {
-                    // TODO: Report this through ErrorLogger instead so these messages appear in the unit testing
-                    std::cerr << "\n###### If you see this, there is a bug ######" << std::endl
-                              << "Token::Match(\"" << pattern << "\", 0)" << std::endl;
+                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                           Severity::error,
+                                                           "Internal error. Token::Match called with varid 0.",
+                                                           "cppcheckError");
+                    Check::reportError(errmsg);
                 }
 
                 if (tok->varId() != varid)
