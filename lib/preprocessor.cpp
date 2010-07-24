@@ -22,6 +22,7 @@
 #include "token.h"
 #include "filelister.h"
 #include "path.h"
+#include "errorlogger.h"
 
 #include <algorithm>
 #include <stdexcept>

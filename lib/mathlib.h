@@ -20,7 +20,7 @@
 #ifndef mathlibH
 #define mathlibH
 
-#include "token.h"
+#include <string>
 
 /// @addtogroup Core
 /// @{

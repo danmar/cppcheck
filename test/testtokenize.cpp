@@ -25,6 +25,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 #include "token.h"
+#include "classinfo.h"
 
 extern std::ostringstream errout;
 class TestTokenizer : public TestFixture

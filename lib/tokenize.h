@@ -25,8 +25,8 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "classinfo.h"
 
+class ClassInfo;
 class Token;
 class ErrorLogger;
 class Settings;

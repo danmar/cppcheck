@@ -25,8 +25,9 @@
 #include <istream>
 #include <string>
 #include <list>
-#include "errorlogger.h"
-#include "settings.h"
+
+class ErrorLogger;
+class Settings;
 
 /// @addtogroup Core
 /// @{
