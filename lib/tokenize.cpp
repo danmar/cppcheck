@@ -6936,39 +6936,28 @@ const Token * Tokenizer::findClassFunction(const Token *tok, const std::string &
 
 void Tokenizer::syntaxError(const Token *tok)
 {
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (tok)
     {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.line = tok->linenr();
         loc.setfile(file(tok));
         locationList.push_back(loc);
-        const ErrorLogger::ErrorMessage errmsg(locationList,
-                                               Severity::error,
-                                               "syntax error",
-                                               "syntaxError");
-        if (_errorLogger)
-            _errorLogger->reportErr(errmsg);
-        else
-            Check::reportError(errmsg);
     }
+
+    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                           Severity::error,
+                                           "syntax error",
+                                           "syntaxError");
+
+    if (_errorLogger)
+        _errorLogger->reportErr(errmsg);
+    else
+        Check::reportError(errmsg);
 }
 
 void Tokenizer::syntaxError(const Token *tok, char c)
 {
-    if (_settings && _settings->_debug)
-    {
-        _tokens->printOut();
-    }
-
-    if (!_errorLogger && tok)
-    {
-        std::ostringstream err;
-        err << "### Unlogged error at Tokenizer::syntaxError: Invalid number of character (" << c << ")";
-        std::cerr << err.str() << std::endl;
-        return;
-    }
-
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (tok)
     {
@@ -6992,19 +6981,10 @@ void Tokenizer::syntaxError(const Token *tok, char c)
         _errorLogger->reportErr(errmsg);
     else
         Check::reportError(errmsg);
-
 }
 
 void Tokenizer::cppcheckError(const Token *tok) const
 {
-    if (!_errorLogger && tok)
-    {
-        std::ostringstream err;
-        err << "### Unlogged error at Tokenizer::cppcheckError";
-        std::cerr << err.str() << std::endl;
-        return;
-    }
-
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (tok)
     {
