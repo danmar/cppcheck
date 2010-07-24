@@ -20,6 +20,7 @@
 #ifndef errorloggerH
 #define errorloggerH
 
+#include <ctime>
 #include <list>
 #include <string>
 #include "settings.h"
@@ -140,7 +141,10 @@ public:
         std::string _id;
     };
 
-    ErrorLogger() { }
+    ErrorLogger()
+    {
+        time1 = 0;
+    }
     virtual ~ErrorLogger() { }
 
     /**
@@ -168,7 +172,19 @@ public:
      */
     virtual void reportStatus(unsigned int index, unsigned int max) = 0;
 
+    /**
+     * Report progress.
+     *
+     * @param func function name (NULL = start command)
+     * @param tok current token
+     */
+    void ReportProgress(const char func[], const Token * const tok);
+
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
+
+private:
+    /** time variable for the 'ReportProgress' */
+    std::time_t time1;
 };
 
 

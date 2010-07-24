@@ -1647,6 +1647,9 @@ void Tokenizer::simplifyTypedef()
 
 bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::string &configuration)
 {
+    if (_errorLogger)
+        _errorLogger->ReportProgress(0, 0);
+
     _configuration = configuration;
 
     // The "_files" vector remembers what files have been tokenized..
@@ -2672,6 +2675,9 @@ void Tokenizer::setVarId()
     {
         if (tok != _tokens && !Token::Match(tok, "[,;{}(] %type%"))
             continue;
+
+        if (_errorLogger)
+            _errorLogger->ReportProgress(__FUNCTION__, tok);
 
         // If pattern is "( %type% *|& %var% )" then check if it's a
         // variable declaration or a multiplication / mask
@@ -7850,4 +7856,6 @@ void Tokenizer::simplifyBuiltinExpect()
         }
     }
 }
+
+
 

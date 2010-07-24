@@ -231,3 +231,32 @@ void ErrorLogger::ErrorMessage::FileLocation::setfile(const std::string &file)
     _file = file;
     _file = Path::fromNativeSeparators(_file);
 }
+
+
+void ErrorLogger::ReportProgress(const char func[], const Token * const tok)
+{
+    if (!func)
+    {
+        time1 = std::time(NULL);
+        return;
+    }
+
+    const std::time_t time2 = std::time(NULL);
+    if (time2 >= (time1 + 60))
+    {
+        time1 = time2;
+
+        // current time in the format "Www Mmm dd hh:mm:ss yyyy"
+        const std::string str(ctime(&time2));
+
+        // format a progress message
+        std::ostringstream ostr;
+        ostr << "progress:"
+             << " time=" << str.substr(11, 8)
+             << " function=" << func
+             << " parsed-line=" << tok->linenr();
+
+        // Report progress message
+        reportOut(ostr.str());
+    }
+}
