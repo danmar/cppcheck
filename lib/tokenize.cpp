@@ -5878,9 +5878,9 @@ bool Tokenizer::simplifyCalculations()
             }
 
             if (Token::Match(tok->previous(), "- %num% - %num%"))
-                tok->str(MathLib::calculate(tok->str(), tok->tokAt(2)->str(), '+'));
+                tok->str(MathLib::add(tok->str(), tok->tokAt(2)->str()));
             else if (Token::Match(tok->previous(), "- %num% + %num%"))
-                tok->str(MathLib::calculate(tok->str(), tok->tokAt(2)->str(), '-'));
+                tok->str(MathLib::sub(tok->str(), tok->tokAt(2)->str()));
             else
                 tok->str(MathLib::calculate(tok->str(), tok->tokAt(2)->str(), tok->strAt(1)[0]));
 
