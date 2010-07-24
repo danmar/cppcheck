@@ -1111,6 +1111,41 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Ticket #1893 - try/catch inside else
+        checkNullPointer("int *test(int *Z)\n"
+                         "{\n"
+                         "    int *Q=NULL;\n"
+                         "    if (Z) {\n"
+                         "        Q = Z;\n"
+                         "    }\n"
+                         "    else {\n"
+                         "        Z = new int;\n"
+                         "        try {\n"
+                         "        } catch(...) {\n"
+                         "        }\n"
+                         "        Q = Z;\n"
+                         "    }\n"
+                         "    *Q=1;\n"
+                         "    return Q;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("int *test(int *Z)\n"
+                         "{\n"
+                         "    int *Q=NULL;\n"
+                         "    if (Z) {\n"
+                         "        Q = Z;\n"
+                         "    }\n"
+                         "    else {\n"
+                         "        try {\n"
+                         "        } catch(...) {\n"
+                         "        }\n"
+                         "    }\n"
+                         "    *Q=1;\n"
+                         "    return Q;\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:12]: (error) Possible null pointer dereference: Q\n", errout.str());
+
         // function pointer..
         checkNullPointer("void foo()\n"
                          "{\n"

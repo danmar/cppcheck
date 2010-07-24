@@ -2713,6 +2713,26 @@ private:
             }
         }
 
+        if (Token::simpleMatch(&tok, "try {"))
+        {
+            // Bail out all used variables
+            unsigned int indentlevel = 0;
+            for (const Token *tok2 = &tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{")
+                    ++indentlevel;
+                else if (tok2->str() == "}")
+                {
+                    if (indentlevel == 0)
+                        break;
+                    if (indentlevel == 1 && !Token::simpleMatch(tok2,"} catch ("))
+                        return tok2;
+                    --indentlevel;
+                }
+                else if (tok2->varId())
+                    bailOutVar(checks,tok2->varId());
+            }
+        }
 
         if (Token::Match(&tok, "%var% ("))
         {
