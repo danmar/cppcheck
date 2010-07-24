@@ -406,8 +406,8 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
                 //printf("min_index: %s %c %s\n", min_counter_value.c_str(), action, second.c_str());
                 //printf("max_index: %s %c %s\n", max_counter_value.c_str(), action, second.c_str());
 
-                min_index = std::atoi(MathLib::calculate(min_counter_value, second, action).c_str());
-                max_index = std::atoi(MathLib::calculate(max_counter_value, second, action).c_str());
+                min_index = std::atoi(MathLib::calculate(min_counter_value, second, action, _tokenizer).c_str());
+                max_index = std::atoi(MathLib::calculate(max_counter_value, second, action, _tokenizer).c_str());
             }
             else if (Token::Match(tok2, "%varid% [ %num% +|-|*|/ %var% ]", arrayInfo.varid) &&
                      tok2->tokAt(4)->varId() == counter_varid)
@@ -418,8 +418,8 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
                 //printf("min_index: %s %c %s\n", first.c_str(), action, min_counter_value.c_str());
                 //printf("max_index: %s %c %s\n", first.c_str(), action, max_counter_value.c_str());
 
-                min_index = std::atoi(MathLib::calculate(first, min_counter_value, action).c_str());
-                max_index = std::atoi(MathLib::calculate(first, max_counter_value, action).c_str());
+                min_index = std::atoi(MathLib::calculate(first, min_counter_value, action, _tokenizer).c_str());
+                max_index = std::atoi(MathLib::calculate(first, max_counter_value, action, _tokenizer).c_str());
             }
 
             //printf("min_index = %d, max_index = %d, size = %d\n", min_index, max_index, size);

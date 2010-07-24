@@ -27,6 +27,8 @@
 
 /** @brief simple math functions that uses operands stored in std::string. useful when performing math on tokens. */
 
+class Tokenizer;
+
 class MathLib
 {
 public:
@@ -44,7 +46,7 @@ public:
     static std::string subtract(const std::string & first, const std::string & second);
     static std::string multiply(const std::string & first, const std::string & second);
     static std::string divide(const std::string & first, const std::string & second);
-    static std::string calculate(const std::string & first, const std::string & second, char action);
+    static std::string calculate(const std::string & first, const std::string & second, char action, const Tokenizer *tokenizer);
 
     static std::string sin(const std::string & tok);
     static std::string cos(const std::string & tok);

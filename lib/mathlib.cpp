@@ -19,7 +19,7 @@
 
 
 #include "mathlib.h"
-
+#include "tokenize.h"
 
 #include <fstream>
 #include <string>
@@ -245,7 +245,7 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
     return toString<double>(toDoubleNumber(first) * toDoubleNumber(second));
 }
 
-std::string MathLib::calculate(const std::string &first, const std::string &second, char action)
+std::string MathLib::calculate(const std::string &first, const std::string &second, char action, const Tokenizer *tokenizer)
 {
     std::string result("0");
 
@@ -268,11 +268,7 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
         break;
 
     default:
-        std::cerr << "##### If you see this, there is a bug: "
-                  << "MathLib::calculate() was called with unknown action '"
-                  << action
-                  << "' #####"
-                  << std::endl;
+        tokenizer->cppcheckError(0);
         break;
     }
 
