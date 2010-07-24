@@ -169,8 +169,6 @@ private:
 
     /** @brief Current preprocessor configuration */
     std::string     cfg;
-
-    std::list<std::string> _xmllist;
 };
 
 /// @}
