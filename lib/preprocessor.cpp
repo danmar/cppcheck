@@ -712,7 +712,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             continue;
         }
 
-        if (line.compare(0, 8, "#define ") == 0 && line.find("(", 8) == std::string::npos)
+        if (line.compare(0, 8, "#define ") == 0)
         {
             if (line.find(" ", 8) == std::string::npos)
                 defines.insert(line.substr(8));
@@ -1219,13 +1219,15 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
         std::string def = getdef(line, true);
         std::string ndef = getdef(line, false);
 
-        if (line.compare(0, 8, "#define ") == 0 && line.find("(", 8) == std::string::npos)
+        if (line.compare(0, 8, "#define ") == 0)
         {
-            std::string::size_type pos = line.find(" ", 8);
+            std::string::size_type pos = line.find_first_of(" (", 8);
             if (pos == std::string::npos)
                 cfgmap[line.substr(8)] = "";
-            else
+            else if (line[pos] == ' ')
                 cfgmap[line.substr(8, pos - 8)] = line.substr(pos + 1);
+            else
+                cfgmap[line.substr(8, pos - 8)] = "";
         }
 
         else if (line.find("#elif ") == 0)

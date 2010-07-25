@@ -178,6 +178,7 @@ private:
 
         // define and then ifdef
         TEST_CASE(define_ifdef);
+        TEST_CASE(define_ifndef);
         TEST_CASE(endfile);
 
         TEST_CASE(redundant_config);
@@ -2143,6 +2144,25 @@ private:
             ASSERT_EQUALS("\n\n1\n\n", actual[""]);
             ASSERT_EQUALS(1, actual.size());
         }
+    }
+
+    void define_ifndef()
+    {
+        const char filedata[] = "#define A(x) (x)\n"
+                                "#ifndef A\n"
+                                ";\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+        TODO_ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(2, actual.size());
     }
 
     void redundant_config()
