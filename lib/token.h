@@ -283,7 +283,7 @@ public:
     static void replace(Token *replaceThis, Token *start, Token *end);
 
     /** Stringify a token list (with or without varId) */
-    std::string stringifyList(bool varid = 0, const char *title = 0) const;
+    std::string stringifyList(bool varid = false, const char *title = 0) const;
     std::string stringifyList(bool varid, const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
