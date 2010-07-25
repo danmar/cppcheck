@@ -650,6 +650,9 @@ void Tokenizer::simplifyTypedef()
     bool hasClass = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        if (_errorLogger)
+            _errorLogger->ReportProgress("Tokenizer::simplifyTypedef");
+
         if (Token::Match(tok, "class|struct|namespace %any%"))
         {
             isNamespace = (tok->str() == "namespace");
@@ -1649,7 +1652,7 @@ void Tokenizer::simplifyTypedef()
 bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::string &configuration)
 {
     if (_errorLogger)
-        _errorLogger->ReportProgress(0, 0);
+        _errorLogger->ReportProgress(0);
 
     _configuration = configuration;
 
@@ -2678,7 +2681,7 @@ void Tokenizer::setVarId()
             continue;
 
         if (_errorLogger)
-            _errorLogger->ReportProgress(__FUNCTION__, tok);
+            _errorLogger->ReportProgress("Tokenizer::setVarId");
 
         // If pattern is "( %type% *|& %var% )" then check if it's a
         // variable declaration or a multiplication / mask

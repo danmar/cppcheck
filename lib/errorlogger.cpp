@@ -233,7 +233,7 @@ void ErrorLogger::ErrorMessage::FileLocation::setfile(const std::string &file)
 }
 
 
-void ErrorLogger::ReportProgress(const char func[], const Token * const tok)
+void ErrorLogger::ReportProgress(const char func[])
 {
     if (!func)
     {
@@ -242,7 +242,7 @@ void ErrorLogger::ReportProgress(const char func[], const Token * const tok)
     }
 
     const std::time_t time2 = std::time(NULL);
-    if (time2 >= (time1 + 60))
+    if (time2 >= (time1 + 10))
     {
         time1 = time2;
 
@@ -253,8 +253,7 @@ void ErrorLogger::ReportProgress(const char func[], const Token * const tok)
         std::ostringstream ostr;
         ostr << "progress:"
              << " time=" << str.substr(11, 8)
-             << " function=" << func
-             << " parsed-line=" << tok->linenr();
+             << " function=" << func;
 
         // Report progress message
         reportOut(ostr.str());

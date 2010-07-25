@@ -176,9 +176,8 @@ public:
      * Report progress.
      *
      * @param func function name (NULL = start command)
-     * @param tok current token
      */
-    void ReportProgress(const char func[], const Token * const tok);
+    void ReportProgress(const char func[]);
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 

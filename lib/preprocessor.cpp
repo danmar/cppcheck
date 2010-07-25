@@ -676,6 +676,9 @@ std::string Preprocessor::getdef(std::string line, bool def)
 
 std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const std::string &filename)
 {
+    if (_errorLogger)
+        _errorLogger->ReportProgress(0);
+
     std::list<std::string> ret;
     ret.push_back("");
 
@@ -696,6 +699,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     while (getline(istr, line))
     {
         ++linenr;
+
+        if (_errorLogger)
+            _errorLogger->ReportProgress("Preprocessor::getcfgs");
 
         if (line.compare(0, 6, "#file ") == 0)
         {
@@ -851,6 +857,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     // Remove defined constants from ifdef configurations..
     for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it)
     {
+        if (_errorLogger)
+            _errorLogger->ReportProgress("Preprocessor::getcfgs");
+
         std::string cfg(*it);
         for (std::set<std::string>::const_iterator it2 = defines.begin(); it2 != defines.end(); ++it2)
         {
