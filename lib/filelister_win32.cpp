@@ -16,14 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "filelister.h"
-#include "filelister_win32.h"
 #include <sstream>
 #include <vector>
 #include <cstring>
 #include <string>
 #include <cctype>
 #include <algorithm>
+
+#include "filelister.h"
+#include "filelister_win32.h"
+#include "path.h"
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -102,8 +104,7 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
     // It always has a trailing backslash available for concatenation.
     std::ostringstream bdir, oss;
 
-    std::string cleanedPath = path;
-    std::replace(cleanedPath.begin(), cleanedPath.end(), '/', '\\');
+    std::string cleanedPath = Path::toNativeSeparators(path);
 
     oss << cleanedPath;
 
@@ -160,7 +161,10 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
 
             // If recursive is not used, accept all files given by user
             if (!recursive || FileLister::acceptFile(ansiFfd))
-                filenames.push_back(fname.str());
+            {
+                const std::string nativename = Path::fromNativeSeparators(fname.str());
+                filenames.push_back(nativename);
+            }
         }
         else if (recursive)
         {
