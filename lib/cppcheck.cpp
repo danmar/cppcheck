@@ -666,7 +666,8 @@ unsigned int CppCheck::check()
             if (_settings.terminated())
                 break;
 
-            reportOut("Analysing " + fname + "..");
+            std::string fixedname = Path::toNativeSeparators(fname);
+            reportOut("Analysing " + fixedname + "..");
 
             std::ifstream f(fname.c_str());
             analyseFile(f, fname);
@@ -684,7 +685,6 @@ unsigned int CppCheck::check()
         if (_settings._errorsOnly == false)
         {
             std::string fixedpath(fname);
-            fixedpath = Path::fromNativeSeparators(fixedpath);
             fixedpath = Path::simplifyPath(fixedpath);
             fixedpath = Path::toNativeSeparators(fixedpath);
             _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string("..."));
@@ -724,7 +724,11 @@ unsigned int CppCheck::check()
                 if (!_settings._force && checkCount > 11)
                 {
                     if (_settings._errorsOnly == false)
-                        _errorLogger.reportOut(std::string("Bailing out from checking ") + fname + ": Too many configurations. Recheck this file with --force if you want to check them all.");
+                    {
+                        const std::string fixedpath = Path::toNativeSeparators(fname);
+                        _errorLogger.reportOut(std::string("Bailing out from checking ") + fixedpath +
+                                               ": Too many configurations. Recheck this file with --force if you want to check them all.");
+                    }
 
                     break;
                 }
@@ -755,7 +759,8 @@ unsigned int CppCheck::check()
         catch (std::runtime_error &e)
         {
             // Exception was thrown when checking this file..
-            _errorLogger.reportOut("Bailing out from checking " + fname + ": " + e.what());
+            const std::string fixedpath = Path::toNativeSeparators(fname);
+            _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
         }
 
         _errorLogger.reportStatus(c + 1, (unsigned int)_filenames.size());
