@@ -603,6 +603,16 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned i
     return 0;
 }
 
+const Token *Token::findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId)
+{
+    for (; tok && tok != end; tok = tok->next())
+    {
+        if (Token::Match(tok, pattern, varId))
+            return tok;
+    }
+    return 0;
+}
+
 void Token::insertToken(const std::string &tokenStr)
 {
     Token *newToken = new Token(tokensBack);

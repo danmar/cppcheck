@@ -98,6 +98,7 @@ private:
         TEST_CASE(operatorEqToSelf5);   // ticket # 1233
         TEST_CASE(operatorEqToSelf6);   // ticket # 1550
         TEST_CASE(memsetOnStruct);
+        TEST_CASE(memsetVector);
         TEST_CASE(memsetOnClass);
 
         TEST_CASE(this_subtraction);    // warn about "this-x"
@@ -271,7 +272,7 @@ private:
             "class A\n"
             "{\n"
             "public:\n"
-            "    A & operator=(const A &)\n"
+            "    A & operator=(const A &);\n"
             "};\n"
             "A & A::operator=(const A &a) { return a; }\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to self\n", errout.str());
@@ -280,7 +281,7 @@ private:
             "class A\n"
             "{\n"
             "public:\n"
-            "    A & operator=(const A &a)\n"
+            "    A & operator=(const A &a);\n"
             "};\n"
             "A & A::operator=(const A &a) { return a; }\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to self\n", errout.str());
@@ -351,7 +352,7 @@ private:
             "{\n"
             "  szp &operator =(int *other);\n"
             "};\n"
-            "szp &szp::operator =(int *other) {};");
+            "szp &szp::operator =(int *other) {}");
         ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to self\n", errout.str());
     }
 
@@ -2557,7 +2558,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // functions with a function call can't be const..
-        checkConst("class foo\n"
+        checkConst("class Fred\n"
                    "{\n"
                    "public:\n"
                    "    int x;\n"
@@ -2567,7 +2568,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // static functions can't be const..
-        checkConst("class foo\n"
+        checkConst("class Fred\n"
                    "{\n"
                    "public:\n"
                    "    static unsigned get();\n"
@@ -2578,7 +2579,7 @@ private:
         // assignment to variable can't be const
         checkConst("class Fred {\n"
                    "    std::string s;\n"
-                   "    void foo()\n"
+                   "    void foo();\n"
                    "};\n"
                    "void Fred::foo() { s = ""; }");
         ASSERT_EQUALS("", errout.str());
@@ -2628,7 +2629,7 @@ private:
                    "    std::string s;\n"
                    "    void foo(std::string & a, std::string & b);\n"
                    "};\n"
-                   "void foo(std::string & a, std::string & b) { a = s; s = b; }");
+                   "void Fred::foo(std::string & a, std::string & b) { a = s; s = b; }");
         ASSERT_EQUALS("", errout.str());
 
         // assignment to function argument pointer can be const
@@ -2750,8 +2751,8 @@ private:
                    "        };\n"
                    "    };\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n"
-                      "[test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n"
+                      "[test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n", errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -2765,8 +2766,8 @@ private:
                    "    };\n"
                    "    int B::getB() { return b; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n"
-                      "[test.cpp:9] -> [test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n"
+                      "[test.cpp:11] -> [test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n", errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -2780,8 +2781,8 @@ private:
                    "};\n"
                    "int Fred::B::A::getA() { return a; }\n"
                    "int Fred::B::getB() { return b; }\n");
-        ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n"
-                      "[test.cpp:11] -> [test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n"
+                      "[test.cpp:12] -> [test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n", errout.str());
     }
 
     // operator< can often be const

@@ -184,6 +184,7 @@ public:
     bool isIntegerType() const;
 
     static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
+    static const Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
 
     /**
      * Needle is build from multiple alternatives. If one of

@@ -771,7 +771,7 @@ private:
               "            C();\n"
               "            struct D {\n"
               "                struct E { };\n"
-              "                E d;\n"
+              "                struct E d;\n"
               "                D(const E &);\n"
               "            };\n"
               "            int c;\n"

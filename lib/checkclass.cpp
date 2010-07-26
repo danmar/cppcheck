@@ -38,6 +38,260 @@ namespace
 CheckClass instance;
 }
 
+//---------------------------------------------------------------------------
+
+CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    : Check(tokenizer, settings, errorLogger)
+{
+    // find all namespaces (class,struct and namespace)
+    SpaceInfo *info = 0;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        // Locate next class
+        if (Token::Match(tok, "class|struct|namespace %var% [{:]"))
+        {
+            SpaceInfo *new_info = new SpaceInfo;
+            new_info->isNamespace = tok->str() == "namespace";
+            new_info->className = tok->next()->str();
+            new_info->classDef = tok;
+
+            // goto initial '{'
+            const Token *tok2 = tok->tokAt(2);
+            while (tok2 && tok2->str() != "{")
+            {
+                // check for base classes
+                if (Token::Match(tok2, ":|, public|protected|private"))
+                {
+                    // jump to base class name
+                    tok2 = tok2->tokAt(2);
+
+                    std::string    derivedFrom;
+
+                    // handle derived base classes
+                    while (Token::Match(tok2, "%var% ::"))
+                    {
+                        derivedFrom += tok2->str();
+                        derivedFrom += " :: ";
+                        tok2 = tok2->tokAt(2);
+                    }
+
+                    derivedFrom += tok2->str();
+
+                    // save pattern for base class name
+                    new_info->derivedFrom.push_back(derivedFrom);
+                }
+                tok2 = tok2->next();
+            }
+
+            new_info->classStart = tok2;
+            new_info->classEnd = new_info->classStart->link();
+            new_info->numConstructors = 0;
+            new_info->varlist = getVarList(tok);
+            new_info->nest = info;
+            new_info->access = tok->str() == "struct" ? Public : Private;
+
+            info = new_info;
+
+            // add namespace
+            spaceInfoMMap.insert(std::make_pair(info->className, info));
+
+            tok = tok2;
+        }
+
+        // check if in class
+        else if (info && !info->isNamespace)
+        {
+            // check for end of class
+            if (tok == info->classEnd)
+            {
+                info = info->nest;
+            }
+            else
+            {
+                // What section are we in..
+                if (tok->str() == "private:")
+                    info->access = Private;
+                else if (tok->str() == "protected:")
+                    info->access = Protected;
+                else if (tok->str() == "public:")
+                    info->access = Public;
+
+                // function?
+                else if (((Token::Match(tok, "%var% (") || Token::Match(tok, "operator %any% (")) && tok->previous()->str() != "::") &&
+                         Token::Match(tok->str() == "operator" ? tok->tokAt(2)->link() : tok->next()->link(), ") const| ;|{|=|:"))
+                {
+                    Func function;
+
+                    // save the access type
+                    function.access = info->access;
+
+                    // save the function name location
+                    function.tokenDef = tok;
+
+                    // operator function
+                    if (function.tokenDef->str() ==  "operator")
+                    {
+                        function.isOperator = true;
+
+                        // update the function name location
+                        function.tokenDef = function.tokenDef->next();
+
+                        // 'operator =' is special
+                        if (function.tokenDef->str() == "=")
+                            function.type = Func::OperatorEqual;
+                    }
+
+                    // class constructor/destructor
+                    else if (function.tokenDef->str() == info->className)
+                    {
+                        if (function.tokenDef->previous()->str() == "~")
+                            function.type = Func::Destructor;
+                        else if (Token::Match(function.tokenDef, "%var% ( const %var% & %var%| )") &&
+                                 function.tokenDef->strAt(3) == info->className)
+                            function.type = Func::CopyConstructor;
+                        else
+                            function.type = Func::Constructor;
+                    }
+
+                    const Token *tok1 = tok;
+
+                    // look for end of previous statement
+                    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:"))
+                    {
+                        // virtual function
+                        if (tok1->previous()->str() == "virtual")
+                        {
+                            function.isVirtual = true;
+                            break;
+                        }
+
+                        // static function
+                        else if (tok1->previous()->str() == "static")
+                        {
+                            function.isStatic = true;
+                            break;
+                        }
+
+                        tok1 = tok1->previous();
+                    }
+
+                    // const function
+                    if (function.tokenDef->next()->link()->next()->str() == "const")
+                        function.isConst = true;
+
+                    // count the number of constructors
+                    if (function.type == Func::Constructor || function.type == Func::CopyConstructor)
+                        info->numConstructors++;
+
+                    // assume implementation is inline (definition and implementation same)
+                    function.token = function.tokenDef;
+
+                    // jump to end of args
+                    const Token *next = function.tokenDef->next()->link();
+
+                    // out of line function
+                    if (Token::Match(next, ") const| ;") ||
+                        Token::Match(next, ") const| = 0 ;"))
+                    {
+                        // find implementation using names on stack
+                        SpaceInfo * nest = info;
+                        unsigned int depth = 0;
+
+                        std::string classPattern;
+                        std::string classPath;
+                        std::string searchPattern;
+                        const Token *funcArgs = function.tokenDef->tokAt(2);
+
+                        if (function.isOperator)
+                            classPattern = "operator " + function.tokenDef->str() + " (";
+                        else
+                            classPattern = function.tokenDef->str() + " (";
+
+                        while (!function.hasBody && nest)
+                        {
+                            classPath = nest->className + std::string(" :: ") + classPath;
+                            searchPattern = classPath + classPattern;
+                            depth++;
+                            nest = nest->nest;
+
+                            // start looking at end of class
+                            SpaceInfo * top = info;
+                            const Token *found = top->classEnd;
+                            while ((found = Token::findmatch(found, searchPattern.c_str(), nest ? nest->classEnd : 0)) != NULL)
+                            {
+                                // skip other classes
+                                if (found->previous()->str() == "::")
+                                    break;
+
+                                // goto function name
+                                while (found->next()->str() != "(")
+                                    found = found->next();
+
+                                if (Token::Match(found->next()->link(), ") const| {"))
+                                {
+                                    if (argsMatch(funcArgs, found->tokAt(2), classPath, depth))
+                                    {
+                                        function.token = found;
+                                        function.hasBody = true;
+
+                                        info->functionList.push_back(function);
+                                        break;
+                                    }
+
+                                    // skip function body
+                                    while (found->str() != "{")
+                                        found = found->next();
+
+                                    found = found->link();
+                                }
+                            }
+                        }
+
+                        if (!function.hasBody)
+                            info->functionList.push_back(function);
+
+                        tok = next->next();
+                    }
+
+                    // inline function
+                    else
+                    {
+                        function.isInline = true;
+                        function.hasBody = true;
+
+                        info->functionList.push_back(function);
+
+                        // skip over function body
+                        tok = next->next();
+                        while (tok->str() != "{")
+                            tok = tok->next();
+                        tok = tok->link();
+                    }
+                }
+            }
+        }
+    }
+}
+
+CheckClass::~CheckClass()
+{
+    std::multimap<std::string, SpaceInfo *>::iterator it;
+
+    for (it = spaceInfoMMap.begin(); it != spaceInfoMMap.end(); ++it)
+    {
+        SpaceInfo *info = it->second;
+
+        // Delete the varlist..
+        while (info->varlist)
+        {
+            Var *nextvar = info->varlist->next;
+            delete info->varlist;
+            info->varlist = nextvar;
+        }
+
+        delete info;
+    }
+}
 
 //---------------------------------------------------------------------------
 
@@ -467,27 +721,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
     }
 }
 
-//---------------------------------------------------------------------------
-// ClassCheck: Check that all class constructors are ok.
-//---------------------------------------------------------------------------
-
-struct Constructor
-{
-    enum AccessControl { Public, Protected, Private };
-
-    Constructor(const Token * tok, AccessControl acc, bool body, bool equal, bool copy) :
-        token(tok), access(acc), hasBody(body), isOperatorEqual(equal), isCopyConstructor(copy)
-    {
-    }
-
-    const Token *token;
-    AccessControl access;
-    bool hasBody;
-    bool isOperatorEqual;
-    bool isCopyConstructor;
-};
-
-static bool argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth)
+bool CheckClass::argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth) const
 {
     bool match = false;
     while (first->str() == second->str())
@@ -511,6 +745,12 @@ static bool argsMatch(const Token *first, const Token *second, const std::string
             second = second->next();
         else if (first->next()->str() == ")" && second->next()->str() != ")")
             second = second->next();
+
+        // function missing variable name
+        else if (second->next()->str() == "," && first->next()->str() != ",")
+            first = first->next();
+        else if (second->next()->str() == ")" && first->next()->str() != ")")
+            first = first->next();
 
         // argument list has different number of arguments
         else if (second->str() == ")")
@@ -566,252 +806,83 @@ static bool argsMatch(const Token *first, const Token *second, const std::string
     return match;
 }
 
-struct SpaceInfo
-{
-    bool isNamespace;
-    std::string className;
-    const Token * classEnd;
-};
+//---------------------------------------------------------------------------
+// ClassCheck: Check that all class constructors are ok.
+//---------------------------------------------------------------------------
 
 void CheckClass::constructors()
 {
     if (!_settings->_checkCodingStyle)
         return;
 
-    const char pattern_class[] = "class|struct|namespace %var% [{:]";
-    std::vector<SpaceInfo> spaceInfo;
-    bool isNamespace = false;
-    std::string className;
-    for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
+    std::multimap<std::string, SpaceInfo *>::iterator i;
+
+    for (i = spaceInfoMMap.begin(); i != spaceInfoMMap.end(); ++i)
     {
-        if (!spaceInfo.empty())
+        SpaceInfo *info = i->second;
+
+        // There are no constructors.
+        if (info->numConstructors == 0)
         {
-            if (tok1 == spaceInfo.back().classEnd)
+            // If there is a private variable, there should be a constructor..
+            for (const Var *var = info->varlist; var; var = var->next)
             {
-                spaceInfo.pop_back();
-                continue;
+                if (var->priv && !var->isClass && !var->isStatic)
+                {
+                    noConstructorError(info->classDef, info->className, info->classDef->str() == "struct");
+                    break;
+                }
             }
         }
 
-        // Locate class
-        if (Token::Match(tok1, pattern_class))
+        std::list<Func>::const_iterator it;
+
+        for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
         {
-            isNamespace = (tok1->str() == "namespace");
-            className = tok1->next()->str();
-            bool isStruct = tok1->str() == "struct";
-
-            const Token *tok2 = tok1->tokAt(2);
-            while (tok2->str() != "{")
-                tok2 = tok2->next();
-
-            SpaceInfo info;
-            info.isNamespace = isNamespace;
-            info.className = className;
-            info.classEnd = tok2->link();
-            spaceInfo.push_back(info);
-
-            if (isNamespace)
+            if (!it->hasBody || !(it->type == Func::Constructor || it->type == Func::CopyConstructor || it->type == Func::OperatorEqual))
                 continue;
 
-            int indentlevel = 0;
-            Constructor::AccessControl access = isStruct ? Constructor::Public : Constructor::Private;
-            std::list<Constructor> constructorList;
-            unsigned int numConstructors = 0;
+            // Mark all variables not used
+            for (Var *var = info->varlist; var; var = var->next)
+                var->init = false;
 
-            // check to end of class definition
-            for (const Token *tok = tok1; tok; tok = tok->next())
+            std::list<std::string> callstack;
+            initializeVarList(info->classDef, it->token, info->varlist, callstack);
+
+            // Check if any variables are uninitialized
+            for (Var *var = info->varlist; var; var = var->next)
             {
-                // Indentation
-                if (tok->str() == "{")
-                    ++indentlevel;
-
-                else if (tok->str() == "}")
-                {
-                    --indentlevel;
-                    if (indentlevel <= 0)
-                        break;
-                }
-
-                // Parse class contents (indentlevel == 1)..
-                if (indentlevel == 1)
-                {
-                    // What section are we in..
-                    if (tok->str() == "private:")
-                        access = Constructor::Private;
-                    else if (tok->str() == "protected:")
-                        access = Constructor::Protected;
-                    else if (tok->str() == "public:")
-                        access = Constructor::Public;
-
-                    // Is there a constructor?
-                    else if (Token::simpleMatch(tok, (className + " (").c_str()) ||
-                             Token::simpleMatch(tok, "operator = ("))
-                    {
-                        bool operatorEqual = tok->str() == "operator";
-                        bool copyConstructor = Token::Match(tok, "%var% ( const %var% & %var%| )");
-                        const Token *next = operatorEqual ? tok->tokAt(2)->link() : tok->next()->link();
-
-                        if (!operatorEqual)
-                            numConstructors++;
-
-                        // out of line function
-                        if (Token::Match(next, ") ;"))
-                        {
-                            // find using names on stack
-                            int stack_index = spaceInfo.size() - 1;
-
-                            std::string classPattern;
-                            std::string classPath;
-                            std::string searchPattern;
-                            int offset1, offset2;
-                            if (operatorEqual)
-                            {
-                                classPattern = "operator = (";
-                                offset1 = offset2 = 3;
-                            }
-                            else
-                            {
-                                classPattern = className + " (";
-                                offset1 = offset2 = 2;
-                            }
-
-                            bool hasBody = false;
-                            unsigned int depth = 0;
-                            while (!hasBody && stack_index >= 0)
-                            {
-                                classPath = spaceInfo[stack_index].className + std::string(" :: ") + classPath;
-                                searchPattern = classPath + classPattern;
-                                offset2 += 2;
-                                depth++;
-
-                                // start looking at end of class
-                                const Token *constructor_token = spaceInfo[stack_index].classEnd;
-
-                                while ((constructor_token = Token::findmatch(constructor_token, searchPattern.c_str())) != NULL)
-                                {
-                                    // skip destructor and other classes
-                                    if (!Token::Match(constructor_token->previous(), "~|::"))
-                                    {
-                                        if (argsMatch(tok->tokAt(offset1), constructor_token->tokAt(offset2), classPath, depth))
-                                        {
-                                            constructorList.push_back(Constructor(constructor_token, access, true, operatorEqual, copyConstructor));
-
-                                            hasBody = true;
-                                            break;
-                                        }
-                                    }
-
-                                    // skip function body
-                                    while (constructor_token->str() != "{")
-                                        constructor_token = constructor_token->next();
-                                    constructor_token = constructor_token->link();
-                                }
-
-                                stack_index--;
-                            }
-
-                            // function body found?
-                            if (!hasBody)
-                            {
-                                constructorList.push_back(Constructor(tok, access, false, operatorEqual, copyConstructor));
-                            }
-
-                            tok = next->next();
-                        }
-
-                        // inline function
-                        else
-                        {
-                            // skip destructor and other classes
-                            if (!Token::Match(tok->previous(), "~|::"))
-                            {
-                                constructorList.push_back(Constructor(tok, access, true, operatorEqual, copyConstructor));
-                            }
-
-                            // skip over function body
-                            tok = next->next();
-                            while (tok->str() != "{")
-                                tok = tok->next();
-                            tok = tok->link();
-                        }
-                    }
-                }
-            }
-
-            // Get variables...
-            Var *varlist = getVarList(tok1);
-
-            // There are no constructors.
-            if (numConstructors == 0)
-            {
-                // If there is a private variable, there should be a constructor..
-                for (const Var *var = varlist; var; var = var->next)
-                {
-                    if (var->priv && !var->isClass && !var->isStatic)
-                    {
-                        noConstructorError(tok1, className, isStruct);
-                        break;
-                    }
-                }
-            }
-
-            std::list<Constructor>::const_iterator it;
-
-            for (it = constructorList.begin(); it != constructorList.end(); ++it)
-            {
-                if (!it->hasBody)
+                // skip classes for regular constructor
+                if (var->isClass && it->type == Func::Constructor)
                     continue;
 
-                std::list<std::string> callstack;
-                initializeVarList(tok1, it->token, varlist, callstack);
+                if (var->init || var->isStatic)
+                    continue;
 
-                // Check if any variables are uninitialized
-                for (Var *var = varlist; var; var = var->next)
+                // It's non-static and it's not initialized => error
+                if (it->type == Func::OperatorEqual)
                 {
-                    // skip classes for regular constructor
-                    if (var->isClass && !(it->isCopyConstructor || it->isOperatorEqual))
-                        continue;
+                    const Token *operStart = 0;
+                    if (it->token->str() == "=")
+                        operStart = it->token->tokAt(1);
+                    else
+                        operStart = it->token->tokAt(3);
 
-                    if (var->init || var->isStatic)
-                        continue;
-
-                    // It's non-static and it's not initialized => error
-                    if (it->isOperatorEqual)
+                    bool classNameUsed = false;
+                    for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next())
                     {
-                        const Token *operStart = 0;
-                        if (Token::simpleMatch(it->token, "operator = ("))
-                            operStart = it->token->tokAt(2);
-                        else
-                            operStart = it->token->tokAt(4);
-
-                        bool classNameUsed = false;
-                        for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next())
+                        if (operTok->str() == info->className)
                         {
-                            if (operTok->str() == className)
-                            {
-                                classNameUsed = true;
-                                break;
-                            }
+                            classNameUsed = true;
+                            break;
                         }
-
-                        if (classNameUsed)
-                            operatorEqVarError(it->token, className, var->name);
                     }
-                    else if (it->access != Constructor::Private && !var->isStatic)
-                        uninitVarError(it->token, className, var->name);
+
+                    if (classNameUsed)
+                        operatorEqVarError(it->token, info->className, var->name);
                 }
-
-                // Mark all variables not used
-                for (Var *var = varlist; var; var = var->next)
-                    var->init = false;
-            }
-
-            // Delete the varlist..
-            while (varlist)
-            {
-                Var *nextvar = varlist->next;
-                delete varlist;
-                varlist = nextvar;
+                else if (it->access != Private && !var->isStatic)
+                    uninitVarError(it->token, info->className, var->name);
             }
         }
     }
@@ -1090,38 +1161,94 @@ void CheckClass::operatorEq()
     if (!_settings->_checkCodingStyle)
         return;
 
-    const Token *tok2 = _tokenizer->tokens();
-    const Token *tok;
+    std::multimap<std::string, SpaceInfo *>::const_iterator i;
 
-    while ((tok = Token::findmatch(tok2, "void operator = (")) != NULL)
+    for (i = spaceInfoMMap.begin(); i != spaceInfoMMap.end(); ++i)
     {
-        const Token *tok1 = tok;
-        while (tok1 && !Token::Match(tok1, "class|struct %var%"))
+        std::list<Func>::const_iterator it;
+
+        for (it = i->second->functionList.begin(); it != i->second->functionList.end(); ++it)
         {
-            if (tok1->str() == "public:")
+            if (it->type == Func::OperatorEqual && it->access != Private)
             {
-                operatorEqReturnError(tok);
-                break;
+                if (it->token->strAt(-2) == "void")
+                    operatorEqReturnError(it->token->tokAt(-2));
             }
-            if (tok1->str() == "private:" || tok1->str() == "protected:")
-                break;
-            tok1 = tok1->previous();
         }
-
-        if (tok1 && Token::Match(tok1, "struct %var%"))
-            operatorEqReturnError(tok);
-
-        tok2 = tok->next();
     }
 }
-//---------------------------------------------------------------------------
-
-
-
 
 //---------------------------------------------------------------------------
 // ClassCheck: "C& operator=(const C&) { ... return *this; }"
 // operator= should return a reference to *this
+//---------------------------------------------------------------------------
+
+void CheckClass::operatorEqRetRefThis()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    std::multimap<std::string, SpaceInfo *>::const_iterator i;
+
+    for (i = spaceInfoMMap.begin(); i != spaceInfoMMap.end(); ++i)
+    {
+        const SpaceInfo *info = i->second;
+        std::list<Func>::const_iterator it;
+
+        for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
+        {
+            if (it->type == Func::OperatorEqual && it->hasBody)
+            {
+                // make sure return signature is correct
+                if (Token::Match(it->tokenDef->tokAt(-4), ";|}|{|public:|protected:|private: %type% &") &&
+                    it->tokenDef->strAt(-3) == info->className)
+                {
+                    // find the ')'
+                    const Token *tok = it->token->next()->link();
+
+                    bool foundReturn = false;
+                    const Token *last = tok->next()->link();
+                    for (tok = tok->tokAt(2); tok && tok != last; tok = tok->next())
+                    {
+                        // check for return of reference to this
+                        if (tok->str() == "return")
+                        {
+                            foundReturn = true;
+                            std::string cast("( " + info->className + " & )");
+                            if (Token::Match(tok->next(), cast.c_str()))
+                                tok = tok->tokAt(4);
+
+                            if (!(Token::Match(tok->tokAt(1), "(| * this ;|=") ||
+                                  Token::Match(tok->tokAt(1), "(| * this +=") ||
+                                  Token::Match(tok->tokAt(1), "operator = (")))
+                                operatorEqRetRefThisError(it->token);
+                        }
+                    }
+                    if (!foundReturn)
+                        operatorEqRetRefThisError(it->token);
+                }
+            }
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// ClassCheck: "C& operator=(const C& rhs) { if (this == &rhs) ... }"
+// operator= should check for assignment to self
+//
+// For simple classes, an assignment to self check is only a potential optimization.
+//
+// For classes that allocate dynamic memory, assignment to self can be a real error
+// if it is deallocated and allocated again without being checked for.
+//
+// This check is not valid for classes with multiple inheritance because a
+// class can have multiple addresses so there is no trivial way to check for
+// assignment to self.
 //---------------------------------------------------------------------------
 
 // match two lists of tokens
@@ -1150,134 +1277,6 @@ static void nameStr(const Token * name, int length, std::string & str)
         str += name->tokAt(i)->str();
     }
 }
-
-void CheckClass::operatorEqRetRefThis_finderr(const Token *tok, const std::string &classname)
-{
-    // find the ')'
-    const Token *tok1 = tok->tokAt(2)->link();
-
-    // is there an implementation?
-    if (Token::simpleMatch(tok1, ") {"))
-    {
-        bool foundReturn = false;
-        const Token *last = tok1->next()->link();
-        for (tok1 = tok1->tokAt(2); tok1 && tok1 != last; tok1 = tok1->next())
-        {
-            // check for return of reference to this
-            if (tok1->str() == "return")
-            {
-                foundReturn = true;
-                std::string cast("( " + classname + " & )");
-                if (Token::Match(tok1->next(), cast.c_str()))
-                    tok1 = tok1->tokAt(4);
-
-                if (!(Token::Match(tok1->tokAt(1), "(| * this ;|=") ||
-                      Token::Match(tok1->tokAt(1), "(| * this +=") ||
-                      Token::Match(tok1->tokAt(1), "operator = (")))
-                    operatorEqRetRefThisError(tok);
-            }
-        }
-        if (!foundReturn)
-            operatorEqRetRefThisError(tok);
-    }
-}
-
-void CheckClass::operatorEqRetRefThis()
-{
-    if (!_settings->_checkCodingStyle)
-        return;
-
-    const Token *tok2 = _tokenizer->tokens();
-    const Token *tok;
-
-    while ((tok = Token::findmatch(tok2, "operator = (")) != NULL)
-    {
-        const Token *tok1 = tok;
-
-        if (tok1->tokAt(-2) && Token::Match(tok1->tokAt(-2), " %type% ::"))
-        {
-            // make sure this is an assignment operator
-            int nameLength = 1;
-
-            tok1 = tok1->tokAt(-2);
-
-            // check backwards for proper function signature
-            while (tok1->tokAt(-2) && Token::Match(tok1->tokAt(-2), " %type% ::"))
-            {
-                tok1 = tok1->tokAt(-2);
-                nameLength += 2;
-            }
-
-            const Token *className = tok1;
-            std::string nameString;
-
-            nameStr(className, nameLength, nameString);
-
-            if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
-            {
-                // check class name
-                if (tok1->tokAt(-(1 + nameLength)) && nameMatch(className, tok1->tokAt(-(1 + nameLength)), nameLength))
-                {
-                    operatorEqRetRefThis_finderr(tok, className->str());
-                }
-            }
-        }
-        else
-        {
-            // make sure this is an assignment operator
-            tok1 = tok;
-
-            // check backwards for proper function signature
-            if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
-            {
-                const Token *className = 0;
-                bool isPublic = false;
-                while (tok1 && !Token::Match(tok1, "class|struct %var%"))
-                {
-                    if (!isPublic)
-                    {
-                        if (tok1->str() == "public:")
-                            isPublic = true;
-                    }
-                    tok1 = tok1->previous();
-                }
-
-                if (Token::Match(tok1, "struct|class %var%"))
-                {
-                    // data members in structs are public by default
-                    isPublic = bool(tok1->str() == "struct");
-
-                    className = tok1->tokAt(1);
-                }
-
-                if (tok->tokAt(-2) && tok->tokAt(-2)->str() == className->str())
-                {
-                    operatorEqRetRefThis_finderr(tok, className->str());
-                }
-            }
-        }
-
-        tok2 = tok->next();
-    }
-}
-//---------------------------------------------------------------------------
-
-
-
-
-//---------------------------------------------------------------------------
-// ClassCheck: "C& operator=(const C& rhs) { if (this == &rhs) ... }"
-// operator= should check for assignment to self
-//
-// For simple classes, an assignment to self check is only a potential optimization.
-//
-// For classes that allocate dynamic memory, assignment to self can be a real error
-// if it is deallocated and allocated again without being checked for.
-//
-// This check is not valid for classes with multiple inheritance because a
-// class can have multiple addresses so there is no trivial way to check for
-// assignment to self.
-//---------------------------------------------------------------------------
 
 static bool hasDeallocation(const Token * first, const Token * last)
 {
@@ -1829,429 +1828,111 @@ bool CheckClass::isVirtual(const std::vector<std::string> &derivedFrom, const To
     return false;
 }
 
-struct NestInfo
-{
-    std::string className;
-    const Token *classStart;
-    const Token *classEnd;
-    int levelEnd;
-    std::vector<std::string> derivedFrom;
-};
-
 // Can a function be const?
 void CheckClass::checkConst()
 {
     if (!_settings->_checkCodingStyle)
         return;
 
-    std::vector<NestInfo> nestInfo;
-    int level = 0;
-    Var *varlist = 0;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    std::multimap<std::string, SpaceInfo *>::iterator it;
+
+    for (it = spaceInfoMMap.begin(); it != spaceInfoMMap.end(); ++it)
     {
-        if (tok->str() == "{" && !nestInfo.empty())
-            level++;
-        else if (tok->str() == "}" && !nestInfo.empty())
+        SpaceInfo *info = it->second;
+
+        std::list<Func>::iterator    it1;
+
+        for (it1 = info->functionList.begin(); it1 != info->functionList.end(); ++it1)
         {
-            level--;
-            if (level == nestInfo.back().levelEnd)
-                nestInfo.pop_back();
-        }
-        else if (Token::Match(tok, "class|struct %var% {|:"))
-        {
-            const Token *classTok = tok;
-            NestInfo info;
+            const Func & func = *it1;
 
-            // get class name..
-            std::string classname(tok->strAt(1));
-            info.className = classname;
-            info.classStart = tok;
-
-            // goto initial '{'
-            while (tok && tok->str() != "{")
+            // does the function have a body?
+            if (func.type == Func::Function && func.hasBody && !func.isStatic && !func.isConst && !func.isVirtual)
             {
-                // check for base classes
-                if (Token::Match(tok, ":|, public|protected|private"))
+                // get function name
+                const std::string functionName((func.tokenDef->isName() ? "" : "operator") + func.tokenDef->str());
+
+                // get last token of return type
+                const Token *previous = func.tokenDef->isName() ? func.token->previous() : func.token->tokAt(-2);
+                while (previous->str() == "::")
+                    previous = previous->tokAt(-2);
+
+                // does the function return a pointer or reference?
+                if (Token::Match(previous, "*|&"))
                 {
-                    // jump to base class name
-                    tok = tok->tokAt(2);
+                    const Token *temp = func.token->previous();
 
-                    std::string    derivedFrom;
+                    while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:"))
+                        temp = temp->previous();
 
-                    // handle derived base classes
-                    while (Token::Match(tok, "%var% ::"))
-                    {
-                        derivedFrom += tok->str();
-                        derivedFrom += " :: ";
-                        tok = tok->tokAt(2);
-                    }
-
-                    derivedFrom += tok->str();
-
-                    // save pattern for base class name
-                    info.derivedFrom.push_back(derivedFrom);
-                }
-                tok = tok->next();
-            }
-            if (!tok)
-                break;
-
-            const Token *classEnd = tok->link();
-
-            info.classEnd = classEnd;
-            info.levelEnd = level++;
-            nestInfo.push_back(info);
-
-            // Delete the varlist..
-            while (varlist)
-            {
-                Var *nextvar = varlist->next;
-                delete varlist;
-                varlist = nextvar;
-            }
-
-            // Get class variables...
-            varlist = getVarList(classTok);
-
-            // parse in this class definition to see if there are any simple getter functions
-            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "{")
-                    tok2 = tok2->link();
-                else if (tok2->str() == "}")
-                    break;
-
-                // start of statement?
-                if (!Token::Match(tok2->previous(), "[;{}]"))
-                    continue;
-
-                // skip private: public: etc
-                if (tok2->isName() && tok2->str().find(":") != std::string::npos)
-                {
-                    if (tok2->next()->str() == "}")
+                    if (temp->str() != "const")
                         continue;
-                    tok2 = tok2->next();
                 }
-
-                // static functions can't be const
-                // virtual functions may be non-const for a reason
-                if (Token::Match(tok2, "static|virtual"))
-                    continue;
-
-                // don't warn for unknown types..
-                // LPVOID, HDC, etc
-                if (tok2->isName())
+                else if (Token::Match(previous->previous(), "*|& >"))
                 {
-                    bool allupper = true;
-                    const std::string s(tok2->str());
-                    for (std::string::size_type pos = 0; pos < s.size(); ++pos)
+                    const Token *temp = func.token->previous();
+
+                    while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:"))
                     {
-                        unsigned char ch = s[pos];
-                        if (!(ch == '_' || (ch >= 'A' && ch <= 'Z')))
-                        {
-                            allupper = false;
+                        temp = temp->previous();
+                        if (temp->str() == "const")
                             break;
-                        }
                     }
 
-                    if (allupper)
+                    if (temp->str() != "const")
                         continue;
-                }
-
-                // member function?
-                if (isMemberFunc(tok2))
-                {
-                    // goto function name..
-                    while (tok2->next()->str() != "(")
-                        tok2 = tok2->next();
-
-                    // get function name
-                    const std::string functionName((tok2->isName() ? "" : "operator") + tok2->str());
-
-                    // skip constructor
-                    if (functionName == classname)
-                        continue;
-
-                    const Token *functionToken = tok2;
-
-                    // goto the ')'
-                    tok2 = tok2->next()->link();
-                    if (!tok2)
-                        break;
-
-                    // is this a non-const function that is implemented inline?
-                    if (Token::simpleMatch(tok2, ") {"))
-                    {
-                        const Token *paramEnd = tok2;
-
-                        // check if base class function is virtual
-                        if (!info.derivedFrom.empty())
-                        {
-                            if (isVirtual(info.derivedFrom, functionToken))
-                                continue;
-                        }
-
-                        // if nothing non-const was found. write error..
-                        if (checkConstFunc(info.className, info.derivedFrom, varlist, paramEnd))
-                        {
-                            for (int i = nestInfo.size() - 2; i >= 0; i--)
-                                classname = std::string(nestInfo[i].className + "::" + classname);
-
-                            checkConstError(tok2, classname, functionName);
-                        }
-                    }
-                    else if (Token::simpleMatch(tok2, ") ;")) // not inline
-                    {
-                        // check if base class function is virtual
-                        if (!info.derivedFrom.empty())
-                        {
-                            if (isVirtual(info.derivedFrom, functionToken))
-                                continue;
-                        }
-
-                        for (int i = nestInfo.size() - 1; i >= 0; i--)
-                        {
-                            const Token *found = nestInfo[i].classEnd;
-                            std::string pattern(functionName + " (");
-                            int namespaceLevel = 0;
-                            for (int j = nestInfo.size() - 1; j >= i; j--, namespaceLevel++)
-                                pattern = std::string(nestInfo[j].className + " :: " + pattern);
-                            while ((found = Token::findmatch(found->next(), pattern.c_str())) != NULL)
-                            {
-                                const Token *paramEnd = found->tokAt(1 + (2 * namespaceLevel))->link();
-                                if (!paramEnd)
-                                    break;
-                                if (paramEnd->next()->str() != "{")
-                                    break;
-
-                                if (sameFunc(namespaceLevel, tok2, paramEnd))
-                                {
-                                    // if nothing non-const was found. write error..
-                                    if (checkConstFunc(info.className, info.derivedFrom, varlist, paramEnd))
-                                    {
-                                        for (int k = nestInfo.size() - 2; k >= 0; k--)
-                                            classname = std::string(nestInfo[k].className + "::" + classname);
-
-                                        checkConstError2(found, tok2, classname, functionName);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Delete the varlist..
-    while (varlist)
-    {
-        Var *nextvar = varlist->next;
-        delete varlist;
-        varlist = nextvar;
-    }
-}
-
-bool CheckClass::sameFunc(int nest, const Token *firstEnd, const Token *secondEnd)
-{
-    // check return type (search backwards until previous statement)
-    const Token * firstStart = firstEnd->link()->tokAt(-2);
-    const Token * secondStart = secondEnd->link()->tokAt((-2 * nest) - 2);
-
-    bool firstDone = false;
-    bool secondDone = false;
-
-    for ( ; ; )
-    {
-        firstDone = false;
-        secondDone = false;
-
-        if (!firstStart || Token::Match(firstStart, ";|}|{|public:|protected:|private:"))
-            firstDone = true;
-
-        if (!secondStart || Token::Match(secondStart, ";|}|{|public:|protected:|private:"))
-            secondDone = true;
-
-        if (firstDone != secondDone)
-            return false;
-
-        // both done and match
-        if (firstDone)
-            break;
-
-        if (secondStart->str() != firstStart->str())
-            return false;
-
-        firstStart = firstStart->previous();
-        secondStart = secondStart->previous();
-    }
-
-    // check parameter types (names can be different or missing)
-    firstStart = firstEnd->link()->next();
-    secondStart = secondEnd->link()->next();
-
-    for ( ; ; )
-    {
-        firstDone = false;
-        secondDone = false;
-        bool again = true;
-
-        while (again)
-        {
-            again = false;
-
-            if (firstStart == firstEnd)
-                firstDone = true;
-
-            if (secondStart == secondEnd)
-                secondDone = true;
-
-            // possible difference in number of parameters
-            if (firstDone != secondDone)
-            {
-                // check for missing names
-                if (firstDone)
-                {
-                    if (secondStart->varId() != 0)
-                        again = true;
                 }
                 else
                 {
-                    if (firstStart->varId() != 0)
-                        again = true;
-                }
-
-                if (!again)
-                    return false;
-            }
-
-            // both done and match
-            if (firstDone && !again)
-                return true;
-
-            if (firstStart->varId() != 0)
-            {
-                // skip variable name
-                firstStart = firstStart->next();
-                again = true;
-            }
-
-            if (secondStart->varId() != 0)
-            {
-                // skip variable name
-                secondStart = secondStart->next();
-                again = true;
-            }
-        }
-
-        if (firstStart->str() != secondStart->str())
-            return false;
-
-        // retry after skipped variable names
-        if (!again)
-        {
-            firstStart = firstStart->next();
-            secondStart = secondStart->next();
-        }
-    }
-
-    return true;
-}
-
-// A const member function can return either a copy of or
-// a const reference or pointer to something.
-// Is this a member function with these signatures:
-// type var (                    returns a copy of something
-// const type var (              returns a const copy of something
-// const type & var (            returns a const reference to something
-// const type * var (            returns a const pointer to something
-// type operator any (           returns a copy of something
-// const type operator any (     returns a const copy of something
-// const type & operator any (   returns a const reference to something
-// const type * operator any (   returns a const pointer to something
-// Type can be anything from a standard type to a complex template.
-bool CheckClass::isMemberFunc(const Token *tok)
-{
-    bool isConst = false;
-
-    if (tok->str() == "const")
-    {
-        isConst = true;
-        tok = tok->next();
-    }
-
-    if (Token::Match(tok, "%type%"))
-    {
-        tok = tok->next();
-
-        if (Token::Match(tok, "%var% ("))
-            return true;
-        else if (Token::Match(tok, "operator %any% ("))
-            return true;
-
-        while (Token::Match(tok, ":: %type%"))
-            tok = tok->tokAt(2);
-
-        // template with parameter(s)?
-        if (Token::Match(tok, "< %type%"))
-        {
-            unsigned int level = 1;
-            tok = tok->tokAt(2);
-            while (tok)
-            {
-                if (tok->str() == "<")
-                    level++;
-                else if (tok->str() == ">")
-                {
-                    level--;
-                    if (level == 0)
+                    // don't warn for unknown types..
+                    // LPVOID, HDC, etc
+                    if (previous->isName())
                     {
-                        tok = tok->next();
-                        break;
+                        bool allupper = true;
+                        const std::string s(previous->str());
+                        for (std::string::size_type pos = 0; pos < s.size(); ++pos)
+                        {
+                            unsigned char ch = s[pos];
+                            if (!(ch == '_' || (ch >= 'A' && ch <= 'Z')))
+                            {
+                                allupper = false;
+                                break;
+                            }
+                        }
+
+                        if (allupper)
+                            continue;
                     }
                 }
 
-                // check for templates returning pointers or references
-                else if (Token::Match(tok, "*|&"))
+                const Token *paramEnd = func.token->next()->link();
+
+                // check if base class function is virtual
+                if (!info->derivedFrom.empty())
                 {
-                    int back = -2;
-                    if (tok->strAt(back) == "::")
-                        back -= 2;
-
-                    if (tok->strAt(back) != "const")
-                    {
-                        if (!isConst)
-                            return false;
-                    }
+                    if (isVirtual(info->derivedFrom, func.token))
+                        continue;
                 }
-                tok = tok->next();
+
+                // if nothing non-const was found. write error..
+                if (checkConstFunc(info->className, info->derivedFrom, info->varlist, paramEnd))
+                {
+                    std::string classname = info->className;
+                    SpaceInfo *nest = info->nest;
+                    while (nest)
+                    {
+                        classname = std::string(nest->className + "::" + classname);
+                        nest = nest->nest;
+                    }
+
+                    if (func.isInline)
+                        checkConstError(func.token, classname, functionName);
+                    else // not inline
+                        checkConstError2(func.token, func.tokenDef, classname, functionName);
+                }
             }
         }
-
-        // template with default type
-        else if (Token::Match(tok, "< >"))
-            tok = tok->tokAt(2);
-
-        // operator something
-        else if (Token::Match(tok, "operator %any% ("))
-            return true;
-
-        if (isConst)
-        {
-            while (Token::Match(tok, "*|&"))
-            {
-                tok = tok->next();
-
-                if (tok->str() == "const")
-                    tok = tok->next();
-            }
-        }
-
-        if (Token::Match(tok, "%var% ("))
-            return true;
     }
-
-    return false;
 }
 
 bool CheckClass::isMemberVar(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok)

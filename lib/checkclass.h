@@ -23,6 +23,7 @@
 
 #include "check.h"
 #include "settings.h"
+#include <map>
 
 class Token;
 
@@ -39,9 +40,9 @@ public:
     { }
 
     /** @brief This constructor is used when running checks. */
-    CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
-    { }
+    CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+
+    ~CheckClass();
 
     /** @brief Run checks on the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -145,6 +146,58 @@ private:
         Var& operator=(const Var&); // disallow assignments
     };
 
+    enum AccessControl { Public, Protected, Private };
+
+    struct Func
+    {
+        enum Type { Constructor, CopyConstructor, OperatorEqual, Destructor, Function };
+
+        Func()
+            : tokenDef(NULL),
+              token(NULL),
+              access(Public),
+              hasBody(false),
+              isInline(false),
+              isConst(false),
+              isVirtual(false),
+              isStatic(false),
+              isOperator(false),
+              type(Function)
+        {
+        }
+
+        const Token *tokenDef; // function name token in class definition
+        const Token *token;    // function name token in implementation
+        AccessControl access;  // public/protected/private
+        bool hasBody;          // has implementation
+        bool isInline;         // implementation in class definition
+        bool isConst;          // is const
+        bool isVirtual;        // is virtual
+        bool isStatic;         // is static
+        bool isOperator;       // is operator
+        Type type;             // constructor, destructor, ...
+    };
+
+    struct SpaceInfo
+    {
+        bool isNamespace;
+        std::string className;
+        const Token *classDef;   // class/struct/namespace token
+        const Token *classStart; // '{' token
+        const Token *classEnd;   // '}' token
+        unsigned int numConstructors;
+        std::list<Func> functionList;
+        Var *varlist;
+        std::vector<std::string> derivedFrom;
+        SpaceInfo *nest;
+        AccessControl access;
+    };
+
+    /** @brief Information about all namespaces/classes/structrues */
+    std::multimap<std::string, SpaceInfo *> spaceInfoMMap;
+
+    bool argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
+
     /**
      * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
      * @param tok1 pointer to class declaration
@@ -163,20 +216,11 @@ private:
      */
     Var *getVarList(const Token *tok1);
 
-    bool sameFunc(int nest, const Token *firstEnd, const Token *secondEnd);
-    bool isMemberFunc(const Token *tok);
     bool isMemberVar(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok);
     bool checkConstFunc(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok);
 
     /** @brief check if this function is virtual in the base classes */
     bool isVirtual(const std::vector<std::string> &derivedFrom, const Token *functionToken) const;
-
-    /**
-     * @brief Helper function for operatorEqRetRefThis that checks if there are errors
-     * @param tok The "operator" token in a operator=(.. function
-     * @param classname Name of class
-     */
-    void operatorEqRetRefThis_finderr(const Token *tok, const std::string &classname);
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
