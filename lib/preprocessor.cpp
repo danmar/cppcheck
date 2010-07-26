@@ -23,6 +23,7 @@
 #include "filelister.h"
 #include "path.h"
 #include "errorlogger.h"
+#include "settings.h"
 
 #include <algorithm>
 #include <stdexcept>

@@ -21,11 +21,12 @@
 // the code for a known configuration, it generates the code for each configuration.
 
 
-#include <cstring>
 #include "testsuite.h"
 #include "tokenize.h"
 #include "token.h"
 #include "classinfo.h"
+#include "settings.h"
+#include <cstring>
 
 extern std::ostringstream errout;
 class TestTokenizer : public TestFixture

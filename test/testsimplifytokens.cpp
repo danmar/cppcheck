@@ -21,6 +21,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 #include "token.h"
+#include "settings.h"
+
 #include <sstream>
 
 extern std::ostringstream errout;

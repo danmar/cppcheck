@@ -25,6 +25,8 @@
 #include "preprocessor.h"
 #include "tokenize.h"
 #include "token.h"
+#include "settings.h"
+
 #include <map>
 #include <string>
 #include <sstream>

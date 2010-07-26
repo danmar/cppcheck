@@ -23,7 +23,7 @@
 #include <ctime>
 #include <list>
 #include <string>
-#include "settings.h"
+
 class Token;
 class Tokenizer;
 
