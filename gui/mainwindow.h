@@ -29,7 +29,7 @@
 #include "resultsview.h"
 #include "settingsdialog.h"
 #include "translationhandler.h"
-
+#include "settings.h"
 #include "ui_main.h"
 class ThreadHandler;
 class LogView;
