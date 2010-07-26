@@ -77,6 +77,9 @@
     <ClCompile Include="..\lib\token.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\lib\path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -143,6 +146,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\token.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\path.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

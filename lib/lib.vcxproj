@@ -100,6 +100,7 @@
     <ClCompile Include="filelister.cpp" />
     <ClCompile Include="filelister_win32.cpp" />
     <ClCompile Include="mathlib.cpp" />
+    <ClCompile Include="path.cpp" />
     <ClCompile Include="preprocessor.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="token.cpp" />
@@ -123,6 +124,7 @@
     <ClInclude Include="filelister.h" />
     <ClInclude Include="filelister_win32.h" />
     <ClInclude Include="mathlib.h" />
+    <ClInclude Include="path.h" />
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="token.h" />

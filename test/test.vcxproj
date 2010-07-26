@@ -135,6 +135,7 @@
     <ClCompile Include="..\lib\filelister.cpp" />
     <ClCompile Include="..\lib\filelister_win32.cpp" />
     <ClCompile Include="..\lib\mathlib.cpp" />
+    <ClCompile Include="..\lib\path.cpp" />
     <ClCompile Include="..\lib\preprocessor.cpp" />
     <ClCompile Include="..\lib\settings.cpp" />
     <ClCompile Include="..\lib\token.cpp" />
@@ -164,6 +165,9 @@
     <ClCompile Include="testunusedfunctions.cpp" />
     <ClCompile Include="testunusedprivfunc.cpp" />
     <ClCompile Include="testunusedvar.cpp" />
+    <ClCompile Include="tinyxml\tinyxml.cpp" />
+    <ClCompile Include="tinyxml\tinyxmlerror.cpp" />
+    <ClCompile Include="tinyxml\tinyxmlparser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\check.h" />
@@ -183,11 +187,13 @@
     <ClInclude Include="..\lib\filelister.h" />
     <ClInclude Include="..\lib\filelister_win32.h" />
     <ClInclude Include="..\lib\mathlib.h" />
+    <ClInclude Include="..\lib\path.h" />
     <ClInclude Include="..\lib\preprocessor.h" />
     <ClInclude Include="..\lib\settings.h" />
     <ClInclude Include="..\lib\token.h" />
     <ClInclude Include="..\lib\tokenize.h" />
     <ClInclude Include="testsuite.h" />
+    <ClInclude Include="tinyxml\tinyxml.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
