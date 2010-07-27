@@ -13,6 +13,9 @@ tools/errmsg
 # VS build folders
 Build/
 BuildTmp/
+# XCode build folders and files
+build/
+*.pbxuser
 # GUI build folders
 gui/debug/
 gui/release/

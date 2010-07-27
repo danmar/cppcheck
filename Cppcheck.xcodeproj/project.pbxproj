@@ -12,7 +12,6 @@
 		2C21A48C1178BB1500D35009 /* checkclass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C21A4631178BB1500D35009 /* checkclass.cpp */; };
 		2C21A48D1178BB1500D35009 /* checkdangerousfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C21A4651178BB1500D35009 /* checkdangerousfunctions.cpp */; };
 		2C21A48E1178BB1500D35009 /* checkexceptionsafety.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C21A4671178BB1500D35009 /* checkexceptionsafety.cpp */; };
-		2C21A48F1178BB1500D35009 /* checkheaders.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C21A4691178BB1500D35009 /* checkheaders.cpp */; };
 		2C21A4901178BB1500D35009 /* checkmemoryleak.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C21A46B1178BB1500D35009 /* checkmemoryleak.cpp */; };
 		2C21A4911178BB1500D35009 /* checkother.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C21A46D1178BB1500D35009 /* checkother.cpp */; };
 		2C21A4921178BB1500D35009 /* checkstl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C21A46F1178BB1500D35009 /* checkstl.cpp */; };
@@ -31,6 +30,7 @@
 		2C21A4A21178BB2200D35009 /* cppcheckexecutor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C21A49F1178BB2200D35009 /* cppcheckexecutor.cpp */; };
 		2C21A4A31178BB2200D35009 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C21A4A11178BB2200D35009 /* main.cpp */; };
 		2C21A4A91178BB7D00D35009 /* threadexecutor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C21A4A71178BB7D00D35009 /* threadexecutor.cpp */; };
+		3EE0707711FED90C00D9009E /* path.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3EE0707511FED90C00D9009E /* path.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -57,8 +57,6 @@
 		2C21A4661178BB1500D35009 /* checkdangerousfunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkdangerousfunctions.h; path = lib/checkdangerousfunctions.h; sourceTree = "<group>"; };
 		2C21A4671178BB1500D35009 /* checkexceptionsafety.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkexceptionsafety.cpp; path = lib/checkexceptionsafety.cpp; sourceTree = "<group>"; };
 		2C21A4681178BB1500D35009 /* checkexceptionsafety.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkexceptionsafety.h; path = lib/checkexceptionsafety.h; sourceTree = "<group>"; };
-		2C21A4691178BB1500D35009 /* checkheaders.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkheaders.cpp; path = lib/checkheaders.cpp; sourceTree = "<group>"; };
-		2C21A46A1178BB1500D35009 /* checkheaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkheaders.h; path = lib/checkheaders.h; sourceTree = "<group>"; };
 		2C21A46B1178BB1500D35009 /* checkmemoryleak.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkmemoryleak.cpp; path = lib/checkmemoryleak.cpp; sourceTree = "<group>"; };
 		2C21A46C1178BB1500D35009 /* checkmemoryleak.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkmemoryleak.h; path = lib/checkmemoryleak.h; sourceTree = "<group>"; };
 		2C21A46D1178BB1500D35009 /* checkother.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkother.cpp; path = lib/checkother.cpp; sourceTree = "<group>"; };
@@ -95,6 +93,8 @@
 		2C21A4A11178BB2200D35009 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = cli/main.cpp; sourceTree = "<group>"; };
 		2C21A4A71178BB7D00D35009 /* threadexecutor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = threadexecutor.cpp; path = cli/threadexecutor.cpp; sourceTree = "<group>"; };
 		2C21A4A81178BB7D00D35009 /* threadexecutor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = threadexecutor.h; path = cli/threadexecutor.h; sourceTree = "<group>"; };
+		3EE0707511FED90C00D9009E /* path.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = path.cpp; path = lib/path.cpp; sourceTree = "<group>"; };
+		3EE0707611FED90C00D9009E /* path.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = path.h; path = lib/path.h; sourceTree = "<group>"; };
 		8DD76F6C0486A84900D96B5E /* cppcheck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cppcheck; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -151,6 +151,8 @@
 		2C21A45D1178BB0B00D35009 /* Library */ = {
 			isa = PBXGroup;
 			children = (
+				3EE0707511FED90C00D9009E /* path.cpp */,
+				3EE0707611FED90C00D9009E /* path.h */,
 				2C21A45E1178BB1500D35009 /* check.h */,
 				2C21A45F1178BB1500D35009 /* checkautovariables.cpp */,
 				2C21A4601178BB1500D35009 /* checkautovariables.h */,
@@ -162,8 +164,6 @@
 				2C21A4661178BB1500D35009 /* checkdangerousfunctions.h */,
 				2C21A4671178BB1500D35009 /* checkexceptionsafety.cpp */,
 				2C21A4681178BB1500D35009 /* checkexceptionsafety.h */,
-				2C21A4691178BB1500D35009 /* checkheaders.cpp */,
-				2C21A46A1178BB1500D35009 /* checkheaders.h */,
 				2C21A46B1178BB1500D35009 /* checkmemoryleak.cpp */,
 				2C21A46C1178BB1500D35009 /* checkmemoryleak.h */,
 				2C21A46D1178BB1500D35009 /* checkother.cpp */,
@@ -232,7 +232,7 @@
 /* Begin PBXProject section */
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "cppcheck" */;
+			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "Cppcheck" */;
 			compatibilityVersion = "Xcode 3.1";
 			hasScannedForEncodings = 1;
 			mainGroup = 08FB7794FE84155DC02AAC07 /* cppcheck */;
@@ -254,7 +254,6 @@
 				2C21A48C1178BB1500D35009 /* checkclass.cpp in Sources */,
 				2C21A48D1178BB1500D35009 /* checkdangerousfunctions.cpp in Sources */,
 				2C21A48E1178BB1500D35009 /* checkexceptionsafety.cpp in Sources */,
-				2C21A48F1178BB1500D35009 /* checkheaders.cpp in Sources */,
 				2C21A4901178BB1500D35009 /* checkmemoryleak.cpp in Sources */,
 				2C21A4911178BB1500D35009 /* checkother.cpp in Sources */,
 				2C21A4921178BB1500D35009 /* checkstl.cpp in Sources */,
@@ -273,6 +272,7 @@
 				2C21A4A21178BB2200D35009 /* cppcheckexecutor.cpp in Sources */,
 				2C21A4A31178BB2200D35009 /* main.cpp in Sources */,
 				2C21A4A91178BB7D00D35009 /* threadexecutor.cpp in Sources */,
+				3EE0707711FED90C00D9009E /* path.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -347,7 +347,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "cppcheck" */ = {
+		1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "Cppcheck" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB923608733DC60010E9CD /* Debug */,
