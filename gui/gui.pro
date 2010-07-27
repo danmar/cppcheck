@@ -2,8 +2,10 @@ TEMPLATE = app
 TARGET = gui
 QT += xml
 CONFIG += warn_on
-DEPENDPATH += .
-INCLUDEPATH += .
+DEPENDPATH += . \
+    ../lib
+INCLUDEPATH += . \
+    ../lib
 
 DESTDIR = .
 RCC_DIR = temp
