@@ -195,6 +195,8 @@ int main(int argc, char **argv)
     fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
+    fout << "dmake:\n";
+    fout << "\t$(CXX) -o dmake tools/dmake.cpp lib/filelister*.cpp\n\n";
     fout << "clean:\n";
 #ifdef _WIN32
     fout << "\tdel lib\*.o\n\tdel cli\*.o\n\tdel test\*.o\n\tdel *.exe\n";
