@@ -2188,6 +2188,8 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
     const Token *tok = _tokenizer->tokens();
     while ((tok = Token::findmatch(tok, ") const| {")))
     {
+        const Token *startOfFunction = tok;
+
         // Record the varid's of the function parameters
         std::set<unsigned int> parameterVarIds;
         for (tok = tok->link(); tok && tok->str() != "{"; tok = tok->next())
@@ -2213,7 +2215,9 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                 tok->varId() == tok->tokAt(4)->varId() &&
                 parameterVarIds.find(tok->varId()) == parameterVarIds.end())
             {
-                memleakUponReallocFailureError(tok, tok->str());
+                // Check that another copy of the pointer wasn't saved earlier in the function
+                if (!Token::findmatch(startOfFunction, "%var% = %varid% ;", tok->varId()))
+                    memleakUponReallocFailureError(tok, tok->str());
             }
         }
     }

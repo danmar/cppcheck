@@ -330,6 +330,7 @@ private:
         TEST_CASE(realloc5);
         TEST_CASE(realloc6);
         TEST_CASE(realloc7);
+        TEST_CASE(realloc8);
 
         TEST_CASE(assign);
 
@@ -2024,6 +2025,19 @@ private:
               "    }\n"
               "    free(pData);\n"
               "    return true;\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc8()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *origBuf = m_buf;\n"
+              "    m_buf = (char *) realloc (m_buf, m_capacity + growBy);\n"
+              "    if (!m_buf) {\n"
+              "        m_buf = origBuf;\n"
+              "    }\n"
               "}\n", false);
         ASSERT_EQUALS("", errout.str());
     }
