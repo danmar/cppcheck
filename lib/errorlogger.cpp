@@ -28,7 +28,7 @@ ErrorLogger::ErrorMessage::ErrorMessage()
 {
 
 }
-#include <iostream>
+
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id)
 {
     _callStack = callStack;
