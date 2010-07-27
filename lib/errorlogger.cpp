@@ -18,7 +18,6 @@
 
 #include "errorlogger.h"
 #include "tokenize.h"
-#include "token.h"
 #include "path.h"
 
 #include <sstream>
