@@ -1404,17 +1404,21 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         std::string processedFile;
         bool fileOpened = false;
         std::ifstream fin;
-        for (std::list<std::string>::const_iterator iter = includePaths.begin(); iter != includePaths.end(); ++iter)
         {
-            fin.open((*iter + filename).c_str());
-            if (fin.is_open())
+            std::list<std::string> includePaths2(includePaths);
+            includePaths2.push_front("");
+            for (std::list<std::string>::const_iterator iter = includePaths2.begin(); iter != includePaths2.end(); ++iter)
             {
-                filename = *iter + filename;
-                fileOpened = true;
-                break;
-            }
+                fin.open((*iter + filename).c_str());
+                if (fin.is_open())
+                {
+                    filename = *iter + filename;
+                    fileOpened = true;
+                    break;
+                }
 
-            fin.clear();
+                fin.clear();
+            }
         }
 
         if (headerType == UserHeader && !fileOpened)
