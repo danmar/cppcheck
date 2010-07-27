@@ -345,7 +345,7 @@ void Tokenizer::createTokens(std::istream &code)
             else if (ch=='&' && CurrentToken.empty() && code.peek() == '&')
             {
                 // &&
-                ch = code.get();
+                ch = (char)code.get();
                 addtoken("&&", lineno, FileIndex, true);
                 continue;
             }
