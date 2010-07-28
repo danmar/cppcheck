@@ -4962,10 +4962,10 @@ void Tokenizer::simplifyIfAssign()
 
         // Delete paranthesis.. and remember how many there are with
         // their links.
-        std::list<Token *> braces;
+        std::stack<Token *> braces;
         while (tok->next()->str() == "(")
         {
-            braces.push_back(tok->next()->link());
+            braces.push(tok->next()->link());
             tok->deleteNext();
         }
 
@@ -4997,8 +4997,8 @@ void Tokenizer::simplifyIfAssign()
         while (! braces.empty())
         {
             tok2->insertToken("(");
-            Token::createMutualLinks(tok2->next(), braces.back());
-            braces.pop_back();
+            Token::createMutualLinks(tok2->next(), braces.top());
+            braces.pop();
         }
 
         if (isNot)
@@ -5026,7 +5026,7 @@ void Tokenizer::simplifyIfAssign()
             if (tok3 && indentlevel == 1)
             {
                 tok3 = tok3->previous();
-                std::list<Token *> braces2;
+                std::stack<Token *> braces2;
 
                 for (tok2 = tok2->next(); tok2 && tok2 != tok; tok2 = tok2->previous())
                 {
@@ -5037,23 +5037,14 @@ void Tokenizer::simplifyIfAssign()
                     newTok->linenr(tok2->linenr());
 
                     // link() newly tokens manually
-                    if (newTok->str() == ")")
+                    if (Token::Match(newTok, "}|)|]"))
                     {
-                        braces.push_back(newTok);
+                        braces2.push(newTok);
                     }
-                    else if (newTok->str() == "]")
+                    else if (Token::Match(newTok, "{|(|["))
                     {
-                        braces2.push_back(newTok);
-                    }
-                    else if (newTok->str() == "(")
-                    {
-                        Token::createMutualLinks(newTok, braces.back());
-                        braces.pop_back();
-                    }
-                    else if (newTok->str() == "[")
-                    {
-                        Token::createMutualLinks(newTok, braces2.back());
-                        braces2.pop_back();
+                        Token::createMutualLinks(newTok, braces2.top());
+                        braces2.pop();
                     }
                 }
             }

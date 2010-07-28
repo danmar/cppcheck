@@ -118,7 +118,8 @@ private:
         // Assignment in condition..
         TEST_CASE(ifassign1);
         TEST_CASE(ifAssignWithCast);
-        TEST_CASE(whileAssign);
+        TEST_CASE(whileAssign1);
+        TEST_CASE(whileAssign2);
 
         // "if(0==x)" => "if(!x)"
         TEST_CASE(ifnot);
@@ -2087,7 +2088,7 @@ private:
         ASSERT_EQUALS(exptected, tok(code));
     }
 
-    void whileAssign()
+    void whileAssign1()
     {
         ASSERT_EQUALS("; a = b ; while ( a ) { b = 0 ; a = b ; }", simplifyIfAssign(";while(a=b) { b = 0; }"));
         ASSERT_EQUALS("; a . b = c ; while ( a . b ) { c = 0 ; a . b = c ; }", simplifyIfAssign(";while(a.b=c) { c=0; }"));
@@ -2102,6 +2103,20 @@ private:
                       tok("char *s; while (0 == (s=new char[10])) { }"));
     }
 
+    void whileAssign2()
+    {
+        // #1909 - Internal error
+        errout.str("");
+        tok("void f()\n"
+            "{\n"
+            "  int b;\n"
+            "  while (b = sizeof (struct foo { int i0;}))\n"
+            "    ;\n"
+            "  if (!(0 <= b ))\n"
+            "    ;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     std::string simplifyIfNot(const char code[])
     {
