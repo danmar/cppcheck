@@ -356,7 +356,6 @@ private:
         // Calls to unknown functions.. they may throw exception, quit the program, etc
         TEST_CASE(unknownFunction1);
         TEST_CASE(unknownFunction2);
-        TEST_CASE(unknownFunction3);
         TEST_CASE(unknownFunction4);
         TEST_CASE(unknownFunction5);
 
@@ -805,6 +804,9 @@ private:
         ASSERT_EQUALS(notfound, dofindleak("; loop { alloc ; if break; } dealloc ;"));
         ASSERT_EQUALS(1, dofindleak("; loop alloc ;"));
         ASSERT_EQUALS(1, dofindleak("; loop alloc ; dealloc ;"));
+
+        // callfunc (might be noreturn)
+        ASSERT_EQUALS(notfound, dofindleak("; alloc ; callfunc ; }"));
     }
 
 
@@ -2294,16 +2296,6 @@ private:
               "    delete [] p;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
-    }
-
-    void unknownFunction3()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    int *p = new int[100];\n"
-              "    ThrowException();\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
 
     void unknownFunction4()

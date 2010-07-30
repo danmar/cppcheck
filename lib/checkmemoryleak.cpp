@@ -2032,21 +2032,9 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
         while (last->next())
             last = last->next();
 
-        // check if we call exit before the end of the funcion
-        Token *tok2 = last->previous();
-        if (tok2)
-        {
-            if (Token::simpleMatch(tok2, ";"))
-            {
-                const Token *tok3 = tok2->previous();
-                if (tok3 && Token::simpleMatch(tok3, "exit"))
-                {
-                    return NULL;
-                }
-            }
-        }
-
-        return last;
+        // not a leak if exit is called before the end of the funcion
+        if (!Token::Match(last->tokAt(-2), "exit|callfunc ; }"))
+            return last;
     }
 
     return NULL;
