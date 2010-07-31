@@ -1,13 +1,16 @@
 #!/bin/bash
 
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren cli/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren cli/*.h
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren gui/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren gui/*.h
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren lib/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren lib/*.h
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren test/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren test/*.h
+style="--style=ansi --min-conditional-indent=0"
+options="--pad-header --unpad-paren"
 
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren tools/*.cpp
+astyle $style $options cli/*.cpp
+astyle $style $options cli/*.h
+astyle $style $options gui/*.cpp
+astyle $style $options gui/*.h
+astyle $style $options lib/*.cpp
+astyle $style $options lib/*.h
+astyle $style $options test/*.cpp
+astyle $style $options test/*.h
+
+astyle $style $options tools/*.cpp
 

@@ -1,12 +1,16 @@
+REM A script to run Astyle for the sources
 
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren cli/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren cli/*.h
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren gui/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren gui/*.h
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren lib/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren lib/*.h
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren test/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren test/*.h
+SET STYLE=--style=ansi --min-conditional-indent=0
+SET OPTIONS=--pad-header --unpad-paren
 
-astyle --style=ansi --min-conditional-indent=0 --pad-header --unpad-paren tools/*.cpp
+astyle %STYLE% %OPTIONS% cli/*.cpp
+astyle %STYLE% %OPTIONS% cli/*.h
+astyle %STYLE% %OPTIONS% gui/*.cpp
+astyle %STYLE% %OPTIONS% gui/*.h
+astyle %STYLE% %OPTIONS% lib/*.cpp
+astyle %STYLE% %OPTIONS% lib/*.h
+astyle %STYLE% %OPTIONS% test/*.cpp
+astyle %STYLE% %OPTIONS% test/*.h
+
+astyle %STYLE% %OPTIONS% tools/*.cpp
 
