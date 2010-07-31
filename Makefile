@@ -128,7 +128,7 @@ lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunction
 lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/preprocessor.h lib/filelister.h lib/path.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/cppcheck.o lib/cppcheck.cpp
 
-lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/tokenize.h lib/token.h lib/path.h
+lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/path.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/errorlogger.o lib/errorlogger.cpp
 
 lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h

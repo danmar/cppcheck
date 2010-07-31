@@ -17,7 +17,6 @@
  */
 
 #include "checkstl.h"
-#include "tokenize.h"
 #include "token.h"
 
 

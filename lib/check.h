@@ -26,6 +26,7 @@
 
 #include <list>
 #include <iostream>
+#include <set>
 
 /// @addtogroup Core
 /// @{

@@ -17,10 +17,10 @@
  */
 
 #include "errorlogger.h"
-#include "tokenize.h"
 #include "path.h"
 
 #include <sstream>
+#include <vector>
 
 ErrorLogger::ErrorMessage::ErrorMessage()
     :_severity(Severity::none)

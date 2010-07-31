@@ -21,7 +21,6 @@
 #ifndef tokenizeH
 #define tokenizeH
 //---------------------------------------------------------------------------
-#include <list>
 #include <string>
 #include <map>
 #include <vector>

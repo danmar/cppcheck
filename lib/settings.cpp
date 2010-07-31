@@ -24,6 +24,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <cctype>   // std::isdigit, std::isalnum, etc
+#include <set>
 
 Settings::Settings()
 {

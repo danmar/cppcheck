@@ -20,8 +20,6 @@
 #include <vector>
 #include <cstring>
 #include <string>
-#include <cctype>
-#include <algorithm>
 
 #ifndef _WIN32 // POSIX-style system
 #include <glob.h>

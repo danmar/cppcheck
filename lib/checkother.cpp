@@ -20,7 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checkother.h"
 #include "mathlib.h"
-#include "tokenize.h"
 #include "executionpath.h"
 
 #include <algorithm>

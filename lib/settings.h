@@ -23,7 +23,6 @@
 #include <string>
 #include <istream>
 #include <map>
-#include <set>
 
 /// @addtogroup Core
 /// @{
