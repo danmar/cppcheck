@@ -45,7 +45,7 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check( int jobs, int files, int result, const std::string &data)
+    void check(int jobs, int files, int result, const std::string &data)
     {
         errout.str("");
         output.str("");
@@ -56,7 +56,7 @@ private:
         }
 
         std::vector<std::string> filenames;
-        for ( int i = 1; i <= files; ++i )
+        for (int i = 1; i <= files; ++i)
         {
             std::ostringstream oss;
             oss << "file_" << i << ".cpp";
@@ -67,7 +67,7 @@ private:
         settings._jobs = jobs;
         ThreadExecutor executor(filenames, settings, *this);
         for (unsigned int i = 0; i < filenames.size(); ++i)
-            executor.addFileContent(filenames[i], data );
+            executor.addFileContent(filenames[i], data);
 
         ASSERT_EQUALS(result, executor.check());
     }
@@ -87,11 +87,11 @@ private:
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
-        for ( int i = 0; i < 500; i++ )
+        for (int i = 0; i < 500; i++)
             oss << "  {char *a = malloc(10);}\n";
 
         oss << "}\n";
-        check( 2, 3, 3, oss.str() );
+        check(2, 3, 3, oss.str());
     }
 
     void no_errors_more_files()
@@ -100,7 +100,7 @@ private:
         oss << "int main()\n"
             << "{\n";
         oss << "}\n";
-        check( 2, 3, 0, oss.str() );
+        check(2, 3, 0, oss.str());
     }
 
     void no_errors_less_files()
@@ -109,7 +109,7 @@ private:
         oss << "int main()\n"
             << "{\n";
         oss << "}\n";
-        check( 2, 1, 0, oss.str() );
+        check(2, 1, 0, oss.str());
     }
 
     void no_errors_equal_amount_files()
@@ -118,7 +118,7 @@ private:
         oss << "int main()\n"
             << "{\n";
         oss << "}\n";
-        check( 2, 2, 0, oss.str() );
+        check(2, 2, 0, oss.str());
     }
 
     void one_error_less_files()
@@ -128,7 +128,7 @@ private:
             << "{\n";
         oss << "  {char *a = malloc(10);}\n";
         oss << "}\n";
-        check( 2, 1, 1, oss.str() );
+        check(2, 1, 1, oss.str());
     }
 
     void one_error_several_files()
@@ -138,7 +138,7 @@ private:
             << "{\n";
         oss << "  {char *a = malloc(10);}\n";
         oss << "}\n";
-        check( 2, 20, 20, oss.str());
+        check(2, 20, 20, oss.str());
     }
 };
 

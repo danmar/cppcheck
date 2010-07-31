@@ -57,7 +57,7 @@ int ThreadExecutor::handleRead(unsigned int &result)
     char type = 0;
     if (read(_pipe[0], &type, 1) <= 0)
     {
-        if ( errno == EAGAIN )
+        if (errno == EAGAIN)
             return 0;
 
         return -1;
@@ -141,10 +141,10 @@ unsigned int ThreadExecutor::check()
 
     unsigned int childCount = 0;
     unsigned int i = 0;
-    while ( true )
+    while (true)
     {
         // Start a new child
-        if ( i < _filenames.size() && childCount < _settings._jobs )
+        if (i < _filenames.size() && childCount < _settings._jobs)
         {
             pid_t pid = fork();
             if (pid < 0)
@@ -185,9 +185,9 @@ unsigned int ThreadExecutor::check()
             while (true)
             {
                 int readRes = handleRead(result);
-                if ( readRes == -1 )
+                if (readRes == -1)
                     break;
-                else if ( readRes == 0 )
+                else if (readRes == 0)
                     usleep(5000); // 5 ms
             }
 

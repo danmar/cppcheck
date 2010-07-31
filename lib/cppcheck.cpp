@@ -747,7 +747,7 @@ unsigned int CppCheck::check()
                 }
 
                 std::string appendCode = _settings.append();
-                if ( !appendCode.empty() )
+                if (!appendCode.empty())
                     Preprocessor::preprocessWhitespaces(appendCode);
 
                 checkFile(codeWithoutCfg + appendCode, _filenames[c].c_str());
