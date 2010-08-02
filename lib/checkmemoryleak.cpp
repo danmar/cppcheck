@@ -1465,7 +1465,8 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
     // reduce "; callfunc ; %var%"
     for (Token *tok2 = tok; tok2; tok2 = tok2->next())
     {
-        if (Token::Match(tok2, ";|{|} callfunc ; %type%"))
+        if (Token::Match(tok2, ";|{|} callfunc ; %type%") ||
+            Token::Match(tok2, ";|{|} callfunc ; ;"))
             tok2->deleteNext();
     }
 
