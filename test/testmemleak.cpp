@@ -708,6 +708,7 @@ private:
 
         // callfunc..
         ASSERT_EQUALS("; callfunc ;", simplifycode(";callfunc;"));
+        ASSERT_EQUALS("while1 { dealloc ; alloc ; } return ; }", simplifycode("while1 { dealloc ; alloc ; } callfunc ; return ; }"));
 
         // exit..
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc; exit;"));
