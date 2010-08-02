@@ -1,5 +1,7 @@
 cppcheck
+cppcheck.exe
 testrunner
+testrunner.exe
 *.o
 *.bak
 tools/dmake
