@@ -699,6 +699,8 @@ private:
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } if { break ; } }"));
 
         ASSERT_EQUALS(";", simplifycode("; do { dealloc ; alloc ; } while(var) ;"));
+        ASSERT_EQUALS("dealloc ; alloc ;", simplifycode("loop { dealloc ; alloc ; }"));
+        ASSERT_EQUALS("dealloc ; alloc ;", simplifycode("while1 { dealloc ; alloc ; }"));
 
         // scope..
         // current result - ok
@@ -709,7 +711,7 @@ private:
         // callfunc..
         ASSERT_EQUALS("; callfunc ;", simplifycode(";callfunc;"));
         ASSERT_EQUALS(";", simplifycode(";callfunc;;"));
-        ASSERT_EQUALS("while1 { dealloc ; alloc ; } return ; }", simplifycode("while1 { dealloc ; alloc ; } callfunc ; return ; }"));
+        ASSERT_EQUALS("dealloc ; alloc ; return ; }", simplifycode("while1 { dealloc ; alloc ; } callfunc ; return ; }"));
 
         // exit..
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc; exit;"));

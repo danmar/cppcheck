@@ -1830,6 +1830,20 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
+            // Reduce "loop|while1 { dealloc ; alloc ; }"
+            if (Token::Match(tok2, "loop|while1 { dealloc ; alloc ; }"))
+            {
+                // delete "loop|while1"
+                tok2->deleteThis();
+                // delete "{"
+                tok2->deleteThis();
+
+                // delete "}"
+                Token::eraseTokens(tok2->tokAt(3), tok2->tokAt(5));
+
+                done = false;
+            }
+
             // Delete if block in "alloc ; if(!var) return ;"
             if (Token::Match(tok2, "alloc ; if(!var) return ;"))
             {
