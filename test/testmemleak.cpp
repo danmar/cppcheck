@@ -518,6 +518,7 @@ private:
         ASSERT_EQUALS(";;use;", getcode("char *s; s2 = x + s;", "s"));
         ASSERT_EQUALS(";;use;if{;}", getcode("char *s; if (foo(s)) ;", "s"));
         ASSERT_EQUALS(";;use;", getcode("char *s; map1[s] = 0;", "s"));
+        ASSERT_EQUALS(";;;;", getcode("char *p; const char *q; q = p;", "p"));
 
         // return..
         ASSERT_EQUALS(";;return;", getcode("char *s; return;", "s"));
@@ -712,6 +713,7 @@ private:
         ASSERT_EQUALS("; callfunc ;", simplifycode(";callfunc;"));
         ASSERT_EQUALS(";", simplifycode(";callfunc;;"));
         ASSERT_EQUALS("dealloc ; alloc ; return ; }", simplifycode("while1 { dealloc ; alloc ; } callfunc ; return ; }"));
+        ASSERT_EQUALS(";", simplifycode("loop callfunc ;"));
 
         // exit..
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc; exit;"));

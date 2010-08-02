@@ -1306,7 +1306,21 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 Token::Match(tok, "= strcpy|strcat|memmove|memcpy ( %varid% ,", varid) ||
                 Token::Match(tok, "[;{}] %var% [ %varid% ]", varid))
             {
-                addtoken("use");
+                bool used = true;
+
+                if (Token::Match(tok->tokAt(-2), "; %var% = %varid%", varid))
+                {
+                    const unsigned int varid2(tok->previous()->varId());
+                    if (Token::Match(tok->tokAt(-6), "const %type% * %varid% ;", varid2) ||
+                        Token::Match(tok->tokAt(-7), "const struct %type% * %varid% ;", varid2))
+                    {
+                        // address is taken by pointer constant
+                        used = false;
+                    }
+                }
+
+                if (used)
+                    addtoken("use");
             }
             else if (Token::Match(tok->previous(), "[;{}=(,+-*/] %varid% [", varid))
             {
@@ -1820,6 +1834,14 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             if (Token::simpleMatch(tok2, "; loop ;"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
+                done = false;
+            }
+
+            // Replace "loop callfunc ;" with ";"
+            if (Token::simpleMatch(tok2, "loop callfunc ;"))
+            {
+                tok2->deleteThis();
+                tok2->deleteThis();
                 done = false;
             }
 
