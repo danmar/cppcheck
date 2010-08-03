@@ -338,6 +338,23 @@ public:
      */
     static void move(Token *srcStart, Token *srcEnd, Token *newLocation);
 
+    /** Get progressValue */
+    unsigned char progressValue() const
+    {
+        return _progressValue;
+    }
+
+    /** Calculate progress values for all tokens */
+    void assignProgressValues()
+    {
+        unsigned int total_count = 0;
+        for (Token *tok = this; tok; tok = tok->next())
+            ++total_count;
+        unsigned int count = 0;
+        for (Token *tok = this; tok; tok = tok->next())
+            tok->_progressValue = count++ * 100 / total_count;
+    }
+
 private:
     void next(Token *nextToken)
     {
@@ -384,6 +401,7 @@ private:
     Token *_link;
     unsigned int _fileIndex;
     unsigned int _linenr;
+    unsigned char _progressValue;
 };
 
 /// @}

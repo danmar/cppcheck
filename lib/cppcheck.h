@@ -19,14 +19,16 @@
 #ifndef CPPCHECK_H
 #define CPPCHECK_H
 
+#include "settings.h"
+#include "errorlogger.h"
+#include "checkunusedfunctions.h"
+
 #include <string>
 #include <list>
 #include <sstream>
 #include <vector>
 #include <map>
-#include "settings.h"
-#include "errorlogger.h"
-#include "checkunusedfunctions.h"
+#include <ctime>
 
 /// @addtogroup Core
 /// @{
@@ -155,6 +157,8 @@ private:
      */
     virtual void reportOut(const std::string &outmsg);
 
+    void reportProgress(const std::string &filename, const char stage[], const unsigned char value);
+
     unsigned int exitcode;
     std::list<std::string> _errorList;
     std::ostringstream _errout;
@@ -169,6 +173,8 @@ private:
 
     /** @brief Current preprocessor configuration */
     std::string     cfg;
+
+    std::time_t     time1;
 };
 
 /// @}

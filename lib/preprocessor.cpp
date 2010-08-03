@@ -677,9 +677,6 @@ std::string Preprocessor::getdef(std::string line, bool def)
 
 std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const std::string &filename)
 {
-    if (_errorLogger)
-        _errorLogger->ReportProgress(0);
-
     std::list<std::string> ret;
     ret.push_back("");
 
@@ -702,7 +699,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         ++linenr;
 
         if (_errorLogger)
-            _errorLogger->ReportProgress("Preprocessor::getcfgs");
+            _errorLogger->reportProgress(filename, "Preprocessing (get configurations 1)", 0);
+
 
         if (line.compare(0, 6, "#file ") == 0)
         {
@@ -856,10 +854,11 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     }
 
     // Remove defined constants from ifdef configurations..
+    unsigned int count = 0;
     for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it)
     {
         if (_errorLogger)
-            _errorLogger->ReportProgress("Preprocessor::getcfgs");
+            _errorLogger->reportProgress(filename, "Preprocessing (get configurations 2)", (100 * count++) / ret.size());
 
         std::string cfg(*it);
         for (std::set<std::string>::const_iterator it2 = defines.begin(); it2 != defines.end(); ++it2)

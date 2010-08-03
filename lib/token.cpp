@@ -43,7 +43,8 @@ Token::Token(Token **t) :
     _previous(0),
     _link(0),
     _fileIndex(0),
-    _linenr(0)
+    _linenr(0),
+    _progressValue(0)
 {
 }
 
@@ -589,6 +590,10 @@ void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
     // Fix the tokens at newLocation
     newLocation->next()->previous(srcEnd);
     newLocation->next(srcStart);
+
+    // Update _progressValue
+    for (Token *tok = srcStart; tok && tok != srcEnd; tok = tok->next())
+        tok->_progressValue = newLocation->_progressValue;
 }
 
 //---------------------------------------------------------------------------
@@ -619,6 +624,7 @@ void Token::insertToken(const std::string &tokenStr)
     newToken->str(tokenStr);
     newToken->_linenr = _linenr;
     newToken->_fileIndex = _fileIndex;
+    newToken->_progressValue = _progressValue;
     if (this->next())
     {
         newToken->next(this->next());

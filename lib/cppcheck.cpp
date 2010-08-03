@@ -171,6 +171,7 @@ CppCheck::CppCheck(ErrorLogger &errorLogger)
     : _errorLogger(errorLogger)
 {
     exitcode = 0;
+    time1 = std::time(0);
 }
 
 CppCheck::~CppCheck()
@@ -928,6 +929,32 @@ const std::vector<std::string> &CppCheck::filenames() const
 void CppCheck::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
 {
 
+}
+
+void CppCheck::reportProgress(const std::string &filename, const char stage[], const unsigned char value)
+{
+    (void)filename;
+
+    // Report progress messages every 10 seconds
+    const std::time_t time2 = std::time(NULL);
+    if (time2 >= (time1 + 10))
+    {
+        time1 = time2;
+
+        // current time in the format "Www Mmm dd hh:mm:ss yyyy"
+        const std::string str(ctime(&time2));
+
+        // format a progress message
+        std::ostringstream ostr;
+        ostr << "progress: "
+             << stage
+             << " " << int(value) << "%";
+        if (_settings._verbose)
+            ostr << " time=" << str.substr(11, 8);
+
+        // Report progress message
+        reportOut(ostr.str());
+    }
 }
 
 void CppCheck::getErrorMessages()

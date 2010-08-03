@@ -980,7 +980,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         if (tok->previous() && (!tok->previous()->isName() && !Token::Match(tok->previous(), "[;{}]")))
             continue;
 
-        _errorLogger->ReportProgress("CheckBufferOverrun::checkGlobalAndLocalVariable");
+        _errorLogger->reportProgress(_tokenizer->getFiles()->front(),
+                                     "Check (BufferOverrun::checkGlobalAndLocalVariable)",
+                                     tok->progressValue());
 
         ArrayInfo arrayInfo;
         if (arrayInfo.declare(tok, *_tokenizer))

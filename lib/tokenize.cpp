@@ -400,6 +400,7 @@ void Tokenizer::createTokens(std::istream &code)
         CurrentToken += ch;
     }
     addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+    _tokens->assignProgressValues();
 }
 
 void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string &type)
@@ -650,8 +651,8 @@ void Tokenizer::simplifyTypedef()
     bool hasClass = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (_errorLogger)
-            _errorLogger->ReportProgress("Tokenizer::simplifyTypedef");
+        if (_errorLogger && !_files.empty())
+            _errorLogger->reportProgress(_files[0], "Tokenize (typedef)", tok->progressValue());
 
         if (Token::Match(tok, "class|struct|namespace %any%"))
         {
@@ -1651,9 +1652,6 @@ void Tokenizer::simplifyTypedef()
 
 bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::string &configuration)
 {
-    if (_errorLogger)
-        _errorLogger->ReportProgress(0);
-
     _configuration = configuration;
 
     // The "_files" vector remembers what files have been tokenized..
@@ -1829,10 +1827,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 //updateClassList();
     setVarId();
 
-    if (!validate())
-        return false;
+    _tokens->assignProgressValues();
 
-    return true;
+    return validate();
 }
 //---------------------------------------------------------------------------
 
@@ -2684,7 +2681,7 @@ void Tokenizer::setVarId()
             continue;
 
         if (_errorLogger)
-            _errorLogger->ReportProgress("Tokenizer::setVarId");
+            _errorLogger->reportProgress(_files[0], "Tokenize (set variable id)", tok->progressValue());
 
         // If pattern is "( %type% *|& %var% )" then check if it's a
         // variable declaration or a multiplication / mask
@@ -3692,6 +3689,8 @@ bool Tokenizer::simplifyTokenList()
     {
         _tokens->printOut(0, _files);
     }
+
+    _tokens->assignProgressValues();
 
     return validate();
 }
