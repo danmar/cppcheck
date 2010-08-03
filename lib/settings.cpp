@@ -68,9 +68,35 @@ std::string Settings::Suppressions::parseFile(std::istream &istr)
         unsigned int lineNumber = 0;
         if (std::getline(lineStream, id, ':'))
         {
-            if (std::getline(lineStream, file, ':'))
+            if (std::getline(lineStream, file))
             {
-                lineStream >> lineNumber;
+                // If there is not a dot after the last colon in "file" then
+                // the colon is a separator and the contents after the colon
+                // is a line number..
+                
+                // Get position of last colon
+                const std::string::size_type pos = file.rfind(":");
+
+                // if a colon is found and there is no dot after it..
+                if (pos != std::string::npos &&
+                    file.find(".", pos) == std::string::npos)
+                {
+                    // Try to parse out the line number
+                    try
+                    {
+                        std::istringstream istr1(file.substr(pos+1));
+                        istr1 >> lineNumber;
+                    }
+                    catch (...)
+                    {
+                        lineNumber = 0;
+                    }
+
+                    if (lineNumber > 0)
+                    {
+                        file.erase(pos);
+                    }
+                }
             }
         }
 
