@@ -1264,12 +1264,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
             }
 
-            else if (varid && Token::Match(tok, "return &| %varid%", varid))
-            {
-                if (!Token::Match(tok, "return %var% ["))
-                    addtoken("use");
-            }
-
             else if (varid && Token::Match(tok, "return strcpy|strncpy|memcpy ( %varid%", varid))
             {
                 addtoken("use");
@@ -1278,18 +1272,32 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             else
             {
+                bool use = false;
+
                 for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
                 {
                     if (tok2->str() == ";")
-                        break;
-
-                    if (tok2->varId() == varid)
                     {
-                        addtoken("use");
                         tok = tok2;
                         break;
                     }
+
+                    if (tok2->varId() == varid)
+                    {
+                        // Read data..
+                        if (!Token::Match(tok2->previous(), "&|(") &&
+                            Token::simpleMatch(tok2->next(), "["))
+                        {
+                        }
+                        else
+                        {
+                            use = true;
+                        }
+                    }
                 }
+                if (use)
+                    addtoken("use");
+                addtoken(";");
             }
         }
 

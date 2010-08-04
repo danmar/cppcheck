@@ -524,6 +524,7 @@ private:
         // return..
         ASSERT_EQUALS(";;return;", getcode("char *s; return;", "s"));
         ASSERT_EQUALS(";;returnuse;", getcode("char *s; return s;", "s"));
+        ASSERT_EQUALS(";;return;", getcode("char *s; return 5 + s[0];", "s"));
 
         // assign..
         ASSERT_EQUALS(";;assign;", getcode("char *s; s = 0;", "s"));
