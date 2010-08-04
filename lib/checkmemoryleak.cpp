@@ -1266,7 +1266,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             else if (varid && Token::Match(tok, "return &| %varid%", varid))
             {
-                addtoken("use");
+                if (!Token::Match(tok, "return %var% ["))
+                    addtoken("use");
             }
 
             else if (varid && Token::Match(tok, "return strcpy|strncpy|memcpy ( %varid%", varid))
