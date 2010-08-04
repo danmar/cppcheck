@@ -3469,6 +3469,10 @@ private:
             {
                 use(checks, tok.next());
             }
+            else if (Token::Match(tok.next(), "%var% ["))
+            {
+                use_array_or_pointer_data(checks, tok.next());
+            }
         }
 
         if (tok.varId())
@@ -3617,8 +3621,11 @@ private:
 
     bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
     {
-        if (tok.varId() && Token::Match(&tok, "%var% <|<=|==|!=|)|["))
+        if (tok.varId() && Token::Match(&tok, "%var% <|<=|==|!=|)"))
             use(checks, &tok);
+
+        else if (Token::Match(&tok, "!| %var% ["))
+            use_array_or_pointer_data(checks, tok.str() == "!" ? tok.next() : &tok);
 
         else if (Token::Match(&tok, "!| %var% ("))
         {
