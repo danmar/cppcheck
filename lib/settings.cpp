@@ -73,7 +73,7 @@ std::string Settings::Suppressions::parseFile(std::istream &istr)
                 // If there is not a dot after the last colon in "file" then
                 // the colon is a separator and the contents after the colon
                 // is a line number..
-                
+
                 // Get position of last colon
                 const std::string::size_type pos = file.rfind(":");
 
