@@ -1961,6 +1961,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' index 10 out of bounds\n", errout.str());
 
+        // ticket #1670 - false negative when using return
+        check("void f()\n"
+              "{\n"
+              "    char *s = new int[10];\n"
+              "    return s[10];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' index 10 out of bounds\n", errout.str());
+
         check("void foo()\n"
               "{\n"
               "char * buf = new char[8];\n"

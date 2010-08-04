@@ -593,6 +593,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                     }
                 }
             }
+            if (Token::Match(tok, "return %varid% [ %num% ]", varid))
+            {
+                int index = MathLib::toLongNumber(tok->strAt(3));
+                if (index < 0 || index >= size)
+                {
+                    arrayIndexOutOfBounds(tok->next(), size, index);
+                }
+            }
         }
         else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), (varnames + " [ %num% ]").c_str()))
         {
