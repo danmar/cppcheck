@@ -91,6 +91,7 @@ private:
               "        delete [] p;\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test4()
@@ -232,7 +233,8 @@ private:
         settings.inconclusive = showAll;
         tokenizer.fillFunctionList();
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.runSimplifiedChecks(&tokenizer, &settings, this);
+        checkMemoryLeak.checkReallocUsage();
+        checkMemoryLeak.check();
     }
 
 
@@ -1132,6 +1134,7 @@ private:
               "    delete [] x;\n"
               "}\n", true);
         TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: x\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1186,6 +1189,7 @@ private:
               "    return a;\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Common realloc mistake: \"a\" nulled but not freed upon failure\n", errout.str());
     }
 
 
@@ -1467,6 +1471,7 @@ private:
               "    foo(p);\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: p\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1816,6 +1821,7 @@ private:
               "   foo(&p);\n"
               "}\n");
         TODO_ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo(char **str)\n"
               "{\n"
@@ -2000,6 +2006,7 @@ private:
               "}\n");
 
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \"a\" nulled but not freed upon failure\n", errout.str());
     }
 
     void realloc5()
@@ -2180,6 +2187,7 @@ private:
               "    char c = *str;\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2676,6 +2684,7 @@ private:
               "  close(handle);\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Resource leak: handle\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void fd_functions()
