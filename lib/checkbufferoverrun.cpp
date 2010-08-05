@@ -80,6 +80,25 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, const ArrayInfo
     reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str().c_str());
 }
 
+void CheckBufferOverrun::arrayIndexOutOfBounds(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<int> &index)
+{
+    std::ostringstream oss;
+    oss << "Array '" << arrayInfo.varname;
+    for (unsigned int i = 0; i < arrayInfo.num.size(); ++i)
+        oss << "[" << arrayInfo.num[i] << "]";
+    oss << "' index ";
+    if (index.size() == 1)
+        oss << index[0];
+    else
+    {
+        oss << arrayInfo.varname;
+        for (unsigned int i = 0; i < index.size(); ++i)
+            oss << "[" << index[i] << "]";
+    }
+    oss << " out of bounds";
+    reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str().c_str());
+}
+
 void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varnames)
 {
     std::string v = varnames;
@@ -518,6 +537,72 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
             }
         }
     }
+
+    // Calling a user function?
+    // only 1-dimensional arrays can be checked currently
+    else if (arrayInfo.num.size() == 1)
+    {
+        const Token *ftok = _tokenizer->getFunctionTokenByName(tok.str().c_str());
+        if (Token::Match(ftok, "%var% (") && Token::Match(ftok->next()->link(), ") const| {"))
+        {
+            // Get varid for the corresponding parameter..
+            unsigned int parameter = 1;
+            unsigned int parameterVarId = 0;
+            for (const Token *ftok2 = ftok->tokAt(2); ftok2; ftok2 = ftok2->next())
+            {
+                if (ftok2->str() == ",")
+                {
+                    if (parameter >= par)
+                        break;
+                    ++parameter;
+                }
+                else if (ftok2->str() == ")")
+                    break;
+                else if (parameter == par && Token::Match(ftok2, "%var% ,|)"))
+                    parameterVarId = ftok2->varId();
+            }
+
+            // No parameterVarId => bail out
+            if (parameterVarId == 0)
+                return;
+
+            // Step into the function scope..
+            ftok = ftok->next()->link();
+            if (!Token::Match(ftok, ") const| {"))
+                return;
+            ftok = Token::findmatch(ftok, "{");
+            ftok = ftok->next();
+
+            // Check the parameter usage in the function scope..
+            for (; ftok; ftok = ftok->next())
+            {
+                if (ftok->str() == "if")
+                    break;
+
+                if (ftok->str() == "}")
+                    break;
+
+                if (ftok->varId() == parameterVarId)
+                {
+                    if (Token::Match(ftok->previous(), "[=+-*/;{}] %var% [ %num% ]"))
+                    {
+                        long index = MathLib::toLongNumber(ftok->strAt(2));
+                        if (index >= arrayInfo.num[0])
+                        {
+                            std::list<const Token *> callstack;
+                            callstack.push_back(&tok);
+                            callstack.push_back(ftok);
+
+                            std::vector<int> ints;
+                            ints.push_back(index);
+
+                            arrayIndexOutOfBounds(callstack, arrayInfo, ints);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -842,9 +927,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (Token::Match(tok, "%var% ("))
         {
             // 1st parameter..
-            if (Token::Match(tok->tokAt(2), "%varid% ,", arrayInfo.varid))
+            if (Token::Match(tok->tokAt(2), "%varid% ,|)", arrayInfo.varid))
                 checkFunctionCall(*tok, 1, arrayInfo);
-            else if (Token::Match(tok->tokAt(2), "%varid% + %num% ,", arrayInfo.varid))
+            else if (Token::Match(tok->tokAt(2), "%varid% + %num% ,|)", arrayInfo.varid))
             {
                 const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok->strAt(4))));
                 checkFunctionCall(*tok, 1, ai);
@@ -862,9 +947,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     break;
                 if (tok2->str() == ",")
                 {
-                    if (Token::Match(tok2, ", %varid% ,", arrayInfo.varid))
+                    if (Token::Match(tok2, ", %varid% ,|)", arrayInfo.varid))
                         checkFunctionCall(*tok, 2, arrayInfo);
-                    else if (Token::Match(tok2, ", %varid% + %num% ,", arrayInfo.varid))
+                    else if (Token::Match(tok2, ", %varid% + %num% ,|)", arrayInfo.varid))
                     {
                         const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(3))));
                         checkFunctionCall(*tok, 2, ai);

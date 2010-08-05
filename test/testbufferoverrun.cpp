@@ -505,8 +505,7 @@ private:
               "    char str[5];\n"
               "    memclr( str );   // ERROR\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array 'str[5]' index 10 out of bounds\n", errout.str());
 
         check("static void memclr( int i, char *data )\n"
               "{\n"
@@ -518,8 +517,7 @@ private:
               "    char str[5];\n"
               "    memclr( 0, str );   // ERROR\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array 'str[5]' index 10 out of bounds\n", errout.str());
 
         check("static void memclr( int i, char *data )\n"
               "{\n"

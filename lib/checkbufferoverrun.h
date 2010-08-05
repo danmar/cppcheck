@@ -177,6 +177,7 @@ public:
 
     void arrayIndexOutOfBounds(const Token *tok, int size, int index);
     void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<int> &index);
+    void arrayIndexOutOfBounds(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<int> &index);
     void bufferOverrun(const Token *tok, const std::string &varnames = "");
     void strncatUsage(const Token *tok);
     void outOfBounds(const Token *tok, const std::string &what);
