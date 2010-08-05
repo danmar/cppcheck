@@ -2336,84 +2336,98 @@ void CheckOther::nullPointerLinkedList()
 
 void CheckOther::nullPointerStructByDeRefAndChec()
 {
-
     // Dereferencing a struct pointer and then checking if it's NULL..
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
     {
+        // dereference in assignment
         if (Token::Match(tok1, "[{};] %var% = %var% . %var%"))
         {
             if (std::string(tok1->strAt(1)) == tok1->strAt(3))
                 continue;
-
             tok1 = tok1->tokAt(3);
-            const unsigned int varid1(tok1->varId());
-            if (varid1 == 0)
-                continue;
+        }
 
-            const std::string varname(tok1->str());
+        // dereference in function call
+        else if (Token::Match(tok1->tokAt(-2), "%var% ( %var% . %var%") ||
+                 Token::Match(tok1->previous(), ", %var% . %var%"))
+        {
 
-            // Checking if the struct pointer is non-null before the assignment..
+        }
+
+        // Goto next token
+        else
+        {
+            continue;
+        }
+
+        // struct dereference was found - investigate if it is later
+        // checked that it is not NULL
+        const unsigned int varid1(tok1->varId());
+        if (varid1 == 0)
+            continue;
+
+        const std::string varname(tok1->str());
+
+        // Checking if the struct pointer is non-null before the assignment..
+        {
+            const Token *tok2 = _tokenizer->tokens();
+            while (tok2)
             {
-                const Token *tok2 = _tokenizer->tokens();
-                while (tok2)
-                {
-                    if (tok2 == tok1)
-                        break;
-                    if (Token::Match(tok2, "if|while ( !| %varid% )", varid1))
-                        break;
-                    tok2 = tok2->next();
-                }
-                if (tok2 != tok1)
-                    continue;
+                if (tok2 == tok1)
+                    break;
+                if (Token::Match(tok2, "if|while ( !| %varid% )", varid1))
+                    break;
+                tok2 = tok2->next();
+            }
+            if (tok2 != tok1)
+                continue;
+        }
+
+        unsigned int indentlevel2 = 0;
+        for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "{")
+                ++indentlevel2;
+
+            else if (tok2->str() == "}")
+            {
+                if (indentlevel2 == 0)
+                    break;
+                --indentlevel2;
             }
 
-            unsigned int indentlevel2 = 0;
-            for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())
+            // goto destination..
+            else if (tok2->isName() && Token::simpleMatch(tok2->next(), ":"))
+                break;
+
+            // Reassignment of the struct
+            else if (tok2->varId() == varid1)
             {
-                if (tok2->str() == "{")
-                    ++indentlevel2;
-
-                else if (tok2->str() == "}")
-                {
-                    if (indentlevel2 == 0)
-                        break;
-                    --indentlevel2;
-                }
-
-                // goto destination..
-                else if (tok2->isName() && Token::simpleMatch(tok2->next(), ":"))
+                if (tok2->next()->str() == "=")
                     break;
-
-                // Reassignment of the struct
-                else if (tok2->varId() == varid1)
-                {
-                    if (tok2->next()->str() == "=")
-                        break;
-                    if (Token::Match(tok2->tokAt(-2), "[,(] &"))
-                        break;
-                }
-
-                // Loop..
-                /** @todo don't bail out if the variable is not used in the loop */
-                else if (tok2->str() == "do")
+                if (Token::Match(tok2->tokAt(-2), "[,(] &"))
                     break;
+            }
 
-                // return at base level => stop checking
-                else if (indentlevel2 == 0 && tok2->str() == "return")
-                    break;
+            // Loop..
+            /** @todo don't bail out if the variable is not used in the loop */
+            else if (tok2->str() == "do")
+                break;
 
-                else if (Token::Match(tok2, "if ( !| %varid% )", varid1))
-                {
-                    // Is this variable a pointer?
-                    const Token *tempTok = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid1);
-                    if (tempTok)
-                        nullPointerError(tok1, varname, tok2->linenr());
-                    break;
-                }
+            // return at base level => stop checking
+            else if (indentlevel2 == 0 && tok2->str() == "return")
+                break;
+
+            else if (Token::Match(tok2, "if ( !| %varid% )", varid1))
+            {
+                // Is this variable a pointer?
+                const Token *tempTok = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid1);
+                if (tempTok)
+                    nullPointerError(tok1, varname, tok2->linenr());
+                break;
             }
         }
     }
-
 }
 
 void CheckOther::nullPointerByDeRefAndChec()
@@ -2429,8 +2443,9 @@ void CheckOther::nullPointerByDeRefAndChec()
 
             const std::string varname(tok->strAt(3));
 
+            // Check that variable is a pointer..
             const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
-            if (!Token::Match(decltok->tokAt(-3), "[;,(] %var% *"))
+            if (!Token::Match(decltok->tokAt(-3), "[;,(] %type% *"))
                 continue;
 
             for (const Token *tok1 = tok->previous(); tok1 && tok1 != decltok; tok1 = tok1->previous())
@@ -2456,8 +2471,8 @@ void CheckOther::nullPointerByDeRefAndChec()
                          tok1->str() == "}")
                     break;
 
-                // goto destination..
-                else if (tok1->isName() && Token::simpleMatch(tok1->next(), ":"))
+                // label..
+                else if (Token::Match(tok1, "%type% :"))
                     break;
             }
         }
