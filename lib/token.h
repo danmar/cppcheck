@@ -339,7 +339,7 @@ public:
     static void move(Token *srcStart, Token *srcEnd, Token *newLocation);
 
     /** Get progressValue */
-    unsigned char progressValue() const
+    unsigned int progressValue() const
     {
         return _progressValue;
     }
@@ -401,7 +401,12 @@ private:
     Token *_link;
     unsigned int _fileIndex;
     unsigned int _linenr;
-    unsigned char _progressValue;
+
+    /**
+     * A value from 0-100 that provides a rough idea about where in the token
+     * list this token is located.
+     */
+    unsigned int _progressValue;
 };
 
 /// @}
