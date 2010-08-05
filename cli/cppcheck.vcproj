@@ -127,6 +127,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="true"
