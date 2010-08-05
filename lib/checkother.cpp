@@ -2454,16 +2454,21 @@ void CheckOther::nullPointerByDeRefAndChec()
                 {
                     if (Token::Match(tok1->tokAt(-2), "[=;{}] *"))
                     {
-                        nullPointerError(tok1, varname);
+                        nullPointerError(tok1, varname, tok->linenr());
                         break;
                     }
-                    else if (tok1->previous() && tok1->previous()->str() == "&")
+                    else if (Token::simpleMatch(tok1->previous(), "&"))
                     {
                         break;
                     }
-                    else if (tok1->next() && tok1->next()->str() == "=")
+                    else if (Token::simpleMatch(tok1->next(), "="))
                     {
                         break;
+                    }
+                    // dereference in function call
+                    else if (Token::Match(tok1->tokAt(-2), "[(,] *"))
+                    {
+                        nullPointerError(tok1, varname, tok->linenr());
                     }
                 }
 
