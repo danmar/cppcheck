@@ -28,6 +28,7 @@
 #include <iostream>
 #include <sstream>
 #include <set>
+#include <stack>
 
 //---------------------------------------------------------------------------
 
@@ -1274,6 +1275,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             {
                 bool use = false;
 
+                std::stack<const Token *> f;
+
                 for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
                 {
                     if (tok2->str() == ";")
@@ -1282,6 +1285,11 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         break;
                     }
 
+                    if (tok2->str() == "(")
+                        f.push(tok2->previous());
+                    else if (tok2->str() == ")")
+                        f.pop();
+
                     if (tok2->varId() == varid)
                     {
                         // Read data..
@@ -1289,7 +1297,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             Token::simpleMatch(tok2->next(), "["))
                         {
                         }
-                        else
+                        else if (f.empty() || !test_white_list(f.top()->str()))
                         {
                             use = true;
                         }

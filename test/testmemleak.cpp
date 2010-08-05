@@ -456,6 +456,7 @@ private:
         // alloc; return;
         ASSERT_EQUALS(";;alloc;return;", getcode("char *s = new char[100]; return 0;", "s"));
         ASSERT_EQUALS(";;alloc;return;", getcode("char *s = new char[100]; return s[0];", "s"));
+        ASSERT_EQUALS(";;alloc;return;", getcode("char *s = new char[100]; return strcmp(s,x);", "s"));
 
         // lock/unlock..
         ASSERT_EQUALS(";;alloc;", getcode("int a; __cppcheck_lock();", ""));
@@ -1390,7 +1391,6 @@ private:
     ////////////////////////////////////////////////
     // function calls
     ////////////////////////////////////////////////
-
 
 
     void func3()
