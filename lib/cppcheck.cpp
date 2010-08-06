@@ -64,7 +64,7 @@ public:
 struct TimerResultsData
 {
     std::clock_t _clocks;
-    unsigned int _numberOfResults;
+    long _numberOfResults;
 
     TimerResultsData()
         : _clocks(0)

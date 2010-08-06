@@ -3380,8 +3380,8 @@ private:
                     if (Token::Match(tok.tokAt(6), "%num% )"))
                     {
                         const unsigned int len = Token::getStrLength(tok.tokAt(4));
-                        const unsigned int sz = MathLib::toLongNumber(tok.strAt(6));
-                        if (len>=sz)
+                        const long sz = MathLib::toLongNumber(tok.strAt(6));
+                        if (sz >= 0 && len >= static_cast<unsigned long>(sz))
                         {
                             init_strncpy(checks, tok.tokAt(2));
                             return tok.next()->link();
@@ -4050,7 +4050,7 @@ void CheckOther::nullPointerError(const Token *tok, const std::string &varname)
 
 void CheckOther::nullPointerError(const Token *tok, const std::string &varname, const unsigned int line)
 {
-    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<long>(line));
+    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<unsigned int>(line));
 }
 
 void CheckOther::uninitstringError(const Token *tok, const std::string &varname)

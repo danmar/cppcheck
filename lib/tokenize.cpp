@@ -1849,13 +1849,13 @@ void Tokenizer::arraySize()
             }
 
             if (Token::Match(tok2, "%any% } ;"))
-                tok->next()->insertToken(MathLib::toString<long>(sz));
+                tok->next()->insertToken(MathLib::toString<unsigned int>(sz));
         }
 
         else if (Token::Match(tok, "%var% [ ] = %str% ;"))
         {
             unsigned int sz = tok->strAt(4).length() - 1;
-            tok->next()->insertToken(MathLib::toString<long>(sz));
+            tok->next()->insertToken(MathLib::toString<unsigned int>(sz));
         }
     }
 }
@@ -3142,17 +3142,17 @@ void Tokenizer::simplifySizeof()
                     continue;
                 }
 
-                sizeOfVar[varId] = MathLib::toString<long>(size);
+                sizeOfVar[varId] = MathLib::toString<unsigned int>(size);
             }
 
             else if (Token::Match(tok->tokAt(-1), "%type% %var% [ %num% ] [;=]") ||
                      Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [;=]"))
             {
-                unsigned int size = sizeOfType(tok->tokAt(-1));
+                const unsigned int size = sizeOfType(tok->tokAt(-1));
                 if (size == 0)
                     continue;
 
-                sizeOfVar[varId] = MathLib::toString<long>(size * MathLib::toLongNumber(tok->strAt(2)));
+                sizeOfVar[varId] = MathLib::toString<unsigned long>(size * static_cast<unsigned long>(MathLib::toLongNumber(tok->strAt(2))));
             }
 
             else if (Token::Match(tok->tokAt(-1), "%type% %var% [ %num% ] [,)]") ||
@@ -3165,11 +3165,11 @@ void Tokenizer::simplifySizeof()
 
             else if (Token::Match(tok->tokAt(-1), "%type% %var% [ ] = %str% ;"))
             {
-                unsigned int size = sizeOfType(tok->tokAt(4));
+                const unsigned int size = sizeOfType(tok->tokAt(4));
                 if (size == 0)
                     continue;
 
-                sizeOfVar[varId] = MathLib::toString<long>(size);
+                sizeOfVar[varId] = MathLib::toString<unsigned int>(size);
             }
         }
     }
@@ -3330,7 +3330,7 @@ void Tokenizer::simplifySizeof()
             unsigned int size = sizeOfType(tok->tokAt(2));
             if (size > 0)
             {
-                tok->str(MathLib::toString<long>(size));
+                tok->str(MathLib::toString<unsigned int>(size));
                 Token::eraseTokens(tok, tok->tokAt(4));
             }
         }
@@ -3361,7 +3361,7 @@ void Tokenizer::simplifySizeof()
 
             if (sz > 0)
             {
-                tok->str(MathLib::toString<long>(sz));
+                tok->str(MathLib::toString<unsigned int>(sz));
                 Token::eraseTokens(tok, tok->next()->link()->next());
             }
         }
@@ -7653,7 +7653,7 @@ void Tokenizer::simplifyStructDecl()
             {
                 std::string name;
 
-                name = "Anonymous" + MathLib::toString<long>(count++);
+                name = "Anonymous" + MathLib::toString<unsigned int>(count++);
 
                 tok1->insertToken(name.c_str());
 

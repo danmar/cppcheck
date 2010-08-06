@@ -922,7 +922,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
                 if (sz > 1 &&
                     Token::Match(tok->tokAt(2), "malloc ( %num% )") &&
-                    (MathLib::toLongNumber(tok->strAt(4)) % sz) != 0)
+                    (MathLib::toLongNumber(tok->strAt(4)) % long(sz)) != 0)
                 {
                     mismatchSizeError(tok->tokAt(4), tok->strAt(4));
                 }

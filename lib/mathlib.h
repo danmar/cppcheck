@@ -21,6 +21,7 @@
 #define mathlibH
 
 #include <string>
+#include <sstream>
 
 /// @addtogroup Core
 /// @{
@@ -36,7 +37,18 @@ public:
     static double toDoubleNumber(const std::string & str);
 
     template<typename T>
-    static std::string toString(T d);
+    static std::string toString(T d)
+    {
+        std::ostringstream result;
+        result << d;
+        std::string strResult(result.str());
+        if (strResult == "-0"
+            || strResult == "+0"
+            || strResult == "-0."
+            || strResult == "+0.")
+            return std::string("0");
+        return result.str();
+    }
 
     static bool isInt(const std::string & str);
     static bool isFloat(const std::string &str);

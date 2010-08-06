@@ -65,20 +65,6 @@ double MathLib::toDoubleNumber(const std::string &str)
     return ret;
 }
 
-template <typename T>
-std::string MathLib::toString(T d)
-{
-    std::ostringstream result;
-    result << d;
-    std::string strResult(result.str());
-    if (strResult == "-0"
-        || strResult == "+0"
-        || strResult == "-0."
-        || strResult == "+0.")
-        return std::string("0");
-    return result.str();
-}
-
 bool MathLib::isFloat(const std::string &s)
 {
     // every number that contains a . is a float
