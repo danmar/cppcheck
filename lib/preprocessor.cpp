@@ -41,7 +41,7 @@ Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _sett
 
 }
 
-void Preprocessor::writeError(const std::string &fileName, const int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText)
+void Preprocessor::writeError(const std::string &fileName, const unsigned int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText)
 {
     if (!errorLogger)
         return;
@@ -183,7 +183,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
         // Just some code..
         else
         {
-            code << std::string(1, ch);
+            code << char(ch);
 
             // if there has been <backspace><newline> sequences, add extra newlines..
             if (ch == '\n' && newlines > 0)
@@ -209,7 +209,7 @@ static bool hasbom(const std::string &str)
 std::string Preprocessor::removeComments(const std::string &str, const std::string &filename, Settings *settings)
 {
     // For the error report
-    int lineno = 1;
+    unsigned int lineno = 1;
 
     // handling <backspace><newline>
     // when this is encountered the <backspace><newline> will be "skipped".
@@ -219,9 +219,9 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     unsigned char previous = 0;
     std::vector<std::string> suppressionIDs;
 
-    for (std::string::size_type i = hasbom(str) ? 3 : 0; i < str.length(); ++i)
+    for (std::string::size_type i = static_cast<unsigned char>(hasbom(str) ? 3 : 0); i < str.length(); ++i)
     {
-        unsigned char ch = str[i];
+        unsigned char ch = static_cast<unsigned char>(str[i]);
         if (ch & 0x80)
         {
             std::ostringstream errmsg;
@@ -294,7 +294,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             {
                 chPrev = ch;
                 ++i;
-                ch = str[i];
+                ch = static_cast<unsigned char>(str[i]);
                 if (ch == '\n')
                 {
                     ++newlines;
@@ -306,8 +306,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         // String or char constants..
         else if (ch == '\"' || ch == '\'')
         {
-            code << std::string(1, ch);
-            unsigned char chNext;
+            code << char(ch);
+            char chNext;
             do
             {
                 ++i;
@@ -320,15 +320,15 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                         ++newlines;
                     else
                     {
-                        code << std::string(1, chNext);
-                        code << std::string(1, chSeq);
-                        previous = chSeq;
+                        code << chNext;
+                        code << chSeq;
+                        previous = static_cast<unsigned char>(chSeq);
                     }
                 }
                 else
                 {
-                    code << std::string(1, chNext);
-                    previous = chNext;
+                    code << chNext;
+                    previous = static_cast<unsigned char>(chNext);
                 }
             }
             while (i < str.length() && chNext != ch && chNext != '\n');
@@ -344,7 +344,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             }
             else
             {
-                code << std::string(1, ch);
+                code << char(ch);
                 previous = ch;
             }
 
@@ -514,11 +514,11 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
 std::string Preprocessor::removeSpaceNearNL(const std::string &str)
 {
     std::string tmp;
-    int prev = -1;
+    char prev = 0;
     for (unsigned int i = 0; i < str.size(); i++)
     {
         if (str[i] == ' ' &&
-            ((i > 0 && tmp[prev] == '\n') ||
+            ((i > 0 && prev == '\n') ||
              (i + 1 < str.size() && str[i+1] == '\n')
             )
            )
@@ -528,7 +528,7 @@ std::string Preprocessor::removeSpaceNearNL(const std::string &str)
         else
         {
             tmp.append(1, str[i]);
-            ++prev;
+            prev = str[i];
         }
     }
 
@@ -992,7 +992,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         for (std::string::size_type pos = 0; pos < s.length(); ++pos)
         {
-            const unsigned char c = s[pos];
+            const unsigned char c = static_cast<unsigned char>(s[pos]);
 
             // ok with ";"
             if (c == ';')
@@ -1339,7 +1339,7 @@ Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
         return NoHeader;
     }
 
-    unsigned char c = str[i];
+    char c = str[i];
     if (c == '<')
         c = '>';
 
@@ -1493,7 +1493,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
  */
 static void skipstring(const std::string &line, std::string::size_type &pos)
 {
-    const unsigned char ch = line[pos];
+    const char ch = line[pos];
 
     ++pos;
     while (pos < line.size() && line[pos] != ch)
@@ -1923,23 +1923,23 @@ static bool getlines(std::istream &istr, std::string &line)
         return false;
     line = "";
     int parlevel = 0;
-    for (unsigned char ch = (unsigned char)istr.get(); istr.good(); ch = (unsigned char)istr.get())
+    for (char ch = istr.get(); istr.good(); ch = istr.get())
     {
         if (ch == '\'' || ch == '\"')
         {
             line += ch;
-            unsigned char c = 0;
+            char c = 0;
             while (istr.good() && c != ch)
             {
                 if (c == '\\')
                 {
-                    c = (unsigned char)istr.get();
+                    c = istr.get();
                     if (!istr.good())
                         return true;
                     line += c;
                 }
 
-                c = (unsigned char)istr.get();
+                c = istr.get();
                 if (!istr.good())
                     return true;
                 if (c == '\n' && line.compare(0, 1, "#") == 0)
@@ -1957,7 +1957,7 @@ static bool getlines(std::istream &istr, std::string &line)
             if (line.compare(0, 1, "#") == 0)
                 return true;
 
-            if ((char)istr.peek() == '#')
+            if (istr.peek() == '#')
             {
                 line += ch;
                 return true;

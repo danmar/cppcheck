@@ -117,7 +117,7 @@ protected:
      * @param errorType id string for error
      * @param errorText Plain text
      */
-    static void writeError(const std::string &fileName, const int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText);
+    static void writeError(const std::string &fileName, const unsigned int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText);
 
     /**
      * Replace "#if defined" with "#ifdef" where possible
