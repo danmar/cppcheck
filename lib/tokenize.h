@@ -92,7 +92,7 @@ public:
     bool simplifyTokenList();
 
     static void deleteTokens(Token *tok);
-    static const char *getParameterName(const Token *ftok, int par);
+    static const char *getParameterName(const Token *ftok, unsigned int par);
 
     std::string fileLine(const Token *tok) const;
 

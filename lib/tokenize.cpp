@@ -6807,11 +6807,13 @@ void Tokenizer::deleteTokens(Token *tok)
 
 //---------------------------------------------------------------------------
 
-const char *Tokenizer::getParameterName(const Token *ftok, int par)
+const char *Tokenizer::getParameterName(const Token *ftok, unsigned int par)
 {
-    int _par = 1;
+    unsigned int _par = 1;
     for (; ftok; ftok = ftok->next())
     {
+        if (ftok->str() == ")")
+            break;
         if (ftok->str() == ",")
             ++_par;
         if (par == _par && Token::Match(ftok, "%var% [,)]"))

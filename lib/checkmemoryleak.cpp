@@ -720,8 +720,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     if (numpar <= 0)
         return "callfunc";
 
-    int par = 1;
-    int parlevel = 0;
+    unsigned int par = 1;
+    unsigned int parlevel = 0;
 
     const bool dot(tok->previous()->str() == ".");
 
