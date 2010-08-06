@@ -29,7 +29,6 @@
 #include "settings.h"
 #include "errorlogger.h"
 #include "check.h"
-#include "classinfo.h"
 
 #include <locale>
 #include <fstream>

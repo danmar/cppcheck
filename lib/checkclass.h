@@ -104,8 +104,8 @@ public:
 
     /** @brief can member function be const? */
     void checkConst();
-private:
 
+public:
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     class Var
     {

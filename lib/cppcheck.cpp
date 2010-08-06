@@ -942,7 +942,7 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
         time1 = time2;
 
         // current time in the format "Www Mmm dd hh:mm:ss yyyy"
-        const std::string str(ctime(&time2));
+        const std::string str(std::ctime(&time2));
 
         // format a progress message
         std::ostringstream ostr;

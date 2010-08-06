@@ -21,11 +21,13 @@
 #ifndef tokenizeH
 #define tokenizeH
 //---------------------------------------------------------------------------
+
+#include "classinfo.h"
+
 #include <string>
 #include <map>
 #include <vector>
 
-class ClassInfo;
 class Token;
 class ErrorLogger;
 class Settings;
