@@ -2228,7 +2228,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 void CheckMemoryLeakInFunction::checkReallocUsage()
 {
     const Token *tok = _tokenizer->tokens();
-    while ((tok = Token::findmatch(tok, ") const| {")))
+    while (NULL != (tok = Token::findmatch(tok, ") const| {")))
     {
         const Token *startOfFunction = tok;
 

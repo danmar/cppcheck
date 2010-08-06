@@ -174,7 +174,7 @@ public:
      * @param stage for example preprocess / tokenize / simplify / check
      * @param value progress value (0-100)
      */
-    virtual void reportProgress(const std::string &filename, const char stage[], const unsigned char value)
+    virtual void reportProgress(const std::string &filename, const char stage[], const unsigned int value)
     {
         (void)filename;
         (void)stage;

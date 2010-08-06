@@ -157,7 +157,7 @@ private:
      */
     virtual void reportOut(const std::string &outmsg);
 
-    void reportProgress(const std::string &filename, const char stage[], const unsigned char value);
+    void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
 
     unsigned int exitcode;
     std::list<std::string> _errorList;

@@ -931,7 +931,7 @@ void CppCheck::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
 
 }
 
-void CppCheck::reportProgress(const std::string &filename, const char stage[], const unsigned char value)
+void CppCheck::reportProgress(const std::string &filename, const char stage[], const unsigned int value)
 {
     (void)filename;
 
