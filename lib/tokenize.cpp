@@ -2200,7 +2200,7 @@ void Tokenizer::simplifyTemplates()
                 break;
 
             // get the position of the template name
-            unsigned int namepos = 0;
+            unsigned char namepos = 0;
             if (Token::Match(tok, "> class|struct %type% {|:"))
                 namepos = 2;
             else if (Token::Match(tok, "> %type% *|&| %type% ("))
@@ -4840,7 +4840,7 @@ void Tokenizer::simplifyVarDecl()
             {
                 Token *eq = tok2;
 
-                int parlevel = 0;
+                unsigned int parlevel = 0;
                 while (tok2)
                 {
                     if (Token::Match(tok2, "[{(<]"))
@@ -4850,7 +4850,7 @@ void Tokenizer::simplifyVarDecl()
 
                     else if (Token::Match(tok2, "[})>]"))
                     {
-                        if (parlevel <= 0)
+                        if (parlevel == 0)
                             break;
                         --parlevel;
                     }
@@ -4858,7 +4858,7 @@ void Tokenizer::simplifyVarDecl()
                     else if (parlevel == 0 && strchr(";,", tok2->str()[0]))
                     {
                         // "type var ="   =>   "type var; var ="
-                        Token *VarTok = type0->tokAt(typelen);
+                        Token *VarTok = type0->tokAt((int)typelen);
                         while (Token::Match(VarTok, "*|const"))
                             VarTok = VarTok->next();
                         insertTokens(eq, VarTok, 2);
@@ -7352,16 +7352,17 @@ std::string Tokenizer::simplifyString(const std::string &source)
             // Hex value
             if (str[i+1] == '0' && str[i+2] == '0')
                 str.replace(i, 3, "0");
-            else
+            else if (i > 0)
             {
                 // We will replace all other character as 'a'
                 // If that causes problems in the future, this can
                 // be improved. But for now, this should be OK.
-                int n = 1;
+                unsigned char n = 1;
                 while (n < 2 && std::isxdigit(str[i+1+n]))
                     ++n;
                 --i;
-                str.replace(i, 2 + n, "a");
+                n += 2;
+                str.replace(i, n, "a");
             }
         }
         else if (MathLib::isOctalDigit(str[i]))
