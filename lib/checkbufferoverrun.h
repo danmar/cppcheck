@@ -79,7 +79,7 @@ public:
      * @param parameters given parameters to sprintf
      * @return minimum length of resulting string
      */
-    static int countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters);
+    static unsigned int countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters);
 
     /**
      * @brief %Check code that matches: "sprintf ( %varid% , %str% [,)]" when varid is not 0,
@@ -87,7 +87,7 @@ public:
      * @param tok The "sprintf" token.
      * @param size The size of the buffer where sprintf is writing.
      */
-    void checkSprintfCall(const Token *tok, int size);
+    void checkSprintfCall(const Token *tok, const unsigned int size);
 
     /** Check for buffer overruns - locate struct variables and check them with the .._CheckScope function */
     void checkStructVariable();
@@ -176,8 +176,8 @@ public:
     void checkFunctionCall(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo);
 
     void arrayIndexOutOfBounds(const Token *tok, int size, int index);
-    void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<int> &index);
-    void arrayIndexOutOfBounds(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<int> &index);
+    void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<unsigned int> &index);
+    void arrayIndexOutOfBounds(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<unsigned int> &index);
     void bufferOverrun(const Token *tok, const std::string &varnames = "");
     void strncatUsage(const Token *tok);
     void outOfBounds(const Token *tok, const std::string &what);

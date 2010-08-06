@@ -71,7 +71,7 @@ std::string FileLister::simplifyPath(const char *originalPath)
     if (subPath.length() > 0)
         pathParts.push_back(subPath);
 
-    for (std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i)
+    for (unsigned int i = 0; i < pathParts.size(); ++i)
     {
         if (pathParts[i] == ".." && i > 1 && pathParts.size() > i + 1)
         {

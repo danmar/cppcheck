@@ -163,6 +163,7 @@ int main(int argc, char **argv)
              << "-Wno-long-long "
              << "-Wfloat-equal "
              << "-Wcast-qual "
+             << "-Wsign-conversion "
              << "-g -D_GLIBCXX_DEBUG\n";
     }
     fout << "CXX=g++\n";

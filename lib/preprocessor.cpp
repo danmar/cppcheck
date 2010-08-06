@@ -219,7 +219,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     unsigned char previous = 0;
     std::vector<std::string> suppressionIDs;
 
-    for (std::string::size_type i = static_cast<unsigned char>(hasbom(str) ? 3 : 0); i < str.length(); ++i)
+    for (std::string::size_type i = hasbom(str) ? 3U : 0U; i < str.length(); ++i)
     {
         unsigned char ch = static_cast<unsigned char>(str[i]);
         if (ch & 0x80)

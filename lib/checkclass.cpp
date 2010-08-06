@@ -777,7 +777,7 @@ bool CheckClass::argsMatch(const Token *first, const Token *second, const std::s
 
             if (Token::Match(second->next(), param.c_str()))
             {
-                second = second->tokAt(depth * 2);
+                second = second->tokAt(int(depth) * 2);
             }
             else if (depth > 1)
             {
@@ -794,7 +794,7 @@ bool CheckClass::argsMatch(const Token *first, const Token *second, const std::s
 
                 if (Token::Match(second->next(), param.c_str()))
                 {
-                    second = second->tokAt((depth - 1) * 2);
+                    second = second->tokAt((int(depth) - 1) * 2);
                 }
             }
         }
@@ -1892,7 +1892,7 @@ void CheckClass::checkConst()
                         const std::string s(previous->str());
                         for (std::string::size_type pos = 0; pos < s.size(); ++pos)
                         {
-                            unsigned char ch = s[pos];
+                            const char ch = s[pos];
                             if (!(ch == '_' || (ch >= 'A' && ch <= 'Z')))
                             {
                                 allupper = false;

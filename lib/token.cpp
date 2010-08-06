@@ -684,7 +684,7 @@ std::string Token::stringifyList(bool varid, const char *title, const std::vecto
 
     unsigned int lineNumber = 0;
     int fileInd = -1;
-    std::map<unsigned int, unsigned int> lineNumbers;
+    std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok; tok = tok->next())
     {
         bool fileChange = false;
@@ -697,8 +697,8 @@ std::string Token::stringifyList(bool varid, const char *title, const std::vecto
 
             fileInd = static_cast<int>(tok->_fileIndex);
             ret << "\n\n##file ";
-            if (fileNames.size() > static_cast<unsigned int>(fileInd))
-                ret << fileNames.at(fileInd);
+            if (fileNames.size() > tok->_fileIndex)
+                ret << fileNames.at(tok->_fileIndex);
             else
                 ret << fileInd;
 
