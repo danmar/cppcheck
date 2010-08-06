@@ -199,7 +199,7 @@ public:
     void strPlusChar(const Token *tok);
     void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
     void nullPointerError(const Token *tok, const std::string &varname);
-    void nullPointerError(const Token *tok, const std::string &varname, const int line);
+    void nullPointerError(const Token *tok, const std::string &varname, const unsigned int line);
     void uninitstringError(const Token *tok, const std::string &varname);
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);

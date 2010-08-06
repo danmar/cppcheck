@@ -909,7 +909,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
             Token::Match(tok->tokAt(start), "( const| struct|union| %type% *| ) ( &| %var%") ||
             Token::Match(tok->tokAt(start), "%any% < const| struct|union| %type% *| > ( &| %var%"))
         {
-            unsigned int offset = 0;
+            unsigned char offset = 0;
             unsigned int varid2;
             bool addressOf = false;
 
@@ -4048,7 +4048,7 @@ void CheckOther::nullPointerError(const Token *tok, const std::string &varname)
     reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname);
 }
 
-void CheckOther::nullPointerError(const Token *tok, const std::string &varname, const int line)
+void CheckOther::nullPointerError(const Token *tok, const std::string &varname, const unsigned int line)
 {
     reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<long>(line));
 }
