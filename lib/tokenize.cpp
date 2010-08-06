@@ -6765,7 +6765,7 @@ void Tokenizer::fillFunctionList()
             if (_functionList[func1]->str() == _functionList[func2]->str())
             {
                 hasDuplicates = true;
-                _functionList.erase(_functionList.begin() + func2);
+                _functionList.erase(_functionList.begin() + static_cast<int>(func2));
             }
             else
             {
@@ -6779,7 +6779,7 @@ void Tokenizer::fillFunctionList()
         }
         else
         {
-            _functionList.erase(_functionList.begin() + func1);
+            _functionList.erase(_functionList.begin() + static_cast<int>(func1));
         }
     }
 }

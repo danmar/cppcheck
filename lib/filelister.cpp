@@ -75,20 +75,20 @@ std::string FileLister::simplifyPath(const char *originalPath)
     {
         if (pathParts[i] == ".." && i > 1 && pathParts.size() > i + 1)
         {
-            pathParts.erase(pathParts.begin() + i + 1);
-            pathParts.erase(pathParts.begin() + i);
-            pathParts.erase(pathParts.begin() + i - 1);
-            pathParts.erase(pathParts.begin() + i - 2);
+            pathParts.erase(pathParts.begin() + static_cast<int>(i) + 1);
+            pathParts.erase(pathParts.begin() + static_cast<int>(i));
+            pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
+            pathParts.erase(pathParts.begin() + static_cast<int>(i) - 2);
             i = 0;
         }
         else if (i > 0 && pathParts[i] == ".")
         {
-            pathParts.erase(pathParts.begin() + i);
+            pathParts.erase(pathParts.begin() + static_cast<int>(i));
             i = 0;
         }
         else if (pathParts[i] == "/" && i > 0 && pathParts[i-1] == "/")
         {
-            pathParts.erase(pathParts.begin() + i - 1);
+            pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
             i = 0;
         }
     }
