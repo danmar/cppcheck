@@ -98,6 +98,7 @@ private:
         TEST_CASE(fflushOnInputStreamTest);
 
         TEST_CASE(sizeofsizeof);
+        TEST_CASE(sizeofCalculation);
 
         TEST_CASE(emptyCatchBlock);
 
@@ -120,6 +121,7 @@ private:
         errout.str("");
 
         checkOther.sizeofsizeof();
+        checkOther.sizeofCalculation();
         checkOther.checkEmptyCatchBlock();
         checkOther.checkRedundantAssignmentInSwitch();
 
@@ -2781,6 +2783,12 @@ private:
               "    int i = sizeof sizeof char;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Suspicious code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent to 'sizeof(size_t)'.\n", errout.str());
+    }
+
+    void sizeofCalculation()
+    {
+        check("sizeof(a+b)");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Found calculation inside sizeof()\n", errout.str());
     }
 
     void emptyCatchBlock()

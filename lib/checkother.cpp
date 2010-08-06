@@ -4134,6 +4134,41 @@ void CheckOther::sizeofsizeofError(const Token *tok)
                 "sizeofsizeof", "Suspicious code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent to 'sizeof(size_t)'.");
 }
 
+void CheckOther::sizeofCalculation()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "sizeof ("))
+        {
+            unsigned int parlevel = 0;
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+                else if (tok2->str() == ")")
+                {
+                    if (parlevel <= 1)
+                        break;
+                    --parlevel;
+                }
+                else if (Token::Match(tok2, "+|/"))
+                {
+                    sizeofCalculationError(tok2);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::sizeofCalculationError(const Token *tok)
+{
+    reportError(tok, Severity::style,
+                "sizeofCalculation", "Found calculation inside sizeof()");
+}
+
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::style,

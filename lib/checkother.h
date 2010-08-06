@@ -61,6 +61,7 @@ public:
         checkOther.checkStructMemberUsage();
         checkOther.strPlusChar();
         checkOther.sizeofsizeof();
+        checkOther.sizeofCalculation();
         checkOther.checkEmptyCatchBlock();
         checkOther.checkRedundantAssignmentInSwitch();
     }
@@ -179,6 +180,10 @@ public:
     void sizeofsizeof();
     void sizeofsizeofError(const Token *tok);
 
+    /** @brief %Check for calculations inside sizeof */
+    void sizeofCalculation();
+    void sizeofCalculationError(const Token *tok);
+
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
 
@@ -238,6 +243,7 @@ public:
         conditionAlwaysTrueFalse(0, "true/false");
         strPlusChar(0);
         sizeofsizeofError(0);
+        sizeofCalculationError(0);
         emptyCatchBlockError(0);
         redundantAssignmentInSwitchError(0, "varname");
 
@@ -276,6 +282,8 @@ public:
                "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
                "* empty catch() block\n"
                "* redundant assignment in a switch statement\n"
+               "* look for 'sizeof sizeof ..'\n"
+               "* look for calculations inside sizeof()\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n"
