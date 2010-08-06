@@ -130,7 +130,7 @@ public:
     {
     private:
         /** @brief List of error which the user doesn't want to see. */
-        std::map<std::string, std::map<std::string, std::list<int> > > _suppressions;
+        std::map<std::string, std::map<std::string, std::list<unsigned int> > > _suppressions;
     public:
         /**
          * @brief Don't show errors listed in the file.
