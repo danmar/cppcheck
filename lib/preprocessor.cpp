@@ -144,9 +144,16 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
             needSpace = true;
 
         // <backspace><newline>..
+        // for gcc-compatibility the trailing spaces should be ignored
+        // for vs-compatibility the trailing spaces should be kept
+        // See tickets #640 and #1869
+        // The solution for now is to have a compiler-dependent behaviour.
         if (ch == '\\')
         {
-            unsigned char chNext = 0;
+            unsigned char chNext;
+
+#ifdef __GNUC__
+            // gcc-compatibility: ignore spaces
             for (;;)
             {
                 chNext = (unsigned char)istr.peek();
@@ -160,7 +167,10 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
 
                 break;
             }
-
+#else
+            // keep spaces
+            chNext = (unsigned char)istr.peek();
+#endif
             if (chNext == '\n' || chNext == '\r')
             {
                 ++newlines;
