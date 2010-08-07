@@ -2394,7 +2394,7 @@ void CheckOther::nullPointerStructByDeRefAndChec()
 
             else if (tok2->str() == "}")
             {
-                if (indentlevel2 == 0)
+                if (indentlevel2 <= 1)
                     break;
                 --indentlevel2;
             }

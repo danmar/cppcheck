@@ -781,6 +781,18 @@ private:
                          "  }\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #1923 - no false positive when using else if
+        checkNullPointer("void f(A *a)\n"
+                         "{\n"
+                         "    if (a->x == 1)\n"
+                         "    {\n"
+                         "        a = a->next;\n"
+                         "    }\n"
+                         "    else if (a->x == 2) { }\n"
+                         "    if (a) { }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer2()
