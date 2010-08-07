@@ -42,6 +42,7 @@ Settings::Settings()
     _terminate = false;
     inconclusive = false;
     test_2_pass = false;
+    ifcfg = false;
 }
 
 std::string Settings::Suppressions::parseFile(std::istream &istr)

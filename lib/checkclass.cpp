@@ -1849,7 +1849,7 @@ bool CheckClass::isVirtual(const std::vector<std::string> &derivedFrom, const To
 // Can a function be const?
 void CheckClass::checkConst()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->_checkCodingStyle || _settings->ifcfg)
         return;
 
     createSymbolDatabase();

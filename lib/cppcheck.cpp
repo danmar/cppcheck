@@ -711,6 +711,8 @@ unsigned int CppCheck::check()
                 preprocessor.preprocess(fin, filedata, configurations, fname, _settings._includePaths);
             }
 
+            _settings.ifcfg = bool(configurations.size() > 1);
+
             if (!_settings.userDefines.empty())
             {
                 configurations.clear();

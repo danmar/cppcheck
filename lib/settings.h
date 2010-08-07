@@ -170,6 +170,12 @@ public:
 
     /** @brief Experimentat 2 pass checking of files */
     bool test_2_pass;
+
+    /**
+     * @brief Is there any #if configurations in the source code?
+     * As usual, include guards are not counted.
+     */
+    bool ifcfg;
 };
 
 /// @}

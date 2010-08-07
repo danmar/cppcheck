@@ -140,6 +140,7 @@ private:
         TEST_CASE(constLPVOID);     // a function that returns LPVOID can't be const
         TEST_CASE(constFunc); // a function that calls const functions can be const
         TEST_CASE(constVirtualFunc);
+        TEST_CASE(constIfCfg);  // ticket #1881 - fp when there are #if
     }
 
     // Check the operator Equal
@@ -2349,7 +2350,7 @@ private:
                       "[test.cpp:3]: (style) Suspicious pointer subtraction\n", errout.str());
     }
 
-    void checkConst(const char code[])
+    void checkConst(const char code[], const Settings *s = 0)
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -2362,7 +2363,10 @@ private:
 
         // Check..
         Settings settings;
-        settings._checkCodingStyle = true;
+        if (s)
+            settings = *s;
+        else
+            settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkConst();
     }
@@ -3847,6 +3851,24 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) The function 'X::getX' can be const\n"
                       "[test.cpp:11]: (style) The function 'Y::getY' can be const\n"
                       "[test.cpp:17]: (style) The function 'Z::getZ' can be const\n", errout.str());
+    }
+
+    void constIfCfg()
+    {
+        const char code[] = "class foo {\n"
+                            "    void f() { }\n"
+                            "};";
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
+        settings.ifcfg = false;
+        checkConst(code, &settings);
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'foo::f' can be const\n", errout.str());
+
+        settings.ifcfg = true;
+        checkConst(code, &settings);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
