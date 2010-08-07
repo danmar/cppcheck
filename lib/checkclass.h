@@ -105,7 +105,13 @@ public:
     /** @brief can member function be const? */
     void checkConst();
 
-public:
+    /**
+     * @brief Access control. This needs to be public, otherwise it
+     * doesn't work to compile with Borland C++
+     */
+    enum AccessControl { Public, Protected, Private };
+
+private:
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     class Var
     {
@@ -145,8 +151,6 @@ public:
     private:
         Var& operator=(const Var&); // disallow assignments
     };
-
-    enum AccessControl { Public, Protected, Private };
 
     struct Func
     {
