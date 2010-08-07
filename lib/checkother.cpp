@@ -2339,9 +2339,22 @@ void CheckOther::nullPointerLinkedList()
 
 void CheckOther::nullPointerStructByDeRefAndChec()
 {
+    // don't check vars that has been tested against null already
+    std::set<unsigned int> skipvar;
+    skipvar.insert(0);
+
     // Dereferencing a struct pointer and then checking if it's NULL..
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
     {
+        if (Token::Match(tok1, "if|while ( !| %var% )"))
+        {
+            tok1 = tok1->tokAt(2);
+            if (tok1->str() == "!")
+                tok1 = tok1->next();
+            skipvar.insert(tok1->varId());
+            continue;
+        }
+
         // dereference in assignment
         if (Token::Match(tok1, "[{};] %var% = %var% . %var%"))
         {
@@ -2366,25 +2379,10 @@ void CheckOther::nullPointerStructByDeRefAndChec()
         // struct dereference was found - investigate if it is later
         // checked that it is not NULL
         const unsigned int varid1(tok1->varId());
-        if (varid1 == 0)
+        if (skipvar.find(varid1) != skipvar.end())
             continue;
 
         const std::string varname(tok1->str());
-
-        // Checking if the struct pointer is non-null before the assignment..
-        {
-            const Token *tok2 = _tokenizer->tokens();
-            while (tok2)
-            {
-                if (tok2 == tok1)
-                    break;
-                if (Token::Match(tok2, "if|while ( !| %varid% )", varid1))
-                    break;
-                tok2 = tok2->next();
-            }
-            if (tok2 != tok1)
-                continue;
-        }
 
         unsigned int indentlevel2 = 0;
         for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())
