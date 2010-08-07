@@ -913,6 +913,9 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
             unsigned int varid2;
             bool addressOf = false;
 
+            if (Token::Match(tok->tokAt(start), "%var% ."))
+                variables.use(tok->tokAt(start)->varId());   // use = read + write
+
             // check for C style cast
             if (tok->tokAt(start)->str() == "(")
             {
