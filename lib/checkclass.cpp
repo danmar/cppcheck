@@ -41,8 +41,20 @@ CheckClass instance;
 //---------------------------------------------------------------------------
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    : Check(tokenizer, settings, errorLogger)
+    : Check(tokenizer, settings, errorLogger),
+      hasSymbolDatabase(false)
 {
+
+}
+
+void CheckClass::createSymbolDatabase()
+{
+    // Multiple calls => bail out
+    if (hasSymbolDatabase)
+        return;
+
+    hasSymbolDatabase = true;
+
     // find all namespaces (class,struct and namespace)
     SpaceInfo *info = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -815,6 +827,8 @@ void CheckClass::constructors()
     if (!_settings->_checkCodingStyle)
         return;
 
+    createSymbolDatabase();
+
     std::multimap<std::string, SpaceInfo *>::iterator i;
 
     for (i = spaceInfoMMap.begin(); i != spaceInfoMMap.end(); ++i)
@@ -1161,6 +1175,8 @@ void CheckClass::operatorEq()
     if (!_settings->_checkCodingStyle)
         return;
 
+    createSymbolDatabase();
+
     std::multimap<std::string, SpaceInfo *>::const_iterator i;
 
     for (i = spaceInfoMMap.begin(); i != spaceInfoMMap.end(); ++i)
@@ -1187,6 +1203,8 @@ void CheckClass::operatorEqRetRefThis()
 {
     if (!_settings->_checkCodingStyle)
         return;
+
+    createSymbolDatabase();
 
     std::multimap<std::string, SpaceInfo *>::const_iterator i;
 
@@ -1833,6 +1851,8 @@ void CheckClass::checkConst()
 {
     if (!_settings->_checkCodingStyle)
         return;
+
+    createSymbolDatabase();
 
     std::multimap<std::string, SpaceInfo *>::iterator it;
 

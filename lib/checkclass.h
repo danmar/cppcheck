@@ -36,7 +36,7 @@ class CheckClass : public Check
 {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check()
+    CheckClass() : Check(), hasSymbolDatabase(false)
     { }
 
     /** @brief This constructor is used when running checks. */
@@ -112,6 +112,22 @@ public:
     enum AccessControl { Public, Protected, Private };
 
 private:
+    /**
+     * @brief Create symbol database. For performance reasons, only call
+     * it if it's needed.
+     */
+    void createSymbolDatabase();
+
+    /**
+     * @brief Prevent creating symbol database more than once.
+     *
+     * Initialize this flag to false in the constructors. If this flag
+     * is true the createSymbolDatabase should just bail out. If it is
+     * false the createSymbolDatabase will set it to true and create
+     * the symbol database.
+     */
+    bool hasSymbolDatabase;
+
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     class Var
     {
