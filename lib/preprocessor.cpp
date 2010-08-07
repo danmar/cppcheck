@@ -1923,7 +1923,7 @@ static bool getlines(std::istream &istr, std::string &line)
         return false;
     line = "";
     int parlevel = 0;
-    for (char ch = istr.get(); istr.good(); ch = istr.get())
+    for (char ch = (char)istr.get(); istr.good(); ch = (char)istr.get())
     {
         if (ch == '\'' || ch == '\"')
         {
@@ -1933,13 +1933,13 @@ static bool getlines(std::istream &istr, std::string &line)
             {
                 if (c == '\\')
                 {
-                    c = istr.get();
+                    c = (char)istr.get();
                     if (!istr.good())
                         return true;
                     line += c;
                 }
 
-                c = istr.get();
+                c = (char)istr.get();
                 if (!istr.good())
                     return true;
                 if (c == '\n' && line.compare(0, 1, "#") == 0)
