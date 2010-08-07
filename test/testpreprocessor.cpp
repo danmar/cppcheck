@@ -1133,7 +1133,11 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+#ifdef __GNUC__
         ASSERT_EQUALS("\n\nint a = 4; int b = 5;\n", actual[""]);
+#else
+        ASSERT_EQUALS("\nint b = 5;\nint a = 4;\\\n", actual[""]);
+#endif
         ASSERT_EQUALS("", errout.str());
     }
 
