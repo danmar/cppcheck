@@ -181,6 +181,7 @@ private:
               isConst(false),
               isVirtual(false),
               isStatic(false),
+              isFriend(false),
               isOperator(false),
               type(Function)
         {
@@ -194,6 +195,7 @@ private:
         bool isConst;          // is const
         bool isVirtual;        // is virtual
         bool isStatic;         // is static
+        bool isFriend;         // is friend
         bool isOperator;       // is operator
         Type type;             // constructor, destructor, ...
     };

@@ -184,6 +184,13 @@ void CheckClass::createSymbolDatabase()
                             break;
                         }
 
+                        // friend function
+                        else if (tok1->previous()->str() == "friend")
+                        {
+                            function.isFriend = true;
+                            break;
+                        }
+
                         tok1 = tok1->previous();
                     }
 
@@ -1867,7 +1874,7 @@ void CheckClass::checkConst()
             const Func & func = *it1;
 
             // does the function have a body?
-            if (func.type == Func::Function && func.hasBody && !func.isStatic && !func.isConst && !func.isVirtual)
+            if (func.type == Func::Function && func.hasBody && !func.isFriend && !func.isStatic && !func.isConst && !func.isVirtual)
             {
                 // get function name
                 const std::string functionName((func.tokenDef->isName() ? "" : "operator") + func.tokenDef->str());

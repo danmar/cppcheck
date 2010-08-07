@@ -141,6 +141,7 @@ private:
         TEST_CASE(constFunc); // a function that calls const functions can be const
         TEST_CASE(constVirtualFunc);
         TEST_CASE(constIfCfg);  // ticket #1881 - fp when there are #if
+        TEST_CASE(constFriend); // ticket #1921 - fp for friend function
     }
 
     // Check the operator Equal
@@ -3868,6 +3869,15 @@ private:
 
         settings.ifcfg = true;
         checkConst(code, &settings);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void constFriend()	// ticket #1921
+    {
+        const char code[] = "class foo {\n"
+                            "    friend void f() { }\n"
+                            "};";
+        checkConst(code);
         ASSERT_EQUALS("", errout.str());
     }
 };
