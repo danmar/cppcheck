@@ -3579,8 +3579,7 @@ bool Tokenizer::simplifyTokenList()
     }
 
     // Simplify simple calculations..
-    while (simplifyCalculations())
-        ;
+    simplifyCalculations();
 
     // Replace "*(str + num)" => "str[num]"
     for (Token *tok = _tokens; tok; tok = tok->next())
