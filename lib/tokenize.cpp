@@ -5852,63 +5852,6 @@ bool Tokenizer::simplifyCalculations()
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::simpleMatch(tok->next(), "* 1") || Token::simpleMatch(tok->next(), "1 *"))
-        {
-            Token::eraseTokens(tok, tok->tokAt(3));
-            ret = true;
-        }
-
-        // (1-2)
-        while (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*/]") ||
-               Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/]") ||
-               Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% <<|>>") ||
-               Token::Match(tok, "<< %num% [+-*/] %num% <<"))
-        {
-            tok = tok->next();
-
-            // Don't simplify "%num% / 0"
-            if (Token::simpleMatch(tok->next(), "/ 0"))
-                continue;
-
-            // + and - are calculated after * and /
-            if (Token::Match(tok->next(), "[+-/]"))
-            {
-                if (tok->previous()->str() == "*")
-                    continue;
-                if (Token::Match(tok->tokAt(3), "[*/]"))
-                    continue;
-            }
-
-            if (Token::Match(tok->previous(), "- %num% - %num%"))
-                tok->str(MathLib::add(tok->str(), tok->tokAt(2)->str()));
-            else if (Token::Match(tok->previous(), "- %num% + %num%"))
-                tok->str(MathLib::subtract(tok->str(), tok->tokAt(2)->str()));
-            else
-                tok->str(MathLib::calculate(tok->str(), tok->tokAt(2)->str(), tok->strAt(1)[0], this));
-
-            Token::eraseTokens(tok, tok->tokAt(3));
-
-            // evaluate "2 + 2 - 2 - 2"
-            // as (((2 + 2) - 2) - 2) = 0
-            // instead of ((2 + 2) - (2 - 2)) = 4
-            if (Token::Match(tok->next(), "[+-*/]"))
-            {
-                tok = tok->previous();
-                continue;
-            }
-
-            ret = true;
-        }
-
-        // Remove parantheses around number..
-        if (!tok->isName() && Token::Match(tok->next(), "( %num% )"))
-        {
-            tok->deleteNext();
-            tok = tok->next();
-            tok->deleteNext();
-            ret = true;
-        }
-
         // Remove parantheses around variable..
         // keep parantheses here: dynamic_cast<Fred *>(p);
         // keep parantheses here: A operator * (int);
@@ -5920,65 +5863,134 @@ bool Tokenizer::simplifyCalculations()
             ret = true;
         }
 
-        if (Token::simpleMatch(tok->previous(), "( 0 ||") ||
-            Token::simpleMatch(tok, "|| 0 )") ||
-            Token::simpleMatch(tok->previous(), "( 1 &&") ||
-            Token::simpleMatch(tok, "&& 1 )"))
+        if (tok->isNumber())
         {
-            tok->deleteThis();
-            tok->deleteThis();
-        }
+            if (Token::simpleMatch(tok->previous(), "* 1") || Token::simpleMatch(tok, "1 *"))
+            {
+                if (Token::simpleMatch(tok->previous(), "*"))
+                    tok = tok->previous();
+                tok->deleteThis();
+                tok->deleteThis();
+                ret = true;
+            }
 
-        if (Token::Match(tok, "%num% ==|!=|<=|>=|<|> %num%") &&
-            MathLib::isInt(tok->str()) &&
-            MathLib::isInt(tok->tokAt(2)->str()))
-        {
-            const std::string prev(tok->previous() ? tok->strAt(-1).c_str() : "");
-            const std::string after(tok->tokAt(3) ? tok->strAt(3).c_str() : "");
-            if ((prev == "(" || prev == "&&" || prev == "||") && (after == ")" || after == "&&" || after == "||"))
+            // Remove parantheses around number..
+            if (Token::Match(tok->tokAt(-2), "%any% ( %num% )") && !tok->tokAt(-2)->isName())
+            {
+                tok = tok->previous();
+                tok->deleteThis();
+                tok->deleteNext();
+                ret = true;
+            }
+
+            if (Token::simpleMatch(tok->previous(), "( 0 ||") ||
+                Token::simpleMatch(tok->previous(), "|| 0 )") ||
+                Token::simpleMatch(tok->previous(), "( 1 &&") ||
+                Token::simpleMatch(tok->previous(), "&& 1 )"))
+            {
+                if (!Token::simpleMatch(tok->previous(), "("))
+                    tok = tok->previous();
+                tok->deleteThis();
+                tok->deleteThis();
+            }
+
+            if (Token::Match(tok, "%num% ==|!=|<=|>=|<|> %num%") &&
+                MathLib::isInt(tok->str()) &&
+                MathLib::isInt(tok->tokAt(2)->str()))
+            {
+                const std::string prev(tok->previous() ? tok->strAt(-1).c_str() : "");
+                const std::string after(tok->tokAt(3) ? tok->strAt(3).c_str() : "");
+                if ((prev == "(" || prev == "&&" || prev == "||") && (after == ")" || after == "&&" || after == "||"))
+                {
+                    const int op1(MathLib::toLongNumber(tok->str()));
+                    const std::string &cmp(tok->next()->str());
+                    const int op2(MathLib::toLongNumber(tok->tokAt(2)->str()));
+
+                    std::string result;
+
+                    if (cmp == "==")
+                        result = (op1 == op2) ? "1" : "0";
+                    else if (cmp == "!=")
+                        result = (op1 != op2) ? "1" : "0";
+                    else if (cmp == "<=")
+                        result = (op1 <= op2) ? "1" : "0";
+                    else if (cmp == ">=")
+                        result = (op1 >= op2) ? "1" : "0";
+                    else if (cmp == "<")
+                        result = (op1 < op2) ? "1" : "0";
+                    else if (cmp == ">")
+                        result = (op1 > op2) ? "1" : "0";
+
+                    tok->str(result);
+                    tok->deleteNext();
+                    tok->deleteNext();
+                }
+            }
+
+            if (Token::Match(tok->previous(), "[([,=] %num% <<|>> %num%"))
             {
                 const int op1(MathLib::toLongNumber(tok->str()));
-                const std::string &cmp(tok->next()->str());
                 const int op2(MathLib::toLongNumber(tok->tokAt(2)->str()));
+                int result;
 
-                std::string result;
+                if (tok->next()->str() == "<<")
+                    result = op1 << op2;
+                else
+                    result = op1 >> op2;
 
-                if (cmp == "==")
-                    result = (op1 == op2) ? "1" : "0";
-                else if (cmp == "!=")
-                    result = (op1 != op2) ? "1" : "0";
-                else if (cmp == "<=")
-                    result = (op1 <= op2) ? "1" : "0";
-                else if (cmp == ">=")
-                    result = (op1 >= op2) ? "1" : "0";
-                else if (cmp == "<")
-                    result = (op1 < op2) ? "1" : "0";
-                else if (cmp == ">")
-                    result = (op1 > op2) ? "1" : "0";
+                std::stringstream ss;
+                ss << result;
 
-                tok->str(result);
+                tok->str(ss.str());
                 tok->deleteNext();
                 tok->deleteNext();
             }
         }
 
-        if (Token::Match(tok->previous(), "[([,=] %num% <<|>> %num%"))
+        else if (tok->next() && tok->next()->isNumber())
         {
-            const int op1(MathLib::toLongNumber(tok->str()));
-            const int op2(MathLib::toLongNumber(tok->tokAt(2)->str()));
-            int result;
 
-            if (tok->next()->str() == "<<")
-                result = op1 << op2;
-            else
-                result = op1 >> op2;
+            // (1-2)
+            while (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*/]") ||
+                   Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/]") ||
+                   Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% <<|>>") ||
+                   Token::Match(tok, "<< %num% [+-*/] %num% <<"))
+            {
+                tok = tok->next();
 
-            std::stringstream ss;
-            ss << result;
+                // Don't simplify "%num% / 0"
+                if (Token::simpleMatch(tok->next(), "/ 0"))
+                    continue;
 
-            tok->str(ss.str());
-            tok->deleteNext();
-            tok->deleteNext();
+                // + and - are calculated after * and /
+                if (Token::Match(tok->next(), "[+-/]"))
+                {
+                    if (tok->previous()->str() == "*")
+                        continue;
+                    if (Token::Match(tok->tokAt(3), "[*/]"))
+                        continue;
+                }
+
+                if (Token::Match(tok->previous(), "- %num% - %num%"))
+                    tok->str(MathLib::add(tok->str(), tok->tokAt(2)->str()));
+                else if (Token::Match(tok->previous(), "- %num% + %num%"))
+                    tok->str(MathLib::subtract(tok->str(), tok->tokAt(2)->str()));
+                else
+                    tok->str(MathLib::calculate(tok->str(), tok->tokAt(2)->str(), tok->strAt(1)[0], this));
+
+                Token::eraseTokens(tok, tok->tokAt(3));
+
+                // evaluate "2 + 2 - 2 - 2"
+                // as (((2 + 2) - 2) - 2) = 0
+                // instead of ((2 + 2) - (2 - 2)) = 4
+                if (Token::Match(tok->next(), "[+-*/]"))
+                {
+                    tok = tok->previous();
+                    continue;
+                }
+
+                ret = true;
+            }
         }
     }
     return ret;
