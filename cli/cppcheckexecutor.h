@@ -21,6 +21,7 @@
 
 #include "errorlogger.h"
 #include "settings.h"
+#include <ctime>
 
 /**
  * This class works as an example of how CppCheck can be used in external
@@ -66,6 +67,8 @@ public:
     /** xml output of errors */
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
 
+    void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
+
     virtual void reportStatus(unsigned int index, unsigned int max);
 
 protected:
@@ -80,6 +83,13 @@ protected:
      * check() will setup this in the beginning of check().
      */
     Settings _settings;
+
+private:
+
+    /**
+     * Report progress time
+     */
+    std::time_t time1;
 };
 
 #endif // CPPCHECKEXECUTOR_H

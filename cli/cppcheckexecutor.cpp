@@ -25,7 +25,7 @@
 
 CppCheckExecutor::CppCheckExecutor()
 {
-
+    time1 = std::time(0);
 }
 
 CppCheckExecutor::~CppCheckExecutor()
@@ -85,6 +85,32 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
 void CppCheckExecutor::reportOut(const std::string &outmsg)
 {
     std::cout << outmsg << std::endl;
+}
+
+void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const unsigned int value)
+{
+    (void)filename;
+
+    // Report progress messages every 10 seconds
+    const std::time_t time2 = std::time(NULL);
+    if (time2 >= (time1 + 1))
+    {
+        time1 = time2;
+
+        // current time in the format "Www Mmm dd hh:mm:ss yyyy"
+        const std::string str(std::ctime(&time2));
+
+        // format a progress message
+        std::ostringstream ostr;
+        ostr << "progress: "
+             << stage
+             << " " << int(value) << "%";
+        if (_settings._verbose)
+            ostr << " time=" << str.substr(11, 8);
+
+        // Report progress message
+        reportOut(ostr.str());
+    }
 }
 
 void CppCheckExecutor::reportStatus(unsigned int index, unsigned int max)

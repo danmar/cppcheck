@@ -28,7 +28,6 @@
 #include <sstream>
 #include <vector>
 #include <map>
-#include <ctime>
 
 /// @addtogroup Core
 /// @{
@@ -157,13 +156,13 @@ private:
      */
     virtual void reportOut(const std::string &outmsg);
 
-    void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
-
     unsigned int exitcode;
     std::list<std::string> _errorList;
     std::ostringstream _errout;
     Settings _settings;
     std::vector<std::string> _filenames;
+
+    void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
 
     /** @brief Key is file name, and value is the content of the file */
     std::map<std::string, std::string> _fileContents;
@@ -173,8 +172,6 @@ private:
 
     /** @brief Current preprocessor configuration */
     std::string     cfg;
-
-    std::time_t     time1;
 };
 
 /// @}
