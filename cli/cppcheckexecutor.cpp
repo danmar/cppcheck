@@ -93,7 +93,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 
     // Report progress messages every 10 seconds
     const std::time_t time2 = std::time(NULL);
-    if (time2 >= (time1 + 1))
+    if (time2 >= (time1 + 10))
     {
         time1 = time2;
 
