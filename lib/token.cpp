@@ -297,10 +297,10 @@ int Token::firstWordEquals(const char *str, const char *word)
 {
     for (;;)
     {
-		if (*str != *word)
-		{
-			if (*str == ' ' && *word == 0)
-				return 0;
+        if (*str != *word)
+        {
+            if (*str == ' ' && *word == 0)
+                return 0;
             return 1;
         }
         else if (*str == 0)
