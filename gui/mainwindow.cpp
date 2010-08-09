@@ -232,15 +232,15 @@ void MainWindow::DoCheckFiles(const QStringList &files)
 
     mThread->SetFiles(fileNames);
     QDir inf(mCurrentDirectory);
-    const QString absDirectory = inf.absolutePath();
-    mSettings->setValue(SETTINGS_CHECK_PATH, absDirectory);
+    const QString checkPath = inf.canonicalPath();
+    mSettings->setValue(SETTINGS_CHECK_PATH, checkPath);
     EnableCheckButtons(false);
     mUI.mActionSettings->setEnabled(false);
     mUI.mActionOpenXML->setEnabled(false);
     mUI.mActionNewProjectFile->setEnabled(false);
     mUI.mActionOpenProjectFile->setEnabled(false);
 
-    mUI.mResults->SetCheckDirectory(absDirectory);
+    mUI.mResults->SetCheckDirectory(checkPath);
 
     Settings checkSettings = GetCppcheckSettings();
     mThread->Check(checkSettings, false);
