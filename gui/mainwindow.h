@@ -252,27 +252,11 @@ protected:
     void DoCheckFiles(const QStringList &files);
 
     /**
-    * @brief Get all files recursively from given path
-    *
-    * @param path Path to get files from
-    * @return List of file paths
-    */
-    QStringList GetFilesRecursively(const QString &path);
-
-    /**
     * @brief Get our default cppcheck settings and read project file.
     *
     * @return Default cppcheck settings
     */
     Settings GetCppcheckSettings();
-
-    /**
-    * @brief Removes all unaccepted (by cppcheck core) files from the list
-    *
-    * @param list List to remove unaccepted files from
-    * @return List of files that are all accepted by cppcheck core
-    */
-    QStringList RemoveUnacceptedFiles(const QStringList &list);
 
     /**
     * @brief Load program settings

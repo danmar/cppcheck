@@ -34,7 +34,7 @@
 #include "project.h"
 #include "report.h"
 #include "logview.h"
-#include "../lib/filelister.h"
+#include "filelist.h"
 
 // HTMLHelp is only available in Windows
 #ifdef WIN32
@@ -210,13 +210,9 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     }
     ClearResults();
 
-    QStringList fileNames;
-    QString selection;
-
-    foreach(selection, files)
-    {
-        fileNames << RemoveUnacceptedFiles(GetFilesRecursively(selection));
-    }
+    FileList pathList;
+    pathList.AddPathList(files);
+    QStringList fileNames = pathList.GetFileList();
 
     mUI.mResults->Clear();
     mThread->ClearFiles();
@@ -234,7 +230,7 @@ void MainWindow::DoCheckFiles(const QStringList &files)
 
     mUI.mResults->CheckingStarted(fileNames.count());
 
-    mThread->SetFiles(RemoveUnacceptedFiles(fileNames));
+    mThread->SetFiles(fileNames);
     QDir inf(mCurrentDirectory);
     const QString absDirectory = inf.absolutePath();
     mSettings->setValue(SETTINGS_CHECK_PATH, absDirectory);
@@ -357,43 +353,6 @@ Settings MainWindow::GetCppcheckSettings()
     if (result._jobs <= 0)
     {
         result._jobs = 1;
-    }
-
-    return result;
-}
-
-QStringList MainWindow::GetFilesRecursively(const QString &path)
-{
-    QFileInfo info(path);
-    QStringList list;
-
-    if (info.isDir())
-    {
-        QDirIterator it(path, QDirIterator::Subdirectories);
-
-        while (it.hasNext())
-        {
-            list << it.next();
-        }
-    }
-    else
-    {
-        list << path;
-    }
-
-    return list;
-}
-
-QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
-{
-    QStringList result;
-    QString str;
-    foreach(str, list)
-    {
-        if (getFileLister()->acceptFile(str.toStdString()))
-        {
-            result << str;
-        }
     }
 
     return result;

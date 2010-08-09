@@ -64,7 +64,8 @@ HEADERS += mainwindow.h \
            xmlreport.h \
            translationhandler.h \
            csvreport.h \
-           logview.h
+           logview.h \
+           filelist.h
 
 SOURCES += main.cpp \
            mainwindow.cpp\
@@ -87,7 +88,8 @@ SOURCES += main.cpp \
            xmlreport.cpp \
            translationhandler.cpp \
            csvreport.cpp \
-           logview.cpp
+           logview.cpp \
+           filelist.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS
