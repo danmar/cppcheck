@@ -180,8 +180,10 @@ private:
               isInline(false),
               isConst(false),
               isVirtual(false),
+              isPure(false),
               isStatic(false),
               isFriend(false),
+              isExplicit(false),
               isOperator(false),
               type(Function)
         {
@@ -194,10 +196,18 @@ private:
         bool isInline;         // implementation in class definition
         bool isConst;          // is const
         bool isVirtual;        // is virtual
+        bool isPure;           // is pure virtual
         bool isStatic;         // is static
         bool isFriend;         // is friend
+        bool isExplicit;       // is explicit
         bool isOperator;       // is operator
         Type type;             // constructor, destructor, ...
+    };
+
+    struct BaseInfo
+    {
+        AccessControl access;  // public/protected/private
+        std::string name;
     };
 
     struct SpaceInfo
@@ -210,7 +220,7 @@ private:
         unsigned int numConstructors;
         std::list<Func> functionList;
         Var *varlist;
-        std::vector<std::string> derivedFrom;
+        std::vector<BaseInfo> derivedFrom;
         SpaceInfo *nest;
         AccessControl access;
     };
@@ -238,11 +248,13 @@ private:
      */
     Var *getVarList(const Token *tok1);
 
-    bool isMemberVar(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok);
-    bool checkConstFunc(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok);
+    bool isMemberVar(const std::string &classname, const std::vector<BaseInfo> &derivedFrom, const Var *varlist, const Token *tok);
+    bool checkConstFunc(const std::string &classname, const std::vector<BaseInfo> &derivedFrom, const Var *varlist, const Token *tok);
+
+    static const Token *initBaseInfo(const Token *tok, std::vector<BaseInfo> &derivedFrom);
 
     /** @brief check if this function is virtual in the base classes */
-    bool isVirtual(const std::vector<std::string> &derivedFrom, const Token *functionToken) const;
+    bool isVirtual(const std::vector<BaseInfo> &derivedFrom, const Token *functionToken) const;
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);

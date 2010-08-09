@@ -84,6 +84,7 @@ private:
         TEST_CASE(noConstructor2);
         TEST_CASE(noConstructor3);
         TEST_CASE(noConstructor4);
+        TEST_CASE(noConstructor5);
 
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEqRetRefThis1);
@@ -516,7 +517,7 @@ private:
             "class A\n"
             "{\n"
             "public:\n"
-            "    A & operator=(const A &)\n"
+            "    A & operator=(const A &);\n"
             "};\n"
             "A & A::operator=(const A &a) { return *this; }\n");
         ASSERT_EQUALS("", errout.str());
@@ -529,7 +530,7 @@ private:
             "    char *s;\n"
             "    A & operator=(const A &);\n"
             "};\n"
-            "A & operator=(const A &a)\n"
+            "A & A::operator=(const A &a)\n"
             "{\n"
             "    if (&a != this)\n"
             "    {\n"
@@ -548,7 +549,7 @@ private:
             "    char *s;\n"
             "    A & operator=(const A &);\n"
             "};\n"
-            "A & operator=(const A &a)\n"
+            "A & A::operator=(const A &a)\n"
             "{\n"
             "    free(s);\n"
             "    s = strdup(a.s);\n"
@@ -2207,6 +2208,15 @@ private:
                            "public:\n"
                            "    int foobar;\n"
                            "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noConstructor5()
+    {
+        checkNoConstructor("namespace Foo\n"
+                           "{\n"
+                           "    int i;\n"
+                           "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

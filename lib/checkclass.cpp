@@ -68,32 +68,7 @@ void CheckClass::createSymbolDatabase()
             new_info->classDef = tok;
 
             // goto initial '{'
-            const Token *tok2 = tok->tokAt(2);
-            while (tok2 && tok2->str() != "{")
-            {
-                // check for base classes
-                if (Token::Match(tok2, ":|, public|protected|private"))
-                {
-                    // jump to base class name
-                    tok2 = tok2->tokAt(2);
-
-                    std::string    derivedFrom;
-
-                    // handle derived base classes
-                    while (Token::Match(tok2, "%var% ::"))
-                    {
-                        derivedFrom += tok2->str();
-                        derivedFrom += " :: ";
-                        tok2 = tok2->tokAt(2);
-                    }
-
-                    derivedFrom += tok2->str();
-
-                    // save pattern for base class name
-                    new_info->derivedFrom.push_back(derivedFrom);
-                }
-                tok2 = tok2->next();
-            }
+            const Token *tok2 = initBaseInfo(tok, new_info->derivedFrom);
 
             new_info->classStart = tok2;
             new_info->classEnd = new_info->classStart->link();
@@ -158,11 +133,15 @@ void CheckClass::createSymbolDatabase()
                     {
                         if (function.tokenDef->previous()->str() == "~")
                             function.type = Func::Destructor;
-                        else if (Token::Match(function.tokenDef, "%var% ( const %var% & %var%| )") &&
+                        else if ((Token::Match(function.tokenDef, "%var% ( const %var% & )") ||
+                                  Token::Match(function.tokenDef, "%var% ( const %var% & %var% )")) &&
                                  function.tokenDef->strAt(3) == info->className)
                             function.type = Func::CopyConstructor;
                         else
                             function.type = Func::Constructor;
+
+                        if (function.tokenDef->previous()->str() == "explicit")
+                            function.isExplicit = true;
                     }
 
                     const Token *tok1 = tok;
@@ -197,6 +176,10 @@ void CheckClass::createSymbolDatabase()
                     // const function
                     if (function.tokenDef->next()->link()->next()->str() == "const")
                         function.isConst = true;
+
+                    // pure virtual function
+                    if (Token::Match(function.tokenDef->next()->link(), ") const| = 0 ;"))
+                        function.isPure = true;
 
                     // count the number of constructors
                     if (function.type == Func::Constructor || function.type == Func::CopyConstructor)
@@ -313,6 +296,61 @@ CheckClass::~CheckClass()
 }
 
 //---------------------------------------------------------------------------
+
+const Token *CheckClass::initBaseInfo(const Token *tok, std::vector<BaseInfo> &derivedFrom)
+{
+    // goto initial '{'
+    const Token *tok2 = tok->tokAt(2);
+    while (tok2 && tok2->str() != "{")
+    {
+        // check for base classes
+        if (Token::Match(tok2, ":|,"))
+        {
+            BaseInfo base;
+
+            tok2 = tok2->next();
+
+            if (tok2->str() == "public")
+            {
+                base.access = Public;
+                tok2 = tok2->next();
+            }
+            else if (tok2->str() == "protected")
+            {
+                base.access = Protected;
+                tok2 = tok2->next();
+            }
+            else if (tok2->str() == "private")
+            {
+                base.access = Private;
+                tok2 = tok2->next();
+            }
+            else
+            {
+                if (tok->str() == "class")
+                    base.access = Private;
+                else if (tok->str() == "struct")
+                    base.access = Public;
+            }
+
+            // handle derived base classes
+            while (Token::Match(tok2, "%var% ::"))
+            {
+                base.name += tok2->str();
+                base.name += " :: ";
+                tok2 = tok2->tokAt(2);
+            }
+
+            base.name += tok2->str();
+
+            // save pattern for base class name
+            derivedFrom.push_back(base);
+        }
+        tok2 = tok2->next();
+    }
+
+    return tok2;
+}
 
 CheckClass::Var *CheckClass::getVarList(const Token *tok1)
 {
@@ -842,6 +880,10 @@ void CheckClass::constructors()
     {
         SpaceInfo *info = i->second;
 
+        // don't check namespaces
+        if (info->isNamespace)
+            continue;
+
         // There are no constructors.
         if (info->numConstructors == 0)
         {
@@ -1276,33 +1318,6 @@ void CheckClass::operatorEqRetRefThis()
 // assignment to self.
 //---------------------------------------------------------------------------
 
-// match two lists of tokens
-static bool nameMatch(const Token * tok1, const Token * tok2, int length)
-{
-    for (int i = 0; i < length; i++)
-    {
-        if (tok1->tokAt(i) == 0 || tok2->tokAt(i) == 0)
-            return false;
-
-        if (tok1->tokAt(i)->str() != tok2->tokAt(i)->str())
-            return false;
-    }
-
-    return true;
-}
-
-// create a class name from a list of tokens
-static void nameStr(const Token * name, int length, std::string & str)
-{
-    for (int i = 0; i < length; i++)
-    {
-        if (i != 0)
-            str += " ";
-
-        str += name->tokAt(i)->str();
-    }
-}
-
 static bool hasDeallocation(const Token * first, const Token * last)
 {
     // This function is called when no simple check was found for assignment
@@ -1408,162 +1423,62 @@ static bool hasAssignSelf(const Token * first, const Token * last, const Token *
     return false;
 }
 
-static bool hasMultipleInheritanceInline(const Token * tok)
-{
-    while (tok && tok->str() != "{")
-    {
-        if (tok->str() == ",")
-            return true;
-
-        tok = tok->next();
-    }
-
-    return false;
-}
-
-static bool hasMultipleInheritanceGlobal(const Token * start, const std::string & name)
-{
-    const Token *tok = start;
-    std::string pattern;
-    std::string className = name;
-
-    // check for nested classes
-    while (className.find("::") != std::string::npos)
-    {
-        std::string tempName;
-
-        // there is probably a better way to do this
-        while (className[0] != ' ')
-        {
-            tempName += className[0];
-            className.erase(0, 1);
-        }
-
-        className.erase(0, 4);
-
-        pattern = "class|struct " + tempName;
-
-        tok = Token::findmatch(tok, pattern.c_str());
-    }
-
-    pattern = "class|struct " + className;
-
-    tok = Token::findmatch(tok, pattern.c_str());
-
-    return hasMultipleInheritanceInline(tok);
-}
-
 void CheckClass::operatorEqToSelf()
 {
     if (!_settings->_checkCodingStyle)
         return;
 
-    const Token *tok2 = _tokenizer->tokens();
-    const Token *tok;
+    createSymbolDatabase();
 
-    while ((tok = Token::findmatch(tok2, "operator = (")) != NULL)
+    std::multimap<std::string, SpaceInfo *>::const_iterator i;
+
+    for (i = spaceInfoMMap.begin(); i != spaceInfoMMap.end(); ++i)
     {
-        const Token *tok1 = tok;
+        const SpaceInfo *info = i->second;
+        std::list<Func>::const_iterator it;
 
-        // make sure this is an assignment operator
-        if (tok1->tokAt(-2) && Token::Match(tok1->tokAt(-2), " %type% ::"))
+        // skip classes with multiple inheritance
+        if (info->derivedFrom.size() > 1)
+            continue;
+
+        for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
         {
-            int nameLength = 1;
-
-            tok1 = tok1->tokAt(-2);
-
-            // check backwards for proper function signature
-            while (tok1->tokAt(-2) && Token::Match(tok1->tokAt(-2), " %type% ::"))
+            if (it->type == Func::OperatorEqual && it->hasBody)
             {
-                tok1 = tok1->tokAt(-2);
-                nameLength += 2;
-            }
-
-            const Token *className = tok1;
-            std::string nameString;
-
-            nameStr(className, nameLength, nameString);
-
-            if (!hasMultipleInheritanceGlobal(_tokenizer->tokens(), nameString))
-            {
-                if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
+                // make sure return signature is correct
+                if (Token::Match(it->tokenDef->tokAt(-4), ";|}|{|public:|protected:|private: %type% &") &&
+                    it->tokenDef->strAt(-3) == info->className)
                 {
-                    // check returned class name
-                    if (tok1->tokAt(-(1 + nameLength)) && nameMatch(className, tok1->tokAt(-(1 + nameLength)), nameLength))
+                    // check for proper function parameter signature
+                    if ((Token::Match(it->tokenDef->next(), "( const %var% & )") ||
+                         Token::Match(it->tokenDef->next(), "( const %var% & %var% )")) &&
+                        it->tokenDef->strAt(3) == info->className)
                     {
-                        // check forward for proper function signature
-                        std::string pattern = "const " + nameString + " & %var% )";
-                        if (Token::Match(tok->tokAt(3), pattern.c_str()))
+                        // find the parameter name
+                        const Token *rhs = it->token;
+                        while (rhs->str() != "&")
+                            rhs = rhs->next();
+                        rhs = rhs->next();
+
+                        // find the ')'
+                        const Token *tok = it->token->next()->link();
+                        const Token *tok1 = tok;
+
+                        if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
                         {
-                            const Token * rhs = tok->tokAt(5 + nameLength);
+                            const Token *first = tok1->tokAt(1);
+                            const Token *last = first->link();
 
-                            if (nameMatch(className, tok->tokAt(4), nameLength))
+                            if (!hasAssignSelf(first, last, rhs))
                             {
-                                tok1 = tok->tokAt(2)->link();
-
-                                if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
-                                {
-                                    const Token *first = tok1->tokAt(1);
-                                    const Token *last = first->link();
-
-                                    if (!hasAssignSelf(first, last, rhs))
-                                    {
-                                        if (hasDeallocation(first, last))
-                                            operatorEqToSelfError(tok);
-                                    }
-                                }
+                                if (hasDeallocation(first, last))
+                                    operatorEqToSelfError(tok);
                             }
                         }
                     }
                 }
             }
         }
-        else
-        {
-            tok1 = tok;
-
-            // check backwards for proper function signature
-            if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
-            {
-                const Token *className = 0;
-                while (tok1 && !Token::Match(tok1, "class|struct %var%"))
-                    tok1 = tok1->previous();
-
-                if (Token::Match(tok1, "struct|class %var%"))
-                    className = tok1->tokAt(1);
-
-                if (!hasMultipleInheritanceInline(tok1))
-                {
-                    if (Token::simpleMatch(tok->tokAt(-2), className->str().c_str()))
-                    {
-                        // check forward for proper function signature
-                        if (Token::Match(tok->tokAt(3), "const %type% & %var% )"))
-                        {
-                            const Token * rhs = tok->tokAt(6);
-
-                            if (tok->tokAt(4)->str() == className->str())
-                            {
-                                tok1 = tok->tokAt(2)->link();
-
-                                if (tok1 && Token::simpleMatch(tok1->next(), "{"))
-                                {
-                                    const Token *first = tok1->next();
-                                    const Token *last = first->link();
-
-                                    if (!hasAssignSelf(first, last, rhs))
-                                    {
-                                        if (hasDeallocation(first, last))
-                                            operatorEqToSelfError(tok);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        tok2 = tok->next();
     }
 }
 //---------------------------------------------------------------------------
@@ -1744,19 +1659,19 @@ void CheckClass::thisSubtraction()
 //---------------------------------------------------------------------------
 
 // check if this function is defined virtual in the base classes
-bool CheckClass::isVirtual(const std::vector<std::string> &derivedFrom, const Token *functionToken) const
+bool CheckClass::isVirtual(const std::vector<BaseInfo> &derivedFrom, const Token *functionToken) const
 {
     // check each base class
     for (unsigned int i = 0; i < derivedFrom.size(); ++i)
     {
         std::string className;
 
-        if (derivedFrom[i].find("::") != std::string::npos)
+        if (derivedFrom[i].name.find("::") != std::string::npos)
         {
             /** @todo handle nested base classes and namespaces */
         }
         else
-            className = derivedFrom[i];
+            className = derivedFrom[i].name;
 
         std::string classPattern = std::string("class|struct ") + className + std::string(" {|:");
 
@@ -1766,34 +1681,8 @@ bool CheckClass::isVirtual(const std::vector<std::string> &derivedFrom, const To
         // find the function in the base class
         if (classToken)
         {
-            std::vector<std::string> baseList;
-            const Token * tok = classToken;
-
-            while (tok->str() != "{")
-            {
-                // check for base classes
-                if (Token::Match(tok, ":|, public|protected|private"))
-                {
-                    // jump to base class name
-                    tok = tok->tokAt(2);
-
-                    std::string    base;
-
-                    // handle nested base classea and namespacess
-                    while (Token::Match(tok, "%var% ::"))
-                    {
-                        base += tok->str();
-                        base += " :: ";
-                        tok = tok->tokAt(2);
-                    }
-
-                    base += tok->str();
-
-                    // save pattern for base class name
-                    baseList.push_back(base);
-                }
-                tok = tok->next();
-            }
+            std::vector<BaseInfo> baseList;
+            const Token *tok = initBaseInfo(classToken, baseList);
 
             tok = tok->next();
 
@@ -1962,7 +1851,7 @@ void CheckClass::checkConst()
     }
 }
 
-bool CheckClass::isMemberVar(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok)
+bool CheckClass::isMemberVar(const std::string &classname, const std::vector<BaseInfo> &derivedFrom, const Var *varlist, const Token *tok)
 {
     while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:|return|:|?"))
     {
@@ -1998,12 +1887,12 @@ bool CheckClass::isMemberVar(const std::string &classname, const std::vector<std
         {
             std::string className;
 
-            if (derivedFrom[i].find("::") != std::string::npos)
+            if (derivedFrom[i].name.find("::") != std::string::npos)
             {
                 /** @todo handle nested base classes and namespaces */
             }
             else
-                className = derivedFrom[i];
+                className = derivedFrom[i].name;
 
             std::string classPattern = std::string("class|struct ") + className + std::string(" {|:");
 
@@ -2013,34 +1902,9 @@ bool CheckClass::isMemberVar(const std::string &classname, const std::vector<std
             // find the function in the base class
             if (classToken)
             {
-                std::vector<std::string> baseList;
-                const Token * tok1 = classToken;
+                std::vector<BaseInfo> baseList;
 
-                while (tok1->str() != "{")
-                {
-                    // check for base classes
-                    if (Token::Match(tok1, ":|, public|protected|private"))
-                    {
-                        // jump to base class name
-                        tok1 = tok1->tokAt(2);
-
-                        std::string    base;
-
-                        // handle nested base classea and namespacess
-                        while (Token::Match(tok1, "%var% ::"))
-                        {
-                            base += tok1->str();
-                            base += " :: ";
-                            tok1 = tok1->tokAt(2);
-                        }
-
-                        base += tok1->str();
-
-                        // save pattern for base class name
-                        baseList.push_back(base);
-                    }
-                    tok1 = tok1->next();
-                }
+                initBaseInfo(classToken, baseList);
 
                 // Get class variables...
                 Var *varlist1 = getVarList(classToken);
@@ -2054,7 +1918,7 @@ bool CheckClass::isMemberVar(const std::string &classname, const std::vector<std
     return false;
 }
 
-bool CheckClass::checkConstFunc(const std::string &classname, const std::vector<std::string> &derivedFrom, const Var *varlist, const Token *tok)
+bool CheckClass::checkConstFunc(const std::string &classname, const std::vector<BaseInfo> &derivedFrom, const Var *varlist, const Token *tok)
 {
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
