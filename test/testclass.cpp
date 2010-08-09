@@ -444,7 +444,6 @@ private:
 
         // Check..
         Settings settings;
-        settings.inconclusive = true;
         settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.operatorEqToSelf();
@@ -1207,6 +1206,7 @@ private:
 
         // Check..
         Settings settings;
+        settings.inconclusive = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.virtualDestructor();
     }
@@ -1228,6 +1228,15 @@ private:
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : public Base { public: ~Derived() { (void)11; } };");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
+
+        checkVirtualDestructor("class Base { };\n"
+                               "class Derived : protected Base { public: ~Derived() { (void)11; } };");
+        TODO_ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        checkVirtualDestructor("class Base { };\n"
+                               "class Derived : private Base { public: ~Derived() { (void)11; } };");
         ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Base { };\n"
@@ -1241,11 +1250,16 @@ private:
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() { (void)11; } };");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
+
+        checkVirtualDestructor("class Base { public: ~Base(); };\n"
+                               "class Derived : protected Base { public: ~Derived() { (void)11; } };");
+        TODO_ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
         ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { public: ~Derived() { (void)11; } };");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
     }
 
     void virtualDestructor4()
@@ -1403,7 +1417,7 @@ private:
                                " public:\n"
                                " ~B(){int a;}\n"
                                "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Class AA<double> which is inherited by class B does not have a virtual destructor\n", errout.str());
     }
 
     void checkUninitVar(const char code[])
@@ -1419,7 +1433,6 @@ private:
 
         // Check..
         Settings settings;
-        settings.inconclusive = true;
         settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
@@ -2338,7 +2351,6 @@ private:
         // Check..
         Settings settings;
         settings._checkCodingStyle = true;
-        settings.inconclusive = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.thisSubtraction();
     }
