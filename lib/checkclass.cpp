@@ -229,7 +229,7 @@ void CheckClass::createSymbolDatabase()
                                 while (found->next()->str() != "(")
                                     found = found->next();
 
-                                if (Token::Match(found->next()->link(), ") const| {"))
+                                if (Token::Match(found->next()->link(), function.isConst ? ") const {" : ") {"))
                                 {
                                     if (argsMatch(funcArgs, found->tokAt(2), classPath, depth))
                                     {

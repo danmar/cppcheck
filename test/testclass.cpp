@@ -133,6 +133,7 @@ private:
         TEST_CASE(const26); // ticket #1847
         TEST_CASE(const27); // ticket #1882
         TEST_CASE(const28); // ticket #1883
+        TEST_CASE(const29); // ticket #1922
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3629,6 +3630,26 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void const27() // ticket #1882
+    {
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){m_d=1.0; m_iRealVal=2.0;}\n"
+                   "    double dGetValue();\n"
+                   "private:\n"
+                   "    double m_d;\n"
+                   "    double m_iRealVal;\n"
+                   "};\n"
+                   "double  A::dGetValue() {\n"
+                   "    double dRet = m_iRealVal;\n"
+                   "    if( m_d != 0 )\n"
+                   "        return dRet / m_d;\n"
+                   "    return dRet;\n"
+                   "};\n"
+                  );
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (style) The function 'A::dGetValue' can be const\n", errout.str());
+    }
+
     void const28() // ticket #1883
     {
         checkConst("class P {\n"
@@ -3669,24 +3690,30 @@ private:
 
     }
 
-    void const27() // ticket #1882
+    void const29() // ticket #1922
     {
-        checkConst("class A {\n"
-                   "public:\n"
-                   "    A(){m_d=1.0; m_iRealVal=2.0;}\n"
-                   "    double dGetValue();\n"
-                   "private:\n"
-                   "    double m_d;\n"
-                   "    double m_iRealVal;\n"
+        checkConst("class test {\n"
+                   "  public:\n"
+                   "    test();\n"
+                   "    const char* get() const;\n"
+                   "    char* get();\n"
+                   "  private:\n"
+                   "    char* value_;\n"
                    "};\n"
-                   "double  A::dGetValue() {\n"
-                   "    double dRet = m_iRealVal;\n"
-                   "    if( m_d != 0 )\n"
-                   "        return dRet / m_d;\n"
-                   "    return dRet;\n"
-                   "};\n"
+                   "test::test()\n"
+                   "{\n"
+                   "  value_ = 0;\n"
+                   "}\n"
+                   "const char* test::get() const\n"
+                   "{\n"
+                   "  return value_;\n"
+                   "}\n"
+                   "char* test::get()\n"
+                   "{\n"
+                   "  return value_;\n"
+                   "}\n"
                   );
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (style) The function 'A::dGetValue' can be const\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const
