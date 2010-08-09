@@ -3883,8 +3883,6 @@ private:
                    "public:\n"
                    "    Z(int x, int y, int z) : Y(x, y), z(z) { }\n"
                    "    int getZ() { return z; }\n"
-                   "};\n"
-                   "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:5]: (style) The function 'X::getX' can be const\n"
                       "[test.cpp:11]: (style) The function 'Y::getY' can be const\n"
