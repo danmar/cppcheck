@@ -140,6 +140,7 @@ private:
         TEST_CASE(varid15);
         TEST_CASE(varid16);
         TEST_CASE(varid17); // ticket #1810
+        TEST_CASE(varid18);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -2232,6 +2233,22 @@ private:
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
+    void varid18()
+    {
+        const std::string code("char foo(char c)\n"
+                               "{\n"
+                               "    bar::c = c;\n"
+                               "}\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: char foo ( char c@1 )\n"
+                                   "2: {\n"
+                                   "3: bar :: c = c@1 ;\n"
+                                   "4: }\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
 
     void varidStl()
     {
@@ -2634,14 +2651,14 @@ private:
                                    "3: public:\n"
                                    "4: static char buf@1 [ 20 ] ;\n"
                                    "5: } ;\n"
-                                   "6: char A :: buf [ 20 ] ;\n"
+                                   "6: char A :: buf@1 [ 20 ] ;\n"
                                    "7: int main ( )\n"
                                    "8: {\n"
                                    "9: char buf@2 [ 2 ] ;\n"
                                    "10: A :: buf@1 [ 10 ] = 0 ;\n"
                                    "11: }\n");
 
-        ASSERT_EQUALS(expected, actual);
+        TODO_ASSERT_EQUALS(expected, actual);
     }
 
     void varidclass7()
@@ -2660,7 +2677,7 @@ private:
                                    "4: A :: buf [ 10 ] = 0 ;\n"
                                    "5: }\n");
 
-        TODO_ASSERT_EQUALS(expected, actual);
+        ASSERT_EQUALS(expected, actual);
     }
 
     void varidclass8()

@@ -2833,7 +2833,7 @@ void Tokenizer::setVarId()
             bool funcDeclaration = false;
             for (tok2 = tok->next(); tok2; tok2 = tok2->next())
             {
-                if (!dot && tok2->str() == varname && !Token::Match(tok2->previous(), "struct|union"))
+                if (!dot && tok2->str() == varname && !Token::Match(tok2->previous(), "struct|union|::"))
                     tok2->varId(_varId);
                 else if (tok2->str() == "{")
                     ++indentlevel;
