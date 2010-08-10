@@ -204,10 +204,13 @@ private:
         Type type;             // constructor, destructor, ...
     };
 
+    struct SpaceInfo;
+
     struct BaseInfo
     {
         AccessControl access;  // public/protected/private
         std::string name;
+        SpaceInfo *spaceInfo;
     };
 
     struct SpaceInfo
@@ -248,13 +251,13 @@ private:
      */
     Var *getVarList(const Token *tok1);
 
-    bool isMemberVar(const std::string &classname, const std::vector<BaseInfo> &derivedFrom, const Var *varlist, const Token *tok);
-    bool checkConstFunc(const std::string &classname, const std::vector<BaseInfo> &derivedFrom, const Var *varlist, const Token *tok);
+    bool isMemberVar(const SpaceInfo *info, const Token *tok);
+    bool checkConstFunc(const SpaceInfo *info, const Token *tok);
 
-    static const Token *initBaseInfo(const Token *tok, std::vector<BaseInfo> &derivedFrom);
+    const Token *initBaseInfo(SpaceInfo *info, const Token *tok);
 
     /** @brief check if this function is virtual in the base classes */
-    bool isVirtual(const std::vector<BaseInfo> &derivedFrom, const Token *functionToken) const;
+    bool isVirtual(const SpaceInfo *info, const Token *functionToken) const;
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
