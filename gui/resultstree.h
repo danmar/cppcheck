@@ -187,7 +187,7 @@ protected:
     *
     * @param severity Severity string
     */
-    QString SeverityToIcon(const QString &severity);
+    QString SeverityToIcon(const QString &severity) const;
 
     /**
     * @brief Helper function to open an error within target with application*
@@ -247,7 +247,7 @@ protected:
     * @param severity Error severity string
     * @return Severity converted to ShowTypes value
     */
-    ShowTypes SeverityToShowType(const QString &severity);
+    ShowTypes SeverityToShowType(const QString &severity) const;
 
     /**
     * @brief Convert ShowType to severity string

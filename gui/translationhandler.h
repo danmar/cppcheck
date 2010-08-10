@@ -33,8 +33,8 @@ class TranslationHandler : QObject
 public:
     TranslationHandler(QObject *parent);
     virtual ~TranslationHandler();
-    const QStringList GetNames();
-    const QStringList GetFiles();
+    const QStringList GetNames() const;
+    const QStringList GetFiles() const;
     bool SetLanguage(const int index, QString &error);
     int GetCurrentLanguage() const;
     int SuggestLanguage() const;

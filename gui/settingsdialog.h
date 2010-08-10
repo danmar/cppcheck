@@ -146,7 +146,7 @@ protected:
     * @param yes value to convert
     * @return value converted to Qt::CheckState
     */
-    Qt::CheckState BoolToCheckState(bool yes);
+    Qt::CheckState BoolToCheckState(bool yes) const;
 
     /**
     * @brief Converts Qt::CheckState to bool
@@ -154,7 +154,7 @@ protected:
     * @param state Qt::CheckState to convert
     * @return converted value
     */
-    bool CheckStateToBool(Qt::CheckState state);
+    bool CheckStateToBool(Qt::CheckState state) const;
 
 
     /**

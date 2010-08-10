@@ -210,7 +210,7 @@ ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
     return (ShowTypes)value;
 }
 
-ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
+ShowTypes ResultsTree::SeverityToShowType(const QString & severity) const
 {
     if (severity == "error")
         return SHOW_ERRORS;
@@ -610,7 +610,7 @@ void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
     }
 }
 
-QString ResultsTree::SeverityToIcon(const QString &severity)
+QString ResultsTree::SeverityToIcon(const QString &severity) const
 {
     if (severity == "possible error")
         return ":images/dialog-warning.png";

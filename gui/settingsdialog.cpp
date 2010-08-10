@@ -77,7 +77,7 @@ SettingsDialog::~SettingsDialog()
     SaveSettings();
 }
 
-Qt::CheckState SettingsDialog::BoolToCheckState(bool yes)
+Qt::CheckState SettingsDialog::BoolToCheckState(bool yes) const
 {
     if (yes)
     {
@@ -86,7 +86,7 @@ Qt::CheckState SettingsDialog::BoolToCheckState(bool yes)
     return Qt::Unchecked;
 }
 
-bool SettingsDialog::CheckStateToBool(Qt::CheckState state)
+bool SettingsDialog::CheckStateToBool(Qt::CheckState state) const
 {
     if (state == Qt::Checked)
     {

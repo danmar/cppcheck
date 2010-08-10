@@ -62,12 +62,12 @@ TranslationHandler::~TranslationHandler()
 {
 }
 
-const QStringList TranslationHandler::GetNames()
+const QStringList TranslationHandler::GetNames() const
 {
     return mNames;
 }
 
-const QStringList TranslationHandler::GetFiles()
+const QStringList TranslationHandler::GetFiles() const
 {
     return mFiles;
 }

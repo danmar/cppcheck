@@ -1831,7 +1831,7 @@ class ExecutionPathBufferOverrun : public ExecutionPath
 public:
     /** Startup constructor */
     ExecutionPathBufferOverrun(Check *c, const std::map<unsigned int, CheckBufferOverrun::ArrayInfo> &arrayinfo)
-        : ExecutionPath(c, 0), arrayInfo(arrayinfo)
+        : ExecutionPath(c, 0), arrayInfo(arrayinfo), value(0)
     {
     }
 
