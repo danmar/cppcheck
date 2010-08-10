@@ -134,6 +134,7 @@ private:
         TEST_CASE(const27); // ticket #1882
         TEST_CASE(const28); // ticket #1883
         TEST_CASE(const29); // ticket #1922
+        TEST_CASE(const30);
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3723,8 +3724,131 @@ private:
                    "char* test::get()\n"
                    "{\n"
                    "  return value_;\n"
-                   "}\n"
-                  );
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const30()
+    {
+        // check for false negatives
+        checkConst("class Base {\n"
+                   "public:\n"
+                   "    int a;\n"
+                   "};\n"
+                   "class Derived : public Base {\n"
+                   "public:\n"
+                   "    int get() {\n"
+                   "        return a;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) The function 'Derived::get' can be const\n", errout.str());
+
+        checkConst("class Base1 {\n"
+                   "public:\n"
+                   "    int a;\n"
+                   "};\n"
+                   "class Base2 {\n"
+                   "public:\n"
+                   "    int b;\n"
+                   "};\n"
+                   "class Derived : public Base1, public Base2 {\n"
+                   "public:\n"
+                   "    int getA() {\n"
+                   "        return a;\n"
+                   "    }\n"
+                   "    int getB() {\n"
+                   "        return b;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:11]: (style) The function 'Derived::getA' can be const\n"
+                      "[test.cpp:14]: (style) The function 'Derived::getB' can be const\n", errout.str());
+
+        checkConst("class Base {\n"
+                   "public:\n"
+                   "    int a;\n"
+                   "};\n"
+                   "class Derived1 : public Base { };\n"
+                   "class Derived2 : public Derived1 {\n"
+                   "public:\n"
+                   "    int get() {\n"
+                   "        return a;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) The function 'Derived2::get' can be const\n", errout.str());
+
+        checkConst("class Base {\n"
+                   "public:\n"
+                   "    int a;\n"
+                   "};\n"
+                   "class Derived1 : public Base { };\n"
+                   "class Derived2 : public Derived1 { };\n"
+                   "class Derived3 : public Derived2 { };\n"
+                   "class Derived4 : public Derived3 {\n"
+                   "public:\n"
+                   "    int get() {\n"
+                   "        return a;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:10]: (style) The function 'Derived4::get' can be const\n", errout.str());
+
+        // check for false positives
+        checkConst("class Base {\n"
+                   "public:\n"
+                   "    int a;\n"
+                   "};\n"
+                   "class Derived : public Base {\n"
+                   "public:\n"
+                   "    int get() const {\n"
+                   "        return a;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Base1 {\n"
+                   "public:\n"
+                   "    int a;\n"
+                   "};\n"
+                   "class Base2 {\n"
+                   "public:\n"
+                   "    int b;\n"
+                   "};\n"
+                   "class Derived : public Base1, public Base2 {\n"
+                   "public:\n"
+                   "    int getA() const {\n"
+                   "        return a;\n"
+                   "    }\n"
+                   "    int getB() const {\n"
+                   "        return b;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Base {\n"
+                   "public:\n"
+                   "    int a;\n"
+                   "};\n"
+                   "class Derived1 : public Base { };\n"
+                   "class Derived2 : public Derived1 {\n"
+                   "public:\n"
+                   "    int get() const {\n"
+                   "        return a;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Base {\n"
+                   "public:\n"
+                   "    int a;\n"
+                   "};\n"
+                   "class Derived1 : public Base { };\n"
+                   "class Derived2 : public Derived1 { };\n"
+                   "class Derived3 : public Derived2 { };\n"
+                   "class Derived4 : public Derived3 {\n"
+                   "public:\n"
+                   "    int get() const {\n"
+                   "        return a;\n"
+                   "    }\n"
+                   "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
