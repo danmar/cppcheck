@@ -19,7 +19,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QDebug>
-#include "filelist.h"
+#include "FileList.h"
 
 QStringList FileList::GetDefaultFilters()
 {
