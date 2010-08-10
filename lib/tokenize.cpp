@@ -2833,11 +2833,16 @@ void Tokenizer::setVarId()
             bool funcDeclaration = false;
             for (tok2 = tok->next(); tok2; tok2 = tok2->next())
             {
-                if (!dot && tok2->str() == varname && !Token::Match(tok2->previous(), "struct|union|::"))
-                    tok2->varId(_varId);
-                else if (tok2->str() == "{")
+                const char c = tok2->str()[0];
+                if (c == varname[0])
+                {
+                    const std::string &prev = tok2->strAt(-1);
+                    if (tok2->str() == varname && prev != "struct" && prev != "union" && prev != "::" && prev != ".")
+                        tok2->varId(_varId);
+                }
+                else if (c == '{')
                     ++indentlevel;
-                else if (tok2->str() == "}")
+                else if (c == '}')
                 {
                     --indentlevel;
                     if (indentlevel < 0)
@@ -2847,9 +2852,9 @@ void Tokenizer::setVarId()
                     if (funcDeclaration && indentlevel <= 0)
                         break;
                 }
-                else if (tok2->str() == "(")
+                else if (c == '(')
                     ++parlevel;
-                else if (tok2->str() == ")")
+                else if (c == ')')
                 {
                     // Is this a function parameter or a variable declared in for example a for loop?
                     if (parlevel == 0 && indentlevel == 0 && Token::Match(tok2, ") const| {"))
@@ -2857,9 +2862,8 @@ void Tokenizer::setVarId()
                     else
                         --parlevel;
                 }
-                else if (parlevel < 0 && tok2->str() == ";")
+                else if (parlevel < 0 && c == ';')
                     break;
-                dot = bool(tok2->str() == ".");
             }
         }
     }
