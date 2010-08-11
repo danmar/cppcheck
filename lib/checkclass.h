@@ -132,14 +132,13 @@ private:
     class Var
     {
     public:
-        Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, bool class_ = false, Var *next_ = 0)
+        Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, bool class_ = false)
             : name(name_),
               init(init_),
               priv(priv_),
               isMutable(mutable_),
               isStatic(static_),
-              isClass(class_),
-              next(next_)
+              isClass(class_)
         {
         }
 
@@ -160,12 +159,6 @@ private:
 
         /** @brief is this variable a class (or unknown type)? */
         bool        isClass;
-
-        /** @brief next Var item */
-        Var *next;
-
-    private:
-        Var& operator=(const Var&); // disallow assignments
     };
 
     struct Func
@@ -213,6 +206,12 @@ private:
         SpaceInfo *spaceInfo;
     };
 
+    struct FriendInfo
+    {
+        std::string name;
+        SpaceInfo *spaceInfo;
+    };
+
     struct SpaceInfo
     {
         bool isNamespace;
@@ -222,34 +221,39 @@ private:
         const Token *classEnd;   // '}' token
         unsigned int numConstructors;
         std::list<Func> functionList;
-        Var *varlist;
+        std::list<Var> varlist;
         std::vector<BaseInfo> derivedFrom;
+        std::list<FriendInfo> friendList;
         SpaceInfo *nest;
         AccessControl access;
+
+        /**
+         * @brief initialize a variable in the varlist
+         * @param varname name of variable to mark initialized
+         */
+        void initVar(const std::string &varname);
+
+        /**
+         * @brief mark all variables in list
+         * @param value state to mark all variables
+         */
+        void markAllVar(bool value);
+
+        /** @brief initialize varlist */
+        void getVarList();
+
+        /**
+         * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
+         * @param func reference to the function that should be checked
+         * @param callstack the function doesn't look into recursive function calls.
+         */
+        void initializeVarList(const Func &func, std::list<std::string> &callstack);
     };
 
     /** @brief Information about all namespaces/classes/structrues */
     std::multimap<std::string, SpaceInfo *> spaceInfoMMap;
 
     bool argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
-
-    /**
-     * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
-     * @param tok1 pointer to class declaration
-     * @param ftok pointer to the function that should be checked
-     * @param varlist variable list (the "init" flag will be set in these variables)
-     * @param callstack the function doesn't look into recursive function calls.
-     */
-    void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, std::list<std::string> &callstack);
-
-    /** @brief initialize a variable in the varlist */
-    void initVar(Var *varlist, const std::string &varname);
-
-    /**
-     * @brief get varlist from a class definition
-     * @param tok1 pointer to class definition
-     */
-    Var *getVarList(const Token *tok1);
 
     bool isMemberVar(const SpaceInfo *info, const Token *tok);
     bool checkConstFunc(const SpaceInfo *info, const Token *tok);

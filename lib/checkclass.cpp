@@ -69,7 +69,7 @@ void CheckClass::createSymbolDatabase()
             new_info->nest = info;
             new_info->access = tok->str() == "struct" ? Public : Private;
             new_info->numConstructors = 0;
-            new_info->varlist = getVarList(tok);
+            new_info->getVarList();
 
             // goto initial '{'
             const Token *tok2 = initBaseInfo(new_info, tok);
@@ -270,6 +270,18 @@ void CheckClass::createSymbolDatabase()
                         tok = tok->link();
                     }
                 }
+
+                // friend class declaration?
+                else if (Token::Match(tok, "friend class| %any% ;"))
+                {
+                    FriendInfo friendInfo;
+
+                    friendInfo.name = tok->strAt(1) == "class" ? tok->strAt(2) : tok->strAt(1);
+                    /** @todo fill this in later after parsing is complete */
+                    friendInfo.spaceInfo = 0;
+
+                    info->friendList.push_back(friendInfo);
+                }
             }
         }
     }
@@ -280,19 +292,7 @@ CheckClass::~CheckClass()
     std::multimap<std::string, SpaceInfo *>::iterator it;
 
     for (it = spaceInfoMMap.begin(); it != spaceInfoMMap.end(); ++it)
-    {
-        SpaceInfo *info = it->second;
-
-        // Delete the varlist..
-        while (info->varlist)
-        {
-            Var *nextvar = info->varlist->next;
-            delete info->varlist;
-            info->varlist = nextvar;
-        }
-
-        delete info;
-    }
+        delete it->second;
 }
 
 //---------------------------------------------------------------------------
@@ -374,10 +374,10 @@ const Token *CheckClass::initBaseInfo(SpaceInfo *info, const Token *tok)
     return tok2;
 }
 
-CheckClass::Var *CheckClass::getVarList(const Token *tok1)
+void CheckClass::SpaceInfo::getVarList()
 {
     // Get variable list..
-    Var *varlist = NULL;
+    const Token *tok1 = classDef;
     unsigned int indentlevel = 0;
     bool isStruct = tok1->str() == "struct";
     bool priv = !isStruct;
@@ -536,35 +536,41 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1)
 
         // If the varname was set in the if-blocks above, create a entry for this variable..
         if (!varname.empty() && varname != "operator")
-        {
-            Var *var = new Var(varname, false, priv, isMutable, isStatic, isClass, varlist);
-            varlist  = var;
-        }
+            varlist.push_back(Var(varname, false, priv, isMutable, isStatic, isClass));
     }
-
-    return varlist;
 }
+
 //---------------------------------------------------------------------------
 
-void CheckClass::initVar(Var *varlist, const std::string &varname)
+void CheckClass::SpaceInfo::initVar(const std::string &varname)
 {
-    for (Var *var = varlist; var; var = var->next)
+    std::list<Var>::iterator i;
+
+    for (i = varlist.begin(); i != varlist.end(); ++i)
     {
-        if (var->name == varname)
+        if (i->name == varname)
         {
-            var->init = true;
+            i->init = true;
             return;
         }
     }
 }
+
+void CheckClass::SpaceInfo::markAllVar(bool value)
+{
+    std::list<Var>::iterator i;
+
+    for (i = varlist.begin(); i != varlist.end(); ++i)
+        i->init = value;
+}
+
 //---------------------------------------------------------------------------
 
-void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, std::list<std::string> &callstack)
+void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::string> &callstack)
 {
-    const std::string &classname = tok1->next()->str();
-    bool isStruct = tok1->str() == "struct";
     bool Assign = false;
     unsigned int indentlevel = 0;
+    const Token *ftok = func.token;
 
     for (; ftok; ftok = ftok->next())
     {
@@ -577,12 +583,12 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         {
             if (Assign && Token::Match(ftok, "%var% ("))
             {
-                initVar(varlist, ftok->strAt(0));
+                initVar(ftok->strAt(0));
 
                 // assignment in the initializer..
                 // : var(value = x)
                 if (Token::Match(ftok->tokAt(2), "%var% ="))
-                    initVar(varlist, ftok->strAt(2));
+                    initVar(ftok->strAt(2));
             }
 
             Assign |= (ftok->str() == ":");
@@ -608,7 +614,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         // Variable getting value from stream?
         if (Token::Match(ftok, ">> %var%"))
         {
-            initVar(varlist, ftok->strAt(1));
+            initVar(ftok->strAt(1));
         }
 
         // Before a new statement there is "[{};)=]"
@@ -621,8 +627,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         // Using the operator= function to initialize all variables..
         if (Token::simpleMatch(ftok->next(), "* this = "))
         {
-            for (Var *var = varlist; var; var = var->next)
-                var->init = true;
+            markAllVar(true);
             break;
         }
 
@@ -655,15 +660,14 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         // Clearing all variables..
         if (Token::simpleMatch(ftok, "memset ( this ,"))
         {
-            for (Var *var = varlist; var; var = var->next)
-                var->init = true;
+            markAllVar(true);
             return;
         }
 
         // Clearing array..
         else if (Token::Match(ftok, "memset ( %var% ,"))
         {
-            initVar(varlist, ftok->strAt(2));
+            initVar(ftok->strAt(2));
             ftok = ftok->next()->link();
             continue;
         }
@@ -676,8 +680,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             {
                 if (tok2->str() == "this")
                 {
-                    for (Var *var = varlist; var; var = var->next)
-                        var->init = true;
+                    markAllVar(true);
                     return;
                 }
             }
@@ -686,116 +689,106 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             // assume that all variables are initialized
             if (std::find(callstack.begin(), callstack.end(), ftok->str()) != callstack.end())
             {
-                for (Var *var = varlist; var; var = var->next)
-                    var->init = true;
+                markAllVar(true);
                 return;
             }
 
-            int i = 0;
-            const Token *ftok2 = _tokenizer->findClassFunction(tok1, classname, ftok->strAt(0), i, isStruct);
-            if (ftok2)
+            // check if member function
+            std::list<Func>::const_iterator it;
+            for (it = functionList.begin(); it != functionList.end(); ++it)
             {
-                callstack.push_back(ftok->str());
-                initializeVarList(tok1, ftok2, varlist, callstack);
-                callstack.pop_back();
+                if (ftok->str() == it->tokenDef->str())
+                    break;
             }
-            else  // there is a called member function, but it is not defined where we can find it, so we assume it initializes everything
+
+            // member function found
+            if (it != functionList.end())
             {
-                // check if the function is part of this class..
-                const Token *tok = Token::findmatch(_tokenizer->tokens(), (tok1->str() + " " + classname + " {|:").c_str());
-                bool derived = false;
-                while (tok && tok->str() != "{")
+                // member function has implementation
+                if (it->hasBody)
                 {
-                    if (tok->str() == ":")
-                        derived = true;
-                    tok = tok->next();
+                    // initialize variable use list using member function
+                    callstack.push_back(ftok->str());
+                    initializeVarList(*it, callstack);
+                    callstack.pop_back();
                 }
 
-                for (tok = tok ? tok->next() : 0; tok; tok = tok->next())
+                // there is a called member function, but it has no implementation, so we assume it initializes everything
+                else
                 {
-                    if (tok->str() == "{")
-                    {
-                        tok = tok->link();
-                        if (!tok)
-                            break;
-                    }
-                    else if (tok->str() == "}")
-                    {
-                        break;
-                    }
-                    else if (tok->str() == ftok->str() || tok->str() == "friend")
-                    {
-                        if (tok->next()->str() == "(" || tok->str() == "friend")
-                        {
-                            tok = 0;
-                            break;
-                        }
-                    }
+                    markAllVar(true);
                 }
-                // bail out..
-                if (!tok || derived)
-                {
-                    for (Var *var = varlist; var; var = var->next)
-                        var->init = true;
-                    break;
-                }
+            }
+
+            // not member function
+            else
+            {
+                // could be a base class virtual function, so we assume it initializes everything
+                if (!derivedFrom.empty())
+                    markAllVar(true);
+
+                // has friends, so we assume it initializes everything
+                if (!friendList.empty())
+                    markAllVar(true);
 
                 // the function is external and it's neither friend nor inherited virtual function.
                 // assume all variables that are passed to it are initialized..
-                unsigned int indentlevel2 = 0;
-                for (tok = ftok->tokAt(2); tok; tok = tok->next())
+                else
                 {
-                    if (tok->str() == "(")
-                        ++indentlevel2;
-                    else if (tok->str() == ")")
+                    unsigned int indentlevel2 = 0;
+                    for (const Token *tok = ftok->tokAt(2); tok; tok = tok->next())
                     {
-                        if (indentlevel2 == 0)
-                            break;
-                        --indentlevel2;
-                    }
-                    if (tok->isName())
-                    {
-                        initVar(varlist, tok->strAt(0));
+                        if (tok->str() == "(")
+                            ++indentlevel2;
+                        else if (tok->str() == ")")
+                        {
+                            if (indentlevel2 == 0)
+                                break;
+                            --indentlevel2;
+                        }
+                        if (tok->isName())
+                        {
+                            initVar(tok->strAt(0));
+                        }
                     }
                 }
-                continue;
             }
         }
 
         // Assignment of member variable?
         else if (Token::Match(ftok, "%var% ="))
         {
-            initVar(varlist, ftok->strAt(0));
+            initVar(ftok->strAt(0));
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "%var% [ %any% ] ="))
         {
-            initVar(varlist, ftok->strAt(0));
+            initVar(ftok->strAt(0));
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "%var% [ %any% ] [ %any% ] ="))
         {
-            initVar(varlist, ftok->strAt(0));
+            initVar(ftok->strAt(0));
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "* %var% ="))
         {
-            initVar(varlist, ftok->strAt(1));
+            initVar(ftok->strAt(1));
         }
 
         // Assignment of struct member of member variable?
         else if (Token::Match(ftok, "%var% . %any% ="))
         {
-            initVar(varlist, ftok->strAt(0));
+            initVar(ftok->strAt(0));
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
         if (Token::Match(ftok, "%var% . clear|Clear ("))
         {
-            initVar(varlist, ftok->strAt(0));
+            initVar(ftok->strAt(0));
         }
     }
 }
@@ -910,7 +903,8 @@ void CheckClass::constructors()
         if (info->numConstructors == 0)
         {
             // If there is a private variable, there should be a constructor..
-            for (const Var *var = info->varlist; var; var = var->next)
+            std::list<Var>::const_iterator var;
+            for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
             {
                 if (var->priv && !var->isClass && !var->isStatic)
                 {
@@ -928,14 +922,14 @@ void CheckClass::constructors()
                 continue;
 
             // Mark all variables not used
-            for (Var *var = info->varlist; var; var = var->next)
-                var->init = false;
+            info->markAllVar(false);
 
             std::list<std::string> callstack;
-            initializeVarList(info->classDef, it->token, info->varlist, callstack);
+            info->initializeVarList(*it, callstack);
 
             // Check if any variables are uninitialized
-            for (Var *var = info->varlist; var; var = var->next)
+            std::list<Var>::const_iterator var;
+            for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
             {
                 // skip classes for regular constructor
                 if (var->isClass && it->type == Func::Constructor)
@@ -1868,7 +1862,8 @@ bool CheckClass::isMemberVar(const SpaceInfo *info, const Token *tok)
     if (tok->str() == info->className && tok->next()->str() == "::")
         tok = tok->tokAt(2);
 
-    for (const Var *var = info->varlist; var; var = var->next)
+    std::list<Var>::const_iterator var;
+    for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
     {
         if (var->name == tok->str())
         {
