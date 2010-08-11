@@ -1704,39 +1704,44 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // Combine tokens..
     for (Token *tok = _tokens; tok && tok->next(); tok = tok->next())
     {
-        static const char * const combineWithNext[][3] =
+        const char c1 = tok->str()[0];
+
+        if (tok->str().length() == 1 && tok->next()->str().length() == 1)
         {
-            { "<", "<", "<<" },
+            const char c2 = tok->next()->str()[0];
 
-            { "|", "|", "||" },
-
-            { "+", "=", "+=" },
-            { "-", "=", "-=" },
-            { "*", "=", "*=" },
-            { "/", "=", "/=" },
-            { "&", "=", "&=" },
-            { "|", "=", "|=" },
-
-            { "=", "=", "==" },
-            { "!", "=", "!=" },
-            { "<", "=", "<=" },
-            { ">", "=", ">=" },
-
-            { ":", ":", "::" },
-            { "-", ">", "." },  // Replace "->" with "."
-
-            { "private", ":", "private:" },
-            { "protected", ":", "protected:" },
-            { "public", ":", "public:" },
-            { "__published", ":", "__published:" }
-        };
-
-        for (unsigned ui = 0; ui < sizeof(combineWithNext) / sizeof(combineWithNext[0]); ui++)
-        {
-            if (tok->str() == combineWithNext[ui][0] && tok->next()->str() == combineWithNext[ui][1])
+            // combine equal tokens..
+            if (c1 == c2 && (c1 == '<' || c1 == '|' || c1 == ':'))
             {
-                tok->str(combineWithNext[ui][2]);
+                tok->str(tok->str() + c2);
                 tok->deleteNext();
+                continue;
+            }
+
+            // combine +-*/ and =
+            else if (c2 == '=' && (strchr("+-*/&|=!<>", c1)))
+            {
+                tok->str(tok->str() + c2);
+                tok->deleteNext();
+                continue;
+            }
+
+            // replace "->" with "."
+            else if (c1 == '-' && c2 == '>')
+            {
+                tok->str(".");
+                tok->deleteNext();
+                continue;
+            }
+        }
+
+        else if (c1 == 'p' && tok->next()->str() == ":")
+        {
+            if (tok->str() == "private" || tok->str() == "protected" || tok->str() == "public" || tok->str() == "__published")
+            {
+                tok->str(tok->str() + ":");
+                tok->deleteNext();
+                continue;
             }
         }
     }
