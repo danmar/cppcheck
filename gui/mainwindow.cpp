@@ -34,7 +34,7 @@
 #include "project.h"
 #include "report.h"
 #include "logview.h"
-#include "FileList.h"
+#include "filelist.h"
 
 // HTMLHelp is only available in Windows
 #ifdef WIN32
