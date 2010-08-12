@@ -3928,8 +3928,18 @@ private:
                    "public:\n"
                    "   B() : b(0) { }\n"
                    "   int func() { return b; }\n"
-                   "};");
+                   "};\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) The function 'B::func' can be const\n", errout.str());
+
+        checkConst("class A { };\n"
+                   "class B : public A {\n"
+                   "   int b;\n"
+                   "public:\n"
+                   "   B() : b(0) { }\n"
+                   "   int func();\n"
+                   "};\n"
+                   "int B::func() { return b; }\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:6]: (style) The function 'B::func' can be const\n", errout.str());
 
         // base class has no virtual function
         checkConst("class A {\n"
@@ -3944,6 +3954,19 @@ private:
                    "};\n");
         ASSERT_EQUALS("[test.cpp:9]: (style) The function 'B::func' can be const\n", errout.str());
 
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    int func();\n"
+                   "};\n"
+                   "class B : public A {\n"
+                   "    int b;\n"
+                   "public:\n"
+                   "    B() : b(0) { }\n"
+                   "    int func();\n"
+                   "};\n"
+                   "int B::func() { return b; }\n");
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:9]: (style) The function 'B::func' can be const\n", errout.str());
+
         // base class has virtual function
         checkConst("class A {\n"
                    "public:\n"
@@ -3955,6 +3978,32 @@ private:
                    "    B() : b(0) { }\n"
                    "    int func() { return b; }\n"
                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    virtual int func();\n"
+                   "};\n"
+                   "class B : public A {\n"
+                   "    int b;\n"
+                   "public:\n"
+                   "    B() : b(0) { }\n"
+                   "    int func();\n"
+                   "};\n"
+                   "int B::func() { return b; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    virtual int func() = 0;\n"
+                   "};\n"
+                   "class B : public A {\n"
+                   "    int b;\n"
+                   "public:\n"
+                   "    B() : b(0) { }\n"
+                   "    int func();\n"
+                   "};\n"
+                   "int B::func() { return b; }\n");
         ASSERT_EQUALS("", errout.str());
 
         // base class has no virtual function
@@ -3980,6 +4029,31 @@ private:
                       "[test.cpp:11]: (style) The function 'B::func' can be const\n"
                       "[test.cpp:17]: (style) The function 'C::func' can be const\n", errout.str());
 
+        checkConst("class A {\n"
+                   "    int a;\n"
+                   "public:\n"
+                   "    A() : a(0) { }\n"
+                   "    int func();\n"
+                   "};\n"
+                   "int A::func() { return a; }\n"
+                   "class B : public A {\n"
+                   "    int b;\n"
+                   "public:\n"
+                   "    B() : b(0) { }\n"
+                   "    int func();\n"
+                   "};\n"
+                   "int B::func() { return b; }\n"
+                   "class C : public B {\n"
+                   "    int c;\n"
+                   "public:\n"
+                   "    C() : c(0) { }\n"
+                   "    int func();\n"
+                   "};\n"
+                   "int C::func() { return c; }\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style) The function 'A::func' can be const\n"
+                      "[test.cpp:14] -> [test.cpp:12]: (style) The function 'B::func' can be const\n"
+                      "[test.cpp:21] -> [test.cpp:19]: (style) The function 'C::func' can be const\n", errout.str());
+
         // base class has virtual function
         checkConst("class A {\n"
                    "    int a;\n"
@@ -4001,6 +4075,29 @@ private:
                    "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkConst("class A {\n"
+                   "    int a;\n"
+                   "public:\n"
+                   "    A() : a(0) { }\n"
+                   "    virtual int func();\n"
+                   "};\n"
+                   "int A::func() { return a; }\n"
+                   "class B : public A {\n"
+                   "    int b;\n"
+                   "public:\n"
+                   "    B() : b(0) { }\n"
+                   "    int func();\n"
+                   "};\n"
+                   "int B::func() { return b; }\n"
+                   "class C : public B {\n"
+                   "    int c;\n"
+                   "public:\n"
+                   "    C() : c(0) { }\n"
+                   "    int func();\n"
+                   "};\n"
+                   "int C::func() { return c; }\n");
+        ASSERT_EQUALS("", errout.str());
+
         // ticket #1311
         checkConst("class X {\n"
                    "    int x;\n"
@@ -4019,10 +4116,35 @@ private:
                    "public:\n"
                    "    Z(int x, int y, int z) : Y(x, y), z(z) { }\n"
                    "    int getZ() { return z; }\n"
-                   "};");
+                   "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) The function 'X::getX' can be const\n"
                       "[test.cpp:11]: (style) The function 'Y::getY' can be const\n"
                       "[test.cpp:17]: (style) The function 'Z::getZ' can be const\n", errout.str());
+
+        checkConst("class X {\n"
+                   "    int x;\n"
+                   "public:\n"
+                   "    X(int x) : x(x) { }\n"
+                   "    int getX();\n"
+                   "};\n"
+                   "int X::getX() { return x; }\n"
+                   "class Y : public X {\n"
+                   "    int y;\n"
+                   "public:\n"
+                   "    Y(int x, int y) : X(x), y(y) { }\n"
+                   "    int getY();\n"
+                   "};\n"
+                   "int Y::getY() { return y; }\n"
+                   "class Z : public Y {\n"
+                   "    int z;\n"
+                   "public:\n"
+                   "    Z(int x, int y, int z) : Y(x, y), z(z) { }\n"
+                   "    int getZ();\n"
+                   "};\n"
+                   "int Z::getZ() { return z; }\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style) The function 'X::getX' can be const\n"
+                      "[test.cpp:14] -> [test.cpp:12]: (style) The function 'Y::getY' can be const\n"
+                      "[test.cpp:21] -> [test.cpp:19]: (style) The function 'Z::getZ' can be const\n", errout.str());
     }
 
     void constIfCfg()

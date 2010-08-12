@@ -1817,7 +1817,7 @@ void CheckClass::checkConst()
                 // check if base class function is virtual
                 if (!info->derivedFrom.empty())
                 {
-                    if (isVirtual(info, func.token))
+                    if (isVirtual(info, func.tokenDef))
                         continue;
                 }
 
