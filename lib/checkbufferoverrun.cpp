@@ -613,7 +613,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     for (unsigned int i = 0; i < varname.size(); ++i)
         varnames += (i == 0 ? "" : " . ") + varname[i];
 
-    const unsigned char varc(varname.empty() ? 0U : (varname.size() - 1) * 2U);
+    const unsigned char varc(static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U));
 
     if (Token::Match(tok, "return"))
     {

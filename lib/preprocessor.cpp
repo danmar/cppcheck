@@ -671,8 +671,8 @@ std::string Preprocessor::getdef(std::string line, bool def)
     std::string::size_type pos = 0;
     while ((pos = line.find(" ", pos)) != std::string::npos)
     {
-        const unsigned char chprev = (pos > 0) ? line[pos-1] : (unsigned char)0;
-        const unsigned char chnext = (pos + 1 < line.length()) ? line[pos+1] : (unsigned char)0;
+        const unsigned char chprev(static_cast<unsigned char>((pos > 0) ? line[pos-1] : 0));
+        const unsigned char chnext(static_cast<unsigned char>((pos + 1 < line.length()) ? line[pos+1] : 0));
         if ((std::isalnum(chprev) || chprev == '_') && (std::isalnum(chnext) || chnext == '_'))
             ++pos;
         else
