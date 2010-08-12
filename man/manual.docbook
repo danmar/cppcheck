@@ -92,6 +92,24 @@ Checking path/file2.cpp...
     </section>
 
     <section>
+      <title>Excluding a file or folder from checking</title>
+
+      <para>There is no command to exclude a file or folder from checking. But
+      you can exclude a file or folder by being more careful when including
+      files and folders in the checking.</para>
+
+      <para>Imagine for example that the folder "src" contain the folders "a",
+      "b" and "c". To exclude "c" this command can be used:</para>
+
+      <programlisting>cppcheck src/a src/b</programlisting>
+
+      <para>All files under "src/a" and "src/b" are then checked.</para>
+
+      <para>The flag <literal>--file-list</literal> might also be
+      useful.</para>
+    </section>
+
+    <section>
       <title>Stylistic issues</title>
 
       <para>By default Cppcheck will only check for bugs. There are also a few
@@ -313,7 +331,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
     <para>If you want to filter out certain errors you can suppress these.
     First you need to create a suppressions file. The format is:</para>
 
-    <programlisting>[error id]:[filename]
+    <programlisting>[error id]:[filename]:[line]
 [error id]:[filename2]
 [error id]</programlisting>
 
