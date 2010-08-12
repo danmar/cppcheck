@@ -114,6 +114,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--inline-suppr</option></arg>
       <arg choice="opt"><option>-j[jobs]</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
+      <arg choice="opt"><option>--report-progress</option></arg>
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--suppressions [file]</option></arg>
       <arg choice="opt"><option>--template '[text]'</option></arg>
@@ -254,6 +255,12 @@ files, this is not needed.</para>
         <term><option>--quiet</option></term>
         <listitem>
           <para>Only print something when there is an error.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--report-progress</option></term>
+        <listitem>
+          <para>Report progress when checking a file.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

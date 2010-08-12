@@ -25,7 +25,7 @@
 
 CppCheckExecutor::CppCheckExecutor()
 {
-    time1 = std::time(0);
+    time1 = 0;
 }
 
 CppCheckExecutor::~CppCheckExecutor()
@@ -40,6 +40,9 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     {
         return EXIT_FAILURE;
     }
+
+    if (cppCheck.settings().reportProgress)
+        time1 = std::time(0);
 
     _settings = cppCheck.settings();
     if (_settings._xml)
@@ -90,6 +93,9 @@ void CppCheckExecutor::reportOut(const std::string &outmsg)
 void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const unsigned int value)
 {
     (void)filename;
+
+    if (!time1)
+        return;
 
     // Report progress messages every 10 seconds
     const std::time_t time2 = std::time(NULL);

@@ -444,6 +444,12 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             AddFilesToList(12 + argv[i], pathnames);
         }
 
+        // Report progress
+        else if (strcmp(argv[i], "--report-progress") == 0)
+        {
+            _settings.reportProgress = true;
+        }
+
         // Output formatter
         else if (strcmp(argv[i], "--template") == 0)
         {
@@ -577,9 +583,9 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             "Syntax:\n"
             "    cppcheck [--append=file] [-D<ID>] [--enable=<id>] [--error-exitcode=[n]]\n"
             "             [--exitcode-suppressions file] [--file-list=file.txt] [--force]\n"
-            "             [--help] [-Idir] [--inline-suppr] [-j [jobs]] [--quiet] [--style]\n"
-            "             [--suppressions file.txt] [--verbose] [--version] [--xml]\n"
-            "             [file or path1] [file or path] ..\n"
+            "             [--help] [-Idir] [--inline-suppr] [-j [jobs]] [--quiet]\n"
+            "             [--report-progress] [--style] [--suppressions file.txt]\n"
+            "             [--verbose] [--version] [--xml] [file or path1] [file or path]\n"
             "\n"
             "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
             "are checked recursively from given directory.\n\n"
@@ -617,6 +623,7 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             "                         on the lines before the warning to suppress.\n"
             "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
             "    -q, --quiet          Only print error messages\n"
+            "    --report-progress    Report progress messages while checking a file.\n"
             "    -s, --style          deprecated, use --enable=style\n"
             "    --suppressions file  Suppress warnings listed in the file. Filename and line\n"
             "                         are optional. The format of the single line in file is:\n"
