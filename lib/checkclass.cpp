@@ -1553,91 +1553,59 @@ void CheckClass::virtualDestructor()
     if (!_settings->inconclusive)
         return;
 
-    const char pattern_classdecl[] = "class %var% : %var%";
+    createSymbolDatabase();
 
-    const Token *derived = _tokenizer->tokens();
-    while ((derived = Token::findmatch(derived, pattern_classdecl)) != NULL)
+    std::multimap<std::string, SpaceInfo *>::const_iterator i;
+
+    for (i = spaceInfoMMap.begin(); i != spaceInfoMMap.end(); ++i)
     {
-        // Check that the derived class has a non empty destructor..
-        {
-            std::ostringstream destructorPattern;
-            destructorPattern << "~ " << derived->strAt(1) << " ( ) {";
-            const Token *derived_destructor = Token::findmatch(_tokenizer->tokens(), destructorPattern.str().c_str());
+        const SpaceInfo *info = i->second;
 
-            // No destructor..
-            if (! derived_destructor)
-            {
-                derived = derived->next();
-                continue;
-            }
+        // Skip base classes and namespaces
+        if (info->derivedFrom.empty())
+            continue;
 
-            // Empty destructor..
-            if (Token::Match(derived_destructor, "~ %var% ( ) { }"))
-            {
-                derived = derived->next();
-                continue;
-            }
-        }
+        // Find the destructor
+        const Func *destructor = info->getDestructor();
 
+        // Check for destructor with implementation
+        if (!destructor || !destructor->hasBody)
+            continue;
+
+        // Empty destructor
+        if (destructor->tokenDef->tokAt(3)->link() == destructor->tokenDef->tokAt(4))
+            continue;
+
+        const Token *derived = info->classDef;
         const Token *derivedClass = derived->tokAt(1);
 
         // Iterate through each base class...
-        derived = derived->tokAt(3);
-        while (Token::Match(derived, "%var%"))
+        for (unsigned int j = 0; j < info->derivedFrom.size(); ++j)
         {
-            bool isPublic(derived->str() == "public");
+            // Check if base class is public and exists in database
+            if (info->derivedFrom[j].access != Public || !info->derivedFrom[j].spaceInfo)
+                continue;
 
-            // What kind of inheritance is it.. public|protected|private
-            if (Token::Match(derived, "public|protected|private"))
-                derived = derived->next();
+            const SpaceInfo *spaceInfo = info->derivedFrom[j].spaceInfo;
 
             // Name of base class..
-            const std::string baseName = derived->strAt(0);
-
-            // Update derived so it's ready for the next loop.
-            do
-            {
-                if (derived->str() == "{")
-                    break;
-
-                if (derived->str() == ",")
-                {
-                    derived = derived->next();
-                    break;
-                }
-
-                derived = derived->next();
-            }
-            while (derived);
-
-            // If not public inheritance, skip checking of this base class..
-            if (! isPublic)
-                continue;
+            const std::string baseName = spaceInfo->className;
 
             // Find the destructor declaration for the base class.
-            const Token *base = Token::findmatch(_tokenizer->tokens(), (std::string("%any% ~ ") + baseName + " (").c_str());
-            while (base && base->str() == "::")
-                base = Token::findmatch(base->next(), (std::string("%any% ~ ") + baseName + " (").c_str());
-
-            const Token *reverseTok = base;
-            while (Token::Match(base, "%var%") && base->str() != "virtual")
-                base = base->previous();
+            const Func *base_destructor = spaceInfo->getDestructor();
+            const Token *base = 0;
+            if (base_destructor)
+                base = base_destructor->token->tokAt(-2);
 
             // Check that there is a destructor..
-            if (! base)
+            if (!base_destructor)
             {
-                // Is the class declaration available?
-                base = Token::findmatch(_tokenizer->tokens(), (std::string("class ") + baseName + " {").c_str());
-                if (base)
-                {
-                    virtualDestructorError(base, baseName, derivedClass->str());
-                }
+                if (spaceInfo->derivedFrom.empty())
+                    virtualDestructorError(spaceInfo->classDef, baseName, derivedClass->str());
 
                 continue;
             }
-
-            // There is a destructor. Check that it's virtual..
-            else if (base->str() == "virtual")
+            else if (base_destructor->isVirtual)
                 continue;
 
             // TODO: This is just a temporary fix, better solution is needed.
@@ -1652,36 +1620,8 @@ void CheckClass::virtualDestructor()
             // Make sure that the destructor is public (protected or private
             // would not compile if inheritance is used in a way that would
             // cause the bug we are trying to find here.)
-            int indent = 0;
-            while (reverseTok)
-            {
-                if (reverseTok->str() == "public:")
-                {
-                    virtualDestructorError(base, baseName, derivedClass->str());
-                    break;
-                }
-                else if (reverseTok->str() == "protected:" ||
-                         reverseTok->str() == "private:")
-                {
-                    // No bug, protected/private destructor is allowed
-                    break;
-                }
-                else if (reverseTok->str() == "{")
-                {
-                    indent++;
-                    if (indent >= 1)
-                    {
-                        // We have found the start of the class without any sign
-                        // of "public :" so we can assume that the destructor is not
-                        // public and there is no bug in the code we are checking.
-                        break;
-                    }
-                }
-                else if (reverseTok->str() == "}")
-                    indent--;
-
-                reverseTok = reverseTok->previous();
-            }
+            if (base_destructor->access == Public)
+                virtualDestructorError(base, baseName, derivedClass->str());
         }
     }
 }

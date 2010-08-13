@@ -248,6 +248,17 @@ private:
          * @param callstack the function doesn't look into recursive function calls.
          */
         void initializeVarList(const Func &func, std::list<std::string> &callstack);
+
+        const Func *getDestructor() const
+        {
+            std::list<Func>::const_iterator it;
+            for (it = functionList.begin(); it != functionList.end(); ++it)
+            {
+                if (it->type == Func::Destructor)
+                    return &*it;
+            }
+            return 0;
+        }
     };
 
     /** @brief Information about all namespaces/classes/structrues */
