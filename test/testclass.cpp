@@ -1418,7 +1418,7 @@ private:
                                " public:\n"
                                " ~B(){int a;}\n"
                                "};\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Class AA<double> which is inherited by class B does not have a virtual destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Class AA<double> which is inherited by class B does not have a virtual destructor\n", errout.str());
     }
 
     void checkUninitVar(const char code[])

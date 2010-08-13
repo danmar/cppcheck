@@ -1583,45 +1583,43 @@ void CheckClass::virtualDestructor()
         for (unsigned int j = 0; j < info->derivedFrom.size(); ++j)
         {
             // Check if base class is public and exists in database
-            if (info->derivedFrom[j].access != Public || !info->derivedFrom[j].spaceInfo)
-                continue;
-
-            const SpaceInfo *spaceInfo = info->derivedFrom[j].spaceInfo;
-
-            // Name of base class..
-            const std::string baseName = spaceInfo->className;
-
-            // Find the destructor declaration for the base class.
-            const Func *base_destructor = spaceInfo->getDestructor();
-            const Token *base = 0;
-            if (base_destructor)
-                base = base_destructor->token->tokAt(-2);
-
-            // Check that there is a destructor..
-            if (!base_destructor)
+            if (info->derivedFrom[j].access == Public && info->derivedFrom[j].spaceInfo)
             {
-                if (spaceInfo->derivedFrom.empty())
-                    virtualDestructorError(spaceInfo->classDef, baseName, derivedClass->str());
+                const SpaceInfo *spaceInfo = info->derivedFrom[j].spaceInfo;
 
-                continue;
+                // Name of base class..
+                const std::string baseName = spaceInfo->className;
+
+                // Find the destructor declaration for the base class.
+                const Func *base_destructor = spaceInfo->getDestructor();
+                const Token *base = 0;
+                if (base_destructor)
+                    base = base_destructor->token;
+
+                // Check that there is a destructor..
+                if (!base_destructor)
+                {
+                    if (spaceInfo->derivedFrom.empty())
+                        virtualDestructorError(spaceInfo->classDef, baseName, derivedClass->str());
+                }
+                else if (!base_destructor->isVirtual)
+                {
+                    // TODO: This is just a temporary fix, better solution is needed.
+                    // Skip situations where base class has base classes of its own, because
+                    // some of the base classes might have virtual destructor.
+                    // Proper solution is to check all of the base classes. If base class is not
+                    // found or if one of the base classes has virtual destructor, error should not
+                    // be printed. See TODO test case "virtualDestructorInherited"
+                    if (spaceInfo->derivedFrom.empty())
+                    {
+                        // Make sure that the destructor is public (protected or private
+                        // would not compile if inheritance is used in a way that would
+                        // cause the bug we are trying to find here.)
+                        if (base_destructor->access == Public)
+                            virtualDestructorError(base, baseName, derivedClass->str());
+                    }
+                }
             }
-            else if (base_destructor->isVirtual)
-                continue;
-
-            // TODO: This is just a temporary fix, better solution is needed.
-            // Skip situations where base class has base classes of its own, because
-            // some of the base classes might have virtual destructor.
-            // Proper solution is to check all of the base classes. If base class is not
-            // found or if one of the base classes has virtual destructor, error should not
-            // be printed. See TODO test case "virtualDestructorInherited"
-            if (!Token::findmatch(_tokenizer->tokens(), (std::string("class ") + baseName + " {").c_str()))
-                continue;
-
-            // Make sure that the destructor is public (protected or private
-            // would not compile if inheritance is used in a way that would
-            // cause the bug we are trying to find here.)
-            if (base_destructor->access == Public)
-                virtualDestructorError(base, baseName, derivedClass->str());
         }
     }
 }
