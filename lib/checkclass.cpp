@@ -428,7 +428,7 @@ void CheckClass::SpaceInfo::getVarList()
 
         // This is the start of a statement
         const Token *next = tok->next();
-        std::string varname;
+        const Token *vartok = 0;
 
         // If next token contains a ":".. it is not part of a variable declaration
         if (next->str().find(":") != std::string::npos)
@@ -464,6 +464,15 @@ void CheckClass::SpaceInfo::getVarList()
             next = next->next();
         }
 
+        // It it a nested derived class or structure?
+        if (Token::Match(next, "class|struct %type% :"))
+        {
+            next = next->tokAt(2);
+            while (next->str() != "{")
+                next = next->next();
+            continue;
+        }
+
         // Is it a variable declaration?
         bool isClass = false;
         if (Token::Match(next, "%type% %var% ;|:"))
@@ -471,22 +480,22 @@ void CheckClass::SpaceInfo::getVarList()
             if (!next->isStandardType())
                 isClass = true;
 
-            varname = next->strAt(1);
+            vartok = next->tokAt(1);
         }
 
         // Structure?
         else if (Token::Match(next, "struct|union %type% %var% ;"))
         {
-            varname = next->strAt(2);
+            vartok = next->tokAt(2);
         }
 
         // Pointer?
         else if (Token::Match(next, "%type% * %var% ;"))
-            varname = next->strAt(2);
+            vartok = next->tokAt(2);
         else if (Token::Match(next, "%type% %type% * %var% ;"))
-            varname = next->strAt(3);
+            vartok = next->tokAt(3);
         else if (Token::Match(next, "%type% :: %type% * %var% ;"))
-            varname = next->strAt(4);
+            vartok = next->tokAt(4);
 
         // Array?
         else if (Token::Match(next, "%type% %var% [") && next->next()->str() != "operator")
@@ -494,20 +503,20 @@ void CheckClass::SpaceInfo::getVarList()
             if (!next->isStandardType())
                 isClass = true;
 
-            varname = next->strAt(1);
+            vartok = next->tokAt(1);
         }
 
         // Pointer array?
         else if (Token::Match(next, "%type% * %var% ["))
-            varname = next->strAt(2);
+            vartok = next->tokAt(2);
         else if (Token::Match(next, "%type% :: %type% * %var% ["))
-            varname = next->strAt(4);
+            vartok = next->tokAt(4);
 
         // std::string..
         else if (Token::Match(next, "%type% :: %type% %var% ;"))
         {
             isClass = true;
-            varname = next->strAt(3);
+            vartok = next->tokAt(3);
         }
 
         // Container..
@@ -529,14 +538,28 @@ void CheckClass::SpaceInfo::getVarList()
                 }
             }
             if (next && Token::Match(next, "> %var% ;"))
-                varname = next->strAt(1);
+                vartok = next->tokAt(1);
             else if (next && Token::Match(next, "> * %var% ;"))
-                varname = next->strAt(2);
+                vartok = next->tokAt(2);
         }
 
-        // If the varname was set in the if-blocks above, create a entry for this variable..
-        if (!varname.empty() && varname != "operator")
-            varlist.push_back(Var(varname, false, priv, isMutable, isStatic, isClass));
+        // If the vartok was set in the if-blocks above, create a entry for this variable..
+        if (vartok && vartok->str() != "operator")
+        {
+#if 0 //ndef NDEBUG
+            if (vartok->varId() == 0)
+            {
+                // debug message that something is wrong..
+                std::cout << "getVarList debug-information: missing varid: "
+                          << vartok->linenr()
+                          << ": "
+                          << vartok->str()
+                          << std::endl;
+            }
+#endif
+
+            varlist.push_back(Var(vartok, false, priv, isMutable, isStatic, isClass));
+        }
     }
 }
 
@@ -548,7 +571,7 @@ void CheckClass::SpaceInfo::initVar(const std::string &varname)
 
     for (i = varlist.begin(); i != varlist.end(); ++i)
     {
-        if (i->name == varname)
+        if (i->token->str() == varname)
         {
             i->init = true;
             return;
@@ -958,10 +981,10 @@ void CheckClass::constructors()
                     }
 
                     if (classNameUsed)
-                        operatorEqVarError(it->token, info->className, var->name);
+                        operatorEqVarError(it->token, info->className, var->token->str());
                 }
                 else if (it->access != Private && !var->isStatic)
-                    uninitVarError(it->token, info->className, var->name);
+                    uninitVarError(it->token, info->className, var->token->str());
             }
         }
     }
@@ -1865,7 +1888,7 @@ bool CheckClass::isMemberVar(const SpaceInfo *info, const Token *tok)
     std::list<Var>::const_iterator var;
     for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
     {
-        if (var->name == tok->str())
+        if (var->token->str() == tok->str())
         {
             return !var->isMutable;
         }

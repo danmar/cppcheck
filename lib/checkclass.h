@@ -132,8 +132,8 @@ private:
     class Var
     {
     public:
-        Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, bool class_ = false)
-            : name(name_),
+        Var(const Token *token_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, bool class_ = false)
+            : token(token_),
               init(init_),
               priv(priv_),
               isMutable(mutable_),
@@ -142,8 +142,8 @@ private:
         {
         }
 
-        /** @brief name of variable */
-        const std::string name;
+        /** @brief variable token */
+        const Token *token;
 
         /** @brief has this variable been initialized? */
         bool        init;
