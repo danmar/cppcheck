@@ -429,6 +429,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int>::iterator it = foo.begin();\n"
+              "    while (it != i2)\n"
+              "    {\n"
+              "        foo.erase(++it);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
     }
 
     void eraseBreak()

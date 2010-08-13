@@ -289,7 +289,7 @@ void CheckStl::eraseCheckLoop(const Token *it)
             tok2 = 0;
             break;
         }
-        else if (Token::simpleMatch(tok, ("erase ( " + it->str() + " )").c_str()))
+        else if (Token::Match(tok, ("erase ( ++|--| " + it->str() + " )").c_str()))
         {
             tok2 = tok;
             while (NULL != (tok2 = tok2 ? tok2->previous() : 0))
