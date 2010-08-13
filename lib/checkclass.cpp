@@ -285,6 +285,41 @@ void CheckClass::createSymbolDatabase()
             }
         }
     }
+
+    std::multimap<std::string, SpaceInfo *>::iterator it;
+
+    // finish filling in base class info
+    for (it = spaceInfoMMap.begin(); it != spaceInfoMMap.end(); ++it)
+    {
+        info = it->second;
+
+        // skip namespaces
+        if (info->isNamespace)
+            continue;
+
+        for (unsigned int i = 0; i < info->derivedFrom.size(); ++i)
+        {
+            std::multimap<std::string, SpaceInfo *>::iterator it1;
+
+            for (it1 = spaceInfoMMap.begin(); it1 != spaceInfoMMap.end(); ++it1)
+            {
+                SpaceInfo *spaceInfo = it1->second;
+
+                /** @todo handle derived base classes and namespaces */
+                if (!spaceInfo->isNamespace)
+                {
+                    if (spaceInfo->className == info->derivedFrom[i].name)
+                    {
+                        if (spaceInfo->nest == info->nest)
+                        {
+                            info->derivedFrom[i].spaceInfo = spaceInfo;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 CheckClass::~CheckClass()
@@ -344,26 +379,6 @@ const Token *CheckClass::initBaseInfo(SpaceInfo *info, const Token *tok)
             base.name += tok2->str();
 
             base.spaceInfo = 0;
-
-            std::multimap<std::string, SpaceInfo *>::iterator i;
-
-            for (i = spaceInfoMMap.begin(); i != spaceInfoMMap.end(); ++i)
-            {
-                SpaceInfo *spaceInfo = i->second;
-
-                /** @todo handle derived base classes and namespaces */
-                if (!spaceInfo->isNamespace)
-                {
-                    if (spaceInfo->className == base.name)
-                    {
-                        if (spaceInfo->nest == info->nest)
-                        {
-                            base.spaceInfo = spaceInfo;
-                            break;
-                        }
-                    }
-                }
-            }
 
             // save pattern for base class name
             info->derivedFrom.push_back(base);
