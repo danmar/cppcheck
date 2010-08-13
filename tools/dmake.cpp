@@ -155,6 +155,7 @@ int main(int argc, char **argv)
         // -Wsign-conversion : generates too many compiler warnings currently
         // -Wlogical-op      : doesn't work on older GCC
 
+        // The _GLIBCXX_DEBUG doesn't work in cygwin
         fout << "CXXFLAGS="
              << "-Wall "
              << "-Wextra "
@@ -164,7 +165,8 @@ int main(int argc, char **argv)
              << "-Wfloat-equal "
              << "-Wcast-qual "
              << "-Wsign-conversion "
-             << "-g -D_GLIBCXX_DEBUG\n";
+             << "-Wconversion "
+             << "-g\n";
     }
     fout << "CXX=g++\n";
     fout << "BIN=${DESTDIR}/usr/bin\n\n";
