@@ -57,27 +57,23 @@ private:
     void dangerousFunctionmktemp(const Token *tok);
     /** Report Error : Using dangerous function 'gets' */
     void dangerousFunctiongets(const Token *tok);
-    /** Report Error : Using dangerous function 'scanf' */
-    void dangerousFunctionscanf(const Token *tok);
 
     void getErrorMessages()
     {
         dangerousFunctionmktemp(0);
         dangerousFunctiongets(0);
-        dangerousFunctionscanf(0);
     }
 
     std::string name() const
     {
-        return "Deprecated functions";
+        return "Dangerous functions (buffer overflows)";
     }
 
     std::string classInfo() const
     {
-        return "Warn if any of these deprecated functions are used:\n"
+        return "Warn if any of these dangerous functions are used:\n"
                "* mktemp\n"
-               "* gets\n"
-               "* scanf\n";
+               "* gets\n";
     }
 };
 /// @}

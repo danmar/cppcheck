@@ -46,10 +46,6 @@ void CheckDangerousFunctions::dangerousFunctions()
         {
             dangerousFunctiongets(tok);
         }
-        else if (Token::simpleMatch(tok, "scanf ("))
-        {
-            dangerousFunctionscanf(tok);
-        }
     }
 }
 //---------------------------------------------------------------------------
@@ -64,11 +60,4 @@ void CheckDangerousFunctions::dangerousFunctiongets(const Token *tok)
 {
     reportError(tok, Severity::style, "dangerousFunctiongets", "Found 'gets'. You should use 'fgets' instead\n"
                 "Using gets can easily cause buffer overflows.");
-}
-
-void CheckDangerousFunctions::dangerousFunctionscanf(const Token *tok)
-{
-    reportError(tok, Severity::style, "dangerousFunctionscanf", "Found 'scanf'. You should use 'fgets' instead\n"
-                "If reading a string the 'scanf' can easily cause a buffer overflow if the data is too big.\n"
-                "If you want to convert the input to a number a wrong input may cause a crash.");
 }
