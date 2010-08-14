@@ -106,7 +106,7 @@ private:
               "    char *x;\n"
               "    scanf(\"%s\", x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Found 'scanf'. You should use 'fgets' instead\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 };
