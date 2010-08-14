@@ -60,6 +60,12 @@ public:
     QStringList GetDefines() const;
 
     /**
+    * @brief Get list of paths to check.
+    * @return list of paths.
+    */
+    QStringList GetCheckPaths() const;
+
+    /**
     * @brief Set list of includes.
     * @param includes List of defines.
     */
@@ -70,6 +76,12 @@ public:
     * @param defines List of defines.
     */
     void SetDefines(QStringList defines);
+
+    /**
+    * @brief Set list of paths to check.
+    * @param defines List of paths.
+    */
+    void SetCheckPaths(QStringList paths);
 
     /**
     * @brief Write project file (to disk).
@@ -99,6 +111,12 @@ protected:
     */
     void ReadDefines(QXmlStreamReader &reader);
 
+    /**
+    * @brief Read list paths to check.
+    * @param reader XML stream reader.
+    */
+    void ReadCheckPaths(QXmlStreamReader &reader);
+
 private:
 
     /**
@@ -115,6 +133,11 @@ private:
     * @brief List of defines.
     */
     QStringList mDefines;
+
+    /**
+    * @brief List of paths to check.
+    */
+    QStringList mPaths;
 };
 /// @}
 #endif  // PROJECT_FILE_H

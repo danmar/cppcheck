@@ -32,6 +32,9 @@ static const char DirNameAttrib[] = "name";
 static const char DefinesElementName[] = "defines";
 static const char DefineName[] = "define";
 static const char DefineNameAttrib[] = "name";
+static const char PathsElementName[] = "paths";
+static const char PathName[] = "dir";
+static const char PathNameAttrib[] = "name";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -66,6 +69,9 @@ bool ProjectFile::Read(const QString &filename)
                 insideProject = true;
                 projectTagFound = true;
             }
+            // Find paths to check from inside project element
+            if (insideProject && xmlReader.name() == PathsElementName)
+                ReadCheckPaths(xmlReader);
 
             // Find include directory from inside project element
             if (insideProject && xmlReader.name() == IncludDirElementName)
@@ -111,6 +117,11 @@ QStringList ProjectFile::GetIncludeDirs() const
 QStringList ProjectFile::GetDefines() const
 {
     return mDefines;
+}
+
+QStringList ProjectFile::GetCheckPaths() const
+{
+    return mPaths;
 }
 
 void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
@@ -196,6 +207,48 @@ void ProjectFile::ReadDefines(QXmlStreamReader &reader)
     while (!allRead);
 }
 
+void ProjectFile::ReadCheckPaths(QXmlStreamReader &reader)
+{
+    QXmlStreamReader::TokenType type;
+    bool allRead = false;
+    do
+    {
+        type = reader.readNext();
+        switch (type)
+        {
+        case QXmlStreamReader::StartElement:
+
+            // Read dir-elements
+            if (reader.name().toString() == PathName)
+            {
+                QXmlStreamAttributes attribs = reader.attributes();
+                QString name = attribs.value("", PathNameAttrib).toString();
+                if (!name.isEmpty())
+                    mPaths << name;
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() == PathsElementName)
+                allRead = true;
+            break;
+
+            // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    }
+    while (!allRead);
+}
+
 void ProjectFile::SetIncludes(QStringList includes)
 {
     mIncludeDirs = includes;
@@ -204,6 +257,11 @@ void ProjectFile::SetIncludes(QStringList includes)
 void ProjectFile::SetDefines(QStringList defines)
 {
     mDefines = defines;
+}
+
+void ProjectFile::SetCheckPaths(QStringList paths)
+{
+    mPaths = paths;
 }
 
 bool ProjectFile::Write(const QString &filename)
@@ -246,6 +304,20 @@ bool ProjectFile::Write(const QString &filename)
         }
         xmlWriter.writeEndElement();
     }
+
+    if (!mPaths.isEmpty())
+    {
+        xmlWriter.writeStartElement(PathsElementName);
+        QString path;
+        foreach(path, mPaths)
+        {
+            xmlWriter.writeStartElement(PathName);
+            xmlWriter.writeAttribute(PathNameAttrib, path);
+            xmlWriter.writeEndElement();
+        }
+        xmlWriter.writeEndElement();
+    }
+
     xmlWriter.writeEndDocument();
     file.close();
     return true;
