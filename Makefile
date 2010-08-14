@@ -16,6 +16,7 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/checkdangerousfunctions.o \
               lib/checkexceptionsafety.o \
               lib/checkmemoryleak.o \
+              lib/checkobsoletefunctions.o \
               lib/checkother.o \
               lib/checkstl.o \
               lib/checkunusedfunctions.o \
@@ -49,6 +50,7 @@ TESTOBJ =     test/testautovariables.o \
               test/testincompletestatement.o \
               test/testmathlib.o \
               test/testmemleak.o \
+              test/testobsoletefunctions.o \
               test/testother.o \
               test/testpreprocessor.o \
               test/testredundantif.o \
@@ -115,6 +117,9 @@ lib/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafet
 
 lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkmemoryleak.o lib/checkmemoryleak.cpp
+
+lib/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkobsoletefunctions.o lib/checkobsoletefunctions.cpp
 
 lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkother.o lib/checkother.cpp
@@ -208,6 +213,9 @@ test/testmathlib.o: test/testmathlib.cpp lib/mathlib.h test/testsuite.h lib/erro
 
 test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkmemoryleak.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testmemleak.o test/testmemleak.cpp
+
+test/testobsoletefunctions.o: test/testobsoletefunctions.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkobsoletefunctions.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testobsoletefunctions.o test/testobsoletefunctions.cpp
 
 test/testother.o: test/testother.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkother.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testother.o test/testother.cpp
