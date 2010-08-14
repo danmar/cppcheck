@@ -1318,6 +1318,33 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f()\n"
+              "{\n"
+              "char str[3];\n"
+              "recv(s, str, 4, 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "char str[3];\n"
+              "recvfrom(s, str, 4, 0, 0x0, 0x0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "char str[3];\n"
+              "send(s, str, 4, 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "char str[3];\n"
+              "sendto(s, str, 4, 0, 0x0, 0x0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
     }
 
 

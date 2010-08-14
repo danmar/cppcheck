@@ -478,7 +478,12 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
     if (par == 2)
     {
         total_size["read"] = 3;
+        total_size["pread"] = 3;
         total_size["write"] = 3;
+        total_size["recv"] = 3;
+        total_size["recvfrom"] = 3;
+        total_size["send"] = 3;
+        total_size["sendto"] = 3;
     }
 
     std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok.str());
