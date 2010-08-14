@@ -2749,9 +2749,21 @@ void Tokenizer::setVarId()
                     tok2 = tok2->tokAt(2);
                     again = true;
                 }
-                else if (Token::Match(tok2, "%type% ,"))
+                else if (Token::Match(tok2, "%type% *| ,"))
                 {
                     tok2 = tok2->tokAt(2);
+                    if (tok2->str() == ",")
+                        tok2 = tok2->next();
+                    again = true;
+                }
+                else if (level > 1 && Token::Match(tok2, "%type% *| >"))
+                {
+                    --level;
+                    while (tok2->str() != ">")
+                        tok2 = tok2->next();
+                    tok2 = tok2->next();
+                    if (level == 1 && tok->str() == ">")
+                        break;
                     again = true;
                 }
                 else
