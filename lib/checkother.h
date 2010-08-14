@@ -82,6 +82,7 @@ public:
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
         checkOther.checkFflushOnInputStream();
+        checkOther.invalidScanf();
 
         checkOther.nullConstantDereference();
 
@@ -184,6 +185,10 @@ public:
     void sizeofCalculation();
     void sizeofCalculationError(const Token *tok);
 
+    /** @brief scanf can crash if width specifiers are not used */
+    void invalidScanf();
+    void invalidScanfError(const Token *tok);
+
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
 
@@ -246,6 +251,7 @@ public:
         sizeofCalculationError(0);
         emptyCatchBlockError(0);
         redundantAssignmentInSwitchError(0, "varname");
+        invalidScanfError(0);
 
         // optimisations
         postIncrementError(0, "varname", true);
@@ -273,6 +279,7 @@ public:
                "* redundant if\n"
                "* bad usage of the function 'strtol'\n"
                "* [[CheckUnsignedDivision|unsigned division]]\n"
+               "* Dangerous usage of 'scanf'\n"
                "* unused struct member\n"
                "* passing parameter by value\n"
                "* [[IncompleteStatement|Incomplete statement]]\n"

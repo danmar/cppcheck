@@ -431,6 +431,51 @@ void CheckOther::invalidFunctionUsage()
 }
 //---------------------------------------------------------------------------
 
+void CheckOther::invalidScanf()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        const Token *formatToken = 0;
+        if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
+            formatToken = tok->tokAt(2);
+        else if (Token::Match(tok, "fscanf|vfscanf ( %var% , %str% ,"))
+            formatToken = tok->tokAt(4);
+        else
+            continue;
+
+        bool format = false;
+
+        // scan the string backwards, so we dont need to keep states
+        const std::string &formatstr(formatToken->str());
+        for (unsigned int i = 1; i < formatstr.length(); i++)
+        {
+            if (formatstr[i] == '%')
+                format = !format;
+
+            else if (!format)
+                continue;
+
+            else if (std::isdigit(formatstr[i]))
+            {
+                format = false;
+            }
+
+            else if (std::isalpha(formatstr[i]))
+            {
+                invalidScanfError(tok);
+                format = false;
+            }
+        }
+    }
+}
+
+void CheckOther::invalidScanfError(const Token *tok)
+{
+    reportError(tok, Severity::style,
+                "invalidscanf", "scanf without field width limits can crash with huge input data");
+}
 
 //---------------------------------------------------------------------------
 // Check for unsigned divisions

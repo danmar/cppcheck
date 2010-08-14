@@ -103,6 +103,9 @@ private:
         TEST_CASE(emptyCatchBlock);
 
         TEST_CASE(switchRedundantAssignmentTest);
+
+        TEST_CASE(testScanf1);
+        TEST_CASE(testScanf2);
     }
 
     void check(const char code[])
@@ -133,6 +136,7 @@ private:
         checkOther.checkMathFunctions();
         checkOther.checkEmptyStringTest();
         checkOther.checkFflushOnInputStream();
+        checkOther.invalidScanf();
     }
 
 
@@ -3006,6 +3010,40 @@ private:
               "        }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testScanf1()
+    {
+        check("#include <stdio.h>\n"
+              "int main(int argc, char **argv)\n"
+              "{\n"
+              "    int a, b;\n"
+              "    FILE *file = fopen(\"test\", \"r\");\n"
+              "    b = fscanf(file, \"aa %ds\", &a);\n"
+              "    c = scanf(\"aa %ds\", &a);\n"
+              "    b = fscanf(file, \"aa%%ds\", &a);\n"
+              "    fclose(file);\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) scanf without field width limits can crash with huge input data\n"
+                      "[test.cpp:7]: (style) scanf without field width limits can crash with huge input data\n", errout.str());
+    }
+
+    void testScanf2()
+    {
+        check("#include <stdio.h>\n"
+              "int main(int argc, char **argv)\n"
+              "{\n"
+              "    int a, b;\n"
+              "    FILE *file = fopen(\"test\", \"r\");\n"
+              "    b = fscanf(file, \"aa%%%ds\", &a);\n"
+              "    c = scanf(\"aa %%%ds\", &a);\n"
+              "    b = fscanf(file, \"aa%%ds\", &a);\n"
+              "    fclose(file);\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) scanf without field width limits can crash with huge input data\n"
+                      "[test.cpp:7]: (style) scanf without field width limits can crash with huge input data\n", errout.str());
     }
 };
 
