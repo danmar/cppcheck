@@ -474,7 +474,23 @@ void CheckOther::invalidScanf()
 void CheckOther::invalidScanfError(const Token *tok)
 {
     reportError(tok, Severity::style,
-                "invalidscanf", "scanf without field width limits can crash with huge input data");
+                "invalidscanf", "scanf without field width limits can crash with huge input data\n"
+                "To fix this error message add a field width specifier:\n"
+                "    %s => %20s\n"
+                "    %i => %3i\n"
+                "\n"
+                "Sample program that can crash:\n"
+                "\n"
+                "#include <stdio.h>\n"
+                "int main()\n"
+                "{\n"
+                "    int a;\n"
+                "    scanf(\"%i\", &a);\n"
+                "    return 0;\n"
+                "}\n"
+                "\n"
+                "To make it crash:\n"
+                "perl -e 'print \"5\"x2100000' | ./a.out");
 }
 
 //---------------------------------------------------------------------------
