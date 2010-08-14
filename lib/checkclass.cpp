@@ -85,15 +85,17 @@ void CheckClass::createSymbolDatabase()
             tok = tok2;
         }
 
-        // check if in class
-        else if (info && !info->isNamespace)
+        // check if in space
+        else if (info)
         {
-            // check for end of class
+            // check for end of space
             if (tok == info->classEnd)
             {
                 info = info->nest;
             }
-            else
+
+            // check if in class or structure
+            else if (!info->isNamespace)
             {
                 // What section are we in..
                 if (tok->str() == "private:")

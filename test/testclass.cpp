@@ -135,6 +135,7 @@ private:
         TEST_CASE(const28); // ticket #1883
         TEST_CASE(const29); // ticket #1922
         TEST_CASE(const30);
+        TEST_CASE(const31);
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3850,6 +3851,17 @@ private:
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const31()
+    {
+        checkConst("namespace std { }\n"
+                   "class Fred {\n"
+                   "public:\n"
+                   "    int a;\n"
+                   "    int get() { return a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) The function 'Fred::get' can be const\n", errout.str());
     }
 
     // increment/decrement => not const
