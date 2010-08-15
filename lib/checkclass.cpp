@@ -63,6 +63,7 @@ void CheckClass::createSymbolDatabase()
         if (Token::Match(tok, "class|struct|namespace %var% [{:]"))
         {
             SpaceInfo *new_info = new SpaceInfo;
+            new_info->tokenizer = _tokenizer;
             new_info->isNamespace = tok->str() == "namespace";
             new_info->className = tok->next()->str();
             new_info->classDef = tok;
@@ -563,15 +564,20 @@ void CheckClass::SpaceInfo::getVarList()
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         if (vartok && vartok->str() != "operator")
         {
-#if 0 //ndef NDEBUG
+#ifndef NDEBUG
             if (vartok->varId() == 0)
             {
-                // debug message that something is wrong..
-                std::cout << "getVarList debug-information: missing varid: "
-                          << vartok->linenr()
-                          << ": "
-                          << vartok->str()
-                          << std::endl;
+                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                ErrorLogger::ErrorMessage::FileLocation loc;
+                loc.line = vartok->linenr();
+                loc.setfile(tokenizer->file(vartok));
+                locationList.push_back(loc);
+
+                const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                       Severity::error,
+                                                       "Internal error. CheckClass::SpaceInfo::getVarList found variable with varid 0.",
+                                                       "cppcheckError");
+                Check::reportError(errmsg);
             }
 #endif
 

@@ -214,6 +214,7 @@ private:
 
     struct SpaceInfo
     {
+        const Tokenizer *tokenizer;
         bool isNamespace;
         std::string className;
         const Token *classDef;   // class/struct/namespace token
