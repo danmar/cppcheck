@@ -713,10 +713,13 @@ void MainWindow::NewProjectFile()
     if (!filepath.isEmpty())
     {
         mUI.mActionCloseProjectFile->setEnabled(true);
-        Project prj(filepath, this);
-        prj.Create();
-        prj.Edit();
         mUI.mActionEditProjectFile->setEnabled(true);
+
+        if (mProject)
+            delete mProject;
+        mProject = new Project(filepath, this);
+        mProject->Create();
+        mProject->Edit();
     }
 }
 
