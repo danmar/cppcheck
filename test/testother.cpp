@@ -104,6 +104,7 @@ private:
 
         TEST_CASE(switchRedundantAssignmentTest);
 
+        TEST_CASE(selfAssignment);
         TEST_CASE(testScanf1);
         TEST_CASE(testScanf2);
     }
@@ -136,6 +137,7 @@ private:
         checkOther.checkMathFunctions();
         checkOther.checkEmptyStringTest();
         checkOther.checkFflushOnInputStream();
+        checkOther.checkSelfAssignment();
         checkOther.invalidScanf();
     }
 
@@ -3008,6 +3010,39 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void selfAssignment()
+    {
+        check("void foo()\n"
+              "{\n"
+              "        int x = 1;\n"
+              "        x = x;\n"
+              "        return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Redundant assignment of \"x\" to itself\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int x = x;\n"
+              "        return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant assignment of \"x\" to itself\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        std::string var = var = \"test\";\n"
+              "        return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant assignment of \"var\" to itself\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int x = 1;\n"
+              "        x = x + 1;\n"
+              "        return 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -85,6 +85,7 @@ public:
         checkOther.invalidScanf();
 
         checkOther.nullConstantDereference();
+        checkOther.checkSelfAssignment();
 
         // New type of check: Check execution paths
         checkOther.executionPaths();
@@ -192,6 +193,9 @@ public:
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
 
+    /** @brief %Check for assigning a variable to itself*/
+    void checkSelfAssignment();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void redundantIfDelete0Error(const Token *tok);
@@ -220,6 +224,7 @@ public:
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void emptyCatchBlockError(const Token *tok);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
+    void selfAssignmentError(const Token *tok, const std::string &varname);
 
     void getErrorMessages()
     {
@@ -251,6 +256,7 @@ public:
         sizeofCalculationError(0);
         emptyCatchBlockError(0);
         redundantAssignmentInSwitchError(0, "varname");
+        selfAssignmentError(0, "varname");
         invalidScanfError(0);
 
         // optimisations
@@ -291,6 +297,7 @@ public:
                "* redundant assignment in a switch statement\n"
                "* look for 'sizeof sizeof ..'\n"
                "* look for calculations inside sizeof()\n"
+               "* assignment of a variable to itself\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n"

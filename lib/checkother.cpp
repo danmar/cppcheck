@@ -349,6 +349,31 @@ void CheckOther::checkRedundantAssignmentInSwitch()
     }
 }
 
+
+//---------------------------------------------------------------------------
+//    int x = 1;
+//    x = x;            // <- redundant assignment to self
+//
+//    int y = y;        // <- redundant initialization to self
+//---------------------------------------------------------------------------
+void CheckOther::checkSelfAssignment()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const char selfAssignmentPattern[] = "%var% = %var% ;|=|)";
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), selfAssignmentPattern);
+    while (tok)
+    {
+        if (tok->varId() && tok->varId() == tok->tokAt(2)->varId())
+        {
+            selfAssignmentError(tok, tok->str());
+        }
+
+        tok = Token::findmatch(tok->next(), selfAssignmentPattern);
+    }
+}
+
 //---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
@@ -4235,4 +4260,10 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::s
 {
     reportError(tok, Severity::style,
                 "redundantAssignInSwitch", "Redundant assignment of \"" + varname + "\" in switch");
+}
+
+void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::style,
+                "selfAssignment", "Redundant assignment of \"" + varname + "\" to itself");
 }
