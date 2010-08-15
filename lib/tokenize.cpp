@@ -2846,7 +2846,6 @@ void Tokenizer::setVarId()
             ++_varId;
             int indentlevel = 0;
             int parlevel = 0;
-            bool dot = false;
             bool funcDeclaration = false;
             for (tok2 = tok->next(); tok2; tok2 = tok2->next())
             {
