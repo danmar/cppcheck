@@ -147,6 +147,12 @@ public slots:
     void OpenProjectFile();
 
     /**
+    * @brief Slot to close open project file.
+    *
+    */
+    void CloseProjectFile();
+
+    /**
     * @brief Slot for showing the log view.
     *
     */

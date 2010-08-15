@@ -89,6 +89,7 @@ MainWindow::MainWindow() :
 
     connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFile()));
     connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(OpenProjectFile()));
+    connect(mUI.mActionCloseProjectFile, SIGNAL(triggered()), this, SLOT(CloseProjectFile()));
 
 #ifdef WIN32
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
@@ -690,6 +691,7 @@ void MainWindow::OpenProjectFile()
 
     if (!filepath.isEmpty())
     {
+        mUI.mActionCloseProjectFile->setEnabled(true);
         mProject = new Project(filepath, this);
         mProject->Open();
         QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
@@ -708,10 +710,18 @@ void MainWindow::NewProjectFile()
 
     if (!filepath.isEmpty())
     {
+        mUI.mActionCloseProjectFile->setEnabled(true);
         Project prj(filepath, this);
         prj.Create();
         prj.Edit();
     }
+}
+
+void MainWindow::CloseProjectFile()
+{
+    delete mProject;
+    mProject = NULL;
+    mUI.mActionCloseProjectFile->setEnabled(false);
 }
 
 void MainWindow::ShowLogView()

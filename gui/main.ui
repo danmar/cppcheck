@@ -76,6 +76,7 @@
     <addaction name="mActionOpenXML"/>
     <addaction name="mActionNewProjectFile"/>
     <addaction name="mActionOpenProjectFile"/>
+    <addaction name="mActionCloseProjectFile"/>
     <addaction name="mActionSave"/>
     <addaction name="mActionQuit"/>
    </widget>
@@ -372,6 +373,14 @@
    </property>
    <property name="toolTip">
     <string>Log View</string>
+   </property>
+  </action>
+  <action name="mActionCloseProjectFile">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>C&amp;lose Project File</string>
    </property>
   </action>
  </widget>
