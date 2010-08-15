@@ -64,6 +64,7 @@ public:
         checkOther.sizeofCalculation();
         checkOther.checkEmptyCatchBlock();
         checkOther.checkRedundantAssignmentInSwitch();
+        checkOther.checkRedundantElseBlock();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -196,6 +197,9 @@ public:
     /** @brief %Check for assigning a variable to itself*/
     void checkSelfAssignment();
 
+    /** @breif %Check for unnecessary else statement */
+    void checkRedundantElseBlock();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void redundantIfDelete0Error(const Token *tok);
@@ -225,6 +229,7 @@ public:
     void emptyCatchBlockError(const Token *tok);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
     void selfAssignmentError(const Token *tok, const std::string &varname);
+    void redundantElseBlockError(const Token *tok);
 
     void getErrorMessages()
     {
@@ -258,6 +263,7 @@ public:
         redundantAssignmentInSwitchError(0, "varname");
         selfAssignmentError(0, "varname");
         invalidScanfError(0);
+        redundantElseBlockError(0);
 
         // optimisations
         postIncrementError(0, "varname", true);
@@ -295,6 +301,7 @@ public:
                "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
                "* empty catch() block\n"
                "* redundant assignment in a switch statement\n"
+               "* redundant else block after a return\n"
                "* look for 'sizeof sizeof ..'\n"
                "* look for calculations inside sizeof()\n"
                "* assignment of a variable to itself\n"
