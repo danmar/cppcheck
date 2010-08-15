@@ -107,8 +107,6 @@ private:
         TEST_CASE(selfAssignment);
         TEST_CASE(testScanf1);
         TEST_CASE(testScanf2);
-
-        TEST_CASE(redundantElseBlockTest);
     }
 
     void check(const char code[])
@@ -130,7 +128,6 @@ private:
         checkOther.sizeofCalculation();
         checkOther.checkEmptyCatchBlock();
         checkOther.checkRedundantAssignmentInSwitch();
-        checkOther.checkRedundantElseBlock();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -3083,72 +3080,6 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (style) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:7]: (style) scanf without field width limits can crash with huge input data\n", errout.str());
     }
-
-    void redundantElseBlockTest()
-    {
-        check("void foo()\n"
-              "{\n"
-              " if (!true)\n"
-              "  return;\n"
-              " else {\n"
-              "  dosomething();\n"
-              "  dosomething();\n"
-              " }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Redundant \"else {\" encapsulation because the if-statement returns from function\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              " if (1)\n"
-              "  return;\n"
-              " else if (2) {\n"
-              "  return;\n"
-              " } else {\n"
-              "  dosomething();\n"
-              "  dosomething();\n"
-              " }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Redundant \"else {\" encapsulation because the if-statement returns from function\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              " if (1)\n"
-              "  return;\n"
-              " else if (2) {\n"
-              "  dosomething();\n"
-              " } else {\n"
-              "  dosomething();\n"
-              "  dosomething();\n"
-              " }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              " if (1)\n"
-              "  dosomething();\n"
-              " else if (2) {\n"
-              "  return;\n"
-              " } else {\n"
-              "  dosomething();\n"
-              "  dosomething();\n"
-              " }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              " if (1)\n"
-              "  if (3) return;\n"
-              " else if (2) {\n"
-              "  return;\n"
-              " } else {\n"
-              "  dosomething();\n"
-              "  dosomething();\n"
-              " }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-	}
 };
 
 REGISTER_TEST(TestOther)

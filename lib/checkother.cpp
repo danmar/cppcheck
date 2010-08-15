@@ -375,66 +375,6 @@ void CheckOther::checkSelfAssignment()
 }
 
 //---------------------------------------------------------------------------
-//    if (x)
-//       return 0;
-//    else // no need to increase the indentation level
-//       return 1;
-//---------------------------------------------------------------------------
-void CheckOther::checkRedundantElseBlock()
-{
-    if (!_settings->_checkCodingStyle)
-        return;
-
-    const char pattern[] = "else| if ( ";
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern);
-    while (tok)
-    {
-        if (tok->str() == "else")
-        {
-            tok = Token::findmatch(tok->tokAt(2), pattern);
-            continue;
-		}
-
-        tok = tok->next()->link(); // jump over if ( ... )
-
-        // search for return in current indentlevel
-        int indentLevel = 0;
-        bool returning = false;
-        for(const Token * iter = tok->tokAt(2); iter != tok->next()->link(); iter = iter->next())
-        {
-            if (iter->str() == "{")
-                indentLevel++;
-			if (iter->str() == "}")
-                indentLevel--;
-            if (indentLevel == 0 && iter->str() == "return")
-			{
-                returning = true;
-                break;
-            }
-        }
-
-        // skip { .. }
-        tok = tok->next()->link()->next();
-
-        // if it returned, and it's an else if... verify next one
-        if (returning && tok->str() == "else" && tok->next()->str() == "if")
-        {
-            tok = tok->next();
-            continue;
-        }
-
-        // if its the last else and we're still returning, raise and error
-        if (returning && tok->str() == "else" && tok->next()->str() != "if")
-        {
-            redundantElseBlockError(tok);
-        }
-
-        // next round...
-        tok = Token::findmatch(tok, pattern);
-    }
-}
-
-//---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
 
@@ -4326,10 +4266,4 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
 {
     reportError(tok, Severity::style,
                 "selfAssignment", "Redundant assignment of \"" + varname + "\" to itself");
-}
-
-void CheckOther::redundantElseBlockError(const Token *tok)
-{
-    reportError(tok, Severity::style,
-                "redundantElseBlock", "Redundant \"else {\" encapsulation because the if-statement returns from function");
 }

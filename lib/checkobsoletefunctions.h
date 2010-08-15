@@ -23,9 +23,6 @@
 //---------------------------------------------------------------------------
 
 #include "check.h"
-#include <string>
-#include <list>
-
 
 /// @addtogroup Checks
 /// @{
@@ -39,12 +36,12 @@ class CheckObsoleteFunctions : public Check
 public:
     /** This constructor is used when registering the CheckObsoleteFunctions */
     CheckObsoleteFunctions() : Check()
-    { initObsoleteFunctions(); }
+    { }
 
     /** This constructor is used when running checks. */
     CheckObsoleteFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(tokenizer, settings, errorLogger)
-    { initObsoleteFunctions(); }
+    { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
@@ -56,56 +53,100 @@ public:
     void obsoleteFunctions();
 
 private:
-     /* function name / error message */
-    std::list< std::pair< const std::string, const std::string> > _obsoleteFunctions;
+    /** Report Error : Using obsolete function 'bsd_signal' */
+    void obsoleteFunctionbsd_signal(const Token *tok);
 
-    /** init obsolete functions list ' */
-    void initObsoleteFunctions() {
-        _obsoleteFunctions.push_back(std::make_pair("bsd_signal","Found obsolete function 'bsd_signal'. It is recommended that new applications use the 'sigaction' function"));
+    /** Report Error : Using obsolete function 'gethostbyaddr' */
+    void obsoleteFunctiongethostbyaddr(const Token*);
 
-        _obsoleteFunctions.push_back(std::make_pair("gethostbyaddr","Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getaddrinfo' function"));
-        _obsoleteFunctions.push_back(std::make_pair("gethostbyname","Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getnameinfo' function"));
+    /** Report Error : Using obsolete function 'gethostbyname' */
+    void obsoleteFunctiongethostbyname(const Token*);
 
-        _obsoleteFunctions.push_back(std::make_pair("usleep","Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function"));
+    /** Report Error : Using obsolete function 'usleep' */
+    void obsoleteFunctionusleep(const Token*);
 
-        _obsoleteFunctions.push_back(std::make_pair("bcmp","Found obsolete function 'bcmp'. It is recommended that new applications use the 'memcmp' function"));
-        _obsoleteFunctions.push_back(std::make_pair("bcopy","Found obsolete function 'bcopy'. It is recommended that new applications use the 'memmove' function"));
-        _obsoleteFunctions.push_back(std::make_pair("bzero","Found obsolete function 'bzero'. It is recommended that new applications use the 'memset' function"));
-        
-        _obsoleteFunctions.push_back(std::make_pair("ecvt","Found obsolete function 'ecvt'. It is recommended that new applications use the 'sprintf' function"));
-        _obsoleteFunctions.push_back(std::make_pair("fcvt","Found obsolete function 'fcvt'. It is recommended that new applications use the 'sprintf' function"));
-        _obsoleteFunctions.push_back(std::make_pair("gcvt","Found obsolete function 'gcvt'. It is recommended that new applications use the 'sprintf' function"));
+    /** Report Error : Using obsolete function 'bcmp' */
+    void obsoleteFunctionbcmp(const Token *tok);
 
-        _obsoleteFunctions.push_back(std::make_pair("ftime","Found obsolete function 'ftime'. It is recommended that new applications use the 'ftime' function. Realtime applications should use ''clock_gettime'' to determine the current time"));
+    /** Report Error : Using obsolete function 'bcopy' */
+    void obsoleteFunctionbcopy(const Token *tok);
 
-        _obsoleteFunctions.push_back(std::make_pair("getcontext","Found obsolete function 'getcontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads"));
-        _obsoleteFunctions.push_back(std::make_pair("makecontext","Found obsolete function 'makecontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads"));
-        _obsoleteFunctions.push_back(std::make_pair("swapcontext","Found obsolete function 'swapcontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads"));
+    /** Report Error : Using obsolete function 'bzero' */
+    void obsoleteFunctionbzero(const Token *tok);
 
-        _obsoleteFunctions.push_back(std::make_pair("getwd","Found obsolete function 'getwd'. It is recommended that new applications use the 'getcwd' function"));
+    /** Report Error : Using obsolete function 'ecvt' */
+    void obsoleteFunctionecvt(const Token *tok);
 
-        _obsoleteFunctions.push_back(std::make_pair("index","Found obsolete function 'index'. It is recommended to use the function 'strchr' instead"));
-        _obsoleteFunctions.push_back(std::make_pair("rindex","Found obsolete function 'rindex'. It is recommended to use the function 'strrchr' instead"));
+    /** Report Error : Using obsolete function 'fcvt' */
+    void obsoleteFunctionfcvt(const Token *tok);
 
-        _obsoleteFunctions.push_back(std::make_pair("pthread_attr_getstackaddr","Found obsolete function 'pthread_attr_getstackaddr'.It is recommended that new applications use the 'pthread_attr_getstack' function"));
-        _obsoleteFunctions.push_back(std::make_pair("pthread_attr_setstackaddr","Found obsolete function 'pthread_attr_setstackaddr'.It is recommended that new applications use the 'pthread_attr_setstack' function"));
+    /** Report Error : Using obsolete function 'gcvt' */
+    void obsoleteFunctiongcvt(const Token *tok);
 
-        _obsoleteFunctions.push_back(std::make_pair("scalbln","Found obsolete function 'scalb'.It is recommended to use either 'scalbln', 'scalblnf' or 'scalblnl' instead of this function"));
+    /** Report Error : Using obsolete function 'ftime' */
+    void obsoleteFunctionftime(const Token *tok);
 
-        _obsoleteFunctions.push_back(std::make_pair("ualarm","Found obsolete function 'ualarm'.It is recommended to use either 'timer_create', 'timer_delete', 'timer_getoverrun', 'timer_gettime', or 'timer_settime' instead of this function"));
+    /** Report Error : Using obsolete function 'getcontext' */
+    void obsoleteFunctiongetcontext(const Token *tok);
 
-        _obsoleteFunctions.push_back(std::make_pair("vfork","Found obsolete function 'vfork'. It is recommended to use the function 'fork' instead"));
+    /** Report Error : Using obsolete function 'makecontext' */
+    void obsoleteFunctionmakecontext(const Token *tok);
 
-        _obsoleteFunctions.push_back(std::make_pair("wcswcs","Found obsolete function 'wcswcs'. It is recommended to use the function 'wcsstr' instead"));
+    /** Report Error : Using obsolete function 'swapcontext' */
+    void obsoleteFunctionswapcontext(const Token *tok);
 
-    }
+    /** Report Error : Using obsolete function 'getwd' */
+    void obsoleteFunctiongetwd(const Token *tok);
+
+    /** Report Error : Using obsolete function 'index' */
+    void obsoleteFunctionindex(const Token *tok);
+
+    /** Report Error : Using obsolete function 'pthread_attr_getstackaddr' */
+    void obsoleteFunctionpthread_attr_getstackaddr(const Token *tok);
+
+    /** Report Error : Using obsolete function 'pthread_attr_setstackaddr' */
+    void obsoleteFunctionpthread_attr_setstackaddr(const Token *tok);
+
+    /** Report Error : Using obsolete function 'rindex' */
+    void obsoleteFunctionrindex(const Token *tok);
+
+    /** Report Error : Using obsolete function 'scalb' */
+    void obsoleteFunctionscalb(const Token *tok);
+
+    /** Report Error : Using obsolete function 'ualarm' */
+    void obsoleteFunctionualarm(const Token *tok);
+
+    /** Report Error : Using obsolete function 'vfork' */
+    void obsoleteFunctionvfork(const Token *tok);
+
+    /** Report Error : Using obsolete function 'wcswcs' */
+    void obsoleteFunctionwcswcs(const Token *tok);
 
     void getErrorMessages()
     {
-        std::list< std::pair<const std::string, const std::string> >::const_iterator it (_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());
-        for(;it!=itend;++it) {
-            reportError(0, Severity::style, "obsoleteFunctions"+it->first, it->second);
-        }
+        obsoleteFunctionbsd_signal(0);
+        obsoleteFunctiongethostbyaddr(0);
+        obsoleteFunctiongethostbyname(0);
+        obsoleteFunctionusleep(0);
+        obsoleteFunctionbcmp(0);
+        obsoleteFunctionbcopy(0);
+        obsoleteFunctionbzero(0);
+        obsoleteFunctionecvt(0);
+        obsoleteFunctionfcvt(0);
+        obsoleteFunctiongcvt(0);
+        obsoleteFunctionftime(0);
+        obsoleteFunctiongetcontext(0);
+        obsoleteFunctionmakecontext(0);
+        obsoleteFunctionswapcontext(0);
+        obsoleteFunctiongetwd(0);
+        obsoleteFunctionindex(0);
+        obsoleteFunctionpthread_attr_getstackaddr(0);
+        obsoleteFunctionpthread_attr_setstackaddr(0);
+        obsoleteFunctionrindex(0);
+        obsoleteFunctionscalb(0);
+        obsoleteFunctionualarm(0);
+        obsoleteFunctionvfork(0);
+        obsoleteFunctionwcswcs(0);
     }
 
     std::string name() const
@@ -115,12 +156,30 @@ private:
 
     std::string classInfo() const
     {
-        std::string info = "Warn if any of these obsolete functions are used:\n";
-        std::list< std::pair<const std::string, const std::string> >::const_iterator it (_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());
-        for(;it!=itend;++it) {
-            info += "* " + it->first + "\n";
-        }
-        return info;
+        return "Warn if any of these obsolete functions are used:\n"
+               "* bsd_signal\n"
+               "* gethostbyaddr\n"
+               "* gethostbyname\n"
+               "* usleep\n"
+               "* bcmp\n"
+               "* bcopy\n"
+               "* bzero\n"
+               "* ecvt\n"
+               "* fcvt\n"
+               "* gcvt\n"
+               "* ftime\n"
+               "* getcontext\n"
+               "* makecontext\n"
+               "* swapcontext\n"
+               "* getwd\n"
+               "* index\n"
+               "* pthread_attr_getstackaddr\n"
+               "* pthread_attr_setstackaddr\n"
+               "* rindex\n"
+               "* scalb\n"
+               "* ualarm\n"
+               "* vfork\n"
+               "* wcswcs\n";
     }
 };
 /// @}
