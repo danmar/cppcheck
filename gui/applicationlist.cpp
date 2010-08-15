@@ -18,6 +18,7 @@
 
 #include "applicationlist.h"
 #include <QStringList>
+#include <QFileInfo>
 #include "common.h"
 
 ApplicationList::ApplicationList(QObject *parent) :
@@ -36,6 +37,30 @@ void ApplicationList::LoadSettings(QSettings *programSettings)
 
     QStringList names = programSettings->value(SETTINGS_APPLICATION_NAMES, QStringList()).toStringList();
     QStringList paths = programSettings->value(SETTINGS_APPLICATION_PATHS, QStringList()).toStringList();
+
+	if (names.empty() && paths.empty())
+	{
+		do {
+			// use as default for gnome environments
+			if (QFileInfo("/usr/bin/gedit").isExecutable())
+			{
+				AddApplicationType("gedit", "/usr/bin/gedit +(line) (file)");
+				break;
+			}
+			// use as default for kde environments
+			if (QFileInfo("/usr/bin/kate").isExecutable())
+			{
+				AddApplicationType("kate", "/usr/bin/kate -l(line) (file)");
+				break;
+			}
+			// use as default for windows environments
+			if (QFileInfo("%PROGRAMFILES%\\Notepad++\\notepad++.exe").isExecutable())
+			{
+				AddApplicationType("notepad++", "%PROGRAMFILES%\\Notepad++\\notepad++.exe -n(line) (file)");
+				break;
+			}
+		} while ( 0 );
+	}
 
     if (names.size() == paths.size())
     {
