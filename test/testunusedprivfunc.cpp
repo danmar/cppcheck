@@ -43,6 +43,7 @@ private:
         // [ 2236547 ] False positive --style unused function, called via pointer
         TEST_CASE(func_pointer1);
         TEST_CASE(func_pointer2);
+        TEST_CASE(func_pointer3);
 
         TEST_CASE(ctor);
 
@@ -254,6 +255,19 @@ private:
     }
 
 
+    void func_pointer3()
+    {
+        check("class c1\n"
+              "{\n"
+              "public:\n"
+              "    c1()\n"
+              "    { sigc::mem_fun(this, &c1::f1); }\n"
+              "\n"
+              "private:\n"
+              "    void f1() const {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
     void ctor()

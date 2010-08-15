@@ -1173,7 +1173,12 @@ void CheckClass::privateFunctions()
         {
             // Final check; check if the function pointer is used somewhere..
             const std::string _pattern("return|(|)|,|= " + FuncList.front()->str());
-            if (!Token::findmatch(_tokenizer->tokens(), _pattern.c_str()))
+
+            // or if the function address is used somewhere...
+            // eg. sigc::mem_fun(this, &className::classFunction)
+            const std::string _pattern2("& " + classname + " :: " + FuncList.front()->str());
+            if (!Token::findmatch(_tokenizer->tokens(), _pattern.c_str()) &&
+                !Token::findmatch(_tokenizer->tokens(), _pattern2.c_str()))
             {
                 unusedPrivateFunctionError(FuncList.front(), classname, FuncList.front()->str());
             }
