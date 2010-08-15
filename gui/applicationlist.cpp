@@ -19,6 +19,7 @@
 #include "applicationlist.h"
 #include <QStringList>
 #include <QFileInfo>
+#include <stdlib.h>
 #include "common.h"
 
 ApplicationList::ApplicationList(QObject *parent) :
@@ -55,9 +56,10 @@ void ApplicationList::LoadSettings(QSettings *programSettings)
                 break;
             }
             // use as default for windows environments
-            if (QFileInfo("%PROGRAMFILES%\\Notepad++\\notepad++.exe").isExecutable())
+            const QString appPath(getenv("ProgramFiles"));
+            if (!appPath.isNull() && QFileInfo(appPath + "\\Notepad++\\notepad++.exe").isExecutable())
             {
-                AddApplicationType("notepad++", "%PROGRAMFILES%\\Notepad++\\notepad++.exe -n(line) (file)");
+                AddApplicationType("notepad++", QString(appPath) + "\\Notepad++\\notepad++.exe -n(line) (file)");
                 break;
             }
         }
