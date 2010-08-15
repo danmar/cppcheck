@@ -136,6 +136,7 @@ private:
         TEST_CASE(const29); // ticket #1922
         TEST_CASE(const30);
         TEST_CASE(const31);
+        TEST_CASE(const32); // ticket #1905 - member array is assigned
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3862,6 +3863,16 @@ private:
                    "    int get() { return a; }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) The function 'Fred::get' can be const\n", errout.str());
+    }
+
+    void const32()
+    {
+        checkConst("class Fred {\n"
+                   "public:\n"
+                   "    std::string a[10];\n"
+                   "    void seta() { a[0] = \"\"; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const

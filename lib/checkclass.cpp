@@ -1913,6 +1913,13 @@ bool CheckClass::checkConstFunc(const SpaceInfo *info, const Token *tok)
                 isconst = false;
                 break;
             }
+            else if (tok1->previous()->str() == "]")
+            {
+                // TODO: I assume that the assigned variable is a member variable
+                //       don't assume it
+                isconst = false;
+                break;
+            }
         }
 
         // streaming: <<
