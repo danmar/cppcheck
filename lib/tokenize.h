@@ -464,6 +464,11 @@ public:
     void simplifyAsm();
 
     /**
+     * Simplify bitfields - the field width is removed as we don't use it.
+     */
+    void simplifyBitfields();
+
+    /**
      * Remove __builtin_expect(...), likely(...), and unlikely(...)
      */
     void simplifyBuiltinExpect();

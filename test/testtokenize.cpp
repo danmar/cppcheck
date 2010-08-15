@@ -142,6 +142,8 @@ private:
         TEST_CASE(varid17); // ticket #1810
         TEST_CASE(varid18);
         TEST_CASE(varid19);
+        TEST_CASE(varid20);
+        TEST_CASE(varid21);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -234,6 +236,8 @@ private:
 
         TEST_CASE(labels);
         TEST_CASE(simplifyInitVar);
+
+        TEST_CASE(bitfields);
     }
 
 
@@ -2266,6 +2270,38 @@ private:
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
+    void varid20()
+    {
+        const std::string code("void foo()\n"
+                               "{\n"
+                               "    pair<vector<int>, vector<double> > x;\n"
+                               "}\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: void foo ( )\n"
+                                   "2: {\n"
+                                   "3: pair < vector < int > , vector < double > > x@1 ;\n"
+                                   "4: }\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid21()
+    {
+        const std::string code("void foo()\n"
+                               "{\n"
+                               "    vector<const std::string &> x;\n"
+                               "}\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: void foo ( )\n"
+                                   "2: {\n"
+                                   "3: vector < const std :: string & > x@1 ;\n"
+                                   "4: }\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
 
     void varidStl()
     {
@@ -4103,6 +4139,12 @@ private:
             checkSimplifyInitVar(code, true);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void bitfields()
+    {
+        const char code[] = "struct A { int x : 3; };";
+        ASSERT_EQUALS("struct A { int x ; } ;", tokenizeAndStringify(code,false));
     }
 };
 

@@ -1679,6 +1679,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // specify array size..
     arraySize();
 
+    // simplify bit fields..
+    simplifyBitfields();
+
     // simplify labels..
     labels();
 
@@ -2740,6 +2743,9 @@ void Tokenizer::setVarId()
             {
                 again = false;
 
+                if (tok2->str() == "const")
+                    tok2 = tok2->next();
+
                 while (Token::Match(tok2, "%var% ::"))
                     tok2 = tok2->tokAt(2);
 
@@ -2749,26 +2755,28 @@ void Tokenizer::setVarId()
                     tok2 = tok2->tokAt(2);
                     again = true;
                 }
-                else if (Token::Match(tok2, "%type% *| ,"))
+                else if (Token::Match(tok2, "%type% *|&| ,"))
                 {
                     tok2 = tok2->tokAt(2);
                     if (tok2->str() == ",")
                         tok2 = tok2->next();
                     again = true;
                 }
-                else if (level > 1 && Token::Match(tok2, "%type% *| >"))
+                else if (level > 1 && Token::Match(tok2, "%type% *|&| >"))
                 {
                     --level;
                     while (tok2->str() != ">")
                         tok2 = tok2->next();
                     tok2 = tok2->next();
-                    if (level == 1 && tok->str() == ">")
+                    if (tok2->str() == ",")
+                        tok2 = tok2->next();
+                    if (level == 1 && tok2->str() == ">")
                         break;
                     again = true;
                 }
                 else
                 {
-                    while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->str() == "*" || tok2->str() == ","))
+                    while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->str() == "*" || tok2->str() == "&" || tok2->str() == ","))
                         tok2 = tok2->next();
                 }
             }
@@ -7848,6 +7856,18 @@ void Tokenizer::simplifyAsm()
         Token::createMutualLinks(tok->tokAt(2), tok->tokAt(3));
     }
 }
+
+
+// Simplify bitfields
+void Tokenizer::simplifyBitfields()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "[;{] int|signed|unsigned %var% : %num% ;"))
+            Token::eraseTokens(tok->tokAt(2), tok->tokAt(5));
+    }
+}
+
 
 // Remove __builtin_expect(...), likely(...), and unlikely(...)
 void Tokenizer::simplifyBuiltinExpect()
