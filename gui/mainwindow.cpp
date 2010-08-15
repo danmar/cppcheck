@@ -90,6 +90,7 @@ MainWindow::MainWindow() :
     connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFile()));
     connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(OpenProjectFile()));
     connect(mUI.mActionCloseProjectFile, SIGNAL(triggered()), this, SLOT(CloseProjectFile()));
+    connect(mUI.mActionEditProjectFile, SIGNAL(triggered()), this, SLOT(EditProjectFile()));
 
 #ifdef WIN32
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
@@ -692,6 +693,7 @@ void MainWindow::OpenProjectFile()
     if (!filepath.isEmpty())
     {
         mUI.mActionCloseProjectFile->setEnabled(true);
+        mUI.mActionEditProjectFile->setEnabled(true);
         mProject = new Project(filepath, this);
         mProject->Open();
         QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
@@ -714,6 +716,7 @@ void MainWindow::NewProjectFile()
         Project prj(filepath, this);
         prj.Create();
         prj.Edit();
+        mUI.mActionEditProjectFile->setEnabled(true);
     }
 }
 
@@ -722,6 +725,22 @@ void MainWindow::CloseProjectFile()
     delete mProject;
     mProject = NULL;
     mUI.mActionCloseProjectFile->setEnabled(false);
+    mUI.mActionEditProjectFile->setEnabled(false);
+}
+
+void MainWindow::EditProjectFile()
+{
+    if (!mProject)
+    {
+        QMessageBox msg(QMessageBox::Critical,
+                        tr("Cppcheck"),
+                        QString(tr("No project file loaded")),
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
+        return;
+    }
+    mProject->Edit();
 }
 
 void MainWindow::ShowLogView()

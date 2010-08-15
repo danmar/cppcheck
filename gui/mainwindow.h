@@ -153,6 +153,12 @@ public slots:
     void CloseProjectFile();
 
     /**
+    * @brief Slot to edit project file.
+    *
+    */
+    void EditProjectFile();
+
+    /**
     * @brief Slot for showing the log view.
     *
     */

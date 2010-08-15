@@ -74,9 +74,12 @@
      <string>&amp;File</string>
     </property>
     <addaction name="mActionOpenXML"/>
+    <addaction name="separator"/>
     <addaction name="mActionNewProjectFile"/>
     <addaction name="mActionOpenProjectFile"/>
+    <addaction name="mActionEditProjectFile"/>
     <addaction name="mActionCloseProjectFile"/>
+    <addaction name="separator"/>
     <addaction name="mActionSave"/>
     <addaction name="mActionQuit"/>
    </widget>
@@ -381,6 +384,14 @@
    </property>
    <property name="text">
     <string>C&amp;lose Project File</string>
+   </property>
+  </action>
+  <action name="mActionEditProjectFile">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Edit Project File...</string>
    </property>
   </action>
  </widget>
