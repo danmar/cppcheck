@@ -62,6 +62,15 @@ public:
     */
     void Create();
 
+    /**
+    * @brief Return current project file.
+    * @return project file.
+    */
+    ProjectFile * GetProjectFile() const
+    {
+        return mPFile;
+    }
+
 private:
 
     QString mFilename;
