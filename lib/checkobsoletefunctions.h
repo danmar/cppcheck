@@ -39,12 +39,16 @@ class CheckObsoleteFunctions : public Check
 public:
     /** This constructor is used when registering the CheckObsoleteFunctions */
     CheckObsoleteFunctions() : Check()
-    { initObsoleteFunctions(); }
+    {
+        initObsoleteFunctions();
+    }
 
     /** This constructor is used when running checks. */
     CheckObsoleteFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(tokenizer, settings, errorLogger)
-    { initObsoleteFunctions(); }
+    {
+        initObsoleteFunctions();
+    }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
@@ -56,11 +60,12 @@ public:
     void obsoleteFunctions();
 
 private:
-     /* function name / error message */
+    /* function name / error message */
     std::list< std::pair< const std::string, const std::string> > _obsoleteFunctions;
 
     /** init obsolete functions list ' */
-    void initObsoleteFunctions() {
+    void initObsoleteFunctions()
+    {
         _obsoleteFunctions.push_back(std::make_pair("bsd_signal","Found obsolete function 'bsd_signal'. It is recommended that new applications use the 'sigaction' function"));
 
         _obsoleteFunctions.push_back(std::make_pair("gethostbyaddr","Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getaddrinfo' function"));
@@ -71,7 +76,7 @@ private:
         _obsoleteFunctions.push_back(std::make_pair("bcmp","Found obsolete function 'bcmp'. It is recommended that new applications use the 'memcmp' function"));
         _obsoleteFunctions.push_back(std::make_pair("bcopy","Found obsolete function 'bcopy'. It is recommended that new applications use the 'memmove' function"));
         _obsoleteFunctions.push_back(std::make_pair("bzero","Found obsolete function 'bzero'. It is recommended that new applications use the 'memset' function"));
-        
+
         _obsoleteFunctions.push_back(std::make_pair("ecvt","Found obsolete function 'ecvt'. It is recommended that new applications use the 'sprintf' function"));
         _obsoleteFunctions.push_back(std::make_pair("fcvt","Found obsolete function 'fcvt'. It is recommended that new applications use the 'sprintf' function"));
         _obsoleteFunctions.push_back(std::make_pair("gcvt","Found obsolete function 'gcvt'. It is recommended that new applications use the 'sprintf' function"));
@@ -102,8 +107,9 @@ private:
 
     void getErrorMessages()
     {
-        std::list< std::pair<const std::string, const std::string> >::const_iterator it (_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());
-        for(;it!=itend;++it) {
+        std::list< std::pair<const std::string, const std::string> >::const_iterator it(_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());
+        for (; it!=itend; ++it)
+        {
             reportError(0, Severity::style, "obsoleteFunctions"+it->first, it->second);
         }
     }
@@ -116,8 +122,9 @@ private:
     std::string classInfo() const
     {
         std::string info = "Warn if any of these obsolete functions are used:\n";
-        std::list< std::pair<const std::string, const std::string> >::const_iterator it (_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());
-        for(;it!=itend;++it) {
+        std::list< std::pair<const std::string, const std::string> >::const_iterator it(_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());
+        for (; it!=itend; ++it)
+        {
             info += "* " + it->first + "\n";
         }
         return info;

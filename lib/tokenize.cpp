@@ -7863,8 +7863,10 @@ void Tokenizer::simplifyBitfields()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[;{] int|signed|unsigned %var% : %num% ;"))
+        if (Token::Match(tok, "[;{] signed|unsigned|int|long %var% : %num% ;"))
             Token::eraseTokens(tok->tokAt(2), tok->tokAt(5));
+        if (Token::Match(tok, "[;{] signed|unsigned int|long %var% : %num% ;"))
+            Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
     }
 }
 

@@ -38,8 +38,9 @@ void CheckObsoleteFunctions::obsoleteFunctions()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        std::list< std::pair<const std::string, const std::string> >::const_iterator it (_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());
-        for(;it!=itend;++it) {
+        std::list< std::pair<const std::string, const std::string> >::const_iterator it(_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());
+        for (; it!=itend; ++it)
+        {
             if (tok->strAt(1) == it->first && tok->strAt(2) == "(" && tok->tokAt(1)->varId() == 0 && !tok->tokAt(0)->isName() && tok->strAt(0) != "." && tok->strAt(0) != "::")
             {
                 reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);

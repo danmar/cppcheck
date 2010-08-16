@@ -4143,8 +4143,11 @@ private:
 
     void bitfields()
     {
-        const char code[] = "struct A { int x : 3; };";
-        ASSERT_EQUALS("struct A { int x ; } ;", tokenizeAndStringify(code,false));
+        const char code1[] = "struct A { int x : 3; };";
+        ASSERT_EQUALS("struct A { int x ; } ;", tokenizeAndStringify(code1,false));
+
+        const char code2[] = "struct A { unsigned long x : 3; };";
+        ASSERT_EQUALS("struct A { unsigned long x ; } ;", tokenizeAndStringify(code2,false));
     }
 };
 
