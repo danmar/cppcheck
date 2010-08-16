@@ -70,10 +70,17 @@ void CheckClass::createSymbolDatabase()
             new_info->nest = info;
             new_info->access = tok->str() == "struct" ? Public : Private;
             new_info->numConstructors = 0;
-            new_info->getVarList();
 
-            // goto initial '{'
-            const Token *tok2 = initBaseInfo(new_info, tok);
+            const Token *tok2 = tok->tokAt(2);
+
+            // only create variable list and base list if not namespace
+            if (!new_info->isNamespace)
+            {
+                new_info->getVarList();
+
+                // goto initial '{'
+                tok2 = initBaseInfo(new_info, tok);
+            }
 
             new_info->classStart = tok2;
             new_info->classEnd = new_info->classStart->link();
@@ -339,10 +346,17 @@ const Token *CheckClass::initBaseInfo(SpaceInfo *info, const Token *tok)
 {
     // goto initial '{'
     const Token *tok2 = tok->tokAt(2);
+    int level = 0;
     while (tok2 && tok2->str() != "{")
     {
+        // skip unsupported templates
+        if (tok2->str() == "<")
+            level++;
+        else if (tok2->str() == ">")
+            level--;
+
         // check for base classes
-        if (Token::Match(tok2, ":|,"))
+        else if (level == 0 && Token::Match(tok2, ":|,"))
         {
             BaseInfo base;
 

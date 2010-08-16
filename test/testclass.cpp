@@ -147,6 +147,8 @@ private:
         TEST_CASE(constVirtualFunc);
         TEST_CASE(constIfCfg);  // ticket #1881 - fp when there are #if
         TEST_CASE(constFriend); // ticket #1921 - fp for friend function
+
+        TEST_CASE(symboldatabase1);
     }
 
     // Check the operator Equal
@@ -4194,6 +4196,18 @@ private:
                             "    friend void f() { }\n"
                             "};";
         checkConst(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase1()
+    {
+        checkConst("namespace foo {\n"
+                   "    class bar;\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class foo : public bar < int, int> {\n"
+                   "};");
         ASSERT_EQUALS("", errout.str());
     }
 };
