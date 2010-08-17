@@ -5314,9 +5314,9 @@ bool Tokenizer::simplifyLogicalOperators()
             ret = true;
         }
         // "%var%|) and %var%|("
-        else if (Token::Match(tok, "and|or") &&
-                 ((Token::Match(tok->previous(), "%var%") || tok->previous()->str() == ")") ||
-                  (Token::Match(tok->next(), "%var%") || tok->next()->str() == "(")))
+        else if (Token::Match(tok->previous(), "%any% and|or %any%") &&
+                 ((tok->previous()->isName() || tok->previous()->str() == ")") ||
+                  (tok->next()->isName() || tok->next()->str() == "(")))
         {
             if (tok->str() == "and")
                 tok->str("&&");
