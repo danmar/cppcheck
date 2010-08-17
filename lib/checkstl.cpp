@@ -108,6 +108,11 @@ void CheckStl::iterators()
                 if (!tok2)
                     break;
             }
+            else if (Token::Match(tok2, "%varid% = %var% ;", iteratorId))
+            {
+                validIterator = true;
+                tok2 = tok2->tokAt(2);
+            }
             else if (!validIterator && Token::Match(tok2, "* %varid%", iteratorId))
             {
                 dereferenceErasedError(tok2, tok2->strAt(1));

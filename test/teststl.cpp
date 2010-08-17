@@ -57,7 +57,8 @@ private:
         TEST_CASE(eraseReturn1);
         TEST_CASE(eraseReturn2);
         TEST_CASE(eraseGoto);
-        TEST_CASE(eraseAssign);
+        TEST_CASE(eraseAssign1);
+        TEST_CASE(eraseAssign2);
         TEST_CASE(eraseErase);
         TEST_CASE(eraseByValue);
 
@@ -521,7 +522,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void eraseAssign()
+    void eraseAssign1()
     {
         check("void f()\n"
               "{\n"
@@ -529,6 +530,25 @@ private:
               "    {\n"
               "        foo.erase(it);\n"
               "        it = foo.begin();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void eraseAssign2()
+    {
+        check("void f(list<int> &ints)\n"
+              "{\n"
+              "    for (list<int>::iterator it = ints.begin(); it != ints.end(); ++it) {\n"
+              "        if (*it == 123) {\n"
+              "            list<int>::iterator copy = it;\n"
+              "            ++copy;\n"
+              "            ints.erase(it);\n"
+              "            it = copy;\n"
+              "        } else {\n"
+              "            it->second = 123;\n"
+              "            ++it;\n"
+              "        }\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
