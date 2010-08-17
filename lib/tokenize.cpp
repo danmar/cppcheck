@@ -1749,6 +1749,37 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         }
     }
 
+    // Remove "= default|delete" inside class|struct definitions
+    // Todo: Remove it if it is used "externally" too.
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "struct|class %var% :|{"))
+        {
+            unsigned int indentlevel = 0;
+            for (Token * tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{")
+                    ++indentlevel;
+                else if (tok2->str() == "}")
+                {
+                    if (indentlevel <= 1)
+                        break;
+                    --indentlevel;
+                }
+                else if (indentlevel == 1 && Token::Match(tok2, ") = delete|default ;"))
+                {
+                    const Token *end = tok2->tokAt(4);
+                    tok2 = tok2->link()->previous();
+                    while ((tok2->isName() && tok2->str().find(":") == std::string::npos) ||
+                           Token::Match(tok2, "[&*~]"))
+                        tok2 = tok2->previous();
+                    if (Token::Match(tok2, "[;{}]") || tok2->isName())
+                        Token::eraseTokens(tok2, end);
+                }
+            }
+        }
+    }
+
     // Remove __declspec()
     simplifyDeclspec();
 

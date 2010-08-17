@@ -231,6 +231,7 @@ private:
         TEST_CASE(removedeclspec);
         TEST_CASE(removeattribute);
         TEST_CASE(cpp0xtemplate);
+        TEST_CASE(cpp0xdefault);
 
         TEST_CASE(arraySize);
 
@@ -3872,6 +3873,25 @@ private:
                            "  fn2<int>();\n"
                            "}\n";
         ASSERT_EQUALS(";\n\n\nint main ( )\n{\nfn2<int> ( ) ;\n}void fn2<int> ( int t = [ ] { return 1 ; } ( ) )\n{ }", tokenizeAndStringify(code));
+    }
+
+    void cpp0xdefault()
+    {
+        {
+            const char *code = "struct foo {"
+                               "    foo() = default;"
+                               "}";
+            ASSERT_EQUALS("struct foo { }", tokenizeAndStringify(code));
+        }
+
+        {
+            const char *code = "struct foo {"
+                               "    foo();"
+                               "}"
+                               "foo::foo() = delete;";
+            ASSERT_EQUALS("struct foo { foo ( ) ; } foo :: foo ( ) = delete ;", tokenizeAndStringify(code));
+            TODO_ASSERT_EQUALS("struct foo { }", tokenizeAndStringify(code));
+        }
     }
 
     std::string arraySize_(const std::string &code)
