@@ -692,6 +692,10 @@ void MainWindow::OpenProjectFile()
 
     if (!filepath.isEmpty())
     {
+        QFileInfo inf(filepath);
+        const QString filename = inf.fileName();
+        FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
+
         mUI.mActionCloseProjectFile->setEnabled(true);
         mUI.mActionEditProjectFile->setEnabled(true);
         mProject = new Project(filepath, this);
@@ -714,6 +718,9 @@ void MainWindow::NewProjectFile()
     {
         mUI.mActionCloseProjectFile->setEnabled(true);
         mUI.mActionEditProjectFile->setEnabled(true);
+        QFileInfo inf(filepath);
+        const QString filename = inf.fileName();
+        FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
 
         if (mProject)
             delete mProject;
@@ -729,6 +736,7 @@ void MainWindow::CloseProjectFile()
     mProject = NULL;
     mUI.mActionCloseProjectFile->setEnabled(false);
     mUI.mActionEditProjectFile->setEnabled(false);
+    FormatAndSetTitle();
 }
 
 void MainWindow::EditProjectFile()
