@@ -82,6 +82,8 @@ void Project::Edit()
     dlg.SetIncludepaths(includes);
     QStringList defines = mPFile->GetDefines();
     dlg.SetDefines(defines);
+    QStringList paths = mPFile->GetCheckPaths();
+    dlg.SetPaths(paths);
     int rv = dlg.exec();
     if (rv == QDialog::Accepted)
     {
@@ -89,6 +91,8 @@ void Project::Edit()
         mPFile->SetIncludes(includes);
         QStringList defines = dlg.GetDefines();
         mPFile->SetDefines(defines);
+        QStringList paths = dlg.GetPaths();
+        mPFile->SetCheckPaths(paths);
         bool writeSuccess = mPFile->Write();
         if (!writeSuccess)
         {
