@@ -1768,13 +1768,25 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
                 }
                 else if (indentlevel == 1 && Token::Match(tok2, ") = delete|default ;"))
                 {
-                    const Token *end = tok2->tokAt(4);
+                    Token * const end = tok2->tokAt(4);
                     tok2 = tok2->link()->previous();
+
+                    // operator ==|>|<|..
+                    if (Token::Match(tok->previous(), "operator %any%"))
+                        tok2 = tok2->previous();
+                    else if (Token::simpleMatch(tok2->tokAt(-2), "operator [ ]"))
+                        tok2 = tok2->tokAt(-2);
+                    else if (Token::simpleMatch(tok2->tokAt(-2), "operator ( )"))
+                        tok2 = tok2->tokAt(-2);
+                    else if (Token::simpleMatch(tok2->tokAt(-3), "operator delete [ ]"))
+                        tok2 = tok2->tokAt(-3);
+
                     while ((tok2->isName() && tok2->str().find(":") == std::string::npos) ||
                            Token::Match(tok2, "[&*~]"))
                         tok2 = tok2->previous();
                     if (Token::Match(tok2, "[;{}]") || tok2->isName())
                         Token::eraseTokens(tok2, end);
+                    tok2 = end;
                 }
             }
         }
