@@ -144,6 +144,10 @@ private:
         TEST_CASE(varid19);
         TEST_CASE(varid20);
         TEST_CASE(varid21);
+        TEST_CASE(varid22);
+        TEST_CASE(varid23);
+        TEST_CASE(varid24);
+        TEST_CASE(varid25);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -238,7 +242,11 @@ private:
         TEST_CASE(labels);
         TEST_CASE(simplifyInitVar);
 
-        TEST_CASE(bitfields);
+        TEST_CASE(bitfields1);
+        TEST_CASE(bitfields2);
+        TEST_CASE(bitfields3);
+
+        TEST_CASE(microsoftMFC);
     }
 
 
@@ -2304,6 +2312,86 @@ private:
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
+    void varid22()
+    {
+        const std::string code("class foo()\n"
+                               "{\n"
+                               "public:\n"
+                               "    vector<const std::string &> x;\n"
+                               "};\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class foo ( )\n"
+                                   "2: {\n"
+                                   "3: public:\n"
+                                   "4: vector < const std :: string & > x@1 ;\n"
+                                   "5: } ;\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid23()
+    {
+        const std::string code("class foo()\n"
+                               "{\n"
+                               "public:\n"
+                               "    static vector<const std::string &> x;\n"
+                               "};\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class foo ( )\n"
+                                   "2: {\n"
+                                   "3: public:\n"
+                                   "4: static vector < const std :: string & > x@1 ;\n"
+                                   "5: } ;\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid24()
+    {
+        const std::string code("class foo()\n"
+                               "{\n"
+                               "public:\n"
+                               "    ;\n"
+                               "private:\n"
+                               "    static int i;\n"
+                               "};\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class foo ( )\n"
+                                   "2: {\n"
+                                   "3: public:\n"
+                                   "4: ;\n"
+                                   "5: private:\n"
+                                   "6: static int i@1 ;\n"
+                                   "7: } ;\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid25()
+    {
+        const std::string code("class foo()\n"
+                               "{\n"
+                               "public:\n"
+                               "    ;\n"
+                               "private:\n"
+                               "    mutable int i;\n"
+                               "};\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class foo ( )\n"
+                                   "2: {\n"
+                                   "3: public:\n"
+                                   "4: ;\n"
+                                   "5: private:\n"
+                                   "6: mutable int i@1 ;\n"
+                                   "7: } ;\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
 
     void varidStl()
     {
@@ -4170,13 +4258,88 @@ private:
         }
     }
 
-    void bitfields()
+    void bitfields1()
     {
-        const char code1[] = "struct A { int x : 3; };";
-        ASSERT_EQUALS("struct A { int x ; } ;", tokenizeAndStringify(code1,false));
+        const char code1[] = "struct A { bool x : 1; };";
+        ASSERT_EQUALS("struct A { bool x ; } ;", tokenizeAndStringify(code1,false));
 
-        const char code2[] = "struct A { unsigned long x : 3; };";
-        ASSERT_EQUALS("struct A { unsigned long x ; } ;", tokenizeAndStringify(code2,false));
+        const char code2[] = "struct A { char x : 3; };";
+        ASSERT_EQUALS("struct A { char x ; } ;", tokenizeAndStringify(code2,false));
+
+        const char code3[] = "struct A { short x : 3; };";
+        ASSERT_EQUALS("struct A { short x ; } ;", tokenizeAndStringify(code3,false));
+
+        const char code4[] = "struct A { int x : 3; };";
+        ASSERT_EQUALS("struct A { int x ; } ;", tokenizeAndStringify(code4,false));
+
+        const char code5[] = "struct A { long x : 3; };";
+        ASSERT_EQUALS("struct A { long x ; } ;", tokenizeAndStringify(code5,false));
+
+        const char code6[] = "struct A { unsigned char x : 3; };";
+        ASSERT_EQUALS("struct A { unsigned char x ; } ;", tokenizeAndStringify(code6,false));
+
+        const char code7[] = "struct A { unsigned short x : 3; };";
+        ASSERT_EQUALS("struct A { unsigned short x ; } ;", tokenizeAndStringify(code7,false));
+
+        const char code8[] = "struct A { unsigned int x : 3; };";
+        ASSERT_EQUALS("struct A { unsigned int x ; } ;", tokenizeAndStringify(code8,false));
+
+        const char code9[] = "struct A { unsigned long x : 3; };";
+        ASSERT_EQUALS("struct A { unsigned long x ; } ;", tokenizeAndStringify(code9,false));
+
+        const char code10[] = "struct A { signed char x : 3; };";
+        ASSERT_EQUALS("struct A { signed char x ; } ;", tokenizeAndStringify(code10,false));
+
+        const char code11[] = "struct A { signed short x : 3; };";
+        ASSERT_EQUALS("struct A { signed short x ; } ;", tokenizeAndStringify(code11,false));
+
+        const char code12[] = "struct A { signed int x : 3; };";
+        ASSERT_EQUALS("struct A { signed int x ; } ;", tokenizeAndStringify(code12,false));
+
+        const char code13[] = "struct A { signed long x : 3; };";
+        ASSERT_EQUALS("struct A { signed long x ; } ;", tokenizeAndStringify(code13,false));
+    }
+
+    void bitfields2()
+    {
+        const char code1[] = "struct A { public: int x : 3; };";
+        ASSERT_EQUALS("struct A { public: int x ; } ;", tokenizeAndStringify(code1,false));
+
+        const char code2[] = "struct A { public: unsigned long x : 3; };";
+        ASSERT_EQUALS("struct A { public: unsigned long x ; } ;", tokenizeAndStringify(code2,false));
+
+        const char code3[] = "struct A { protected: int x : 3; };";
+        ASSERT_EQUALS("struct A { protected: int x ; } ;", tokenizeAndStringify(code3,false));
+
+        const char code4[] = "struct A { protected: unsigned long x : 3; };";
+        ASSERT_EQUALS("struct A { protected: unsigned long x ; } ;", tokenizeAndStringify(code4,false));
+
+        const char code5[] = "struct A { private: int x : 3; };";
+        ASSERT_EQUALS("struct A { private: int x ; } ;", tokenizeAndStringify(code5,false));
+
+        const char code6[] = "struct A { private: unsigned long x : 3; };";
+        ASSERT_EQUALS("struct A { private: unsigned long x ; } ;", tokenizeAndStringify(code6,false));
+    }
+
+    void bitfields3()
+    {
+        const char code1[] = "struct A { const int x : 3; };";
+        ASSERT_EQUALS("struct A { const int x ; } ;", tokenizeAndStringify(code1,false));
+
+        const char code2[] = "struct A { const unsigned long x : 3; };";
+        ASSERT_EQUALS("struct A { const unsigned long x ; } ;", tokenizeAndStringify(code2,false));
+
+        const char code3[] = "struct A { public: const int x : 3; };";
+        ASSERT_EQUALS("struct A { public: const int x ; } ;", tokenizeAndStringify(code3,false));
+
+        const char code4[] = "struct A { public: const unsigned long x : 3; };";
+        ASSERT_EQUALS("struct A { public: const unsigned long x ; } ;", tokenizeAndStringify(code4,false));
+    }
+
+    void microsoftMFC()
+    {
+        const char code1[] = "class MyDialog : public CDialog { DECLARE_MESSAGE_MAP() private: CString text; };";
+        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code1,false));
     }
 };
 

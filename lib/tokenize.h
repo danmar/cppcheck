@@ -474,6 +474,11 @@ public:
     void simplifyBuiltinExpect();
 
     /**
+     * Remove Microsoft MFC 'DECLARE_MESSAGE_MAP()'
+     */
+    void simplifyMicrosoftMFC();
+
+    /**
      * This will return a short name describing function parameters
      * e.g. parameters: (int a, char b) should get name "int,char,".
      * This should help to identify functions with the same name,

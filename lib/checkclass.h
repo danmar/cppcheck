@@ -132,10 +132,10 @@ private:
     class Var
     {
     public:
-        Var(const Token *token_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, bool class_ = false)
+        Var(const Token *token_, bool init_ = false, AccessControl access_ = Public, bool mutable_ = false, bool static_ = false, bool class_ = false)
             : token(token_),
               init(init_),
-              priv(priv_),
+              access(access_),
               isMutable(mutable_),
               isStatic(static_),
               isClass(class_)
@@ -148,8 +148,8 @@ private:
         /** @brief has this variable been initialized? */
         bool        init;
 
-        /** @brief is this variable declared in the private section? */
-        bool        priv;
+        /** @brief what section is this variable declared in? */
+        AccessControl access;  // public/protected/private
 
         /** @brief is this variable mutable? */
         bool        isMutable;

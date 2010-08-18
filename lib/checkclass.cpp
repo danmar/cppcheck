@@ -112,6 +112,17 @@ void CheckClass::createSymbolDatabase()
                     info->access = Protected;
                 else if (tok->str() == "public:")
                     info->access = Public;
+                else if (Token::Match(tok, "public|protected|private %var% :"))
+                {
+                    if (tok->str() == "private")
+                        info->access = Private;
+                    else if (tok->str() == "protected")
+                        info->access = Protected;
+                    else if (tok->str() == "public")
+                        info->access = Public;
+
+                    tok = tok->tokAt(2);
+                }
 
                 // function?
                 else if (((Token::Match(tok, "%var% (") || Token::Match(tok, "operator %any% (")) && tok->previous()->str() != "::") &&
@@ -411,8 +422,7 @@ void CheckClass::SpaceInfo::getVarList()
     // Get variable list..
     const Token *tok1 = classDef;
     unsigned int indentlevel = 0;
-    bool isStruct = tok1->str() == "struct";
-    bool priv = !isStruct;
+    AccessControl varaccess = tok1->str() == "struct" ? Public : Private;
     for (const Token *tok = tok1; tok; tok = tok->next())
     {
         if (!tok->next())
@@ -434,7 +444,6 @@ void CheckClass::SpaceInfo::getVarList()
         // These are automaticly initialized.
         if (tok->str() == "__published:")
         {
-            priv = false;
             for (; tok; tok = tok->next())
             {
                 if (tok->str() == "{")
@@ -449,10 +458,33 @@ void CheckClass::SpaceInfo::getVarList()
         }
 
         // "private:" "public:" "protected:" etc
-        const bool b((tok->str()[0] != ':') && tok->str().find(":") != std::string::npos);
-
-        if (b)
-            priv = bool(tok->str() == "private:");
+        bool b = false;
+        if (tok->str() == "public:")
+        {
+            varaccess = Public;
+            b = true;
+        }
+        else if (tok->str() == "protected:")
+        {
+            varaccess = Protected;
+            b = true;
+        }
+        else if (tok->str() == "private:")
+        {
+            varaccess = Private;
+            b = true;
+        }
+        else if (Token::Match(tok, "public|protected|private %var% :"))
+        {
+            if (tok->str() == "public")
+                varaccess = Public;
+            else if (tok->str() == "protected")
+                varaccess = Protected;
+            else if (tok->str() == "private")
+                varaccess = Private;
+            tok = tok->tokAt(2);
+            b = true;
+        }
 
         // Search for start of statement..
         if (! Token::Match(tok, "[;{}]") && ! b)
@@ -465,6 +497,25 @@ void CheckClass::SpaceInfo::getVarList()
         // If next token contains a ":".. it is not part of a variable declaration
         if (next->str().find(":") != std::string::npos)
             continue;
+
+        if (Token::Match(next, "public|protected|private %var% :"))
+        {
+            if (next->str() == "public")
+                varaccess = Public;
+            else if (next->str() == "protected")
+                varaccess = Protected;
+            else if (next->str() == "private")
+                varaccess = Private;
+            tok = tok->tokAt(2);
+            continue;
+        }
+
+        // Is it a forward declaration?
+        if (Token::Match(next, "class|struct|union %var% ;"))
+        {
+            tok = tok->tokAt(2);
+            continue;
+        }
 
         // Borland C++: Ignore properties..
         if (next->str() == "__property")
@@ -583,7 +634,7 @@ void CheckClass::SpaceInfo::getVarList()
                 check->reportError(vartok, Severity::error, "cppcheckError", "Internal error. CheckClass::SpaceInfo::getVarList found variable \'" + vartok->str() + "\' with varid 0.");
             }
 
-            varlist.push_back(Var(vartok, false, priv, isMutable, isStatic, isClass));
+            varlist.push_back(Var(vartok, false, varaccess, isMutable, isStatic, isClass));
         }
     }
 }
@@ -954,7 +1005,7 @@ void CheckClass::constructors()
             std::list<Var>::const_iterator var;
             for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
             {
-                if (var->priv && !var->isClass && !var->isStatic)
+                if (var->access == Private && !var->isClass && !var->isStatic)
                 {
                     noConstructorError(info->classDef, info->className, info->classDef->str() == "struct");
                     break;

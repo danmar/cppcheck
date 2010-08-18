@@ -149,6 +149,7 @@ private:
         TEST_CASE(constFriend); // ticket #1921 - fp for friend function
 
         TEST_CASE(symboldatabase1);
+        TEST_CASE(symboldatabase2);
     }
 
     // Check the operator Equal
@@ -4207,6 +4208,21 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         checkConst("class foo : public bar < int, int> {\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase2()
+    {
+        checkConst("class foo {\n"
+                   "public slots :\n"
+                   "foo() { }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class foo {\n"
+                   "class bar;\n"
+                   "foo() { }\n"
                    "};");
         ASSERT_EQUALS("", errout.str());
     }

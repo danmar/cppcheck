@@ -2585,7 +2585,8 @@ private:
 
         {
             const char code[] = "class NoLabels { bool varOne : 1 ; bool varTwo : 1 ; } ;";
-            ASSERT_EQUALS(code, tok(code));
+            const char expect[] = "class NoLabels { bool varOne ; bool varTwo ; } ;";
+            ASSERT_EQUALS(expect, tok(code));
         }
 
         {

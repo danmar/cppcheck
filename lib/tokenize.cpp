@@ -1679,9 +1679,6 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // specify array size..
     arraySize();
 
-    // simplify bit fields..
-    simplifyBitfields();
-
     // simplify labels..
     labels();
 
@@ -1792,6 +1789,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         }
     }
 
+    // simplify bit fields..
+    simplifyBitfields();
+
     // Remove __declspec()
     simplifyDeclspec();
 
@@ -1800,6 +1800,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 
     // remove __attribute__((?))
     simplifyAttribute();
+
+    // remove Microsoft MFC..
+    simplifyMicrosoftMFC();
 
     // typedef..
     simplifyTypedef();
@@ -1935,7 +1938,10 @@ void Tokenizer::labels()
 
                 // simplify label..
                 if (Token::Match(tok, "[;{}] %var% : %var%"))
-                    tok->tokAt(2)->insertToken(";");
+                {
+                    if (!Token::Match(tok->next(), "public|protected|private"))
+                        tok->tokAt(2)->insertToken(";");
+                }
             }
         }
     }
@@ -2769,7 +2775,7 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "else|return|typedef|delete|sizeof"))
             continue;
 
-        if (Token::Match(tok, "const|static|extern|public:|private:|protected:"))
+        while (Token::Match(tok, "const|static|extern|public:|private:|protected:|;|mutable"))
             tok = tok->next();
 
         while (Token::Match(tok, "%var% ::"))
@@ -7913,10 +7919,14 @@ void Tokenizer::simplifyBitfields()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[;{] signed|unsigned|int|long %var% : %num% ;"))
+        if (Token::Match(tok, ";|{|public:|protected:|private: signed|unsigned|int|long|bool|char|short %var% : %num% ;"))
             Token::eraseTokens(tok->tokAt(2), tok->tokAt(5));
-        if (Token::Match(tok, "[;{] signed|unsigned int|long %var% : %num% ;"))
+        else if (Token::Match(tok, ";|{|public:|protected:|private: signed|unsigned int|long|char|short %var% : %num% ;"))
             Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
+        else if (Token::Match(tok, ";|{|public:|protected:|private: const signed|unsigned|int|long|bool|char|short %var% : %num% ;"))
+            Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
+        else if (Token::Match(tok, ";|{|public:|protected:|private: const signed|unsigned int|long|char|short %var% : %num% ;"))
+            Token::eraseTokens(tok->tokAt(4), tok->tokAt(7));
     }
 }
 
@@ -7961,6 +7971,22 @@ void Tokenizer::simplifyBuiltinExpect()
         }
     }
 }
+
+
+// Remove Microsoft MFC 'DECLARE_MESSAGE_MAP()'
+void Tokenizer::simplifyMicrosoftMFC()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok->next(), "DECLARE_MESSAGE_MAP ( )"))
+        {
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+        }
+    }
+}
+
 
 
 
