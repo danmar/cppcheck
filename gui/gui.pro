@@ -95,6 +95,6 @@ win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS
     RC_FILE = cppcheck-gui.rc
     HEADERS += ../cli/resource.h
-    LIBS += -lshlwapi -lhtmlhelp
+    LIBS += -lshlwapi
 }
 

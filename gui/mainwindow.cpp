@@ -36,12 +36,6 @@
 #include "logview.h"
 #include "filelist.h"
 
-// HTMLHelp is only available in Windows
-#ifdef WIN32
-#include <windows.h>
-#include <htmlhelp.h>
-#endif
-
 MainWindow::MainWindow() :
     mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
     mApplications(new ApplicationList(this)),
@@ -89,12 +83,7 @@ MainWindow::MainWindow() :
     connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFile()));
     connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(OpenProjectFile()));
 
-#ifdef WIN32
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
-#else
-    // Hide if not Windows
-    mUI.mActionHelpContents->setVisible(false);
-#endif
 
     CreateLanguageMenuItems();
     LoadSettings();
@@ -662,13 +651,13 @@ void MainWindow::OpenHelpContents()
 
 void MainWindow::OpenHtmlHelpContents()
 {
-#ifdef WIN32
+/*
     QString file("/cppcheck.chm");
     QString exeFolder = QDir::currentPath();
     exeFolder += file;
     exeFolder = QDir::toNativeSeparators(exeFolder);
     HtmlHelp(NULL, exeFolder.utf16(), HH_DISPLAY_TOPIC, NULL);
-#endif // WIN32
+*/
 }
 
 void MainWindow::OpenProjectFile()
