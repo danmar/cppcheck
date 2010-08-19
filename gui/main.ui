@@ -155,6 +155,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="mActionCheckDirectory"/>
+   <addaction name="mActionOpenProjectFile"/>
    <addaction name="mActionSave"/>
    <addaction name="mActionRecheck"/>
    <addaction name="mActionStop"/>
@@ -361,6 +362,10 @@
    </property>
   </action>
   <action name="mActionOpenProjectFile">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/openproject.png</normaloff>:/images/openproject.png</iconset>
+   </property>
    <property name="text">
     <string>Open P&amp;roject File...</string>
    </property>
