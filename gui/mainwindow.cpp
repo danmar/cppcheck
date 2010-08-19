@@ -252,6 +252,17 @@ void MainWindow::DoCheckFiles(const QStringList &files)
 
 QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
 {
+    if (mProject)
+    {
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle(tr("Cppcheck"));
+        const QString msg(tr("You must close the project file before selecting new files or directories!"));
+        msgBox.setText(msg);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return QStringList();
+    }
+
     QStringList selected;
 
     // NOTE: we use QFileDialog::getOpenFileNames() and
