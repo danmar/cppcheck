@@ -702,7 +702,10 @@ void MainWindow::OpenProjectFile()
         mProject->Open();
         QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
         if (!paths.isEmpty())
+        {
+            mCurrentDirectory = paths[0];
             DoCheckFiles(paths);
+        }
     }
 }
 
