@@ -35,6 +35,7 @@
 #include "report.h"
 #include "logview.h"
 #include "filelist.h"
+#include "helpwindow.h"
 
 MainWindow::MainWindow() :
     mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
@@ -651,13 +652,8 @@ void MainWindow::OpenHelpContents()
 
 void MainWindow::OpenHtmlHelpContents()
 {
-    /*
-        QString file("/cppcheck.chm");
-        QString exeFolder = QDir::currentPath();
-        exeFolder += file;
-        exeFolder = QDir::toNativeSeparators(exeFolder);
-        HtmlHelp(NULL, exeFolder.utf16(), HH_DISPLAY_TOPIC, NULL);
-    */
+    HelpWindow *helpWindow = new HelpWindow;
+    helpWindow->setVisible(true);
 }
 
 void MainWindow::OpenProjectFile()

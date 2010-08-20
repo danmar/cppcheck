@@ -4,7 +4,31 @@
     <virtualFolder>doc</virtualFolder>
     <filterSection>
         <toc>
-            <section title="cppcheck" ref="index.html"/>
+            <section title="Manual" ref="index.html">
+                <section title="Introduction" ref="ch01.html"/>
+                <section title="Getting started" ref="ch02.html">
+                    <section title="Checking all files in a folder" ref="ch02s02.html"/>
+                    <section title="Excluding a file or a folder from checking" ref="ch02s03.html"/>
+                    <section title="Stylistic issues" ref="ch02s04.html"/>
+                    <section title="Saving results in a file" ref="ch02s05.html"/>
+                    <section title="Unused functions" ref="ch02s06.html"/>
+                    <section title="Enable all checks" ref="ch02s07.html"/>
+                    <section title="Multithreaded checking" ref="ch02s08.html"/>
+                </section>
+                <section title="Preprocessor configurations" ref="ch03.html"/>
+                <section title="XML output" ref="ch04.html"/>
+                <section title="Reformatting the output" ref="ch05.html"/>
+                <section title="Suppressions" ref="ch06.html"/>
+                <section title="Leaks" ref="ch07.html"/>
+                <section title="Exception safety" ref="ch08.html"/>
+                <section title="Html report" ref="ch09.html"/>
+                <section title="Graphical user interface" ref="ch10.html">
+                    <section title="Check source code" ref="ch10s02.html"/>
+                    <section title="Inspecting results" ref="ch10s03.html"/>
+                    <section title="Settings" ref="ch10s04.html"/>
+                    <section title="Project files" ref="ch10s05.html"/>
+                </section>
+            </section>
         </toc>
         <keywords/>
         <files>

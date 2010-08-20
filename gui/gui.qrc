@@ -14,8 +14,6 @@
     <file>images/view-refresh.png</file>
     <file>images/showerrors.png</file>
     <file>images/showstylewarnings.png</file>
-
-    <file>help/online-help.qhc</file>
   
     <file alias="COPYING">../COPYING</file>
     <file alias="AUTHORS">../AUTHORS</file>

@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = gui
 QT += xml
-CONFIG += warn_on
+CONFIG += warn_on help
 DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
@@ -29,7 +29,8 @@ FORMS = main.ui \
     file.ui \
     projectfile.ui \
     about.ui \
-    logview.ui
+    logview.ui \
+    helpwindow.ui
 
 TRANSLATIONS =  cppcheck_fi.ts \
                 cppcheck_nl.ts \
@@ -65,7 +66,8 @@ HEADERS += mainwindow.h \
            translationhandler.h \
            csvreport.h \
            logview.h \
-           filelist.h
+           filelist.h \
+           helpwindow.h
 
 SOURCES += main.cpp \
            mainwindow.cpp\
@@ -89,7 +91,8 @@ SOURCES += main.cpp \
            translationhandler.cpp \
            csvreport.cpp \
            logview.cpp \
-           filelist.cpp
+           filelist.cpp \
+           helpwindow.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS
