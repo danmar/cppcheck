@@ -32,7 +32,28 @@
         </toc>
         <keywords/>
         <files>
-            <file>index.html</file>
+          <file>index.html</file>
+          <file>ch01.html</file>
+          <file>ch02.html</file>
+          <file>ch02s02.html</file>
+          <file>ch02s03.html</file>
+          <file>ch02s04.html</file>
+          <file>ch02s05.html</file>
+          <file>ch02s06.html</file>
+          <file>ch02s07.html</file>
+          <file>ch02s08.html</file>
+          <file>ch03.html</file>
+          <file>ch04.html</file>
+          <file>ch05.html</file>
+          <file>ch06.html</file>
+          <file>ch07.html</file>
+          <file>ch08.html</file>
+          <file>ch09.html</file>
+          <file>ch10.html</file>
+          <file>ch10s02.html</file>
+          <file>ch10s03.html</file>
+          <file>ch10s04.html</file>
+          <file>ch10s05.html</file>
         </files>
     </filterSection>
 </QtHelpProject>
