@@ -212,6 +212,7 @@ private:
         TEST_CASE(simplifyTypedef55);
         TEST_CASE(simplifyTypedef56); // ticket #1829
         TEST_CASE(simplifyTypedef57); // ticket #1846
+        TEST_CASE(simplifyTypedef58); // ticket #1963
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4331,6 +4332,37 @@ private:
         // Check for output..
         checkSimplifyTypedef(code);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef58() // ticket #1963
+    {
+        {
+            const char code[] = "typedef int vec2_t[2];\n"
+                                "vec2_t coords[4] = {1,2,3,4,5,6,7,8};\n";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "int coords [ 4 ] [ 2 ] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 } ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef int vec2_t[2];\n"
+                                "vec2_t coords[4][5][6+1] = {1,2,3,4,5,6,7,8};\n";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "int coords [ 4 ] [ 5 ] [ 7 ] [ 2 ] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 } ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            // Check for output..
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void simplifyTypedefFunction1()

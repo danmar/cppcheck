@@ -1535,6 +1535,11 @@ void Tokenizer::simplifyTypedef()
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok3);
                     }
+                    else if (tok2->tokAt(2) && tok2->tokAt(2)->str() == "[")
+                    {
+                        while (tok2->tokAt(2) && tok2->tokAt(2)->str() == "[")
+                            tok2 = tok2->tokAt(2)->link()->previous();
+                    }
 
                     if (arrayStart && arrayEnd)
                     {
