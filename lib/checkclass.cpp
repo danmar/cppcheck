@@ -1770,6 +1770,11 @@ bool CheckClass::isVirtual(const SpaceInfo *info, const Token *functionToken) co
                     return true;
             }
         }
+        else
+        {
+            // unable to find base class so assume it has a virtual function
+            return true;
+        }
     }
 
     return false;
