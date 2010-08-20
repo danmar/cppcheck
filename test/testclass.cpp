@@ -138,6 +138,7 @@ private:
         TEST_CASE(const31);
         TEST_CASE(const32); // ticket #1905 - member array is assigned
         TEST_CASE(const33);
+        TEST_CASE(const34); // ticket #1964
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3884,6 +3885,16 @@ private:
         checkConst("class derived : public base {\n"
                    "public:\n"
                    "    void f(){}\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const34() // ticket #1964
+    {
+        checkConst("class Bar {\n"
+                   "    void init(Foo * foo) {\n"
+                   "        foo.bar = this;\n"
+                   "    }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -1978,6 +1978,11 @@ bool CheckClass::checkConstFunc(const SpaceInfo *info, const Token *tok)
                 isconst = false;
                 break;
             }
+            else if (tok1->next()->str() == "this")
+            {
+                isconst = false;
+                break;
+            }
         }
 
         // streaming: <<
