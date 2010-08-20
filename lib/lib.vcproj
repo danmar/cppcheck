@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="lib"
 	ProjectGUID="{ACE2ABB0-1027-44DF-8E14-8B4DAF88590F}"
 	RootNamespace="lib"
@@ -43,7 +43,7 @@
 				Optimization="0"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				TreatWChar_tAsBuiltInType="false"
 				AssemblerListingLocation="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
@@ -109,7 +109,7 @@
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="true"
 				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;_CRT_SECURE_NO_WARNINGS"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="false"
 				AssemblerListingLocation="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
