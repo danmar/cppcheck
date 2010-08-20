@@ -3069,6 +3069,7 @@ void Tokenizer::setVarId()
                     }
                     else if (indentlevel > 0 &&
                              tok2->varId() == 0 &&
+                             !Token::simpleMatch(tok2->previous(), ".") &&
                              varlist.find(tok2->str()) != varlist.end())
                     {
                         tok2->varId(varlist[tok2->str()]);

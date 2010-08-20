@@ -152,7 +152,8 @@ private:
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
         TEST_CASE(varid_reference_to_containers);
-        TEST_CASE(varid_in_class);
+        TEST_CASE(varid_in_class1);
+        TEST_CASE(varid_in_class2);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
 
@@ -2526,7 +2527,7 @@ private:
         ASSERT_EQUALS(expected, actual);
     }
 
-    void varid_in_class()
+    void varid_in_class1()
     {
         {
             const std::string actual = tokenizeDebugListing(
@@ -2581,6 +2582,41 @@ private:
 
             ASSERT_EQUALS(expected, actual);
         }
+    }
+
+    void varid_in_class2()
+    {
+        const std::string actual = tokenizeDebugListing(
+                                       "struct Foo {\n"
+                                       "    int x;\n"
+                                       "};\n"
+                                       "\n"
+                                       "struct Bar {\n"
+                                       "    Foo foo;\n"
+                                       "    int x;\n"
+                                       "    void f();\n"
+                                       "};\n"
+                                       "\n"
+                                       "void Bar::f()\n"
+                                       "{\n"
+                                       "    foo.x = x;\n"
+                                       "}\n");
+        const std::string expected("\n\n##file 0\n"
+                                   "1: struct Foo {\n"
+                                   "2: int x@1 ;\n"
+                                   "3: } ;\n"
+                                   "4:\n"
+                                   "5: struct Bar {\n"
+                                   "6: Foo foo@2 ;\n"
+                                   "7: int x@3 ;\n"
+                                   "8: void f ( ) ;\n"
+                                   "9: } ;\n"
+                                   "10:\n"
+                                   "11: void Bar :: f ( )\n"
+                                   "12: {\n"
+                                   "13: foo@2 . x = x@3 ;\n"    // TODO: it would be even better if the ". x" was ". x@4" instead
+                                   "14: }\n");
+        ASSERT_EQUALS(expected, actual);
     }
 
     void varid_operator()
