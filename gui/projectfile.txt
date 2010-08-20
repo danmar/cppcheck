@@ -13,10 +13,12 @@ program. The format is:
 
 <?xml version="1.0"?>
 <project version="1">
+    <root name="c:/projects/cppcheck/" />
     <paths>
-        <dir name="c:/projects/cppcheck/src/" />
+        <dir name="lib/" />
     </paths>
     <includedir>
+        <dir name="lib/" />
         <dir name="c:/projects/framework/" />
         <dir name="c:/Program Files/Visual Studio 8/VC/include/" />
     </includedir>

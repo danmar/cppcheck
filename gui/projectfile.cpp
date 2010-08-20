@@ -35,6 +35,8 @@ static const char DefineNameAttrib[] = "name";
 static const char PathsElementName[] = "paths";
 static const char PathName[] = "dir";
 static const char PathNameAttrib[] = "name";
+static const char RootPathName[] = "root";
+static const char RootPathNameAttrib[] = "name";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -69,6 +71,10 @@ bool ProjectFile::Read(const QString &filename)
                 insideProject = true;
                 projectTagFound = true;
             }
+            // Read root path from inside project element
+            if (insideProject && xmlReader.name() == RootPathName)
+                ReadRootPath(xmlReader);
+
             // Find paths to check from inside project element
             if (insideProject && xmlReader.name() == PathsElementName)
                 ReadCheckPaths(xmlReader);
@@ -122,6 +128,14 @@ QStringList ProjectFile::GetDefines() const
 QStringList ProjectFile::GetCheckPaths() const
 {
     return mPaths;
+}
+
+void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
+{
+    QXmlStreamAttributes attribs = reader.attributes();
+    QString name = attribs.value("", RootPathNameAttrib).toString();
+    if (!name.isEmpty())
+        mRootPath = name;
 }
 
 void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
@@ -278,6 +292,13 @@ bool ProjectFile::Write(const QString &filename)
     xmlWriter.writeStartDocument("1.0");
     xmlWriter.writeStartElement(ProjectElementName);
     xmlWriter.writeAttribute(ProjectVersionAttrib, ProjectFileVersion);
+
+    if (!mRootPath.isEmpty())
+    {
+        xmlWriter.writeStartElement(RootPathName);
+        xmlWriter.writeAttribute(RootPathNameAttrib, mRootPath);
+        xmlWriter.writeEndElement();
+    }
 
     if (!mIncludeDirs.isEmpty())
     {

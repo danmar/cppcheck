@@ -48,6 +48,15 @@ public:
     bool Read(const QString &filename = QString());
 
     /**
+    * @brief Get project root path.
+    * @return project root path.
+    */
+    QString GetRootPath() const
+    {
+        return mRootPath;
+    }
+
+    /**
     * @brief Get list of include directories.
     * @return list of directories.
     */
@@ -64,6 +73,15 @@ public:
     * @return list of paths.
     */
     QStringList GetCheckPaths() const;
+
+    /**
+    * @brief Set project root path.
+    * @param rootpath new project root path.
+    */
+    void SetRootPath(const QString &rootpath)
+    {
+        mRootPath = rootpath;
+    }
 
     /**
     * @brief Set list of includes.
@@ -99,6 +117,13 @@ public:
     }
 
 protected:
+
+    /**
+    * @brief Read optional root path from XML.
+    * @param reader XML stream reader.
+    */
+    void ReadRootPath(QXmlStreamReader &reader);
+
     /**
     * @brief Read list of include directories from XML.
     * @param reader XML stream reader.
@@ -123,6 +148,14 @@ private:
     * @brief Filename (+path) of the project file.
     */
     QString mFilename;
+
+    /**
+    * @brief Root path (optional) for the project.
+    * This is the project root path. If it is present then all relative paths in
+    * the project file are relative to this path. Otherwise paths are relative
+    * to project file's path.
+    */
+    QString mRootPath;
 
     /**
     * @brief List of include directories used to search include files.
