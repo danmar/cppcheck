@@ -651,13 +651,13 @@ void MainWindow::OpenHelpContents()
 
 void MainWindow::OpenHtmlHelpContents()
 {
-/*
-    QString file("/cppcheck.chm");
-    QString exeFolder = QDir::currentPath();
-    exeFolder += file;
-    exeFolder = QDir::toNativeSeparators(exeFolder);
-    HtmlHelp(NULL, exeFolder.utf16(), HH_DISPLAY_TOPIC, NULL);
-*/
+    /*
+        QString file("/cppcheck.chm");
+        QString exeFolder = QDir::currentPath();
+        exeFolder += file;
+        exeFolder = QDir::toNativeSeparators(exeFolder);
+        HtmlHelp(NULL, exeFolder.utf16(), HH_DISPLAY_TOPIC, NULL);
+    */
 }
 
 void MainWindow::OpenProjectFile()
