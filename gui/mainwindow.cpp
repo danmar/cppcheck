@@ -711,10 +711,28 @@ void MainWindow::OpenProjectFile()
         mUI.mActionEditProjectFile->setEnabled(true);
         mProject = new Project(filepath, this);
         mProject->Open();
+        QString rootpath = mProject->GetProjectFile()->GetRootPath();
+
+        // If root path not give or "current dir" then use project file's directory
+        // as check path
+        if (rootpath.isEmpty() || rootpath == ".")
+            mCurrentDirectory = inf.canonicalPath();
+        else
+            mCurrentDirectory = rootpath;
+
         QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
         if (!paths.isEmpty())
         {
-            mCurrentDirectory = paths[0];
+            for (int i = 0; i < paths.size(); i++)
+            {
+                if (!QDir::isAbsolutePath(paths[i]))
+                {
+                    QString path = mCurrentDirectory + "/";
+                    path += paths[i];
+                    paths[i] = QDir::cleanPath(path);
+                }
+            }
+
             DoCheckFiles(paths);
         }
     }
