@@ -43,6 +43,7 @@ MainWindow::MainWindow() :
     mTranslation(new TranslationHandler(this)),
     mLanguages(new QActionGroup(this)),
     mLogView(NULL),
+    mHelpWindow(NULL),
     mExiting(false)
 {
     mUI.setupUi(this);
@@ -110,6 +111,7 @@ MainWindow::MainWindow() :
 MainWindow::~MainWindow()
 {
     delete mLogView;
+    delete mHelpWindow;
 }
 
 void MainWindow::CreateLanguageMenuItems()
@@ -457,6 +459,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
     // Check that we aren't checking files
     if (!mThread->IsChecking())
     {
+        delete mHelpWindow;
+        mHelpWindow = NULL;
+
         SaveSettings();
         event->accept();
     }
@@ -652,8 +657,12 @@ void MainWindow::OpenHelpContents()
 
 void MainWindow::OpenHtmlHelpContents()
 {
-    HelpWindow *helpWindow = new HelpWindow;
-    helpWindow->setVisible(true);
+    if (mHelpWindow == NULL)
+        mHelpWindow = new HelpWindow;
+
+    mHelpWindow->show();
+    if (!mHelpWindow->isActiveWindow())
+        mHelpWindow->activateWindow();
 }
 
 void MainWindow::OpenProjectFile()

@@ -33,6 +33,7 @@
 #include "ui_main.h"
 class ThreadHandler;
 class LogView;
+class HelpWindow;
 
 /// @addtogroup GUI
 /// @{
@@ -326,6 +327,11 @@ protected:
     * @brief Log view..
     */
     LogView *mLogView;
+
+    /**
+     * @brief Help window..
+     */
+    HelpWindow *mHelpWindow;
 
 private:
 
