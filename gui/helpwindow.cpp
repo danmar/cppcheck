@@ -65,10 +65,16 @@ HelpWindow::HelpWindow(QWidget *parent) :
         helpPanel->insertWidget(1, helpBrowser);
         helpPanel->setStretchFactor(1, 1);
 
-        m_ui->horizontalLayout->addWidget(helpPanel);
+        m_ui->mainLayout->addWidget(helpPanel);
 
         connect(helpEngine->contentWidget(), SIGNAL(linkActivated(const QUrl &)),
                 helpBrowser, SLOT(setSource(const QUrl &)));
+
+        connect(m_ui->backButton, SIGNAL(clicked()), helpBrowser, SLOT(backward()));
+        connect(m_ui->forwardButton, SIGNAL(clicked()), helpBrowser, SLOT(forward()));
+        connect(m_ui->homeButton, SIGNAL(clicked()), helpBrowser, SLOT(home()));
+        connect(m_ui->zoomInButton, SIGNAL(clicked()), helpBrowser, SLOT(zoomIn()));
+        connect(m_ui->zoomOutButton, SIGNAL(clicked()), helpBrowser, SLOT(zoomOut()));
     }
 }
 
