@@ -249,6 +249,7 @@ private:
         TEST_CASE(enum12);
         TEST_CASE(enum13);
         TEST_CASE(enum14);
+        TEST_CASE(enum15);
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -5464,6 +5465,44 @@ private:
                             "ab";
         const char expected[] = "; ab";
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void enum15() // C++0x features
+    {
+        {
+            const char code[] = "enum class Enum1 { a };\n"
+                                "Enum1 e1 = a;";
+            const char expected[] = "; int e1 ; e1 = 0 ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "enum Enum1 : char { a };\n"
+                                "Enum1 e1 = a;";
+            const char expected[] = "; char e1 ; e1 = 0 ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "enum class Enum1 : unsigned char { a };\n"
+                                "Enum1 e1 = a;";
+            const char expected[] = "; unsigned char e1 ; e1 = 0 ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "enum class Enum1 : unsigned int { a };\n"
+                                "Enum1 e1 = a;";
+            const char expected[] = "; unsigned int e1 ; e1 = 0 ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "enum class Enum1 : unsigned long long int { a };\n"
+                                "Enum1 e1 = a;";
+            const char expected[] = "; unsigned long long e1 ; e1 = 0 ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void removestd()

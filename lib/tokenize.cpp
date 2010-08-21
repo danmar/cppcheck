@@ -6445,20 +6445,52 @@ void Tokenizer::simplifyEnum()
             ++classLevel;
             continue;
         }
-        else if (Token::Match(tok, "enum {") ||
-                 Token::Match(tok, "enum %type% {"))
+        else if (Token::Match(tok, "enum class|struct| {|:") ||
+                 Token::Match(tok, "enum class|struct| %type% {|:"))
         {
-            Token * tok1;
-            Token * start = tok;
-            Token * end;
-            Token * enumType = 0;
+            Token *tok1;
+            Token *start = tok;
+            Token *end;
+            Token *enumType = 0;
+            Token *typeTokenStart = 0;
+            Token *typeTokenEnd = 0;
+            bool enumClass = false;
+
+            // check for C++0x enum class
+            if (Token::Match(tok->next(), "class|struct"))
+            {
+                tok->deleteNext();
+                enumClass = true;
+            }
+
+            // check for C++0x typed enumeration
+            if (Token::Match(tok->next(), "%type% :"))
+            {
+                // check for forward declaration
+                /** @todo start substitution check at forward declaration */
+                const Token *temp = tok->tokAt(3);
+                while (!Token::Match(temp, "{|;"))
+                    temp = temp->next();
+                if (temp->str() == ";")
+                    continue;
+
+                typeTokenStart = tok->tokAt(3);
+                typeTokenEnd = typeTokenStart;
+                while (Token::Match(typeTokenEnd->next(), "signed|unsigned|char|short|int|long"))
+                    typeTokenEnd = typeTokenEnd->next();
+            }
 
             if (tok->tokAt(1)->str() == "{")
                 tok1 = tok->tokAt(2);
-            else
+            else if (tok->tokAt(2)->str() == "{")
             {
                 enumType = tok->tokAt(1);
                 tok1 = tok->tokAt(3);
+            }
+            else if (tok->tokAt(2)->str() == ":")
+            {
+                enumType = tok->tokAt(1);
+                tok1 = typeTokenEnd->tokAt(2);
             }
 
             end = tok1->tokAt(-1)->link();
@@ -6672,11 +6704,26 @@ void Tokenizer::simplifyEnum()
             // check for a variable definition: enum {} x;
             if (end->next()->str() != ";")
             {
-                Token * tempTok = end;
+                Token *tempTok = end;
 
                 tempTok->insertToken(";");
                 tempTok = tempTok->next();
-                tempTok->insertToken("int");
+                if (typeTokenStart == 0)
+                    tempTok->insertToken("int");
+                else
+                {
+                    Token *tempTok1 = typeTokenStart;
+
+                    tempTok->insertToken(tempTok1->str());
+
+                    while (tempTok1 != typeTokenEnd)
+                    {
+                        tempTok1 = tempTok1->next();
+
+                        tempTok->insertToken(tempTok1->str());
+                        tempTok = tempTok->next();
+                    }
+                }
             }
 
             if (enumType)
@@ -6727,7 +6774,22 @@ void Tokenizer::simplifyEnum()
                     {
                         if (tok2->str() == "enum")
                             tok2->deleteNext();
-                        tok2->str("int");
+                        if (typeTokenStart == 0)
+                            tok2->str("int");
+                        else
+                        {
+                            Token *tok3 = typeTokenStart;
+
+                            tok2->str(tok3->str());
+
+                            while (tok3 != typeTokenEnd)
+                            {
+                                tok3 = tok3->next();
+
+                                tok2->insertToken(tok3->str());
+                                tok2 = tok2->next();
+                            }
+                        }
 
                         if (hasClass)
                         {
