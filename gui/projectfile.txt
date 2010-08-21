@@ -29,4 +29,18 @@ program. The format is:
     </defines>
 </project>
 
+where:
+ - optional root element defines the root directory for the project. All
+   relative paths are considered to be relative to this path. If the root
+   element is missing or it contains "." as value then the project file's
+   location is considered to be the root path.
+-  paths element contains a list of checked paths. The paths can be relative or
+   absolute paths.
+-  indludedir element contains a list of additional include paths. These
+   include paths are used when finding local include files ("#include "file.h")
+   for source files. The paths can be relative or absolute paths. It is highly
+   recommended that relative paths are used for paths inside the project root
+   folder for better portability.
+-  defines element contains a list of C/C++ preprocessor defines.
+
 See also gui.cppcheck file in gui-directory of cppcheck sources.
