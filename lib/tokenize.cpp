@@ -8037,6 +8037,13 @@ void Tokenizer::simplifyBuiltinExpect()
             tok->deleteNext();
             tok->deleteNext();
         }
+        else if (Token::Match(tok->next(), "DECLARE_DYNAMIC ( %any% )"))
+        {
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+        }
     }
 }
 
