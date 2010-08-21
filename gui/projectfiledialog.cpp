@@ -33,6 +33,13 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
 }
 
+QString ProjectFileDialog::GetRootPath() const
+{
+    QString root = mUI.mEditProjectRoot->text();
+    root = root.trimmed();
+    return root;
+}
+
 QStringList ProjectFileDialog::GetIncludePaths() const
 {
     QString include = mUI.mEditIncludePaths->text();
@@ -76,6 +83,11 @@ QStringList ProjectFileDialog::GetPaths() const
             paths.append(path);
     }
     return paths;
+}
+
+void ProjectFileDialog::SetRootPath(const QString &root)
+{
+    mUI.mEditProjectRoot->setText(root);
 }
 
 void ProjectFileDialog::SetIncludepaths(const QStringList &includes)

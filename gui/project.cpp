@@ -77,7 +77,8 @@ bool Project::Open()
 void Project::Edit()
 {
     ProjectFileDialog dlg(mFilename, mParentWidget);
-
+    QString root = mPFile->GetRootPath();
+    dlg.SetRootPath(root);
     QStringList includes = mPFile->GetIncludeDirs();
     dlg.SetIncludepaths(includes);
     QStringList defines = mPFile->GetDefines();
@@ -87,6 +88,8 @@ void Project::Edit()
     int rv = dlg.exec();
     if (rv == QDialog::Accepted)
     {
+        QString root = dlg.GetRootPath();
+        mPFile->SetRootPath(root);
         QStringList includes = dlg.GetIncludePaths();
         mPFile->SetIncludes(includes);
         QStringList defines = dlg.GetDefines();

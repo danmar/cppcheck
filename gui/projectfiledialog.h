@@ -21,6 +21,7 @@
 
 #include <QDialog>
 #include <QString>
+#include <QStringList>
 
 #include "ui_projectfile.h"
 
@@ -40,6 +41,12 @@ public:
     ProjectFileDialog(const QString &path, QWidget *parent = 0);
 
     /**
+    * @brief Return project root path from the dialog control.
+    * @return Project root path.
+    */
+    QString GetRootPath() const;
+
+    /**
     * @brief Return include paths from the dialog control.
     * @return List of include paths.
     */
@@ -56,6 +63,12 @@ public:
     * @return List of check paths.
     */
     QStringList GetPaths() const;
+
+    /**
+    * @brief Set project root path to dialog control.
+    * @param root Project root path to set to dialog control.
+    */
+    void SetRootPath(const QString &root);
 
     /**
     * @brief Set include paths to dialog control.
