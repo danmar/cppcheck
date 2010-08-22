@@ -1794,9 +1794,6 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         }
     }
 
-    // simplify bit fields..
-    simplifyBitfields();
-
     // Remove __declspec()
     simplifyDeclspec();
 
@@ -1830,6 +1827,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // colapse compound standard types into a single token
     // unsigned long long int => long _isUnsigned=true,_isLong=true
     simplifyStdType();
+
+    // simplify bit fields..
+    simplifyBitfields();
 
     // Use "<" comparison instead of ">"
     simplifyComparisonOrder();
@@ -4970,14 +4970,14 @@ void Tokenizer::simplifyStdType()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         // long unsigned => unsigned long
-        if (Token::Match(tok, "long|short|int|char|_int64 unsigned|signed"))
+        if (Token::Match(tok, "char|short|int|long|__int8|__int16|__int32|__int64 unsigned|signed"))
         {
             std::string temp = tok->str();
             tok->str(tok->next()->str());
             tok->next()->str(temp);
         }
 
-        if (!Token::Match(tok, "unsigned|signed|long|char|short|int|__int64"))
+        if (!Token::Match(tok, "unsigned|signed|char|short|int|long|__int8|__int16|__int32|__int64"))
             continue;
 
         // check if signed or unsigned specified
@@ -4994,7 +4994,13 @@ void Tokenizer::simplifyStdType()
             tok->isSigned(!isUnsigned);
         }
 
-        if (Token::Match(tok, "__int64"))
+        if (Token::Match(tok, "__int8"))
+            tok->str("char");
+        else if (Token::Match(tok, "__int16"))
+            tok->str("short");
+        else if (Token::Match(tok, "__int32"))
+            tok->str("int");
+        else if (Token::Match(tok, "__int64"))
         {
             tok->str("long");
             tok->isLong(true);
@@ -8006,7 +8012,7 @@ static bool isAllUpper(const Token *type)
 
 static bool isBitfieldType(const Token *type)
 {
-    if (Token::Match(type, "signed|unsigned|int|long|bool|char|short|__int64") || isAllUpper(type))
+    if (Token::Match(type, "bool|char|short|int|long") || isAllUpper(type))
         return true;
     return false;
 }
@@ -8022,20 +8028,15 @@ void Tokenizer::simplifyBitfields()
             last = tok->tokAt(5);
             Token::eraseTokens(tok->tokAt(2), tok->tokAt(5));
         }
-        else if (Token::Match(tok, ";|{|public:|protected:|private: signed|unsigned %type% %var% : %num% ;|,") && isBitfieldType(tok->tokAt(2)))
-        {
-            last = tok->tokAt(6);
-            Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
-        }
         else if (Token::Match(tok, ";|{|public:|protected:|private: const %type% %var% : %num% ;|,") && isBitfieldType(tok->tokAt(2)))
         {
             last = tok->tokAt(6);
             Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
         }
-        else if (Token::Match(tok, ";|{|public:|protected:|private: const signed|unsigned %type% %var% : %num% ;|,") && isBitfieldType(tok->tokAt(3)))
+        else if (Token::Match(tok, ";|{|public:|protected:|private: %type% : %num% ;") && isBitfieldType(tok->next()))
         {
-            last = tok->tokAt(7);
-            Token::eraseTokens(tok->tokAt(4), tok->tokAt(7));
+            Token::eraseTokens(tok->tokAt(0), tok->tokAt(5));
+            tok = tok->previous();
         }
 
         if (last && last->str() == ",")
@@ -8046,14 +8047,9 @@ void Tokenizer::simplifyBitfields()
             Token *tok2 = tok->next();
             tok1->insertToken(tok2->str());
             tok1 = tok1->next();
-            tok2 = tok2->next();
-
-            while (tok2->str() != last->previous()->str())
-            {
-                tok1->insertToken(tok2->str());
-                tok1 = tok1->next();
-                tok2 = tok2->next();
-            }
+            tok1->isSigned(tok2->isSigned());
+            tok1->isUnsigned(tok2->isUnsigned());
+            tok1->isLong(tok2->isLong());
         }
     }
 }
