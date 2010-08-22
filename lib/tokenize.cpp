@@ -4986,7 +4986,7 @@ void Tokenizer::simplifyStdType()
             bool isUnsigned = tok->str() == "unsigned";
 
             // unsigned i => unsigned int i
-            if (!tok->next()->isIntegerType())
+            if (!Token::Match(tok->next(), "char|short|int|long|__int8|__int16|__int32|__int64"))
                 tok->str("int");
             else
                 tok->deleteThis();
