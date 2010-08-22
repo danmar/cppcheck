@@ -8006,7 +8006,7 @@ static bool isAllUpper(const Token *type)
 
 static bool isBitfieldType(const Token *type)
 {
-    if (Token::Match(type, "signed|unsigned|int|long|bool|char|short") || isAllUpper(type))
+    if (Token::Match(type, "signed|unsigned|int|long|bool|char|short|__int64") || isAllUpper(type))
         return true;
     return false;
 }
@@ -8015,14 +8015,46 @@ void Tokenizer::simplifyBitfields()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, ";|{|public:|protected:|private: %type% %var% : %num% ;") && isBitfieldType(tok->next()))
+        Token *last = 0;
+
+        if (Token::Match(tok, ";|{|public:|protected:|private: %type% %var% : %num% ;|,") && isBitfieldType(tok->next()))
+        {
+            last = tok->tokAt(5);
             Token::eraseTokens(tok->tokAt(2), tok->tokAt(5));
-        else if (Token::Match(tok, ";|{|public:|protected:|private: signed|unsigned %type% %var% : %num% ;") && isBitfieldType(tok->tokAt(2)))
+        }
+        else if (Token::Match(tok, ";|{|public:|protected:|private: signed|unsigned %type% %var% : %num% ;|,") && isBitfieldType(tok->tokAt(2)))
+        {
+            last = tok->tokAt(6);
             Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
-        else if (Token::Match(tok, ";|{|public:|protected:|private: const %type% %var% : %num% ;") && isBitfieldType(tok->tokAt(2)))
+        }
+        else if (Token::Match(tok, ";|{|public:|protected:|private: const %type% %var% : %num% ;|,") && isBitfieldType(tok->tokAt(2)))
+        {
+            last = tok->tokAt(6);
             Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
-        else if (Token::Match(tok, ";|{|public:|protected:|private: const signed|unsigned %type% %var% : %num% ;") && isBitfieldType(tok->tokAt(3)))
+        }
+        else if (Token::Match(tok, ";|{|public:|protected:|private: const signed|unsigned %type% %var% : %num% ;|,") && isBitfieldType(tok->tokAt(3)))
+        {
+            last = tok->tokAt(7);
             Token::eraseTokens(tok->tokAt(4), tok->tokAt(7));
+        }
+
+        if (last && last->str() == ",")
+        {
+            Token *tok1 = last;
+            tok1->str(";");
+
+            Token *tok2 = tok->next();
+            tok1->insertToken(tok2->str());
+            tok1 = tok1->next();
+            tok2 = tok2->next();
+
+            while (tok2->str() != last->previous()->str())
+            {
+                tok1->insertToken(tok2->str());
+                tok1 = tok1->next();
+                tok2 = tok2->next();
+            }
+        }
     }
 }
 

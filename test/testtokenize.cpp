@@ -247,6 +247,7 @@ private:
         TEST_CASE(bitfields2);
         TEST_CASE(bitfields3);
         TEST_CASE(bitfields4); // ticket #1956
+        TEST_CASE(bitfields5); // ticket #1956
 
         TEST_CASE(microsoftMFC);
     }
@@ -4312,29 +4313,38 @@ private:
         const char code5[] = "struct A { long x : 3; };";
         ASSERT_EQUALS("struct A { long x ; } ;", tokenizeAndStringify(code5,false));
 
-        const char code6[] = "struct A { unsigned char x : 3; };";
-        ASSERT_EQUALS("struct A { unsigned char x ; } ;", tokenizeAndStringify(code6,false));
+        const char code6[] = "struct A { __int64 x : 3; };";
+        ASSERT_EQUALS("struct A { long long x ; } ;", tokenizeAndStringify(code6,false));
 
-        const char code7[] = "struct A { unsigned short x : 3; };";
-        ASSERT_EQUALS("struct A { unsigned short x ; } ;", tokenizeAndStringify(code7,false));
+        const char code7[] = "struct A { unsigned char x : 3; };";
+        ASSERT_EQUALS("struct A { unsigned char x ; } ;", tokenizeAndStringify(code7,false));
 
-        const char code8[] = "struct A { unsigned int x : 3; };";
-        ASSERT_EQUALS("struct A { unsigned int x ; } ;", tokenizeAndStringify(code8,false));
+        const char code8[] = "struct A { unsigned short x : 3; };";
+        ASSERT_EQUALS("struct A { unsigned short x ; } ;", tokenizeAndStringify(code8,false));
 
-        const char code9[] = "struct A { unsigned long x : 3; };";
-        ASSERT_EQUALS("struct A { unsigned long x ; } ;", tokenizeAndStringify(code9,false));
+        const char code9[] = "struct A { unsigned int x : 3; };";
+        ASSERT_EQUALS("struct A { unsigned int x ; } ;", tokenizeAndStringify(code9,false));
 
-        const char code10[] = "struct A { signed char x : 3; };";
-        ASSERT_EQUALS("struct A { signed char x ; } ;", tokenizeAndStringify(code10,false));
+        const char code10[] = "struct A { unsigned long x : 3; };";
+        ASSERT_EQUALS("struct A { unsigned long x ; } ;", tokenizeAndStringify(code10,false));
 
-        const char code11[] = "struct A { signed short x : 3; };";
-        ASSERT_EQUALS("struct A { signed short x ; } ;", tokenizeAndStringify(code11,false));
+        const char code11[] = "struct A { unsigned __int64 x : 3; };";
+        ASSERT_EQUALS("struct A { unsigned long long x ; } ;", tokenizeAndStringify(code11,false));
 
-        const char code12[] = "struct A { signed int x : 3; };";
-        ASSERT_EQUALS("struct A { signed int x ; } ;", tokenizeAndStringify(code12,false));
+        const char code12[] = "struct A { signed char x : 3; };";
+        ASSERT_EQUALS("struct A { signed char x ; } ;", tokenizeAndStringify(code12,false));
 
-        const char code13[] = "struct A { signed long x : 3; };";
-        ASSERT_EQUALS("struct A { signed long x ; } ;", tokenizeAndStringify(code13,false));
+        const char code13[] = "struct A { signed short x : 3; };";
+        ASSERT_EQUALS("struct A { signed short x ; } ;", tokenizeAndStringify(code13,false));
+
+        const char code14[] = "struct A { signed int x : 3; };";
+        ASSERT_EQUALS("struct A { signed int x ; } ;", tokenizeAndStringify(code14,false));
+
+        const char code15[] = "struct A { signed long x : 3; };";
+        ASSERT_EQUALS("struct A { signed long x ; } ;", tokenizeAndStringify(code15,false));
+
+        const char code16[] = "struct A { signed __int64 x : 3; };";
+        ASSERT_EQUALS("struct A { signed long long x ; } ;", tokenizeAndStringify(code16,false));
     }
 
     void bitfields2()
@@ -4404,6 +4414,12 @@ private:
 
         const char code10[] = "struct A { UINT64 x : 3; };";
         ASSERT_EQUALS("struct A { UINT64 x ; } ;", tokenizeAndStringify(code10,false));
+    }
+
+    void bitfields5() // ticket #1956
+    {
+        const char code1[] = "struct RGB { unsigned int r : 3, g : 3, b : 2; };";
+        ASSERT_EQUALS("struct RGB { unsigned int r ; unsigned int g ; unsigned int b ; } ;", tokenizeAndStringify(code1,false));
     }
 
     void microsoftMFC()
