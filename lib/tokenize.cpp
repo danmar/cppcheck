@@ -8065,13 +8065,6 @@ void Tokenizer::simplifyBuiltinExpect()
             tok->deleteNext();
             tok->deleteNext();
         }
-        else if (Token::Match(tok->next(), "DECLARE_DYNAMIC ( %any% )"))
-        {
-            tok->deleteNext();
-            tok->deleteNext();
-            tok->deleteNext();
-            tok->deleteNext();
-        }
     }
 }
 
@@ -8083,6 +8076,13 @@ void Tokenizer::simplifyMicrosoftMFC()
     {
         if (Token::simpleMatch(tok->next(), "DECLARE_MESSAGE_MAP ( )"))
         {
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+        }
+        else if (Token::Match(tok->next(), "DECLARE_DYNAMIC|DECLARE_DYNCREATE ( %any% )"))
+        {
+            tok->deleteNext();
             tok->deleteNext();
             tok->deleteNext();
             tok->deleteNext();
