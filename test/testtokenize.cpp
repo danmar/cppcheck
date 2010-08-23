@@ -148,6 +148,7 @@ private:
         TEST_CASE(varid23);
         TEST_CASE(varid24);
         TEST_CASE(varid25);
+        TEST_CASE(varid26);  // ticket #1967 (list of function pointers)
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -2391,6 +2392,16 @@ private:
                                    "5: private:\n"
                                    "6: mutable int i@1 ;\n"
                                    "7: } ;\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid26()
+    {
+        const std::string code("list<int (*)()> functions;\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: list < int ( * ) ( ) > functions@1 ;\n");
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }

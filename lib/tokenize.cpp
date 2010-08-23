@@ -2832,6 +2832,13 @@ void Tokenizer::setVarId()
                 {
                     while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->str() == "*" || tok2->str() == "&" || tok2->str() == ","))
                         tok2 = tok2->next();
+                    if (tok2->str() == "(")
+                    {
+                        tok2 = tok2->link()->next();
+                        if (tok2->str() == "(")
+                            tok2 = tok2->link()->next();
+                        again = true;
+                    }
                 }
             }
             while (again);
