@@ -4450,6 +4450,9 @@ private:
 
         const char code2[] = "struct A { int a : 3; int : 3; int c : 3; };";
         ASSERT_EQUALS("struct A { int a ; int c ; } ;", tokenizeAndStringify(code2,false));
+
+        const char code3[] = "struct A { virtual void f() {} int f1 : 1; };";
+        ASSERT_EQUALS("struct A { virtual void f ( ) { } int f1 ; } ;", tokenizeAndStringify(code3,false));
     }
 
     void microsoftMFC()

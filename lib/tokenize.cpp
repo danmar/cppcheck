@@ -7988,54 +7988,27 @@ void Tokenizer::simplifyAsm()
 }
 
 // Simplify bitfields
-static bool isAllUpper(const Token *type)
-{
-    if (type->isName())
-    {
-        bool allupper = true;
-        const std::string s(type->str());
-        for (std::string::size_type pos = 0; pos < s.size(); ++pos)
-        {
-            const char ch = s[pos];
-            if (!(ch == '_' || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')))
-            {
-                allupper = false;
-                break;
-            }
-        }
-
-        return allupper;
-    }
-
-    return false;
-}
-
-static bool isBitfieldType(const Token *type)
-{
-    if (Token::Match(type, "bool|char|short|int|long") || isAllUpper(type))
-        return true;
-    return false;
-}
-
 void Tokenizer::simplifyBitfields()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         Token *last = 0;
+        int offset = 0;
 
-        if (Token::Match(tok, ";|{|public:|protected:|private: %type% %var% : %num% ;|,") && isBitfieldType(tok->next()))
+        if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% %var% : %num% ;|,"))
         {
-            last = tok->tokAt(5);
-            Token::eraseTokens(tok->tokAt(2), tok->tokAt(5));
+            if (tok->next()->str() == "const")
+                offset = 1;
+
+            last = tok->tokAt(5 + offset);
+            Token::eraseTokens(tok->tokAt(2 + offset), tok->tokAt(5 + offset));
         }
-        else if (Token::Match(tok, ";|{|public:|protected:|private: const %type% %var% : %num% ;|,") && isBitfieldType(tok->tokAt(2)))
+        else if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% : %num% ;"))
         {
-            last = tok->tokAt(6);
-            Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
-        }
-        else if (Token::Match(tok, ";|{|public:|protected:|private: %type% : %num% ;") && isBitfieldType(tok->next()))
-        {
-            Token::eraseTokens(tok->tokAt(0), tok->tokAt(5));
+            if (tok->next()->str() == "const")
+                offset = 1;
+
+            Token::eraseTokens(tok->tokAt(0), tok->tokAt(5 + offset));
             tok = tok->previous();
         }
 
