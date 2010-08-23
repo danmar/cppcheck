@@ -18,36 +18,61 @@
     <layout class="QHBoxLayout" name="toolbarlLayout">
      <item>
       <widget class="QToolButton" name="backButton">
+       <property name="toolTip">
+        <string>Go back</string>
+       </property>
        <property name="text">
         <string>Back</string>
+       </property>
+       <property name="icon">
+        <iconset resource="gui.qrc">
+         <normaloff>:/images/go-previous.png</normaloff>:/images/go-previous.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>22</width>
+         <height>22</height>
+        </size>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QToolButton" name="forwardButton">
+       <property name="toolTip">
+        <string>Go forward</string>
+       </property>
        <property name="text">
         <string>Forward</string>
+       </property>
+       <property name="icon">
+        <iconset resource="gui.qrc">
+         <normaloff>:/images/go-next.png</normaloff>:/images/go-next.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>22</width>
+         <height>22</height>
+        </size>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QToolButton" name="homeButton">
+       <property name="toolTip">
+        <string>Start</string>
+       </property>
        <property name="text">
         <string>Home</string>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="zoomInButton">
-       <property name="text">
-        <string>Zoom In</string>
+       <property name="icon">
+        <iconset resource="gui.qrc">
+         <normaloff>:/images/go-home.png</normaloff>:/images/go-home.png</iconset>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="zoomOutButton">
-       <property name="text">
-        <string>Zoom Out</string>
+       <property name="iconSize">
+        <size>
+         <width>22</width>
+         <height>22</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -71,6 +96,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

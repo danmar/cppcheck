@@ -73,8 +73,8 @@ HelpWindow::HelpWindow(QWidget *parent) :
         connect(m_ui->backButton, SIGNAL(clicked()), helpBrowser, SLOT(backward()));
         connect(m_ui->forwardButton, SIGNAL(clicked()), helpBrowser, SLOT(forward()));
         connect(m_ui->homeButton, SIGNAL(clicked()), helpBrowser, SLOT(home()));
-        connect(m_ui->zoomInButton, SIGNAL(clicked()), helpBrowser, SLOT(zoomIn()));
-        connect(m_ui->zoomOutButton, SIGNAL(clicked()), helpBrowser, SLOT(zoomOut()));
+        //connect(m_ui->zoomInButton, SIGNAL(clicked()), helpBrowser, SLOT(zoomIn()));
+        //connect(m_ui->zoomOutButton, SIGNAL(clicked()), helpBrowser, SLOT(zoomOut()));
     }
 }
 
