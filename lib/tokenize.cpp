@@ -8088,7 +8088,7 @@ void Tokenizer::simplifyMicrosoftMFC()
             tok->deleteNext();
             tok->deleteNext();
         }
-        else if (Token::Match(tok->next(), "DECLARE_DYNAMIC|DECLARE_DYNCREATE ( %any% )"))
+        else if (Token::Match(tok->next(), "DECLARE_DYNAMIC|DECLARE_DYNAMIC_CLASS|DECLARE_DYNCREATE ( %any% )"))
         {
             tok->deleteNext();
             tok->deleteNext();
