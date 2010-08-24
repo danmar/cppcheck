@@ -2255,7 +2255,8 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                 --indentlevel;
             }
 
-            if (Token::Match(tok, "%var% = realloc|g_try_realloc ( %var% ,") &&
+            if (tok->varId() > 0 &&
+                Token::Match(tok, "%var% = realloc|g_try_realloc ( %var% ,") &&
                 tok->varId() == tok->tokAt(4)->varId() &&
                 parameterVarIds.find(tok->varId()) == parameterVarIds.end())
             {

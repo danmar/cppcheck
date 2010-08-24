@@ -333,6 +333,7 @@ private:
         TEST_CASE(realloc6);
         TEST_CASE(realloc7);
         TEST_CASE(realloc8);
+        TEST_CASE(realloc9);
 
         TEST_CASE(assign);
 
@@ -2055,6 +2056,15 @@ private:
               "    if (!m_buf) {\n"
               "        m_buf = origBuf;\n"
               "    }\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc9()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    x = realloc(x,100);\n"
               "}\n", false);
         ASSERT_EQUALS("", errout.str());
     }
