@@ -33,6 +33,13 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
 }
 
+QString ProjectFileDialog::GetRootPath() const
+{
+    QString root = mUI.mEditProjectRoot->text();
+    root = root.trimmed();
+    return root;
+}
+
 QStringList ProjectFileDialog::GetIncludePaths() const
 {
     QString include = mUI.mEditIncludePaths->text();
@@ -63,6 +70,26 @@ QStringList ProjectFileDialog::GetDefines() const
     return defines;
 }
 
+QStringList ProjectFileDialog::GetPaths() const
+{
+    QString path = mUI.mEditPaths->text();
+    QStringList paths;
+    if (!path.isEmpty())
+    {
+        path = path.trimmed();
+        if (path.indexOf(';') != -1)
+            paths = path.split(";");
+        else
+            paths.append(path);
+    }
+    return paths;
+}
+
+void ProjectFileDialog::SetRootPath(const QString &root)
+{
+    mUI.mEditProjectRoot->setText(root);
+}
+
 void ProjectFileDialog::SetIncludepaths(const QStringList &includes)
 {
     QString includestr;
@@ -91,4 +118,19 @@ void ProjectFileDialog::SetDefines(const QStringList &defines)
     if (definestr.endsWith(';'))
         definestr = definestr.left(definestr.length() - 1);
     mUI.mEditDefines->setText(definestr);
+}
+
+void ProjectFileDialog::SetPaths(const QStringList &paths)
+{
+    QString pathstr;
+    QString path;
+    foreach(path, paths)
+    {
+        pathstr += path;
+        pathstr += ";";
+    }
+    // Remove ; from the end of the string
+    if (pathstr.endsWith(';'))
+        pathstr = pathstr.left(pathstr.length() - 1);
+    mUI.mEditPaths->setText(pathstr);
 }

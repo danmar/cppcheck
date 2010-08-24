@@ -44,7 +44,8 @@ MainWindow::MainWindow() :
     mLanguages(new QActionGroup(this)),
     mLogView(NULL),
     mHelpWindow(NULL),
-    mExiting(false)
+    mExiting(false),
+    mProject(NULL)
 {
     mUI.setupUi(this);
     mUI.mResults->Initialize(mSettings, mApplications);
@@ -84,6 +85,8 @@ MainWindow::MainWindow() :
 
     connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFile()));
     connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(OpenProjectFile()));
+    connect(mUI.mActionCloseProjectFile, SIGNAL(triggered()), this, SLOT(CloseProjectFile()));
+    connect(mUI.mActionEditProjectFile, SIGNAL(triggered()), this, SLOT(EditProjectFile()));
 
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
 
@@ -112,6 +115,7 @@ MainWindow::~MainWindow()
 {
     delete mLogView;
     delete mHelpWindow;
+    delete mProject;
 }
 
 void MainWindow::CreateLanguageMenuItems()
@@ -240,6 +244,17 @@ void MainWindow::DoCheckFiles(const QStringList &files)
 
 QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
 {
+    if (mProject)
+    {
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle(tr("Cppcheck"));
+        const QString msg(tr("You must close the project file before selecting new files or directories!"));
+        msgBox.setText(msg);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return QStringList();
+    }
+
     QStringList selected;
 
     // NOTE: we use QFileDialog::getOpenFileNames() and
@@ -289,48 +304,51 @@ void MainWindow::CheckDirectory()
 
 Settings MainWindow::GetCppcheckSettings()
 {
-    ProjectFile pfile;
+    ProjectFile *pfile = NULL;
     Settings result;
+    bool projectRead = true;
 
-    if (!mCurrentDirectory.isEmpty())
+    if (!mCurrentDirectory.isEmpty() && !mProject)
     {
         // Format project filename (directory name + .cppcheck) and load
         // the project file if it is found.
         QStringList parts = mCurrentDirectory.split("/");
         QString projfile = mCurrentDirectory + "/" + parts[parts.count() - 1] + ".cppcheck";
-        bool projectRead = false;
         if (QFile::exists(projfile))
         {
             qDebug() << "Reading project file " << projfile;
-            projectRead = pfile.Read(projfile);
+            projectRead = pfile->Read(projfile);
         }
+    }
+    else if (mProject)
+    {
+        pfile = mProject->GetProjectFile();
+    }
 
-        if (projectRead)
+    if (projectRead)
+    {
+        QStringList dirs = pfile->GetIncludeDirs();
+        QString dir;
+        foreach(dir, dirs)
         {
-            QStringList dirs = pfile.GetIncludeDirs();
-            QString dir;
-            foreach(dir, dirs)
-            {
-                QString incdir;
-                if (!QDir::isAbsolutePath(dir))
-                    incdir = mCurrentDirectory + "/";
-                incdir += dir;
-                incdir = QDir::cleanPath(incdir);
+            QString incdir;
+            if (!QDir::isAbsolutePath(dir))
+                incdir = mCurrentDirectory + "/";
+            incdir += dir;
+            incdir = QDir::cleanPath(incdir);
 
-                // include paths must end with '/'
-                if (!incdir.endsWith("/"))
-                    incdir += "/";
-                result._includePaths.push_back(incdir.toStdString());
-            }
-
-            QStringList defines = pfile.GetDefines();
-            QString define;
-            foreach(define, defines)
-            {
-                if (!result.userDefines.empty())
-                    result.userDefines += ";";
-                result.userDefines += define.toStdString();
-            }
+            // include paths must end with '/'
+            if (!incdir.endsWith("/"))
+                incdir += "/";
+            result._includePaths.push_back(incdir.toStdString());
+        }
+        QStringList defines = pfile->GetDefines();
+        QString define;
+        foreach(define, defines)
+        {
+            if (!result.userDefines.empty())
+                result.userDefines += ";";
+            result.userDefines += define.toStdString();
         }
     }
 
@@ -667,6 +685,9 @@ void MainWindow::OpenHtmlHelpContents()
 
 void MainWindow::OpenProjectFile()
 {
+    if (mProject != NULL)
+        delete mProject;
+
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     QString filepath = QFileDialog::getOpenFileName(this,
                        tr("Select Project File"),
@@ -675,9 +696,38 @@ void MainWindow::OpenProjectFile()
 
     if (!filepath.isEmpty())
     {
-        Project prj(filepath, this);
-        if (prj.Open())
-            prj.Edit();
+        QFileInfo inf(filepath);
+        const QString filename = inf.fileName();
+        FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
+
+        mUI.mActionCloseProjectFile->setEnabled(true);
+        mUI.mActionEditProjectFile->setEnabled(true);
+        mProject = new Project(filepath, this);
+        mProject->Open();
+        QString rootpath = mProject->GetProjectFile()->GetRootPath();
+
+        // If root path not give or "current dir" then use project file's directory
+        // as check path
+        if (rootpath.isEmpty() || rootpath == ".")
+            mCurrentDirectory = inf.canonicalPath();
+        else
+            mCurrentDirectory = rootpath;
+
+        QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
+        if (!paths.isEmpty())
+        {
+            for (int i = 0; i < paths.size(); i++)
+            {
+                if (!QDir::isAbsolutePath(paths[i]))
+                {
+                    QString path = mCurrentDirectory + "/";
+                    path += paths[i];
+                    paths[i] = QDir::cleanPath(path);
+                }
+            }
+
+            DoCheckFiles(paths);
+        }
     }
 }
 
@@ -691,10 +741,42 @@ void MainWindow::NewProjectFile()
 
     if (!filepath.isEmpty())
     {
-        Project prj(filepath, this);
-        prj.Create();
-        prj.Edit();
+        mUI.mActionCloseProjectFile->setEnabled(true);
+        mUI.mActionEditProjectFile->setEnabled(true);
+        QFileInfo inf(filepath);
+        const QString filename = inf.fileName();
+        FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
+
+        if (mProject)
+            delete mProject;
+        mProject = new Project(filepath, this);
+        mProject->Create();
+        mProject->Edit();
     }
+}
+
+void MainWindow::CloseProjectFile()
+{
+    delete mProject;
+    mProject = NULL;
+    mUI.mActionCloseProjectFile->setEnabled(false);
+    mUI.mActionEditProjectFile->setEnabled(false);
+    FormatAndSetTitle();
+}
+
+void MainWindow::EditProjectFile()
+{
+    if (!mProject)
+    {
+        QMessageBox msg(QMessageBox::Critical,
+                        tr("Cppcheck"),
+                        QString(tr("No project file loaded")),
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
+        return;
+    }
+    mProject->Edit();
 }
 
 void MainWindow::ShowLogView()

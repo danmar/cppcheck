@@ -7,13 +7,47 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>112</height>
+    <height>131</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Project File</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Project:</string>
+       </property>
+       <property name="buddy">
+        <cstring>mEditProjectRoot</cstring>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="mEditProjectRoot"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Paths:</string>
+       </property>
+       <property name="buddy">
+        <cstring>mEditPaths</cstring>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="mEditPaths"/>
+     </item>
+    </layout>
+   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -73,6 +107,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>mEditProjectRoot</tabstop>
+  <tabstop>mEditPaths</tabstop>
+  <tabstop>mEditIncludePaths</tabstop>
+  <tabstop>mEditDefines</tabstop>
+  <tabstop>mButtons</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

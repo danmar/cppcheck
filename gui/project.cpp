@@ -77,18 +77,25 @@ bool Project::Open()
 void Project::Edit()
 {
     ProjectFileDialog dlg(mFilename, mParentWidget);
-
+    QString root = mPFile->GetRootPath();
+    dlg.SetRootPath(root);
     QStringList includes = mPFile->GetIncludeDirs();
     dlg.SetIncludepaths(includes);
     QStringList defines = mPFile->GetDefines();
     dlg.SetDefines(defines);
+    QStringList paths = mPFile->GetCheckPaths();
+    dlg.SetPaths(paths);
     int rv = dlg.exec();
     if (rv == QDialog::Accepted)
     {
+        QString root = dlg.GetRootPath();
+        mPFile->SetRootPath(root);
         QStringList includes = dlg.GetIncludePaths();
         mPFile->SetIncludes(includes);
         QStringList defines = dlg.GetDefines();
         mPFile->SetDefines(defines);
+        QStringList paths = dlg.GetPaths();
+        mPFile->SetCheckPaths(paths);
         bool writeSuccess = mPFile->Write();
         if (!writeSuccess)
         {

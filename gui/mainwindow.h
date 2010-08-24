@@ -31,9 +31,11 @@
 #include "translationhandler.h"
 #include "settings.h"
 #include "ui_main.h"
+
 class ThreadHandler;
 class LogView;
 class HelpWindow;
+class Project;
 
 /// @addtogroup GUI
 /// @{
@@ -140,10 +142,22 @@ public slots:
     void NewProjectFile();
 
     /**
-    * @brief Slot to edit existing project file.
+    * @brief Slot to open project file and start checking contained paths.
     *
     */
     void OpenProjectFile();
+
+    /**
+    * @brief Slot to close open project file.
+    *
+    */
+    void CloseProjectFile();
+
+    /**
+    * @brief Slot to edit project file.
+    *
+    */
+    void EditProjectFile();
 
     /**
     * @brief Slot for showing the log view.
@@ -324,7 +338,7 @@ protected:
     QString mCurrentDirectory;
 
     /**
-    * @brief Log view..
+    * @brief Log view.
     */
     LogView *mLogView;
 
@@ -332,6 +346,11 @@ protected:
      * @brief Help window..
      */
     HelpWindow *mHelpWindow;
+
+    /**
+    * @brief Project (file).
+    */
+    Project *mProject;
 
 private:
 
