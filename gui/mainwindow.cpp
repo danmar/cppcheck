@@ -302,13 +302,13 @@ void MainWindow::CheckDirectory()
     DoCheckFiles(SelectFilesToCheck(QFileDialog::DirectoryOnly));
 }
 
-Settings MainWindow::GetCppcheckSettings()
+bool MainWindow::GetCheckProject()
 {
-    ProjectFile *pfile = NULL;
-    Settings result;
-    bool projectRead = true;
+    // We have succesfully loaded project earlier and use that project
+    if (mProject)
+        return true;
 
-    if (!mCurrentDirectory.isEmpty() && !mProject)
+    if (!mCurrentDirectory.isEmpty())
     {
         // Format project filename (directory name + .cppcheck) and load
         // the project file if it is found.
@@ -316,18 +316,22 @@ Settings MainWindow::GetCppcheckSettings()
         QString projfile = mCurrentDirectory + "/" + parts[parts.count() - 1] + ".cppcheck";
         if (QFile::exists(projfile))
         {
-            qDebug() << "Reading project file " << projfile;
-            pfile = new ProjectFile();
-            projectRead = pfile->Read(projfile);
+            qDebug() << "Opening project file: " << projfile;
+            mProject = new Project();
+            mProject->SetFilename(projfile);
+            return mProject->Open();
         }
     }
-    else if (mProject)
-    {
-        pfile = mProject->GetProjectFile();
-    }
+    return false;
+}
 
+Settings MainWindow::GetCppcheckSettings()
+{
+    Settings result;
+    bool projectRead = GetCheckProject();
     if (projectRead)
     {
+        ProjectFile *pfile = mProject->GetProjectFile();
         QStringList dirs = pfile->GetIncludeDirs();
         QString dir;
         foreach(dir, dirs)
@@ -352,9 +356,6 @@ Settings MainWindow::GetCppcheckSettings()
             result.userDefines += define.toStdString();
         }
     }
-
-    if (!mProject)
-        delete pfile;
 
     result._debug = false;
     result._checkCodingStyle = true;
