@@ -2230,15 +2230,17 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
     const Token *tok = _tokenizer->tokens();
     while (NULL != (tok = Token::findmatch(tok, ") const| {")))
     {
-        const Token *startOfFunction = tok;
-
         // Record the varid's of the function parameters
         std::set<unsigned int> parameterVarIds;
-        for (tok = tok->link(); tok && tok->str() != "{"; tok = tok->next())
+        for (const Token *tok2 = tok->link(); tok2 && tok2->str() != ")"; tok2 = tok2->next())
         {
-            if (tok->varId() != 0)
-                parameterVarIds.insert(tok->varId());
+            if (tok2->varId() != 0)
+                parameterVarIds.insert(tok2->varId());
         }
+
+        while (tok->str() != "{")
+            tok = tok->next();
+        const Token *startOfFunction = tok;
 
         // Search for the "var = realloc(var, 100);" pattern within this function
         unsigned int indentlevel = 0;
