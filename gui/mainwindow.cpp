@@ -44,8 +44,8 @@ MainWindow::MainWindow() :
     mLanguages(new QActionGroup(this)),
     mLogView(NULL),
     mHelpWindow(NULL),
-    mExiting(false),
-    mProject(NULL)
+    mProject(NULL),
+    mExiting(false)
 {
     mUI.setupUi(this);
     mUI.mResults->Initialize(mSettings, mApplications);
