@@ -1221,10 +1221,16 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
 void CheckBufferOverrun::checkStructVariable()
 {
-    const char declstruct[] = "struct|class %var% {|:";
-    for (const Token *tok = Token::findmatch(_tokenizer->tokens(), declstruct);
-         tok; tok = Token::findmatch(tok->next(), declstruct))
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+        if (tok->str() == "{")
+        {
+            tok = tok->link();
+        }
+
+        if (!Token::Match(tok, "struct|class %var% {|:"))
+            continue;
+
         const std::string &structname = tok->next()->str();
         const Token *tok2 = tok;
 
@@ -1294,7 +1300,6 @@ void CheckBufferOverrun::checkStructVariable()
 
                 else
                     continue;
-
 
                 // Goto end of statement.
                 const Token *CheckTok = NULL;

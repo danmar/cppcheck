@@ -175,6 +175,8 @@ private:
         TEST_CASE(executionPaths2);
 
         TEST_CASE(cmdLineArgs1);
+
+        TEST_CASE(scope);   // handling different scopes
     }
 
 
@@ -2483,6 +2485,21 @@ private:
               "    strcpy(prog, argv[0]);\n"
               "}\n");
 
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void scope()
+    {
+        check("class A {\n"
+              "private:\n"
+              "    struct X { char buf[10]; };\n"
+              "}\n"
+              "\n"
+              "void f()\n"
+              "{\n"
+              "    X x;\n"
+              "    x.buf[10] = 0;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
