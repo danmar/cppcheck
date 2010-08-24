@@ -273,7 +273,7 @@ protected:
     * it.
     * @return true if we have project, false if no project.
     */
-    bool MainWindow::GetCheckProject();
+    bool GetCheckProject();
 
     /**
     * @brief Get our default cppcheck settings and read project file.
