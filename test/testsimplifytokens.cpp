@@ -5470,6 +5470,13 @@ private:
     void enum15() // C++0x features
     {
         {
+            const char code[] = "enum : char { a = 99 };\n"
+                                "char c1 = a;";
+            const char expected[] = "; char c1 ; c1 = 99 ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
             const char code[] = "enum class Enum1 { a };\n"
                                 "Enum1 e1 = a;";
             const char expected[] = "; int e1 ; e1 = 0 ;";

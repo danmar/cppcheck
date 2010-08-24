@@ -6467,27 +6467,27 @@ void Tokenizer::simplifyEnum()
             Token *enumType = 0;
             Token *typeTokenStart = 0;
             Token *typeTokenEnd = 0;
-            bool enumClass = false;
 
             // check for C++0x enum class
             if (Token::Match(tok->next(), "class|struct"))
-            {
                 tok->deleteNext();
-                enumClass = true;
-            }
 
             // check for C++0x typed enumeration
-            if (Token::Match(tok->next(), "%type% :"))
+            if (Token::Match(tok->next(), "%type% :") || tok->next()->str() == ":")
             {
+                int offset = 2;
+                if (tok->next()->str() != ":")
+                    offset = 3;
+
                 // check for forward declaration
                 /** @todo start substitution check at forward declaration */
-                const Token *temp = tok->tokAt(3);
+                const Token *temp = tok->tokAt(offset);
                 while (!Token::Match(temp, "{|;"))
                     temp = temp->next();
                 if (temp->str() == ";")
                     continue;
 
-                typeTokenStart = tok->tokAt(3);
+                typeTokenStart = tok->tokAt(offset);
                 typeTokenEnd = typeTokenStart;
                 while (Token::Match(typeTokenEnd->next(), "signed|unsigned|char|short|int|long"))
                     typeTokenEnd = typeTokenEnd->next();
@@ -6495,6 +6495,8 @@ void Tokenizer::simplifyEnum()
 
             if (tok->tokAt(1)->str() == "{")
                 tok1 = tok->tokAt(2);
+            else if (tok->tokAt(1)->str() == ":")
+                tok1 = typeTokenEnd->tokAt(2);
             else if (tok->tokAt(2)->str() == "{")
             {
                 enumType = tok->tokAt(1);
