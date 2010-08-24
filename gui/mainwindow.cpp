@@ -317,6 +317,7 @@ Settings MainWindow::GetCppcheckSettings()
         if (QFile::exists(projfile))
         {
             qDebug() << "Reading project file " << projfile;
+            pfile = new ProjectFile();
             projectRead = pfile->Read(projfile);
         }
     }
@@ -351,6 +352,9 @@ Settings MainWindow::GetCppcheckSettings()
             result.userDefines += define.toStdString();
         }
     }
+
+    if (!mProject)
+        delete pfile;
 
     result._debug = false;
     result._checkCodingStyle = true;
@@ -685,8 +689,7 @@ void MainWindow::OpenHtmlHelpContents()
 
 void MainWindow::OpenProjectFile()
 {
-    if (mProject != NULL)
-        delete mProject;
+    delete mProject;
 
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     QString filepath = QFileDialog::getOpenFileName(this,
@@ -747,8 +750,7 @@ void MainWindow::NewProjectFile()
         const QString filename = inf.fileName();
         FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
 
-        if (mProject)
-            delete mProject;
+        delete mProject;
         mProject = new Project(filepath, this);
         mProject->Create();
         mProject->Edit();
