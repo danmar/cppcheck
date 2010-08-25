@@ -1826,7 +1826,11 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
                 }
             }
             if (level > 0)
+            {
                 syntaxError(tok);
+                deallocateTokens();
+                return false;
+            }
         }
     }
 

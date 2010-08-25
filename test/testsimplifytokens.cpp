@@ -837,10 +837,10 @@ private:
     {
         const char code[] =
             "const char * names[2];"
-            "for (int i = 0; i < sizeof(names[0]); i++)"
+            "for (int i = 0; i != sizeof(names[0]); i++)"
             "{}";
         std::ostringstream expected;
-        expected << "const char * names [ 2 ] ; for ( int i = 0 ; i < " << sizeofFromTokenizer("*") << " ; i ++ ) { }";
+        expected << "const char * names [ 2 ] ; for ( int i = 0 ; i != " << sizeofFromTokenizer("*") << " ; i ++ ) { }";
         ASSERT_EQUALS(expected.str(), sizeof_(code));
     }
 

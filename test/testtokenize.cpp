@@ -679,12 +679,12 @@ private:
     {
         // ticket #990
         const char code[] =
-            "{"
+            "void f() {"
             "    for (int k=0; k<VectorSize; k++)"
             "        LOG_OUT(ID_Vector[k])"
             "}";
         const char expected[] =
-            "{ "
+            "void f ( ) { "
             "for ( int k = 0 ; k < VectorSize ; k ++ ) { "
             "LOG_OUT ( ID_Vector [ k ] ) "
             "} "
@@ -3518,12 +3518,16 @@ private:
     void vardecl7()
     {
         // ticket #603
-        const char code[] = "for (int c = 0; c < 0; ++c) {}\n"
-                            "int t;\n"
-                            "D(3 > t, \"T\");";
-        const char res[] = "for ( int c = 0 ; c < 0 ; ++ c ) { }\n"
+        const char code[] = "void f() {\n"
+                            "    for (int c = 0; c < 0; ++c) {}\n"
+                            "    int t;\n"
+                            "    D(3 > t, \"T\");\n"
+                            "}";
+        const char res[] = "void f ( ) {\n"
+                           "for ( int c = 0 ; c < 0 ; ++ c ) { }\n"
                            "int t ;\n"
-                           "D ( 3 > t , \"T\" ) ;";
+                           "D ( 3 > t , \"T\" ) ;\n"
+                           "}";
 
         ASSERT_EQUALS(res, tokenizeAndStringify(code));
     }
@@ -3740,8 +3744,8 @@ private:
         }
 
         {
-            const char code1[] = "for (signed i=0; i<10; i++)";
-            const char code2[] = "for ( signed int i = 0 ; i < 10 ; i ++ )";
+            const char code1[] = "void f() { for (signed i=0; i<10; i++) {} }";
+            const char code2[] = "void f ( ) { for ( signed int i = 0 ; i < 10 ; i ++ ) { } }";
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
     }
@@ -3773,8 +3777,8 @@ private:
 
         // insert "int" after "unsigned"..
         {
-            const char code1[] = "for (unsigned i=0; i<10; i++)";
-            const char code2[] = "for ( unsigned int i = 0 ; i < 10 ; i ++ )";
+            const char code1[] = "void f() { for (unsigned i=0; i<10; i++) {} }";
+            const char code2[] = "void f ( ) { for ( unsigned int i = 0 ; i < 10 ; i ++ ) { } }";
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
 
