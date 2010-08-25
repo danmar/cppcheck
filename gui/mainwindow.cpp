@@ -101,6 +101,7 @@ MainWindow::MainWindow() :
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
     mUI.mActionRecheck->setEnabled(false);
+    EnableProjectActions(false);
 
     QStringList args = QCoreApplication::arguments();
     //Remove the application itself
@@ -233,12 +234,10 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     EnableCheckButtons(false);
     mUI.mActionSettings->setEnabled(false);
     mUI.mActionOpenXML->setEnabled(false);
-    mUI.mActionNewProjectFile->setEnabled(false);
-    mUI.mActionOpenProjectFile->setEnabled(false);
-
     mUI.mResults->SetCheckDirectory(checkPath);
 
     Settings checkSettings = GetCppcheckSettings();
+    EnableProjectActions(false);
     mThread->Check(checkSettings, false);
 }
 
@@ -313,12 +312,14 @@ bool MainWindow::GetCheckProject()
         // Format project filename (directory name + .cppcheck) and load
         // the project file if it is found.
         QStringList parts = mCurrentDirectory.split("/");
-        QString projfile = mCurrentDirectory + "/" + parts[parts.count() - 1] + ".cppcheck";
+        const QString filename = parts[parts.count() - 1] + ".cppcheck";;
+        const QString projfile = mCurrentDirectory + "/" + filename;
         if (QFile::exists(projfile))
         {
             qDebug() << "Opening project file: " << projfile;
             mProject = new Project();
             mProject->SetFilename(projfile);
+            FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
             return mProject->Open();
         }
     }
@@ -385,8 +386,7 @@ void MainWindow::CheckDone()
     EnableCheckButtons(true);
     mUI.mActionSettings->setEnabled(true);
     mUI.mActionOpenXML->setEnabled(true);
-    mUI.mActionNewProjectFile->setEnabled(false);
-    mUI.mActionOpenProjectFile->setEnabled(false);
+    EnableProjectActions(true);
 
     if (mUI.mResults->HasResults())
     {
@@ -702,7 +702,7 @@ void MainWindow::OpenProjectFile()
     {
         QFileInfo inf(filepath);
         const QString filename = inf.fileName();
-        FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
+        FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
 
         mUI.mActionCloseProjectFile->setEnabled(true);
         mUI.mActionEditProjectFile->setEnabled(true);
@@ -745,11 +745,10 @@ void MainWindow::NewProjectFile()
 
     if (!filepath.isEmpty())
     {
-        mUI.mActionCloseProjectFile->setEnabled(true);
-        mUI.mActionEditProjectFile->setEnabled(true);
+        EnableProjectActions(true);
         QFileInfo inf(filepath);
         const QString filename = inf.fileName();
-        FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
+        FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
 
         delete mProject;
         mProject = new Project(filepath, this);
@@ -762,8 +761,7 @@ void MainWindow::CloseProjectFile()
 {
     delete mProject;
     mProject = NULL;
-    mUI.mActionCloseProjectFile->setEnabled(false);
-    mUI.mActionEditProjectFile->setEnabled(false);
+    EnableProjectActions(false);
     FormatAndSetTitle();
 }
 
@@ -798,4 +796,10 @@ void MainWindow::Log(const QString &logline)
     {
         mLogView->AppendLine(logline);
     }
+}
+
+void MainWindow::EnableProjectActions(bool enable)
+{
+    mUI.mActionCloseProjectFile->setEnabled(enable);
+    mUI.mActionEditProjectFile->setEnabled(enable);
 }

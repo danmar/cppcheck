@@ -306,6 +306,12 @@ protected:
     void OpenHtmlHelpContents();
 
     /**
+    * @brief Enable or disable project file actions.
+    * @param enable If true then actions are enabled.
+    */
+    void EnableProjectActions(bool enable);
+
+    /**
     * @brief Program settings
     *
     */
