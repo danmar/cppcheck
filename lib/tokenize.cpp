@@ -6502,7 +6502,7 @@ void Tokenizer::simplifyEnum()
                 enumType = tok->tokAt(1);
                 tok1 = tok->tokAt(3);
             }
-            else if (tok->tokAt(2)->str() == ":")
+            else
             {
                 enumType = tok->tokAt(1);
                 tok1 = typeTokenEnd->tokAt(2);
