@@ -41,6 +41,12 @@ public:
     HelpWindow(QWidget *parent = 0);
     ~HelpWindow();
 
+    /**
+     * load a *.qhc file and setup GUI. the file must exist.
+     * @return false if loading failed
+     */
+    bool load(const QString &helpFile);
+
 private:
     Ui::HelpWindow *m_ui;
 

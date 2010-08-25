@@ -684,7 +684,23 @@ void MainWindow::OpenHelpContents()
 void MainWindow::OpenHtmlHelpContents()
 {
     if (mHelpWindow == NULL)
+    {
+        const QString fname = qApp->applicationDirPath() + "/online-help.qhc";
+        if (!QFileInfo(fname).exists())
+        {
+            QMessageBox::warning(this, tr("Cppcheck Help"), tr("Failed to load help file (not found)"));
+            return;
+        }
+
         mHelpWindow = new HelpWindow;
+        if (!mHelpWindow->load(fname))
+        {
+            delete mHelpWindow;
+            mHelpWindow = NULL;
+            QMessageBox::warning(this, tr("Cppcheck Help"), tr("Failed to load help file"));
+            return;
+        }
+    }
 
     mHelpWindow->show();
     if (!mHelpWindow->isActiveWindow())

@@ -52,30 +52,36 @@ HelpWindow::HelpWindow(QWidget *parent) :
     m_ui(new Ui::HelpWindow)
 {
     m_ui->setupUi(this);
+    helpEngine = NULL;
+}
 
-    setVisible(true);
-
-    helpEngine = new QHelpEngine("help/online-help.qhc", this);
-    if (helpEngine->setupData())
+bool HelpWindow::load(const QString &helpFile)
+{
+    helpEngine = new QHelpEngine(helpFile, this);
+    if (!helpEngine->setupData())
     {
-        QSplitter *helpPanel = new QSplitter(Qt::Horizontal);
-        HelpBrowser *helpBrowser = new HelpBrowser(helpEngine, this);
-
-        helpPanel->insertWidget(0, helpEngine->contentWidget());
-        helpPanel->insertWidget(1, helpBrowser);
-        helpPanel->setStretchFactor(1, 1);
-
-        m_ui->mainLayout->addWidget(helpPanel);
-
-        connect(helpEngine->contentWidget(), SIGNAL(linkActivated(const QUrl &)),
-                helpBrowser, SLOT(setSource(const QUrl &)));
-
-        connect(m_ui->backButton, SIGNAL(clicked()), helpBrowser, SLOT(backward()));
-        connect(m_ui->forwardButton, SIGNAL(clicked()), helpBrowser, SLOT(forward()));
-        connect(m_ui->homeButton, SIGNAL(clicked()), helpBrowser, SLOT(home()));
-        //connect(m_ui->zoomInButton, SIGNAL(clicked()), helpBrowser, SLOT(zoomIn()));
-        //connect(m_ui->zoomOutButton, SIGNAL(clicked()), helpBrowser, SLOT(zoomOut()));
+        return false;
     }
+
+    QSplitter *helpPanel = new QSplitter(Qt::Horizontal);
+    HelpBrowser *helpBrowser = new HelpBrowser(helpEngine, this);
+
+    helpPanel->insertWidget(0, helpEngine->contentWidget());
+    helpPanel->insertWidget(1, helpBrowser);
+    helpPanel->setStretchFactor(1, 1);
+
+    m_ui->mainLayout->addWidget(helpPanel);
+
+    connect(helpEngine->contentWidget(), SIGNAL(linkActivated(const QUrl &)),
+            helpBrowser, SLOT(setSource(const QUrl &)));
+
+    connect(m_ui->backButton, SIGNAL(clicked()), helpBrowser, SLOT(backward()));
+    connect(m_ui->forwardButton, SIGNAL(clicked()), helpBrowser, SLOT(forward()));
+    connect(m_ui->homeButton, SIGNAL(clicked()), helpBrowser, SLOT(home()));
+    //connect(m_ui->zoomInButton, SIGNAL(clicked()), helpBrowser, SLOT(zoomIn()));
+    //connect(m_ui->zoomOutButton, SIGNAL(clicked()), helpBrowser, SLOT(zoomOut()));
+
+    return true;
 }
 
 HelpWindow::~HelpWindow()
