@@ -210,6 +210,7 @@ private:
         TEST_CASE(vardecl_template);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
+        TEST_CASE(syntax_error_templates);
 
         TEST_CASE(removeKeywords);
 
@@ -3662,6 +3663,42 @@ private:
             std::istringstream istr(code);
             ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("[test.cpp:2]: (error) Invalid number of character (() when these macros are defined: ''.\n", errout.str());
+        }
+    }
+
+
+    void syntax_error_templates()
+    {
+        // ok code.. using ">" for a comparison
+        {
+            errout.str("");
+            std::istringstream istr("x<y>z> xyz;\n");
+            Tokenizer tokenizer(0, this);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        // bad code.. missing ">"
+        {
+            errout.str("");
+            std::istringstream istr("x<y<int> xyz;\n");
+            Tokenizer tokenizer(0, this);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        }
+
+        // bad code
+        {
+            errout.str("");
+            std::istringstream istr("typedef\n"
+                                    "    typename boost::mpl::if_c<\n"
+                                    "          _visitableIndex < boost::mpl::size< typename _Visitables::ConcreteVisitables >::value\n"
+                                    "          , ConcreteVisitable\n"
+                                    "          , Dummy< _visitableIndex >\n"
+                                    "    >::type ConcreteVisitableOrDummy;\n");
+            Tokenizer tokenizer(0, this);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
         }
     }
 
