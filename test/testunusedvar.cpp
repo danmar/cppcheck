@@ -2175,7 +2175,8 @@ private:
                               "        func();\n"
                               "    } while(a--);\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: z\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: x\n"
+                      "[test.cpp:4]: (style) Unused variable: z\n", errout.str());
     }
 
     void localvarStruct4()

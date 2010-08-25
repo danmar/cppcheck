@@ -5723,6 +5723,12 @@ private:
             const char expected[] = ";";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+
+        {
+            const char code[] = "struct { struct { struct { } ; } ; };";
+            const char expected[] = ";";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void removeUnwantedKeywords()

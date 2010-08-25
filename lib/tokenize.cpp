@@ -4725,13 +4725,13 @@ void Tokenizer::simplifyVarDecl()
                 break;
         }
 
-        if (tok->previous() && !Token::Match(tok->previous(), "[{};)]"))
+        if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|)|public:|protected:|private:"))
             continue;
 
         Token *type0 = tok;
         if (!Token::Match(type0, "%type%"))
             continue;
-        if (Token::Match(type0, "else|return"))
+        if (Token::Match(type0, "else|return|public:|protected:|private:"))
             continue;
 
         bool isconst = false;
@@ -7793,6 +7793,8 @@ void Tokenizer::simplifyStructDecl()
 
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        Token *restart;
+
         // check for named struct/union
         if (Token::Match(tok, "struct|union %type% :|{"))
         {
@@ -7803,6 +7805,7 @@ void Tokenizer::simplifyStructDecl()
                 next = next->next();
 
             tok = next->link();
+            restart = next;
 
             // check for named type
             if (Token::Match(tok->next(), "*|&| %type% ,|;|["))
@@ -7812,7 +7815,7 @@ void Tokenizer::simplifyStructDecl()
                 tok->insertToken(type->str().c_str());
             }
 
-            tok = next;
+            tok = restart;
         }
 
         // check for anonymous struct/union
@@ -7820,6 +7823,7 @@ void Tokenizer::simplifyStructDecl()
         {
             Token *tok1 = tok;
 
+            restart = tok->next();
             tok = tok->next()->link();
 
             // check for named type
@@ -7847,14 +7851,21 @@ void Tokenizer::simplifyStructDecl()
                 }
                 else
                     tok1->deleteThis();
+                restart = tok1->previous();
                 tok->deleteThis();
                 if (tok->next())
                     tok->deleteThis();
-                if (!tok->next())
-                    return;
             }
 
-            tok = tok1->next();
+            if (!restart)
+            {
+                simplifyStructDecl();
+                return;
+            }
+            else if (!restart->next())
+                return;
+
+            tok = restart;
         }
     }
 }
