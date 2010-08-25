@@ -101,6 +101,7 @@ MainWindow::MainWindow() :
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
     mUI.mActionRecheck->setEnabled(false);
+    EnableProjectOpenActions(true);
     EnableProjectActions(false);
 
     QStringList args = QCoreApplication::arguments();
@@ -238,6 +239,7 @@ void MainWindow::DoCheckFiles(const QStringList &files)
 
     Settings checkSettings = GetCppcheckSettings();
     EnableProjectActions(false);
+    EnableProjectOpenActions(false);
     mThread->Check(checkSettings, false);
 }
 
@@ -387,6 +389,7 @@ void MainWindow::CheckDone()
     mUI.mActionSettings->setEnabled(true);
     mUI.mActionOpenXML->setEnabled(true);
     EnableProjectActions(true);
+    EnableProjectOpenActions(true);
 
     if (mUI.mResults->HasResults())
     {
@@ -762,6 +765,7 @@ void MainWindow::CloseProjectFile()
     delete mProject;
     mProject = NULL;
     EnableProjectActions(false);
+    EnableProjectOpenActions(true);
     FormatAndSetTitle();
 }
 
@@ -802,4 +806,10 @@ void MainWindow::EnableProjectActions(bool enable)
 {
     mUI.mActionCloseProjectFile->setEnabled(enable);
     mUI.mActionEditProjectFile->setEnabled(enable);
+}
+
+void MainWindow::EnableProjectOpenActions(bool enable)
+{
+    mUI.mActionNewProjectFile->setEnabled(enable);
+    mUI.mActionOpenProjectFile->setEnabled(enable);
 }

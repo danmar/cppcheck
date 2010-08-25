@@ -307,9 +307,18 @@ protected:
 
     /**
     * @brief Enable or disable project file actions.
+    * Project editing and closing actions should be only enabled when project is
+    * open and we are not checking files.
     * @param enable If true then actions are enabled.
     */
     void EnableProjectActions(bool enable);
+
+    /**
+    * @brief Enable or disable project file actions.
+    * Project opening and creating actions should be disabled when checking.
+    * @param enable If true then actions are enabled.
+    */
+    void EnableProjectOpenActions(bool enable);
 
     /**
     * @brief Program settings
