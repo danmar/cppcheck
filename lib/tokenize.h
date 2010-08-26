@@ -502,6 +502,8 @@ public:
     void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type);
     void duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type);
 
+    void unsupportedTypedef(const Token *tok) const;
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);

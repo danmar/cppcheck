@@ -4236,7 +4236,11 @@ private:
 
             // this is invalid C so just make sure it doesn't crash
             checkSimplifyTypedef(code);
+#ifndef NDEBUG
+            ASSERT_EQUALS("[test.cpp:1]: (error) Failed to parse 'typedef int ( * int ( * ) ( ) ) ( ) ;'. The checking continues anyway.\n", errout.str());
+#else
             ASSERT_EQUALS("", errout.str());
+#endif
         }
 
         {

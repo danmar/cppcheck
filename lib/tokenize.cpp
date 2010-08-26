@@ -635,6 +635,38 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
     return false;
 }
 
+void Tokenizer::unsupportedTypedef(const Token *tok) const
+{
+#ifndef NDEBUG
+    std::ostringstream str;
+    const Token *tok1 = tok;
+    while (tok && tok->str() != ";")
+    {
+        if (tok != tok1)
+            str << " ";
+        str << tok->str();
+        tok = tok->next();
+    }
+    if (tok)
+        str << " ;";
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    ErrorLogger::ErrorMessage::FileLocation loc;
+    loc.line = tok1->linenr();
+    loc.setfile(file(tok1));
+    locationList.push_back(loc);
+
+    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                           Severity::error,
+                                           "Failed to parse \'" + str.str() + "\'. The checking continues anyway.",
+                                           "cppcheckError");
+
+    if (_errorLogger)
+        _errorLogger->reportErr(errmsg);
+    else
+        Check::reportError(errmsg);
+#endif
+}
+
 struct SpaceInfo
 {
     bool isNamespace;
@@ -902,6 +934,8 @@ void Tokenizer::simplifyTypedef()
             }
             else
             {
+                unsupportedTypedef(typeDef);
+
                 // unhandled typedef, skip it and continue
                 tok = tok->tokAt(offset);
                 continue;
@@ -1084,6 +1118,8 @@ void Tokenizer::simplifyTypedef()
         // unhandled typedef, skip it and continue
         else
         {
+            unsupportedTypedef(typeDef);
+
             continue;
         }
 
