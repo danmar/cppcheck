@@ -1785,7 +1785,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
                 else if (tok2->str() == "<")
                 {
                     bool inclevel = false;
-                    if (level == 0)
+                    if (Token::simpleMatch(tok2->previous(), "operator <"))
+                        ;
+                    else if (level == 0)
                         inclevel = true;
                     else if (tok2->next()->isStandardType())
                         inclevel = true;

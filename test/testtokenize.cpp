@@ -3682,6 +3682,15 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
 
+        // ok code..
+        {
+            errout.str("");
+            std::istringstream istr("template<class T> operator<(T a, T b) { }\n");
+            Tokenizer tokenizer(0, this);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT_EQUALS("", errout.str());
+        }
+
         // bad code.. missing ">"
         {
             errout.str("");
