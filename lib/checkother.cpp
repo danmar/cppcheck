@@ -1935,6 +1935,18 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
             if (Token::simpleMatch(tok, "do {"))
                 for_or_while = true;
 
+            // possible unexpanded macro hiding for/while..
+            if (Token::Match(tok->previous(), "[;{}] %type% {"))
+            {
+                bool upper = true;
+                for (unsigned int i = 0; i < tok->str().length(); ++i)
+                {
+                    if (!std::isupper(tok->str()[i]))
+                        upper = false;
+                }
+                for_or_while |= upper;
+            }
+
             if (parlevel == 0 && (tok->str() == ";"))
                 for_or_while = false;
         }
@@ -4267,3 +4279,4 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
     reportError(tok, Severity::style,
                 "selfAssignment", "Redundant assignment of \"" + varname + "\" to itself");
 }
+

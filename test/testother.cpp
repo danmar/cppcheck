@@ -60,6 +60,7 @@ private:
         TEST_CASE(varScope7);
         TEST_CASE(varScope8);
         TEST_CASE(varScope9);		// classes may have extra side-effects
+        TEST_CASE(varScope10);      // Undefined macro FOR
 
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
@@ -695,6 +696,19 @@ private:
                  "    fred f;\n"
                  "    if (a == 2) {\n"
                  "        f.x();\n"
+                 "    }\n"
+                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope10()
+    {
+        // classes may have extra side effects
+        varScope("int f()\n"
+                 "{\n"
+                 "    int x = 0;\n"
+                 "    FOR {\n"
+                 "        foo(x++);\n"
                  "    }\n"
                  "}\n");
         ASSERT_EQUALS("", errout.str());
