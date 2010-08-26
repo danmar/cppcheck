@@ -1104,10 +1104,13 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
         const std::map<std::string, std::string>::const_iterator it = variables.find(tok->str());
         if (it != variables.end())
         {
-            if (it->second.empty())
-                tok->deleteThis();
-            else
+            if (!it->second.empty())
                 tok->str(it->second);
+            else if ((!tok->previous() || tok->strAt(-1) == "||" || tok->strAt(-1) == "&&" || tok->strAt(-1) == "(") &&
+                     (!tok->next() || tok->strAt(1) == "||" || tok->strAt(1) == "&&" || tok->strAt(-1) == ")"))
+                tok->str("1");
+            else
+                tok->deleteThis();
         }
     }
 

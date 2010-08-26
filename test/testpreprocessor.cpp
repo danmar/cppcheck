@@ -111,7 +111,8 @@ private:
         TEST_CASE(if_cond9);
         TEST_CASE(if_cond10);
 
-        TEST_CASE(if_or);
+        TEST_CASE(if_or_1);
+        TEST_CASE(if_or_2);
 
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
@@ -1068,7 +1069,7 @@ private:
 
 
 
-    void if_or()
+    void if_or_1()
     {
         const char filedata[] = "#if defined(DEF_10) || defined(DEF_11)\n"
                                 "a1;\n"
@@ -1095,6 +1096,15 @@ private:
         TODO_ASSERT_EQUALS(2, actual.size());
         TODO_ASSERT_EQUALS("\na1;\n\n", actual["DEF_10"]);
 
+    }
+
+    void if_or_2()
+    {
+        const std::string code("#if X || Y\n"
+                               "a1;\n"
+                               "#endif\n");
+        const std::string actual = Preprocessor::getcode(code, "X", "test.c", NULL);
+        ASSERT_EQUALS("\na1;\n\n", actual);
     }
 
 
