@@ -1092,19 +1092,13 @@ void Tokenizer::simplifyTypedef()
 
         while (!done)
         {
-            std::string pattern;
+            std::string pattern = typeName->str();
             int scope = 0;
             bool inScope = true;
-
             bool exitThisScope = false;
             int exitScope = 0;
             bool simplifyType = false;
             unsigned int classLevel = spaceInfo.size();
-
-            for (unsigned int i = classLevel; i < spaceInfo.size(); i++)
-                pattern += (spaceInfo[i].className + " :: ");
-
-            pattern += typeName->str();
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
