@@ -50,6 +50,8 @@ private:
         TEST_CASE(classInClass);
         TEST_CASE(sameFunctionNames);
         TEST_CASE(incompleteImplementation);
+
+        TEST_CASE(derivedClass);   // skip warning for derived classes. It might be a virtual function.
     }
 
 
@@ -357,6 +359,19 @@ private:
               "#endfile\n"
               "A::A() { }\n"
               "void A::b() { }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void derivedClass()
+    {
+        // skip warning in derived classes in case the function is virtual
+        check("class derived : public base\n"
+              "{\n"
+              "public:\n"
+              "    derived() : base() { }\n"
+              "private:\n"
+              "    void f();\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

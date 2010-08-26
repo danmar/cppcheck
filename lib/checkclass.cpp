@@ -1075,7 +1075,7 @@ void CheckClass::privateFunctions()
     if (!_settings->_checkCodingStyle)
         return;
 
-    const char pattern_class[] = "class|struct %var% {|:";
+    const char pattern_class[] = "class|struct %var% {";
 
     // Locate some class
     for (const Token *tok1 = Token::findmatch(_tokenizer->tokens(), pattern_class);
