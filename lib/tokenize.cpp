@@ -1792,6 +1792,18 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
             tok = tok->link();
         }
 
+        // skip executing scopes (ticket #1985)..
+        if (Token::simpleMatch(tok, "try {"))
+        {
+            tok = tok->next()->link();
+            while (Token::simpleMatch(tok, "} catch ("))
+            {
+                tok = tok->tokAt(2)->link();
+                if (Token::simpleMatch(tok, ") {"))
+                    tok = tok->next()->link();
+            }
+        }
+
         // not start of statement?
         if (tok->previous() && !Token::Match(tok, "[;{}]"))
             continue;

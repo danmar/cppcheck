@@ -3691,6 +3691,16 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
 
+        // ok code (ticket #1985)..
+        {
+            errout.str("");
+            std::istringstream istr("void f()\n"
+                                    "try { ;x<y; }");
+            Tokenizer tokenizer(0, this);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT_EQUALS("", errout.str());
+        }
+
         // bad code.. missing ">"
         {
             errout.str("");
