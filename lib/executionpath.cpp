@@ -304,6 +304,13 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
             return;
         }
 
+        // might be a noreturn function..
+        if (Token::Match(tok->previous(), "[;{}] %var% ( ) ; }") && tok->varId() == 0)
+        {
+            ExecutionPath::bailOut(checks);
+            return;
+        }
+
         // don't parse into "struct type { .."
         if (Token::Match(tok, "struct|union|class %type% {|:"))
         {
