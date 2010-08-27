@@ -1030,8 +1030,12 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         if (unhandled)
         {
             // unhandled ifdef configuration..
-            if (_errorLogger && _settings && _settings->_debug)
-                _errorLogger->reportOut("unhandled configuration: " + *it);
+            if (_errorLogger && _settings && _settings->debugwarnings)
+            {
+                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                const ErrorLogger::ErrorMessage errmsg(locationList, Severity::debug, "unhandled configuration: " + *it, "debug");
+                _errorLogger->reportErr(errmsg);
+            }
 
             ret.erase(it++);
         }

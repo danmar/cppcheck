@@ -28,7 +28,7 @@
 
 Settings::Settings()
 {
-    _debug = false;
+    debug = debugwarnings = false;
     _checkCodingStyle = false;
     _errorsOnly = false;
     _inlineSuppressions = false;

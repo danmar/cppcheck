@@ -49,7 +49,10 @@ public:
     Settings();
 
     /** @brief Is --debug given? */
-    bool _debug;
+    bool debug;
+
+    /** @brief Is --debug-warnings given? */
+    bool debugwarnings;
 
     /** @brief Inconclusive checks - for debugging of Cppcheck */
     bool inconclusive;

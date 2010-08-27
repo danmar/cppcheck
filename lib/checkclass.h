@@ -241,7 +241,7 @@ private:
         void markAllVar(bool value);
 
         /** @brief initialize varlist */
-        void getVarList();
+        void getVarList(bool debugwarnings);
 
         /**
          * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist

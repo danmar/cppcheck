@@ -741,7 +741,7 @@ private:
     {
         // Tokenize..
         Settings settings;
-        settings._debug = true;
+        settings.debug = settings.debugwarnings = true;
         Tokenizer tokenizer(&settings, NULL);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");

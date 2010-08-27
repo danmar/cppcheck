@@ -2153,7 +2153,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 
     simplifycode(tok);
 
-    if (_settings->_debug && _settings->_verbose)
+    if (_settings->debug && _settings->_verbose)
     {
         tok->printOut(("Checkmemoryleak: simplifycode result for: " + varname).c_str());
     }
@@ -2183,7 +2183,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
     }
 
     // detect cases that "simplifycode" don't handle well..
-    else if (_settings->_debug)
+    else if (_settings->debugwarnings)
     {
         Token *first = tok;
         while (first && first->str() == ";")
@@ -2204,10 +2204,11 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
         // Unhandled case..
         if (! noerr)
         {
-            std::cout << "Token listing..\n  ";
+            std::ostringstream errmsg;
+            errmsg << "inconclusive leak: ";
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
-                std::cout << " " << tok2->str();
-            std::cout << "\n";
+                errmsg << " " << tok2->str();
+            reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
         }
     }
 

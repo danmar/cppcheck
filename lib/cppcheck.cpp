@@ -246,7 +246,11 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
 
         // Flag used for various purposes during debugging
         else if (strcmp(argv[i], "--debug") == 0)
-            _settings._debug = true;
+            _settings.debug = _settings.debugwarnings = true;
+
+        // Show debug warnings
+        else if (strcmp(argv[i], "--debug-warnings") == 0)
+            _settings.debugwarnings = true;
 
         // Inconclusive checking - keep this for compatibility but don't
         // handle it

@@ -637,7 +637,15 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
 
 void Tokenizer::unsupportedTypedef(const Token *tok) const
 {
-#ifndef NDEBUG
+// ###### The ifdef will be removed soon - the message will only be shown if --debug-warnings are given. #######
+#ifdef NDEBUG
+    if (!_settings)
+        return;
+
+    if (!_settings->debugwarnings)
+        return;
+#endif
+
     std::ostringstream str;
     const Token *tok1 = tok;
     while (tok && tok->str() != ";")
@@ -656,15 +664,14 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
     locationList.push_back(loc);
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           Severity::error,
+                                           Severity::debug,
                                            "Failed to parse \'" + str.str() + "\'. The checking continues anyway.",
-                                           "cppcheckError");
+                                           "debug");
 
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
     else
         Check::reportError(errmsg);
-#endif
 }
 
 struct SpaceInfo
@@ -2405,19 +2412,25 @@ void Tokenizer::simplifyTemplates()
                 namepos = 3;
             else
             {
-#ifndef NDEBUG
                 // debug message that we bail out..
-                if (_settings && _settings->_debug)
+                if (_settings && _settings->debugwarnings)
                 {
-                    std::cout << "simplifyTemplates debug-information: bailing out: "
-                              << file(tok->tokAt(namepos))
-                              << ": "
-                              << tok->tokAt(namepos)->linenr()
-                              << ": "
-                              << tok->tokAt(namepos)->str()
-                              << std::endl;
+                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                    ErrorLogger::ErrorMessage::FileLocation loc;
+                    loc.line = tok->linenr();
+                    loc.setfile(file(tok));
+                    locationList.push_back(loc);
+
+                    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                           Severity::debug,
+                                                           "simplifyTemplates: bailing out",
+                                                           "debug");
+
+                    if (_errorLogger)
+                        _errorLogger->reportErr(errmsg);
+                    else
+                        Check::reportError(errmsg);
                 }
-#endif
                 continue;
             }
             if ((tok->tokAt(namepos)->str() == "*" || tok->tokAt(namepos)->str() == "&"))
@@ -3910,7 +3923,7 @@ bool Tokenizer::simplifyTokenList()
     removeRedundantAssignment();
 
     simplifyComma();
-    if (_settings && _settings->_debug)
+    if (_settings && _settings->debug)
     {
         _tokens->printOut(0, _files);
     }

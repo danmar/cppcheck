@@ -1082,7 +1082,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        settings._debug = true;
+        settings.debug = settings.debugwarnings = true;
         settings._verbose = true;
         Preprocessor preprocessor(&settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
@@ -1092,7 +1092,7 @@ private:
         ASSERT_EQUALS("\n\n\n", actual[""]);
 
         // the "defined(DEF_10) || defined(DEF_11)" are not handled correctly..
-        ASSERT_EQUALS("unhandled configuration: defined(DEF_10)||defined(DEF_11)\n", output.str());
+        ASSERT_EQUALS("(debug) unhandled configuration: defined(DEF_10)||defined(DEF_11)\n", errout.str());
         TODO_ASSERT_EQUALS(2, actual.size());
         TODO_ASSERT_EQUALS("\na1;\n\n", actual["DEF_10"]);
 

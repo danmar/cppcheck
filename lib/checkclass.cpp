@@ -76,7 +76,7 @@ void CheckClass::createSymbolDatabase()
             // only create variable list and base list if not namespace
             if (!new_info->isNamespace)
             {
-                new_info->getVarList();
+                new_info->getVarList(_settings->debugwarnings);
 
                 // goto initial '{'
                 tok2 = initBaseInfo(new_info, tok);
@@ -417,7 +417,7 @@ const Token *CheckClass::initBaseInfo(SpaceInfo *info, const Token *tok)
     return tok2;
 }
 
-void CheckClass::SpaceInfo::getVarList()
+void CheckClass::SpaceInfo::getVarList(bool debugwarnings)
 {
     // Get variable list..
     const Token *tok1 = classDef;
@@ -629,9 +629,9 @@ void CheckClass::SpaceInfo::getVarList()
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         if (vartok && vartok->str() != "operator")
         {
-            if (vartok->varId() == 0)
+            if (vartok->varId() == 0 && debugwarnings)
             {
-                check->reportError(vartok, Severity::error, "cppcheckError", "Internal error. CheckClass::SpaceInfo::getVarList found variable \'" + vartok->str() + "\' with varid 0.");
+                check->reportError(vartok, Severity::debug, "debug", "CheckClass::SpaceInfo::getVarList found variable \'" + vartok->str() + "\' with varid 0.");
             }
 
             varlist.push_back(Var(vartok, false, varaccess, isMutable, isStatic, isClass));
