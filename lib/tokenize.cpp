@@ -1994,9 +1994,6 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 
     simplifyVariableMultipleAssign();
 
-    // Change initialisation of variable to assignment
-    simplifyInitVar();
-
     // Remove redundant parantheses
     simplifyRedundantParanthesis();
 
@@ -2025,6 +2022,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 
 //updateClassList();
     setVarId();
+
+    // Change initialisation of variable to assignment
+    simplifyInitVar();
 
     _tokens->assignProgressValues();
 
@@ -5517,10 +5517,14 @@ void Tokenizer::simplifyInitVar()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[{};] class|struct|union| %type% *| %var% ( &| %any% ) ;"))
-            tok = initVar(tok->next());
-        else if (tok == _tokens && Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ;"))
-            tok = initVar(tok);
+        if (Token::Match(tok, "{|}|;| class|struct|union| %type% *| %var% ( &| %any% ) ;") ||
+            Token::Match(tok, "{|}|;| %type% *| %var% ( %type% ("))
+        {
+            if (Token::Match(tok, "[;{}]"))
+                tok = initVar(tok->next());
+            else
+                tok = initVar(tok);
+        }
     }
 }
 
@@ -5561,7 +5565,7 @@ Token * Tokenizer::initVar(Token * tok)
     // check initializer..
     if (tok->tokAt(2)->isStandardType() || tok->tokAt(2)->str() == "void")
         return tok;
-    else if (!tok->tokAt(2)->isNumber() && tok->tokAt(2)->str() != "&" && tok->tokAt(2)->varId() == 0)
+    else if (!tok->tokAt(2)->isNumber() && !Token::Match(tok->tokAt(2), "%type% (") && tok->tokAt(2)->str() != "&" && tok->tokAt(2)->varId() == 0)
         return tok;
 
     // insert '; var ='
@@ -5570,13 +5574,14 @@ Token * Tokenizer::initVar(Token * tok)
     tok = tok->tokAt(2);
     tok->insertToken("=");
 
-    // remove parantheses..
-    tok = tok->next();
-    tok->deleteNext();
-    tok = tok->next();
-    if (tok->str() == "&")
-        tok = tok->next();
-    tok->deleteNext();
+    // goto '('..
+    tok = tok->tokAt(2);
+
+    // delete ')'
+    tok->link()->deleteThis();
+
+    // delete this
+    tok->deleteThis();
 
     return tok;
 }

@@ -44,6 +44,8 @@ private:
         TEST_CASE(tokenize3);
         TEST_CASE(tokenize4);
         TEST_CASE(tokenize5);
+        TEST_CASE(tokenize6);
+        TEST_CASE(tokenize7);
 
         // array access. replace "*(p+1)" => "p[1]"
         TEST_CASE(tokenize6);
@@ -367,6 +369,16 @@ private:
         // "*(p+1)" => "p[1]"
         ASSERT_EQUALS("; x = p [ 1 ] ;", tokenizeAndStringify("; x = * ( p + 1 ) ;", true));
         ASSERT_EQUALS("; x = p [ n ] ;", tokenizeAndStringify("; x = * ( p + n ) ;", true));
+    }
+
+    void tokenize7()
+    {
+        const std::string code = "void f() {\n"
+                                 "    int x1 = 1;\n"
+                                 "    int x2(x1);\n"
+                                 "}\n";
+        ASSERT_EQUALS("void f ( ) {\nint x1 ; x1 = 1 ;\nint x2 ; x2 = x1 ;\n}",
+                      tokenizeAndStringify(code.c_str(), false));
     }
 
     void wrong_syntax()
@@ -4200,13 +4212,8 @@ private:
 
         {
             const char code[] = "int i ; int p(i);";
-            // this can't be simplified because i doesn't have a varid yet
-            ASSERT_EQUALS("int i ; int p ( i ) ;", tokenizeAndStringify(code, false));
-            checkSimplifyInitVar(code, false);
-            ASSERT_EQUALS("", errout.str());
-            // this can be simplified because i shold have a varid
-            ASSERT_EQUALS("int i ; int p ; p = i ;", tokenizeAndStringify(code, true));
-            checkSimplifyInitVar(code, true);
+            ASSERT_EQUALS("int i ; int p ; p = i ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -4361,25 +4368,22 @@ private:
 
         {
             const char code[] = "class A { } ; int foo(A);";
-            // don't know what A is yet so leave it alone
-            ASSERT_EQUALS("class A { } ; int foo ( A ) ;", tokenizeAndStringify(code, false));
-            checkSimplifyInitVar(code, false);
-            ASSERT_EQUALS("", errout.str());
-            // we know A is not a variable here so leave it alone
-            ASSERT_EQUALS("class A { } ; int foo ( A ) ;", tokenizeAndStringify(code, true));
-            checkSimplifyInitVar(code, true);
+            ASSERT_EQUALS("class A { } ; int foo ( A ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }
 
         {
             const char code[] = "class A { } ; A a; int foo(a);";
-            // don't know what a is yet so leave it alone
-            ASSERT_EQUALS("class A { } ; A a ; int foo ( a ) ;", tokenizeAndStringify(code, false));
-            checkSimplifyInitVar(code, false);
+            ASSERT_EQUALS("class A { } ; A a ; int foo ; foo = a ;", tokenizeAndStringify(code, false));
+            checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
-            // we know a is a variable here so simplify it
-            ASSERT_EQUALS("class A { } ; A a ; int foo ; foo = a ;", tokenizeAndStringify(code, true));
-            checkSimplifyInitVar(code, true);
+        }
+
+        {
+            const char code[] = "int x(f());";
+            ASSERT_EQUALS("int x ; x = f ( ) ;", tokenizeAndStringify(code, false));
+            checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }
     }
