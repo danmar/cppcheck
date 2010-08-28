@@ -360,7 +360,7 @@ Settings MainWindow::GetCppcheckSettings()
         }
     }
 
-    result._debug = false;
+    result.debug = false;
     result._checkCodingStyle = true;
     result._errorsOnly = false;
     result._verbose = true;
