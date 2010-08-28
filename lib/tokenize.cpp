@@ -2020,7 +2020,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // "if (p or q)" => "if (p || q)"
     while (simplifyLogicalOperators()) { }
 
-//updateClassList();
+    // Change initialisation of variable to assignment
+    simplifyInitVar();
+
     setVarId();
 
     // Change initialisation of variable to assignment
@@ -5571,6 +5573,7 @@ Token * Tokenizer::initVar(Token * tok)
     // insert '; var ='
     tok->insertToken(";");
     tok->next()->insertToken(tok->str());
+    tok->tokAt(2)->varId(tok->varId());
     tok = tok->tokAt(2);
     tok->insertToken("=");
 

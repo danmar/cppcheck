@@ -46,6 +46,7 @@ private:
         TEST_CASE(tokenize5);
         TEST_CASE(tokenize6);
         TEST_CASE(tokenize7);
+        TEST_CASE(tokenize8);
 
         // array access. replace "*(p+1)" => "p[1]"
         TEST_CASE(tokenize6);
@@ -379,6 +380,20 @@ private:
                                  "}\n";
         ASSERT_EQUALS("void f ( ) {\nint x1 ; x1 = 1 ;\nint x2 ; x2 = x1 ;\n}",
                       tokenizeAndStringify(code.c_str(), false));
+    }
+
+    void tokenize8()
+    {
+        const std::string code = "void f() {\n"
+                                 "    int x1(g());\n"
+                                 "    int x2(x1);\n"
+                                 "}\n";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void f ( ) {\n"
+                      "2: int x1@1 ; x1@1 = g ( ) ;\n"
+                      "3: int x2@2 ; x2@2 = x1@1 ;\n"
+                      "4: }\n",
+                      tokenizeDebugListing(code.c_str(), false));
     }
 
     void wrong_syntax()
