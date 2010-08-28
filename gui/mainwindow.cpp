@@ -361,6 +361,7 @@ Settings MainWindow::GetCppcheckSettings()
     }
 
     result.debug = false;
+    result.debugwarnings = false;
     result._checkCodingStyle = true;
     result._errorsOnly = false;
     result._verbose = true;
