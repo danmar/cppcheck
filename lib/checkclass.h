@@ -161,8 +161,9 @@ private:
         bool        isClass;
     };
 
-    struct Func
+    class Func
     {
+    public:
         enum Type { Constructor, CopyConstructor, OperatorEqual, Destructor, Function };
 
         Func()
@@ -212,21 +213,25 @@ private:
         SpaceInfo *spaceInfo;
     };
 
-    struct SpaceInfo
+    class SpaceInfo
     {
+    public:
+        SpaceInfo(CheckClass *check_, const Token *classDef_, SpaceInfo *nestedIn_);
+
         CheckClass *check;
         bool isNamespace;
         std::string className;
         const Token *classDef;   // class/struct/namespace token
         const Token *classStart; // '{' token
         const Token *classEnd;   // '}' token
-        unsigned int numConstructors;
         std::list<Func> functionList;
         std::list<Var> varlist;
         std::vector<BaseInfo> derivedFrom;
         std::list<FriendInfo> friendList;
-        SpaceInfo *nest;
+        SpaceInfo *nestedIn;
+        std::list<SpaceInfo *> nestedList;
         AccessControl access;
+        unsigned int numConstructors;
 
         /**
          * @brief initialize a variable in the varlist
@@ -241,7 +246,7 @@ private:
         void markAllVar(bool value);
 
         /** @brief initialize varlist */
-        void getVarList(bool debugwarnings);
+        void getVarList();
 
         /**
          * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist

@@ -62,21 +62,13 @@ void CheckClass::createSymbolDatabase()
         // Locate next class
         if (Token::Match(tok, "class|struct|namespace %var% [{:]"))
         {
-            SpaceInfo *new_info = new SpaceInfo;
-            new_info->check = this;
-            new_info->isNamespace = tok->str() == "namespace";
-            new_info->className = tok->next()->str();
-            new_info->classDef = tok;
-            new_info->nest = info;
-            new_info->access = tok->str() == "struct" ? Public : Private;
-            new_info->numConstructors = 0;
-
+            SpaceInfo *new_info = new SpaceInfo(this, tok, info);
             const Token *tok2 = tok->tokAt(2);
 
             // only create variable list and base list if not namespace
             if (!new_info->isNamespace)
             {
-                new_info->getVarList(_settings->debugwarnings);
+                new_info->getVarList();
 
                 // goto initial '{'
                 tok2 = initBaseInfo(new_info, tok);
@@ -99,7 +91,7 @@ void CheckClass::createSymbolDatabase()
             // check for end of space
             if (tok == info->classEnd)
             {
-                info = info->nest;
+                info = info->nestedIn;
             }
 
             // check if in class or structure
@@ -217,7 +209,7 @@ void CheckClass::createSymbolDatabase()
                         Token::Match(next, ") const| = 0 ;"))
                     {
                         // find implementation using names on stack
-                        SpaceInfo * nest = info;
+                        SpaceInfo *nest = info;
                         unsigned int depth = 0;
 
                         std::string classPattern;
@@ -235,10 +227,10 @@ void CheckClass::createSymbolDatabase()
                             classPath = nest->className + std::string(" :: ") + classPath;
                             searchPattern = classPath + classPattern;
                             depth++;
-                            nest = nest->nest;
+                            nest = nest->nestedIn;
 
                             // start looking at end of class
-                            SpaceInfo * top = info;
+                            SpaceInfo *top = info;
                             const Token *found = top->classEnd;
                             while ((found = Token::findmatch(found, searchPattern.c_str(), nest ? nest->classEnd : 0)) != NULL)
                             {
@@ -331,7 +323,7 @@ void CheckClass::createSymbolDatabase()
                 {
                     if (spaceInfo->className == info->derivedFrom[i].name)
                     {
-                        if (spaceInfo->nest == info->nest)
+                        if (spaceInfo->nestedIn == info->nestedIn)
                         {
                             info->derivedFrom[i].spaceInfo = spaceInfo;
                             break;
@@ -350,8 +342,6 @@ CheckClass::~CheckClass()
     for (it = spaceInfoMMap.begin(); it != spaceInfoMMap.end(); ++it)
         delete it->second;
 }
-
-//---------------------------------------------------------------------------
 
 const Token *CheckClass::initBaseInfo(SpaceInfo *info, const Token *tok)
 {
@@ -416,8 +406,23 @@ const Token *CheckClass::initBaseInfo(SpaceInfo *info, const Token *tok)
 
     return tok2;
 }
+//---------------------------------------------------------------------------
 
-void CheckClass::SpaceInfo::getVarList(bool debugwarnings)
+CheckClass::SpaceInfo::SpaceInfo(CheckClass *check_, const Token *classDef_, CheckClass::SpaceInfo *nestedIn_) :
+    check(check_),
+    classDef(classDef_),
+    nestedIn(nestedIn_),
+    numConstructors(0)
+{
+    isNamespace = classDef->str() == "namespace";
+    className = classDef->next()->str();
+    access = classDef->str() == "struct" ? Public : Private;
+
+    if (nestedIn)
+        nestedIn->nestedList.push_back(this);
+}
+
+void CheckClass::SpaceInfo::getVarList()
 {
     // Get variable list..
     const Token *tok1 = classDef;
@@ -629,7 +634,7 @@ void CheckClass::SpaceInfo::getVarList(bool debugwarnings)
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         if (vartok && vartok->str() != "operator")
         {
-            if (vartok->varId() == 0 && debugwarnings)
+            if (vartok->varId() == 0 && check->_settings->debugwarnings)
             {
                 check->reportError(vartok, Severity::debug, "debug", "CheckClass::SpaceInfo::getVarList found variable \'" + vartok->str() + "\' with varid 0.");
             }
@@ -775,7 +780,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
         else if (Token::Match(ftok, "%var% (") && ftok->str() != "if")
         {
             // Passing "this" => assume that everything is initialized
-            for (const Token * tok2 = ftok->next()->link(); tok2 && tok2 != ftok; tok2 = tok2->previous())
+            for (const Token *tok2 = ftok->next()->link(); tok2 && tok2 != ftok; tok2 = tok2->previous())
             {
                 if (tok2->str() == "this")
                 {
@@ -1438,7 +1443,7 @@ void CheckClass::operatorEqRetRefThis()
 // assignment to self.
 //---------------------------------------------------------------------------
 
-static bool hasDeallocation(const Token * first, const Token * last)
+static bool hasDeallocation(const Token *first, const Token *last)
 {
     // This function is called when no simple check was found for assignment
     // to self.  We are currently looking for a specific sequence of:
@@ -1447,16 +1452,16 @@ static bool hasDeallocation(const Token * first, const Token * last)
     // Unfortunately, this is necessary to prevent false positives.
     // This check needs to do careful analysis someday to get this
     // correct with a high degree of certainty.
-    for (const Token * tok = first; tok && (tok != last); tok = tok->next())
+    for (const Token *tok = first; tok && (tok != last); tok = tok->next())
     {
         // check for deallocating memory
         if (Token::Match(tok, "{|;|, free ( %var%"))
         {
-            const Token * var = tok->tokAt(3);
+            const Token *var = tok->tokAt(3);
 
             // we should probably check that var is a pointer in this class
 
-            const Token * tok1 = tok->tokAt(4);
+            const Token *tok1 = tok->tokAt(4);
 
             while (tok1 && (tok1 != last))
             {
@@ -1471,11 +1476,11 @@ static bool hasDeallocation(const Token * first, const Token * last)
         }
         else if (Token::Match(tok, "{|;|, delete [ ] %var%"))
         {
-            const Token * var = tok->tokAt(4);
+            const Token *var = tok->tokAt(4);
 
             // we should probably check that var is a pointer in this class
 
-            const Token * tok1 = tok->tokAt(5);
+            const Token *tok1 = tok->tokAt(5);
 
             while (tok1 && (tok1 != last))
             {
@@ -1490,11 +1495,11 @@ static bool hasDeallocation(const Token * first, const Token * last)
         }
         else if (Token::Match(tok, "{|;|, delete %var%"))
         {
-            const Token * var = tok->tokAt(2);
+            const Token *var = tok->tokAt(2);
 
             // we should probably check that var is a pointer in this class
 
-            const Token * tok1 = tok->tokAt(3);
+            const Token *tok1 = tok->tokAt(3);
 
             while (tok1 && (tok1 != last))
             {
@@ -1512,14 +1517,14 @@ static bool hasDeallocation(const Token * first, const Token * last)
     return false;
 }
 
-static bool hasAssignSelf(const Token * first, const Token * last, const Token * rhs)
+static bool hasAssignSelf(const Token *first, const Token *last, const Token *rhs)
 {
-    for (const Token * tok = first; tok && tok != last; tok = tok->next())
+    for (const Token *tok = first; tok && tok != last; tok = tok->next())
     {
         if (Token::Match(tok, "if ("))
         {
-            const Token * tok1 = tok->tokAt(2);
-            const Token * tok2 = tok->tokAt(1)->link();
+            const Token *tok1 = tok->tokAt(2);
+            const Token *tok2 = tok->tokAt(1)->link();
 
             if (tok1 && tok2)
             {
@@ -1872,11 +1877,11 @@ void CheckClass::checkConst()
                 if (checkConstFunc(info, paramEnd))
                 {
                     std::string classname = info->className;
-                    SpaceInfo *nest = info->nest;
+                    SpaceInfo *nest = info->nestedIn;
                     while (nest)
                     {
                         classname = std::string(nest->className + "::" + classname);
-                        nest = nest->nest;
+                        nest = nest->nestedIn;
                     }
 
                     if (func.isInline)
@@ -1925,7 +1930,7 @@ bool CheckClass::isMemberVar(const SpaceInfo *info, const Token *tok)
         for (unsigned int i = 0; i < info->derivedFrom.size(); ++i)
         {
             // find the base class
-            const SpaceInfo * spaceInfo = info->derivedFrom[i].spaceInfo;
+            const SpaceInfo *spaceInfo = info->derivedFrom[i].spaceInfo;
 
             // find the function in the base class
             if (spaceInfo)
