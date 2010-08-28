@@ -36,6 +36,7 @@ class ThreadHandler;
 class LogView;
 class HelpWindow;
 class Project;
+class ErrorItem;
 
 /// @addtogroup GUI
 /// @{
@@ -217,6 +218,12 @@ protected slots:
     *
     */
     void Log(const QString &logline);
+
+    /**
+    * @brief Handle new debug error.
+    *
+    */
+    void DebugError(const ErrorItem &item);
 
 protected:
 

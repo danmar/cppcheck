@@ -819,6 +819,14 @@ void MainWindow::Log(const QString &logline)
     }
 }
 
+void MainWindow::DebugError(const ErrorItem &item)
+{
+    if (mLogView)
+    {
+        mLogView->AppendLine(item.ToString());
+    }
+}
+
 void MainWindow::EnableProjectActions(bool enable)
 {
     mUI.mActionCloseProjectFile->setEnabled(enable);

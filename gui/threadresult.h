@@ -100,6 +100,13 @@ signals:
     */
     void Log(const QString &logline);
 
+    /**
+    * @brief Signal of a debug error
+    *
+    * @param item Error data
+    */
+    void DebugError(const ErrorItem &item);
+
 protected:
 
     /**

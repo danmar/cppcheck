@@ -37,3 +37,12 @@ ErrorItem::ErrorItem(const ErrorLine &line)
     severity = line.severity;
     msg = line.msg;
 }
+
+QString ErrorItem::ToString() const
+{
+    QString str = file + " - " + id + " - " + severity +"\n";
+    str += "  " + msg;
+    for (int i = 0; i < files.size(); i++)
+        str += "  " + files[i] + ": " + lines[i] + "\n";
+    return str;
+}

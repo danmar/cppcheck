@@ -146,6 +146,9 @@ void ThreadHandler::Initialize(ResultsView *view)
 
     connect(&mResults, SIGNAL(Log(const QString &)),
             parent(), SLOT(Log(const QString &)));
+
+    connect(&mResults, SIGNAL(Error(const ErrorItem &)),
+            parent(), SLOT(Error(const ErrorItem &)));
 }
 
 void ThreadHandler::LoadSettings(QSettings &settings)
