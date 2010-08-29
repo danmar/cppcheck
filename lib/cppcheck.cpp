@@ -649,7 +649,10 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             "  # Check only files one.cpp and two.cpp and give all information there is:\n"
             "    cppcheck -v -s one.cpp two.cpp\n"
             "  # Check f.cpp and search include files from inc1/ and inc2/:\n"
-            "    cppcheck -I inc1/ -I inc2/ f.cpp\n";
+            "    cppcheck -I inc1/ -I inc2/ f.cpp\n"
+            "\n"
+            "For more information:\n"
+            "    http://cppcheck.sf.net/manual.pdf\n";
         reportOut(oss.str());
     }
     else if (_filenames.empty())

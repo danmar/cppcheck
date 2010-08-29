@@ -7,6 +7,10 @@ About
 
     The original name of this program is "C++check" but it was later changed to "cppcheck".
 
+Manual
+
+    A manual is available online: 
+    http://cppcheck.sf.net/manual.pdf
 
 Compiling
 
@@ -20,7 +24,6 @@ Compiling
       * gnu make
       * g++
 
-
     qmake
     =====
         You can use the gui/gui.pro file to build the gui.
@@ -28,32 +31,28 @@ Compiling
             qmake
             make
 
-
     Visual Studio
     =============
         Use the cppcheck.sln file.
 
-
     gnu make
     ========
-            make
-
+        make
 
     g++ (for experts)
     =================
         If you just want to build Cppcheck then you can use this command:
             g++ -o cppcheck -Ilib cli/*.cpp lib/*.cpp
 
+    mingw
+    =====
+        make LDFLAGS=-lshlwapi
 
 Cross compiling Win32 (CLI) version of Cppcheck in Linux
 
     sudo apt-get install mingw32
     make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi"
     mv cppcheck cppcheck.exe
-
-Usage
-
-    A manual is available online: http://cppcheck.sf.net/manual.pdf
 
 Webpage
 
