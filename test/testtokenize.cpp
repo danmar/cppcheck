@@ -47,6 +47,7 @@ private:
         TEST_CASE(tokenize6);
         TEST_CASE(tokenize7);
         TEST_CASE(tokenize8);
+        TEST_CASE(tokenize9);
 
         // array access. replace "*(p+1)" => "p[1]"
         TEST_CASE(tokenize6);
@@ -394,6 +395,18 @@ private:
                       "3: int x2@2 ; x2@2 = x1@1 ;\n"
                       "4: }\n",
                       tokenizeDebugListing(code.c_str(), false));
+    }
+
+    void tokenize9()
+    {
+        errout.str("");
+        const char code[] = "typedef void (*fp)();\n"
+                            "typedef fp (*fpp)();\n"
+                            "void f() {\n"
+                            "    fpp x = (fpp)f();\n"
+                            "}";
+        tokenizeAndStringify(code, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void wrong_syntax()
