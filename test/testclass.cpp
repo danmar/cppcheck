@@ -53,6 +53,7 @@ private:
         TEST_CASE(uninitVar7);
         TEST_CASE(uninitVar8);
         TEST_CASE(uninitVar9); // ticket #1730
+        TEST_CASE(uninitVar10); // ticket #1993
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1626,6 +1627,19 @@ private:
                        "    SetMinSize( wxSize( 48,48 ) );\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Prefs::xasd'\n", errout.str());
+    }
+
+    void uninitVar10() // ticket #1993
+    {
+        checkUninitVar("class A {\n"
+                       "public:\n"
+                       "        A();\n"
+                       "private:\n"
+                       "        int var1;\n"
+                       "        int var2;\n"
+                       "};\n"
+                       "A::A() : var1(0) { }\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) Member variable not initialized in the constructor 'A::var2'\n", errout.str());
     }
 
     void uninitVarArray1()
