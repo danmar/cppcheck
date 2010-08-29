@@ -33,6 +33,18 @@ public:
 
 private:
 
+    void run()
+    {
+        TEST_CASE(testbsd_signal);
+        TEST_CASE(testgethostbyname);
+        TEST_CASE(testgethostbyaddr);
+        TEST_CASE(testusleep);
+        TEST_CASE(testindex);
+        TEST_CASE(testrindex);
+
+        // no false positives for variables
+        TEST_CASE(var);
+    }
 
 
     void check(const char code[])
@@ -58,16 +70,6 @@ private:
         settings.inconclusive = true;
         CheckObsoleteFunctions checkObsoleteFunctions(&tokenizer, &settings, this);
         checkObsoleteFunctions.obsoleteFunctions();
-    }
-
-    void run()
-    {
-        TEST_CASE(testbsd_signal);
-        TEST_CASE(testgethostbyname);
-        TEST_CASE(testgethostbyaddr);
-        TEST_CASE(testusleep);
-        TEST_CASE(testindex);
-        TEST_CASE(testrindex);
     }
 
     void testbsd_signal()
@@ -179,7 +181,15 @@ private:
     }
 
 
-
+    void var()
+    {
+        check("class Fred {\n"
+              "public:\n"
+              "    Fred() : index(0) { }\n"
+              "    int index;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 };
 
