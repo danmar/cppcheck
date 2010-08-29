@@ -48,6 +48,7 @@ ShowTypes;
 #define SETTINGS_CHECK_THREADS          "Check threads"
 #define SETTINGS_SHOW_FULL_PATH         "Show full path"
 #define SETTINGS_SHOW_NO_ERRORS         "Show no errors message"
+#define SETTINGS_SHOW_DEBUG_WARNINGS    "Show debug warnings"
 #define SETTINGS_SAVE_ALL_ERRORS        "Save all errors"
 #define SETTINGS_SAVE_FULL_PATH         "Save full path"
 #define SETTINGS_CHECK_DIALOG_WIDTH     "Check dialog width"

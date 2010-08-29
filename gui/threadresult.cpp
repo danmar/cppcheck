@@ -71,7 +71,10 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
     item.msg = QString(msg._msg.c_str());
     item.severity = QString::fromStdString(Severity::toString(msg._severity));
 
-    emit Error(item);
+    if (msg._severity != Severity::debug)
+        emit Error(item);
+    else
+        emit DebugError(item);
 }
 
 QString ThreadResult::GetNextFile()

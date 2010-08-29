@@ -39,6 +39,12 @@ public:
     ErrorItem(const ErrorLine &line);
     ~ErrorItem() { }
 
+    /**
+    * @brief Convert error item to string.
+    * @return Error item as string.
+    */
+    QString ToString() const;
+
     QString file;
     QStringList files;
     QList<unsigned int> lines;

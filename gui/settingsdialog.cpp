@@ -46,7 +46,7 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
     mUI.mForce->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_CHECK_FORCE, false).toBool()));
     mUI.mShowFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_FULL_PATH, false).toBool()));
     mUI.mShowNoErrorsMessage->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_NO_ERRORS, false).toBool()));
-
+    mUI.mShowDebugWarnings->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool()));
 
     connect(mUI.mButtonAdd, SIGNAL(clicked()),
             this, SLOT(AddApplication()));
@@ -122,6 +122,7 @@ void SettingsDialog::SaveCheckboxValues()
     SaveCheckboxValue(mUI.mSaveFullPath, SETTINGS_SAVE_FULL_PATH);
     SaveCheckboxValue(mUI.mShowFullPath, SETTINGS_SHOW_FULL_PATH);
     SaveCheckboxValue(mUI.mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
+    SaveCheckboxValue(mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)

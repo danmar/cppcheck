@@ -361,7 +361,7 @@ Settings MainWindow::GetCppcheckSettings()
     }
 
     result.debug = false;
-    result.debugwarnings = false;
+    result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, 0).toBool();
     result._checkCodingStyle = true;
     result._errorsOnly = false;
     result._verbose = true;
@@ -816,6 +816,14 @@ void MainWindow::Log(const QString &logline)
     if (mLogView)
     {
         mLogView->AppendLine(logline);
+    }
+}
+
+void MainWindow::DebugError(const ErrorItem &item)
+{
+    if (mLogView)
+    {
+        mLogView->AppendLine(item.ToString());
     }
 }
 
