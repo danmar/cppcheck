@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>589</width>
-    <height>274</height>
+    <height>281</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -58,6 +58,13 @@
           <widget class="QCheckBox" name="mShowNoErrorsMessage">
            <property name="text">
             <string>Show &quot;No errors found&quot; message when no errors found</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="mShowDebugWarnings">
+           <property name="text">
+            <string>Show internal warnings in log</string>
            </property>
           </widget>
          </item>
@@ -164,6 +171,22 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>mJobs</tabstop>
+  <tabstop>mForce</tabstop>
+  <tabstop>mShowFullPath</tabstop>
+  <tabstop>mShowNoErrorsMessage</tabstop>
+  <tabstop>mShowDebugWarnings</tabstop>
+  <tabstop>mListWidget</tabstop>
+  <tabstop>mButtonAdd</tabstop>
+  <tabstop>mButtonDelete</tabstop>
+  <tabstop>mButtonModify</tabstop>
+  <tabstop>mButtonDefault</tabstop>
+  <tabstop>mSaveAllErrors</tabstop>
+  <tabstop>mSaveFullPath</tabstop>
+  <tabstop>mButtons</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
