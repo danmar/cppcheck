@@ -6646,6 +6646,12 @@ void Tokenizer::simplifyEnum()
                 typeTokenEnd = typeTokenStart;
                 while (Token::Match(typeTokenEnd->next(), "signed|unsigned|char|short|int|long"))
                     typeTokenEnd = typeTokenEnd->next();
+
+                if (!Token::Match(typeTokenEnd->next(), "{|;"))
+                {
+                    syntaxError(typeTokenEnd->next());
+                    return;
+                }
             }
 
             if (tok->tokAt(1)->str() == "{")

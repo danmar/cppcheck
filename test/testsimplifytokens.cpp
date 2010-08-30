@@ -250,6 +250,7 @@ private:
         TEST_CASE(enum13);
         TEST_CASE(enum14);
         TEST_CASE(enum15);
+        TEST_CASE(enum16); // ticket #1988
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -5511,6 +5512,13 @@ private:
             const char expected[] = "; unsigned long long e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+    }
+
+    void enum16() // ticket #1988
+    {
+        const char code[] = "enum D : auto * { FF = 0 };";
+        checkSimplifyEnum(code);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void removestd()
