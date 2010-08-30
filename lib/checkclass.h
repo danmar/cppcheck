@@ -168,7 +168,9 @@ private:
 
         Func()
             : tokenDef(NULL),
+              argDef(NULL),
               token(NULL),
+              arg(NULL),
               access(Public),
               hasBody(false),
               isInline(false),
@@ -184,7 +186,9 @@ private:
         }
 
         const Token *tokenDef; // function name token in class definition
+        const Token *argDef;   // function argument start '(' in class definition
         const Token *token;    // function name token in implementation
+        const Token *arg;      // function argument start '('
         AccessControl access;  // public/protected/private
         bool hasBody;          // has implementation
         bool isInline;         // implementation in class definition

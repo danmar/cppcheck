@@ -47,6 +47,54 @@ CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, Err
 
 }
 
+static bool isFunction(const Token *tok, const Token **argStart)
+{
+    if (tok->previous()->str() == "::")
+        return false;
+
+    // regular function?
+    if (Token::Match(tok, "%var% (") && Token::Match(tok->next()->link(), ") const| ;|{|=|:"))
+    {
+        *argStart = tok->next();
+        return true;
+    }
+
+    // simple operator?
+    else if (Token::Match(tok, "operator %any% (") && Token::Match(tok->tokAt(2)->link(), ") const| ;|{|=|:"))
+    {
+        *argStart = tok->tokAt(2);
+        return true;
+    }
+
+    // complex operator?
+    else if (tok->str() == "operator")
+    {
+        // operator[] or operator()?
+        if ((Token::Match(tok->next(), "( ) (") || Token::Match(tok->next(), "[ ] (")) &&
+            Token::Match(tok->tokAt(3)->link(), ") const| ;|{|=|:"))
+        {
+            *argStart = tok->tokAt(3);
+            return true;
+        }
+
+        // operator new/delete?
+        else if (Token::Match(tok->next(), "new|delete (") && Token::Match(tok->tokAt(2)->link(), ") ;|{"))
+        {
+            *argStart = tok->tokAt(2);
+            return true;
+        }
+
+        // operator new/delete []?
+        else if (Token::Match(tok->next(), "new|delete [ ] (") && Token::Match(tok->tokAt(4)->link(), ") ;|{"))
+        {
+            *argStart = tok->tokAt(4);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void CheckClass::createSymbolDatabase()
 {
     // Multiple calls => bail out
@@ -97,6 +145,8 @@ void CheckClass::createSymbolDatabase()
             // check if in class or structure
             else if (!info->isNamespace)
             {
+                const Token *argStart = 0;
+
                 // What section are we in..
                 if (tok->str() == "private:")
                     info->access = Private;
@@ -117,10 +167,12 @@ void CheckClass::createSymbolDatabase()
                 }
 
                 // function?
-                else if (((Token::Match(tok, "%var% (") || Token::Match(tok, "operator %any% (")) && tok->previous()->str() != "::") &&
-                         Token::Match(tok->str() == "operator" ? tok->tokAt(2)->link() : tok->next()->link(), ") const| ;|{|=|:"))
+                else if (isFunction(tok, &argStart))
                 {
                     Func function;
+
+                    // save the function definition argument start '('
+                    function.argDef = argStart;
 
                     // save the access type
                     function.access = info->access;
@@ -187,11 +239,11 @@ void CheckClass::createSymbolDatabase()
                     }
 
                     // const function
-                    if (function.tokenDef->next()->link()->next()->str() == "const")
+                    if (function.argDef->link()->next()->str() == "const")
                         function.isConst = true;
 
                     // pure virtual function
-                    if (Token::Match(function.tokenDef->next()->link(), ") const| = 0 ;"))
+                    if (Token::Match(function.argDef->link(), ") const| = 0 ;"))
                         function.isPure = true;
 
                     // count the number of constructors
@@ -202,7 +254,7 @@ void CheckClass::createSymbolDatabase()
                     function.token = function.tokenDef;
 
                     // jump to end of args
-                    const Token *next = function.tokenDef->next()->link();
+                    const Token *next = function.argDef->link();
 
                     // out of line function
                     if (Token::Match(next, ") const| ;") ||
@@ -216,12 +268,27 @@ void CheckClass::createSymbolDatabase()
                         std::string classPath;
                         std::string searchPattern;
                         const Token *funcArgs = function.tokenDef->tokAt(2);
+                        int offset = 1;
 
                         if (function.isOperator)
-                            classPattern = "operator " + function.tokenDef->str() + " (";
+                        {
+                            if (Token::Match(function.tokenDef, "(|["))
+                            {
+                                classPattern = "operator " + function.tokenDef->str() + " " + function.tokenDef->next()->str() + " (";
+                                offset = 2;
+                            }
+                            else if (Token::Match(function.tokenDef, "new|delete ["))
+                            {
+                                classPattern = "operator " + function.tokenDef->str() + " " + function.tokenDef->next()->str() + " " + function.tokenDef->next()->strAt(2) +  " (";
+                                offset = 3;
+                            }
+                            else
+                                classPattern = "operator " + function.tokenDef->str() + " (";
+                        }
                         else
                             classPattern = function.tokenDef->str() + " (";
 
+                        // look for an implementation outside of class
                         while (!function.hasBody && nest)
                         {
                             classPath = nest->className + std::string(" :: ") + classPath;
@@ -242,13 +309,14 @@ void CheckClass::createSymbolDatabase()
                                 while (found->next()->str() != "(")
                                     found = found->next();
 
-                                if (Token::Match(found->next()->link(), function.isConst ? ") const {" : ") {") ||
+                                if (Token::Match(found->tokAt(offset)->link(), function.isConst ? ") const {" : ") {") ||
                                     (function.type == Func::Constructor && Token::Match(found->next()->link(), ") :|{")))
                                 {
-                                    if (argsMatch(funcArgs, found->tokAt(2), classPath, depth))
+                                    if (argsMatch(funcArgs, found->tokAt(offset + 1), classPath, depth))
                                     {
                                         function.token = found;
                                         function.hasBody = true;
+                                        function.arg = found->tokAt(offset);
 
                                         info->functionList.push_back(function);
                                         break;
@@ -274,6 +342,7 @@ void CheckClass::createSymbolDatabase()
                     {
                         function.isInline = true;
                         function.hasBody = true;
+                        function.arg = function.argDef;
 
                         info->functionList.push_back(function);
 
