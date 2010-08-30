@@ -151,7 +151,9 @@ protected:
             locationList.push_back(loc);
         }
 
-        const ErrorLogger::ErrorMessage errmsg(locationList, severity, msg, id);
+        ErrorLogger::ErrorMessage errmsg(locationList, severity, msg, id);
+        if (_tokenizer && _tokenizer->getFiles() && !_tokenizer->getFiles()->empty())
+            errmsg.file0 = _tokenizer->getFiles()->at(0);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else

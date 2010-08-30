@@ -138,6 +138,9 @@ public:
         Severity::SeverityType _severity;
         std::string _msg;
         std::string _id;
+
+        /** source file (not header) */
+        std::string file0;
     };
 
     ErrorLogger() { }
