@@ -6108,7 +6108,13 @@ bool Tokenizer::simplifyCalculations()
         // Remove parantheses around variable..
         // keep parantheses here: dynamic_cast<Fred *>(p);
         // keep parantheses here: A operator * (int);
-        if (!tok->isName() && tok->str() != ">" && Token::Match(tok->next(), "( %var% ) [;),+-*/><]]") && !Token::simpleMatch(tok->previous(), "operator") && !Token::Match(tok->tokAt(-1), "* )"))
+        // keep parantheses here: operator new [] (size_t);
+        if (Token::Match(tok->next(), "( %var% ) [;),+-*/><]]") &&
+            !tok->isName() &&
+            tok->str() != ">" &&
+            tok->str() != "]" &&
+            !Token::simpleMatch(tok->previous(), "operator") &&
+            !Token::simpleMatch(tok->previous(), "* )"))
         {
             tok->deleteNext();
             tok = tok->next();

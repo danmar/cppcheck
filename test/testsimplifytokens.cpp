@@ -2456,6 +2456,12 @@ private:
 
         ASSERT_EQUALS("x = 501 ;", tok("x = 1000 + 2 >> 1;"));
         ASSERT_EQUALS("x = 125 ;", tok("x = 1000 / 2 >> 2;"));
+
+        {
+            // Ticket #1997
+            const char code[] = "void * operator new[](size_t);";
+            ASSERT_EQUALS("void * operator new [ ] ( size_t ) ;", tok(code));
+        }
     }
 
 
