@@ -202,7 +202,7 @@ private:
         Type type;             // constructor, destructor, ...
     };
 
-    struct SpaceInfo;
+    class SpaceInfo;
 
     struct BaseInfo
     {
