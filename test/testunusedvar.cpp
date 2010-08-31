@@ -81,6 +81,7 @@ private:
         TEST_CASE(localvaralias7); // ticket #1732
         TEST_CASE(localvaralias8);
         TEST_CASE(localvaralias9); // ticket #1996
+        TEST_CASE(localvaralias10); // ticket #2004
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
 
@@ -2142,6 +2143,17 @@ private:
                               "    Foo foo;\n"
                               "    Foo &ref = foo;\n"
                               "    ref[0] = 123;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvaralias10() // ticket 2004
+    {
+        functionVariableUsage("void foo(Foo &foo)\n"
+                              "{\n"
+                              "    Foo &ref = foo;\n"
+                              "    int *x = &ref.x();\n"
+                              "    *x = 0;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

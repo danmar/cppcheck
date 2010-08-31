@@ -1634,7 +1634,6 @@ void CheckOther::functionVariableUsage()
                 else
                 {
                     Variables::VariableUsage *var = variables.find(varid1);
-
                     if (var && var->_type == Variables::reference)
                     {
                         variables.writeAliases(varid1);
@@ -1642,6 +1641,13 @@ void CheckOther::functionVariableUsage()
                     }
                     else
                         variables.write(varid1);
+
+                    Variables::VariableUsage *var2 = variables.find(tok->varId());
+                    if (var2 && var2->_type == Variables::reference)
+                    {
+                        variables.writeAliases(tok->varId());
+                        variables.read(tok->varId());
+                    }
                 }
 
                 const Token *equal = tok->next();
