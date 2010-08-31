@@ -140,6 +140,7 @@ private:
         TEST_CASE(const32); // ticket #1905 - member array is assigned
         TEST_CASE(const33);
         TEST_CASE(const34); // ticket #1964
+        TEST_CASE(const35); // ticket #2001
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -3929,6 +3930,26 @@ private:
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const35() // ticket #2001
+    {
+        checkConst("namespace N\n"
+                   "{\n"
+                   "        class Base\n"
+                   "        {\n"
+                   "        };\n"
+                   "}\n"
+                   "namespace N\n"
+                   "{\n"
+                   "        class Derived : public Base\n"
+                   "        {\n"
+                   "        public:\n"
+                   "                int getResourceName() { return var; }\n"
+                   "                int var;\n"
+                   "        };\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:12]: (style) The function 'N::Derived::getResourceName' can be const\n", errout.str());
     }
 
     // increment/decrement => not const

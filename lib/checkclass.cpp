@@ -393,9 +393,13 @@ void CheckClass::createSymbolDatabase()
                 /** @todo handle derived base classes and namespaces */
                 if (!spaceInfo->isNamespace)
                 {
+                    // do class names match?
                     if (spaceInfo->className == info->derivedFrom[i].name)
                     {
-                        if (spaceInfo->nestedIn == info->nestedIn)
+                        // are they in the same namespace or different namespaces with same name?
+                        if ((spaceInfo->nestedIn == info->nestedIn) ||
+                            ((spaceInfo->nestedIn->isNamespace && info->nestedIn->isNamespace) &&
+                             (spaceInfo->nestedIn->className == info->nestedIn->className)))
                         {
                             info->derivedFrom[i].spaceInfo = spaceInfo;
                             break;
