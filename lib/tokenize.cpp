@@ -1701,6 +1701,30 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 
     createTokens(code);
 
+
+    // remove inline SQL (Oracle PRO*C). Ticket: #1959
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "EXEC SQL"))
+        {
+            // delete all tokens until ";"
+            while (tok && tok->str() != ";")
+                tok->deleteThis();
+
+            // insert "asm ( ) ;"
+            if (tok)
+            {
+                tok->insertToken("asm");
+                tok = tok->next();
+                tok->insertToken("(");
+                tok = tok->next();
+                tok->insertToken(")");
+                tok = tok->next();
+                tok->insertToken(";");
+            }
+        }
+    }
+
     if (!createLinks())
     {
         // Source has syntax errors, can't proceed
