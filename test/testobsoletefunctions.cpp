@@ -43,7 +43,10 @@ private:
         TEST_CASE(testrindex);
 
         // no false positives for variables
-        TEST_CASE(var);
+        TEST_CASE(testvar);
+	
+        // dangerous function
+        TEST_CASE(testgets);
     }
 
 
@@ -181,7 +184,7 @@ private:
     }
 
 
-    void var()
+    void testvar()
     {
         check("class Fred {\n"
               "public:\n"
@@ -190,6 +193,17 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void testgets()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *x = gets();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n", errout.str());
+    }
+
+
 
 };
 

@@ -13,7 +13,6 @@ MAN_SOURCE=man/cppcheck.1.xml
 LIBOBJ =     lib/checkautovariables.o \
               lib/checkbufferoverrun.o \
               lib/checkclass.o \
-              lib/checkdangerousfunctions.o \
               lib/checkexceptionsafety.o \
               lib/checkmemoryleak.o \
               lib/checkobsoletefunctions.o \
@@ -43,7 +42,6 @@ TESTOBJ =     test/testautovariables.o \
               test/testclass.o \
               test/testconstructors.o \
               test/testcppcheck.o \
-              test/testdangerousfunctions.o \
               test/testdivision.o \
               test/testexceptionsafety.o \
               test/testfilelister.o \
@@ -108,9 +106,6 @@ lib/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h li
 
 lib/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkclass.o lib/checkclass.cpp
-
-lib/checkdangerousfunctions.o: lib/checkdangerousfunctions.cpp lib/checkdangerousfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h
-	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkdangerousfunctions.o lib/checkdangerousfunctions.cpp
 
 lib/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafety.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkexceptionsafety.o lib/checkexceptionsafety.cpp
@@ -192,9 +187,6 @@ test/testconstructors.o: test/testconstructors.cpp lib/tokenize.h lib/classinfo.
 
 test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h test/testsuite.h lib/path.h test/tinyxml/tinyxml.h test/tinyxml/tinystr.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testcppcheck.o test/testcppcheck.cpp
-
-test/testdangerousfunctions.o: test/testdangerousfunctions.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkdangerousfunctions.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testdangerousfunctions.o test/testdangerousfunctions.cpp
 
 test/testdivision.o: test/testdivision.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkother.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testdivision.o test/testdivision.cpp

@@ -4,7 +4,6 @@ HEADERS += $$PWD/check.h \
            $$PWD/checkautovariables.h \
            $$PWD/checkbufferoverrun.h \
            $$PWD/checkclass.h \
-           $$PWD/checkdangerousfunctions.h \
            $$PWD/checkexceptionsafety.h \
            $$PWD/checkmemoryleak.h \
            $$PWD/checkobsoletefunctions.h \
@@ -27,7 +26,6 @@ HEADERS += $$PWD/check.h \
 SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/checkbufferoverrun.cpp \
            $$PWD/checkclass.cpp \
-           $$PWD/checkdangerousfunctions.cpp \
            $$PWD/checkexceptionsafety.cpp \
            $$PWD/checkmemoryleak.cpp \
            $$PWD/checkobsoletefunctions.cpp \

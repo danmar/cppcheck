@@ -102,6 +102,8 @@ private:
         _obsoleteFunctions.push_back(std::make_pair("vfork","Found obsolete function 'vfork'. It is recommended to use the function 'fork' instead"));
 
         _obsoleteFunctions.push_back(std::make_pair("wcswcs","Found obsolete function 'wcswcs'. It is recommended to use the function 'wcsstr' instead"));
+        
+        _obsoleteFunctions.push_back(std::make_pair("gets","Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead"));
 
     }
 
