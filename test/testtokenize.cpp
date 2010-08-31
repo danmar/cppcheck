@@ -2450,10 +2450,8 @@ private:
     void varid26()
     {
         const std::string code("list<int (*)()> functions;\n");
-
         const std::string expected("\n\n##file 0\n"
                                    "1: list < int ( * ) ( ) > functions@1 ;\n");
-
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
@@ -2685,21 +2683,35 @@ private:
 
     void varid_operator()
     {
-        const std::string actual = tokenizeDebugListing(
-                                       "class Foo\n"
-                                       "{\n"
-                                       "public:\n"
-                                       "    void operator=(const Foo &);\n"
-                                       "};\n");
+        {
+            const std::string actual = tokenizeDebugListing(
+                                           "class Foo\n"
+                                           "{\n"
+                                           "public:\n"
+                                           "    void operator=(const Foo &);\n"
+                                           "};\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Foo\n"
-                                   "2: {\n"
-                                   "3: public:\n"
-                                   "4: void operator = ( const Foo & ) ;\n"
-                                   "5: } ;\n");
+            const std::string expected("\n\n##file 0\n"
+                                       "1: class Foo\n"
+                                       "2: {\n"
+                                       "3: public:\n"
+                                       "4: void operator = ( const Foo & ) ;\n"
+                                       "5: } ;\n");
 
-        ASSERT_EQUALS(expected, actual);
+            ASSERT_EQUALS(expected, actual);
+        }
+        {
+            const std::string actual = tokenizeDebugListing(
+                                           "struct Foo {\n"
+                                           "    void * operator new [](int);\n"
+                                           "};\n");
+            const std::string expected("\n\n##file 0\n"
+                                       "1: struct Foo {\n"
+                                       "2: void * operator new [ ] ( int ) ;\n"
+                                       "3: } ;\n");
+
+            ASSERT_EQUALS(expected, actual);
+        }
     }
 
     void varid_throw()    // ticket #1723

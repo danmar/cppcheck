@@ -3034,6 +3034,9 @@ void Tokenizer::setVarId()
         if (varname == "operator" && Token::Match(tok2, "=|+|-|*|/|[| ]| ("))
             continue;
 
+        if (varname == "new" && Token::Match(tok2->tokAt(-2), "operator new (|["))
+            continue;
+
         // Is it a function?
         if (tok2->str() == "(")
         {
