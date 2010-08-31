@@ -3403,7 +3403,7 @@ void Tokenizer::simplifySizeof()
             {
                 Token tempTok(0);
                 tempTok.str("*");
-                sizeOfVar[varId] = MathLib::toString<long>(sizeOfType(&tempTok));
+                sizeOfVar[varId] = MathLib::toString<unsigned long>(sizeOfType(&tempTok));
             }
 
             else if (Token::Match(tok->tokAt(-1), "%type% %var% [ ] = %str% ;"))
@@ -3547,7 +3547,7 @@ void Tokenizer::simplifySizeof()
 
         if (Token::Match(tok->next(), "( * )"))
         {
-            tok->str(MathLib::toString<long>(sizeOfType(tok->tokAt(2))));
+            tok->str(MathLib::toString<unsigned long>(sizeOfType(tok->tokAt(2))));
             Token::eraseTokens(tok, tok->tokAt(4));
         }
 
