@@ -225,6 +225,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\cmdlineparser.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\cppcheck.cpp"
 				>
 			</File>
@@ -328,6 +332,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\classinfo.h"
+				>
+			</File>
+			<File
+				RelativePath=".\cmdlineparser.h"
 				>
 			</File>
 			<File

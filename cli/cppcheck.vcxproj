@@ -143,6 +143,7 @@
     <ClCompile Include="..\lib\timer.cpp" />
     <ClCompile Include="..\lib\token.cpp" />
     <ClCompile Include="..\lib\tokenize.cpp" />
+    <ClCompile Include="cmdlineparser.cpp" />
     <ClCompile Include="cppcheckexecutor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="threadexecutor.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="..\lib\timer.h" />
     <ClInclude Include="..\lib\token.h" />
     <ClInclude Include="..\lib\tokenize.h" />
+    <ClInclude Include="cmdlineparser.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

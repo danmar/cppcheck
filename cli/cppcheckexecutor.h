@@ -23,6 +23,8 @@
 #include "settings.h"
 #include <ctime>
 
+class CppCheck;
+
 /**
  * This class works as an example of how CppCheck can be used in external
  * programs without very little knowledge of the internal parts of the
@@ -78,6 +80,16 @@ protected:
      * @param errmsg String printed to error stream
      */
     virtual void reportErr(const std::string &errmsg);
+
+    /**
+     * @brief Parse command line args and get settings and file lists
+     * from there.
+     *
+     * @param argc argc from main()
+     * @param argv argv from main()
+     * @return false when errors are found in the input
+     */
+    bool parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[]);
 
     /**
      * check() will setup this in the beginning of check().

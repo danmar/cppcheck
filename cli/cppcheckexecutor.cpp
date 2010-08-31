@@ -22,6 +22,8 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
+#include "cmdlineparser.h"
+#include "filelister.h"
 
 CppCheckExecutor::CppCheckExecutor()
 {
@@ -33,10 +35,47 @@ CppCheckExecutor::~CppCheckExecutor()
 
 }
 
+bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
+{
+    CmdLineParser parser(&_settings);
+    bool success = parser.ParseFromArgs(argc, argv);
+
+    if (success)
+    {
+        if (parser.GetShowVersion())
+        {
+            std::cout << "Cppcheck " << cppcheck->version();
+            return true;
+        }
+
+        if (parser.GetShowErrorMessages())
+        {
+            cppcheck->getErrorMessages();
+            return true;
+        }
+    }
+
+    std::vector<std::string> pathnames = parser.GetPathNames();
+    std::vector<std::string> filenames;
+
+    if (!pathnames.empty())
+    {
+        // Execute recursiveAddFiles() to each given file parameter
+        std::vector<std::string>::const_iterator iter;
+        for (iter = pathnames.begin(); iter != pathnames.end(); ++iter)
+            getFileLister()->recursiveAddFiles(filenames, iter->c_str(), true);
+
+        for (iter = filenames.begin(); iter != filenames.end(); ++iter)
+            cppcheck->addFile(*iter);
+    }
+
+    return true;
+}
+
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     CppCheck cppCheck(*this);
-    if (!cppCheck.parseFromArgs(argc, argv))
+    if (!parseFromArgs(&cppCheck, argc, argv))
     {
         return EXIT_FAILURE;
     }
