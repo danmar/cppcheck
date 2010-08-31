@@ -55,20 +55,12 @@ public:
     {
         CheckExceptionSafety checkExceptionSafety(tokenizer, settings, errorLogger);
         checkExceptionSafety.destructors();
-        checkExceptionSafety.unsafeNew();
-        checkExceptionSafety.realloc();
         checkExceptionSafety.deallocThrow();
     }
 
 
     /** Don't throw exceptions in destructors */
     void destructors();
-
-    /** unsafe use of "new" */
-    void unsafeNew();
-
-    /** Unsafe realloc */
-    void realloc();
 
     /** deallocating memory and then throw */
     void deallocThrow();
@@ -80,18 +72,6 @@ private:
         reportError(tok, Severity::style, "exceptThrowInDestructor", "Throwing exception in destructor");
     }
 
-    /** Unsafe use of new */
-    void unsafeNewError(const Token * const tok, const std::string &varname)
-    {
-        reportError(tok, Severity::style, "exceptNew", "Upon exception there is memory leak: " + varname);
-    }
-
-    /** Unsafe reallocation */
-    void reallocError(const Token * const tok, const std::string &varname)
-    {
-        reportError(tok, Severity::style, "exceptRealloc", "Upon exception " + varname + " becomes a dead pointer");
-    }
-
     void deallocThrowError(const Token * const tok, const std::string &varname)
     {
         reportError(tok, Severity::error, "exceptDeallocThrow", "Throwing exception in invalid state, " + varname + " points at deallocated memory");
@@ -101,8 +81,6 @@ private:
     void getErrorMessages()
     {
         destructorsError(0);
-        unsafeNewError(0, "p");
-        reallocError(0, "p");
         deallocThrowError(0, "p");
     }
 
@@ -117,8 +95,6 @@ private:
     {
         return "Checking exception safety\n"
                "* Throwing exceptions in destructors\n"
-               "* Unsafe use of 'new'\n"
-               "* Unsafe reallocation\n"
                "* Throwing exception during invalid state";
     }
 };

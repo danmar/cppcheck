@@ -471,8 +471,6 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             "                         Example: -DDEBUG=1 -D__cplusplus\n"
             "    --enable=id          Enable additional checks. The available ids are:\n"
             "                          * all - enable all checks\n"
-            "                          * exceptNew - exception safety when using new\n"
-            "                          * exceptRealloc - exception safety when reallocating\n"
             "                          * style - Check coding style\n"
             "                          * unusedFunctions - check for unused functions\n"
             "                         Several ids can be given if you separate them with commas\n"
