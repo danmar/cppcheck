@@ -1443,7 +1443,8 @@ void Tokenizer::simplifyTypedef()
                         }
 
                         // skip over variable name
-                        tok2 = tok2->next();
+                        if (!inCast)
+                            tok2 = tok2->next();
 
                         if (tok4 && functionPtrRetFuncPtr)
                         {
@@ -1949,9 +1950,6 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 
     // typedef..
     simplifyTypedef();
-
-    // Fix #1887 - the links are invalid after simplifyTypedef
-    createLinks();
 
     // enum..
     simplifyEnum();
