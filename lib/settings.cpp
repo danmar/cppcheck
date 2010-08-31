@@ -188,8 +188,6 @@ std::string Settings::addEnabled(const std::string &str)
         handled = _checkCodingStyle = true;
 
     std::set<std::string> id;
-    id.insert("exceptNew");
-    id.insert("exceptRealloc");
     id.insert("unusedFunctions");
 
     if (str == "all")
