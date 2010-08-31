@@ -29,6 +29,7 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/path.o \
               lib/preprocessor.o \
               lib/settings.o \
+              lib/timer.o \
               lib/token.o \
               lib/tokenize.o
 
@@ -125,7 +126,7 @@ lib/checkstl.o: lib/checkstl.cpp lib/checkstl.h lib/check.h lib/token.h lib/toke
 lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkunusedfunctions.o lib/checkunusedfunctions.cpp
 
-lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/preprocessor.h lib/filelister.h lib/path.h
+lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/preprocessor.h lib/filelister.h lib/path.h lib/timer.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/cppcheck.o lib/cppcheck.cpp
 
 lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/path.h
@@ -154,6 +155,9 @@ lib/preprocessor.o: lib/preprocessor.cpp lib/preprocessor.h lib/tokenize.h lib/c
 
 lib/settings.o: lib/settings.cpp lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/settings.o lib/settings.cpp
+
+lib/timer.o: lib/timer.cpp lib/timer.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/timer.o lib/timer.cpp
 
 lib/token.o: lib/token.cpp lib/token.h lib/errorlogger.h lib/check.h lib/tokenize.h lib/classinfo.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/token.o lib/token.cpp

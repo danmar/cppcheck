@@ -20,6 +20,7 @@ HEADERS += $$PWD/check.h \
            $$PWD/path.h \
            $$PWD/preprocessor.h \
            $$PWD/settings.h \
+           $$PWD/timer.h \
            $$PWD/token.h \
            $$PWD/tokenize.h
 
@@ -42,5 +43,6 @@ SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/path.cpp \
            $$PWD/preprocessor.cpp \
            $$PWD/settings.cpp \
+           $$PWD/timer.cpp \
            $$PWD/token.cpp \
            $$PWD/tokenize.cpp
