@@ -1665,11 +1665,11 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "%var% [") && Token::Match(tok->next()->link(), "] ="))
             {
                 unsigned int varid = tok->varId();
-                Variables::VariableUsage *var = variables.find(varid);
+                const Variables::VariableUsage *var = variables.find(varid);
 
                 if (var)
                 {
-                    if (var->_type == Variables::pointer)
+                    if (var->_type == Variables::pointer || var->_type == Variables::reference)
                     {
                         variables.read(varid);
                         variables.writeAliases(varid);

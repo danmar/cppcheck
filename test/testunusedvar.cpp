@@ -80,6 +80,7 @@ private:
         TEST_CASE(localvaralias6); // ticket #1729
         TEST_CASE(localvaralias7); // ticket #1732
         TEST_CASE(localvaralias8);
+        TEST_CASE(localvaralias9); // ticket #1996
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
 
@@ -2132,6 +2133,17 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: b1\n"
                       "[test.cpp:4]: (style) Unused variable: b2\n"
                       "[test.cpp:5]: (style) Unused variable: b3\n", errout.str());
+    }
+
+    void localvaralias9() // ticket 1996
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    Foo foo;\n"
+                              "    Foo &ref = foo;\n"
+                              "    ref[0] = 123;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarasm()
