@@ -20,9 +20,6 @@
     <ClCompile Include="checkclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="checkdangerousfunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="checkexceptionsafety.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -83,9 +80,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkclass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="checkdangerousfunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkexceptionsafety.h">
