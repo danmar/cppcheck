@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="test"
 	ProjectGUID="{BA98E531-D8B3-39CB-8171-064854404B81}"
 	Keyword="Qt4VSv1.0"
@@ -203,10 +203,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\lib\checkdangerousfunctions.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\lib\checkexceptionsafety.cpp"
 				>
 			</File>
@@ -284,10 +280,6 @@
 			</File>
 			<File
 				RelativePath="testcppcheck.cpp"
-				>
-			</File>
-			<File
-				RelativePath="testdangerousfunctions.cpp"
 				>
 			</File>
 			<File
@@ -406,10 +398,6 @@
 			</File>
 			<File
 				RelativePath="..\lib\checkclass.h"
-				>
-			</File>
-			<File
-				RelativePath="..\lib\checkdangerousfunctions.h"
 				>
 			</File>
 			<File

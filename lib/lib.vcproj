@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="lib"
 	ProjectGUID="{ACE2ABB0-1027-44DF-8E14-8B4DAF88590F}"
 	RootNamespace="lib"
@@ -164,10 +164,6 @@
 			</File>
 			<File
 				RelativePath=".\checkclass.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\checkdangerousfunctions.cpp"
 				>
 			</File>
 			<File
