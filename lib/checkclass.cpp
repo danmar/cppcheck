@@ -660,6 +660,8 @@ void CheckClass::SpaceInfo::getVarList()
             vartok = next->tokAt(3);
         else if (Token::Match(next, "%type% :: %type% * %var% ;"))
             vartok = next->tokAt(4);
+        else if (Token::Match(next, "%type% :: %type% :: %type% * %var% ;"))
+            vartok = next->tokAt(6);
 
         // Array?
         else if (Token::Match(next, "%type% %var% [") && next->next()->str() != "operator")
@@ -675,12 +677,19 @@ void CheckClass::SpaceInfo::getVarList()
             vartok = next->tokAt(2);
         else if (Token::Match(next, "%type% :: %type% * %var% ["))
             vartok = next->tokAt(4);
+        else if (Token::Match(next, "%type% :: %type% :: %type% * %var% ["))
+            vartok = next->tokAt(6);
 
         // std::string..
         else if (Token::Match(next, "%type% :: %type% %var% ;"))
         {
             isClass = true;
             vartok = next->tokAt(3);
+        }
+        else if (Token::Match(next, "%type% :: %type% :: %type% %var% ;"))
+        {
+            isClass = true;
+            vartok = next->tokAt(5);
         }
 
         // Container..
