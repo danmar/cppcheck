@@ -258,6 +258,8 @@ private:
         TEST_CASE(bitfields5); // ticket #1956
 
         TEST_CASE(microsoftMFC);
+
+        TEST_CASE(sql);
     }
 
 
@@ -4609,6 +4611,15 @@ private:
 
         const char code4[] = "class MyDialog : public CDialog { DECLARE_DYNAMIC_CLASS(MyDialog) private: CString text; };";
         ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code4,false));
+    }
+
+    void sql()
+    {
+        // Oracle PRO*C extensions for inline SQL. Just replace the SQL with "asm()" to fix wrong error messages
+        // ticket: #1959
+        const char code1[] = "; EXEC SQL SELECT A FROM B;";
+        ASSERT_EQUALS("; ; asm ( ) ;", tokenizeAndStringify(code1,false));
+
     }
 };
 
