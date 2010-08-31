@@ -1778,7 +1778,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
             }
         }
 
-        else if (c1 == 'p' && tok->next()->str() == ":")
+        else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":")
         {
             if (tok->str() == "private" || tok->str() == "protected" || tok->str() == "public" || tok->str() == "__published")
             {

@@ -44,7 +44,7 @@ private:
 
         // no false positives for variables
         TEST_CASE(testvar);
-	
+
         // dangerous function
         TEST_CASE(testgets);
     }
