@@ -273,6 +273,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\timer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\token.cpp"
 				>
 			</File>
@@ -368,6 +372,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\settings.h"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\timer.h"
 				>
 			</File>
 			<File

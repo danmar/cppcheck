@@ -355,6 +355,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\timer.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\tinyxml\tinystr.cpp"
 				>
 			</File>
@@ -462,6 +466,10 @@
 			</File>
 			<File
 				RelativePath="testsuite.h"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\timer.h"
 				>
 			</File>
 			<File

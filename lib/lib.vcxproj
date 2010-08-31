@@ -102,6 +102,7 @@
     <ClCompile Include="path.cpp" />
     <ClCompile Include="preprocessor.cpp" />
     <ClCompile Include="settings.cpp" />
+    <ClCompile Include="timer.cpp" />
     <ClCompile Include="token.cpp" />
     <ClCompile Include="tokenize.cpp" />
   </ItemGroup>
@@ -125,6 +126,7 @@
     <ClInclude Include="path.h" />
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="settings.h" />
+    <ClInclude Include="timer.h" />
     <ClInclude Include="token.h" />
     <ClInclude Include="tokenize.h" />
   </ItemGroup>
