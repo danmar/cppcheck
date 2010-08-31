@@ -348,8 +348,10 @@ void CheckClass::createSymbolDatabase()
 
                         // skip over function body
                         tok = next->next();
-                        while (tok->str() != "{")
+                        while (tok && tok->str() != "{")
                             tok = tok->next();
+                        if (!tok)
+                            return;
                         tok = tok->link();
                     }
                 }

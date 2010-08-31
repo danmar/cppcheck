@@ -154,6 +154,7 @@ private:
 
         TEST_CASE(symboldatabase1);
         TEST_CASE(symboldatabase2);
+        TEST_CASE(symboldatabase3); // ticket #2000
     }
 
     // Check the operator Equal
@@ -4276,6 +4277,15 @@ private:
                    "class bar;\n"
                    "foo() { }\n"
                    "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase3()
+    {
+        checkConst("typedef void (func_type)();\n"
+                   "struct A {\n"
+                   "    friend func_type f : 2;\n"
+                   "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
