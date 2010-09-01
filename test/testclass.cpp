@@ -141,6 +141,7 @@ private:
         TEST_CASE(const33);
         TEST_CASE(const34); // ticket #1964
         TEST_CASE(const35); // ticket #2001
+        TEST_CASE(const36); // ticket #2003
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -3950,6 +3951,19 @@ private:
                    "        };\n"
                    "}\n");
         ASSERT_EQUALS("[test.cpp:12]: (style) The function 'N::Derived::getResourceName' can be const\n", errout.str());
+    }
+
+    void const36() // ticket #2003
+    {
+        checkConst("class Foo {\n"
+                   "public:\n"
+                   "    Blue::Utility::Size m_MaxQueueSize;\n"
+                   "    void SetMaxQueueSize(Blue::Utility::Size a_MaxQueueSize)\n"
+                   "    {\n"
+                   "        m_MaxQueueSize = a_MaxQueueSize;\n"
+                   "    }\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const
