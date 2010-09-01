@@ -1893,9 +1893,6 @@ void CheckClass::checkConst()
             // does the function have a body?
             if (func.type == Func::Function && func.hasBody && !func.isFriend && !func.isStatic && !func.isConst && !func.isVirtual)
             {
-                // get function name
-                const std::string functionName((func.tokenDef->isName() ? "" : "operator") + func.tokenDef->str());
-
                 // get last token of return type
                 const Token *previous = func.tokenDef->isName() ? func.token->previous() : func.token->tokAt(-2);
                 while (previous->str() == "::")
@@ -1968,6 +1965,14 @@ void CheckClass::checkConst()
                         classname = std::string(nest->className + "::" + classname);
                         nest = nest->nestedIn;
                     }
+
+                    // get function name
+                    std::string functionName((func.tokenDef->isName() ? "" : "operator") + func.tokenDef->str());
+
+                    if (func.tokenDef->str() == "(")
+                        functionName += ")";
+                    else if (func.tokenDef->str() == "[")
+                        functionName += "]";
 
                     if (func.isInline)
                         checkConstError(func.token, classname, functionName);

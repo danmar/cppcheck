@@ -2878,7 +2878,7 @@ private:
                    "    int array[10];\n"
                    "    int const & operator [] (unsigned int index) { return array[index]; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::operator[' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::operator[]' can be const\n", errout.str());
     }
 
     void const5()
