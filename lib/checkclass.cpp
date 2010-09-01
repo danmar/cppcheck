@@ -70,7 +70,7 @@ static bool isFunction(const Token *tok, const Token **argStart)
     else if (tok->str() == "operator")
     {
         // operator[] or operator()?
-        if ((Token::Match(tok->next(), "( ) (") || Token::Match(tok->next(), "[ ] (")) &&
+        if ((Token::simpleMatch(tok->next(), "( ) (") || Token::simpleMatch(tok->next(), "[ ] (")) &&
             Token::Match(tok->tokAt(3)->link(), ") const| ;|{|=|:"))
         {
             *argStart = tok->tokAt(3);
@@ -260,80 +260,7 @@ void CheckClass::createSymbolDatabase()
                     if (Token::Match(next, ") const| ;") ||
                         Token::Match(next, ") const| = 0 ;"))
                     {
-                        // find implementation using names on stack
-                        SpaceInfo *nest = info;
-                        unsigned int depth = 0;
-
-                        std::string classPattern;
-                        std::string classPath;
-                        std::string searchPattern;
-                        const Token *funcArgs = function.tokenDef->tokAt(2);
-                        int offset = 1;
-
-                        if (function.isOperator)
-                        {
-                            if (Token::Match(function.tokenDef, "(|["))
-                            {
-                                classPattern = "operator " + function.tokenDef->str() + " " + function.tokenDef->next()->str() + " (";
-                                offset = 2;
-                            }
-                            else if (Token::Match(function.tokenDef, "new|delete ["))
-                            {
-                                classPattern = "operator " + function.tokenDef->str() + " " + function.tokenDef->next()->str() + " " + function.tokenDef->next()->strAt(2) +  " (";
-                                offset = 3;
-                            }
-                            else
-                                classPattern = "operator " + function.tokenDef->str() + " (";
-                        }
-                        else
-                            classPattern = function.tokenDef->str() + " (";
-
-                        // look for an implementation outside of class
-                        while (!function.hasBody && nest)
-                        {
-                            classPath = nest->className + std::string(" :: ") + classPath;
-                            searchPattern = classPath + classPattern;
-                            depth++;
-                            nest = nest->nestedIn;
-
-                            // start looking at end of class
-                            SpaceInfo *top = info;
-                            const Token *found = top->classEnd;
-                            while ((found = Token::findmatch(found, searchPattern.c_str(), nest ? nest->classEnd : 0)) != NULL)
-                            {
-                                // skip other classes
-                                if (found->previous()->str() == "::")
-                                    break;
-
-                                // goto function name
-                                while (found->next()->str() != "(")
-                                    found = found->next();
-
-                                if (Token::Match(found->tokAt(offset)->link(), function.isConst ? ") const {" : ") {") ||
-                                    (function.type == Func::Constructor && Token::Match(found->next()->link(), ") :|{")))
-                                {
-                                    if (argsMatch(funcArgs, found->tokAt(offset + 1), classPath, depth))
-                                    {
-                                        function.token = found;
-                                        function.hasBody = true;
-                                        function.arg = found->tokAt(offset);
-
-                                        info->functionList.push_back(function);
-                                        break;
-                                    }
-
-                                    // skip function body
-                                    while (found->str() != "{")
-                                        found = found->next();
-
-                                    found = found->link();
-                                }
-                            }
-                        }
-
-                        if (!function.hasBody)
-                            info->functionList.push_back(function);
-
+                        // find the function implementation later
                         tok = next->next();
                     }
 
@@ -344,8 +271,6 @@ void CheckClass::createSymbolDatabase()
                         function.hasBody = true;
                         function.arg = function.argDef;
 
-                        info->functionList.push_back(function);
-
                         // skip over function body
                         tok = next->next();
                         while (tok && tok->str() != "{")
@@ -354,6 +279,8 @@ void CheckClass::createSymbolDatabase()
                             return;
                         tok = tok->link();
                     }
+
+                    info->functionList.push_back(function);
                 }
 
                 // friend class declaration?
@@ -373,7 +300,6 @@ void CheckClass::createSymbolDatabase()
 
     std::multimap<std::string, SpaceInfo *>::iterator it;
 
-    // finish filling in base class info
     for (it = spaceInfoMMap.begin(); it != spaceInfoMMap.end(); ++it)
     {
         info = it->second;
@@ -382,6 +308,7 @@ void CheckClass::createSymbolDatabase()
         if (info->isNamespace)
             continue;
 
+        // finish filling in base class info
         for (unsigned int i = 0; i < info->derivedFrom.size(); ++i)
         {
             std::multimap<std::string, SpaceInfo *>::iterator it1;
@@ -398,11 +325,90 @@ void CheckClass::createSymbolDatabase()
                     {
                         // are they in the same namespace or different namespaces with same name?
                         if ((spaceInfo->nestedIn == info->nestedIn) ||
-                            ((spaceInfo->nestedIn->isNamespace && info->nestedIn->isNamespace) &&
+                            ((spaceInfo->nestedIn && spaceInfo->nestedIn->isNamespace) &&
+                             (info->nestedIn && info->nestedIn->isNamespace) &&
                              (spaceInfo->nestedIn->className == info->nestedIn->className)))
                         {
                             info->derivedFrom[i].spaceInfo = spaceInfo;
                             break;
+                        }
+                    }
+                }
+            }
+        }
+
+        std::list<Func>::iterator func;
+
+        // find the function body if not implemented inline
+        for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
+        {
+            if (!func->hasBody)
+            {
+                // find implementation using names on stack
+                SpaceInfo *nest = info;
+                unsigned int depth = 0;
+
+                std::string classPattern;
+                std::string classPath;
+                std::string searchPattern;
+                const Token *funcArgs = func->tokenDef->tokAt(2);
+                int offset = 1;
+
+                if (func->isOperator)
+                {
+                    if (Token::Match(func->tokenDef, "(|["))
+                    {
+                        classPattern = "operator " + func->tokenDef->str() + " " + func->tokenDef->next()->str() + " (";
+                        offset = 2;
+                    }
+                    else if (Token::Match(func->tokenDef, "new|delete ["))
+                    {
+                        classPattern = "operator " + func->tokenDef->str() + " " + func->tokenDef->next()->str() + " " + func->tokenDef->next()->strAt(2) +  " (";
+                        offset = 3;
+                    }
+                    else
+                        classPattern = "operator " + func->tokenDef->str() + " (";
+                }
+                else
+                    classPattern = func->tokenDef->str() + " (";
+
+                // look for an implementation outside of class
+                while (!func->hasBody && nest)
+                {
+                    classPath = nest->className + std::string(" :: ") + classPath;
+                    searchPattern = classPath + classPattern;
+                    depth++;
+                    nest = nest->nestedIn;
+
+                    // start looking at end of class
+                    SpaceInfo *top = info;
+                    const Token *found = top->classEnd;
+                    while ((found = Token::findmatch(found, searchPattern.c_str(), nest ? nest->classEnd : 0)) != NULL)
+                    {
+                        // skip other classes
+                        if (found->previous()->str() == "::")
+                            break;
+
+                        // goto function name
+                        while (found->next()->str() != "(")
+                            found = found->next();
+
+                        if (Token::Match(found->tokAt(offset)->link(), func->isConst ? ") const {" : ") {") ||
+                            (func->type == Func::Constructor && Token::Match(found->next()->link(), ") :|{")))
+                        {
+                            if (argsMatch(funcArgs, found->tokAt(offset + 1), classPath, depth))
+                            {
+                                func->token = found;
+                                func->hasBody = true;
+                                func->arg = found->tokAt(offset);
+                                break;
+                            }
+
+                            // skip function body
+                            while (found->str() != "{")
+                                found = found->next();
+
+                            found = found->link();
                         }
                     }
                 }
@@ -487,6 +493,8 @@ const Token *CheckClass::initBaseInfo(SpaceInfo *info, const Token *tok)
 CheckClass::SpaceInfo::SpaceInfo(CheckClass *check_, const Token *classDef_, CheckClass::SpaceInfo *nestedIn_) :
     check(check_),
     classDef(classDef_),
+    classStart(NULL),
+    classEnd(NULL),
     nestedIn(nestedIn_),
     numConstructors(0)
 {
