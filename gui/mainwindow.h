@@ -37,6 +37,7 @@ class LogView;
 class HelpWindow;
 class Project;
 class ErrorItem;
+class StatsDialog;
 
 /// @addtogroup GUI
 /// @{
@@ -165,6 +166,12 @@ public slots:
     *
     */
     void ShowLogView();
+
+    /**
+    * @brief Slot for showing the scan and project statistics.
+    *
+    */
+    void ShowStatistics();
 
 protected slots:
 

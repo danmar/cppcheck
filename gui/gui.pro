@@ -30,7 +30,8 @@ FORMS = main.ui \
     projectfile.ui \
     about.ui \
     logview.ui \
-    helpwindow.ui
+    helpwindow.ui \
+    stats.ui
 
 TRANSLATIONS =  cppcheck_fi.ts \
                 cppcheck_nl.ts \
@@ -67,7 +68,8 @@ HEADERS += mainwindow.h \
            csvreport.h \
            logview.h \
            filelist.h \
-           helpwindow.h
+           helpwindow.h \
+           statsdialog.h
 
 SOURCES += main.cpp \
            mainwindow.cpp\
@@ -92,7 +94,8 @@ SOURCES += main.cpp \
            csvreport.cpp \
            logview.cpp \
            filelist.cpp \
-           helpwindow.cpp
+           helpwindow.cpp \
+           statsdialog.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS

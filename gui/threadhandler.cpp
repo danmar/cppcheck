@@ -22,6 +22,7 @@
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent),
+    mScanDuration(0),
     mRunningThreadCount(0)
 {
     SetThreadCount(1);
@@ -71,6 +72,8 @@ void ThreadHandler::Check(Settings settings, bool recheck)
     {
         mThreads[i]->Check(settings);
     }
+
+    mTime.start();
 }
 
 bool ThreadHandler::IsChecking() const
@@ -124,6 +127,8 @@ void ThreadHandler::ThreadDone()
     if (mRunningThreadCount == 0)
     {
         emit Done();
+
+        mScanDuration = mTime.elapsed();
     }
 }
 
@@ -172,4 +177,9 @@ bool ThreadHandler::HasPreviousFiles() const
 int ThreadHandler::GetPreviousFilesCount() const
 {
     return mLastFiles.size();
+}
+
+int ThreadHandler::GetPreviousScanDuration() const
+{
+    return mScanDuration;
 }

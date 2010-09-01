@@ -22,6 +22,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QTime>
 #include "../lib/settings.h"
 #include "../lib/cppcheck.h"
 #include "threadresult.h"
@@ -110,6 +111,13 @@ public:
     */
     int GetPreviousFilesCount() const;
 
+    /**
+    * @brief Return the time elapsed while scanning the previous time.
+    *
+    * @return the time elapsed in milliseconds.
+    */
+    int GetPreviousScanDuration() const;
+
 signals:
     /**
     * @brief Signal that all threads are done
@@ -139,6 +147,18 @@ protected:
     *
     */
     QStringList mLastFiles;
+
+    /**
+    * @brief Timer used for measuring scan duration
+    *
+    */
+    QTime mTime;
+
+    /**
+    * @brief The previous scan duration in milliseconds.
+    *
+    */
+    int mScanDuration;
 
     /**
     * @brief Function to delete all threads

@@ -33,6 +33,7 @@
 #include "projectfile.h"
 #include "project.h"
 #include "report.h"
+#include "statsdialog.h"
 #include "logview.h"
 #include "filelist.h"
 #include "helpwindow.h"
@@ -67,6 +68,7 @@ MainWindow::MainWindow() :
     connect(mUI.mActionCollapseAll, SIGNAL(triggered()), mUI.mResults, SLOT(CollapseAllResults()));
     connect(mUI.mActionExpandAll, SIGNAL(triggered()), mUI.mResults, SLOT(ExpandAllResults()));
     connect(mUI.mActionViewLog, SIGNAL(triggered()), this, SLOT(ShowLogView()));
+    connect(mUI.mActionViewStats, SIGNAL(triggered()), this, SLOT(ShowStatistics()));
 
     connect(mUI.mActionRecheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
 
@@ -809,6 +811,22 @@ void MainWindow::ShowLogView()
     mLogView->show();
     if (!mLogView->isActiveWindow())
         mLogView->activateWindow();
+}
+
+void MainWindow::ShowStatistics()
+{
+    StatsDialog statsDialog(this);
+
+    // Show a dialog with the previous scan statistics and project information
+    if (mProject)
+    {
+        statsDialog.setProject(*mProject);
+    }
+    statsDialog.setPathSelected(mCurrentDirectory);
+    statsDialog.setNumberOfFilesScanned(mThread->GetPreviousFilesCount());
+    statsDialog.setScanDuration(mThread->GetPreviousScanDuration() / 1000.0);
+
+    statsDialog.exec();
 }
 
 void MainWindow::Log(const QString &logline)
