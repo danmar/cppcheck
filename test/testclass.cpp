@@ -73,7 +73,6 @@ private:
         TEST_CASE(uninitVarHeader2);    	// Class is defined in header
         TEST_CASE(uninitVarHeader3);    	// Class is defined in header
         TEST_CASE(uninitVarPublished);  	// Borland C++: Variables in the published section are auto-initialized
-        TEST_CASE(uninitProperty);			// Borland C++: No FP for properties
         TEST_CASE(uninitOperator);      	// No FP about uninitialized 'operator[]'
         TEST_CASE(uninitFunction1);			// No FP when initialized in function
         TEST_CASE(uninitFunction2);			// No FP when initialized in function
@@ -1993,30 +1992,6 @@ private:
                        "    int *i;\n"
                        "public:\n"
                        "    Fred() { }\n"
-                       "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        checkUninitVar("class Fred\n"
-                       "{\n"
-                       "__published:\n"
-                       "    int * i_;\n"
-                       "    __property int * i = {read=i_, write=i_};\n"
-                       "public:\n"
-                       "    Fred() { i_ = 0; }\n"
-                       "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    // Borland C++: No FP for properties
-    void uninitProperty()
-    {
-        checkUninitVar("class Fred\n"
-                       "{\n"
-                       "private:\n"
-                       "    int * i_;\n"
-                       "public:\n"
-                       "    Fred() { i_ = 0; }\n"
-                       "    __property int * i = {read=i_, write=i_};\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }

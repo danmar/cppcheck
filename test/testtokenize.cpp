@@ -259,6 +259,8 @@ private:
 
         TEST_CASE(microsoftMFC);
 
+        TEST_CASE(borland);
+
         TEST_CASE(sql);
     }
 
@@ -4611,6 +4613,17 @@ private:
 
         const char code4[] = "class MyDialog : public CDialog { DECLARE_DYNAMIC_CLASS(MyDialog) private: CString text; };";
         ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code4,false));
+    }
+
+    void borland()
+    {
+        // __closure
+        ASSERT_EQUALS("int * a ;",
+                      tokenizeAndStringify("int (__closure *a)();", false));
+
+        // __property
+        ASSERT_EQUALS("class Fred { } ;",
+                      tokenizeAndStringify("class Fred { __property int x = { } };", false));
     }
 
     void sql()

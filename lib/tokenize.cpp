@@ -1972,6 +1972,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // remove Microsoft MFC..
     simplifyMicrosoftMFC();
 
+    // remove Borland stuff..
+    simplifyBorland();
+
     // typedef..
     simplifyTypedef();
 
@@ -8304,5 +8307,55 @@ void Tokenizer::simplifyMicrosoftMFC()
 }
 
 
+// Remove Borland code
+void Tokenizer::simplifyBorland()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "( __closure * %var% )"))
+        {
+            tok->deleteNext();
+        }
+    }
+
+    // I think that these classes are always declared at the outer scope
+    // I save some time by ignoring inner classes.
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "{")
+            tok = tok->link();
+
+        if (Token::Match(tok, "class %var% :|{"))
+        {
+            unsigned int indentlevel = 0;
+            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{")
+                {
+                    if (indentlevel == 0)
+                        indentlevel = 1;
+                    else
+                        tok2 = tok2->link();
+                }
+                else if (tok2->str() == "}")
+                {
+                    break;
+                }
+                else if (tok2->str() == "__property" &&
+                         Token::Match(tok2->previous(), ";|{|}|protected:|public:|__published:"))
+                {
+                    while (tok2 && !Token::Match(tok2, "{|;"))
+                        tok2->deleteThis();
+                    if (Token::simpleMatch(tok2, "{"))
+                    {
+                        Token::eraseTokens(tok2, tok2->link());
+                        tok2->deleteThis();
+                        tok2->deleteThis();
+                    }
+                }
+            }
+        }
+    }
+}
 
 
