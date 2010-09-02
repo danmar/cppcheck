@@ -181,6 +181,7 @@ private:
               isFriend(false),
               isExplicit(false),
               isOperator(false),
+              retFuncPtr(false),
               type(Function)
         {
         }
@@ -199,6 +200,7 @@ private:
         bool isFriend;         // is friend
         bool isExplicit;       // is explicit
         bool isOperator;       // is operator
+        bool retFuncPtr;       // returns function pointer
         Type type;             // constructor, destructor, ...
     };
 

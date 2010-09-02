@@ -47,14 +47,26 @@ CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, Err
 
 }
 
-static bool isFunction(const Token *tok, const Token **argStart)
+static bool isFunction(const Token *tok, const Token **funcStart, const Token **argStart)
 {
     if (tok->previous()->str() == "::")
         return false;
 
-    // regular function?
-    if (Token::Match(tok, "%var% (") && Token::Match(tok->next()->link(), ") const| ;|{|=|:"))
+    // function returning function pointer? '... ( ... %var% ( ... ))( ... ) {'
+    if (tok->str() == "(" &&
+        tok->link()->previous()->str() == ")" &&
+        tok->link()->next()->str() == "(" &&
+        Token::Match(tok->link()->next()->link()->next(), "{|;|const|="))
     {
+        *funcStart = tok->link()->previous()->link()->previous();
+        *argStart = tok->link()->previous()->link();
+        return true;
+    }
+
+    // regular function?
+    else if (Token::Match(tok, "%var% (") && Token::Match(tok->next()->link(), ") const| ;|{|=|:"))
+    {
+        *funcStart = tok;
         *argStart = tok->next();
         return true;
     }
@@ -62,6 +74,7 @@ static bool isFunction(const Token *tok, const Token **argStart)
     // simple operator?
     else if (Token::Match(tok, "operator %any% (") && Token::Match(tok->tokAt(2)->link(), ") const| ;|{|=|:"))
     {
+        *funcStart = tok->next();
         *argStart = tok->tokAt(2);
         return true;
     }
@@ -73,20 +86,15 @@ static bool isFunction(const Token *tok, const Token **argStart)
         if ((Token::simpleMatch(tok->next(), "( ) (") || Token::simpleMatch(tok->next(), "[ ] (")) &&
             Token::Match(tok->tokAt(3)->link(), ") const| ;|{|=|:"))
         {
+            *funcStart = tok->next();
             *argStart = tok->tokAt(3);
-            return true;
-        }
-
-        // operator new/delete?
-        else if (Token::Match(tok->next(), "new|delete (") && Token::Match(tok->tokAt(2)->link(), ") ;|{"))
-        {
-            *argStart = tok->tokAt(2);
             return true;
         }
 
         // operator new/delete []?
         else if (Token::Match(tok->next(), "new|delete [ ] (") && Token::Match(tok->tokAt(4)->link(), ") ;|{"))
         {
+            *funcStart = tok->next();
             *argStart = tok->tokAt(4);
             return true;
         }
@@ -145,6 +153,7 @@ void CheckClass::createSymbolDatabase()
             // check if in class or structure
             else if (!info->isNamespace)
             {
+                const Token *funcStart = 0;
                 const Token *argStart = 0;
 
                 // What section are we in..
@@ -167,7 +176,7 @@ void CheckClass::createSymbolDatabase()
                 }
 
                 // function?
-                else if (isFunction(tok, &argStart))
+                else if (isFunction(tok, &funcStart, &argStart))
                 {
                     Func function;
 
@@ -178,15 +187,12 @@ void CheckClass::createSymbolDatabase()
                     function.access = info->access;
 
                     // save the function name location
-                    function.tokenDef = tok;
+                    function.tokenDef = funcStart;
 
                     // operator function
-                    if (function.tokenDef->str() ==  "operator")
+                    if (function.tokenDef->previous()->str() ==  "operator")
                     {
                         function.isOperator = true;
-
-                        // update the function name location
-                        function.tokenDef = function.tokenDef->next();
 
                         // 'operator =' is special
                         if (function.tokenDef->str() == "=")
@@ -207,6 +213,12 @@ void CheckClass::createSymbolDatabase()
 
                         if (function.tokenDef->previous()->str() == "explicit")
                             function.isExplicit = true;
+                    }
+
+                    // function returning function pointer
+                    else if (tok->str() == "(")
+                    {
+                        function.retFuncPtr = true;
                     }
 
                     const Token *tok1 = tok;
@@ -238,12 +250,19 @@ void CheckClass::createSymbolDatabase()
                         tok1 = tok1->previous();
                     }
 
+                    const Token *end;
+
+                    if (!function.retFuncPtr)
+                        end = function.argDef->link();
+                    else
+                        end = tok->link()->next()->link();
+
                     // const function
-                    if (function.argDef->link()->next()->str() == "const")
+                    if (end->next()->str() == "const")
                         function.isConst = true;
 
                     // pure virtual function
-                    if (Token::Match(function.argDef->link(), ") const| = 0 ;"))
+                    if (Token::Match(end, ") const| = 0 ;"))
                         function.isPure = true;
 
                     // count the number of constructors
@@ -253,15 +272,12 @@ void CheckClass::createSymbolDatabase()
                     // assume implementation is inline (definition and implementation same)
                     function.token = function.tokenDef;
 
-                    // jump to end of args
-                    const Token *next = function.argDef->link();
-
                     // out of line function
-                    if (Token::Match(next, ") const| ;") ||
-                        Token::Match(next, ") const| = 0 ;"))
+                    if (Token::Match(end, ") const| ;") ||
+                        Token::Match(end, ") const| = 0 ;"))
                     {
                         // find the function implementation later
-                        tok = next->next();
+                        tok = end->next();
                     }
 
                     // inline function
@@ -272,7 +288,7 @@ void CheckClass::createSymbolDatabase()
                         function.arg = function.argDef;
 
                         // skip over function body
-                        tok = next->next();
+                        tok = end->next();
                         while (tok && tok->str() != "{")
                             tok = tok->next();
                         if (!tok)
@@ -1173,12 +1189,25 @@ void CheckClass::privateFunctions()
     if (!_settings->_checkCodingStyle)
         return;
 
-    const char pattern_class[] = "class|struct %var% {";
+    createSymbolDatabase();
 
-    // Locate some class
-    for (const Token *tok1 = Token::findmatch(_tokenizer->tokens(), pattern_class);
-         tok1; tok1 = Token::findmatch(tok1->next(), pattern_class))
+    std::multimap<std::string, SpaceInfo *>::iterator i;
+
+    for (i = spaceInfoMMap.begin(); i != spaceInfoMMap.end(); ++i)
     {
+        SpaceInfo *info = i->second;
+
+        // don't check namespaces
+        if (info->isNamespace)
+            continue;
+
+        // dont check derived classes
+        if (!info->derivedFrom.empty())
+            continue;
+
+        // Locate some class
+        const Token *tok1 = info->classDef;
+
         /** @todo check that the whole class implementation is seen */
         // until the todo above is fixed we only check classes that are
         // declared in the source file
@@ -1187,66 +1216,24 @@ void CheckClass::privateFunctions()
 
         const std::string &classname = tok1->next()->str();
 
-        // Get private functions..
         std::list<const Token *> FuncList;
-        FuncList.clear();
-        bool isStruct = tok1->str() == "struct";
-        bool priv = !isStruct;
-        unsigned int indent_level = 0;
-        for (const Token *tok = tok1; tok; tok = tok->next())
+        /** @todo embedded class have access to private functions */
+        if (info->nestedList.empty())
         {
-            if (Token::Match(tok, "friend %var%"))
+            std::list<Func>::const_iterator it;
+            for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
             {
-                /** @todo Handle friend classes */
-                FuncList.clear();
-                break;
-            }
-
-            if (tok->str() == "{")
-                ++indent_level;
-            else if (tok->str() == "}")
-            {
-                if (indent_level <= 1)
-                    break;
-                --indent_level;
-            }
-
-            else if (indent_level != 1)
-                continue;
-            else if (tok->str() == "private:")
-                priv = true;
-            else if (tok->str() == "public:")
-                priv = false;
-            else if (tok->str() == "protected:")
-                priv = false;
-            else if (priv)
-            {
-                if (Token::Match(tok, "typedef %type% ("))
-                    tok = tok->tokAt(2)->link();
-
-                else if (Token::Match(tok, "[:,] %var% ("))
-                    tok = tok->tokAt(2)->link();
-
-                else if (Token::Match(tok, "%var% (") &&
-                         !Token::simpleMatch(tok->next()->link(), ") (") &&
-                         !Token::Match(tok, classname.c_str()))
-                {
-                    FuncList.push_back(tok);
-                }
-            }
-
-            /** @todo embedded class have access to private functions */
-            if (tok->str() == "class")
-            {
-                FuncList.clear();
-                break;
+                // Get private functions..
+                if (it->type == Func::Function &&
+                    it->access == Private && it->hasBody)
+                    FuncList.push_back(it->tokenDef);
             }
         }
 
         // Check that all private functions are used..
         bool HasFuncImpl = false;
         bool inclass = false;
-        indent_level = 0;
+        int indent_level = 0;
         for (const Token *ftok = _tokenizer->tokens(); ftok; ftok = ftok->next())
         {
             if (ftok->str() == "{")
