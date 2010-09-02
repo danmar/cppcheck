@@ -123,6 +123,7 @@ bool FileLister::acceptFile(const std::string &filename)
         extension == ".cc" ||
         extension == ".c" ||
         extension == ".c++" ||
+        extension == ".tpp" ||
         extension == ".txx")
     {
         return true;
