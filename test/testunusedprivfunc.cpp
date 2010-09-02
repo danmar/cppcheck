@@ -109,7 +109,7 @@ private:
               "unsigned int Fred::f()\n"
               "{ }\n");
 
-        TODO_ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
+        ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
 
         check("#file \"p.h\"\n"
               "class Fred\n"
@@ -125,7 +125,7 @@ private:
               "{\n"
               "}\n"
               "\n");
-        TODO_ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
+        ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
 
         // Don't warn about include files which implementation we don't see
         check("#file \"p.h\"\n"

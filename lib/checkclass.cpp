@@ -1208,10 +1208,23 @@ void CheckClass::privateFunctions()
         // Locate some class
         const Token *tok1 = info->classDef;
 
-        /** @todo check that the whole class implementation is seen */
-        // until the todo above is fixed we only check classes that are
-        // declared in the source file
-        if (tok1->fileIndex() != 0)
+        // check that the whole class implementation is seen
+        bool whole = true;
+        std::list<Func>::const_iterator func;
+        for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
+        {
+            if (!func->hasBody)
+            {
+                // empty private copy constructors and assignment operators are OK
+                if ((func->type == Func::CopyConstructor || func->type == Func::OperatorEqual) && func->access == Private)
+                    continue;
+
+                whole = false;
+                break;
+            }
+        }
+
+        if (!whole)
             continue;
 
         const std::string &classname = tok1->next()->str();
@@ -1220,13 +1233,12 @@ void CheckClass::privateFunctions()
         /** @todo embedded class have access to private functions */
         if (info->nestedList.empty())
         {
-            std::list<Func>::const_iterator it;
-            for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
+            for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
             {
                 // Get private functions..
-                if (it->type == Func::Function &&
-                    it->access == Private && it->hasBody)
-                    FuncList.push_back(it->tokenDef);
+                if (func->type == Func::Function &&
+                    func->access == Private && func->hasBody)
+                    FuncList.push_back(func->tokenDef);
             }
         }
 
