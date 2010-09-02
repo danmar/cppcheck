@@ -110,6 +110,7 @@ private:
         TEST_CASE(if_cond8);
         TEST_CASE(if_cond9);
         TEST_CASE(if_cond10);
+        TEST_CASE(if_cond11);
 
         TEST_CASE(if_or_1);
         TEST_CASE(if_or_2);
@@ -1065,6 +1066,22 @@ private:
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
+    }
+
+    void if_cond11()
+    {
+        errout.str("");
+        const char filedata[] = "#if defined(L_fixunssfdi) && LIBGCC2_HAS_SF_MODE\n"
+                                "#if LIBGCC2_HAS_DF_MODE\n"
+                                "#elif FLT_MANT_DIG < W_TYPE_SIZE\n"
+                                "#endif\n"
+                                "#endif\n";
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

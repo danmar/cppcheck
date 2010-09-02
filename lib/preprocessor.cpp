@@ -919,7 +919,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         {
             Tokenizer tokenizer(_settings, _errorLogger);
             std::istringstream tempIstr(s.c_str());
-            if (!tokenizer.tokenize(tempIstr, filename.c_str()))
+            if (!tokenizer.tokenize(tempIstr, filename.c_str(), "", true))
             {
                 std::ostringstream lineStream;
                 lineStream << __LINE__;
@@ -1053,7 +1053,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 {
     Tokenizer tokenizer;
     std::istringstream istr(("(" + condition + ")").c_str());
-    tokenizer.tokenize(istr, "");
+    tokenizer.tokenize(istr, "", "", true);
 
     if (Token::Match(tokenizer.tokens(), "( %var% )"))
     {
