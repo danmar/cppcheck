@@ -2431,7 +2431,7 @@ void CheckOther::nullPointerLinkedList()
                                 }
                                 --indentlevel4;
                             }
-                            else if (tok4->str() == "break")
+                            else if (tok4->str() == "break" || tok4->str() == "return")
                                 break;
                         }
                     }

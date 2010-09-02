@@ -925,6 +925,18 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNullPointer("void f()\n"
+                         "{\n"
+                         "    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())\n"
+                         "    {\n"
+                         "        while (tok && tok->str() != \"{\")\n"
+                         "            tok = tok->next();\n"
+                         "        if (!tok)\n"
+                         "            return;\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // dynamic_cast..
         checkNullPointer("void foo(ABC *abc)\n"
                          "{\n"
