@@ -4631,7 +4631,7 @@ private:
         // Oracle PRO*C extensions for inline SQL. Just replace the SQL with "asm()" to fix wrong error messages
         // ticket: #1959
         const char code1[] = "; EXEC SQL SELECT A FROM B;";
-        ASSERT_EQUALS("; ; asm ( ) ;", tokenizeAndStringify(code1,false));
+        ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(code1,false));
 
     }
 };

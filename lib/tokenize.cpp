@@ -1711,19 +1711,18 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         if (Token::simpleMatch(tok, "EXEC SQL"))
         {
             // delete all tokens until ";"
-            while (tok && tok->str() != ";")
-                tok->deleteThis();
+            const Token *end = tok;
+            while (end && end->str() != ";")
+                end = end->next();
+            Token::eraseTokens(tok, end);
 
-            // insert "asm ( ) ;"
             if (tok)
             {
-                tok->insertToken("asm");
-                tok = tok->next();
+                // insert "asm ( ) ;"
+                tok->str("asm");
                 tok->insertToken("(");
                 tok = tok->next();
                 tok->insertToken(")");
-                tok = tok->next();
-                tok->insertToken(";");
             }
         }
     }
@@ -8347,7 +8346,7 @@ void Tokenizer::simplifyBorland()
                 else if (tok2->str() == "__property" &&
                          Token::Match(tok2->previous(), ";|{|}|protected:|public:|__published:"))
                 {
-                    while (tok2 && !Token::Match(tok2, "{|;"))
+                    while (tok2->next() && !Token::Match(tok2, "{|;"))
                         tok2->deleteThis();
                     if (Token::simpleMatch(tok2, "{"))
                     {
