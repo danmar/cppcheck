@@ -213,6 +213,7 @@ private:
         TEST_CASE(simplifyTypedef56); // ticket #1829
         TEST_CASE(simplifyTypedef57); // ticket #1846
         TEST_CASE(simplifyTypedef58); // ticket #1963
+        TEST_CASE(simplifyTypedef59); // ticket #2011
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4372,6 +4373,20 @@ private:
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void simplifyTypedef59() // ticket #2011
+    {
+        const char code[] = "template<typename DISPATCHER> class SomeTemplateClass {\n"
+                            "    typedef void (SomeTemplateClass<DISPATCHER>::*MessageDispatcherFunc)(SerialInputMessage&);\n"
+                            "};\n";
+        // The expected result..
+        const std::string expected("; ;");
+        ASSERT_EQUALS(expected, sizeof_(code));
+
+        // Check for output..
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1()

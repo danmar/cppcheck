@@ -992,11 +992,14 @@ void Tokenizer::simplifyTypedef()
                 tok = specEnd->next();
             }
         }
-        else if (Token::Match(tok->tokAt(offset), "( ::| %var% :: *|&| const|volatile| const|volatile| %type% ) ("))
+        else if (Token::Match(tok->tokAt(offset), "( ::| %var% :: *|&| const|volatile| const|volatile| %type% ) (") ||
+                 Token::Match(tok->tokAt(offset), "( ::| %var% < %type% > :: *|&| const|volatile| const|volatile| %type% ) ("))
         {
             namespaceStart = tok->tokAt(offset + 1);
             if (tok->tokAt(offset + 1)->str() == "::")
                 offset++;
+            if (tok->tokAt(offset + 2)->str() == "<")
+                offset += 3;
             namespaceEnd = tok->tokAt(offset + 2);
             functionPtr = tok->tokAt(offset + 3)->str() == "*";
             functionRef = tok->tokAt(offset + 3)->str() == "&";
