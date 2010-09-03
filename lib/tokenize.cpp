@@ -7996,9 +7996,20 @@ void Tokenizer::simplifyStructDecl()
 {
     unsigned int count = 0;
 
+    // Skip simplification of unions in class definition
+    std::list<bool> skip;
+    skip.push_back(false);
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         Token *restart;
+
+        if (tok->str() == "{")
+            skip.push_back(!Token::Match(tok->previous(), "const|)"));
+        else if (tok->str() == "}" && !skip.empty())
+            skip.pop_back();
+        else if (!skip.empty() && skip.back() && tok->str() == "union")
+            continue;
 
         // check for named struct/union
         if (Token::Match(tok, "struct|union %type% :|{"))

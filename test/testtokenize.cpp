@@ -213,6 +213,7 @@ private:
         TEST_CASE(vardecl12);
         TEST_CASE(vardecl_stl);
         TEST_CASE(vardecl_template);
+        TEST_CASE(vardecl_union);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
         TEST_CASE(syntax_error_templates);
@@ -3534,6 +3535,13 @@ private:
         const char code1[] = "b<(1<<24),10,24> u, v;";
         const char res1[]  = "b < ( 1 << 24 ) , 10 , 24 > u ; b < ( 1 << 24 ) , 10 , 24 > v ;";
         ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
+    }
+
+    void vardecl_union()
+    {
+        // ticket #1976
+        const char code1[] = "class Fred { public: union { int a ; int b ; } ; } ;";
+        ASSERT_EQUALS(code1, tokenizeAndStringify(code1));
     }
 
     void vardec_static()
