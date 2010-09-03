@@ -3954,6 +3954,20 @@ private:
                    "}\n");
         ASSERT_EQUALS("", errout.str());
         TODO_ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:6]: (style) The function 'N::Base::getResourceName' can be const\n", errout.str());
+
+        checkConst("namespace N\n"
+                   "{\n"
+                   "        class Base\n"
+                   "        {\n"
+                   "        public:\n"
+                   "                int getResourceName();\n"
+                   "                int var;\n"
+                   "        };\n"
+                   "}\n"
+                   "using namespace N;\n"
+                   "int Base::getResourceName() { return var; }\n");
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (style) The function 'N::Base::getResourceName' can be const\n", errout.str());
     }
 
     void const36() // ticket #2003
