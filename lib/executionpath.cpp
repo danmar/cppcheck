@@ -76,13 +76,13 @@ void ExecutionPath::print() const
 }
 
 // I use this function when debugging ExecutionPaths with GDB
-#ifdef __GNUC__
+/*
 static void printchecks(const std::list<ExecutionPath *> &checks)
 {
     for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
         (*it)->print();
 }
-#endif
+*/
 
 
 
@@ -176,8 +176,8 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
             }
         }
 
-        // goto => bailout
-        if (tok->str() == "goto")
+        // goto/setjmp/longjmp => bailout
+        if (Token::Match(tok, "goto|setjmp|longjmp"))
         {
             ExecutionPath::bailOut(checks);
             return;

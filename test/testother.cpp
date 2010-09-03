@@ -1589,7 +1589,7 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
 
-        // goto..
+        // goto/setjmp/longjmp..
         checkUninitVar("void foo(int x)\n"
                        "{\n"
                        "    long b;\n"
@@ -1602,6 +1602,18 @@ private:
                        "\n"
                        "found:\n"
                        "    int a = b;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int foo()\n"
+                       "{\n"
+                       "    jmp_buf env;\n"
+                       "    int a;\n"
+                       "    int val = setjmp(env);\n"
+                       "    if(val)\n"
+                       "        return a;\n"
+                       "    a = 1;\n"
+                       "    longjmp(env, 1);\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 

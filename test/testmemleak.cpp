@@ -403,6 +403,9 @@ private:
 
         // #1440 - Check function parameters also..
         TEST_CASE(functionParameter);
+
+        // setjmp/longjmp..
+        TEST_CASE(jmp);
     }
 
 
@@ -2912,6 +2915,30 @@ private:
               "    p = malloc(100);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
+    }
+
+    // Ticket #2014 - setjmp / longjmp
+    void jmp()
+    {
+        check("int main()\n"
+              "{\n"
+              "  jmp_buf env;\n"
+              "  int val;\n"
+              "  char *a;\n"
+              "\n"
+              "  val = setjmp(env);\n"
+              "  if(val)\n"
+              "  {\n"
+              "    delete a;\n"
+              "    return 0;\n"
+              "  }\n"
+              "\n"
+              "  a = new char(1);\n"
+              "  longjmp(env, 1);\n"
+              "\n"
+              "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

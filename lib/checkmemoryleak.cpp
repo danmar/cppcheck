@@ -1360,6 +1360,14 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
             }
 
+            // Calling setjmp / longjmp => bail out
+            else if (Token::Match(tok, "setjmp|longjmp"))
+            {
+                while (rethead->next())
+                    rethead->deleteNext();
+                return rethead;
+            }
+
             // Inside class function.. if the var is passed as a parameter then
             // just add a "::use"
             // The "::use" means that a member function was probably called but it wasn't analyzed further
