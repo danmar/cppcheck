@@ -195,6 +195,8 @@ public:
      */
     static bool match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def);
 
+    static void getErrorMessages(std::ostream &ostr);
+
 private:
     /**
      * Search includes from code and append code from the included
@@ -212,6 +214,9 @@ private:
 
     Settings *_settings;
     ErrorLogger *_errorLogger;
+
+    /** filename for cpp/c file - useful when reporting errors */
+    std::string file0;
 };
 
 /// @}

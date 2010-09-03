@@ -188,7 +188,8 @@ std::string Settings::addEnabled(const std::string &str)
         handled = _checkCodingStyle = true;
 
     std::set<std::string> id;
-    id.insert("unusedFunctions");
+    id.insert("missingInclude");
+    id.insert("unusedFunction");
 
     if (str == "all")
     {

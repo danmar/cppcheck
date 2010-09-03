@@ -602,6 +602,9 @@ void Preprocessor::preprocessWhitespaces(std::string &processedFile)
 
 void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
 {
+    if (file0.empty())
+        file0 = filename;
+
     processedFile = read(srcCodeStream, filename, _settings);
 
     // normalize the whitespaces of the file
@@ -1439,10 +1442,10 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
         if (headerType == UserHeader && !fileOpened)
         {
-            filename = paths.back() + filename;
-            fin.open(filename.c_str());
+            fin.open((paths.back() + filename).c_str());
             if (fin.is_open())
             {
+                filename = paths.back() + filename;
                 fileOpened = true;
             }
         }
@@ -1464,7 +1467,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
             fin.close();
         }
 
-        if (processedFile.length() > 0)
+        if (!processedFile.empty())
         {
             // Replace all tabs with spaces..
             std::replace(processedFile.begin(), processedFile.end(), '\t', ' ');
@@ -1484,10 +1487,39 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         }
         else if (!fileOpened)
         {
-            if (headerType == UserHeader && _errorLogger && _settings && _settings->_verbose)
+            if (headerType == UserHeader && _errorLogger && _settings && _settings->isEnabled("missingInclude"))
             {
-                std::string fixedpath = Path::toNativeSeparators(filename);
-                _errorLogger->reportOut("Include file: \"" + fixedpath + "\" not found.");
+                // Determine line number of include
+                unsigned int linenr = 1;
+                unsigned int level = 0;
+                for (std::string::size_type p = 0; p < pos; ++p)
+                {
+                    if (level == 0 && code[pos-p] == '\n')
+                        ++linenr;
+                    else if (code.compare(pos-p, 9, "#endfile\n") == 0)
+                    {
+                        ++level;
+                    }
+                    else if (code.compare(pos-p, 6, "#file ") == 0)
+                    {
+                        if (level == 0)
+                        {
+                            --linenr;
+                            break;
+                        }
+                        --level;
+                    }
+                }
+
+                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                ErrorLogger::ErrorMessage::FileLocation loc;
+                loc.line = linenr;		/** @todo set correct line */
+                loc.setfile(Path::toNativeSeparators(filePath));
+                locationList.push_back(loc);
+
+                ErrorLogger::ErrorMessage errmsg(locationList, Severity::style, "Include file: \"" + filename + "\" not found.", "missingInclude");
+                errmsg.file0 = file0;
+                _errorLogger->reportErr(errmsg);
             }
         }
     }
@@ -2259,3 +2291,12 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
     return ostr.str();
 }
 
+void Preprocessor::getErrorMessages(std::ostream &ostr)
+{
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                           Severity::style,
+                                           "Include file: \"\" not found.",
+                                           "missingInclude");
+    ostr << errmsg.toXML() << std::endl;
+}

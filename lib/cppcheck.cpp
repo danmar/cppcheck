@@ -830,5 +830,7 @@ void CppCheck::getErrorMessages()
     Tokenizer tokenizer(&_settings, 0);
     tokenizer.getErrorMessages();
 
+    Preprocessor::getErrorMessages(std::cout);
+
     std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
 }
