@@ -278,7 +278,7 @@ void CheckOther::checkFflushOnInputStream()
 void CheckOther::checkRedundantAssignmentInSwitch()
 {
     const char switchPattern[] = "switch ( %any% ) { case";
-    const char breakPattern[] = "break|return|exit|goto";
+    const char breakPattern[] = "break|continue|return|exit|goto";
     const char functionPattern[] = "%var% (";
 
     // Find the beginning of a switch. E.g.:

@@ -3025,6 +3025,22 @@ private:
 
         check("void foo()\n"
               "{\n"
+              "    int y = 1;\n"
+              "    while(xyz()) {\n"
+              "        switch (x)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            y = 2;\n"
+              "            continue;\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
               "        int y = 1;\n"
               "        switch (x)\n"
               "        {\n"
