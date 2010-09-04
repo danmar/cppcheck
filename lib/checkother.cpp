@@ -2059,7 +2059,7 @@ void CheckOther::checkStructMemberUsage()
             {
                 if (tok2->str() == "(")
                 {
-                    structname = "";
+                    structname.clear();
                     break;
                 }
 
@@ -2067,20 +2067,24 @@ void CheckOther::checkStructMemberUsage()
                     break;
             }
 
+            // bail out if struct is inherited
+            if (!structname.empty() && Token::findmatch(tok, (",|private|protected|public " + structname).c_str()))
+                structname.clear();
+
             // Bail out if some data is casted to struct..
             const std::string s("( struct| " + tok->next()->str() + " * ) & %var% [");
             if (Token::findmatch(tok, s.c_str()))
-                structname = "";
+                structname.clear();
 
             // Try to prevent false positives when struct members are not used directly.
             if (Token::findmatch(tok, (structname + " *").c_str()))
-                structname = "";
+                structname.clear();
             else if (Token::findmatch(tok, (structname + " %type% *").c_str()))
                 structname = "";
         }
 
         if (tok->str() == "}")
-            structname = "";
+            structname.clear();
 
         if (!structname.empty() && Token::Match(tok, "[{;]"))
         {
@@ -2097,7 +2101,7 @@ void CheckOther::checkStructMemberUsage()
             else
                 continue;
 
-            // Check if the struct variable is anywhere in the file
+            // Check if the struct variable is used anywhere in the file
             const std::string usagePattern(". " + varname);
             bool used = false;
             for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next())

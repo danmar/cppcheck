@@ -44,6 +44,7 @@ private:
         TEST_CASE(structmember6);
         TEST_CASE(structmember7);
         TEST_CASE(structmember8);
+        TEST_CASE(structmember9);  // #2017 - struct is inherited
         TEST_CASE(structmember_extern);		// No false positives for extern structs
 
         TEST_CASE(localvar1);
@@ -275,6 +276,17 @@ private:
                                "void foo(char *ab)\n"
                                "{\n"
                                "    ((AB *)ab)->b = 0;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember9()
+    {
+        checkStructMemberUsage("struct base {\n"
+                               "    int a;\n"
+                               "};\n"
+                               "\n"
+                               "struct derived : public base {"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
     }
