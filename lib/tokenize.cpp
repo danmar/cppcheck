@@ -5602,6 +5602,10 @@ Token * Tokenizer::initVar(Token * tok)
     if (tok->str() == "*")
         tok = tok->next();
 
+    // sizeof is not a variable name..
+    if (tok->str() == "sizeof")
+        return tok;
+
     // check initializer..
     if (tok->tokAt(2)->isStandardType() || tok->tokAt(2)->str() == "void")
         return tok;

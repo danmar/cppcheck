@@ -49,6 +49,7 @@ private:
         TEST_CASE(tokenize8);
         TEST_CASE(tokenize9);
         TEST_CASE(tokenize10);
+        TEST_CASE(tokenize11);
 
         // array access. replace "*(p+1)" => "p[1]"
         TEST_CASE(tokenize6);
@@ -421,6 +422,11 @@ private:
         ASSERT_EQUALS("protected:", tokenizeAndStringify("protected:", false));
         ASSERT_EQUALS("public:", tokenizeAndStringify("public:", false));
         ASSERT_EQUALS("__published:", tokenizeAndStringify("__published:", false));
+    }
+
+    void tokenize11()
+    {
+        ASSERT_EQUALS("X * sizeof ( Y ( ) ) ;", tokenizeAndStringify("X * sizeof(Y());", false));
     }
 
     void wrong_syntax()
