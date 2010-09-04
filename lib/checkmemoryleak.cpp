@@ -809,30 +809,25 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
 }
 
 
+static void addtoken(Token **rettail, const Token *tok, const std::string &str)
+{
+    (*rettail)->insertToken(str);
+    (*rettail) = (*rettail)->next();
+    (*rettail)->linenr(tok->linenr());
+    (*rettail)->fileIndex(tok->fileIndex());
+}
+
 
 Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, CheckMemoryLeak::AllocType &alloctype, CheckMemoryLeak::AllocType &dealloctype, bool classmember, unsigned int sz)
 {
     Token *rethead = 0, *rettail = 0;
-#define addtoken(_str)                  \
-    {                                       \
-        if (rettail)                        \
-        {                                   \
-            rettail->insertToken(_str);     \
-            rettail = rettail->next();      \
-        }                                   \
-        else                                \
-        {                                   \
-            rethead = new Token(0);         \
-            rettail = rethead;              \
-            rettail->str(_str);             \
-        }                                   \
-                                            \
-        rettail->linenr( tok->linenr() );   \
-        rettail->fileIndex( tok->fileIndex() ); \
-    }
 
     // The first token should be ";"
-    addtoken(";");
+    rethead = new Token(0);
+    rethead->str(";");
+    rethead->linenr(tok->linenr());
+    rethead->fileIndex(tok->fileIndex());
+    rettail = rethead;
 
     bool isloop = false;
 
@@ -842,12 +837,12 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
     {
         if (tok->str() == "{")
         {
-            addtoken("{");
+            addtoken(&rettail, tok, "{");
             ++indentlevel;
         }
         else if (tok->str() == "}")
         {
-            addtoken("}");
+            addtoken(&rettail, tok, "}");
             if (indentlevel <= 0)
                 break;
             --indentlevel;
@@ -860,7 +855,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         isloop &= (parlevel > 0);
 
         if (parlevel == 0 && tok->str() == ";")
-            addtoken(";");
+            addtoken(&rettail, tok, ";");
 
         if (varid == 0)
         {
@@ -871,11 +866,11 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
                 if (tok->next()->str() == "__cppcheck_lock")
                 {
-                    addtoken("alloc");
+                    addtoken(&rettail, tok, "alloc");
                 }
                 else
                 {
-                    addtoken("dealloc");
+                    addtoken(&rettail, tok, "dealloc");
                 }
 
                 tok = tok->tokAt(3);
@@ -884,7 +879,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             if (Token::simpleMatch(tok, "if ("))
             {
-                addtoken("if");
+                addtoken(&rettail, tok, "if");
                 tok = tok->next()->link();
                 continue;
             }
@@ -932,8 +927,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     alloc = getReallocationType(tok->tokAt(2), varid);
                     if (alloc != CheckMemoryLeak::No)
                     {
-                        addtoken("realloc");
-                        addtoken(";");
+                        addtoken(&rettail, tok, "realloc");
+                        addtoken(&rettail, tok, ";");
                         realloc = true;
                         tok = tok->tokAt(2);
                         continue;
@@ -969,7 +964,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 if (alloc != No)
                 {
                     if (! realloc)
-                        addtoken("alloc");
+                        addtoken(&rettail, tok, "alloc");
 
                     if (alloctype != No && alloctype != alloc)
                         alloc = Many;
@@ -1007,7 +1002,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         }
                     }
 
-                    addtoken((rhs ? "use" : "assign"));
+                    addtoken(&rettail, tok, (rhs ? "use" : "assign"));
                 }
             }
 
@@ -1021,7 +1016,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
                 else if (dealloc != No)
                 {
-                    addtoken("dealloc");
+                    addtoken(&rettail, tok, "dealloc");
 
                     if (dealloctype != No && dealloctype != dealloc)
                         dealloc = Many;
@@ -1045,14 +1040,14 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     if (Token::Match(tok, "if ( 0 <= %varid% )", varid) ||
                         Token::Match(tok, "if ( %varid% != -1 )", varid))
                     {
-                        addtoken("if(var)");
+                        addtoken(&rettail, tok, "if(var)");
                         tok = tok->next()->link();
                         continue;
                     }
                     else if (Token::Match(tok, "if ( %varid% == -1 )", varid) ||
                              Token::Match(tok, "if ( %varid% < 0 )", varid))
                     {
-                        addtoken("if(!var)");
+                        addtoken(&rettail, tok, "if(!var)");
                         tok = tok->next()->link();
                         continue;
                     }
@@ -1060,14 +1055,14 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
                 if (Token::Match(tok, "if ( %varid% )", varid))
                 {
-                    addtoken("if(var)");
+                    addtoken(&rettail, tok, "if(var)");
 
                     // Make sure the "use" will not be added
                     tok = tok->next()->link();
                 }
                 else if (Token::simpleMatch(tok, "if (") && notvar(tok->tokAt(2), varid, true))
                 {
-                    addtoken("if(!var)");
+                    addtoken(&rettail, tok, "if(!var)");
                 }
                 else
                 {
@@ -1086,8 +1081,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         }
                         if (Token::Match(tok2, "close|pclose|fclose|closedir ( %varid% )", varid))
                         {
-                            addtoken("dealloc");
-                            addtoken(";");
+                            addtoken(&rettail, tok, "dealloc");
+                            addtoken(&rettail, tok, ";");
                             dep = true;
                             break;
                         }
@@ -1117,8 +1112,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             }
                             if (use)
                             {
-                                addtoken("use");
-                                addtoken(";");
+                                addtoken(&rettail, tok, "use");
+                                addtoken(&rettail, tok, ";");
                                 break;
                             }
                         }
@@ -1126,17 +1121,17 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
                     if (Token::Match(tok, "if ( ! %varid% &&", varid))
                     {
-                        addtoken("if(!var)");
+                        addtoken(&rettail, tok, "if(!var)");
                     }
                     else if (tok->next() &&
                              tok->next()->link() &&
                              Token::Match(tok->next()->link()->tokAt(-3), "&& ! %varid%", varid))
                     {
-                        addtoken("if(!var)");
+                        addtoken(&rettail, tok, "if(!var)");
                     }
                     else
                     {
-                        addtoken((dep ? "ifv" : "if"));
+                        addtoken(&rettail, tok, (dep ? "ifv" : "if"));
                     }
 
                     tok = tok->next();
@@ -1148,19 +1143,19 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
         if ((tok->str() == "else") || (tok->str() == "switch"))
         {
-            addtoken(tok->str().c_str());
+            addtoken(&rettail, tok, tok->str());
         }
 
         else if ((tok->str() == "case"))
         {
-            addtoken("case");
-            addtoken(";");
+            addtoken(&rettail, tok, "case");
+            addtoken(&rettail, tok, ";");
         }
 
         else if ((tok->str() == "default"))
         {
-            addtoken("default");
-            addtoken(";");
+            addtoken(&rettail, tok, "default");
+            addtoken(&rettail, tok, ";");
         }
 
         // Loops..
@@ -1171,15 +1166,15 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             if (Token::simpleMatch(tok, "while ( true )") ||
                 Token::simpleMatch(tok, "for ( ; ; )"))
             {
-                addtoken("while1");
+                addtoken(&rettail, tok, "while1");
                 tok = tok->next()->link();
                 continue;
             }
 
             else if (varid && getDeallocationType(tok->tokAt(2), varid) != No)
             {
-                addtoken("dealloc");
-                addtoken(";");
+                addtoken(&rettail, tok, "dealloc");
+                addtoken(&rettail, tok, ";");
             }
 
             else if (alloctype == Fd && varid)
@@ -1187,14 +1182,14 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 if (Token::Match(tok, "while ( 0 <= %varid% )", varid) ||
                     Token::Match(tok, "while ( %varid% != -1 )", varid))
                 {
-                    addtoken("while(var)");
+                    addtoken(&rettail, tok, "while(var)");
                     tok = tok->next()->link();
                     continue;
                 }
                 else if (Token::Match(tok, "while ( %varid% == -1 )", varid) ||
                          Token::Match(tok, "while ( %varid% < 0 )", varid))
                 {
-                    addtoken("while(!var)");
+                    addtoken(&rettail, tok, "while(!var)");
                     tok = tok->next()->link();
                     continue;
                 }
@@ -1202,49 +1197,49 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             else if (varid && Token::Match(tok, "while ( %varid% )", varid))
             {
-                addtoken("while(var)");
+                addtoken(&rettail, tok, "while(var)");
                 tok = tok->next()->link();
                 continue;
             }
             else if (varid && Token::simpleMatch(tok, "while (") && notvar(tok->tokAt(2), varid, true))
             {
-                addtoken("while(!var)");
+                addtoken(&rettail, tok, "while(!var)");
                 tok = tok->next()->link();
                 continue;
             }
 
-            addtoken("loop");
+            addtoken(&rettail, tok, "loop");
         }
         else if ((tok->str() == "do"))
         {
-            addtoken("do");
+            addtoken(&rettail, tok, "do");
         }
         if (varid > 0 && isloop && notvar(tok, varid))
         {
-            addtoken("!var");
+            addtoken(&rettail, tok, "!var");
         }
 
         // continue / break..
         if (tok->str() == "continue")
         {
-            addtoken("continue");
+            addtoken(&rettail, tok, "continue");
         }
         else if (tok->str() == "break")
         {
-            addtoken("break");
+            addtoken(&rettail, tok, "break");
         }
         else if (tok->str() == "goto")
         {
-            addtoken("goto");
+            addtoken(&rettail, tok, "goto");
         }
 
         // Return..
         else if (tok->str() == "return")
         {
-            addtoken("return");
+            addtoken(&rettail, tok, "return");
             if (varid == 0)
             {
-                addtoken(";");
+                addtoken(&rettail, tok, ";");
                 while (tok && tok->str() != ";")
                     tok = tok->next();
                 if (!tok)
@@ -1260,14 +1255,14 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     tok2 = tok2->next();
                 if (Token::Match(tok2, "> ( %varid% )", varid))
                 {
-                    addtoken("use");
+                    addtoken(&rettail, tok, "use");
                     tok = tok2->tokAt(3);
                 }
             }
 
             else if (varid && Token::Match(tok, "return strcpy|strncpy|memcpy ( %varid%", varid))
             {
-                addtoken("use");
+                addtoken(&rettail, tok, "use");
                 tok = tok->tokAt(2);
             }
 
@@ -1304,14 +1299,14 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     }
                 }
                 if (use)
-                    addtoken("use");
-                addtoken(";");
+                    addtoken(&rettail, tok, "use");
+                addtoken(&rettail, tok, ";");
             }
         }
 
         // throw..
         else if (Token::Match(tok, "try|throw|catch"))
-            addtoken(tok->strAt(0));
+            addtoken(&rettail, tok, tok->str());
 
         // Assignment..
         if (varid)
@@ -1337,11 +1332,11 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
 
                 if (used)
-                    addtoken("use");
+                    addtoken(&rettail, tok, "use");
             }
             else if (Token::Match(tok->previous(), "[;{}=(,+-*/] %varid% [", varid))
             {
-                addtoken("use_");
+                addtoken(&rettail, tok, "use_");
             }
         }
 
@@ -1353,8 +1348,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             {
                 if (!Token::Match(tok, "if|for|while|switch"))
                 {
-                    addtoken("exit");
-                    addtoken(";");
+                    addtoken(&rettail, tok, "exit");
+                    addtoken(&rettail, tok, ";");
                     tok = tok->next()->link();
                     continue;
                 }
@@ -1386,7 +1381,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     }
                     if (tok2->varId() == varid)
                     {
-                        addtoken("::use");
+                        addtoken(&rettail, tok, "::use");
                         break;
                     }
                 }
@@ -1396,7 +1391,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             {
                 if (varid > 0 && Token::Match(tok, "%var% ( close|fclose|pclose ( %varid% ) ) ;", varid))
                 {
-                    addtoken("dealloc");
+                    addtoken(&rettail, tok, "dealloc");
                     tok = tok->next()->link();
                     continue;
                 }
@@ -1407,27 +1402,27 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 {
                     if (allocpar)
                     {
-                        addtoken(str);
+                        addtoken(&rettail, tok, str);
                         tok = tok->next()->link();
                     }
                     else if (varid == 0 || str != std::string("alloc"))
                     {
-                        addtoken(str);
+                        addtoken(&rettail, tok, str);
                     }
                     else if (Token::Match(tok->tokAt(-2), "%varid% =", varid))
                     {
-                        addtoken(str);
+                        addtoken(&rettail, tok, str);
                     }
                 }
                 else if (varid > 0 &&
                          getReallocationType(tok, varid) != No &&
                          tok->tokAt(2)->varId() == varid)
                 {
-                    addtoken("if");
-                    addtoken("{");
-                    addtoken("dealloc");
-                    addtoken(";");
-                    addtoken("}");
+                    addtoken(&rettail, tok, "if");
+                    addtoken(&rettail, tok, "{");
+                    addtoken(&rettail, tok, "dealloc");
+                    addtoken(&rettail, tok, ";");
+                    addtoken(&rettail, tok, "}");
                     tok = tok->next()->link();
                     continue;
                 }
@@ -1451,7 +1446,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         break;
                     else if (tok2->varId() == varid)
                     {
-                        addtoken("use");
+                        addtoken(&rettail, tok, "use");
                         break;
                     }
                 }
@@ -1461,7 +1456,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // Linux lists..
         if (varid > 0 && Token::Match(tok, "[=(,] & %varid% [.[,)]", varid))
         {
-            addtoken("&use");
+            addtoken(&rettail, tok, "&use");
         }
     }
 
