@@ -33,7 +33,7 @@
             <File Id='qtsql4dll' Name='qtsql4.dll' Source='$(var.QtDllDir)\qtsql4.dll' />
             <File Id='qtxml4dll' Name='qtxml4.dll' Source='$(var.QtDllDir)\qtxml4.dll' />
           </Component>
-          <Component Id='GuiTranslations' Guid='*'>
+          <Component Id='GuiTranslations' Guid='$(var.guiTranslationsGUID)'>
             <File Id='cppcheck_de.qm' Name='cppcheck_de.qm' Source='$(var.GuiBuildDir)\cppcheck_de.qm' />
             <File Id='cppcheck_en.qm' Name='cppcheck_en.qm' Source='$(var.GuiBuildDir)\cppcheck_en.qm' />
             <File Id='cppcheck_fi.qm' Name='cppcheck_fi.qm' Source='$(var.GuiBuildDir)\cppcheck_fi.qm' />
@@ -43,12 +43,12 @@
             <File Id='cppcheck_ru.qm' Name='cppcheck_ru.qm' Source='$(var.GuiBuildDir)\cppcheck_ru.qm' />
             <File Id='cppcheck_se.qm' Name='cppcheck_se.qm' Source='$(var.GuiBuildDir)\cppcheck_se.qm' />
           </Component>
-          <Component Id='BaseDocs' Guid='*'>
-            <File Id='authors.txt' Name='authors.txt' DiskId='1' Source='..\authors' KeyPath='yes' />
-            <File Id='readme.txt' Name='readme.txt' DiskId='1' Source='..\readme.txt' KeyPath='yes' />
+          <Component Id='BaseDocs' Guid='$(var.basedocsGUID)'>
+            <File Id='authors.txt' Name='authors.txt' DiskId='1' Source='..\authors' />
+            <File Id='readme.txt' Name='readme.txt' DiskId='1' Source='..\readme.txt' />
           </Component>
           <Component Id='GuiHelp' Guid='*'>
-            <File Id='online-help.qhc' Name='online-help.qhc' DiskId='1' Source='$(var.HelpDir)\online-help.qhc' KeyPath='yes' />
+            <File Id='onlinehelp.qhc' Name='online-help.qhc' DiskId='1' Source='$(var.HelpDir)\online-help.qhc' KeyPath='yes' />
           </Component>
           <!-- Cleanup runtime files installed by previous InnoSetup installer -->
           <Component Id='InnoSetupCleanup' Guid='4A3F299D-1EE1-468b-814B-D6577F0698CA'>
