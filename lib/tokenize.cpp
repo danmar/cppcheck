@@ -6068,6 +6068,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
 
         if (!Token::simpleMatch(tok->tokAt(-2), "operator delete") &&
             Token::Match(tok->previous(), "delete|; (") &&
+            (tok->strAt(-1) != "delete" || tok->next()->varId() > 0) &&
             Token::Match(tok->link(), ") ;|,"))
         {
             tok->link()->deleteThis();

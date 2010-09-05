@@ -44,15 +44,12 @@ private:
         TEST_CASE(tokenize3);
         TEST_CASE(tokenize4);
         TEST_CASE(tokenize5);
-        TEST_CASE(tokenize6);
+        TEST_CASE(tokenize6);   // array access. replace "*(p+1)" => "p[1]"
         TEST_CASE(tokenize7);
         TEST_CASE(tokenize8);
         TEST_CASE(tokenize9);
         TEST_CASE(tokenize10);
         TEST_CASE(tokenize11);
-
-        // array access. replace "*(p+1)" => "p[1]"
-        TEST_CASE(tokenize6);
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -191,6 +188,7 @@ private:
         TEST_CASE(removeParantheses6);
         TEST_CASE(removeParantheses7);
         TEST_CASE(removeParantheses8);       // Ticket #1865
+        TEST_CASE(removeParantheses9);       // Ticket #1962
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -3294,7 +3292,7 @@ private:
 
     void removeParantheses7()
     {
-        const char code[] = ";(delete(p), (p)=0);";
+        const char code[] = ";char *p; (delete(p), (p)=0);";
 
         // tokenize..
         Tokenizer tokenizer;
@@ -3306,7 +3304,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(" ; delete p ; ( p ) = 0 ;", ostr.str());
+        ASSERT_EQUALS(" ; char * p ; delete p ; ( p ) = 0 ;", ostr.str());
     }
 
     void removeParantheses8()
@@ -3321,6 +3319,11 @@ private:
                                 "}";
 
         ASSERT_EQUALS(expected, actual);
+    }
+
+    void removeParantheses9()
+    {
+        ASSERT_EQUALS("void delete ( double num ) ;", tokenizeAndStringify("void delete(double num);", false));
     }
 
     void tokenize_double()
