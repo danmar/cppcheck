@@ -1912,6 +1912,13 @@ bool Tokenizer::tokenize(std::istream &code,
                         if (level > 0)
                             --level;
                     }
+                    else if (tok2->str() == ">>")
+                    {
+                        if (level > 0)
+                            --level;
+                        if (level > 0)
+                            --level;
+                    }
                 }
                 if (level > 0)
                 {

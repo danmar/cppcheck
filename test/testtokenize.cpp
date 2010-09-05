@@ -243,7 +243,8 @@ private:
 
         TEST_CASE(removedeclspec);
         TEST_CASE(removeattribute);
-        TEST_CASE(cpp0xtemplate);
+        TEST_CASE(cpp0xtemplate1);
+        TEST_CASE(cpp0xtemplate2);
         TEST_CASE(cpp0xdefault);
 
         TEST_CASE(arraySize);
@@ -4160,7 +4161,7 @@ private:
         ASSERT_EQUALS("int x [ 2 ] ;", tokenizeAndStringify("int x[2] __attribute__ ((packed));"));
     }
 
-    void cpp0xtemplate()
+    void cpp0xtemplate1()
     {
         const char *code = "template <class T>\n"
                            "void fn2 (T t = []{return 1;}())\n"
@@ -4170,6 +4171,14 @@ private:
                            "  fn2<int>();\n"
                            "}\n";
         ASSERT_EQUALS(";\n\n\nint main ( )\n{\nfn2<int> ( ) ;\n}void fn2<int> ( int t = [ ] { return 1 ; } ( ) )\n{ }", tokenizeAndStringify(code));
+    }
+
+    void cpp0xtemplate2()
+    {
+        // tokenize ">>" into "> >"
+        const char *code = "list<list<int>> ints;\n";
+        ASSERT_EQUALS("list < list < int >> ints ;", tokenizeAndStringify(code));
+        TODO_ASSERT_EQUALS("list < list < int > > ints ;", tokenizeAndStringify(code));
     }
 
     void cpp0xdefault()
