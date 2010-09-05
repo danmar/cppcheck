@@ -62,15 +62,16 @@ private:
 
         TEST_CASE(include);
         TEST_CASE(templateFormat);
-        TEST_CASE(getErrorMessages);
-        TEST_CASE(parseOutputtingArgs);
-        TEST_CASE(parseOutputtingInvalidArgs);
-        TEST_CASE(parseArgsAndCheck);
-        TEST_CASE(parseArgsAndCheckSettings);
+        //TEST_CASE(getErrorMessages);
+        //TEST_CASE(parseOutputtingArgs);
+        //TEST_CASE(parseOutputtingInvalidArgs);
+        //TEST_CASE(parseArgsAndCheck);
+        //TEST_CASE(parseArgsAndCheckSettings);
 
-        TEST_CASE(userdefines);
+        //TEST_CASE(userdefines);
     }
 
+#if 0
     bool argCheck(int argc, const char *argv[])
     {
         errout.str("");
@@ -180,6 +181,7 @@ private:
 //            ASSERT_EQUALS(true, output.str().find("Overall time:") != std::string::npos);
         }
     }
+#endif
 
     void parseErrorList(const char* xmlData)
     {
@@ -212,7 +214,7 @@ private:
         }
     }
 
-
+#if 0
     void parseOutputtingArgs()
     {
         {
@@ -338,6 +340,7 @@ private:
             ASSERT_EQUALS("cppcheck: argument to '--template' is missing\n", output.str());
         }
     }
+#endif
 
     void linenumbers()
     {
@@ -413,6 +416,7 @@ private:
         cppCheck.getErrorMessages();
     }
 
+#if 0
     void userdefines()
     {
         {
@@ -424,6 +428,7 @@ private:
             ASSERT_EQUALS("", output.str());
         }
     }
+#endif
 };
 
 REGISTER_TEST(TestCppcheck)
