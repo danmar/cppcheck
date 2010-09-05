@@ -48,10 +48,8 @@
           <Component Id='readme.txt' Guid='*'>
             <File Id='readme.txt' Name='readme.txt' DiskId='1' Source='..\readme.txt' KeyPath='yes' />
           </Component>
-          <Component Id='HtmlHelp' Guid='*'>
-            <File Id='cppcheck.chm' Name='cppcheck.chm' DiskId='1' Source='$(var.ManualDir)\cppcheck.chm' KeyPath='yes'>
-              <Shortcut Id='startmenuManual' Directory="ProgramMenuDir" Name="Manual" Advertise="yes" />
-            </File>
+          <Component Id='GuiHelp' Guid='*'>
+            <File Id='online-help.qhc' Name='online-help.qhc' DiskId='1' Source='$(var.HelpDir)\online-help.qhc' KeyPath='yes' />
           </Component>
           <!-- Cleanup runtime files installed by previous InnoSetup installer -->
           <Component Id='InnoSetupCleanup' Guid='4A3F299D-1EE1-468b-814B-D6577F0698CA'>
@@ -80,7 +78,7 @@
         <ComponentRef Id='gui.exe' />
         <ComponentRef Id='authors.txt' />
         <ComponentRef Id='readme.txt' />
-        <ComponentRef Id='HtmlHelp' />
+        <ComponentRef Id='GuiHelp' />
         <ComponentRef Id='ProgramMenuDir' />
         <ComponentRef Id='InnoSetupCleanup' />
       </Feature>
