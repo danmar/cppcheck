@@ -33,7 +33,8 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/token.o \
               lib/tokenize.o
 
-CLIOBJ =     cli/cppcheckexecutor.o \
+CLIOBJ =     cli/cmdlineparser.o \
+              cli/cppcheckexecutor.o \
               cli/main.o \
               cli/threadexecutor.o
 
@@ -165,7 +166,10 @@ lib/token.o: lib/token.cpp lib/token.h lib/errorlogger.h lib/check.h lib/tokeniz
 lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/filelister.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/tokenize.o lib/tokenize.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h cli/threadexecutor.h
+cli/cmdlineparser.o: cli/cmdlineparser.cpp cli/cmdlineparser.h lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/timer.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
+
+cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h cli/threadexecutor.h cli/cmdlineparser.h lib/filelister.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
 
 cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h

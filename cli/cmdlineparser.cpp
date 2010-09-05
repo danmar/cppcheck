@@ -20,10 +20,11 @@
 #include <sstream>
 #include <fstream>
 #include <string>
-#include "cmdlineparser.h"
+#include <cstring>
 #include "cppcheck.h"
 #include "timer.h"
 #include "settings.h"
+#include "cmdlineparser.h"
 
 
 static void AddFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
