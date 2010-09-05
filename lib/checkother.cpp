@@ -4040,25 +4040,6 @@ void CheckOther::postIncrement()
     }
 }
 
-void CheckOther::checkEmptyCatchBlock()
-{
-    if (!_settings->_checkCodingStyle)
-        return;
-
-    const char pattern[] = "} catch (";
-    for (const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern); tok;
-         tok = Token::findmatch(tok, pattern))
-    {
-        tok = tok->tokAt(2);
-
-        if (Token::simpleMatch(tok->link(), ") { }"))
-        {
-            emptyCatchBlockError(tok);
-        }
-    }
-}
-
-
 void CheckOther::cstyleCastError(const Token *tok)
 {
     reportError(tok, Severity::style, "cstyleCast", "C-style pointer casting");
@@ -4219,11 +4200,6 @@ void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &v
 {
     reportError(tok, Severity::error,
                 "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour");
-}
-
-void CheckOther::emptyCatchBlockError(const Token *tok)
-{
-    reportError(tok, Severity::style, "emptyCatchBlock", "Empty catch block");
 }
 
 void CheckOther::sizeofsizeof()

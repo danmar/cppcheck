@@ -62,7 +62,6 @@ public:
         checkOther.strPlusChar();
         checkOther.sizeofsizeof();
         checkOther.sizeofCalculation();
-        checkOther.checkEmptyCatchBlock();
         checkOther.checkRedundantAssignmentInSwitch();
     }
 
@@ -175,9 +174,6 @@ public:
     /** @brief %Check for using fflush() on an input stream*/
     void checkFflushOnInputStream();
 
-    /** @brief %Check for empty catch() blocks*/
-    void checkEmptyCatchBlock();
-
     /** @brief %Check for 'sizeof sizeof ..' */
     void sizeofsizeof();
     void sizeofsizeofError(const Token *tok);
@@ -222,7 +218,6 @@ public:
     void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
     void emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
-    void emptyCatchBlockError(const Token *tok);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
     void selfAssignmentError(const Token *tok, const std::string &varname);
 
@@ -254,7 +249,6 @@ public:
         strPlusChar(0);
         sizeofsizeofError(0);
         sizeofCalculationError(0);
-        emptyCatchBlockError(0);
         redundantAssignmentInSwitchError(0, "varname");
         selfAssignmentError(0, "varname");
         invalidScanfError(0);
@@ -293,7 +287,6 @@ public:
                "* variable scope can be limited\n"
                "* condition that is always true/false\n"
                "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
-               "* empty catch() block\n"
                "* redundant assignment in a switch statement\n"
                "* look for 'sizeof sizeof ..'\n"
                "* look for calculations inside sizeof()\n"
