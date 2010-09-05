@@ -32,7 +32,8 @@
             <File Id='qtnetwork4dll' Name='qtnetwork4.dll' Source='$(var.QtDllDir)\qtnetwork4.dll' />
             <File Id='qtsql4dll' Name='qtsql4.dll' Source='$(var.QtDllDir)\qtsql4.dll' />
             <File Id='qtxml4dll' Name='qtxml4.dll' Source='$(var.QtDllDir)\qtxml4.dll' />
-            <!-- Translations -->
+          </Component>
+          <Component Id='GuiTranslations' Guid='*'>
             <File Id='cppcheck_de.qm' Name='cppcheck_de.qm' Source='$(var.GuiBuildDir)\cppcheck_de.qm' />
             <File Id='cppcheck_en.qm' Name='cppcheck_en.qm' Source='$(var.GuiBuildDir)\cppcheck_en.qm' />
             <File Id='cppcheck_fi.qm' Name='cppcheck_fi.qm' Source='$(var.GuiBuildDir)\cppcheck_fi.qm' />
@@ -74,6 +75,7 @@
       <Feature Id='MainProgram' Title='Command line interface' Description='Command line tool' Level='1'>
         <ComponentRef Id='cppcheck.exe' />
         <ComponentRef Id='gui.exe' />
+        <ComponentRef Id='GuiTranslations' />
         <ComponentRef Id='BaseDocs' />
         <ComponentRef Id='GuiHelp' />
         <ComponentRef Id='ProgramMenuDir' />
