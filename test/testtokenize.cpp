@@ -537,6 +537,7 @@ private:
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm mov a, b ;"));
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";asm volatile (\"fnstcw %0\" : \"= m\" (old_cw));"));
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify("; __asm__ (\"fnstcw %0\" : \"= m\" (old_cw));"));
+        ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify("; __asm __volatile__ (\"ddd\") ;"));
     }
 
 

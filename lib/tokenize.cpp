@@ -8191,7 +8191,7 @@ void Tokenizer::simplifyAsm()
             Token::eraseTokens(tok, tok->tokAt(2)->link()->next());
         }
 
-        else if (Token::Match(tok->next(), "__asm__ __volatile__ (") &&
+        else if (Token::Match(tok->next(), "__asm|__asm__ __volatile__ (") &&
                  tok->tokAt(3)->link() &&
                  tok->tokAt(3)->link()->next())
         {
