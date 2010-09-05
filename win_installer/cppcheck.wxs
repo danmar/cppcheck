@@ -42,10 +42,8 @@
             <File Id='cppcheck_ru.qm' Name='cppcheck_ru.qm' Source='$(var.GuiBuildDir)\cppcheck_ru.qm' />
             <File Id='cppcheck_se.qm' Name='cppcheck_se.qm' Source='$(var.GuiBuildDir)\cppcheck_se.qm' />
           </Component>
-          <Component Id='authors.txt' Guid='*'>
+          <Component Id='BaseDocs' Guid='*'>
             <File Id='authors.txt' Name='authors.txt' DiskId='1' Source='..\authors' KeyPath='yes' />
-          </Component>
-          <Component Id='readme.txt' Guid='*'>
             <File Id='readme.txt' Name='readme.txt' DiskId='1' Source='..\readme.txt' KeyPath='yes' />
           </Component>
           <Component Id='GuiHelp' Guid='*'>
@@ -76,8 +74,7 @@
       <Feature Id='MainProgram' Title='Command line interface' Description='Command line tool' Level='1'>
         <ComponentRef Id='cppcheck.exe' />
         <ComponentRef Id='gui.exe' />
-        <ComponentRef Id='authors.txt' />
-        <ComponentRef Id='readme.txt' />
+        <ComponentRef Id='BaseDocs' />
         <ComponentRef Id='GuiHelp' />
         <ComponentRef Id='ProgramMenuDir' />
         <ComponentRef Id='InnoSetupCleanup' />
