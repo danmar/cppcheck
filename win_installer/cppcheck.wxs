@@ -34,14 +34,13 @@
             <File Id='qtxml4dll' Name='qtxml4.dll' Source='$(var.QtDllDir)\qtxml4.dll' />
           </Component>
           <Component Id='GuiTranslations' Guid='$(var.guiTranslationsGUID)'>
-            <File Id='cppcheck_de.qm' Name='cppcheck_de.qm' Source='$(var.GuiBuildDir)\cppcheck_de.qm' />
-            <File Id='cppcheck_en.qm' Name='cppcheck_en.qm' Source='$(var.GuiBuildDir)\cppcheck_en.qm' />
-            <File Id='cppcheck_fi.qm' Name='cppcheck_fi.qm' Source='$(var.GuiBuildDir)\cppcheck_fi.qm' />
-            <File Id='cppcheck_fr.qm' Name='cppcheck_fr.qm' Source='$(var.GuiBuildDir)\cppcheck_fr.qm' />
-            <File Id='cppcheck_nl.qm' Name='cppcheck_nl.qm' Source='$(var.GuiBuildDir)\cppcheck_nl.qm' />
-            <File Id='cppcheck_pl.qm' Name='cppcheck_pl.qm' Source='$(var.GuiBuildDir)\cppcheck_pl.qm' />
-            <File Id='cppcheck_ru.qm' Name='cppcheck_ru.qm' Source='$(var.GuiBuildDir)\cppcheck_ru.qm' />
-            <File Id='cppcheck_se.qm' Name='cppcheck_se.qm' Source='$(var.GuiBuildDir)\cppcheck_se.qm' />
+            <File Id='cppcheck_de.qm' Name='cppcheck_de.qm' Source='$(var.TranslationsDir)\cppcheck_de.qm' />
+            <File Id='cppcheck_en.qm' Name='cppcheck_en.qm' Source='$(var.TranslationsDir)\cppcheck_en.qm' />
+            <File Id='cppcheck_fi.qm' Name='cppcheck_fi.qm' Source='$(var.TranslationsDir)\cppcheck_fi.qm' />
+            <File Id='cppcheck_nl.qm' Name='cppcheck_nl.qm' Source='$(var.TranslationsDir)\cppcheck_nl.qm' />
+            <File Id='cppcheck_pl.qm' Name='cppcheck_pl.qm' Source='$(var.TranslationsDir)\cppcheck_pl.qm' />
+            <File Id='cppcheck_ru.qm' Name='cppcheck_ru.qm' Source='$(var.TranslationsDir)\cppcheck_ru.qm' />
+            <File Id='cppcheck_se.qm' Name='cppcheck_se.qm' Source='$(var.TranslationsDir)\cppcheck_se.qm' />
           </Component>
           <Component Id='BaseDocs' Guid='$(var.basedocsGUID)'>
             <File Id='authors.txt' Name='authors.txt' DiskId='1' Source='..\authors' />
