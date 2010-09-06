@@ -82,6 +82,7 @@ private:
         TEST_CASE(sizeof17);
         TEST_CASE(sizeof18);
         TEST_CASE(sizeof19);    // #1891 - sizeof 'x'
+        TEST_CASE(sizeof20);    // #2024 - sizeof a)
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
@@ -1321,6 +1322,25 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
     }
+
+    void sizeof20()
+    {
+        // ticket #2024 - sizeof a)
+        const char code[] = "struct struct_a {\n"
+                            "  char a[20];\n"
+                            "};\n"
+                            "\n"
+                            "void foo() {\n"
+                            "  struct_a a;\n"
+                            "  append(sizeof a).append();\n"
+                            "}\n";
+        ASSERT_EQUALS("struct struct_a { char a [ 20 ] ; } ; "
+                      "void foo ( ) {"
+                      " struct_a a ;"
+                      " append ( 100 ) . append ( ) ; "
+                      "}", tok(code));
+    }
+
 
     void sizeofsizeof()
     {

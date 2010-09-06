@@ -3541,8 +3541,13 @@ void Tokenizer::simplifySizeof()
         else if (tok->next()->str() != "(")
         {
             // Add parenthesis around the sizeof
+            int parlevel = 0;
             for (Token *tempToken = tok->next(); tempToken; tempToken = tempToken->next())
             {
+                if (tempToken->str() == "(")
+                    ++parlevel;
+                else if (tempToken->str() == ")")
+                    --parlevel;
                 if (Token::Match(tempToken, "%var%"))
                 {
                     while (tempToken->next()->str() == "[")
@@ -3568,8 +3573,9 @@ void Tokenizer::simplifySizeof()
                         // nothing after this
                         tempToken = tempToken->tokAt(2);
                     }
-                    else if (Token::simpleMatch(tempToken->next(), ") ."))
+                    else if (parlevel > 0 && Token::simpleMatch(tempToken->next(), ") ."))
                     {
+                        --parlevel;
                         tempToken = tempToken->tokAt(2);
                         continue;
                     }
