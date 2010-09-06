@@ -1948,7 +1948,7 @@ void CheckClass::checkConst()
                             }
                         }
 
-                        if (allupper)
+                        if (allupper && previous->str().size() > 2)
                             continue;
                     }
                 }
