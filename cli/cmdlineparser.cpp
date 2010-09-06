@@ -326,12 +326,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->test_2_pass = true;
         }
 
-        else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
-        {
-            std::cout << "cppcheck: error: unrecognized command line option \"" << argv[i] << "\"";
-            return false;
-        }
-
         // show timing information..
         else if (strncmp(argv[i], "--showtime=", 11) == 0)
         {
@@ -353,6 +347,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _showHelp = true;
             break;
         }
+        
+        else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
+        {
+            std::cout << "cppcheck: error: unrecognized command line option \"" << argv[i] << "\"";
+            return false;
+        }
+        
         else
             _pathnames.push_back(argv[i]);
     }
