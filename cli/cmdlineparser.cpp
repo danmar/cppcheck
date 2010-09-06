@@ -347,13 +347,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _showHelp = true;
             break;
         }
-        
+
         else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
         {
             std::cout << "cppcheck: error: unrecognized command line option \"" << argv[i] << "\"";
             return false;
         }
-        
+
         else
             _pathnames.push_back(argv[i]);
     }
@@ -404,7 +404,8 @@ void CmdLineParser::PrintHelp()
               "    --enable=id          Enable additional checks. The available ids are:\n"
               "                          * all - enable all checks\n"
               "                          * style - Check coding style\n"
-              "                          * unusedFunctions - check for unused functions\n"
+              "                          * unusedFunction - check for unused functions\n"
+              "                          * missingInclude - check for missing includes\n"
               "                         Several ids can be given if you separate them with commas\n"
               "    --error-exitcode=[n] If errors are found, integer [n] is returned instead\n"
               "                         of default 0. EXIT_FAILURE is returned\n"
