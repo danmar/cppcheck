@@ -362,9 +362,9 @@ Settings MainWindow::GetCppcheckSettings()
         }
     }
 
+    result.addEnabled("style");
     result.debug = false;
     result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, 0).toBool();
-    result._checkCodingStyle = true;
     result._errorsOnly = false;
     result._verbose = true;
     result._force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
