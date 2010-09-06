@@ -194,8 +194,8 @@ int main(int argc, char **argv)
     fout << "cppcheck:\t$(LIBOBJ)\t$(CLIOBJ)\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(LDFLAGS)\n\n";
     fout << "all:\tcppcheck\ttestrunner\ttools\n\n";
-    fout << "testrunner:\t$(TESTOBJ)\t$(LIBOBJ)\tcli/threadexecutor.o\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o $(LDFLAGS)\n\n";
+    fout << "testrunner:\t$(TESTOBJ)\t$(LIBOBJ)\tcli/threadexecutor.o\tcli/cmdlineparser.o\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cmdlineparser.o $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "dmake:\n";

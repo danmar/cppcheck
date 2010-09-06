@@ -42,6 +42,7 @@ TESTOBJ =     test/testautovariables.o \
               test/testbufferoverrun.o \
               test/testcharvar.o \
               test/testclass.o \
+              test/testcmdlineparser.o \
               test/testconstructors.o \
               test/testcppcheck.o \
               test/testdivision.o \
@@ -78,8 +79,8 @@ cppcheck:	$(LIBOBJ)	$(CLIOBJ)
 
 all:	cppcheck	testrunner	tools
 
-testrunner:	$(TESTOBJ)	$(LIBOBJ)	cli/threadexecutor.o
-	$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o $(LDFLAGS)
+testrunner:	$(TESTOBJ)	$(LIBOBJ)	cli/threadexecutor.o	cli/cmdlineparser.o
+	$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cmdlineparser.o $(LDFLAGS)
 
 test:	all
 	./testrunner
@@ -166,7 +167,7 @@ lib/token.o: lib/token.cpp lib/token.h lib/errorlogger.h lib/check.h lib/tokeniz
 lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/filelister.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/tokenize.o lib/tokenize.cpp
 
-cli/cmdlineparser.o: cli/cmdlineparser.cpp cli/cmdlineparser.h lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/timer.h
+cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/timer.h cli/cmdlineparser.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
 
 cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h cli/threadexecutor.h cli/cmdlineparser.h lib/filelister.h
@@ -189,6 +190,9 @@ test/testcharvar.o: test/testcharvar.cpp lib/tokenize.h lib/classinfo.h lib/toke
 
 test/testclass.o: test/testclass.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkclass.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testclass.o test/testclass.cpp
+
+test/testcmdlineparser.o: test/testcmdlineparser.cpp test/testsuite.h lib/errorlogger.h lib/settings.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testcmdlineparser.o test/testcmdlineparser.cpp
 
 test/testconstructors.o: test/testconstructors.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkclass.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testconstructors.o test/testconstructors.cpp
