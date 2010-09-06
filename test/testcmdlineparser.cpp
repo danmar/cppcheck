@@ -160,7 +160,7 @@ private:
     void verboseshort()
     {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "-v", "fíle.cpp"};
+        const char *argv[] = {"cppcheck", "-v", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
@@ -170,7 +170,7 @@ private:
     void verboselong()
     {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--verbose", "fíle.cpp"};
+        const char *argv[] = {"cppcheck", "--verbose", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
@@ -180,7 +180,7 @@ private:
     void debug()
     {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--debug", "fíle.cpp"};
+        const char *argv[] = {"cppcheck", "--debug", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
@@ -190,7 +190,7 @@ private:
     void debugwarnings()
     {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--debug-warnings", "fíle.cpp"};
+        const char *argv[] = {"cppcheck", "--debug-warnings", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
@@ -200,7 +200,7 @@ private:
     void forceshort()
     {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "-f", "fíle.cpp"};
+        const char *argv[] = {"cppcheck", "-f", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
@@ -210,7 +210,7 @@ private:
     void forcelong()
     {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--force", "fíle.cpp"};
+        const char *argv[] = {"cppcheck", "--force", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
@@ -220,7 +220,7 @@ private:
     void quietshort()
     {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "-q", "fíle.cpp"};
+        const char *argv[] = {"cppcheck", "-q", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
@@ -230,7 +230,7 @@ private:
     void quietlong()
     {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--quiet", "fíle.cpp"};
+        const char *argv[] = {"cppcheck", "--quiet", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
