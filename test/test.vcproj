@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\lib"
+				AdditionalIncludeDirectories="..\lib;..\cli"
 				PreprocessorDefinitions="_DEBUG,WIN32,UNIT_TESTING;_CRT_SECURE_NO_WARNINGS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -128,7 +128,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\lib"
+				AdditionalIncludeDirectories="..\lib;..\cli"
 				PreprocessorDefinitions="NDEBUG,WIN32,UNIT_TESTING;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="false"
@@ -223,6 +223,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\cli\cmdlineparser.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\cppcheck.cpp"
 				>
 			</File>
@@ -272,6 +276,10 @@
 			</File>
 			<File
 				RelativePath="testclass.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testcmdlineparser.cpp"
 				>
 			</File>
 			<File
@@ -426,6 +434,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\classinfo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\cli\cmdlineparser.h"
 				>
 			</File>
 			<File

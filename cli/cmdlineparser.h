@@ -76,6 +76,14 @@ public:
         return _pathnames;
     }
 
+    /**
+     * Return if help is shown to user.
+     */
+    bool GetShowHelp() const
+    {
+        return _showHelp;
+    }
+
 protected:
 
     /**

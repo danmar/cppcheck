@@ -370,8 +370,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
     }
 
 
-    if (argc <= 1 || _showHelp)
+    if (argc <= 1)
+        _showHelp = true;
+
+    if (_showHelp)
+    {
         PrintHelp();
+    }
     else if (_pathnames.empty())
     {
         std::cout << "cppcheck: No C or C++ source files found.";
