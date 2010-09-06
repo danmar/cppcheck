@@ -39,6 +39,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 {
     CmdLineParser parser(&_settings);
     bool success = parser.ParseFromArgs(argc, argv);
+    cppcheck->settings(_settings);   // copy the settings
 
     if (success)
     {
