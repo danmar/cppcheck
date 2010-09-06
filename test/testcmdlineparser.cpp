@@ -72,6 +72,17 @@ private:
         TEST_CASE(helpshort);
         TEST_CASE(helplong);
         TEST_CASE(showversion);
+        TEST_CASE(onefile);
+        TEST_CASE(onepath);
+        TEST_CASE(optionwithoutfile);
+        TEST_CASE(verboseshort);
+        TEST_CASE(verboselong);
+        TEST_CASE(debug);
+        TEST_CASE(debugwarnings);
+        TEST_CASE(forceshort);
+        TEST_CASE(forcelong);
+        TEST_CASE(quietshort);
+        TEST_CASE(quietlong);
     }
 
     void nooptions()
@@ -112,6 +123,118 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(2, argv));
         ASSERT_EQUALS(true, parser.GetShowVersion());
+    }
+
+    void onefile()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(2, argv));
+        ASSERT_EQUALS(1, parser.GetPathNames().size());
+        ASSERT_EQUALS("file.cpp", parser.GetPathNames().at(0));
+    }
+
+    void onepath()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "src"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(2, argv));
+        ASSERT_EQUALS(1, parser.GetPathNames().size());
+        ASSERT_EQUALS("src", parser.GetPathNames().at(0));
+    }
+
+    void optionwithoutfile()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-v"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT_EQUALS(false, parser.ParseFromArgs(2, argv));
+        ASSERT_EQUALS(0, parser.GetPathNames().size());
+    }
+
+    void verboseshort()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-v", "fíle.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings._verbose);
+    }
+
+    void verboselong()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--verbose", "fíle.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings._verbose);
+    }
+
+    void debug()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--debug", "fíle.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings.debug);
+    }
+
+    void debugwarnings()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--debug-warnings", "fíle.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings.debugwarnings);
+    }
+
+    void forceshort()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-f", "fíle.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings._force);
+    }
+
+    void forcelong()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--force", "fíle.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings._force);
+    }
+
+    void quietshort()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-q", "fíle.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings._errorsOnly);
+    }
+
+    void quietlong()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--quiet", "fíle.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings._errorsOnly);
     }
 };
 
