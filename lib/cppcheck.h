@@ -27,7 +27,6 @@
 #include <list>
 #include <sstream>
 #include <vector>
-#include <map>
 
 /// @addtogroup Core
 /// @{

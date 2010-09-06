@@ -27,10 +27,7 @@
 
 #include <algorithm>
 #include <iostream>
-#include <sstream>
-#include <cstring>
 #include <fstream>
-#include <stdexcept>
 #include <ctime>
 #include "timer.h"
 
