@@ -2353,6 +2353,27 @@ private:
                        "    f();\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: f\n", errout.str());
+
+        // calling noreturn function..
+        checkUninitVar("int foo(int a) {\n"
+                       "    int x;\n"
+                       "    if (a==1)\n"
+                       "        g();\n"    // might be a noreturn function
+                       "    else\n"
+                       "        x = 3;\n"
+                       "    return x;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int foo(int a) {\n"
+                       "    int x;\n"
+                       "    if (a==1)\n"
+                       "        g(1);\n"    // might be a noreturn function
+                       "    else\n"
+                       "        x = 3;\n"
+                       "    return x;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -305,7 +305,9 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
         }
 
         // might be a noreturn function..
-        if (Token::Match(tok->previous(), "[;{}] %var% ( ) ; }") && tok->varId() == 0)
+        if (tok->varId() == 0 &&
+            (Token::Match(tok->previous(), "[;{}] %var% ( ) ; }") ||
+             Token::Match(tok->previous(), "[;{}] %var% ( %num% ) ; }")))
         {
             ExecutionPath::bailOut(checks);
             return;
