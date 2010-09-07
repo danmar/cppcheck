@@ -120,10 +120,6 @@ private:
         TEST_CASE(simplifyKnownVariables28);
         TEST_CASE(simplifyKnownVariables29); // ticket #1811
 
-        TEST_CASE(match1);
-
-        TEST_CASE(match2);
-
         TEST_CASE(varid1);
         TEST_CASE(varid2);
         TEST_CASE(varid3);
@@ -1782,122 +1778,6 @@ private:
                                     "5: return u@1 || v@2 ;\n"
                                     "6: }\n";
             TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
-        }
-    }
-
-    void match1()
-    {
-        // Match "%var% | %var%"
-        {
-            const std::string code("abc|def");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "%var% | %var%"));
-        }
-
-        // Match "%var% || %var%"
-        {
-            const std::string code("abc||def");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "%var% || %var%"));
-        }
-    }
-
-    void match2()
-    {
-        {
-            const std::string code("");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "!!else"));
-        }
-
-        {
-            const std::string code("");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(false, Token::Match(tokenizer.tokens(), "!!else something"));
-        }
-
-        {
-            const std::string code("if ;");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "!!return if"));
-        }
-
-        {
-            const std::string code("if ;");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "if ; !!else"));
-        }
-
-        {
-            const std::string code("if ; something");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "if ; !!else"));
-        }
-
-        {
-            const std::string code("else");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(false, Token::Match(tokenizer.tokens(), "!!else"));
-        }
-
-        {
-            const std::string code("if ; else");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(false, Token::Match(tokenizer.tokens(), "if ; !!else"));
         }
     }
 
