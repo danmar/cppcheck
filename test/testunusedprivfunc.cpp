@@ -52,6 +52,8 @@ private:
         TEST_CASE(incompleteImplementation);
 
         TEST_CASE(derivedClass);   // skip warning for derived classes. It might be a virtual function.
+
+        TEST_CASE(borland);     // skip FP when using __property
     }
 
 
@@ -372,6 +374,21 @@ private:
               "private:\n"
               "    void f();\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void borland()
+    {
+        // ticket #2034 - Borland C++ __property
+        check("class Foo {\n"
+              "private:\n"
+              "    int getx() {\n"
+              "        return 123;\n"
+              "    }\n"
+              "public:\n"
+              "    Foo() { }\n"
+              "    __property int x = {read=getx}\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 };

@@ -1189,6 +1189,10 @@ void CheckClass::privateFunctions()
     if (!_settings->_checkCodingStyle)
         return;
 
+    // dont check borland classes with properties..
+    if (Token::findmatch(_tokenizer->tokens(), "; __property ;"))
+        return;
+
     createSymbolDatabase();
 
     std::multimap<std::string, SpaceInfo *>::iterator i;

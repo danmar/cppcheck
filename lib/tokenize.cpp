@@ -8390,6 +8390,11 @@ void Tokenizer::simplifyBorland()
                         Token::eraseTokens(tok2, tok2->link());
                         tok2->deleteThis();
                         tok2->deleteThis();
+
+                        // insert "; __property ;"
+                        tok2->previous()->insertToken(";");
+                        tok2->previous()->insertToken("__property");
+                        tok2->previous()->insertToken(";");
                     }
                 }
             }

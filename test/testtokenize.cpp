@@ -4649,7 +4649,7 @@ private:
                       tokenizeAndStringify("int (__closure *a)();", false));
 
         // __property
-        ASSERT_EQUALS("class Fred { } ;",
+        ASSERT_EQUALS("class Fred { ; __property ; } ;",
                       tokenizeAndStringify("class Fred { __property int x = { } };", false));
     }
 
