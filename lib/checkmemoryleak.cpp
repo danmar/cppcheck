@@ -1915,8 +1915,15 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
-            // Delete first part in "use ; dealloc ;"
+            // use; dealloc; => dealloc;
             if (Token::Match(tok2, "[;{}] use ; dealloc ;"))
+            {
+                Token::eraseTokens(tok2, tok2->tokAt(3));
+                done = false;
+            }
+
+            // use; if return; dealloc; => if return; dealloc;
+            if (Token::Match(tok2, "[;{}] use ; if return ; dealloc ;"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
@@ -1925,7 +1932,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             // Delete first part in "use ; return use ;"
             if (Token::Match(tok2, "[;{}] use ; return use ;"))
             {
-                Token::eraseTokens(tok2, tok2->tokAt(2));
+                Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
             }
 

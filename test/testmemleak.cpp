@@ -735,6 +735,9 @@ private:
 
         // dealloc; dealloc;
         ASSERT_EQUALS("; alloc ; if dealloc ; dealloc ;", simplifycode("; alloc ; if { dealloc ; } dealloc ;"));
+
+        // use ; dealloc ;
+        ASSERT_EQUALS("; alloc ; if return ; dealloc ;", simplifycode("; alloc ; use ; if { return ; } dealloc ;"));
     }
 
 
