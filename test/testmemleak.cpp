@@ -410,7 +410,7 @@ private:
 
 
 
-    std::string getcode(const char code[], const char varname[]) const
+    std::string getcode(const char code[], const char varname[], bool classfunc=false) const
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -427,7 +427,7 @@ private:
         callstack.push_back(0);
         CheckMemoryLeak::AllocType allocType, deallocType;
         allocType = deallocType = CheckMemoryLeak::No;
-        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varId, allocType, deallocType, false, 1);
+        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varId, allocType, deallocType, classfunc, 1);
 
         // stringify..
         std::ostringstream ret;
@@ -438,7 +438,6 @@ private:
 
         return ret.str();
     }
-
 
 
 
@@ -562,6 +561,9 @@ private:
         // fcloseall..
         ASSERT_EQUALS(";;alloc;;", getcode("char *s; s = malloc(10); fcloseall();", "s"));
         ASSERT_EQUALS(";;alloc;dealloc;", getcode("FILE *f; f = fopen(a,b); fcloseall();", "f"));
+
+        // call memcpy in class function..
+        ASSERT_EQUALS(";;alloc;;", getcode("char *s; s = new char[10]; memcpy(s,a);", "s", true));
     }
 
 
