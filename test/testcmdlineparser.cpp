@@ -83,6 +83,11 @@ private:
         TEST_CASE(forcelong);
         TEST_CASE(quietshort);
         TEST_CASE(quietlong);
+        TEST_CASE(defines);
+        TEST_CASE(defines2);
+        TEST_CASE(includesnopath);
+        TEST_CASE(includes);
+        TEST_CASE(includes2);
     }
 
     void nooptions()
@@ -235,6 +240,57 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings._errorsOnly);
+    }
+
+    void defines()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-D_WIN32", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS("_WIN32", settings.userDefines);
+    }
+
+    void defines2()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-D_WIN32", "-DNODEBUG", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS("_WIN32;NODEBUG", settings.userDefines);
+    }
+
+    void includesnopath()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-I", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
+    }
+
+    void includes()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-I include", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(" include/", settings._includePaths.front());
+    }
+
+    void includes2()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-I include/", "-I framework/", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS(" include/", settings._includePaths.front());
+        settings._includePaths.pop_front();
+        ASSERT_EQUALS(" framework/", settings._includePaths.front());
     }
 };
 
