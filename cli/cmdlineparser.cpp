@@ -182,7 +182,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         {
             if (!_settings->userDefines.empty())
                 _settings->userDefines += ";";
-            _settings->userDefines += 2 + argv[i];
+            if (strcmp(argv[i], "-D") == 0)
+                _settings->userDefines += argv[++i];
+            else
+                _settings->userDefines += 2 + argv[i];
         }
 
         // Include paths

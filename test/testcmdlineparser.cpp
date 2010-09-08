@@ -85,6 +85,7 @@ private:
         TEST_CASE(quietlong);
         TEST_CASE(defines);
         TEST_CASE(defines2);
+        TEST_CASE(defines3);
         TEST_CASE(includesnopath);
         TEST_CASE(includes);
         TEST_CASE(includes2);
@@ -260,6 +261,16 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(4, argv));
         ASSERT_EQUALS("_WIN32;NODEBUG", settings.userDefines);
+    }
+
+    void defines3()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-D", "DEBUG", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS("DEBUG", settings.userDefines);
     }
 
     void includesnopath()
