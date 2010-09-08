@@ -783,6 +783,17 @@ void Tokenizer::simplifyTypedef()
             tok->deleteThis();
             tok = tok3;
         }
+
+        /** @todo add support for struct and union */
+        if (Token::Match(tok, "typedef enum %type% %type% ;") && tok->strAt(2) == tok->strAt(3))
+        {
+            tok->deleteThis();
+            tok->deleteThis();
+            tok->deleteThis();
+            tok->deleteThis();
+            continue;
+        }
+
         Token *typeName;
         std::list<std::string> pointers;
         Token *typeStart = 0;
@@ -7001,7 +7012,8 @@ void Tokenizer::simplifyEnum()
                         {
                             // Don't replace this enum if it's preceded by "::"
                         }
-                        else if (tok2->next() && tok2->next()->isName())
+                        else if (tok2->next() &&
+                                 (tok2->next()->isName() || tok2->next()->str() == "("))
                         {
                             simplify = true;
                             hasClass = false;

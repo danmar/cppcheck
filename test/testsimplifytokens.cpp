@@ -215,6 +215,7 @@ private:
         TEST_CASE(simplifyTypedef57); // ticket #1846
         TEST_CASE(simplifyTypedef58); // ticket #1963
         TEST_CASE(simplifyTypedef59); // ticket #2011
+        TEST_CASE(simplifyTypedef60); // ticket #2035
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -757,7 +758,7 @@ private:
 
 
     // Simplify 'sizeof'..
-    std::string sizeof_(const char code[])
+    std::string sizeof_(const char code[], bool simplify = true)
     {
         // tokenize..
         Settings settings;
@@ -766,7 +767,8 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         tokenizer.setVarId();
-        tokenizer.simplifyTokenList();
+        if (simplify)
+            tokenizer.simplifyTokenList();
 
         std::ostringstream ostr;
         for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
@@ -4403,6 +4405,24 @@ private:
         // The expected result..
         const std::string expected("; ;");
         ASSERT_EQUALS(expected, sizeof_(code));
+
+        // Check for output..
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef60() // ticket #2035
+    {
+        const char code[] = "typedef enum {qfalse, qtrue} qboolean;\n"
+                            "typedef qboolean (*localEntitiyAddFunc_t) (struct le_s * le, entity_t * ent);\n"
+                            "void f()\n"
+                            "{\n"
+                            "    qboolean b;\n"
+                            "    localEntitiyAddFunc_t f;\n"
+                            "}\n";
+        // The expected result..
+        const std::string expected("; ; ; void f ( ) { int b ; int * f ; }");
+        ASSERT_EQUALS(expected, sizeof_(code, false));
 
         // Check for output..
         checkSimplifyTypedef(code);
