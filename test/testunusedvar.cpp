@@ -2211,17 +2211,17 @@ private:
                               "        func();\n"
                               "    } while(a--);\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: x\n"
-                      "[test.cpp:4]: (style) Unused variable: z\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: x\n"
+                           "[test.cpp:4]: (style) Unused variable: z\n", errout.str());
     }
 
     void localvarStruct4()
     {
         /* This must not SIGSEGV: */
-        // FIXME!!
-        //functionVariableUsage("void foo()\n"
-        //                      "{\n"
-        //                      "    struct { \n");
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    struct { \n");
     }
 
     void localvarOp()

@@ -8114,6 +8114,40 @@ void Tokenizer::simplifyStructDecl()
             // unnamed anonymous struct/union so remove it
             else if (tok->next()->str() == ";")
             {
+                if (tok1->str() == "union")
+                {
+                    // Try to create references in the union..
+                    Token *tok2 = tok1->tokAt(2);
+                    while (tok2)
+                    {
+                        if (Token::Match(tok2, "%type% %var% ;"))
+                            tok2 = tok2->tokAt(3);
+                        else
+                            break;
+                    }
+                    if (!Token::simpleMatch(tok2, "} ;"))
+                        continue;
+                    Token *vartok = 0;
+                    tok2 = tok1->tokAt(2);
+                    while (Token::Match(tok2, "%type% %var% ;"))
+                    {
+                        if (!vartok)
+                        {
+                            vartok = tok2->next();
+                            tok2 = tok2->tokAt(3);
+                        }
+                        else
+                        {
+                            tok2->insertToken("&");
+                            tok2 = tok2->tokAt(2);
+                            tok2->insertToken(vartok->str());
+                            tok2->next()->varId(vartok->varId());
+                            tok2->insertToken("=");
+                            tok2 = tok2->tokAt(4);
+                        }
+                    }
+                }
+
                 tok1->deleteThis();
                 if (tok1->next() == tok)
                 {

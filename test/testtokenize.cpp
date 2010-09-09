@@ -3438,6 +3438,15 @@ private:
         // ticket #1976
         const char code1[] = "class Fred { public: union { int a ; int b ; } ; } ;";
         ASSERT_EQUALS(code1, tokenizeAndStringify(code1));
+
+        // ticket #2039
+        const char code2[] = "void f() {\n"
+                             "     union {\n"
+                             "         int x;\n"
+                             "         long y;\n"
+                             "     };\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) {\n\nint x ;\nlong & y = x ;\n\n}", tokenizeAndStringify(code2));
     }
 
     void vardec_static()
