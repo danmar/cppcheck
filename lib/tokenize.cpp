@@ -5546,31 +5546,51 @@ bool Tokenizer::simplifyLogicalOperators()
     // "if (p or q)" => "if (p || q)"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "if|while ( not %var%"))
+        if (Token::Match(tok, "if|while ( not|compl %var%"))
         {
-            tok->tokAt(2)->str("!");
+            tok->tokAt(2)->str(tok->strAt(2) == "not" ? "!" : "~");
             ret = true;
         }
-        else if (Token::Match(tok, "&& not %var%"))
+        else if (Token::Match(tok, "&& not|compl %var%"))
         {
-            tok->next()->str("!");
+            tok->next()->str(tok->strAt(1) == "not" ? "!" : "~");
             ret = true;
         }
-        else if (Token::Match(tok, "|| not %var%"))
+        else if (Token::Match(tok, "|| not|compl %var%"))
         {
-            tok->next()->str("!");
+            tok->next()->str(tok->strAt(1) == "not" ? "!" : "~");
             ret = true;
         }
         // "%var%|) and %var%|("
-        else if (Token::Match(tok->previous(), "%any% and|or %any%") &&
-                 ((tok->previous()->isName() || tok->previous()->str() == ")") ||
-                  (tok->next()->isName() || tok->next()->str() == "(")))
+        else if (Token::Match(tok->previous(), "%any% %var% %any%"))
         {
-            if (tok->str() == "and")
-                tok->str("&&");
-            else
-                tok->str("||");
-            ret = true;
+            if (!Token::Match(tok, "and|or|bitand|bitor|xor|not_eq"))
+                continue;
+
+            const Token *tok2 = tok;
+            while (0 != (tok2 = tok2->previous()))
+            {
+                if (tok2->str() == ")")
+                    tok2 = tok2->link();
+                else if (Token::Match(tok2, "(|;|{|}"))
+                    break;
+            }
+            if (tok2 && Token::Match(tok2->previous(), "if|while ("))
+            {
+                if (tok->str() == "and")
+                    tok->str("&&");
+                else if (tok->str() == "or")
+                    tok->str("||");
+                else if (tok->str() == "bitand")
+                    tok->str("&");
+                else if (tok->str() == "bitor")
+                    tok->str("|");
+                else if (tok->str() == "xor")
+                    tok->str("^");
+                else if (tok->str() == "not_eq")
+                    tok->str("!=");
+                ret = true;
+            }
         }
     }
     return ret;

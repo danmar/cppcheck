@@ -259,6 +259,8 @@ private:
         TEST_CASE(borland);
 
         TEST_CASE(sql);
+
+        TEST_CASE(simplifyLogicalOperators);
     }
 
 
@@ -4540,6 +4542,18 @@ private:
         const char code1[] = "; EXEC SQL SELECT A FROM B;";
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(code1,false));
 
+    }
+
+    void simplifyLogicalOperators()
+    {
+        ASSERT_EQUALS("if ( a && b )", tokenizeAndStringify("if (a and b)"));
+        ASSERT_EQUALS("if ( a || b )", tokenizeAndStringify("if (a or b)"));
+        ASSERT_EQUALS("if ( a & b )", tokenizeAndStringify("if (a bitand b)"));
+        ASSERT_EQUALS("if ( a | b )", tokenizeAndStringify("if (a bitor b)"));
+        ASSERT_EQUALS("if ( a ^ b )", tokenizeAndStringify("if (a xor b)"));
+        ASSERT_EQUALS("if ( ~ b )", tokenizeAndStringify("if (compl b)"));
+        ASSERT_EQUALS("if ( ! b )", tokenizeAndStringify("if (not b)"));
+        ASSERT_EQUALS("if ( a != b )", tokenizeAndStringify("if (a not_eq b)"));
     }
 };
 
