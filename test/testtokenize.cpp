@@ -261,6 +261,9 @@ private:
         TEST_CASE(sql);
 
         TEST_CASE(simplifyLogicalOperators);
+
+        // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
+        simplifyAssignmentInFunctionCall();
     }
 
 
@@ -4554,6 +4557,11 @@ private:
         ASSERT_EQUALS("if ( ~ b )", tokenizeAndStringify("if (compl b)"));
         ASSERT_EQUALS("if ( ! b )", tokenizeAndStringify("if (not b)"));
         ASSERT_EQUALS("if ( a != b )", tokenizeAndStringify("if (a not_eq b)"));
+    }
+
+    void simplifyAssignmentInFunctionCall()
+    {
+        ASSERT_EQUALS("; x = g ( ) ; f ( x ) ;", tokenizeAndStringify(";f(x=g());"));
     }
 };
 

@@ -136,6 +136,10 @@ public:
      */
     std::map<std::string, ClassInfo> _classInfoList;
 
+    /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
+     */
+    void simplifyAssignmentInFunctionCall();
+
     /**
      * Simplify constant calculations such as "1+2" => "3"
      * @return true if modifications to token-list are done.

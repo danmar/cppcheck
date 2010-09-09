@@ -2042,6 +2042,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // Split up variable declarations.
     simplifyVarDecl();
 
+    // f(x=g())   =>   x=g(); f(x)
+    simplifyAssignmentInFunctionCall();
+
     simplifyVariableMultipleAssign();
 
     // Remove redundant parantheses
@@ -5250,6 +5253,8 @@ void Tokenizer::simplifyStdType()
 
 void Tokenizer::simplifyIfAssign()
 {
+    // See also simplifyFunctionAssign
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (!Token::Match(tok->next(), "if|while ( !| (| %var% =") &&
@@ -8213,6 +8218,45 @@ void Tokenizer::simplifyKeyword()
         while (Token::Match(tok->next(), pattern))
         {
             tok->deleteNext();
+        }
+    }
+}
+
+void Tokenizer::simplifyAssignmentInFunctionCall()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "(")
+            tok = tok->link();
+        else if (Token::Match(tok, "[;{}] %var% ( %var% =") && Token::simpleMatch(tok->tokAt(2)->link(), ") ;"))
+        {
+            const std::string funcname(tok->strAt(1));
+            const Token * const vartok = tok->tokAt(3);
+
+            // Goto ',' or ')'..
+            for (Token *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    tok2 = tok2->link();
+                else if (tok2->str() == ";")
+                    break;
+                else if (tok2->str() == ")" || tok2->str() == ",")
+                {
+                    tok2 = tok2->previous();
+
+                    tok2->insertToken(vartok->str());
+                    tok2->next()->varId(vartok->varId());
+
+                    tok2->insertToken("(");
+                    Token::createMutualLinks(tok2->next(), tok->tokAt(2)->link());
+
+                    tok2->insertToken(funcname);
+                    tok2->insertToken(";");
+
+                    Token::eraseTokens(tok, vartok);
+                    break;
+                }
+            }
         }
     }
 }
