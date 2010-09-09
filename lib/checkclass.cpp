@@ -1020,10 +1020,7 @@ bool CheckClass::argsMatch(const Token *first, const Token *second, const std::s
 
         // skip default value assignment
         else if (first->next()->str() == "=")
-        {
             first = first->tokAt(2);
-            continue;
-        }
 
         // definition missing variable name
         else if (first->next()->str() == "," && second->next()->str() != ",")
@@ -1173,7 +1170,7 @@ void CheckClass::constructors()
                     if (classNameUsed)
                         operatorEqVarError(it->token, info->className, var->token->str());
                 }
-                else if (it->access != Private && !var->isStatic)
+                else if (it->access != Private)
                     uninitVarError(it->token, info->className, var->token->str());
             }
         }
