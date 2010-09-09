@@ -132,9 +132,11 @@ private:
     class Var
     {
     public:
-        Var(const Token *token_, bool init_ = false, AccessControl access_ = Public, bool mutable_ = false, bool static_ = false, bool class_ = false)
+        Var(const Token *token_, unsigned int index_, AccessControl access_ = Public, bool mutable_ = false, bool static_ = false, bool class_ = false)
             : token(token_),
-              init(init_),
+              index(index_),
+              assign(false),
+              init(false),
               access(access_),
               isMutable(mutable_),
               isStatic(static_),
@@ -144,6 +146,12 @@ private:
 
         /** @brief variable token */
         const Token *token;
+
+        /** @brief order declared */
+        unsigned int index;
+
+        /** @brief has this variable been assigned? */
+        bool        assign;
 
         /** @brief has this variable been initialized? */
         bool        init;
@@ -240,16 +248,32 @@ private:
         unsigned int numConstructors;
 
         /**
+         * @brief assign a variable in the varlist
+         * @param varname name of variable to mark assigned
+         */
+        void assignVar(const std::string &varname);
+
+        /**
          * @brief initialize a variable in the varlist
          * @param varname name of variable to mark initialized
          */
         void initVar(const std::string &varname);
 
+        void addVar(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool class_)
+        {
+            varlist.push_back(Var(token_, varlist.size(), access_, mutable_, static_, class_));
+
+        }
+
         /**
-         * @brief mark all variables in list
-         * @param value state to mark all variables
+         * @brief set all variables in list assigned
          */
-        void markAllVar(bool value);
+        void assignAllVar();
+
+        /**
+         * @brief set all variables in list not assigned and not initialized
+         */
+        void clearAllVar();
 
         /** @brief initialize varlist */
         void getVarList();

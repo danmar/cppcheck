@@ -748,12 +748,26 @@ void CheckClass::SpaceInfo::getVarList()
                 check->reportError(vartok, Severity::debug, "debug", "CheckClass::SpaceInfo::getVarList found variable \'" + vartok->str() + "\' with varid 0.");
             }
 
-            varlist.push_back(Var(vartok, false, varaccess, isMutable, isStatic, isClass));
+            addVar(vartok, varaccess, isMutable, isStatic, isClass);
         }
     }
 }
 
 //---------------------------------------------------------------------------
+
+void CheckClass::SpaceInfo::assignVar(const std::string &varname)
+{
+    std::list<Var>::iterator i;
+
+    for (i = varlist.begin(); i != varlist.end(); ++i)
+    {
+        if (i->token->str() == varname)
+        {
+            i->assign = true;
+            return;
+        }
+    }
+}
 
 void CheckClass::SpaceInfo::initVar(const std::string &varname)
 {
@@ -769,12 +783,23 @@ void CheckClass::SpaceInfo::initVar(const std::string &varname)
     }
 }
 
-void CheckClass::SpaceInfo::markAllVar(bool value)
+void CheckClass::SpaceInfo::assignAllVar()
 {
     std::list<Var>::iterator i;
 
     for (i = varlist.begin(); i != varlist.end(); ++i)
-        i->init = value;
+        i->assign = true;
+}
+
+void CheckClass::SpaceInfo::clearAllVar()
+{
+    std::list<Var>::iterator i;
+
+    for (i = varlist.begin(); i != varlist.end(); ++i)
+    {
+        i->assign = false;
+        i->init = false;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -801,7 +826,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
                 // assignment in the initializer..
                 // : var(value = x)
                 if (Token::Match(ftok->tokAt(2), "%var% ="))
-                    initVar(ftok->strAt(2));
+                    assignVar(ftok->strAt(2));
             }
 
             Assign |= (ftok->str() == ":");
@@ -827,7 +852,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
         // Variable getting value from stream?
         if (Token::Match(ftok, ">> %var%"))
         {
-            initVar(ftok->strAt(1));
+            assignVar(ftok->strAt(1));
         }
 
         // Before a new statement there is "[{};)=]"
@@ -840,7 +865,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
         // Using the operator= function to initialize all variables..
         if (Token::simpleMatch(ftok->next(), "* this = "))
         {
-            markAllVar(true);
+            assignAllVar();
             break;
         }
 
@@ -873,14 +898,14 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
         // Clearing all variables..
         if (Token::simpleMatch(ftok, "memset ( this ,"))
         {
-            markAllVar(true);
+            assignAllVar();
             return;
         }
 
         // Clearing array..
         else if (Token::Match(ftok, "memset ( %var% ,"))
         {
-            initVar(ftok->strAt(2));
+            assignVar(ftok->strAt(2));
             ftok = ftok->next()->link();
             continue;
         }
@@ -893,7 +918,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
             {
                 if (tok2->str() == "this")
                 {
-                    markAllVar(true);
+                    assignAllVar();
                     return;
                 }
             }
@@ -902,7 +927,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
             // assume that all variables are initialized
             if (std::find(callstack.begin(), callstack.end(), ftok->str()) != callstack.end())
             {
-                markAllVar(true);
+                assignAllVar();
                 return;
             }
 
@@ -929,7 +954,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
                 // there is a called member function, but it has no implementation, so we assume it initializes everything
                 else
                 {
-                    markAllVar(true);
+                    assignAllVar();
                 }
             }
 
@@ -938,11 +963,11 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
             {
                 // could be a base class virtual function, so we assume it initializes everything
                 if (!derivedFrom.empty())
-                    markAllVar(true);
+                    assignAllVar();
 
                 // has friends, so we assume it initializes everything
                 if (!friendList.empty())
-                    markAllVar(true);
+                    assignAllVar();
 
                 // the function is external and it's neither friend nor inherited virtual function.
                 // assume all variables that are passed to it are initialized..
@@ -961,7 +986,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
                         }
                         if (tok->isName())
                         {
-                            initVar(tok->strAt(0));
+                            assignVar(tok->strAt(0));
                         }
                     }
                 }
@@ -971,37 +996,37 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
         // Assignment of member variable?
         else if (Token::Match(ftok, "%var% ="))
         {
-            initVar(ftok->strAt(0));
+            assignVar(ftok->strAt(0));
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "%var% [ %any% ] ="))
         {
-            initVar(ftok->strAt(0));
+            assignVar(ftok->strAt(0));
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "%var% [ %any% ] [ %any% ] ="))
         {
-            initVar(ftok->strAt(0));
+            assignVar(ftok->strAt(0));
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "* %var% ="))
         {
-            initVar(ftok->strAt(1));
+            assignVar(ftok->strAt(1));
         }
 
         // Assignment of struct member of member variable?
         else if (Token::Match(ftok, "%var% . %any% ="))
         {
-            initVar(ftok->strAt(0));
+            assignVar(ftok->strAt(0));
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
         if (Token::Match(ftok, "%var% . clear|Clear ("))
         {
-            initVar(ftok->strAt(0));
+            assignVar(ftok->strAt(0));
         }
     }
 }
@@ -1132,7 +1157,7 @@ void CheckClass::constructors()
                 continue;
 
             // Mark all variables not used
-            info->markAllVar(false);
+            info->clearAllVar();
 
             std::list<std::string> callstack;
             info->initializeVarList(*it, callstack);
@@ -1145,7 +1170,7 @@ void CheckClass::constructors()
                 if (var->isClass && it->type == Func::Constructor)
                     continue;
 
-                if (var->init || var->isStatic)
+                if (var->assign || var->init || var->isStatic)
                     continue;
 
                 // It's non-static and it's not initialized => error
