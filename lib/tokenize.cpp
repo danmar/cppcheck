@@ -2042,6 +2042,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // Split up variable declarations.
     simplifyVarDecl();
 
+    // f(x=g())   =>   x=g(); f(x)
+    simplifyAssignmentInFunctionCall();
+
     simplifyVariableMultipleAssign();
 
     // Remove redundant parantheses
@@ -5250,6 +5253,8 @@ void Tokenizer::simplifyStdType()
 
 void Tokenizer::simplifyIfAssign()
 {
+    // See also simplifyFunctionAssign
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (!Token::Match(tok->next(), "if|while ( !| (| %var% =") &&
@@ -5546,31 +5551,51 @@ bool Tokenizer::simplifyLogicalOperators()
     // "if (p or q)" => "if (p || q)"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "if|while ( not %var%"))
+        if (Token::Match(tok, "if|while ( not|compl %var%"))
         {
-            tok->tokAt(2)->str("!");
+            tok->tokAt(2)->str(tok->strAt(2) == "not" ? "!" : "~");
             ret = true;
         }
-        else if (Token::Match(tok, "&& not %var%"))
+        else if (Token::Match(tok, "&& not|compl %var%"))
         {
-            tok->next()->str("!");
+            tok->next()->str(tok->strAt(1) == "not" ? "!" : "~");
             ret = true;
         }
-        else if (Token::Match(tok, "|| not %var%"))
+        else if (Token::Match(tok, "|| not|compl %var%"))
         {
-            tok->next()->str("!");
+            tok->next()->str(tok->strAt(1) == "not" ? "!" : "~");
             ret = true;
         }
         // "%var%|) and %var%|("
-        else if (Token::Match(tok->previous(), "%any% and|or %any%") &&
-                 ((tok->previous()->isName() || tok->previous()->str() == ")") ||
-                  (tok->next()->isName() || tok->next()->str() == "(")))
+        else if (Token::Match(tok->previous(), "%any% %var% %any%"))
         {
-            if (tok->str() == "and")
-                tok->str("&&");
-            else
-                tok->str("||");
-            ret = true;
+            if (!Token::Match(tok, "and|or|bitand|bitor|xor|not_eq"))
+                continue;
+
+            const Token *tok2 = tok;
+            while (0 != (tok2 = tok2->previous()))
+            {
+                if (tok2->str() == ")")
+                    tok2 = tok2->link();
+                else if (Token::Match(tok2, "(|;|{|}"))
+                    break;
+            }
+            if (tok2 && Token::Match(tok2->previous(), "if|while ("))
+            {
+                if (tok->str() == "and")
+                    tok->str("&&");
+                else if (tok->str() == "or")
+                    tok->str("||");
+                else if (tok->str() == "bitand")
+                    tok->str("&");
+                else if (tok->str() == "bitor")
+                    tok->str("|");
+                else if (tok->str() == "xor")
+                    tok->str("^");
+                else if (tok->str() == "not_eq")
+                    tok->str("!=");
+                ret = true;
+            }
         }
     }
     return ret;
@@ -8089,6 +8114,40 @@ void Tokenizer::simplifyStructDecl()
             // unnamed anonymous struct/union so remove it
             else if (tok->next()->str() == ";")
             {
+                if (tok1->str() == "union")
+                {
+                    // Try to create references in the union..
+                    Token *tok2 = tok1->tokAt(2);
+                    while (tok2)
+                    {
+                        if (Token::Match(tok2, "%type% %var% ;"))
+                            tok2 = tok2->tokAt(3);
+                        else
+                            break;
+                    }
+                    if (!Token::simpleMatch(tok2, "} ;"))
+                        continue;
+                    Token *vartok = 0;
+                    tok2 = tok1->tokAt(2);
+                    while (Token::Match(tok2, "%type% %var% ;"))
+                    {
+                        if (!vartok)
+                        {
+                            vartok = tok2->next();
+                            tok2 = tok2->tokAt(3);
+                        }
+                        else
+                        {
+                            tok2->insertToken("&");
+                            tok2 = tok2->tokAt(2);
+                            tok2->insertToken(vartok->str());
+                            tok2->next()->varId(vartok->varId());
+                            tok2->insertToken("=");
+                            tok2 = tok2->tokAt(4);
+                        }
+                    }
+                }
+
                 tok1->deleteThis();
                 if (tok1->next() == tok)
                 {
@@ -8193,6 +8252,45 @@ void Tokenizer::simplifyKeyword()
         while (Token::Match(tok->next(), pattern))
         {
             tok->deleteNext();
+        }
+    }
+}
+
+void Tokenizer::simplifyAssignmentInFunctionCall()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "(")
+            tok = tok->link();
+        else if (Token::Match(tok, "[;{}] %var% ( %var% =") && Token::simpleMatch(tok->tokAt(2)->link(), ") ;"))
+        {
+            const std::string funcname(tok->strAt(1));
+            const Token * const vartok = tok->tokAt(3);
+
+            // Goto ',' or ')'..
+            for (Token *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    tok2 = tok2->link();
+                else if (tok2->str() == ";")
+                    break;
+                else if (tok2->str() == ")" || tok2->str() == ",")
+                {
+                    tok2 = tok2->previous();
+
+                    tok2->insertToken(vartok->str());
+                    tok2->next()->varId(vartok->varId());
+
+                    tok2->insertToken("(");
+                    Token::createMutualLinks(tok2->next(), tok->tokAt(2)->link());
+
+                    tok2->insertToken(funcname);
+                    tok2->insertToken(";");
+
+                    Token::eraseTokens(tok, vartok);
+                    break;
+                }
+            }
         }
     }
 }

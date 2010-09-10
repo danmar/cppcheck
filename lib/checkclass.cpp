@@ -385,6 +385,8 @@ void CheckClass::createSymbolDatabase()
                     else
                         classPattern = "operator " + func->tokenDef->str() + " (";
                 }
+                else if (func->type == Func::Destructor)
+                    classPattern = "~ " + func->tokenDef->str() + " (";
                 else
                     classPattern = func->tokenDef->str() + " (";
 
@@ -821,7 +823,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
         {
             if (Assign && Token::Match(ftok, "%var% ("))
             {
-                initVar(ftok->strAt(0));
+                initVar(ftok->str());
 
                 // assignment in the initializer..
                 // : var(value = x)
@@ -986,7 +988,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
                         }
                         if (tok->isName())
                         {
-                            assignVar(tok->strAt(0));
+                            assignVar(tok->str());
                         }
                     }
                 }
@@ -996,37 +998,37 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
         // Assignment of member variable?
         else if (Token::Match(ftok, "%var% ="))
         {
-            assignVar(ftok->strAt(0));
+            assignVar(ftok->str());
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "%var% [ %any% ] ="))
         {
-            assignVar(ftok->strAt(0));
+            assignVar(ftok->str());
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "%var% [ %any% ] [ %any% ] ="))
         {
-            assignVar(ftok->strAt(0));
+            assignVar(ftok->str());
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "* %var% ="))
         {
-            assignVar(ftok->strAt(1));
+            assignVar(ftok->next()->str());
         }
 
         // Assignment of struct member of member variable?
         else if (Token::Match(ftok, "%var% . %any% ="))
         {
-            assignVar(ftok->strAt(0));
+            assignVar(ftok->str());
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
         if (Token::Match(ftok, "%var% . clear|Clear ("))
         {
-            assignVar(ftok->strAt(0));
+            assignVar(ftok->str());
         }
     }
 }
@@ -1762,7 +1764,7 @@ void CheckClass::virtualDestructor()
             continue;
 
         // Empty destructor
-        if (destructor->tokenDef->tokAt(3)->link() == destructor->tokenDef->tokAt(4))
+        if (destructor->token->tokAt(3)->link() == destructor->token->tokAt(4))
             continue;
 
         const Token *derived = info->classDef;

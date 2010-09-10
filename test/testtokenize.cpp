@@ -259,6 +259,11 @@ private:
         TEST_CASE(borland);
 
         TEST_CASE(sql);
+
+        TEST_CASE(simplifyLogicalOperators);
+
+        // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
+        simplifyAssignmentInFunctionCall();
     }
 
 
@@ -3433,6 +3438,15 @@ private:
         // ticket #1976
         const char code1[] = "class Fred { public: union { int a ; int b ; } ; } ;";
         ASSERT_EQUALS(code1, tokenizeAndStringify(code1));
+
+        // ticket #2039
+        const char code2[] = "void f() {\n"
+                             "     union {\n"
+                             "         int x;\n"
+                             "         long y;\n"
+                             "     };\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) {\n\nint x ;\nlong & y = x ;\n\n}", tokenizeAndStringify(code2));
     }
 
     void vardec_static()
@@ -4540,6 +4554,23 @@ private:
         const char code1[] = "; EXEC SQL SELECT A FROM B;";
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(code1,false));
 
+    }
+
+    void simplifyLogicalOperators()
+    {
+        ASSERT_EQUALS("if ( a && b )", tokenizeAndStringify("if (a and b)"));
+        ASSERT_EQUALS("if ( a || b )", tokenizeAndStringify("if (a or b)"));
+        ASSERT_EQUALS("if ( a & b )", tokenizeAndStringify("if (a bitand b)"));
+        ASSERT_EQUALS("if ( a | b )", tokenizeAndStringify("if (a bitor b)"));
+        ASSERT_EQUALS("if ( a ^ b )", tokenizeAndStringify("if (a xor b)"));
+        ASSERT_EQUALS("if ( ~ b )", tokenizeAndStringify("if (compl b)"));
+        ASSERT_EQUALS("if ( ! b )", tokenizeAndStringify("if (not b)"));
+        ASSERT_EQUALS("if ( a != b )", tokenizeAndStringify("if (a not_eq b)"));
+    }
+
+    void simplifyAssignmentInFunctionCall()
+    {
+        ASSERT_EQUALS("; x = g ( ) ; f ( x ) ;", tokenizeAndStringify(";f(x=g());"));
     }
 };
 
