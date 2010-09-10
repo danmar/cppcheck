@@ -91,6 +91,11 @@ protected:
      */
     void PrintHelp();
 
+    /**
+     * Print message (to console?).
+     */
+    void PrintMessage(const std::string &message);
+
 private:
     Settings *_settings;
     bool _showHelp;
