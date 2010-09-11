@@ -19,10 +19,10 @@
             <File Id='cppcheck.exe' Name='cppcheck.exe' DiskId='1' Source='$(var.CliBuildDir)\cppcheck.exe' KeyPath='yes' />
             <Environment Id='UpdatePath' Name='PATH' Action='set' System='yes' Part='last' Value='[INSTALLDIR]' />
           </Component>
-          <Component Id='gui.exe' DiskId='1' Guid='$(var.guiGUID)'>
-            <File Id='gui.exe' Name='gui.exe' Source='$(var.GuiBuildDir)\gui.exe' KeyPath='yes'>
+          <Component Id='GuiExecutable' DiskId='1' Guid='$(var.guiGUID)'>
+            <File Id='cppcheckguiexe' Name='cppcheck-gui.exe' Source='$(var.GuiBuildDir)\cppcheck-gui.exe' KeyPath='yes'>
               <Shortcut Id='startmenuGui' Directory="ProgramMenuDir" Name='$(var.ProductNameShort)'
-                  WorkingDirectory='INSTALLDIR' Icon="gui.exe" IconIndex="0" Advertise="yes" />
+                  WorkingDirectory='INSTALLDIR' Icon="cppcheck-gui.exe" IconIndex="0" Advertise="yes" />
             </File>
             <!-- <File Id='mingwm10dll' Name='mingwm10.dll' Source='mingwm10.dll' /> -->
             <File Id='qtclucene4dll' Name='qtclucene4.dll' Source='$(var.QtDllDir)\qtclucene4.dll' />
@@ -73,7 +73,7 @@
       Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR' >
       <Feature Id='MainProgram' Title='Command line interface' Description='Command line tool' Level='1'>
         <ComponentRef Id='cppcheck.exe' />
-        <ComponentRef Id='gui.exe' />
+        <ComponentRef Id='GuiExecutable' />
         <ComponentRef Id='GuiTranslations' />
         <ComponentRef Id='BaseDocs' />
         <ComponentRef Id='GuiHelp' />
@@ -101,7 +101,7 @@
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
     <UIRef Id="WixUI_InstallDir"/>
 
-    <Icon Id='gui.exe' SourceFile='$(var.GuiBuildDir)\gui.exe' />
+    <Icon Id='cppcheck-gui.exe' SourceFile='$(var.GuiBuildDir)\cppcheck-gui.exe' />
 
     <WixVariable Id="WixUILicenseRtf" Value="GPLv3.rtf" />
     <WixVariable Id="WixUIBannerBmp" Value="Bitmaps\banner.bmp" />

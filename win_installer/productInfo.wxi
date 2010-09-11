@@ -10,7 +10,7 @@
   <?define ProductGUID = "7214EC4C-8F10-4E56-8E99-0B9908E68774" ?>
   <?define ProductUpgradeCode = "7E94124C-1CD1-433F-9423-4614E52300DD" ?>
   <?define cppcheckGUID = "1c31dd76-07fa-4420-b9b5-5463742d6a48" ?>
-  <?define guiGUID = "4102893e-5237-4011-9d70-7d9067623372" ?>
+  <?define guiGUID = "D7D3FF8E-1D82-4215-B59B-4715A748C540" ?>
   <?define guiTranslationsGUID = "24738151-890D-4fcc-824C-DA7FF63E0D7F" ?>
   <?define basedocsGUID = "9F62B23C-CD2B-4826-A567-6AB6F75A2AEA" ?>
 </Include>
