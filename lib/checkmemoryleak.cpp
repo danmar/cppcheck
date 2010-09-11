@@ -1492,21 +1492,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             tok2->str("return");
     }
 
-    // reduce "if callfunc {" => "if {"
-    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-    {
-        if (Token::Match(tok2, "if|ifv callfunc {"))
-            tok2->deleteNext();
-    }
-
-    // reduce "; callfunc ; %var%"
-    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-    {
-        if (Token::Match(tok2, ";|{|} callfunc ; %type%") ||
-            Token::Match(tok2, ";|{|} callfunc ; ;"))
-            tok2->deleteNext();
-    }
-
     // remove redundant braces..
     for (Token *start = tok; start; start = start->next())
     {
@@ -1541,6 +1526,16 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
     {
         //tok->printOut("simplifycode loop..");
         done = true;
+
+        // reduce callfunc
+        for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "callfunc")
+            {
+                if (!Token::Match(tok2->previous(), "[;{}] callfunc ; }"))
+                    tok2->deleteThis();
+            }
+        }
 
         // simplify "while1" contents..
         for (Token *tok2 = tok; tok2; tok2 = tok2->next())
@@ -1947,6 +1942,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             if (Token::Match(tok2, "[;{}] use ; return use ;"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
+                done = false;
+            }
+
+            // callfunc callfunc
+            while (Token::simpleMatch(tok2, "callfunc callfunc"))
+            {
+                tok2->deleteNext();
                 done = false;
             }
 

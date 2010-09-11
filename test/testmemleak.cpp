@@ -725,10 +725,11 @@ private:
         TODO_ASSERT_EQUALS("; assign ; if alloc ; }", simplifycode("; assign ; { dealloc ; if alloc ; } }"));
 
         // callfunc..
-        ASSERT_EQUALS("; callfunc ;", simplifycode(";callfunc;"));
+        ASSERT_EQUALS("; callfunc ; }", simplifycode(";callfunc;}"));
         ASSERT_EQUALS(";", simplifycode(";callfunc;;"));
+        ASSERT_EQUALS("; callfunc ; }", simplifycode(";callfunc callfunc ; }"));
         ASSERT_EQUALS("dealloc ; alloc ; return ; }", simplifycode("while1 { dealloc ; alloc ; } callfunc ; return ; }"));
-        ASSERT_EQUALS(";", simplifycode("loop callfunc ;"));
+        ASSERT_EQUALS("; }", simplifycode("loop callfunc ; }"));
 
         // exit..
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc; exit;"));
