@@ -1919,6 +1919,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
+            // use use => use
+            if (Token::simpleMatch(tok2, "use use"))
+            {
+                tok2->deleteThis();
+                done = false;
+            }
+
             // use; if| use; => use;
             while (Token::Match(tok2, "[;{}] use ; if| use ;"))
             {

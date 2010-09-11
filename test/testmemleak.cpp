@@ -659,6 +659,7 @@ private:
         ASSERT_EQUALS("alloc ;", simplifycode("alloc ; if ; else ;"));
 
         // use..
+        ASSERT_EQUALS("; use ; }", simplifycode("; use use ; }"));
         ASSERT_EQUALS("; alloc ; dealloc ; }", simplifycode("; alloc ; use ; use ; if use ; dealloc ; }"));
 
         // if, else..
