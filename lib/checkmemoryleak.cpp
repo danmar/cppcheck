@@ -2275,7 +2275,8 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                 parameterVarIds.find(tok->varId()) == parameterVarIds.end())
             {
                 // Check that another copy of the pointer wasn't saved earlier in the function
-                if (!Token::findmatch(startOfFunction, "%var% = %varid% ;", tok->varId()))
+                if (!Token::findmatch(startOfFunction, "%var% = %varid% ;", tok->varId()) &&
+                    !Token::findmatch(startOfFunction, "[{};] %varid% = %var% [;=]", tok->varId()))
                     memleakUponReallocFailureError(tok, tok->str());
             }
         }
