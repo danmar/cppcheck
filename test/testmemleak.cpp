@@ -334,6 +334,7 @@ private:
         TEST_CASE(realloc7);
         TEST_CASE(realloc8);
         TEST_CASE(realloc9);
+        TEST_CASE(realloc10);
 
         TEST_CASE(assign);
 
@@ -2073,6 +2074,17 @@ private:
         check("void foo()\n"
               "{\n"
               "    x = realloc(x,100);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc10()
+    {
+        check("void foo() {\n"
+              "    char *pa, *pb;\n"
+              "    pa = pb = malloc(10);\n"
+              "    pa = realloc(pa, 20);"
+              "    exit();\n"
               "}\n", false);
         ASSERT_EQUALS("", errout.str());
     }
