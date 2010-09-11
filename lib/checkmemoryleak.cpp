@@ -2221,6 +2221,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
         noerr |= Token::simpleMatch(first, "alloc ; return use ; }");
         noerr |= Token::simpleMatch(first, "alloc ; use ; }");
         noerr |= Token::simpleMatch(first, "alloc ; use ; return ; }");
+        noerr |= Token::simpleMatch(first, "alloc ; dealloc ; return ; }");
         noerr |= Token::simpleMatch(first, "if alloc ; dealloc ; }");
         noerr |= Token::simpleMatch(first, "if alloc ; return use ; }");
         noerr |= Token::simpleMatch(first, "if alloc ; use ; }");
