@@ -1855,10 +1855,9 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
-            // Replace "loop callfunc ;" with ";"
-            if (Token::simpleMatch(tok2, "loop callfunc ;"))
+            // Replace "loop loop .." with "loop .."
+            if (Token::simpleMatch(tok2, "loop loop"))
             {
-                tok2->deleteThis();
                 tok2->deleteThis();
                 done = false;
             }
@@ -1945,10 +1944,11 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
-            // callfunc callfunc
-            while (Token::simpleMatch(tok2, "callfunc callfunc"))
+            // try/catch
+            if (Token::simpleMatch(tok2, "try ; catch exit ;"))
             {
-                tok2->deleteNext();
+                Token::eraseTokens(tok2, tok2->tokAt(4));
+                tok2->deleteThis();
                 done = false;
             }
 

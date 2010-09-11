@@ -707,6 +707,7 @@ private:
         ASSERT_EQUALS("; loop alloc ;", simplifycode("; loop { alloc ; }"));
         ASSERT_EQUALS("; alloc ; alloc ;", simplifycode("; alloc ; do { alloc ; } loop ;"));
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc ; do { } loop ; exit ;"));
+        ASSERT_EQUALS("; loop use ;", simplifycode("; loop { loop loop use ; } ;"));
 
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; while(!var) alloc ;"));
 
@@ -739,6 +740,9 @@ private:
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if(!var) { exit; }"));
         TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; if(var) { exit; }"));
         TODO_ASSERT_EQUALS(";\n; alloc ;", simplifycode("; alloc ; ifv { exit; }"));
+
+        // try-catch
+        ASSERT_EQUALS("; }", simplifycode("; try ; catch exit ; }"));
 
         // dealloc; dealloc;
         ASSERT_EQUALS("; alloc ; if dealloc ; dealloc ;", simplifycode("; alloc ; if { dealloc ; } dealloc ;"));
