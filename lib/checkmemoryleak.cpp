@@ -1811,6 +1811,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
+            // if break ; break ; => break ;
+            if (Token::Match(tok2->previous(), "[;{}] if break ; break ;"))
+            {
+                Token::eraseTokens(tok2, tok2->tokAt(4));
+                done = false;
+            }
+
             // Reduce "do { dealloc ; alloc ; } while(var) ;" => ";"
             if (Token::simpleMatch(tok2->next(), "do { dealloc ; alloc ; } while(var) ;"))
             {
