@@ -87,7 +87,7 @@ public:
      */
     void noMemset();
 
-    /** @brief 'operator=' should return something. */
+    /** @brief 'operator=' should return something and it should not be const. */
     void operatorEq();
 
     /** @brief 'operator=' should return reference to *this */
@@ -318,6 +318,7 @@ private:
     void memsetClassError(const Token *tok, const std::string &memfunc);
     void memsetStructError(const Token *tok, const std::string &memfunc, const std::string &classname);
     void operatorEqReturnError(const Token *tok);
+    void operatorEqReturnConstError(const Token *tok);
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
     void thisSubtractionError(const Token *tok);
     void operatorEqRetRefThisError(const Token *tok);
@@ -335,6 +336,7 @@ private:
         memsetClassError(0, "memfunc");
         memsetStructError(0, "memfunc", "classname");
         operatorEqReturnError(0);
+        operatorEqReturnConstError(0);
         virtualDestructorError(0, "Base", "Derived");
         thisSubtractionError(0);
         operatorEqRetRefThisError(0);
@@ -359,6 +361,9 @@ private:
                "* 'operator=' should check for assignment to self\n"
                "* Constness for member functions\n";
     }
+
+private:
+    void checkReturnPtrThis(const SpaceInfo *info, const Func *func, const Token *tok, const Token *last);
 };
 /// @}
 //---------------------------------------------------------------------------

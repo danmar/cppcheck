@@ -1461,7 +1461,7 @@ void CheckClass::noMemset()
 
 
 //---------------------------------------------------------------------------
-// ClassCheck: "void operator=("
+// ClassCheck: "void operator=(" and "const type & operator=("
 //---------------------------------------------------------------------------
 
 void CheckClass::operatorEq()
@@ -1483,6 +1483,8 @@ void CheckClass::operatorEq()
             {
                 if (it->token->strAt(-2) == "void")
                     operatorEqReturnError(it->token->tokAt(-2));
+                else if (Token::Match(it->token->tokAt(-4), "const %type% &"))
+                    operatorEqReturnConstError(it->token->tokAt(-4));
             }
         }
     }
@@ -1492,6 +1494,56 @@ void CheckClass::operatorEq()
 // ClassCheck: "C& operator=(const C&) { ... return *this; }"
 // operator= should return a reference to *this
 //---------------------------------------------------------------------------
+
+void CheckClass::checkReturnPtrThis(const SpaceInfo *info, const Func *func, const Token *tok, const Token *last)
+{
+    bool foundReturn = false;
+
+    for (; tok && tok != last; tok = tok->next())
+    {
+        // check for return of reference to this
+        if (tok->str() == "return")
+        {
+            foundReturn = true;
+            std::string cast("( " + info->className + " & )");
+            if (Token::Match(tok->next(), cast.c_str()))
+                tok = tok->tokAt(4);
+
+            // check if a function is called
+            if (Token::Match(tok->tokAt(1), "%any% (") &&
+                tok->tokAt(2)->link()->next()->str() == ";")
+            {
+                std::list<Func>::const_iterator it;
+
+                // check if it is a member function
+                for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
+                {
+                    // check for a regular function with the same name and a bofy
+                    if (it->type == Func::Function && it->hasBody &&
+                        it->token->str() == tok->next()->str())
+                    {
+                        // check for the proper return type
+                        if (it->tokenDef->previous()->str() == "&" &&
+                            it->tokenDef->strAt(-2) == info->className)
+                        {
+                            // make sure it's not a const function
+                            if (it->arg->link()->next()->str() != "const")
+                                checkReturnPtrThis(info, &*it, it->arg->link()->next(), it->arg->link()->next()->link());
+                        }
+                    }
+                }
+            }
+
+            // check of *this is returned
+            else if (!(Token::Match(tok->tokAt(1), "(| * this ;|=") ||
+                       Token::Match(tok->tokAt(1), "(| * this +=") ||
+                       Token::Match(tok->tokAt(1), "operator = (")))
+                operatorEqRetRefThisError(func->token);
+        }
+    }
+    if (!foundReturn)
+        operatorEqRetRefThisError(func->token);
+}
 
 void CheckClass::operatorEqRetRefThis()
 {
@@ -1518,26 +1570,7 @@ void CheckClass::operatorEqRetRefThis()
                     // find the ')'
                     const Token *tok = it->token->next()->link();
 
-                    bool foundReturn = false;
-                    const Token *last = tok->next()->link();
-                    for (tok = tok->tokAt(2); tok && tok != last; tok = tok->next())
-                    {
-                        // check for return of reference to this
-                        if (tok->str() == "return")
-                        {
-                            foundReturn = true;
-                            std::string cast("( " + info->className + " & )");
-                            if (Token::Match(tok->next(), cast.c_str()))
-                                tok = tok->tokAt(4);
-
-                            if (!(Token::Match(tok->tokAt(1), "(| * this ;|=") ||
-                                  Token::Match(tok->tokAt(1), "(| * this +=") ||
-                                  Token::Match(tok->tokAt(1), "operator = (")))
-                                operatorEqRetRefThisError(it->token);
-                        }
-                    }
-                    if (!foundReturn)
-                        operatorEqRetRefThisError(it->token);
+                    checkReturnPtrThis(info, &*it, tok->tokAt(2), tok->next()->link());
                 }
             }
         }
@@ -2194,6 +2227,11 @@ void CheckClass::memsetStructError(const Token *tok, const std::string &memfunc,
 void CheckClass::operatorEqReturnError(const Token *tok)
 {
     reportError(tok, Severity::style, "operatorEq", "'operator=' should return something");
+}
+
+void CheckClass::operatorEqReturnConstError(const Token *tok)
+{
+    reportError(tok, Severity::style, "operatorEqReturnConst", "'operator=' should not return a const reference");
 }
 
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived)
