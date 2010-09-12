@@ -1492,6 +1492,18 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             tok2->str("return");
     }
 
+    // Insert extra ";"
+    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+    {
+        if (!tok2->previous() || Token::Match(tok2->previous(), "[;{}]"))
+        {
+            if (Token::Match(tok2, "assign|callfunc|use assign|callfunc|use"))
+            {
+                tok2->insertToken(";");
+            }
+        }
+    }
+
     // remove redundant braces..
     for (Token *start = tok; start; start = start->next())
     {
