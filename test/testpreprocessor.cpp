@@ -84,6 +84,8 @@ private:
         // #error with extended chars
         TEST_CASE(error2);
 
+        TEST_CASE(error3);
+
         // Handling include guards (don't create extra configuration for it)
         TEST_CASE(includeguard1);
         TEST_CASE(includeguard2);
@@ -447,6 +449,16 @@ private:
         std::istringstream istr(filedata);
         Preprocessor preprocessor(0,this);
         ASSERT_EQUALS("#error\n\n123", preprocessor.read(istr,"test.c",0));
+    }
+
+
+    void error3()
+    {
+        Settings settings;
+        settings.userDefines = "__cplusplus";
+        const std::string code("#error hello world!\n");
+        Preprocessor::getcode(code, "X", "test.c", &settings, this);
+        ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
     }
 
 
@@ -1120,7 +1132,7 @@ private:
         const std::string code("#if X || Y\n"
                                "a1;\n"
                                "#endif\n");
-        const std::string actual = Preprocessor::getcode(code, "X", "test.c", NULL);
+        const std::string actual = Preprocessor::getcode(code, "X", "test.c", NULL, NULL);
         ASSERT_EQUALS("\na1;\n\n", actual);
     }
 
@@ -1575,7 +1587,7 @@ private:
                                     "int z;\n"
                                     "z = 0;\n";
 
-            ASSERT_EQUALS("\n\nint z;\nz = 0;\n", OurPreprocessor::getcode(filedata, "", "", NULL));
+            ASSERT_EQUALS("\n\nint z;\nz = 0;\n", OurPreprocessor::getcode(filedata, "", "", NULL, NULL));
         }
     }
 

@@ -160,7 +160,7 @@ unsigned int CppCheck::check()
 
                 cfg = *it;
                 Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
-                const std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, &_errorLogger);
+                const std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, &_settings, &_errorLogger);
                 t.Stop();
 
                 // If only errors are printed, print filename after the check
@@ -213,7 +213,7 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
     std::list<std::string> configurations;
     std::string filedata = "";
     preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
-    const std::string code = Preprocessor::getcode(filedata, "", filename, &_errorLogger);
+    const std::string code = Preprocessor::getcode(filedata, "", filename, &_settings, &_errorLogger);
 
     // Tokenize..
     Tokenizer tokenizer(&_settings, this);

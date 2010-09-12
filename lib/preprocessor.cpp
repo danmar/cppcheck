@@ -508,7 +508,7 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
     std::string data;
     preprocess(istr, data, configs, filename, includePaths);
     for (std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it)
-        result[ *it ] = Preprocessor::getcode(data, *it, filename, _errorLogger);
+        result[ *it ] = Preprocessor::getcode(data, *it, filename, _settings, _errorLogger);
 }
 
 std::string Preprocessor::removeSpaceNearNL(const std::string &str)
@@ -1165,8 +1165,11 @@ bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, 
 }
 
 
-std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, const std::string &filename, ErrorLogger *errorLogger)
+std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, const std::string &filename, const Settings *settings, ErrorLogger *errorLogger)
 {
+    // For the error report
+    unsigned int lineno = 0;
+
     std::ostringstream ret;
 
     bool match = true;
@@ -1211,6 +1214,8 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
     std::string line;
     while (getline(istr, line))
     {
+        ++lineno;
+
         if (line.compare(0, 11, "#pragma asm") == 0)
         {
             ret << "\n";
@@ -1310,7 +1315,15 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
 
         // #error => return ""
         if (match && line.compare(0, 6, "#error") == 0)
+        {
+            if (settings && !settings->userDefines.empty())
+            {
+                std::ostringstream errmsg;
+                errmsg << line;
+                writeError(filename, lineno, errorLogger, "preprocessorErrorDirective", errmsg.str());
+            }
             return "";
+        }
 
         if (!match && line.compare(0, 8, "#define ") == 0)
         {
@@ -2299,4 +2312,10 @@ void Preprocessor::getErrorMessages(std::ostream &ostr)
                                            "Include file: \"\" not found.",
                                            "missingInclude");
     ostr << errmsg.toXML() << std::endl;
+
+    const ErrorLogger::ErrorMessage errmsg2(locationList,
+                                            Severity::error,
+                                            "#error ...",
+                                            "preprocessorErrorDirective");
+    ostr << errmsg2.toXML() << std::endl;
 }
