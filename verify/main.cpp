@@ -24,18 +24,31 @@
 #include <sstream>
 #include <string>
 
-// Check that array indexes are within bounds
+/**
+ * Check that array indexes are within bounds
+ * 1. Locate array access through: [ .. ]
+ * 2. Try to determine if index is within bounds.
+ * 3. If it fails to determine that the index is within bounds then write warning
+ * \param tokenizer The tokenizer
+ * \param errout output stream to write warnings to
+ */
+
 static void arrayIndex(const Tokenizer &tokenizer, std::ostream &errout)
 {
-    // Check that all array indexes are within bounds..
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
     {
+        // 1. Locate array access through: [ .. ]
         if (tok->str() == "[")
         {
-            // TODO: try to determine if the array index is within bounds
-            ;
+            // 2. try to determine if the array index is within bounds
 
-            // Write error message:
+            // array declaration
+            if (Token::simpleMatch(tok, "[ ]"))
+                continue;
+            if (Token::Match(tok->tokAt(-2), "%type% %var% [ %num% ] ;|="))
+                continue;
+
+            // 3. If it fails to determine that the index is within bounds then write warning
             errout << tokenizer.fileLine(tok)
                    << " failed to determine if given array index is within bounds"
                    << std::endl;
