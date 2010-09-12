@@ -1549,6 +1549,16 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             }
         }
 
+        if (Token::Match(tok, ";| if return ;"))
+        {
+            tok->deleteThis();
+            tok->deleteThis();
+            if (tok->str() == "return")
+                tok->deleteThis();
+            if (tok->strAt(1) == "else")
+                tok->deleteNext();
+        }
+
         // simplify "while1" contents..
         for (Token *tok2 = tok; tok2; tok2 = tok2->next())
         {
