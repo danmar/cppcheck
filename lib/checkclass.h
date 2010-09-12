@@ -295,6 +295,8 @@ private:
             }
             return 0;
         }
+
+        bool isBaseClassFunc(const Token *tok);
     };
 
     /** @brief Information about all namespaces/classes/structrues */

@@ -1879,6 +1879,18 @@ private:
                        "    int i;\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+
+        // Unknown non-member function
+        checkUninitVar("class ABC { };\n"
+                       "class Fred : private ABC\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { Init(); }\n"
+                       "private:\n"
+                       "    int i;\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+
     }
 
     void uninitVarEnum()

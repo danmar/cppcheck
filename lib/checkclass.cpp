@@ -806,6 +806,33 @@ void CheckClass::SpaceInfo::clearAllVar()
 
 //---------------------------------------------------------------------------
 
+bool CheckClass::SpaceInfo::isBaseClassFunc(const Token *tok)
+{
+    // Iterate through each base class...
+    for (unsigned int i = 0; i < derivedFrom.size(); ++i)
+    {
+        const SpaceInfo *info = derivedFrom[i].spaceInfo;
+
+        // Check if base class exists in database
+        if (info)
+        {
+            std::list<Func>::const_iterator it;
+
+            for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
+            {
+                if (it->tokenDef->str() == tok->str())
+                    return true;
+            }
+        }
+
+        // Base class not found so assume it is in it.
+        else
+            return true;
+    }
+
+    return false;
+}
+
 void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::string> &callstack)
 {
     bool Assign = false;
@@ -964,7 +991,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
             else
             {
                 // could be a base class virtual function, so we assume it initializes everything
-                if (!derivedFrom.empty())
+                if (isBaseClassFunc(ftok))
                     assignAllVar();
 
                 // has friends, so we assume it initializes everything
