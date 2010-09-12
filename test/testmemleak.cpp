@@ -720,6 +720,7 @@ private:
         ASSERT_EQUALS(";", simplifycode("; do { dealloc ; alloc ; } while(var) ;"));
         ASSERT_EQUALS("dealloc ; alloc ;", simplifycode("loop { dealloc ; alloc ; }"));
         ASSERT_EQUALS("dealloc ; alloc ;", simplifycode("while1 { dealloc ; alloc ; }"));
+        ASSERT_EQUALS("use ; }", simplifycode("loop { use ; callfunc ; } }"));
 
         // scope..
         // current result - ok

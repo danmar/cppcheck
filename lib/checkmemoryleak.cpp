@@ -1890,6 +1890,16 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
+            // loop { use ; callfunc ; }  =>  use ;
+            // assume that the "callfunc" is not noreturn
+            if (Token::simpleMatch(tok2, "loop { use ; callfunc ; }"))
+            {
+                Token::eraseTokens(tok2, tok2->tokAt(7));
+                tok2->str("use");
+                tok2->insertToken(";");
+                done = false;
+            }
+
             // Delete if block in "alloc ; if(!var) return ;"
             if (Token::Match(tok2, "alloc ; if(!var) return ;"))
             {
