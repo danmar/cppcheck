@@ -710,6 +710,7 @@ private:
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc ; do { } loop ; exit ;"));
         ASSERT_EQUALS("; loop use ;", simplifycode("; loop { loop loop use ; } ;"));
         ASSERT_EQUALS("; }", simplifycode("; loop { if break ; break ; } ; }"));
+        ASSERT_EQUALS("; }", simplifycode("; loop { if continue ; if continue ; } ; }"));
 
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; while(!var) alloc ;"));
 

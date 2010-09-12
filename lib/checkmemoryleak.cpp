@@ -1860,10 +1860,17 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
-            // Reduce "loop if break ; => ";"
+            // Reduce "loop if break|continue ; !!else" => ";"
             if (Token::Match(tok2->next(), "loop if break|continue ; !!else"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(4));
+                done = false;
+            }
+
+            // Reduce "loop { if break|continue ; !!else" => "loop {"
+            if (Token::Match(tok2, "loop { if break|continue ; !!else"))
+            {
+                Token::eraseTokens(tok2->next(), tok2->tokAt(5));
                 done = false;
             }
 
