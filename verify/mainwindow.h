@@ -16,13 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtGui/QApplication>
-#include "mainwindow.h"
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-int main(int argc, char *argv[])
+#include <QtGui/QMainWindow>
+
+namespace Ui
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-    return a.exec();
+    class MainWindow;
 }
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = 0);
+    ~MainWindow();
+
+private:
+    Ui::MainWindow *ui;
+};
+
+#endif // MAINWINDOW_H
