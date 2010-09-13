@@ -65,7 +65,8 @@ private:
     void run()
     {
         // Just read the code into a string. Perform simple cleanup of the code
-        TEST_CASE(readCode);
+        TEST_CASE(readCode1);
+        TEST_CASE(readCode2);
 
         // The bug that started the whole work with the new preprocessor
         TEST_CASE(Bug2190219);
@@ -192,7 +193,7 @@ private:
     }
 
 
-    void readCode()
+    void readCode1()
     {
         const char code[] = " \t a //\n"
                             "  #aa\t /* remove this */\tb  \r\n";
@@ -200,6 +201,15 @@ private:
         std::istringstream istr(code);
         std::string codestr(preprocessor.read(istr,"test.c",0));
         ASSERT_EQUALS("a \n#aa b \n", codestr);
+    }
+
+    void readCode2()
+    {
+        const char code[] = "R\"( \" /* abc */ \n)\"";
+        Preprocessor preprocessor(0,this);
+        std::istringstream istr(code);
+        std::string codestr(preprocessor.read(istr,"test.c",0));
+        ASSERT_EQUALS("\" \\\" /* abc */ \\n\"\n", codestr);
     }
 
 

@@ -334,6 +334,67 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             while (i < str.length() && chNext != ch && chNext != '\n');
         }
 
+        // Rawstring..
+        else if (str.compare(i,2,"R\"")==0)
+        {
+            std::string delim;
+            for (std::string::size_type i2 = i+2; i2 < str.length(); ++i2)
+            {
+                if (i2 > 16 ||
+                    std::isspace(str[i2]) ||
+                    std::iscntrl(str[i2]) ||
+                    str[i2] == ')' ||
+                    str[i2] == '\\')
+                {
+                    delim = " ";
+                    break;
+                }
+                else if (str[i2] == '(')
+                    break;
+
+                delim += str[i2];
+            }
+            const std::string::size_type endpos = str.find(")" + delim + "\"", i);
+            if (delim != " " && endpos != std::string::npos)
+            {
+                unsigned int rawstringnewlines = 0;
+                code << '\"';
+                for (std::string::size_type p = i + 3 + delim.size(); p < endpos; ++p)
+                {
+                    if (str[p] == '\n')
+                    {
+                        rawstringnewlines++;
+                        code << "\\n";
+                    }
+                    else if (std::iscntrl((unsigned char)str[p]) ||
+                             std::isspace((unsigned char)str[p]))
+                    {
+                        code << " ";
+                    }
+                    else if (str[p] == '\\')
+                    {
+                        code << "\\";
+                    }
+                    else if (str[p] == '\"' || str[p] == '\'')
+                    {
+                        code << "\\" << (char)str[p];
+                    }
+                    else
+                    {
+                        code << (char)str[p];
+                    }
+                }
+                code << "\"";
+                if (rawstringnewlines > 0)
+                    code << std::string(rawstringnewlines, '\n');
+                i = endpos + delim.size() + 2;
+            }
+            else
+            {
+                code << "R";
+                previous = 'R';
+            }
+        }
 
         // Just some code..
         else
