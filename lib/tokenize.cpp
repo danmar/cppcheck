@@ -637,14 +637,11 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
 
 void Tokenizer::unsupportedTypedef(const Token *tok) const
 {
-// ###### The ifdef will be removed soon - the message will only be shown if --debug-warnings are given. #######
-#ifdef NDEBUG
     if (!_settings)
         return;
 
     if (!_settings->debugwarnings)
         return;
-#endif
 
     std::ostringstream str;
     const Token *tok1 = tok;
