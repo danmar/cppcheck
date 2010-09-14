@@ -28,6 +28,8 @@
 #include <string>
 #include <set>
 
+#include <QFileDialog>
+
 static void arrayIndex(const Tokenizer &tokenizer, std::set<unsigned int> &errorlines);
 
 static unsigned char readChar(std::istream &istr)
@@ -49,8 +51,22 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(open()));
+}
 
-    const std::string fileName("../lib/tokenize.cpp");
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::open()
+{
+    const std::string fileName = QFileDialog::getOpenFileName(this,
+                                 tr("Open File"),
+                                 "",
+                                 "cpp files (*.cpp)").toStdString();
+    if (fileName.empty())
+        return;
 
     setWindowTitle(fileName.c_str());
 
@@ -99,11 +115,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
         ui->plainTextEdit->setPlainText(QString::fromStdString(report.str()));
     }
-}
 
-MainWindow::~MainWindow()
-{
-    delete ui;
 }
 
 

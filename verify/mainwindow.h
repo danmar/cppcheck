@@ -23,7 +23,7 @@
 
 namespace Ui
 {
-    class MainWindow;
+class MainWindow;
 }
 
 class MainWindow : public QMainWindow
@@ -33,6 +33,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+private slots:
+    void open();
 
 private:
     Ui::MainWindow *ui;
