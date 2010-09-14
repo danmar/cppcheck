@@ -231,7 +231,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             writeError(filename, lineno, _errorLogger, "syntaxError", errmsg.str());
         }
 
-        if (str.compare(i, 6, "#error") == 0 || str.compare(i, 8, "#warning") == 0)
+        if ((str.compare(i, 6, "#error") == 0 && (!_settings || _settings->userDefines.empty())) ||
+            str.compare(i, 8, "#warning") == 0)
         {
             if (str.compare(i, 6, "#error") == 0)
                 code << "#error";
