@@ -1,7 +1,6 @@
 TARGET = cppcheck-verify
 TEMPLATE = app
 INCLUDEPATH += ../lib
-
 SOURCES += main.cpp \
     mainwindow.cpp \
     ../lib/tokenize.cpp \
@@ -13,8 +12,8 @@ SOURCES += main.cpp \
     ../lib/filelister_win32.cpp \
     ../lib/filelister_unix.cpp \
     ../lib/filelister.cpp \
-    ../lib/errorlogger.cpp
-
+    ../lib/errorlogger.cpp \
+    codeeditor.cpp
 HEADERS += mainwindow.h \
     ../lib/tokenize.h \
     ../lib/token.h \
@@ -25,7 +24,6 @@ HEADERS += mainwindow.h \
     ../lib/filelister_win32.h \
     ../lib/filelister_unix.h \
     ../lib/filelister.h \
-    ../lib/errorlogger.h
-
+    ../lib/errorlogger.h \
+    codeeditor.h
 FORMS += mainwindow.ui
-

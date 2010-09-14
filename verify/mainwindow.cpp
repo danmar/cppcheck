@@ -98,26 +98,22 @@ void MainWindow::open()
     // show report..
     {
         std::ostringstream report;
-        report << std::string(8,' ');
-        unsigned int lineno = 1;
         std::ifstream fin(fileName.c_str());
         for (unsigned char c = readChar(fin); fin.good(); c = readChar(fin))
         {
+            if (c & 0x80)
+                continue;
             report << c;
-            if (c == '\n')
-            {
-                ++lineno;
-                if (errorlines.find(lineno) != errorlines.end())
-                    report << std::string(6,'!') << "  ";
-                else
-                    report << std::string(8,' ');
-            }
         }
-        ui->plainTextEdit->setPlainText(QString::fromStdString(report.str()));
+        ui->codeEditor->setPlainText(QString::fromStdString(report.str()));
+
+        QList<int> errorLines;
+        for (std::set<unsigned int>::const_iterator it = errorlines.begin(); it != errorlines.end(); ++it)
+            errorLines.push_back(*it);
+        ui->codeEditor->highlightErrors(errorLines);
     }
 
 }
-
 
 
 
