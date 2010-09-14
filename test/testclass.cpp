@@ -1868,7 +1868,7 @@ private:
                        "private:\n"
                        "    int i;\n"
                        "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
 
         // Unknown non-member function
         checkUninitVar("class Fred\n"

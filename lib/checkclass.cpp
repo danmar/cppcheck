@@ -991,8 +991,13 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
             else
             {
                 // could be a base class virtual function, so we assume it initializes everything
-                if (isBaseClassFunc(ftok))
+                if (func.type != Func::Constructor && isBaseClassFunc(ftok))
+                {
+                    /** @todo False Negative: we should look at the base class functions to see if they
+                     *  call any derived class virtual functions that change the derived class state
+                     */
                     assignAllVar();
+                }
 
                 // has friends, so we assume it initializes everything
                 if (!friendList.empty())
