@@ -1317,13 +1317,20 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
 
         if (line.compare(0, 8, "#define ") == 0)
         {
-            std::string::size_type pos = line.find_first_of(" (", 8);
-            if (pos == std::string::npos)
-                cfgmap[line.substr(8)] = "";
-            else if (line[pos] == ' ')
-                cfgmap[line.substr(8, pos - 8)] = line.substr(pos + 1);
-            else
-                cfgmap[line.substr(8, pos - 8)] = "";
+            match = true;
+            for (std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it)
+                match &= bool(*it);
+
+            if (match)
+            {
+                std::string::size_type pos = line.find_first_of(" (", 8);
+                if (pos == std::string::npos)
+                    cfgmap[line.substr(8)] = "";
+                else if (line[pos] == ' ')
+                    cfgmap[line.substr(8, pos - 8)] = line.substr(pos + 1);
+                else
+                    cfgmap[line.substr(8, pos - 8)] = "";
+            }
         }
 
         else if (line.find("#elif ") == 0)

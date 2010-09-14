@@ -186,7 +186,8 @@ private:
 
         // define and then ifdef
         TEST_CASE(define_ifdef);
-        TEST_CASE(define_ifndef);
+        TEST_CASE(define_ifndef1);
+        TEST_CASE(define_ifndef2);
         TEST_CASE(endfile);
 
         TEST_CASE(redundant_config);
@@ -2217,7 +2218,7 @@ private:
         }
     }
 
-    void define_ifndef()
+    void define_ifndef1()
     {
         const char filedata[] = "#define A(x) (x)\n"
                                 "#ifndef A\n"
@@ -2234,6 +2235,21 @@ private:
         ASSERT_EQUALS("\n\n\n\n", actual[""]);
         TODO_ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS(2, actual.size());
+    }
+
+    void define_ifndef2()
+    {
+        const char filedata[] = "#ifdef A\n"
+                                "#define B char\n"
+                                "#endif\n"
+                                "#ifndef B\n"
+                                "#define B int\n"
+                                "#endif\n"
+                                "B me;\n";
+
+        // Preprocess => actual result..
+        ASSERT_EQUALS("\n\n\n\n\n\nint me;\n", Preprocessor::getcode(filedata, "", "a.cpp", NULL, NULL));
+        ASSERT_EQUALS("\n\n\n\n\n\nchar me;\n", Preprocessor::getcode(filedata, "A", "a.cpp", NULL, NULL));
     }
 
     void redundant_config()
