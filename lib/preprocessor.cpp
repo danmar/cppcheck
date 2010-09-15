@@ -1534,7 +1534,8 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
         if (fileOpened)
         {
-            std::string tempFile = getFileLister()->simplifyPath(filename.c_str());
+            filename = getFileLister()->simplifyPath(filename.c_str());
+            std::string tempFile = filename;
             std::transform(tempFile.begin(), tempFile.end(), tempFile.begin(), tolowerWrapper);
             if (handledFiles.find(tempFile) != handledFiles.end())
             {
