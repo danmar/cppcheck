@@ -126,7 +126,7 @@ public:
     public:
         ArrayInfo();
         ArrayInfo(const ArrayInfo &);
-        const ArrayInfo & operator=(const ArrayInfo &ai);
+        ArrayInfo & operator=(const ArrayInfo &ai);
 
         /**
          * Create array info with specified data
