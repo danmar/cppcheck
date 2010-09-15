@@ -1817,6 +1817,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo(int a, int b)\n"
+                       "{\n"
+                       "    int x; x = (a<b) ? 1 : 0;\n"
+                       "    int y = y;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: y\n", errout.str());
+
         // while..
         checkUninitVar("int f()\n"
                        "{\n"
