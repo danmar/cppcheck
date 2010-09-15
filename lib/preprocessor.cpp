@@ -247,7 +247,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
         // We have finished a line that didn't contain any comment
         // (the '\n' is swallowed when a // comment is detected)
-        if (ch == '\n' && !suppressionIDs.empty())
+        if ((ch == '\n' || str.compare(i,2,"//")==0) && !suppressionIDs.empty())
         {
             // Add the suppressions.
             for (size_t j(0); j < suppressionIDs.size(); ++j)
