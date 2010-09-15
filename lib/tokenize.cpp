@@ -5143,22 +5143,22 @@ void Tokenizer::simplifyVarDecl()
             {
                 Token *eq = tok2;
 
-                unsigned int parlevel = 0;
+                unsigned int level = 0;
                 while (tok2)
                 {
-                    if (Token::Match(tok2, "[{(<]"))
+                    if (Token::Match(tok2, "[{(]"))
+                        tok2 = tok2->link();
+
+                    else if (tok2->str() == "<")
                     {
-                        ++parlevel;
+                        if (tok2->previous()->isName() && !tok2->previous()->varId())
+                            ++level;
                     }
 
-                    else if (Token::Match(tok2, "[})>]"))
-                    {
-                        if (parlevel == 0)
-                            break;
-                        --parlevel;
-                    }
+                    else if (level > 0 && tok2->str() == ">")
+                        --level;
 
-                    else if (parlevel == 0 && strchr(";,", tok2->str()[0]))
+                    else if (level == 0 && strchr(";,", tok2->str()[0]))
                     {
                         // "type var ="   =>   "type var; var ="
                         Token *VarTok = type0->tokAt((int)typelen);

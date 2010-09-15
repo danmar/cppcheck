@@ -206,6 +206,7 @@ private:
         TEST_CASE(vardecl10);
         TEST_CASE(vardecl11);
         TEST_CASE(vardecl12);
+        TEST_CASE(vardecl13);
         TEST_CASE(vardecl_stl);
         TEST_CASE(vardecl_template);
         TEST_CASE(vardecl_union);
@@ -3545,6 +3546,14 @@ private:
     {
         const char code[] = "struct A { public: B a, b, c, d; };";
         ASSERT_EQUALS("struct A { public: B a ; B b ; B c ; B d ; } ;", tokenizeAndStringify(code));
+    }
+
+    void vardecl13()
+    {
+        const char code[] = "void f() {\n"
+                            "    int a = (x < y) ? 1 : 0;\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\nint a ; a = ( x < y ) ? 1 : 0 ;\n}", tokenizeAndStringify(code));
     }
 
     void volatile_variables()
