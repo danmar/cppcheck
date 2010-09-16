@@ -86,6 +86,11 @@ private:
         TEST_CASE(if_str_find);
 
         TEST_CASE(size1);
+
+        // Redundant conditions..
+        // if (ints.find(123) != ints.end()) ints.remove(123);
+        TEST_CASE(redundantCondition1);
+        TEST_CASE(redundantCondition2);
     }
 
     void check(const std::string &code)
@@ -944,6 +949,28 @@ private:
               "    fun(x.size());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantCondition1()
+    {
+        check("void f()\n"
+              "{\n"
+              "    if (haystack.find(needle) != haystack.end())\n"
+              "        haystack.remove(needle);"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. The remove function in the STL will not do anything if element doesn't exist\n", errout.str());
+    }
+
+    void redundantCondition2()
+    {
+        check("void f()\n"
+              "{\n"
+              "    if (haystack.find(needle) != haystack.end())\n"
+              "    {\n"
+              "        haystack.remove(needle);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. The remove function in the STL will not do anything if element doesn't exist\n", errout.str());
     }
 
 };

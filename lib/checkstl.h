@@ -57,6 +57,7 @@ public:
 
         // Style check
         checkStl.size();
+        checkStl.redundantCondition();
     }
 
 
@@ -105,6 +106,11 @@ public:
      */
     void size();
 
+    /**
+     * Check for redundant condition 'if (ints.find(1) != ints.end()) ints.remove(123);'
+     * */
+    void redundantCondition();
+
 private:
 
     /**
@@ -125,6 +131,7 @@ private:
     void if_findError(const Token *tok, bool str);
     void sizeError(const Token *tok);
     void eraseByValueError(const Token *tok, const std::string &containername, const std::string &itername);
+    void redundantIfRemoveError(const Token *tok);
 
     void getErrorMessages()
     {
@@ -141,6 +148,7 @@ private:
         if_findError(0, true);
         sizeError(0);
         eraseByValueError(0, "container", "iterator");
+        redundantIfRemoveError(0);
     }
 
     std::string name() const
@@ -157,7 +165,8 @@ private:
                "* dereferencing an erased iterator\n"
                "* for vectors: using iterator/pointer after push_back has been used\n"
                "* optimisation: use empty() instead of size() to guarantee fast code\n"
-               "* suspicious condition when using find\n";
+               "* suspicious condition when using find\n"
+               "* redundant condition\n";
     }
 
     bool isStlContainer(const Token *tok);

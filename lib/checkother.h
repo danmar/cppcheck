@@ -71,7 +71,6 @@ public:
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Coding style checks
-        checkOther.warningRedundantCode();
         checkOther.checkConstantFunctionParameter();
         checkOther.checkIncompleteStatement();
         checkOther.checkEmptyStringTest();
@@ -103,9 +102,6 @@ public:
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
-
-    /** @brief Redundant code: if (p) delete p; */
-    void warningRedundantCode();
 
     /**
      * @brief Invalid function usage (invalid radix / overlapping data)
@@ -163,11 +159,6 @@ public:
 
     void lookupVar(const Token *tok1, const std::string &varname);
 
-    // Redundant condition
-    // if (haystack.find(needle) != haystack.end())
-    //    haystack.remove(needle);
-    void redundantCondition2();
-
     /** @brief %Check for inefficient empty string test*/
     void checkEmptyStringTest();
 
@@ -194,8 +185,6 @@ public:
 
     // Error messages..
     void cstyleCastError(const Token *tok);
-    void redundantIfDelete0Error(const Token *tok);
-    void redundantIfRemoveError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
     void udivError(const Token *tok);
@@ -236,8 +225,6 @@ public:
 
         // style
         cstyleCastError(0);
-        redundantIfDelete0Error(0);
-        redundantIfRemoveError(0);
         dangerousUsageStrtolError(0);
         unusedStructMemberError(0, "structname", "variable");
         passedByValueError(0, "parametername");

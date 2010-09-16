@@ -24,7 +24,6 @@ SOURCES += testautovariables.cpp \
            testmemleak.cpp \
            testother.cpp \
            testpreprocessor.cpp \
-           testredundantif.cpp \
            testrunner.cpp \
            testsimplifytokens.cpp \
            teststl.cpp \

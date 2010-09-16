@@ -711,3 +711,40 @@ void CheckStl::sizeError(const Token *tok)
     const bool verbose(_settings ? _settings->_verbose : true);
     reportError(tok, Severity::style, "stlSize", "Use " + varname + ".empty() instead of " + varname + ".size() to guarantee fast code." + (verbose ? " size() can take linear time but empty() is guaranteed to take constant time." : ""));
 }
+
+
+
+void CheckStl::redundantCondition()
+{
+    const char pattern[] = "if ( %var% . find ( %any% ) != %var% . end ( ) ) "
+                           "{|{|"
+                           "    %var% . remove ( %any% ) ; "
+                           "}|}|";
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern);
+    while (tok)
+    {
+        bool b(tok->tokAt(15)->str() == "{");
+
+        // Get tokens for the fields %var% and %any%
+        const Token *var1 = tok->tokAt(2);
+        const Token *any1 = tok->tokAt(6);
+        const Token *var2 = tok->tokAt(9);
+        const Token *var3 = tok->tokAt(b ? 16 : 15);
+        const Token *any2 = tok->tokAt(b ? 20 : 19);
+
+        // Check if all the "%var%" fields are the same and if all the "%any%" are the same..
+        if (var1->str() == var2->str() &&
+            var2->str() == var3->str() &&
+            any1->str() == any2->str())
+        {
+            redundantIfRemoveError(tok);
+        }
+
+        tok = Token::findmatch(tok->next(), pattern);
+    }
+}
+
+void CheckStl::redundantIfRemoveError(const Token *tok)
+{
+    reportError(tok, Severity::style, "redundantIfRemove", "Redundant condition. The remove function in the STL will not do anything if element doesn't exist");
+}

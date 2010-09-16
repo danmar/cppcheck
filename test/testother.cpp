@@ -39,9 +39,6 @@ private:
         TEST_CASE(zeroDiv3);
         TEST_CASE(zeroDiv4);
 
-        TEST_CASE(delete1);
-        TEST_CASE(delete2);
-
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
@@ -130,7 +127,6 @@ private:
         // Simplify token list..
         tokenizer.simplifyTokenList();
 
-        checkOther.warningRedundantCode();
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
         checkOther.checkEmptyStringTest();
@@ -247,137 +243,6 @@ private:
               "   div_t divresult = div (1,0.5);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void delete1()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    if (p)\n"
-              "    {\n"
-              "        delete p;\n"
-              "        z = 0;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (p)\n"
-              "        delete p;\n"
-              "    else\n"
-              "        p = new P();\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (0 != g->p)\n"
-              "        delete this->p;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (0 != g->p)\n"
-              "    {\n"
-              "        delete g->p;\n"
-              "        g->z = 0;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (0 != this->g->a)\n"
-              "        delete this->p->a;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void delete2()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    if (p)\n"
-              "    {\n"
-              "        delete p;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (p)\n"
-              "    {\n"
-              "        delete p;\n"
-              "        p = 0;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (p)\n"
-              "        delete p;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (p != NULL)\n"
-              "        delete p;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (p != NULL)\n"
-              "    {\n"
-              "        delete p;\n"
-              "        p = NULL;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (p)\n"
-              "        delete [] p;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (0 != this->p)\n"
-              "        delete this->p;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (0 != this->p->a)\n"
-              "        delete this->p->a;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
-
-
-        check("void Foo::deleteInstance()\n"
-              "{\n"
-              "    if (Foo::instance != NULL)\n"
-              "        delete Foo::instance;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
-
-        check("void Foo::deleteInstance()\n"
-              "{\n"
-              "    if (Foo::instance != NULL)\n"
-              "    {\n"
-              "        delete Foo::instance;\n"
-              "        Foo::instance = NULL;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
     }
 
 
