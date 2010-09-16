@@ -1,5 +1,5 @@
 CXXFLAGS=-Wall -Wextra -Wshadow -pedantic -Wno-long-long -Wfloat-equal -Wcast-qual -Wsign-conversion -g
-CXX=g++
+CXX=clang++
 BIN=${DESTDIR}/usr/bin
 
 # For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml
