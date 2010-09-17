@@ -150,6 +150,15 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
 
     for (; tok; tok = tok->next())
     {
+        // might be a noreturn function..
+        if (Token::simpleMatch(tok->tokAt(-2), ") ; }") &&
+            Token::Match(tok->tokAt(-2)->link()->tokAt(-2), "[;{}] %var% (") &&
+            tok->tokAt(-2)->link()->previous()->varId() == 0)
+        {
+            ExecutionPath::bailOut(checks);
+            return;
+        }
+
         if (tok->str() == "}" || tok->str() == "break")
             return;
 
@@ -302,15 +311,6 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
         }
 
         if (Token::Match(tok, "abort|exit ("))
-        {
-            ExecutionPath::bailOut(checks);
-            return;
-        }
-
-        // might be a noreturn function..
-        if (Token::Match(tok->previous(), "[;{}] %var% (") &&
-            Token::simpleMatch(tok->next()->link(), ") ; }") &&
-            tok->varId() == 0)
         {
             ExecutionPath::bailOut(checks);
             return;
