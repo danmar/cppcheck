@@ -460,9 +460,6 @@ void checkExecutionPaths(const Token *tok, ExecutionPath *c)
                 delete checks.back();
                 checks.pop_back();
             }
-
-            // skip this scope - it has been checked
-            tok = tok->link();
         }
     }
 }

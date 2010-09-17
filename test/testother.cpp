@@ -74,7 +74,8 @@ private:
         TEST_CASE(uninitvar_arrays);    // arrays
         TEST_CASE(uninitvar_class);     // class/struct
         TEST_CASE(uninitvar_enum);      // enum variables
-        TEST_CASE(uninitvar_if);        // handling if/while
+        TEST_CASE(uninitvar_if);        // handling if
+        TEST_CASE(uninitvar_loops);     // handling for/while
         TEST_CASE(uninitvar_switch);    // handling switch
         TEST_CASE(uninitvar_references); // references
         TEST_CASE(uninitvar_strncpy);   // strncpy doesn't always 0-terminate
@@ -1427,7 +1428,8 @@ private:
                          "        *p = 0;\n"
                          "    }\n"
                          "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: p\n"   // <-- duplicate
+                      "[test.cpp:5]: (error) Uninitialized variable: p\n", errout.str());
 
         // +=
         checkUninitVar("void f()\n"
@@ -1689,25 +1691,6 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: y\n", errout.str());
 
-        // while..
-        checkUninitVar("int f()\n"
-                       "{\n"
-                       "    int i;\n"
-                       "    while (fgets())\n"
-                       "        i = 1;\n"
-                       "    return i;"
-                       "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: i\n", errout.str());
-
-        checkUninitVar("void f(int i)\n"
-                       "{\n"
-                       "    int a;\n"
-                       "    while (i < 10)\n"
-                       "        i++;\n"
-                       "    a++;"
-                       "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: a\n", errout.str());
-
         // ; { .. }
         checkUninitVar("int foo()\n"
                        "{\n"
@@ -1731,6 +1714,40 @@ private:
                        "  { }\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+
+    // handling for/while loops..
+    void uninitvar_loops()
+    {
+        // for..
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    for (int i = 0; i < 4; ++i) {\n"
+                       "        int a;\n"
+                       "        b(4*a);\n"
+                       "    }"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
+
+        // while..
+        checkUninitVar("int f()\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    while (fgets())\n"
+                       "        i = 1;\n"
+                       "    return i;"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: i\n", errout.str());
+
+        checkUninitVar("void f(int i)\n"
+                       "{\n"
+                       "    int a;\n"
+                       "    while (i < 10)\n"
+                       "        i++;\n"
+                       "    a++;"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: a\n", errout.str());
     }
 
     // switch..
