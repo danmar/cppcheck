@@ -13,21 +13,24 @@ SOURCES += testautovariables.cpp \
            testbufferoverrun.cpp \
            testcharvar.cpp \
            testclass.cpp \
+           testcmdlineparser.cpp \
            testconstructors.cpp \
            testcppcheck.cpp \
-           testdangerousfunctions.cpp \
            testdivision.cpp \
            testexceptionsafety.cpp \
            testfilelister.cpp \
            testincompletestatement.cpp \
            testmathlib.cpp \
            testmemleak.cpp \
+           testobsoletefunctions.cpp \
            testother.cpp \
            testpreprocessor.cpp \
            testrunner.cpp \
+           testsettings.cpp \
            testsimplifytokens.cpp \
            teststl.cpp \
            testsuite.cpp \
+           testthreadexecutor.cpp \
            testtoken.cpp \
            testtokenize.cpp \
            testunusedfunctions.cpp \
