@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="cppcheck"
 	ProjectGUID="{7D0D241B-E144-3FAC-ABD3-8D1BBA4B600A}"
 	RootNamespace="cppcheck"
@@ -213,6 +213,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\checkobsoletefunctions.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\checkother.cpp"
 				>
 			</File>
@@ -246,6 +250,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\filelister.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\filelister_unix.cpp"
 				>
 			</File>
 			<File
@@ -319,6 +327,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\checkobsoletefunctions.h"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\checkother.h"
 				>
 			</File>
@@ -356,6 +368,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\filelister.h"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\filelister_unix.h"
 				>
 			</File>
 			<File
