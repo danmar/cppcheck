@@ -532,6 +532,23 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int> foo;\n"
+              "    std::vector<int>::iterator it;\n"
+              "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "    {\n"
+              "        if (somecondition) {\n"
+              "            if (*it == 1)\n"
+              "                foo.erase(it);\n"
+              "            else\n"
+              "                *it = 0;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5] (error) Dereferencing invalid iterator 'it'", errout.str());
     }
 
     void eraseGoto()
