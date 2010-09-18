@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="test"
 	ProjectGUID="{BA98E531-D8B3-39CB-8171-064854404B81}"
 	Keyword="Qt4VSv1.0"
@@ -211,6 +211,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\checkobsoletefunctions.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\checkother.cpp"
 				>
 			</File>
@@ -243,6 +247,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\filelister_unix.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\filelister_win32.cpp"
 				>
 			</File>
@@ -263,19 +271,19 @@
 				>
 			</File>
 			<File
-				RelativePath="testautovariables.cpp"
+				RelativePath=".\testautovariables.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testbufferoverrun.cpp"
+				RelativePath=".\testbufferoverrun.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testcharvar.cpp"
+				RelativePath=".\testcharvar.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testclass.cpp"
+				RelativePath=".\testclass.cpp"
 				>
 			</File>
 			<File
@@ -283,83 +291,95 @@
 				>
 			</File>
 			<File
-				RelativePath="testconstructors.cpp"
+				RelativePath=".\testconstructors.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testcppcheck.cpp"
+				RelativePath=".\testcppcheck.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testdivision.cpp"
+				RelativePath=".\testdivision.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testexceptionsafety.cpp"
+				RelativePath=".\testexceptionsafety.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testfilelister.cpp"
+				RelativePath=".\testfilelister.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testincompletestatement.cpp"
+				RelativePath=".\testincompletestatement.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testmathlib.cpp"
+				RelativePath=".\testmathlib.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testmemleak.cpp"
+				RelativePath=".\testmemleak.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testother.cpp"
+				RelativePath=".\testobsoletefunctions.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testpreprocessor.cpp"
+				RelativePath=".\testother.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testredundantif.cpp"
+				RelativePath=".\testpreprocessor.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testrunner.cpp"
+				RelativePath=".\testrunner.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testsimplifytokens.cpp"
+				RelativePath=".\testsettings.cpp"
 				>
 			</File>
 			<File
-				RelativePath="teststl.cpp"
+				RelativePath=".\testsimplifytokens.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testsuite.cpp"
+				RelativePath=".\teststl.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testtoken.cpp"
+				RelativePath=".\testsuite.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testtokenize.cpp"
+				RelativePath=".\testthreadexecutor.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testunusedfunctions.cpp"
+				RelativePath=".\testtoken.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testunusedprivfunc.cpp"
+				RelativePath=".\testtokenize.cpp"
 				>
 			</File>
 			<File
-				RelativePath="testunusedvar.cpp"
+				RelativePath=".\testunusedfunctions.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testunusedprivfunc.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testunusedvar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\cli\threadexecutor.cpp"
 				>
 			</File>
 			<File
@@ -421,6 +441,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\checkobsoletefunctions.h"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\checkother.h"
 				>
 			</File>
@@ -457,6 +481,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\filelister_unix.h"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\filelister_win32.h"
 				>
 			</File>
@@ -477,7 +505,11 @@
 				>
 			</File>
 			<File
-				RelativePath="testsuite.h"
+				RelativePath=".\testsuite.h"
+				>
+			</File>
+			<File
+				RelativePath="..\cli\threadexecutor.h"
 				>
 			</File>
 			<File
