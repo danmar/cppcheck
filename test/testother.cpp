@@ -1057,6 +1057,17 @@ private:
                          "}\n");
         ASSERT_EQUALS("[test.cpp:12]: (error) Possible null pointer dereference: Q\n", errout.str());
 
+        // Ticket #2052 (false positive for 'else continue;')
+        checkNullPointer("void f() {\n"
+                         "    for (int x = 0; x < 5; ++x) {"
+                         "        int *p = 0;\n"
+                         "        if (a(x)) p=b(x);\n"
+                         "        else continue;\n"
+                         "        *p = 0;\n"
+                         "    }\n"
+                         "}");
+        ASSERT_EQUALS("", errout.str());
+
         // function pointer..
         checkNullPointer("void foo()\n"
                          "{\n"

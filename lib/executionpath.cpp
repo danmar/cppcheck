@@ -427,7 +427,10 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
         }
 
         // return/throw ends all execution paths
-        if (tok->str() == "return" || tok->str() == "throw")
+        if (tok->str() == "return" ||
+            tok->str() == "throw" ||
+            tok->str() == "continue" ||
+            tok->str() == "break")
         {
             ExecutionPath::bailOut(checks);
         }
