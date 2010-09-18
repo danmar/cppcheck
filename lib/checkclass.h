@@ -339,7 +339,7 @@ private:
         memsetStructError(0, "memfunc", "classname");
         operatorEqReturnError(0);
         operatorEqReturnConstError(0);
-        virtualDestructorError(0, "Base", "Derived");
+        //virtualDestructorError(0, "Base", "Derived");
         thisSubtractionError(0);
         operatorEqRetRefThisError(0);
         operatorEqToSelfError(0);
@@ -357,7 +357,7 @@ private:
                "* Missing constructors\n"
                "* Are all variables initialized by the constructors?\n"
                "* [[CheckMemset|Warn if memset, memcpy etc are used on a class]]\n"
-               "* If it's a base class, check that the destructor is virtual\n"
+               //"* If it's a base class, check that the destructor is virtual\n"
                "* Are there unused private functions\n"
                "* 'operator=' should return reference to self\n"
                "* 'operator=' should check for assignment to self\n"
