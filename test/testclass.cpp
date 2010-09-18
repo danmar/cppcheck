@@ -88,7 +88,6 @@ private:
         TEST_CASE(noConstructor5);
 
         TEST_CASE(operatorEq1);
-        TEST_CASE(operatorEq2);
         TEST_CASE(operatorEqRetRefThis1);
         TEST_CASE(operatorEqRetRefThis2); // ticket #1323
         TEST_CASE(operatorEqRetRefThis3); // ticket #1405
@@ -230,16 +229,6 @@ private:
                        "    void operator=(const A&);\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return something\n", errout.str());
-    }
-
-    void operatorEq2()
-    {
-        checkOpertorEq("class A\n"
-                       "{\n"
-                       "public:\n"
-                       "    const A& operator=(const A&);\n"
-                       "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should not return a const reference\n", errout.str());
     }
 
     // Check that operator Equal returns reference to this

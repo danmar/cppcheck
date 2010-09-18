@@ -1515,8 +1515,6 @@ void CheckClass::operatorEq()
             {
                 if (it->token->strAt(-2) == "void")
                     operatorEqReturnError(it->token->tokAt(-2));
-                else if (Token::Match(it->token->tokAt(-4), "const %type% &"))
-                    operatorEqReturnConstError(it->token->tokAt(-4));
             }
         }
     }
@@ -2259,11 +2257,6 @@ void CheckClass::memsetStructError(const Token *tok, const std::string &memfunc,
 void CheckClass::operatorEqReturnError(const Token *tok)
 {
     reportError(tok, Severity::style, "operatorEq", "'operator=' should return something");
-}
-
-void CheckClass::operatorEqReturnConstError(const Token *tok)
-{
-    reportError(tok, Severity::style, "operatorEqReturnConst", "'operator=' should not return a const reference");
 }
 
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived)
