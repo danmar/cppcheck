@@ -131,6 +131,10 @@ void CheckStl::iterators()
             {
                 validIterator = true;
             }
+            else if (tok2->str() == "else")
+            {
+                validIterator = true;
+            }
         }
     }
 }
