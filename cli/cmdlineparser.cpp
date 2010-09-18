@@ -93,7 +93,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             const std::string errmsg = _settings->addEnabled("style");
             if (!errmsg.empty())
             {
-                std::cout << errmsg;
+                PrintMessage(errmsg);
                 return false;
             }
         }
@@ -121,7 +121,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             const std::string errmsg(_settings->nomsg.parseFile(f));
             if (!errmsg.empty())
             {
-                std::cout << errmsg;
+                PrintMessage(errmsg);
                 return false;
             }
         }
@@ -152,7 +152,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             const std::string errmsg = _settings->addEnabled("unusedFunctions");
             if (!errmsg.empty())
             {
-                std::cout << errmsg;
+                PrintMessage(errmsg);
                 return false;
             }
         }
@@ -166,7 +166,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             const std::string errmsg = _settings->addEnabled(argv[i] + 9);
             if (!errmsg.empty())
             {
-                std::cout << errmsg;
+                PrintMessage(errmsg);
                 return false;
             }
         }
