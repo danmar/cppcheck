@@ -1894,7 +1894,7 @@ public:
      * @param macrocode output string
      * @return true if the expanding was successful
      */
-    bool code(const std::vector<std::string> &params2, const std::map<std::string, PreprocessorMacro *> macros, std::string &macrocode) const
+    bool code(const std::vector<std::string> &params2, const std::map<std::string, PreprocessorMacro *> &macros, std::string &macrocode) const
     {
         if (_nopar || (_params.empty() && _variadic))
         {
@@ -2007,6 +2007,17 @@ public:
 
                                 break;
                             }
+                        }
+
+                        // expand nopar macro
+                        const std::map<std::string, PreprocessorMacro *>::const_iterator it = macros.find(str);
+                        if (it != macros.end() && it->second->_macro.find("(") == std::string::npos)
+                        {
+                            str = it->second->_macro;
+                            if (str.find(" ") != std::string::npos)
+                                str.erase(0, str.find(" "));
+                            else
+                                str = "";
                         }
                     }
                     if (_variadic && tok->str() == "," && tok->next() && tok->next()->str() == "##")

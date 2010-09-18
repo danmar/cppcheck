@@ -1411,7 +1411,7 @@ private:
             const char filedata[] = "#define A 4\n"
                                     "#define B(a) a,A\n"
                                     "B(2);\n";
-            ASSERT_EQUALS("\n\n2,4;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n2, 4;\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -1642,6 +1642,14 @@ private:
                                  "#define ab(A,B) AB(A,B)\n"
                                  "ab(a,AB(b,c))\n";
         ASSERT_EQUALS("\n\nabc\n", OurPreprocessor::expandMacros(filedata5));
+
+        // Ticket #1802
+        const char filedata6[] = "#define AB_(A,B) A ## B\n"
+                                 "#define AB(A,B) AB_(A,B)\n"
+                                 "#define ab(suf) AB(X, AB_(_, suf))\n"
+                                 "#define X x\n"
+                                 "ab(y)\n";
+        ASSERT_EQUALS("\n\n\n\nx_y\n", OurPreprocessor::expandMacros(filedata6));
     }
 
 
