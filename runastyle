@@ -1,7 +1,7 @@
 #!/bin/bash
 
 style="--style=ansi --min-conditional-indent=0"
-options="--pad-header --unpad-paren" --suffix=none
+options="--pad-header --unpad-paren --suffix=none"
 
 astyle $style $options cli/*.cpp
 astyle $style $options cli/*.h
