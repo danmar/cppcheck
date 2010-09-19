@@ -1983,13 +1983,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
-            // use; if return; dealloc; => if return; dealloc;
-            if (Token::Match(tok2, "[;{}] use ; if return ; dealloc ;"))
-            {
-                Token::eraseTokens(tok2, tok2->tokAt(3));
-                done = false;
-            }
-
             // Delete first part in "use ; return use ;"
             if (Token::Match(tok2, "[;{}] use ; return use ;"))
             {

@@ -310,6 +310,7 @@ private:
         TEST_CASE(func16);
         TEST_CASE(func17);
         TEST_CASE(func18);
+        TEST_CASE(func19);      // Ticket #2056 - if (!f(p)) return 0;
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -752,7 +753,7 @@ private:
         ASSERT_EQUALS("; alloc ; if dealloc ; dealloc ;", simplifycode("; alloc ; if { dealloc ; } dealloc ;"));
 
         // use ; dealloc ;
-        ASSERT_EQUALS("; alloc ; if return ; dealloc ;", simplifycode("; alloc ; use ; if { return ; } dealloc ;"));
+        ASSERT_EQUALS("; alloc ; use ; if return ; dealloc ;", simplifycode("; alloc ; use ; if { return ; } dealloc ;"));
     }
 
 
@@ -1666,6 +1667,21 @@ private:
               "{\n"
               "    int *p = malloc(16);\n"
               "    free_pointers(1, p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void func19()
+    {
+        // Ticket #2056
+        check("bool a(int *p) {\n"
+              "    return p;\n"
+              "}\n"
+              "\n"
+              "void b() {\n"
+              "    int *p = malloc(16);\n"
+              "    if (!a(p)) return;\n"
+              "    free(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
