@@ -1318,15 +1318,17 @@ void CheckClass::privateFunctions()
                     inclass = false;
             }
 
-            if (Token::Match(ftok, ("class " + classname + " :|{").c_str()))
+            else if (ftok->str() == "class" &&
+                     ftok->next()->str() == classname &&
+                     Token::Match(ftok->tokAt(2), ":|{"))
             {
                 indent_level = 0;
                 inclass = true;
             }
 
             // Check member class functions to see what functions are used..
-            if ((inclass && indent_level == 1 && Token::Match(ftok, "%var% (")) ||
-                (Token::Match(ftok, (classname + " :: ~| %var% (").c_str())))
+            else if ((inclass && indent_level == 1 && Token::Match(ftok, "%var% (")) ||
+                     (ftok->str() == classname && Token::Match(ftok->next(), ":: ~| %var% (")))
             {
                 while (ftok && ftok->str() != ")")
                     ftok = ftok->next();
