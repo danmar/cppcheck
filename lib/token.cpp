@@ -346,17 +346,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 {
     const char *p = pattern;
     bool firstpattern = true;
-    bool first = true;
     while (*p)
     {
-        if (!first)
-        {
-            while (*p && *p != ' ')
-                ++p;
-        }
-
-        first = false;
-
         // Skip spaces in pattern..
         while (*p == ' ')
             ++p;
@@ -369,20 +360,27 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         {
             // If we have no tokens, pattern "!!else" should return true
             if (p[1] == '!' && p[0] == '!' && p[2] != '\0')
+            {
+                while (*p && *p != ' ')
+                    ++p;
                 continue;
+            }
             else
                 return false;
         }
 
         // If we are in the first token, we skip all initial !! patterns
         if (firstpattern && !tok->previous() && tok->next() && p[1] == '!' && p[0] == '!' && p[2] != '\0')
+        {
+            while (*p && *p != ' ')
+                ++p;
             continue;
+        }
 
         firstpattern = false;
 
         // Compare the first character of the string for optimization reasons
         // before doing more detailed checks.
-        bool patternIdentified = false;
         if (p[0] == '%')
         {
             // TODO: %var% should match only for
@@ -393,8 +391,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             {
                 if (!tok->isName())
                     return false;
-
-                patternIdentified = true;
+                p += 5;
             }
 
             // Type..
@@ -409,13 +406,13 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 if (tok->str() == "delete")
                     return false;
 
-                patternIdentified = true;
+                p += 6;
             }
 
             // Accept any token
             else if (firstWordEquals(p, "%any%") == 0)
             {
-                patternIdentified = true;
+                p += 5;
             }
 
             else if (firstWordEquals(p, "%varid%") == 0)
@@ -433,41 +430,46 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 if (tok->varId() != varid)
                     return false;
 
-                patternIdentified = true;
+                p += 7;
             }
 
             else if (firstWordEquals(p, "%num%") == 0)
             {
                 if (!tok->isNumber())
                     return false;
-
-                patternIdentified = true;
+                p += 5;
             }
 
             else if (firstWordEquals(p, "%bool%") == 0)
             {
                 if (!tok->isBoolean())
                     return false;
-
-                patternIdentified = true;
+                p += 6;
             }
 
             else if (firstWordEquals(p, "%str%") == 0)
             {
                 if (tok->_str[0] != '\"')
                     return false;
-
-                patternIdentified = true;
+                p += 5;
             }
-        }
 
-        if (patternIdentified)
-        {
-            // Pattern was identified already above.
+            else if (firstWordEquals(p, tok->_str.c_str()))
+            {
+                p += tok->_str.length();
+            }
+
+            else
+            {
+                return false;
+            }
+
+            tok = tok->next();
+            continue;
         }
 
         // [.. => search for a one-character token..
-        else if (p[0] == '[' && chrInFirstWord(p, ']') && tok->_str.length() == 1)
+        else if (p[0] == '[' && tok->_str.length() == 1 && chrInFirstWord(p, ']'))
         {
             const char *temp = p + 1;
             bool chrFound = false;
@@ -507,6 +509,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             if (res == 0)
             {
                 // Empty alternative matches, use the same token on next round
+                while (*p && *p != ' ')
+                    ++p;
                 continue;
             }
             else if (res == -1)
@@ -524,7 +528,12 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         }
 
         else if (firstWordEquals(p, tok->_str.c_str()) != 0)
+        {
             return false;
+        }
+
+        while (*p && *p != ' ')
+            ++p;
 
         tok = tok->next();
     }
