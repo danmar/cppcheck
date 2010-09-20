@@ -90,6 +90,7 @@
     <ClCompile Include="checkclass.cpp" />
     <ClCompile Include="checkexceptionsafety.cpp" />
     <ClCompile Include="checkmemoryleak.cpp" />
+    <ClCompile Include="checkobsoletefunctions.cpp" />
     <ClCompile Include="checkother.cpp" />
     <ClCompile Include="checkstl.cpp" />
     <ClCompile Include="checkunusedfunctions.cpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="checkclass.h" />
     <ClInclude Include="checkexceptionsafety.h" />
     <ClInclude Include="checkmemoryleak.h" />
+    <ClInclude Include="checkobsoletefunctions.h" />
     <ClInclude Include="checkother.h" />
     <ClInclude Include="checkstl.h" />
     <ClInclude Include="checkunusedfunctions.h" />

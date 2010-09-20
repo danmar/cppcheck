@@ -53,9 +53,6 @@
     <ClCompile Include="testpreprocessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testredundantif.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="testrunner.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -158,6 +155,12 @@
     <ClCompile Include="testcmdlineparser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testobsoletefunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\checkobsoletefunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="testsuite.h">
@@ -233,6 +236,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\cli\cmdlineparser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\checkobsoletefunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

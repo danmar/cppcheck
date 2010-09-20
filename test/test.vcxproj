@@ -126,6 +126,7 @@
     <ClCompile Include="..\lib\checkclass.cpp" />
     <ClCompile Include="..\lib\checkexceptionsafety.cpp" />
     <ClCompile Include="..\lib\checkmemoryleak.cpp" />
+    <ClCompile Include="..\lib\checkobsoletefunctions.cpp" />
     <ClCompile Include="..\lib\checkother.cpp" />
     <ClCompile Include="..\lib\checkstl.cpp" />
     <ClCompile Include="..\lib\checkunusedfunctions.cpp" />
@@ -154,9 +155,9 @@
     <ClCompile Include="testincompletestatement.cpp" />
     <ClCompile Include="testmathlib.cpp" />
     <ClCompile Include="testmemleak.cpp" />
+    <ClCompile Include="testobsoletefunctions.cpp" />
     <ClCompile Include="testother.cpp" />
     <ClCompile Include="testpreprocessor.cpp" />
-    <ClCompile Include="testredundantif.cpp" />
     <ClCompile Include="testrunner.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />
     <ClCompile Include="teststl.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="..\lib\checkclass.h" />
     <ClInclude Include="..\lib\checkexceptionsafety.h" />
     <ClInclude Include="..\lib\checkmemoryleak.h" />
+    <ClInclude Include="..\lib\checkobsoletefunctions.h" />
     <ClInclude Include="..\lib\checkother.h" />
     <ClInclude Include="..\lib\checkstl.h" />
     <ClInclude Include="..\lib\checkunusedfunctions.h" />
