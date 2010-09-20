@@ -1,10 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+# Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppcheck", "cli\cppcheck.vcxproj", "{7D0D241B-E144-3FAC-ABD3-8D1BBA4B600A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{BA98E531-D8B3-39CB-8171-064854404B81}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib", "lib\lib.vcxproj", "{ACE2ABB0-1027-44DF-8E14-8B4DAF88590F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,10 +18,6 @@ Global
 		{BA98E531-D8B3-39CB-8171-064854404B81}.Debug|Win32.Build.0 = Debug|Win32
 		{BA98E531-D8B3-39CB-8171-064854404B81}.Release|Win32.ActiveCfg = Release|Win32
 		{BA98E531-D8B3-39CB-8171-064854404B81}.Release|Win32.Build.0 = Release|Win32
-		{ACE2ABB0-1027-44DF-8E14-8B4DAF88590F}.Debug|Win32.ActiveCfg = Debug|Win32
-		{ACE2ABB0-1027-44DF-8E14-8B4DAF88590F}.Debug|Win32.Build.0 = Debug|Win32
-		{ACE2ABB0-1027-44DF-8E14-8B4DAF88590F}.Release|Win32.ActiveCfg = Release|Win32
-		{ACE2ABB0-1027-44DF-8E14-8B4DAF88590F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
