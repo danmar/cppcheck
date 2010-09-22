@@ -108,7 +108,7 @@ unsigned int CppCheck::check()
         if (_settings._errorsOnly == false)
         {
             std::string fixedpath(fname);
-            fixedpath = Path::simplifyPath(fixedpath);
+            fixedpath = getFileLister()->simplifyPath(fixedpath.c_str());
             fixedpath = Path::toNativeSeparators(fixedpath);
             _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string("..."));
         }
@@ -166,7 +166,7 @@ unsigned int CppCheck::check()
                 // If only errors are printed, print filename after the check
                 if (_settings._errorsOnly == false && it != configurations.begin())
                 {
-                    std::string fixedpath = Path::simplifyPath(fname);
+                    std::string fixedpath = getFileLister()->simplifyPath(fname.c_str());
                     fixedpath = Path::toNativeSeparators(fixedpath);
                     _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
                 }

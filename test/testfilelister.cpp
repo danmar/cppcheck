@@ -52,6 +52,8 @@ private:
         ASSERT_EQUALS("../path/index.h", getFileLister()->simplifyPath("../path/other/../index.h"));
         ASSERT_EQUALS("a/index.h", getFileLister()->simplifyPath("a/../a/index.h"));
         ASSERT_EQUALS("a/..", getFileLister()->simplifyPath("a/.."));
+        ASSERT_EQUALS("../../src/test.cpp", getFileLister()->simplifyPath("../../src/test.cpp"));
+        ASSERT_EQUALS("../../../src/test.cpp", getFileLister()->simplifyPath("../../../src/test.cpp"));
     }
 };
 

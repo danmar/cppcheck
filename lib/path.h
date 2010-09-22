@@ -47,14 +47,6 @@ public:
       * @return converted path.
       */
     static std::string fromNativeSeparators(const std::string &path);
-
-    /**
-      * Simplify given path.
-      * This method simplifies the path removing reduntant parts.
-      * @param path Path string to simplify.
-      * @return simplified path.
-      */
-    static std::string simplifyPath(const std::string &path);
 };
 
 /// @}

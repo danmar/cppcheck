@@ -17,6 +17,7 @@
  */
 
 #include "errorlogger.h"
+#include "filelister.h"
 #include "path.h"
 
 #include <sstream>
@@ -219,8 +220,7 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 
 std::string ErrorLogger::ErrorMessage::FileLocation::getfile(bool convert) const
 {
-    std::string f(_file);
-    f = Path::simplifyPath(f);
+    std::string f = getFileLister()->simplifyPath(_file.c_str());
 
     if (convert)
         f = Path::toNativeSeparators(f);
