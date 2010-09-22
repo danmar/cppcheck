@@ -88,7 +88,7 @@ TESTOBJ =     test/testautovariables.o \
 cppcheck:	$(LIBOBJ)	$(CLIOBJ)
 	$(CXX) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(LDFLAGS)
 
-all:	cppcheck	testrunner	tools
+all:	cppcheck	testrunner
 
 testrunner:	$(TESTOBJ)	$(LIBOBJ)	cli/threadexecutor.o	cli/cmdlineparser.o
 	$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cmdlineparser.o $(LDFLAGS)
@@ -96,13 +96,16 @@ testrunner:	$(TESTOBJ)	$(LIBOBJ)	cli/threadexecutor.o	cli/cmdlineparser.o
 test:	all
 	./testrunner
 
-dmake:
+dmake:	tools/dmake.cpp
 	$(CXX) -o dmake tools/dmake.cpp lib/filelister*.cpp
 
 clean:
-	rm -f lib/*.o cli/*.o test/*.o testrunner cppcheck
+	rm -f lib/*.o cli/*.o test/*.o testrunner cppcheck cppcheck.1
 
-man:	$(MAN_SOURCE)
+man:	man/cppcheck.1
+
+man/cppcheck.1:	$(MAN_SOURCE)
+
 	$(XP) $(DB2MAN) $(MAN_SOURCE)
 
 install:	cppcheck
@@ -142,7 +145,7 @@ lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunction
 lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/preprocessor.h lib/filelister.h lib/path.h lib/timer.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/cppcheck.o lib/cppcheck.cpp
 
-lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/path.h
+lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/filelister.h lib/path.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/errorlogger.o lib/errorlogger.cpp
 
 lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h

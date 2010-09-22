@@ -220,19 +220,20 @@ int main(int argc, char **argv)
     fout << "\n###### Targets\n\n";
     fout << "cppcheck:\t$(LIBOBJ)\t$(CLIOBJ)\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(LDFLAGS)\n\n";
-    fout << "all:\tcppcheck\ttestrunner\ttools\n\n";
+    fout << "all:\tcppcheck\ttestrunner\n\n";
     fout << "testrunner:\t$(TESTOBJ)\t$(LIBOBJ)\tcli/threadexecutor.o\tcli/cmdlineparser.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cmdlineparser.o $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
-    fout << "dmake:\n";
+    fout << "dmake:\ttools/dmake.cpp\n";
     fout << "\t$(CXX) -o dmake tools/dmake.cpp lib/filelister*.cpp\n\n";
     fout << "clean:\n";
 #ifdef _WIN32
     fout << "\tdel lib\*.o\n\tdel cli\*.o\n\tdel test\*.o\n\tdel *.exe\n";
 #else
-    fout << "\trm -f lib/*.o cli/*.o test/*.o testrunner cppcheck\n\n";
-    fout << "man:\t$(MAN_SOURCE)\n";
+    fout << "\trm -f lib/*.o cli/*.o test/*.o testrunner cppcheck cppcheck.1\n\n";
+    fout << "man:\tman/cppcheck.1\n\n";
+    fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
     fout << "install:\tcppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
