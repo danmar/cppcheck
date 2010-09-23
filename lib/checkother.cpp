@@ -3189,7 +3189,7 @@ private:
                 return &tok;
             }
 
-            if (Token::Match(tok.previous(), "[;{}] %var% =|[|."))
+            if (Token::Match(tok.previous(), "[;{}] %var% [=[.]"))
             {
                 if (tok.next()->str() == ".")
                 {
@@ -3203,7 +3203,7 @@ private:
                     // check variable usages in rhs/index
                     for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
                     {
-                        if (Token::Match(tok2, ";|)|=|?"))
+                        if (Token::Match(tok2, "[;)=?]"))
                             break;
                         if (Token::Match(tok2, "%var% ("))
                             break;
@@ -3307,7 +3307,7 @@ private:
             }
         }
 
-        if (Token::Match(&tok, "%var% (") && uvarFunctions.find(tok.str()) == uvarFunctions.end())
+        else if (Token::Match(&tok, "%var% (") && uvarFunctions.find(tok.str()) == uvarFunctions.end())
         {
             if (Token::simpleMatch(&tok, "sizeof ("))
                 return tok.next()->link();
@@ -3480,10 +3480,6 @@ private:
                     const unsigned int varid2 = tok.tokAt(-2)->varId();
                     if (varid2)
                     {
-                        /*
-                        const Token *tok2 = Token::findmatch(owner->_tokenizer->tokens(), "%varid%", varid2);
-                        if (tok2 && !Token::simpleMatch(tok2->previous(), "*"))
-                        */
                         {
                             use(checks, &tok);
                             return &tok;
