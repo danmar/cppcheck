@@ -5,6 +5,7 @@ testrunner.exe
 *.o
 *.bak
 tools/dmake
+dmake
 tools/errmsg
 # VS generated files
 *.ncb
