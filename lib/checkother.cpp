@@ -3086,24 +3086,8 @@ private:
         if (vartok->varId() == 0)
             return;
 
-        bool isenum = false;
-        if (!tok.isStandardType())
-        {
-            const std::string pattern("enum " + tok.str());
-            for (const Token *tok2 = tok.previous(); tok2; tok2 = tok2->previous())
-            {
-                if (tok2->str() != "{")
-                    continue;
-                if (Token::simpleMatch(tok2->tokAt(-2), pattern.c_str()))
-                {
-                    isenum = true;
-                    break;
-                }
-            }
-        }
-
         // Suppress warnings if variable in inner scope has same name as variable in outer scope
-        if (!tok.isStandardType() && !isenum)
+        if (!tok.isStandardType())
         {
             std::set<unsigned int> dup;
             for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
@@ -3120,7 +3104,7 @@ private:
             }
         }
 
-        if (a || p || tok.isStandardType() || isenum)
+        if (a || p || tok.isStandardType())
             checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), p, a));
     }
 
