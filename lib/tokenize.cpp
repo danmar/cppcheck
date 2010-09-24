@@ -8174,14 +8174,28 @@ void Tokenizer::simplifyStructDecl()
 
 void Tokenizer::simplifyCallingConvention()
 {
-    const char * pattern = "__cdecl|__stdcall|__fastcall|__thiscall|__clrcall|__syscall|__pascal|__fortran|__far|__near|WINAPI|APIENTRY|CALLBACK";
-    while (Token::Match(_tokens, pattern))
+    std::set<std::string> str;
+    str.insert("__cdecl");
+    str.insert("__stdcall");
+    str.insert("__fastcall");
+    str.insert("__thiscall");
+    str.insert("__clrcall");
+    str.insert("__syscall");
+    str.insert("__pascal");
+    str.insert("__fortran");
+    str.insert("__far");
+    str.insert("__near");
+    str.insert("WINAPI");
+    str.insert("APIENTRY");
+    str.insert("CALLBACK");
+
+    while (_tokens && str.find(_tokens->str()) != str.end())
     {
         _tokens->deleteThis();
     }
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        while (Token::Match(tok->next(), pattern))
+        while (tok->next() && str.find(tok->next()->str()) != str.end())
         {
             tok->deleteNext();
         }
@@ -8436,18 +8450,21 @@ void Tokenizer::simplifyMicrosoftMFC()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::simpleMatch(tok->next(), "DECLARE_MESSAGE_MAP ( )"))
+        if (tok->str().compare(0,9,"DECLARE_") == 0)
         {
-            tok->deleteNext();
-            tok->deleteNext();
-            tok->deleteNext();
-        }
-        else if (Token::Match(tok->next(), "DECLARE_DYNAMIC|DECLARE_DYNAMIC_CLASS|DECLARE_DYNCREATE ( %any% )"))
-        {
-            tok->deleteNext();
-            tok->deleteNext();
-            tok->deleteNext();
-            tok->deleteNext();
+            if (Token::simpleMatch(tok->next(), "DECLARE_MESSAGE_MAP ( )"))
+            {
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+            }
+            else if (Token::Match(tok->next(), "DECLARE_DYNAMIC|DECLARE_DYNAMIC_CLASS|DECLARE_DYNCREATE ( %any% )"))
+            {
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+            }
         }
     }
 }
