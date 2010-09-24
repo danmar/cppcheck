@@ -1143,8 +1143,8 @@ private:
         const std::string code("#if X || Y\n"
                                "a1;\n"
                                "#endif\n");
-        const std::string actual = Preprocessor::getcode(code, "X", "test.c", NULL, NULL);
-        ASSERT_EQUALS("\na1;\n\n", actual);
+        ASSERT_EQUALS("\na1;\n\n", Preprocessor::getcode(code, "X", "test.c", NULL, NULL));
+        ASSERT_EQUALS("\na1;\n\n", Preprocessor::getcode(code, "Y", "test.c", NULL, NULL));
     }
 
 

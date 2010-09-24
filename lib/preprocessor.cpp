@@ -1176,7 +1176,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
             if (!it->second.empty())
                 tok->str(it->second);
             else if ((!tok->previous() || tok->strAt(-1) == "||" || tok->strAt(-1) == "&&" || tok->strAt(-1) == "(") &&
-                     (!tok->next() || tok->strAt(1) == "||" || tok->strAt(1) == "&&" || tok->strAt(-1) == ")"))
+                     (!tok->next() || tok->strAt(1) == "||" || tok->strAt(1) == "&&" || tok->strAt(1) == ")"))
                 tok->str("1");
             else
                 tok->deleteThis();
@@ -1197,6 +1197,17 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
                 tok->str(tok->str() == "0" ? "1" : "0");
                 modified = true;
             }
+        }
+    }
+
+    for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
+    {
+        while ((tok->str() == "(" || tok->str() == "||") && (Token::simpleMatch(tok->tokAt(2), "|| 1")))
+        {
+            tok->deleteNext();
+            tok->deleteNext();
+            if (tok->tokAt(-3))
+                tok = tok->tokAt(-3);
         }
     }
 
