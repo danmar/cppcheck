@@ -191,7 +191,10 @@ private:
         ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
 
         givenACodeSampleToTokenize positive("+666");
-        TODO_ASSERT_EQUALS(true, Token::Match(positive.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(positive.tokens(), "+ %num%"));
+
+        givenACodeSampleToTokenize negative("-42");
+        ASSERT_EQUALS(true, Token::Match(negative.tokens(), "- %num%"));
     }
 
 
