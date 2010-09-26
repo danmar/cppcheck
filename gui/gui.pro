@@ -14,11 +14,11 @@ OBJECTS_DIR = temp
 UI_DIR = temp
 
 win32 {
-   DESTDIR = ..\Build\gui
-   RCC_DIR = ..\BuildTmp\gui
-   MOC_DIR = ..\BuildTmp\gui
-   OBJECTS_DIR = ..\BuildTmp\gui
-   UI_DIR = ..\BuildTmp\gui
+   DESTDIR = ../Build/gui
+   RCC_DIR = ../BuildTmp/gui
+   MOC_DIR = ../BuildTmp/gui
+   OBJECTS_DIR = ../BuildTmp/gui
+   UI_DIR = ../BuildTmp/gui
 }
 
 RESOURCES = gui.qrc
