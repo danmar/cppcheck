@@ -4,6 +4,7 @@ testrunner
 testrunner.exe
 *.o
 *.bak
+*.gcno
 tools/dmake
 dmake
 tools/errmsg
@@ -34,6 +35,7 @@ gui/qrc_gui.cpp
 gui/*.qm
 # Doxygen output folder
 doxyoutput/
+htdocs/
 # qmake generated
 
 *.sdf
