@@ -37,6 +37,7 @@ private:
     std::set<std::string> _options;
     const bool _gcc_style_errors;
     const bool _quiet;
+    std::string _which_test;
 };
 
 #endif

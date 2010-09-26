@@ -34,6 +34,7 @@ private:
     {
         TEST_CASE(which_test);
         TEST_CASE(which_test_method);
+        TEST_CASE(no_test_method);
         TEST_CASE(not_quiet);
         TEST_CASE(quiet);
         TEST_CASE(gcc_errors);
@@ -55,6 +56,14 @@ private:
         const char* argv[] = {"./test_runner", "TestClass::TestMethod"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS("TestClass::TestMethod", args.which_test());
+    }
+
+
+    void no_test_method()
+    {
+        const char* argv[] = {"./test_runner"};
+        options args(sizeof argv / sizeof argv[0], argv);
+        ASSERT_EQUALS("", args.which_test());
     }
 
 

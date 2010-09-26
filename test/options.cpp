@@ -20,9 +20,14 @@ options::options(int argc, const char* argv[])
     :_options(&argv[1], &argv[0] + argc)
     ,_gcc_style_errors(_options.count("-g") != 0)
     ,_quiet(_options.count("-q") != 0)
+    ,_which_test("")
 {
     _options.erase("-g");
     _options.erase("-q");
+    if (not _options.empty())
+    {
+        _which_test = *_options.rbegin();
+    }
 }
 
 bool options::quiet() const
@@ -37,11 +42,6 @@ bool options::gcc_style_errors() const
 
 const std::string& options::which_test() const
 {
-    static std::string ret = "";
-    if (not _options.empty())
-    {
-        ret = *_options.rbegin();
-    }
-    return ret;
+    return _which_test;
 }
 
