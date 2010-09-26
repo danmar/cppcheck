@@ -20,12 +20,22 @@
 #include <set>
 #include <string>
 
+/**
+ * @brief Class to parse command-line parameters for ./testrunner .
+ * Has getters for available switches and parameters.
+ * See test/testoptions.cpp for sample usage.
+ */
 class options
 {
 public:
+    /** Call from main() to populate object */
     options(int argc, const char* argv[]);
+    /** Don't print the name of each method being tested. */
     bool quiet() const;
+    /** __FILE__:__LINE__: Error message. Makes it easier for editors to find
+     * failing tests/ */
     bool gcc_style_errors() const;
+    /** Which test should be run. Empty string means 'all tests' */
     const std::string& which_test() const;
 
 private:

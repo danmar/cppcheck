@@ -1,3 +1,19 @@
+// Cppcheck - A tool for static C/C++ code analysis
+// Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #ifndef REDIRECT_H
 #define REDIRECT_H
 
@@ -5,10 +21,15 @@
 
 extern std::ostringstream errout;
 extern std::ostringstream output;
-
+/**
+  * @brief Utility class for capturing cout and cerr to ostringstream buffers
+  * for later use. Uses RAII to stop redirection when the object goes out of
+  * scope.
+  */
 class RedirectOutputError
 {
 public:
+    /** Set up redirection, flushing anything in the pipes. */
     RedirectOutputError()
     {
         // flush all old output
@@ -22,6 +43,7 @@ public:
         std::cerr.rdbuf(_err.rdbuf()); // assign streambuf to cerr
     }
 
+    /** Revert cout and cerr behaviour */
     ~RedirectOutputError()
     {
         std::cout.rdbuf(_oldCout); // restore cout's original streambuf
