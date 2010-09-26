@@ -5603,13 +5603,13 @@ void Tokenizer::simplifyInitVar()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "{|}|;| class|struct|union| %type% *| %var% ( &| %any% ) ;") ||
-            Token::Match(tok, "{|}|;| %type% *| %var% ( %type% ("))
+        if (!tok->isName() || (tok->previous() && !Token::Match(tok->previous(), "[;{}]")))
+            continue;
+
+        if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ;") ||
+            Token::Match(tok, "%type% *| %var% ( %type% ("))
         {
-            if (Token::Match(tok, "[;{}]"))
-                tok = initVar(tok->next());
-            else
-                tok = initVar(tok);
+            tok = initVar(tok);
         }
     }
 }
