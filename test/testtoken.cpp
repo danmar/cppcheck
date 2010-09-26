@@ -40,8 +40,10 @@ private:
 
         TEST_CASE(deleteLast);
 
-        TEST_CASE(match1);
-        TEST_CASE(match2);
+        TEST_CASE(matchAny);
+        TEST_CASE(matchNothingOrAnyNotElse);
+        TEST_CASE(matchNumeric);
+        TEST_CASE(matchBoolean);
     }
 
     void nextprevious()
@@ -126,122 +128,108 @@ private:
     }
 
 
-
-    void match1()
+    void matchAny()
     {
-        // Match "%var% | %var%"
-        {
-            const std::string code("abc|def");
+        givenACodeSampleToTokenize varBitOrVar("abc|def");
+        ASSERT_EQUALS(true, Token::Match(varBitOrVar.tokens(), "%var% | %var%"));
 
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "%var% | %var%"));
-        }
-
-        // Match "%var% || %var%"
-        {
-            const std::string code("abc||def");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "%var% || %var%"));
-        }
+        givenACodeSampleToTokenize varLogOrVar("abc||def");
+        ASSERT_EQUALS(true, Token::Match(varLogOrVar.tokens(), "%var% || %var%"));
     }
 
-    void match2()
+    void matchNothingOrAnyNotElse()
     {
-        {
-            const std::string code("");
+        givenACodeSampleToTokenize emptyString("");
+        ASSERT_EQUALS(true, Token::Match(emptyString.tokens(), "!!else"));
+        ASSERT_EQUALS(false, Token::Match(emptyString.tokens(), "!!else something"));
 
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
+        givenACodeSampleToTokenize ifSemicolon("if ;");
+        ASSERT_EQUALS(true, Token::Match(ifSemicolon.tokens(), "!!return if"));
+        ASSERT_EQUALS(true, Token::Match(ifSemicolon.tokens(), "if ; !!else"));
 
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "!!else"));
-        }
+        givenACodeSampleToTokenize ifSemicolonSomething("if ; something");
+        ASSERT_EQUALS(true, Token::Match(ifSemicolonSomething.tokens(), "if ; !!else"));
 
-        {
-            const std::string code("");
+        givenACodeSampleToTokenize justElse("else");
+        ASSERT_EQUALS(false, Token::Match(justElse.tokens(), "!!else"));
 
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(false, Token::Match(tokenizer.tokens(), "!!else something"));
-        }
-
-        {
-            const std::string code("if ;");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "!!return if"));
-        }
-
-        {
-            const std::string code("if ;");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "if ; !!else"));
-        }
-
-        {
-            const std::string code("if ; something");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "if ; !!else"));
-        }
-
-        {
-            const std::string code("else");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(false, Token::Match(tokenizer.tokens(), "!!else"));
-        }
-
-        {
-            const std::string code("if ; else");
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Match..
-            ASSERT_EQUALS(false, Token::Match(tokenizer.tokens(), "if ; !!else"));
-        }
+        givenACodeSampleToTokenize ifSemicolonElse("if ; else");
+        ASSERT_EQUALS(false, Token::Match(ifSemicolonElse.tokens(), "if ; !!else"));
     }
+
+
+    void matchNumeric()
+    {
+        givenACodeSampleToTokenize nonNumeric("abc");
+        ASSERT_EQUALS(false, Token::Match(nonNumeric.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize binary("101010b");
+        ASSERT_EQUALS(true, Token::Match(binary.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize octal("0123");
+        ASSERT_EQUALS(true, Token::Match(octal.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize decimal("4567");
+        ASSERT_EQUALS(true, Token::Match(decimal.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize hexadecimal("0xDEADBEEF");
+        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize floatingPoint("0.0f");
+        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize doublePrecision("0.0d");
+        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize unsignedInt("0U");
+        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize unsignedLong("0UL");
+        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize unsignedLongLong("0ULL");
+        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize positive("+666");
+        TODO_ASSERT_EQUALS(true, Token::Match(positive.tokens(), "%num%"));
+    }
+
+
+    void matchBoolean()
+    {
+        givenACodeSampleToTokenize yes("YES");
+        ASSERT_EQUALS(false, Token::Match(yes.tokens(), "%bool%"));
+
+        givenACodeSampleToTokenize positive("true");
+        ASSERT_EQUALS(true, Token::Match(positive.tokens(), "%bool%"));
+
+        givenACodeSampleToTokenize negative("false");
+        ASSERT_EQUALS(true, Token::Match(negative.tokens(), "%bool%"));
+    }
+
+
+    class givenACodeSampleToTokenize
+    {
+    private:
+        std::istringstream _sample;
+        const Token* _tokens;
+        Tokenizer _tokenizer;
+
+    public:
+        givenACodeSampleToTokenize(const std::string& sample)
+            :_sample(sample)
+            ,_tokens(NULL)
+        {
+            _tokenizer.tokenize(_sample, "test.cpp");
+            _tokens = _tokenizer.tokens();
+        }
+
+        const Token* tokens() const
+        {
+            return _tokens;
+        }
+    };
+
 };
 
 REGISTER_TEST(TestToken)
