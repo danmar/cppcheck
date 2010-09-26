@@ -16,11 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
-
-
 #include "testsuite.h"
+#include "options.h"
 
 #include <iostream>
 #include <list>
@@ -68,7 +65,10 @@ unsigned int       TestFixture::countTests;
 size_t TestFixture::fails_counter = 0;
 size_t TestFixture::todos_counter = 0;
 
-TestFixture::TestFixture(const std::string &_name) : classname(_name)
+TestFixture::TestFixture(const std::string &_name)
+    :classname(_name)
+    ,gcc_style_errors(false)
+    ,quiet_tests(false)
 {
     TestRegistry::theInstance().addTest(this);
 }
@@ -79,7 +79,14 @@ bool TestFixture::runTest(const char testname[])
     if (testToRun.empty() || testToRun == testname)
     {
         ++countTests;
-        std::cout << classname << "::" << testname << "\n";
+        if (quiet_tests)
+        {
+            std::cout << '.';
+        }
+        else
+        {
+            std::cout << classname << "::" << testname << "\n";
+        }
         return true;
     }
     return false;
@@ -110,7 +117,14 @@ void TestFixture::assert(const char *filename, int linenr, bool condition)
     if (!condition)
     {
         ++fails_counter;
-        errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl;
+        if (gcc_style_errors)
+        {
+            errmsg << filename << ':' << linenr << ": Assertion failed." << std::endl;
+        }
+        else
+        {
+            errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl;
+        }
     }
 }
 
@@ -119,12 +133,24 @@ void TestFixture::assertEquals(const char *filename, int linenr, const std::stri
     if (expected != actual)
     {
         ++fails_counter;
-
-        errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
-               << "Expected:" << std::endl
-               << writestr(expected) << std::endl
-               << "Actual:" << std::endl
-               << writestr(actual) << std::endl;
+        if (gcc_style_errors)
+        {
+            errmsg << filename << ':' << linenr << ": Assertion failed. "
+                   << "Expected: "
+                   << writestr(expected)
+                   << ". Actual: "
+                   << writestr(actual)
+                   << "."
+                   << std::endl;
+        }
+        else
+        {
+            errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
+                   << "Expected:" << std::endl
+                   << writestr(expected) << std::endl
+                   << "Actual:" << std::endl
+                   << writestr(actual) << std::endl;
+        }
         if (!msg.empty())
         {
             errmsg << msg << std::endl;
@@ -144,9 +170,13 @@ void TestFixture::assertEquals(const char *filename, int linenr, double expected
 void TestFixture::todoAssertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual)
 {
     if (expected == actual)
+    {
         assertEquals(filename, linenr, "TODO assertion", "The assertion succeeded");
+    }
     else
+    {
         ++todos_counter;
+    }
 }
 
 void TestFixture::todoAssertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual)
@@ -161,9 +191,16 @@ void TestFixture::todoAssertEquals(const char *filename, int linenr, unsigned in
 void TestFixture::assertThrowFail(const char *filename, int linenr)
 {
     ++fails_counter;
-
-    errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
-           << "The expected exception was not thrown" << std::endl;
+    if (gcc_style_errors)
+    {
+        errmsg << filename << ':' << linenr << " Assertion failed. "
+               << "The expected exception was not thrown" << std::endl;
+    }
+    else
+    {
+        errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
+               << "The expected exception was not thrown" << std::endl;
+    }
 }
 
 void TestFixture::printTests()
@@ -179,12 +216,22 @@ void TestFixture::printTests()
 void TestFixture::run(const std::string &str)
 {
     testToRun = str;
+    if (quiet_tests)
+    {
+        std::cout << '\n' << classname << ':';
+    }
     run();
 }
 
-size_t TestFixture::runTests(const char cmd[])
+void TestFixture::processOptions(const options& args)
 {
-    std::string classname(cmd ? cmd : "");
+    quiet_tests = args.quiet();
+    gcc_style_errors = args.gcc_style_errors();
+}
+
+size_t TestFixture::runTests(const options& args)
+{
+    std::string classname(args.which_test());
     std::string testname("");
     if (classname.find("::") != std::string::npos)
     {
@@ -201,6 +248,7 @@ size_t TestFixture::runTests(const char cmd[])
     {
         if (classname.empty() || (*it)->classname == classname)
         {
+            (*it)->processOptions(args);
             (*it)->run(testname);
         }
     }

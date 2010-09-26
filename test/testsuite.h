@@ -22,6 +22,9 @@
 
 #include <sstream>
 #include "errorlogger.h"
+#include "redirect.h"
+
+class options;
 
 class Token;
 
@@ -36,6 +39,8 @@ private:
 protected:
     std::string classname;
     std::string testToRun;
+    bool gcc_style_errors;
+    bool quiet_tests;
 
     virtual void run() = 0;
 
@@ -52,7 +57,7 @@ protected:
     void todoAssertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual);
     void todoAssertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual);
     void assertThrowFail(const char *filename, int linenr);
-
+    void processOptions(const options& args);
 public:
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
@@ -63,11 +68,10 @@ public:
     virtual ~TestFixture() { }
 
     static void printTests();
-    static size_t runTests(const char cmd[]);
+    static size_t runTests(const options& args);
 };
 
-
-#define TEST_CASE( NAME )  if ( runTest(#NAME) ) NAME ();
+#define TEST_CASE( NAME )  if ( runTest(#NAME) ) { if (quiet_tests) { REDIRECT; NAME(); } else { NAME ();} }
 #define ASSERT( CONDITION )  assert(__FILE__, __LINE__, CONDITION)
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_MSG( EXPECTED , ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)

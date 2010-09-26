@@ -18,10 +18,13 @@
 
 #include <cstdlib>
 #include "testsuite.h"
+#include "options.h"
 
 int main(int argc, const char *argv[])
 {
-    size_t ret = TestFixture::runTests((argc == 2) ? argv[1] : NULL);
+    options args(argc, argv);
+
+    size_t ret = TestFixture::runTests(args);
 
     return (ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }

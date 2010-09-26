@@ -50,7 +50,8 @@ CLIOBJ =     cli/cmdlineparser.o \
               cli/main.o \
               cli/threadexecutor.o
 
-TESTOBJ =     test/testautovariables.o \
+TESTOBJ =     test/options.o \
+              test/testautovariables.o \
               test/testbufferoverrun.o \
               test/testcharvar.o \
               test/testclass.o \
@@ -64,6 +65,7 @@ TESTOBJ =     test/testautovariables.o \
               test/testmathlib.o \
               test/testmemleak.o \
               test/testobsoletefunctions.o \
+              test/testoptions.o \
               test/testother.o \
               test/testpreprocessor.o \
               test/testrunner.o \
@@ -95,6 +97,9 @@ testrunner:	$(TESTOBJ)	$(LIBOBJ)	cli/threadexecutor.o	cli/cmdlineparser.o
 
 test:	all
 	./testrunner
+
+check:	all
+	./testrunner -g -q
 
 dmake:	tools/dmake.cpp
 	$(CXX) -o dmake tools/dmake.cpp lib/filelister*.cpp
@@ -193,6 +198,9 @@ cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h
 cli/threadexecutor.o: cli/threadexecutor.cpp cli/threadexecutor.h lib/settings.h lib/errorlogger.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/threadexecutor.o cli/threadexecutor.cpp
 
+test/options.o: test/options.cpp test/options.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/options.o test/options.cpp
+
 test/testautovariables.o: test/testautovariables.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkautovariables.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testautovariables.o test/testautovariables.cpp
 
@@ -235,13 +243,16 @@ test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/classinfo.h lib/toke
 test/testobsoletefunctions.o: test/testobsoletefunctions.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkobsoletefunctions.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testobsoletefunctions.o test/testobsoletefunctions.cpp
 
+test/testoptions.o: test/testoptions.cpp test/options.h test/testsuite.h lib/errorlogger.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testoptions.o test/testoptions.cpp
+
 test/testother.o: test/testother.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkother.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testother.o test/testother.cpp
 
 test/testpreprocessor.o: test/testpreprocessor.cpp test/testsuite.h lib/errorlogger.h lib/preprocessor.h lib/tokenize.h lib/classinfo.h lib/token.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testpreprocessor.o test/testpreprocessor.cpp
 
-test/testrunner.o: test/testrunner.cpp test/testsuite.h lib/errorlogger.h
+test/testrunner.o: test/testrunner.cpp test/testsuite.h lib/errorlogger.h test/options.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testrunner.o test/testrunner.cpp
 
 test/testsettings.o: test/testsettings.cpp lib/settings.h test/testsuite.h lib/errorlogger.h
@@ -253,7 +264,7 @@ test/testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h lib/erro
 test/teststl.o: test/teststl.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkstl.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/teststl.o test/teststl.cpp
 
-test/testsuite.o: test/testsuite.cpp test/testsuite.h lib/errorlogger.h
+test/testsuite.o: test/testsuite.cpp test/testsuite.h lib/errorlogger.h test/options.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testsuite.o test/testsuite.cpp
 
 test/testthreadexecutor.o: test/testthreadexecutor.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h test/testsuite.h

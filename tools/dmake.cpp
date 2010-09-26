@@ -225,6 +225,8 @@ int main(int argc, char **argv)
     fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cmdlineparser.o $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
+    fout << "check:\tall\n";
+    fout << "\t./testrunner -g -q\n\n";
     fout << "dmake:\ttools/dmake.cpp\n";
     fout << "\t$(CXX) -o dmake tools/dmake.cpp lib/filelister*.cpp\n\n";
     fout << "clean:\n";
