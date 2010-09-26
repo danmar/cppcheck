@@ -6,10 +6,10 @@
 extern std::ostringstream errout;
 extern std::ostringstream output;
 
-class RedirectInputOutput
+class RedirectOutputError
 {
 public:
-    RedirectInputOutput()
+    RedirectOutputError()
     {
         // flush all old output
         std::cout.flush();
@@ -22,7 +22,7 @@ public:
         std::cerr.rdbuf(_err.rdbuf()); // assign streambuf to cerr
     }
 
-    ~RedirectInputOutput()
+    ~RedirectOutputError()
     {
         std::cout.rdbuf(_oldCout); // restore cout's original streambuf
         std::cerr.rdbuf(_oldCerr); // restore cerrs's original streambuf
@@ -38,6 +38,6 @@ private:
     std::streambuf *_oldCerr;
 };
 
-#define REDIRECT RedirectInputOutput redir;
+#define REDIRECT RedirectOutputError redir;
 
 #endif
