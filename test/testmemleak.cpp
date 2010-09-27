@@ -408,6 +408,8 @@ private:
 
         // setjmp/longjmp..
         TEST_CASE(jmp);
+
+        TEST_CASE(trac1949);
     }
 
 
@@ -2984,6 +2986,23 @@ private:
               "  return 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void trac1949()
+    {
+        check("\n"
+              "\n"
+              "int fn()\n"
+              "{\n"
+              "char * buff = new char[100];\n"
+              "assert (buff);\n"
+              "\n"
+              "\n"
+              "\n"
+              "return 0;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: buff\n", errout.str());
     }
 };
 
