@@ -3291,7 +3291,7 @@ private:
             }
         }
 
-        else if (Token::Match(&tok, "%var% (") && uvarFunctions.find(tok.str()) == uvarFunctions.end())
+        if (Token::Match(&tok, "%var% (") && uvarFunctions.find(tok.str()) == uvarFunctions.end())
         {
             if (Token::simpleMatch(&tok, "sizeof ("))
                 return tok.next()->link();

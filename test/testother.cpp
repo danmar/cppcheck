@@ -2274,6 +2274,15 @@ private:
                        "    return x;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void (*init)(char *str);\n"
+                       "\n"
+                       "char x() {\n"
+                       "    char cmd[10];\n"
+                       "    init(cmd);\n"
+                       "    return cmd[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
