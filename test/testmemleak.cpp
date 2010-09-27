@@ -812,6 +812,7 @@ private:
         ASSERT_EQUALS(2,  dofindleak("if alloc;\n return;"));
         ASSERT_EQUALS(notfound, dofindleak("if alloc;\n return use;"));
         ASSERT_EQUALS(notfound, dofindleak("if alloc;\n use;"));
+        ASSERT_EQUALS(notfound, dofindleak("if alloc;\n if assign;\n if dealloc; }"));
 
         // if..
         ASSERT_EQUALS(notfound, dofindleak("alloc; ifv dealloc;"));
@@ -832,7 +833,7 @@ private:
         // assign..
         ASSERT_EQUALS(2,  dofindleak("alloc;\n assign;\n dealloc;"));
         ASSERT_EQUALS(notfound, dofindleak("alloc;\n if(!var) assign;\n dealloc;"));
-        ASSERT_EQUALS(2,  dofindleak("alloc;\n if assign;\n dealloc;"));
+        ASSERT_EQUALS(2,  dofindleak(";alloc;\n if assign;\n dealloc;"));
 
         // loop..
         TODO_ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if break; dealloc ; }"));
