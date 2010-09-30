@@ -516,6 +516,12 @@ public:
 
     void unsupportedTypedef(const Token *tok) const;
 
+    /** Was there templates in the code? */
+    bool codeWithTemplates() const
+    {
+        return _codeWithTemplates;
+    }
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);
@@ -532,6 +538,12 @@ private:
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */
     std::string _configuration;
+
+    /**
+     * was there any templates? templates that are "unused" are
+     * removed from the token list
+     */
+    bool _codeWithTemplates;
 };
 
 /// @}

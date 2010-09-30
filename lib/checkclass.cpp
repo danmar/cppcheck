@@ -1245,6 +1245,11 @@ void CheckClass::privateFunctions()
     if (!_settings->_checkCodingStyle)
         return;
 
+    // don't check code that contains templates. Templates that are
+    // "unused" are removed from the code. #2067
+    if (_tokenizer->codeWithTemplates())
+        return;
+
     // dont check borland classes with properties..
     if (Token::findmatch(_tokenizer->tokens(), "; __property ;"))
         return;

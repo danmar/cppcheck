@@ -50,6 +50,7 @@ Tokenizer::Tokenizer()
 {
     _tokens = 0;
     _tokensBack = 0;
+    _codeWithTemplates = false;
 }
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
@@ -57,6 +58,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
 {
     _tokens = 0;
     _tokensBack = 0;
+    _codeWithTemplates = false;
 }
 
 Tokenizer::~Tokenizer()
@@ -2308,6 +2310,8 @@ void Tokenizer::simplifyTemplates()
     {
         if (Token::simpleMatch(tok, "template <"))
         {
+            _codeWithTemplates = true;
+
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 // Just a declaration => ignore this

@@ -54,6 +54,9 @@ private:
         TEST_CASE(derivedClass);   // skip warning for derived classes. It might be a virtual function.
 
         TEST_CASE(borland);     // skip FP when using __property
+
+        // No false positives when there are "unused" templates that are removed in the simplified token list
+        TEST_CASE(template1);
     }
 
 
@@ -389,6 +392,25 @@ private:
               "    Foo() { }\n"
               "    __property int x = {read=getx}\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template1()
+    {
+        // ticket #2067 - Template methods do not "use" private ones
+        check("class A {\n"
+              "public:\n"
+              "    template <class T>\n"
+              "    T getVal() const;\n"
+              "\n"
+              "private:\n"
+              "    int internalGetVal() const { return 8000; }\n"
+              "};\n"
+              "\n"
+              "template <class T>\n"
+              "T A::getVal() const {\n"
+              "    return internalGetVal();\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
