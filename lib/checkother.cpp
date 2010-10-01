@@ -3842,6 +3842,52 @@ void CheckOther::checkMathFunctions()
 }
 
 
+bool CheckOther::isIdentifierObjectType(const Token * const tok)
+{
+    const std::string identifier = tok->tokAt(1)->str();
+    const MemoizeIsClassResultsIterator found = isClassresults.find(identifier);
+    if (found != isClassresults.end())
+    {
+        return found->second;
+    }
+
+    const std::string classDef = std::string("class|struct ") + identifier;
+    const bool result = Token::findmatch(_tokenizer->tokens(), classDef.c_str());
+    isClassresults.insert(std::make_pair(identifier, result));
+    return result;
+}
+
+
+void CheckOther::checkMisusedScopedObject()
+{
+    bool withinFuntion = false;
+    unsigned int depth = 0;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        withinFuntion |= Token::Match(tok, ") const| {");
+        if (withinFuntion)
+        {
+            if (tok->str() == "{")
+            {
+                ++depth;
+            }
+            else if (tok->str() == "}")
+            {
+                --depth;
+                withinFuntion &= depth > 0;
+            }
+
+            if (withinFuntion && Token::Match(tok, "[;{}] %var% (") && isIdentifierObjectType(tok))
+            {
+                tok = tok->next();
+                misusedScopeObjectError(tok, tok->str());
+                tok = tok->next();
+            }
+        }
+    }
+}
+
 
 void CheckOther::postIncrement()
 {
@@ -4091,3 +4137,8 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
                 "selfAssignment", "Redundant assignment of \"" + varname + "\" to itself");
 }
 
+void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
+{
+    reportError(tok, Severity::error,
+                "unusedScopedObject", "instance of \"" + varname + "\" object destroyed immediately");
+}

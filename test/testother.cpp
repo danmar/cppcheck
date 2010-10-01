@@ -104,6 +104,13 @@ private:
         TEST_CASE(selfAssignment);
         TEST_CASE(testScanf1);
         TEST_CASE(testScanf2);
+
+        TEST_CASE(trac1132);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickFunction);
+        TEST_CASE(testMisusedScopeObjectPicksClass);
+        TEST_CASE(testMisusedScopeObjectPicksStruct);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickIf);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickConstructorDeclaration);
     }
 
     void check(const char code[])
@@ -134,6 +141,7 @@ private:
         checkOther.checkFflushOnInputStream();
         checkOther.checkSelfAssignment();
         checkOther.invalidScanf();
+        checkOther.checkMisusedScopedObject();
     }
 
 
@@ -2996,6 +3004,101 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:7]: (style) scanf without field width limits can crash with huge input data\n", errout.str());
+    }
+
+    void trac1132()
+    {
+        errout.str("");
+
+        std::istringstream code("#include <iostream>\n"
+                                "class Lock\n"
+                                "{\n"
+                                "public:\n"
+                                "    Lock(int i)\n"
+                                "    {\n"
+                                "        std::cout << \"Lock \" << i << std::endl;\n"
+                                "    }\n"
+                                "    ~Lock()\n"
+                                "    {\n"
+                                "        std::cout << \"~Lock\" << std::endl;\n"
+                                "    }\n"
+                                "};\n"
+                                "int main()\n"
+                                "{\n"
+                                "    Lock(123);\n"
+                                "    std::cout << \"hello\" << std::endl;\n"
+                                "    return 0;\n"
+                                "}\n"
+                               );
+
+        Tokenizer tokenizer;
+        tokenizer.tokenize(code, "trac1132.cpp");
+        tokenizer.simplifyTokenList();
+
+        Settings settings;
+
+        CheckOther checkOther(&tokenizer, &settings, this);
+        checkOther.checkMisusedScopedObject();
+
+        ASSERT_EQUALS("[trac1132.cpp:16]: (error) instance of \"Lock\" object destroyed immediately\n", errout.str());
+    }
+
+    void testMisusedScopeObjectDoesNotPickFunction()
+    {
+        check("int main ( )\n"
+              "{\n"
+              "    CouldBeFunction ( 123 ) ;\n"
+              "    return 0 ;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectPicksClass()
+    {
+        check("class NotAFunction ;\n"
+              "int function ( )\n"
+              "{\n"
+              "    NotAFunction ( 123 );\n"
+              "    return 0 ;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:4]: (error) instance of \"NotAFunction\" object destroyed immediately\n", errout.str());
+    }
+
+    void testMisusedScopeObjectPicksStruct()
+    {
+        check("struct NotAClass;\n"
+              "bool func ( )\n"
+              "{\n"
+              "    NotAClass ( 123 ) ;\n"
+              "    return true ;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:4]: (error) instance of \"NotAClass\" object destroyed immediately\n", errout.str());
+    }
+
+    void testMisusedScopeObjectDoesNotPickIf()
+    {
+        check("bool func( int a , int b , int c )\n"
+              "{\n"
+              "    if ( a > b ) return c == a ;\n"
+              "    return b == a ;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectDoesNotPickConstructorDeclaration()
+    {
+        check("class Something : public SomthingElse\n"
+              "{\n"
+              "public:\n"
+              "~Something ( ) ;\n"
+              "Something ( ) ;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
