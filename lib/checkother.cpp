@@ -3841,24 +3841,6 @@ void CheckOther::checkMathFunctions()
     }
 }
 
-bool CheckOther::isIdentifierObjectType(const Token * const tok) const
-{
-    const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->tokAt(1)->varId());
-    const std::string classDef = std::string("class|struct ") + std::string(decltok->previous()->strAt(0));
-    return Token::findmatch(_tokenizer->tokens(), classDef.c_str());
-}
-
-
-void CheckOther::CheckUnusedScopedObject()
-{
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "[;{}] %var% (") && isIdentifierObjectType(tok))
-        {
-            misusedScopeObjectError(tok, tok->tokAt(1)->str());
-        }
-    }
-}
 
 
 void CheckOther::postIncrement()
@@ -3880,11 +3862,13 @@ void CheckOther::postIncrement()
 
                 // Take a look at the variable declaration
                 const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok2->tokAt(1)->varId());
+                const std::string classDef = std::string("class ") + std::string(decltok->previous()->strAt(0));
 
                 // Is the variable an iterator?
                 if (decltok && Token::Match(decltok->previous(), "iterator|const_iterator"))
                     postIncrementError(tok2, tok2->strAt(1), (std::string("++") == tok2->strAt(2)));
-                else if (isIdentifierObjectType(tok2))
+                // Is the variable a class?
+                else if (Token::findmatch(_tokenizer->tokens(), classDef.c_str()))
                     postIncrementError(tok2, tok2->strAt(1), (std::string("++") == tok2->strAt(2)));
             }
         }
@@ -4107,8 +4091,3 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
                 "selfAssignment", "Redundant assignment of \"" + varname + "\" to itself");
 }
 
-void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
-{
-    reportError(tok, Severity::error,
-                "unusedScopedObject", "instance of \"" + varname + "\" object destroyed immediately");
-}

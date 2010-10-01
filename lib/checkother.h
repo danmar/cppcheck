@@ -87,7 +87,6 @@ public:
 
         // New type of check: Check execution paths
         checkOther.executionPaths();
-        checkOther.CheckUnusedScopedObject();
     }
 
 
@@ -184,9 +183,6 @@ public:
     /** @brief %Check for assigning a variable to itself*/
     void checkSelfAssignment();
 
-    /** @brief %Check for objects that are destroyed immediately */
-    void CheckUnusedScopedObject();
-
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -213,7 +209,6 @@ public:
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
     void selfAssignmentError(const Token *tok, const std::string &varname);
-    void misusedScopeObjectError(const Token *tok, const std::string &varname);
 
     void getErrorMessages()
     {
@@ -227,7 +222,6 @@ public:
         zerodivError(0);
         mathfunctionCallError(0);
         fflushOnInputStreamError(0, "stdin");
-        misusedScopeObjectError(NULL, "varname");
 
         // style
         cstyleCastError(0);
@@ -343,14 +337,6 @@ private:
 
         return varname;
     }
-
-    /**
-     * @brief query type of identifier
-     * @param tok Token of the identifier
-     * @return true if the identifier is of type 'class' or 'struct',
-     *         false otherwise.
-     */
-    bool isIdentifierObjectType(const Token* const tok) const;
 };
 /// @}
 //---------------------------------------------------------------------------
