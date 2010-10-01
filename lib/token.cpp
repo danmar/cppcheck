@@ -417,16 +417,6 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
             else if (firstWordEquals(p, "%varid%") == 0)
             {
-                if (varid == 0)
-                {
-                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                           Severity::error,
-                                                           "Internal error. Token::Match called with varid 0.",
-                                                           "cppcheckError");
-                    Check::reportError(errmsg);
-                }
-
                 if (tok->varId() != varid)
                     return false;
 
