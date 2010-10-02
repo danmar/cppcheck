@@ -112,6 +112,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickIf);
         TEST_CASE(testMisusedScopeObjectDoesNotPickConstructorDeclaration);
         TEST_CASE(testMisusedScopeObjectDoesNotPickFunctor);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassMethod);
     }
 
     void check(const char code[])
@@ -3122,6 +3123,17 @@ private:
               "    const size_t n = sizeof a / sizeof a[0];\n"
               "    std::for_each(a, a + n, IncrementFunctor());\n"
               "    return a[0];\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectDoesNotPickLocalClassMethod()
+    {
+        check("void f() {\n"
+              "    class Foo {\n"
+              "        Foo() { }\n"
+              "    };\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());

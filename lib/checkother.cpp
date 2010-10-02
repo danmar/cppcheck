@@ -3861,13 +3861,13 @@ bool CheckOther::isIdentifierObjectType(const Token * const tok)
 
 void CheckOther::checkMisusedScopedObject()
 {
-    bool withinFuntion = false;
+    bool withinFunction = false;
     unsigned int depth = 0;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        withinFuntion |= Token::Match(tok, ") const| {");
-        if (withinFuntion)
+        withinFunction |= Token::Match(tok, ") const| {");
+        if (withinFunction)
         {
             if (tok->str() == "{")
             {
@@ -3876,10 +3876,14 @@ void CheckOther::checkMisusedScopedObject()
             else if (tok->str() == "}")
             {
                 --depth;
-                withinFuntion &= depth > 0;
+                withinFunction &= depth > 0;
+            }
+            else if (Token::Match(tok, "class|struct"))
+            {
+                withinFunction = false;
             }
 
-            if (withinFuntion && Token::Match(tok, "[;{}] %var% (") && isIdentifierObjectType(tok))
+            if (withinFunction && Token::Match(tok, "[;{}] %var% (") && isIdentifierObjectType(tok))
             {
                 tok = tok->next();
                 misusedScopeObjectError(tok, tok->str());
