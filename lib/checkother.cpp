@@ -3845,15 +3845,16 @@ void CheckOther::checkMathFunctions()
 bool CheckOther::isIdentifierObjectType(const Token * const tok)
 {
     const std::string identifier = tok->tokAt(1)->str();
-    const MemoizeIsClassResultsIterator found = isClassresults.find(identifier);
-    if (found != isClassresults.end())
+
+    const std::map<std::string, bool>::const_iterator found = isClassResults.find(identifier);
+    if (found != isClassResults.end())
     {
         return found->second;
     }
 
     const std::string classDef = std::string("class|struct ") + identifier;
     const bool result = Token::findmatch(_tokenizer->tokens(), classDef.c_str());
-    isClassresults.insert(std::make_pair(identifier, result));
+    isClassResults.insert(std::make_pair(identifier, result));
     return result;
 }
 

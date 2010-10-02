@@ -111,6 +111,7 @@ private:
         TEST_CASE(testMisusedScopeObjectPicksStruct);
         TEST_CASE(testMisusedScopeObjectDoesNotPickIf);
         TEST_CASE(testMisusedScopeObjectDoesNotPickConstructorDeclaration);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickFunctor);
     }
 
     void check(const char code[])
@@ -3096,6 +3097,31 @@ private:
               "public:\n"
               "~Something ( ) ;\n"
               "Something ( ) ;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectDoesNotPickFunctor()
+    {
+        check("\n"
+              "#include <algorithm>\n"
+              "\n"
+              "class IncrementFunctor\n"
+              "{\n"
+              "public:\n"
+              "    void operator()(int &i)\n"
+              "    {\n"
+              "        ++i;\n"
+              "    }\n"
+              "};\n"
+              "\n"
+              "int main()\n"
+              "{\n"
+              "    int a[] = {1, 2, 3, 4, 5};\n"
+              "    const size_t n = sizeof a / sizeof a[0];\n"
+              "    std::for_each(a, a + n, IncrementFunctor());\n"
+              "    return a[0];\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());

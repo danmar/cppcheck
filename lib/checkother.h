@@ -352,9 +352,7 @@ private:
      */
     bool isIdentifierObjectType(const Token* const tok);
 
-    typedef std::map<std::string, bool> MemoizeIsClassResults;
-    typedef MemoizeIsClassResults::const_iterator MemoizeIsClassResultsIterator;
-    MemoizeIsClassResults isClassresults;
+    std::map<std::string, bool> isClassResults;
 };
 /// @}
 //---------------------------------------------------------------------------
