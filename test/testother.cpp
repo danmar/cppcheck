@@ -113,6 +113,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickConstructorDeclaration);
         TEST_CASE(testMisusedScopeObjectDoesNotPickFunctor);
         TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassMethod);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
     }
 
     void check(const char code[])
@@ -3134,6 +3135,20 @@ private:
               "    class Foo {\n"
               "        Foo() { }\n"
               "    };\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectDoesNotPickUsedObject()
+    {
+        check("struct Foo {\n"
+              "    void bar() {\n"
+              "    }\n"
+              "};\n"
+              "\n"
+              "void fn() {\n"
+              "    Foo().bar();\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());

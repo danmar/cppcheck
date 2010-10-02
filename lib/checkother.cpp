@@ -3883,7 +3883,11 @@ void CheckOther::checkMisusedScopedObject()
                 withinFunction = false;
             }
 
-            if (withinFunction && Token::Match(tok, "[;{}] %var% (") && isIdentifierObjectType(tok))
+            if (withinFunction 
+                && Token::Match(tok, "[;{}] %var% (") 
+                && isIdentifierObjectType(tok)
+                && !Token::Match(tok->tokAt(2)->link(), ") .")
+               )
             {
                 tok = tok->next();
                 misusedScopeObjectError(tok, tok->str());
