@@ -259,6 +259,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\options.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\path.cpp"
 				>
 			</File>
