@@ -2022,13 +2022,33 @@ private:
 
     void template_typename()
     {
-        const char code[] = "template <class T>\n"
-                            "void foo(typename T::t *)\n"
-                            "{ }";
+        {
+            const char code[] = "template <class T>\n"
+                                "void foo(typename T::t *)\n"
+                                "{ }";
 
-        // The expected result..
-        const std::string expected(";");
-        ASSERT_EQUALS(expected, sizeof_(code));
+            // The expected result..
+            const std::string expected(";");
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
+        {
+            const char code[] = "void f() {\n"
+                                "    x(sizeof typename);\n"
+                                "    type = 0;\n"
+                                "}";
+            std::istringstream istr(code);
+            Tokenizer tokenizer;
+            tokenizer.tokenize(istr, "test.c", "", false);
+            std::ostringstream ostr;
+            for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
+            {
+                ostr << tok1->str();
+                if (Token::Match(tok1, "%var% %var%"))
+                    ostr << " ";
+            }
+            ASSERT_EQUALS("void f(){x(sizeof typename);type=0;}", ostr.str());
+        }
     }
 
     void namespaces()

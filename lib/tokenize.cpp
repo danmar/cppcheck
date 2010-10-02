@@ -2225,6 +2225,20 @@ static void removeTemplates(Token *tok)
 
 void Tokenizer::simplifyTemplates()
 {
+    // Don't simplify C files
+    {
+        if (_files.empty())
+            return;
+
+        std::string::size_type pos = _files[0].rfind(".");
+        if (pos == std::string::npos)
+            return;
+
+        const std::string ext(_files[0].substr(pos));
+        if (ext == ".c" || ext == ".C")
+            return;
+    }
+
     // Remove "typename" unless used in template arguments..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
