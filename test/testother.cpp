@@ -112,7 +112,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickIf);
         TEST_CASE(testMisusedScopeObjectDoesNotPickConstructorDeclaration);
         TEST_CASE(testMisusedScopeObjectDoesNotPickFunctor);
-        TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassMethod);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassConstructors);
         TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
     }
 
@@ -3128,15 +3128,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testMisusedScopeObjectDoesNotPickLocalClassMethod()
+    void testMisusedScopeObjectDoesNotPickLocalClassConstructors()
     {
         check("void f() {\n"
               "    class Foo {\n"
               "        Foo() { }\n"
+              "        Foo(int a) { }\n"
+              "        Foo(int a, int b) { }\n"
               "    };\n"
+              "    Foo();\n"
               "}\n"
              );
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) instance of \"Foo\" object destroyed immediately\n", errout.str());
     }
 
     void testMisusedScopeObjectDoesNotPickUsedObject()

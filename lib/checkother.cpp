@@ -3863,6 +3863,7 @@ void CheckOther::checkMisusedScopedObject()
 {
     bool withinFunction = false;
     unsigned int depth = 0;
+    std::string className = "";
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -3877,10 +3878,17 @@ void CheckOther::checkMisusedScopedObject()
             {
                 --depth;
                 withinFunction &= depth > 0;
+
+                if (tok->strAt(1) == ";" && !className.empty())
+                {
+                    isClassResults[className] = true;
+                    className.clear();
+                }
             }
             else if (Token::Match(tok, "class|struct"))
             {
-                withinFunction = false;
+                className = tok->strAt(1);
+                isClassResults.insert(std::make_pair(className, false));
             }
 
             if (withinFunction
