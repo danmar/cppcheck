@@ -6202,12 +6202,15 @@ bool Tokenizer::simplifyCalculations()
         // keep parantheses here: dynamic_cast<Fred *>(p);
         // keep parantheses here: A operator * (int);
         // keep parantheses here: operator new [] (size_t);
+        // keep parantheses here: Functor()(a ... )
         if (Token::Match(tok->next(), "( %var% ) [;),+-*/><]]") &&
             !tok->isName() &&
             tok->str() != ">" &&
             tok->str() != "]" &&
             !Token::simpleMatch(tok->previous(), "operator") &&
-            !Token::simpleMatch(tok->previous(), "* )"))
+            !Token::simpleMatch(tok->previous(), "* )") &&
+            !Token::Match(tok->tokAt(-2), "%type% ( ) ( %var%")
+           )
         {
             tok->deleteNext();
             tok = tok->next();

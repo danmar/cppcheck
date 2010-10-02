@@ -285,6 +285,8 @@ private:
 
         // remove calling convention __cdecl, __stdcall, ...
         TEST_CASE(simplifyCallingConvention);
+
+        TEST_CASE(simplifyFunctorCall);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -5839,6 +5841,11 @@ private:
         ASSERT_EQUALS("int f ( ) ;", tok("int WINAPI f();", true));
         ASSERT_EQUALS("int f ( ) ;", tok("int APIENTRY f();", true));
         ASSERT_EQUALS("int f ( ) ;", tok("int CALLBACK f();", true));
+    }
+
+    void simplifyFunctorCall()
+    {
+        ASSERT_EQUALS("IncrementFunctor ( ) ( a ) ;", tok("IncrementFunctor()(a);", true));
     }
 };
 
