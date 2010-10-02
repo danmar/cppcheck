@@ -3120,10 +3120,9 @@ private:
               "\n"
               "int main()\n"
               "{\n"
-              "    int a[] = {1, 2, 3, 4, 5};\n"
-              "    const size_t n = sizeof a / sizeof a[0];\n"
-              "    std::for_each(a, a + n, IncrementFunctor());\n"
-              "    return a[0];\n"
+              "    int a = 1;\n"
+              "    IncrementFunctor()(a);\n"
+              "    return a;\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
