@@ -151,7 +151,8 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <varlistentry>
         <term><option>-D[id]</option></term>
         <listitem>
-          <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration.</para>
+          <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration. 
+Example: -DDEBUG=1 -D__cplusplus</para>
         </listitem>
       </varlistentry>      
       <varlistentry>
@@ -166,31 +167,25 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
                 </glossdef>
               </glossentry>
               <glossentry>
-                <glossterm>exceptNew</glossterm>
-                <glossdef>
-                  <para>Check exception safety when using new.</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>exceptRealloc</glossterm>
-                <glossdef>
-                  <para>Check exception safety when reallocating.</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
                 <glossterm>style</glossterm>
                 <glossdef>
                   <para>Check coding style.</para>
                 </glossdef>
               </glossentry>
               <glossentry>
-                <glossterm>unusedFunctions</glossterm>
+                <glossterm>unusedFunction</glossterm>
                 <glossdef>
                   <para>Check for unused functions.</para>
                 </glossdef>
               </glossentry>
+              <glossentry>
+                <glossterm>missingInclude</glossterm>
+                <glossdef>
+                  <para>check for missing includes</para>
+                </glossdef>
+              </glossentry>              
             </glosslist>          
-            Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunctions.
+            Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunction.
           </para>
         </listitem>
       </varlistentry>
@@ -283,12 +278,6 @@ files, this is not needed.</para>
           <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'. Pre-defined templates: gcc, vs</para>
         </listitem>
       </varlistentry>
-      <varlistentry>
-       <term><option>--unused-functions</option></term>
-       <listitem>
-        <para>Deprecated, use --enable=unusedFunctions</para>
-       </listitem>
-      </varlistentry>      
       <varlistentry>
         <term><option>-v</option></term>
         <term><option>--verbose</option></term>
