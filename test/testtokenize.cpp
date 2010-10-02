@@ -264,7 +264,7 @@ private:
         TEST_CASE(simplifyLogicalOperators);
 
         // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
-        simplifyAssignmentInFunctionCall();
+        TEST_CASE(simplifyAssignmentInFunctionCall);
     }
 
 
