@@ -266,6 +266,7 @@ public:
                "* null pointer dereferencing\n"
                "* using uninitialized variables and data\n"
                "* using fflush() on an input stream\n"
+               "* scoped object destroyed immediately after construction\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
