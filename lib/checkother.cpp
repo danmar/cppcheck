@@ -3865,10 +3865,6 @@ void CheckOther::checkMisusedScopedObject()
     unsigned int depth = 0;
     std::string className = "";
 
-    // This condition can be removed after the release. it is here because of #2072
-    if (!_settings->inconclusive)
-        return;
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         withinFunction |= Token::Match(tok, ") const| {");
