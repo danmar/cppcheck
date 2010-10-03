@@ -114,6 +114,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickFunctor);
         TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassConstructors);
         TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
+        TEST_CASE(trac2071);
     }
 
     void check(const char code[])
@@ -3153,6 +3154,19 @@ private:
               "    Foo().bar();\n"
               "}\n"
              );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void trac2071()
+    {
+        check("void f() {\n"
+            "    struct AB {\n"
+            "        AB(int a) { }\n"
+            "    };\n"
+            "\n"
+            "    const AB ab[3] = { AB(0), AB(1), AB(2) };\n"
+            "}\n"
+            );
         ASSERT_EQUALS("", errout.str());
     }
 };

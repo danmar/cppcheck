@@ -3893,9 +3893,8 @@ void CheckOther::checkMisusedScopedObject()
 
             if (withinFunction
                 && Token::Match(tok, "[;{}] %var% (")
+                && Token::Match(tok->tokAt(2)->link(), ") ;")
                 && isIdentifierObjectType(tok)
-                && !Token::Match(tok->tokAt(2)->link(), ") ( %var%")
-                && !Token::simpleMatch(tok->tokAt(2)->link(), ") .")
                )
             {
                 tok = tok->next();
