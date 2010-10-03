@@ -44,9 +44,6 @@ tag=$1
 # Name of release
 releasename=cppcheck-$tag
 
-# Tagging..
-git tag $tag
-
 # Create archives..
 git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar.gz
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
