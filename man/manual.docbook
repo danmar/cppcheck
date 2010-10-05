@@ -3,9 +3,9 @@
 "/usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.44</title>
+    <title>Cppcheck 1.45</title>
 
-    <date>2010-07-10</date>
+    <date>2010-10-05</date>
   </bookinfo>
 
   <chapter>
