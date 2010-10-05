@@ -120,9 +120,12 @@ public:
     {
         return bool(varId == e.varId && is_equal(&e));
     }
+
+    static void checkScope(const Token *tok, std::list<ExecutionPath *> &checks);
 };
 
 
+void checkExecutionPaths(const Token *tok, ExecutionPath *c);
 void checkExecutionPaths(const Token *tok, ExecutionPath *c);
 
 

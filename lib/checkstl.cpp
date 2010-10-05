@@ -18,7 +18,7 @@
 
 #include "checkstl.h"
 #include "token.h"
-
+#include "executionpath.h"
 
 
 // Register this check class (by creating a static instance of it)
@@ -221,6 +221,134 @@ void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, con
 }
 
 
+/**
+ * @brief %Check for invalid iterator usage after erase/insert/etc
+ */
+class EraseCheckLoop : public ExecutionPath
+{
+public:
+    static void checkScope(CheckStl *checkStl, const Token *it)
+    {
+        const Token *tok = it;
+
+        // Search for the start of the loop body..
+        int indentlevel = 1;
+        while (indentlevel > 0 && 0 != (tok = tok->next()))
+        {
+            if (tok->str() == "(")
+                ++indentlevel;
+            else if (tok->str() == ")")
+                --indentlevel;
+        }
+
+        if (! Token::simpleMatch(tok, ") {"))
+            return;
+
+        EraseCheckLoop c(checkStl, it->varId());
+        std::list<ExecutionPath *> checks;
+        checks.push_back(c.copy());
+        ExecutionPath::checkScope(tok->tokAt(2), checks);
+
+        c.end(checks, tok->link());
+
+        while (!checks.empty())
+        {
+            delete checks.back();
+            checks.pop_back();
+        }
+    }
+
+private:
+    /** Startup constructor */
+    EraseCheckLoop(Check *o, unsigned int varid)
+        : ExecutionPath(o, varid), eraseToken(0)
+    {
+    }
+
+    /** @brief token where iterator is erased (non-zero => the iterator is invalid) */
+    const Token *eraseToken;
+
+    /** @brief Copy this check. Called from the ExecutionPath baseclass. */
+    ExecutionPath *copy()
+    {
+        return new EraseCheckLoop(*this);
+    }
+
+    /** @brief is another execution path equal? */
+    bool is_equal(const ExecutionPath *e) const
+    {
+        const EraseCheckLoop *c = static_cast<const EraseCheckLoop *>(e);
+        return (eraseToken == c->eraseToken);
+    }
+
+    /** @brief no implementation => compiler error if used by accident */
+    void operator=(const EraseCheckLoop &);
+
+    /** @brief parse tokens */
+    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
+    {
+        if (Token::Match(&tok, "[;{}] %var% =") || Token::Match(&tok, "= %var% ;"))
+        {
+            ExecutionPath::bailOutVar(checks, tok.next()->varId());
+        }
+
+        if (Token::Match(&tok, "[;{}] break ;"))
+        {
+            ExecutionPath::bailOut(checks);
+        }
+
+        if (Token::Match(&tok, "erase ( ++|--| %var% )"))
+        {
+            const Token *token = &tok;
+            while (NULL != (token = token ? token->previous() : 0))
+            {
+                if (Token::Match(token, "[;{}]"))
+                    break;
+                else if (token->str() == "=")
+                    token = 0;
+                else
+                    token = token->previous();
+            }
+
+            if (token)
+            {
+                unsigned int iteratorId = 0;
+                if (tok.tokAt(2)->isName())
+                    iteratorId = tok.tokAt(2)->varId();
+                else
+                    iteratorId = tok.tokAt(3)->varId();
+
+                for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
+                {
+                    EraseCheckLoop *c = dynamic_cast<EraseCheckLoop *>(*it);
+                    if (c && c->varId == iteratorId)
+                    {
+                        c->eraseToken = &tok;
+                    }
+                }
+            }
+        }
+        return &tok;
+    }
+
+    /** @brief going out of scope - all execution paths end */
+    void end(const std::list<ExecutionPath *> &checks, const Token * /*tok*/) const
+    {
+        for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
+        {
+            EraseCheckLoop *c = dynamic_cast<EraseCheckLoop *>(*it);
+            if (c && c->eraseToken)
+            {
+                CheckStl *checkStl = dynamic_cast<CheckStl *>(c->owner);
+                if (checkStl)
+                {
+                    checkStl->eraseError(c->eraseToken);
+                }
+            }
+        }
+    }
+};
+
 
 void CheckStl::erase()
 {
@@ -236,7 +364,7 @@ void CheckStl::erase()
                     {
                         const unsigned int varid = tok2->next()->varId();
                         if (varid > 0 && Token::findmatch(_tokenizer->tokens(), "> :: iterator %varid%", varid))
-                            eraseCheckLoop(tok2->next());
+                            EraseCheckLoop::checkScope(this, tok2->next());
                     }
                     break;
                 }
@@ -245,7 +373,7 @@ void CheckStl::erase()
                     tok2->str() == tok2->tokAt(8)->str() &&
                     tok2->tokAt(2)->str() == tok2->tokAt(10)->str())
                 {
-                    eraseCheckLoop(tok2);
+                    EraseCheckLoop::checkScope(this, tok2);
                     break;
                 }
             }
@@ -255,69 +383,9 @@ void CheckStl::erase()
         {
             const unsigned int varid = tok->tokAt(2)->varId();
             if (varid > 0 && Token::findmatch(_tokenizer->tokens(), "> :: iterator %varid%", varid))
-                eraseCheckLoop(tok->tokAt(2));
+                EraseCheckLoop::checkScope(this, tok->tokAt(2));
         }
     }
-}
-
-void CheckStl::eraseCheckLoop(const Token *it)
-{
-    const Token *tok = it;
-
-    // Search for the start of the loop body..
-    int indentlevel = 1;
-    while (indentlevel > 0 && 0 != (tok = tok->next()))
-    {
-        if (tok->str() == "(")
-            ++indentlevel;
-        else if (tok->str() == ")")
-            --indentlevel;
-    }
-
-    if (! Token::simpleMatch(tok, ") {"))
-        return;
-
-    // Parse loop..
-    // Error if it contains "erase(it)" but neither "break;", "=it" nor "it="
-    indentlevel = 0;
-    const Token *tok2 = 0;
-    while (0 != (tok = tok->next()))
-    {
-        if (tok->str() == "{")
-            ++indentlevel;
-        else if (tok->str() == "}")
-        {
-            --indentlevel;
-            if (indentlevel <= 0)
-                break;
-        }
-        else if (Token::Match(tok, "break|return|goto") ||
-                 Token::simpleMatch(tok, (it->str() + " =").c_str()) ||
-                 Token::simpleMatch(tok, ("= " + it->str()).c_str()))
-        {
-            tok2 = 0;
-            break;
-        }
-        else if (Token::Match(tok, ("erase ( ++|--| " + it->str() + " )").c_str()))
-        {
-            tok2 = tok;
-            while (NULL != (tok2 = tok2 ? tok2->previous() : 0))
-            {
-                if (Token::Match(tok2, "[;{}]"))
-                    break;
-                else if (tok2->str() == "=")
-                    tok2 = 0;
-                else
-                    tok2 = tok2->previous();
-            }
-            if (tok2)
-                tok2 = tok;
-        }
-    }
-
-    // Write error message..
-    if (tok2)
-        eraseError(tok2);
 }
 
 

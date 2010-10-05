@@ -25,8 +25,6 @@
 #include <iostream>
 
 
-static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks);
-
 
 // default : bail out if the condition is has variable handling
 bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> & checks)
@@ -111,7 +109,7 @@ static void parseIfSwitchBody(const Token * const tok,
                 countif2.insert((*it)->varId);
         }
     }
-    checkExecutionPaths_(tok, c);
+    ExecutionPath::checkScope(tok, c);
     while (!c.empty())
     {
         if (c.back()->varId == 0)
@@ -141,7 +139,7 @@ static void parseIfSwitchBody(const Token * const tok,
 }
 
 
-static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)
+void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &checks)
 {
     if (!tok || tok->str() == "}" || checks.empty())
         return;
@@ -345,7 +343,7 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
         // ; { ... }
         if (Token::Match(tok->previous(), "[;{}] {"))
         {
-            checkExecutionPaths_(tok->next(), checks);
+            ExecutionPath::checkScope(tok->next(), checks);
             tok = tok->link();
             continue;
         }
@@ -398,7 +396,7 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
                     continue;
 
                 // there is no "if"..
-                checkExecutionPaths_(tok->next(), checks);
+                ExecutionPath::checkScope(tok->next(), checks);
                 tok = tok->link();
                 if (!tok)
                 {
@@ -454,7 +452,7 @@ void checkExecutionPaths(const Token *tok, ExecutionPath *c)
 
             std::list<ExecutionPath *> checks;
             checks.push_back(c->copy());
-            checkExecutionPaths_(tok, checks);
+            ExecutionPath::checkScope(tok, checks);
 
             c->end(checks, tok->link());
 

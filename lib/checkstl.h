@@ -86,6 +86,8 @@ public:
      * Dangerous usage of erase
      */
     void erase();
+    void eraseError(const Token *tok);
+
 
     /**
      * Dangerous usage of push_back and insert
@@ -124,7 +126,6 @@ private:
     void invalidIteratorError(const Token *tok, const std::string &iteratorName);
     void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
     void mismatchingContainersError(const Token *tok);
-    void eraseError(const Token *tok);
     void invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name);
     void invalidPointerError(const Token *tok, const std::string &pointer_name);
     void stlBoundriesError(const Token *tok, const std::string &container_name);

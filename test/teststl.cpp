@@ -384,7 +384,7 @@ private:
     {
         check("static void f()\n"
               "{\n"
-              "    for (it = foo.begin(); it != foo.end(); it = next)\n"
+              "    for (iterator it = foo.begin(); it != foo.end(); it = next)\n"
               "    {\n"
               "        next = it;\n"
               "        next++;\n"
@@ -452,10 +452,23 @@ private:
     {
         check("void f()\n"
               "{\n"
-              "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "    for (iterator it = foo.begin(); it != foo.end(); ++it)\n"
               "    {\n"
               "        foo.erase(it);\n"
-              "        break;\n"
+              "        if (x)"
+              "            break;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    for (iterator it = foo.begin(); it != foo.end(); ++it)\n"
+              "    {\n"
+              "        if (x) {\n"
+              "            foo.erase(it);\n"
+              "            break;\n"
+              "        }\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -555,7 +568,7 @@ private:
     {
         check("void f()\n"
               "{\n"
-              "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "    for (iterator it = foo.begin(); it != foo.end(); ++it)\n"
               "    {\n"
               "        foo.erase(it);\n"
               "        goto abc;\n"
@@ -569,7 +582,7 @@ private:
     {
         check("void f()\n"
               "{\n"
-              "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "    for (iterator it = foo.begin(); it != foo.end(); ++it)\n"
               "    {\n"
               "        foo.erase(it);\n"
               "        it = foo.begin();\n"
