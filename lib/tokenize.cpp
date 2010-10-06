@@ -826,7 +826,7 @@ void Tokenizer::simplifyTypedef()
             typeStart = tok->next();
             offset = 1;
 
-            if (Token::Match(typeStart, "const"))
+            while (Token::Match(tok->tokAt(offset), "const|signed|unsigned"))
                 offset++;
 
             typeEnd = tok->tokAt(offset++);
