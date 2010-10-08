@@ -24,7 +24,6 @@
 #include "testsuite.h"
 #include "tokenize.h"
 #include "token.h"
-#include "classinfo.h"
 #include "settings.h"
 #include <cstring>
 
@@ -221,7 +220,6 @@ private:
         TEST_CASE(unsigned2);
         TEST_CASE(unsigned3);   // template arguments
 
-        TEST_CASE(testUpdateClassList);
         TEST_CASE(createLinks);
         TEST_CASE(signed1);
 
@@ -3826,38 +3824,6 @@ private:
             const char code[] = "; foo<unsigned int>();";
             const char expected[] = "; foo<int> ( ) ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
-        }
-    }
-
-    void tokenizeAndUpdateClassList(const char code[])
-    {
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.updateClassList();
-    }
-
-    void testUpdateClassList()
-    {
-        const char code[] = "class A{\n"
-                            " void f() {}\n"
-                            " public:\n"
-                            " void g() {}\n"
-                            "};";
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.updateClassList();
-        ASSERT_EQUALS(2, tokenizer._classInfoList["A"]._memberFunctions.size());
-        if (tokenizer._classInfoList["A"]._memberFunctions.size() > 1)
-        {
-            ASSERT_EQUALS(std::string("f"), tokenizer._classInfoList["A"]._memberFunctions[0]._name);
-            ASSERT_EQUALS(std::string("f"), tokenizer._classInfoList["A"]._memberFunctions[0]._declaration->str());
-            ASSERT_EQUALS(ClassInfo::PRIVATE, tokenizer._classInfoList["A"]._memberFunctions[0]._type);
-            ASSERT_EQUALS(std::string("g"), tokenizer._classInfoList["A"]._memberFunctions[1]._name);
-            ASSERT_EQUALS(std::string("g"), tokenizer._classInfoList["A"]._memberFunctions[1]._declaration->str());
-            ASSERT_EQUALS(ClassInfo::PUBLIC, tokenizer._classInfoList["A"]._memberFunctions[1]._type);
         }
     }
 

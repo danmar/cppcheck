@@ -22,8 +22,6 @@
 #define tokenizeH
 //---------------------------------------------------------------------------
 
-#include "classinfo.h"
-
 #include <string>
 #include <map>
 #include <vector>
@@ -129,12 +127,6 @@ public:
      * get error messages
      */
     virtual void getErrorMessages();
-
-    /**
-     * List of classes in currently checked source code and
-     * their member functions and member variables.
-     */
-    std::map<std::string, ClassInfo> _classInfoList;
 
     /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
      */
@@ -424,12 +416,6 @@ public:
 
     /** Syntax error. Example: invalid number of ')' */
     void syntaxError(const Token *tok, char c);
-
-    /**
-     * Update _classInfoList to contain class names and member
-     * functions and member variables.
-     */
-    void updateClassList();
 
     /**
      * assert that tokens are ok - used during debugging for example
