@@ -216,6 +216,7 @@ private:
         TEST_CASE(simplifyTypedef58); // ticket #1963
         TEST_CASE(simplifyTypedef59); // ticket #2011
         TEST_CASE(simplifyTypedef60); // ticket #2035
+        TEST_CASE(simplifyTypedef61); // ticket #2074 and 2075
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4448,6 +4449,23 @@ private:
 
         // Check for output..
         checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef61() // ticket #2074 and 2075
+    {
+        const char code1[] = "typedef       unsigned char   (*Mf_GetIndexByte_Func)          (void);\n"
+                             "typedef const unsigned char * (*Mf_GetPointerToCurrentPos_Func)(void);\n";
+
+        // Check for output..
+        checkSimplifyTypedef(code1);
+        ASSERT_EQUALS("", errout.str());
+
+        const char code2[] = "typedef unsigned long uint32_t;\n"
+                             "typedef uint32_t (*write_type_t) (uint32_t);\n";
+
+        // Check for output..
+        checkSimplifyTypedef(code2);
         ASSERT_EQUALS("", errout.str());
     }
 
