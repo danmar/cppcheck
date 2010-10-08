@@ -45,7 +45,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     {
         if (parser.GetShowVersion())
         {
-            std::cout << "Cppcheck " << cppcheck->version();
+            std::cout << "Cppcheck " << cppcheck->version() << std::endl;
             return true;
         }
 
