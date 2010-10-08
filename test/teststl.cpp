@@ -48,7 +48,7 @@ private:
 
         TEST_CASE(STLSize);
         TEST_CASE(STLSizeNoErr);
-        TEST_CASE(erase);
+        TEST_CASE(erase1);
         TEST_CASE(erase2);
         TEST_CASE(erase3);
         TEST_CASE(erase4);
@@ -348,7 +348,7 @@ private:
 
 
 
-    void erase()
+    void erase1()
     {
         check("void f()\n"
               "{\n"
@@ -552,16 +552,15 @@ private:
               "    std::vector<int>::iterator it;\n"
               "    for (it = foo.begin(); it != foo.end(); ++it)\n"
               "    {\n"
-              "        if (somecondition) {\n"
-              "            if (*it == 1)\n"
+              "        if (a) {\n"
+              "            if (b)\n"
               "                foo.erase(it);\n"
               "            else\n"
               "                *it = 0;\n"
               "        }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:5] (error) Dereferencing invalid iterator 'it'", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
     }
 
     void eraseGoto()
