@@ -52,6 +52,7 @@ private:
         TEST_CASE(erase2);
         TEST_CASE(erase3);
         TEST_CASE(erase4);
+        TEST_CASE(erase5);
         TEST_CASE(eraseBreak);
         TEST_CASE(eraseContinue);
         TEST_CASE(eraseReturn1);
@@ -446,6 +447,20 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+    }
+
+    void erase5()
+    {
+        check("void f()\n"
+              "{\n"
+              "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "    {\n"
+              "        if (*it == 123)"
+              "            foo.erase(it);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
     }
 
     void eraseBreak()
