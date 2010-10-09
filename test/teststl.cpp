@@ -453,14 +453,15 @@ private:
     {
         check("void f()\n"
               "{\n"
+              "    std::list<int> foo;\n"
+              "    std::list<int>::iterator it;\n"
               "    for (it = foo.begin(); it != foo.end(); ++it)\n"
               "    {\n"
-              "        if (*it == 123)"
+              "        if (*it == 123)\n"
               "            foo.erase(it);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
     }
 
     void eraseBreak()

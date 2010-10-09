@@ -331,6 +331,19 @@ private:
         return &tok;
     }
 
+    /**
+     * Parse condition. @sa ExecutionPath::parseCondition
+     * @param tok first token in condition.
+     * @param checks The execution paths. All execution paths in the list are executed in the current scope
+     * @return true => bail out all checking
+     **/
+    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
+    {
+        (void)tok;
+        (void)checks;
+        return false;
+    }
+
     /** @brief going out of scope - all execution paths end */
     void end(const std::list<ExecutionPath *> &checks, const Token * /*tok*/) const
     {
