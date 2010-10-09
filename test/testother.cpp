@@ -1134,7 +1134,7 @@ private:
                          "  std::string * x = 0;\n"
                          "  *x = \"test\";\n"
                          "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
     }
 
     void checkUninitVar(const char code[])

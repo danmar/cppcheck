@@ -2685,14 +2685,16 @@ private:
                 vartok = vartok->tokAt(3);
                 while (vartok && (vartok->str() == "*" || vartok->isName()))
                     vartok = vartok->next();
-                if (Token::Match(vartok, "> * %var% ;|="))
-                {
-                    vartok = vartok->tokAt(2);
-                    checks.push_back(new CheckNullpointer(owner, vartok->varId(), vartok->str()));
-                    if (Token::simpleMatch(vartok->next(), "= 0 ;"))
-                        setnull(checks, vartok->varId());
-                    return vartok->next();
-                }
+            }
+            if (vartok
+                && (vartok->str() == ">" || vartok->isName())
+                && Token::Match(vartok->next(), "* %var% ;|="))
+            {
+                vartok = vartok->tokAt(2);
+                checks.push_back(new CheckNullpointer(owner, vartok->varId(), vartok->str()));
+                if (Token::simpleMatch(vartok->next(), "= 0 ;"))
+                    setnull(checks, vartok->varId());
+                return vartok->next();
             }
         }
 
