@@ -2513,19 +2513,19 @@ private:
     void passedByValue()
     {
         testPassedByValue("void f(const std::string str) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'str' is passed by value. It could be passed by reference instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'str' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("class Foo;\nvoid f(const Foo foo) {}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Function parameter 'foo' is passed by value. It could be passed by reference instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Function parameter 'foo' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::string &str) {}");
         ASSERT_EQUALS("", errout.str());
 
         testPassedByValue("void f(const std::vector<int> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::vector<std::string> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::vector<int> &v) {}");
         ASSERT_EQUALS("", errout.str());
@@ -2534,16 +2534,16 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         testPassedByValue("void f(const std::map<int,int> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::map<std::string,std::string> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::map<int,std::string> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::map<std::string,int> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
     }
 
     void mathfunctionCall1()
