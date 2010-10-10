@@ -5855,19 +5855,6 @@ bool Tokenizer::simplifyKnownVariables()
                                 }
                             }
                         }
-
-                        if (tok3->next()->varId() == varid)
-                        {
-                            tok3->next()->str(value);
-                            tok3->next()->varId(valueVarId);
-                            ret = true;
-                        }
-                        else if (tok3->tokAt(3)->varId() == varid)
-                        {
-                            tok3->tokAt(3)->str(value);
-                            tok3->tokAt(3)->varId(valueVarId);
-                            ret = true;
-                        }
                     }
 
                     if (indentlevel == indentlevel3 && Token::Match(tok3->next(), "%varid% ++|--", varid) && MathLib::isInt(value))

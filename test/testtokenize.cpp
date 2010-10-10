@@ -118,6 +118,7 @@ private:
         TEST_CASE(simplifyKnownVariables27);
         TEST_CASE(simplifyKnownVariables28);
         TEST_CASE(simplifyKnownVariables29); // ticket #1811
+        TEST_CASE(simplifyKnownVariables30);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -1783,6 +1784,21 @@ private:
                                     "6: }\n";
             TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
         }
+    }
+
+    void simplifyKnownVariables30()
+    {
+        const char code[] = "int foo() {\n"
+                            "  iterator it1 = ints.begin();\n"
+                            "  iterator it2 = it1;\n"
+                            "  for (++it2;it2!=ints.end();++it2);\n"
+                            "}\n";
+        const char expected[] = "int foo ( ) {\n"
+                                "iterator it1 ; it1 = ints . begin ( ) ;\n"
+                                "iterator it2 ; it2 = it1 ;\n"
+                                "for ( ++ it2 ; it2 != ints . end ( ) ; ++ it2 ) { ; }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
     std::string tokenizeDebugListing(const std::string &code, bool simplify = false)

@@ -98,7 +98,6 @@ private:
         TEST_CASE(missingInnerComparison1);
         TEST_CASE(missingInnerComparison2);     // no FP when there is comparison
         TEST_CASE(missingInnerComparison3);     // no FP when there is iterator shadowing
-        TEST_CASE(missingInnerComparison4);     // no FP when the iterator is incremented in inner for loop
     }
 
     void check(const std::string &code)
@@ -1080,18 +1079,6 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void missingInnerComparison4()
-    {
-        check("void f(std::list<int> &ints) {\n"
-              "    for (std::list<int>::iterator it1 = ints.begin(); it1 != ints.end(); ++it1) {\n"
-              "        std::list<int>::iterator it2 = it1;\n"
-              "        for (++it2; it2 != ints.end(); ++it2)\n"
-              "        { }\n"
-              "    }\n"
-              "}\n");
-        TODO_ASSERT_EQUALS("", errout.str());
     }
 };
 
