@@ -63,6 +63,7 @@ public:
         checkOther.sizeofsizeof();
         checkOther.sizeofCalculation();
         checkOther.checkRedundantAssignmentInSwitch();
+        checkOther.checkAssignmentInAssert();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -184,6 +185,9 @@ public:
     /** @brief %Check for assigning a variable to itself*/
     void checkSelfAssignment();
 
+    /** @brief %Check for assignment to a variable in an assert test*/
+    void checkAssignmentInAssert();
+
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
 
@@ -213,6 +217,7 @@ public:
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
     void selfAssignmentError(const Token *tok, const std::string &varname);
+    void assignmentInAssertError(const Token *tok, const std::string &varname);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
 
     void getErrorMessages()
@@ -244,6 +249,7 @@ public:
         sizeofCalculationError(0);
         redundantAssignmentInSwitchError(0, "varname");
         selfAssignmentError(0, "varname");
+        assignmentInAssertError(0, "varname");
         invalidScanfError(0);
 
         // optimisations
@@ -267,6 +273,7 @@ public:
                "* using uninitialized variables and data\n"
                "* using fflush() on an input stream\n"
                "* scoped object destroyed immediately after construction\n"
+               "* assignment in an assert statement\n"
 
                // style
                "* C-style pointer cast in cpp file\n"

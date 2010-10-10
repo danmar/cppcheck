@@ -8151,7 +8151,11 @@ void Tokenizer::simplifyAssignmentInFunctionCall()
     {
         if (tok->str() == "(")
             tok = tok->link();
-        else if (Token::Match(tok, "[;{}] %var% ( %var% =") && Token::simpleMatch(tok->tokAt(2)->link(), ") ;"))
+
+        // Find 'foo(var='. Exclude 'assert(var=' to allow tests to check that assert(...) does not contain side-effects
+        else if (Token::Match(tok, "[;{}] %var% ( %var% =") &&
+                 Token::simpleMatch(tok->tokAt(2)->link(), ") ;") &&
+                 tok->strAt(1) != "assert")
         {
             const std::string funcname(tok->strAt(1));
             const Token * const vartok = tok->tokAt(3);

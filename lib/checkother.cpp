@@ -230,6 +230,33 @@ void CheckOther::checkSelfAssignment()
 }
 
 //---------------------------------------------------------------------------
+//    int a = 1;
+//    assert(a = 2);            // <- assert should not have a side-effect
+//---------------------------------------------------------------------------
+void CheckOther::checkAssignmentInAssert()
+{
+    const char assertPattern[] = "assert ( %any%";
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), assertPattern);
+    const Token *endTok = tok ? tok->next()->link() : NULL;
+
+    while (tok && endTok)
+    {
+        const Token* varTok = Token::findmatch(tok->tokAt(2), "%var% --|++|+=|-=|*=|/=|&=|^=|=", endTok);
+        if (varTok)
+        {
+            assignmentInAssertError(tok, varTok->str());
+        }
+        else if ((varTok = Token::findmatch(tok->tokAt(2), "--|++ %var%", endTok)))
+        {
+            assignmentInAssertError(tok, varTok->strAt(1));
+        }
+
+        tok = Token::findmatch(endTok->next(), assertPattern);
+        endTok = tok ? tok->next()->link() : NULL;
+    }
+}
+
+//---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
 
@@ -4154,6 +4181,12 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
 {
     reportError(tok, Severity::style,
                 "selfAssignment", "Redundant assignment of \"" + varname + "\" to itself");
+}
+
+void CheckOther::assignmentInAssertError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::error,
+                "assignmentInAssert", "Assert statement modifies '" + varname + "' instead of just testing it");
 }
 
 void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)

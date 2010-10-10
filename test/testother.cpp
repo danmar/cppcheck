@@ -115,6 +115,8 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassConstructors);
         TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
         TEST_CASE(trac2071);
+
+        TEST_CASE(assignmentInAssert);
     }
 
     void check(const char code[])
@@ -135,6 +137,7 @@ private:
         checkOther.sizeofsizeof();
         checkOther.sizeofCalculation();
         checkOther.checkRedundantAssignmentInSwitch();
+        checkOther.checkAssignmentInAssert();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -3168,6 +3171,66 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assignmentInAssert()
+    {
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    assert(a = 2);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (error) Assert statement modifies 'a' instead of just testing it\n", errout.str());
+
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    assert(a == 2);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    int b = 0;\n"
+              "    assert(a == 2 && b = 1);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:4]: (error) Assert statement modifies 'b' instead of just testing it\n", errout.str());
+
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    assert(a += 2);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (error) Assert statement modifies 'a' instead of just testing it\n", errout.str());
+
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    assert(a *= 2);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (error) Assert statement modifies 'a' instead of just testing it\n", errout.str());
+
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    assert(a -= 2);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (error) Assert statement modifies 'a' instead of just testing it\n", errout.str());
+
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    assert(a --);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (error) Assert statement modifies 'a' instead of just testing it\n", errout.str());
     }
 };
 
