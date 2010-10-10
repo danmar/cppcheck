@@ -93,6 +93,9 @@ private:
         // if (ints.find(123) != ints.end()) ints.remove(123);
         TEST_CASE(redundantCondition1);
         TEST_CASE(redundantCondition2);
+
+        // missing inner comparison when incrementing iterator inside loop
+        TEST_CASE(missingInnerComparison1);
     }
 
     void check(const std::string &code)
@@ -610,7 +613,7 @@ private:
     {
         check("void f(list<int> &ints)\n"
               "{\n"
-              "    for (list<int>::iterator it = ints.begin(); it != ints.end(); ++it) {\n"
+              "    for (list<int>::iterator it = ints.begin(); it != ints.end();) {\n"
               "        if (*it == 123) {\n"
               "            list<int>::iterator copy = it;\n"
               "            ++copy;\n"
@@ -1039,6 +1042,17 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. The remove function in the STL will not do anything if element doesn't exist\n", errout.str());
     }
 
+    void missingInnerComparison1()
+    {
+        check("void f(std::set<int> &ints) {\n"
+              "    for (std::set<int>::iterator it = ints.begin(); it != ints.end(); ++it) {\n"
+              "        if (a) {\n"
+              "            it++;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The iterator is incremented at line 4 and then at line 2. The loop might unintentionally skip an element in the container. There is no comparison between these increments to prevent that the iterator is incremented beyond the end.\n", errout.str());
+    }
 };
 
 REGISTER_TEST(TestStl)

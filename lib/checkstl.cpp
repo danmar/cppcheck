@@ -19,7 +19,7 @@
 #include "checkstl.h"
 #include "token.h"
 #include "executionpath.h"
-
+#include <sstream>
 
 // Register this check class (by creating a static instance of it)
 namespace
@@ -833,3 +833,74 @@ void CheckStl::redundantIfRemoveError(const Token *tok)
 {
     reportError(tok, Severity::style, "redundantIfRemove", "Redundant condition. The remove function in the STL will not do anything if element doesn't exist");
 }
+
+
+
+void CheckStl::missingComparison()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "for ("))
+        {
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == ";")
+                    break;
+
+                if (!Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% != %var% . end ( ) ; ++| %var% ++| ) {"))
+                    continue;
+
+                // same iterator name
+                if (tok2->str() != tok2->strAt(8))
+                    continue;
+
+                // same container
+                if (tok2->strAt(2) != tok2->strAt(10))
+                    continue;
+
+                // increment iterator
+                if (!Token::simpleMatch(tok2->tokAt(16), ("++ " + tok2->str() + " )").c_str()) &&
+                    !Token::simpleMatch(tok2->tokAt(16), (tok2->str() + " ++ )").c_str()))
+                {
+                    continue;
+                }
+
+                const std::string &itName(tok2->str());
+                const Token *incrementToken = 0;
+                unsigned int indentlevel = 0;
+                // Parse loop..
+                for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next())
+                {
+                    if (tok3->str() == "{")
+                        ++indentlevel;
+                    else if (tok3->str() == "}")
+                    {
+                        if (indentlevel == 0)
+                            break;
+                        --indentlevel;
+                    }
+                    else if (tok3->str() == itName && Token::simpleMatch(tok3->next(), "++"))
+                        incrementToken = tok3;
+                    else if (tok3->str() == "++" && Token::simpleMatch(tok3->next(), itName.c_str()))
+                        incrementToken = tok3;
+                    else if (tok3->str() == itName && Token::simpleMatch(tok3->next(), "!="))
+                        incrementToken = 0;
+                }
+                if (incrementToken)
+                    missingComparisonError(incrementToken, tok2->tokAt(16));
+            }
+        }
+    }
+}
+
+void CheckStl::missingComparisonError(const Token *incrementToken1, const Token *incrementToken2)
+{
+    std::ostringstream errmsg;
+    errmsg << "The iterator is incremented at line " << incrementToken1->linenr()
+           << " and then at line " << incrementToken2->linenr()
+           << ". The loop might unintentionally skip an element in the container. There is no comparison between these increments to prevent that the iterator is incremented beyond the end.";
+
+    reportError(incrementToken1, Severity::style, "StlMissingComparison", errmsg.str());
+}
+
+

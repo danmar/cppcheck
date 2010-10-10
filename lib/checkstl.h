@@ -58,6 +58,7 @@ public:
         // Style check
         checkStl.size();
         checkStl.redundantCondition();
+        checkStl.missingComparison();
     }
 
 
@@ -112,6 +113,15 @@ public:
      * Check for redundant condition 'if (ints.find(1) != ints.end()) ints.remove(123);'
      * */
     void redundantCondition();
+
+    /**
+     * @brief Missing inner comparison, when incrementing iterator inside loop
+     * Dangers:
+     *  - may increment iterator beyond end
+     *  - may unintentionally skip elements in list/set etc
+     */
+    void missingComparison();
+    void missingComparisonError(const Token *incrementToken1, const Token *incrementToken2);
 
 private:
 
