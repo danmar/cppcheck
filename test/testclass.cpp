@@ -55,6 +55,7 @@ private:
         TEST_CASE(uninitVar9); // ticket #1730
         TEST_CASE(uninitVar10); // ticket #1993
         TEST_CASE(uninitVar11);
+        TEST_CASE(uninitVar12); // ticket #2078
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1675,6 +1676,24 @@ private:
                        "};\n"
                        "A::A(int a) { }\n");
         ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'A::var'\n", errout.str());
+    }
+
+    void uninitVar12() // ticket #2078
+    {
+        checkUninitVar("class Point\n"
+                       "{\n"
+                       "public:\n"
+                       "    Point()\n"
+                       "    {\n"
+                       "        Point(0, 0);\n"
+                       "    }\n"
+                       "    Point(int x, int y)\n"
+                       "        : x(x), y(y)\n"
+                       "    {}\n"
+                       "    int x, y;\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Point::x'\n"
+                      "[test.cpp:4]: (style) Member variable not initialized in the constructor 'Point::y'\n", errout.str());
     }
 
     void uninitVarArray1()

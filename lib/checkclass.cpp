@@ -964,7 +964,7 @@ void CheckClass::SpaceInfo::initializeVarList(const Func &func, std::list<std::s
             std::list<Func>::const_iterator it;
             for (it = functionList.begin(); it != functionList.end(); ++it)
             {
-                if (ftok->str() == it->tokenDef->str())
+                if (ftok->str() == it->tokenDef->str() && it->type != Func::Constructor)
                     break;
             }
 
