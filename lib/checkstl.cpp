@@ -865,7 +865,7 @@ void CheckStl::missingComparison()
                     continue;
                 }
 
-                const std::string &itName(tok2->str());
+                const unsigned int &iteratorId(tok2->varId());
                 const Token *incrementToken = 0;
                 unsigned int indentlevel = 0;
                 // Parse loop..
@@ -879,11 +879,11 @@ void CheckStl::missingComparison()
                             break;
                         --indentlevel;
                     }
-                    else if (tok3->str() == itName && Token::simpleMatch(tok3->next(), "++"))
+                    else if (tok3->varId() == iteratorId && Token::simpleMatch(tok3->next(), "++"))
                         incrementToken = tok3;
-                    else if (tok3->str() == "++" && Token::simpleMatch(tok3->next(), itName.c_str()))
+                    else if (tok3->str() == "++" && tok3->next() && tok3->next()->varId() == iteratorId)
                         incrementToken = tok3;
-                    else if (tok3->str() == itName && Token::Match(tok3->next(), "!=|=="))
+                    else if (tok3->varId() == iteratorId && Token::Match(tok3->next(), "!=|=="))
                         incrementToken = 0;
                 }
                 if (incrementToken)

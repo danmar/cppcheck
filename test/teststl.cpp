@@ -96,7 +96,8 @@ private:
 
         // missing inner comparison when incrementing iterator inside loop
         TEST_CASE(missingInnerComparison1);
-        TEST_CASE(missingInnerComparison2);
+        TEST_CASE(missingInnerComparison2);     // no FP when there is comparison
+        TEST_CASE(missingInnerComparison3);     // no FP when there is iterator shadowing
     }
 
     void check(const std::string &code)
@@ -1064,6 +1065,17 @@ private:
               "            if (it == ints.end())\n"
               "                return;\n"
               "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void missingInnerComparison3()
+    {
+        check("void f(std::set<int> &ints) {\n"
+              "    for (std::set<int>::iterator it = ints.begin(); it != ints.end(); ++it) {\n"
+              "        for (std::set<int>::iterator it = ints2.begin(); it != ints2.end(); ++it)\n"
+              "        { }\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
