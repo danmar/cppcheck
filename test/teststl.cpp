@@ -96,6 +96,7 @@ private:
 
         // missing inner comparison when incrementing iterator inside loop
         TEST_CASE(missingInnerComparison1);
+        TEST_CASE(missingInnerComparison2);
     }
 
     void check(const std::string &code)
@@ -1052,6 +1053,20 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) The iterator is incremented at line 4 and then at line 2. The loop might unintentionally skip an element in the container. There is no comparison between these increments to prevent that the iterator is incremented beyond the end.\n", errout.str());
+    }
+
+    void missingInnerComparison2()
+    {
+        check("void f(std::set<int> &ints) {\n"
+              "    for (std::set<int>::iterator it = ints.begin(); it != ints.end(); ++it) {\n"
+              "        if (a) {\n"
+              "            it++;\n"
+              "            if (it == ints.end())\n"
+              "                return;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

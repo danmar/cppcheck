@@ -883,7 +883,7 @@ void CheckStl::missingComparison()
                         incrementToken = tok3;
                     else if (tok3->str() == "++" && Token::simpleMatch(tok3->next(), itName.c_str()))
                         incrementToken = tok3;
-                    else if (tok3->str() == itName && Token::simpleMatch(tok3->next(), "!="))
+                    else if (tok3->str() == itName && Token::Match(tok3->next(), "!=|=="))
                         incrementToken = 0;
                 }
                 if (incrementToken)
