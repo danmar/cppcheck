@@ -1170,6 +1170,13 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             varid = tok->tokAt(1)->varId();
             nextTok = 8;
         }
+        else if (indentlevel > 0 && Token::Match(tok, "[;{}] %var% = %str% ;"))
+        {
+            size = 1 + tok->tokAt(3)->strValue().size();
+            type = "char";
+            varid = tok->next()->varId();
+            nextTok = 4;
+        }
         else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = malloc ( %num% ) ;"))
         {
             size = MathLib::toLongNumber(tok->strAt(5));

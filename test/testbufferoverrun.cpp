@@ -158,6 +158,7 @@ private:
 
         TEST_CASE(alloc1);    // Buffer allocated with new
         TEST_CASE(alloc2);    // Buffer allocated with malloc
+        TEST_CASE(alloc3);    // statically allocated buffer
 
         TEST_CASE(memset1);
         TEST_CASE(memset2);
@@ -2062,6 +2063,17 @@ private:
               "    x[10] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[10]' index 10 out of bounds\n", errout.str());
+    }
+
+    // statically allocated buffer
+    void alloc3()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    const char *s = \"123\";\n"
+              "    s[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[4]' index 10 out of bounds\n", errout.str());
     }
 
     void memset1()
