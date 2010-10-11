@@ -84,11 +84,11 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         (but may be used by others).</para>
       <para>Permission is granted to copy, distribute and/or modify this
         document under the terms of the GNU General Public License,
-        Version 2 or (at your option) any later version published by
+        Version 3 or (at your option) any later version published by
         the Free Software Foundation.</para>
       <para>On Debian systems, the complete text of the GNU General Public
         License can be found in
-	<filename>/usr/share/common-licenses/GPL-2</filename>.</para>
+	<filename>/usr/share/common-licenses/GPL-3</filename>.</para>
     </legalnotice>
   </refentryinfo>
   <refmeta>
