@@ -1172,7 +1172,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         }
         else if (indentlevel > 0 && Token::Match(tok, "[;{}] %var% = %str% ;"))
         {
-            size = 1 + tok->tokAt(3)->strValue().size();
+            size = 1 + int(tok->tokAt(3)->strValue().size());
             type = "char";
             varid = tok->next()->varId();
             nextTok = 4;
@@ -1794,12 +1794,18 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
     if (!tok->isName())
         return false;
 
+    while (tok && (tok->str() == "static" || tok->str() == "const"))
+        tok = tok->next();
+
     int ivar = 0;
     if (Token::Match(tok, "%type% *| %var% ["))
         ivar = 1;
     else if (Token::Match(tok, "%type% %type% *| %var% ["))
         ivar = 2;
     else
+        return false;
+
+    if (tok->str().find(":") != std::string::npos)
         return false;
 
     // Goto variable name token, get element size..
@@ -1813,8 +1819,6 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
     {
         _element_size = tokenizer.sizeOfType(tok);
     }
-    if (_element_size == 0)
-        return false;
 
     _varname = vartok->str();
     _varid = vartok->varId();

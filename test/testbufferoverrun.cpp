@@ -103,6 +103,7 @@ private:
         TEST_CASE(array_index_27);
         TEST_CASE(array_index_28); // ticket #1418
         TEST_CASE(array_index_29); // ticket #1734
+        TEST_CASE(array_index_30); // ticket #2086 - out of bounds when type is unknown
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
@@ -974,6 +975,16 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
         TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Array ii[10] out of bounds\n", errout.str());
+    }
+
+    void array_index_30()
+    {
+        // ticket #2086 - unknown type
+        check("void f() {\n"
+              "    UINT8 x[2];\n"
+              "    x[5] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'x[2]' index 5 out of bounds\n", errout.str());
     }
 
     void array_index_multidim()
