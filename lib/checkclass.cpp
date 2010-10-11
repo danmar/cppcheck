@@ -2200,7 +2200,7 @@ bool CheckClass::checkConstFunc(const SpaceInfo *info, const Token *tok)
         }
 
         // function call..
-        else if ((Token::Match(tok1, "%var% (") && !Token::Match(tok1, "return|c_str|if")) ||
+        else if ((Token::Match(tok1, "%var% (") && !Token::Match(tok1, "return|c_str|if|string")) ||
                  Token::Match(tok1, "%var% < %any% > ("))
         {
             isconst = false;
