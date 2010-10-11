@@ -3181,7 +3181,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assert statement modifies 'a' instead of just testing it\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -3198,7 +3198,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:4]: (error) Assert statement modifies 'b' instead of just testing it\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Assert statement modifies 'b'. If the modification is needed in release builds there is a bug.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -3206,7 +3206,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assert statement modifies 'a' instead of just testing it\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -3214,7 +3214,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assert statement modifies 'a' instead of just testing it\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -3222,7 +3222,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assert statement modifies 'a' instead of just testing it\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -3230,7 +3230,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assert statement modifies 'a' instead of just testing it\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
     }
 };
 

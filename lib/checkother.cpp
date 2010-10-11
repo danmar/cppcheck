@@ -235,6 +235,9 @@ void CheckOther::checkSelfAssignment()
 //---------------------------------------------------------------------------
 void CheckOther::checkAssignmentInAssert()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     const char assertPattern[] = "assert ( %any%";
     const Token *tok = Token::findmatch(_tokenizer->tokens(), assertPattern);
     const Token *endTok = tok ? tok->next()->link() : NULL;
@@ -4185,8 +4188,8 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
 
 void CheckOther::assignmentInAssertError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error,
-                "assignmentInAssert", "Assert statement modifies '" + varname + "' instead of just testing it");
+    reportError(tok, Severity::style,
+                "assignmentInAssert", "Assert statement modifies '" + varname + "'. If the modification is needed in release builds there is a bug.");
 }
 
 void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
