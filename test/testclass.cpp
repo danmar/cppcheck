@@ -144,6 +144,7 @@ private:
         TEST_CASE(const34); // ticket #1964
         TEST_CASE(const35); // ticket #2001
         TEST_CASE(const36); // ticket #2003
+        TEST_CASE(const37); // ticket #2081 and #2085
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -4044,6 +4045,36 @@ private:
                    "    }\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const37() // ticket #2081 and #2085
+    {
+        checkConst("class A\n"
+                   "{\n"
+                   "public:\n"
+                   "    A(){};\n"
+                   "    std::string operator+(const char *c)\n"
+                   "    {\n"
+                   "        return m_str+std::string(c);\n"
+                   "    }\n"
+                   "private:\n"
+                   "    std::string m_str;\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) The function 'A::operator+' can be const\n", errout.str());
+
+        checkConst("class Fred\n"
+                   "{\n"
+                   "private:\n"
+                   "    long x;\n"
+                   "public:\n"
+                   "    Fred() {\n"
+                   "        x = 0;\n"
+                   "    }\n"
+                   "    bool isValid() {\n"
+                   "        return bool(x == 0x11224488);\n"
+                   "    }\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (style) The function 'Fred::isValid' can be const\n", errout.str());
     }
 
     // increment/decrement => not const
