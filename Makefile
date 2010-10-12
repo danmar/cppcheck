@@ -113,6 +113,9 @@ man/cppcheck.1:	$(MAN_SOURCE)
 
 	$(XP) $(DB2MAN) $(MAN_SOURCE)
 
+tags:
+	ctags -R --exclude=doxyoutput .
+
 install:	cppcheck
 	install -d ${BIN}
 	install cppcheck ${BIN}

@@ -42,3 +42,5 @@ htdocs/
 ipch
 *.opensdf
 *.orig
+
+tags
