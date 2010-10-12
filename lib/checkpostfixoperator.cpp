@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "checkpostfixoperator.h"
-#include <string>
 
 //---------------------------------------------------------------------------
 
@@ -63,12 +62,13 @@ void CheckPostfixOperator::postfixOperator()
         if(result) {
              const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->previous()->varId());
              if (decltok && Token::Match(decltok->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator")) {
-                 // the variable an iterator
+                 // the variable is an iterator
                  postfixOperatorError(tok);
              }
              else { 
                  const std::string classDef = std::string("class ") + std::string(decltok->previous()->strAt(0));
                  if (Token::findmatch(_tokenizer->tokens(), classDef.c_str())) {
+                     // the variable is an instance of class
                      postfixOperatorError(tok);
                  }
             }
