@@ -934,6 +934,12 @@ private:
             ASSERT_EQUALS("; const char str [ 1 ] = { '1' } ; 1 ;", sizeof_(code));
         }
 
+        {
+            // Ticket #2087
+            const char code[] = "; const char str[] = {\"abc\"}; sizeof(str);";
+            ASSERT_EQUALS("; const char str [ 4 ] = \"abc\" ; 4 ;", sizeof_(code));
+        }
+
         // ticket #716 - sizeof string
         {
             std::ostringstream expected;

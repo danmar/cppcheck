@@ -2095,6 +2095,12 @@ void Tokenizer::arraySize()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        if (Token::Match(tok, "%var% [ ] = { %str% }"))
+        {
+            tok->tokAt(4)->deleteThis();
+            tok->tokAt(5)->deleteThis();
+        }
+
         if (Token::Match(tok, "%var% [ ] = {"))
         {
             unsigned int sz = 1;
