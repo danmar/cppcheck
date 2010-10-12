@@ -75,7 +75,6 @@ public:
         checkOther.checkConstantFunctionParameter();
         checkOther.checkIncompleteStatement();
         checkOther.checkEmptyStringTest();
-        checkOther.postIncrement();
 
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
@@ -156,9 +155,6 @@ public:
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
 
-    /** @brief %Check for post increment/decrement in for loop*/
-    void postIncrement();
-
     void lookupVar(const Token *tok1, const std::string &varname);
 
     /** @brief %Check for inefficient empty string test*/
@@ -212,7 +208,6 @@ public:
     void uninitvarError(const Token *tok, const std::string &varname);
     void zerodivError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
-    void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
     void emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
@@ -252,8 +247,6 @@ public:
         assignmentInAssertError(0, "varname");
         invalidScanfError(0);
 
-        // optimisations
-        postIncrementError(0, "varname", true);
         emptyStringTestError(0, "varname", true);
     }
 

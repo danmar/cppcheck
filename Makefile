@@ -28,6 +28,7 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/checkexceptionsafety.o \
               lib/checkmemoryleak.o \
               lib/checkobsoletefunctions.o \
+              lib/checkpostfixoperator.o \
               lib/checkother.o \
               lib/checkstl.o \
               lib/checkunusedfunctions.o \
@@ -65,6 +66,7 @@ TESTOBJ =     test/options.o \
               test/testmathlib.o \
               test/testmemleak.o \
               test/testobsoletefunctions.o \
+              test/testpostfixoperator.o \
               test/testoptions.o \
               test/testother.o \
               test/testpreprocessor.o \
@@ -140,6 +142,9 @@ lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/check.h
 
 lib/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkobsoletefunctions.o lib/checkobsoletefunctions.cpp
+
+lib/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/checkpostfixoperator.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkpostfixoperator.o lib/checkpostfixoperator.cpp
 
 lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkother.o lib/checkother.cpp
@@ -245,6 +250,9 @@ test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/checkmemoryleak.h li
 
 test/testobsoletefunctions.o: test/testobsoletefunctions.cpp lib/tokenize.h lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testobsoletefunctions.o test/testobsoletefunctions.cpp
+
+test/testpostfixoperator.o: test/testpostfixoperator.cpp lib/tokenize.h lib/checkpostfixoperator.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testpostfixoperator.o test/testpostfixoperator.cpp
 
 test/testoptions.o: test/testoptions.cpp test/options.h test/testsuite.h lib/errorlogger.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testoptions.o test/testoptions.cpp

@@ -83,9 +83,6 @@ private:
 
         TEST_CASE(oldStylePointerCast);
 
-        TEST_CASE(postIncrementDecrementStl);
-        TEST_CASE(postIncrementDecrementClass);
-
         TEST_CASE(dangerousStrolUsage);
 
         TEST_CASE(passedByValue);
@@ -2378,103 +2375,6 @@ private:
                                  "  virtual void abc(const B *) const = 0;\n"
                                  "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void checkpostIncrementDecrement(const char code[])
-    {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // Clear the error buffer..
-        errout.str("");
-
-        // Check for redundant code..
-        Settings settings;
-        settings._checkCodingStyle = true;
-        settings.inconclusive = true;
-        CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.postIncrement();
-    }
-
-    void postIncrementDecrementStl()
-    {
-        checkpostIncrementDecrement("void f1()\n"
-                                    "{\n"
-                                    "    std::list<int>::iterator it;\n"
-                                    "    for (it = ab.begin(); it != ab.end(); it++)\n"
-                                    "        ;\n"
-                                    "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Pre-Incrementing variable 'it' is preferred to Post-Incrementing\n", errout.str());
-
-        checkpostIncrementDecrement("void f1()\n"
-                                    "{\n"
-                                    "    std::list<int>::iterator it;\n"
-                                    "    for (it = ab.begin(); it != ab.end(); it++)\n"
-                                    "        ;\n"
-                                    "    for (it = ab.begin(); it != ab.end(); it++)\n"
-                                    "        ;\n"
-                                    "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Pre-Incrementing variable 'it' is preferred to Post-Incrementing\n"
-                      "[test.cpp:6]: (style) Pre-Incrementing variable 'it' is preferred to Post-Incrementing\n", errout.str());
-
-        checkpostIncrementDecrement("void f2()\n"
-                                    "{\n"
-                                    "    std::list<int>::iterator it;\n"
-                                    "    for (it = ab.end(); it != ab.begin(); it--)\n"
-                                    "        ;\n"
-                                    "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Pre-Decrementing variable 'it' is preferred to Post-Decrementing\n", errout.str());
-
-        checkpostIncrementDecrement("void f2()\n"
-                                    "{\n"
-                                    "    std::list<int>::iterator it;\n"
-                                    "    for (it = ab.end(); it != ab.begin(); it--)\n"
-                                    "        ;\n"
-                                    "    for (it = ab.end(); it != ab.begin(); it--)\n"
-                                    "        ;\n"
-                                    "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Pre-Decrementing variable 'it' is preferred to Post-Decrementing\n"
-                      "[test.cpp:6]: (style) Pre-Decrementing variable 'it' is preferred to Post-Decrementing\n", errout.str());
-
-        checkpostIncrementDecrement("void f1()\n"
-                                    "{\n"
-                                    "    std::list<std::vector<int> >::iterator it;\n"
-                                    "    for (it = ab.begin(); it != ab.end(); it++)\n"
-                                    "        ;\n"
-                                    "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Pre-Incrementing variable 'it' is preferred to Post-Incrementing\n", errout.str());
-
-        checkpostIncrementDecrement("void f1()\n"
-                                    "{\n"
-                                    "    std::map<int, std::vector<int> >::iterator it;\n"
-                                    "    for (it = ab.begin(); it != ab.end(); it++)\n"
-                                    "        ;\n"
-                                    "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Pre-Incrementing variable 'it' is preferred to Post-Incrementing\n", errout.str());
-    }
-
-    void postIncrementDecrementClass()
-    {
-        checkpostIncrementDecrement("class TestClass;\n"
-                                    "void f1()\n"
-                                    "{\n"
-                                    "    TestClass tClass;\n"
-                                    "    for (tClass = TestClass.begin(); tClass != TestClass.end(); tClass++)\n"
-                                    "        ;\n"
-                                    "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Pre-Incrementing variable 'tClass' is preferred to Post-Incrementing\n", errout.str());
-
-        checkpostIncrementDecrement("class TestClass;\n"
-                                    "void f1()\n"
-                                    "{\n"
-                                    "    TestClass tClass;\n"
-                                    "    for (tClass = TestClass.end(); tClass != TestClass.begin(); tClass--)\n"
-                                    "        ;\n"
-                                    "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Pre-Decrementing variable 'tClass' is preferred to Post-Decrementing\n", errout.str());
     }
 
     void dangerousStrolUsage()

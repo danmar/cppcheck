@@ -3937,39 +3937,6 @@ void CheckOther::checkMisusedScopedObject()
     }
 }
 
-
-void CheckOther::postIncrement()
-{
-    if (!_settings->_checkCodingStyle || !_settings->inconclusive)
-        return;
-
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::simpleMatch(tok, "for ("))
-        {
-            const Token *tok2 = tok->next()->link();
-            if (tok2)
-                tok2 = tok2->tokAt(-3);
-            if (Token::Match(tok2, "; %var% ++|-- )"))
-            {
-                if (tok2->next()->varId() == 0)
-                    continue;
-
-                // Take a look at the variable declaration
-                const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok2->tokAt(1)->varId());
-                const std::string classDef = std::string("class ") + std::string(decltok->previous()->strAt(0));
-
-                // Is the variable an iterator?
-                if (decltok && Token::Match(decltok->previous(), "iterator|const_iterator"))
-                    postIncrementError(tok2, tok2->strAt(1), (std::string("++") == tok2->strAt(2)));
-                // Is the variable a class?
-                else if (Token::findmatch(_tokenizer->tokens(), classDef.c_str()))
-                    postIncrementError(tok2, tok2->strAt(1), (std::string("++") == tok2->strAt(2)));
-            }
-        }
-    }
-}
-
 void CheckOther::cstyleCastError(const Token *tok)
 {
     reportError(tok, Severity::style, "cstyleCast", "C-style pointer casting");
@@ -4094,12 +4061,6 @@ void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numP
     }
     else
         reportError(tok, Severity::error, "wrongmathcall", "Passing value " " to " "() leads to undefined result");
-}
-
-void CheckOther::postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement)
-{
-    std::string type = (isIncrement ? "Incrementing" : "Decrementing");
-    reportError(tok, Severity::style, "postIncrementDecrement", ("Pre-" + type + " variable '" + var_name + "' is preferred to Post-" + type));
 }
 
 void CheckOther::emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty)
