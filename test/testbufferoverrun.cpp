@@ -126,6 +126,7 @@ private:
         TEST_CASE(buffer_overrun_13);
         TEST_CASE(buffer_overrun_14);
         TEST_CASE(buffer_overrun_15); // ticket #1787
+        TEST_CASE(buffer_overrun_16);
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
@@ -1683,6 +1684,15 @@ private:
               "    sprintf(val, \"drive_%d_partition_%d_size\", i, ii) ;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds\n", errout.str());
+    }
+
+    void buffer_overrun_16()
+    {
+        check("void f() {\n"
+              "    struct Foo foo[5];\n"
+              "    memset(foo, 0, sizeof(foo));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sprintf1()

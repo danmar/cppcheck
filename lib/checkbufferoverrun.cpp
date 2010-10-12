@@ -1815,6 +1815,10 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
         _element_size = tokenizer.sizeOfType(vartok);
         vartok = vartok->next();
     }
+    else if (tok->str() == "struct")
+    {
+        _element_size = 100;
+    }
     else
     {
         _element_size = tokenizer.sizeOfType(tok);
