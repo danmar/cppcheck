@@ -1594,28 +1594,33 @@ void Tokenizer::simplifyTypedef()
 
                     if (arrayStart && arrayEnd)
                     {
-                        tok2 = tok2->next();
-                        Token * nextArrTok;
-                        std::stack<Token *> arrLinks;
-                        for (nextArrTok = arrayStart; nextArrTok != arrayEnd->next(); nextArrTok = nextArrTok->next())
+                        do
                         {
-                            tok2->insertToken(nextArrTok->strAt(0));
                             tok2 = tok2->next();
-
-                            // Check for links and fix them up
-                            if (tok2->str() == "(" || tok2->str() == "[")
-                                arrLinks.push(tok2);
-                            if (tok2->str() == ")" || tok2->str() == "]")
+                            Token * nextArrTok;
+                            std::stack<Token *> arrLinks;
+                            for (nextArrTok = arrayStart; nextArrTok != arrayEnd->next(); nextArrTok = nextArrTok->next())
                             {
-                                Token * link = arrLinks.top();
+                                tok2->insertToken(nextArrTok->strAt(0));
+                                tok2 = tok2->next();
 
-                                tok2->link(link);
-                                link->link(tok2);
+                                // Check for links and fix them up
+                                if (tok2->str() == "(" || tok2->str() == "[")
+                                    arrLinks.push(tok2);
+                                if (tok2->str() == ")" || tok2->str() == "]")
+                                {
+                                    Token * link = arrLinks.top();
 
-                                arrLinks.pop();
+                                    tok2->link(link);
+                                    link->link(tok2);
+
+                                    arrLinks.pop();
+                                }
                             }
+
+                            tok2 = tok2->next();
                         }
-                        tok2 = tok2->next();
+                        while (Token::Match(tok2, ", %var% ;|'"));
                     }
 
                     simplifyType = false;

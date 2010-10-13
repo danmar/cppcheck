@@ -217,6 +217,7 @@ private:
         TEST_CASE(simplifyTypedef59); // ticket #2011
         TEST_CASE(simplifyTypedef60); // ticket #2035
         TEST_CASE(simplifyTypedef61); // ticket #2074 and 2075
+        TEST_CASE(simplifyTypedef62); // ticket #2082
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4472,6 +4473,23 @@ private:
 
         // Check for output..
         checkSimplifyTypedef(code2);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef62() // ticket #2082
+    {
+        const char code[] = "typedef char TString[256];\n"
+                            "void f()\n"
+                            "{\n"
+                            "    TString a, b;\n"
+                            "}";
+
+        // The expected tokens..
+        const std::string expected("; void f ( ) { char a [ 256 ] ; char b [ 256 ] ; }");
+        ASSERT_EQUALS(expected, sizeof_(code, false));
+
+        // Check for output..
+        checkSimplifyTypedef(code);
         ASSERT_EQUALS("", errout.str());
     }
 
