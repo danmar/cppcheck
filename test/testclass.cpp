@@ -4130,7 +4130,7 @@ private:
                    "    void f() const { };\n"
                    "    void a() { f(); };\n"
                    "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::a' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::a' can be const\n", errout.str());
 
         // ticket #1593
         checkConst("#include <vector>\n"
