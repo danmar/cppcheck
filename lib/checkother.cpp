@@ -3884,8 +3884,8 @@ bool CheckOther::isIdentifierObjectType(const Token * const tok)
         return found->second;
     }
 
-    const std::string classDef = std::string("class|struct ") + identifier;
-    const bool result = Token::findmatch(_tokenizer->tokens(), classDef.c_str());
+    const std::string classDefnOrDecl = std::string("class|struct ") + identifier + " [{:;]";
+    const bool result = Token::findmatch(_tokenizer->tokens(), classDefnOrDecl.c_str());
     isClassResults.insert(std::make_pair(identifier, result));
     return result;
 }
@@ -3893,6 +3893,7 @@ bool CheckOther::isIdentifierObjectType(const Token * const tok)
 
 void CheckOther::checkMisusedScopedObject()
 {
+    const char localClassDefinition[] = "class|struct %var% [{:]";
     bool withinFunction = false;
     unsigned int depth = 0;
     std::string className = "";
@@ -3917,7 +3918,7 @@ void CheckOther::checkMisusedScopedObject()
                     className.clear();
                 }
             }
-            else if (Token::Match(tok, "class|struct"))
+            else if (Token::Match(tok, localClassDefinition))
             {
                 className = tok->strAt(1);
                 isClassResults.insert(std::make_pair(className, false));

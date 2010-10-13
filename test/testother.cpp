@@ -115,6 +115,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassConstructors);
         TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
         TEST_CASE(trac2071);
+        TEST_CASE(trac2084);
 
         TEST_CASE(assignmentInAssert);
     }
@@ -3155,6 +3156,21 @@ private:
               "\n"
               "void fn() {\n"
               "    Foo().bar();\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void trac2084()
+    {
+        check("#include <signal.h>\n"
+              "\n"
+              "void f()\n"
+              "{\n"
+              "    struct sigaction sa;\n"
+              "\n"
+              "    { sigaction(SIGHUP, &sa, 0); };\n"
+              "    { sigaction(SIGINT, &sa, 0); };\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
