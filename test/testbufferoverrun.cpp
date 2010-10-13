@@ -1700,6 +1700,13 @@ private:
               "    strcpy(x, \"12\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("extern char a[10];\n"
+              "void f() {\n"
+              "    char b[25] = {0};\n"
+              "    std::memcpy(b, a, sizeof(a));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sprintf1()

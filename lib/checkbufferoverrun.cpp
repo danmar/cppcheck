@@ -1794,7 +1794,9 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
     if (!tok->isName())
         return false;
 
-    while (tok && (tok->str() == "static" || tok->str() == "const"))
+    while (tok && (tok->str() == "static" ||
+                   tok->str() == "const" ||
+                   tok->str() == "extern"))
         tok = tok->next();
 
     int ivar = 0;
