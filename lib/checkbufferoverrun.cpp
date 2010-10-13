@@ -1012,7 +1012,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", arrayInfo.varid))
         {
             const unsigned long len = Token::getStrLength(tok->tokAt(4));
-            if (len >= total_size)
+            if (total_size > 0 && len >= total_size)
             {
                 bufferOverrun(tok, arrayInfo.varname);
                 continue;
