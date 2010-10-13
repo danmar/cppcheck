@@ -3885,7 +3885,7 @@ bool CheckOther::isIdentifierObjectType(const Token * const tok)
     }
 
     const std::string classDefnOrDecl = std::string("class|struct ") + identifier + " [{:;]";
-    const bool result = Token::findmatch(_tokenizer->tokens(), classDefnOrDecl.c_str());
+    const bool result = Token::findmatch(_tokenizer->tokens(), classDefnOrDecl.c_str()) != NULL;
     isClassResults.insert(std::make_pair(identifier, result));
     return result;
 }
