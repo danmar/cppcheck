@@ -17,7 +17,7 @@
  */
 
 //---------------------------------------------------------------------------
-// You should use ++ and -- as prefix whenever possible as these are more 
+// You should use ++ and -- as prefix whenever possible as these are more
 // efficient than postfix operators
 //---------------------------------------------------------------------------
 
@@ -40,37 +40,47 @@ void CheckPostfixOperator::postfixOperator()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         bool result = false;
-        if ( Token::Match(tok, "++|--") ) {
-	    if ( Token::Match(tok->previous()->previous(), ";|{|}") && Token::Match(tok->next(), ";|)|,") ) {
-	  	result = true; 
-	    }
-	    else if (tok->strAt(-2) == ",") {
-		int i(1);
-		while(tok->strAt(i) != ")") {
-			if(tok->strAt(i) == ";") {
-				result = true;
-				break;
-			}
-			++i;
-		}
+        if (Token::Match(tok, "++|--"))
+        {
+            if (Token::Match(tok->previous()->previous(), ";|{|}") && Token::Match(tok->next(), ";|)|,"))
+            {
+                result = true;
             }
-	    else if (tok->strAt(-2) == "<<" && tok->strAt(1) == "<<") {
-	        result = true;
-	    }
+            else if (tok->strAt(-2) == ",")
+            {
+                int i(1);
+                while (tok->strAt(i) != ")")
+                {
+                    if (tok->strAt(i) == ";")
+                    {
+                        result = true;
+                        break;
+                    }
+                    ++i;
+                }
+            }
+            else if (tok->strAt(-2) == "<<" && tok->strAt(1) == "<<")
+            {
+                result = true;
+            }
         }
 
-        if(result) {
-             const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->previous()->varId());
-             if (decltok && Token::Match(decltok->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator")) {
-                 // the variable is an iterator
-                 postfixOperatorError(tok);
-             }
-             else { 
-                 const std::string classDef = std::string("class ") + std::string(decltok->previous()->strAt(0));
-                 if (Token::findmatch(_tokenizer->tokens(), classDef.c_str())) {
-                     // the variable is an instance of class
-                     postfixOperatorError(tok);
-                 }
+        if (result)
+        {
+            const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->previous()->varId());
+            if (decltok && Token::Match(decltok->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
+            {
+                // the variable is an iterator
+                postfixOperatorError(tok);
+            }
+            else
+            {
+                const std::string classDef = std::string("class ") + std::string(decltok->previous()->strAt(0));
+                if (Token::findmatch(_tokenizer->tokens(), classDef.c_str()))
+                {
+                    // the variable is an instance of class
+                    postfixOperatorError(tok);
+                }
             }
         }
     }
