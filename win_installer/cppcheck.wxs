@@ -49,11 +49,13 @@
           <Component Id='GuiHelp' Guid='*'>
             <File Id='onlinehelp.qhc' Name='online-help.qhc' DiskId='1' Source='$(var.HelpDir)\online-help.qhc' KeyPath='yes' />
           </Component>
-          <!-- Cleanup runtime files installed by previous InnoSetup installer -->
+          <!-- Cleanup runtime files installed by previous InnoSetup installer
+               Also remove old gui.exe which is now cppcheck-gui.exe -->
           <Component Id='InnoSetupCleanup' Guid='4A3F299D-1EE1-468b-814B-D6577F0698CA'>
             <RemoveFile Id="msvcp90.dll" On="install" Name="msvcp90.dll" />
             <RemoveFile Id="msvcr90.dll" On="install" Name="msvcr90.dll" />
             <RemoveFile Id="Microsoft.VC90.CRT.manifest" On="install" Name="Microsoft.VC90.CRT.manifest" />
+            <RemoveFile Id="gui.exe" On="install" Name="gui.exe" />
           </Component>
         </Directory>
         <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />

@@ -1012,7 +1012,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", arrayInfo.varid))
         {
             const unsigned long len = Token::getStrLength(tok->tokAt(4));
-            if (len >= total_size)
+            if (total_size > 0 && len >= total_size)
             {
                 bufferOverrun(tok, arrayInfo.varname);
                 continue;
@@ -1794,7 +1794,9 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
     if (!tok->isName())
         return false;
 
-    while (tok && (tok->str() == "static" || tok->str() == "const"))
+    while (tok && (tok->str() == "static" ||
+                   tok->str() == "const" ||
+                   tok->str() == "extern"))
         tok = tok->next();
 
     int ivar = 0;

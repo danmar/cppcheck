@@ -25,11 +25,14 @@ Building installer
 
 Before building the installer make sure all the components are build:
  - CLI executable (cppcheck.exe)
- - GUI executable (gui.exe)
- - Manual (manual.pdf)
+ - GUI executable (cppcheck-gui.exe)
+ - GUI translations (*.qm)
+ - Manual (onlinehelp.qhc)
 
 And that runtime files are available:
-  - Qt runtimes (qtcore4.dll, qtgui4.dll and qtxml4.dll)
+  - Qt runtimes:
+      QtCLucene4.dll, QtCore4.dll, QtGui4.dll, QtHelp4.dll, QtNetwork4.dll,
+      QtSql4.dll and QtXml4.dll
   - MS CRT merge module (Microsoft_VC90_CRT_x86.msm)
 
 Build installer by giving this command line in VS command prompt (or run

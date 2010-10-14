@@ -305,6 +305,7 @@ private:
     bool argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
 
     bool isMemberVar(const SpaceInfo *info, const Token *tok);
+    bool isConstMemberFunc(const SpaceInfo *info, const Token *tok);
     bool checkConstFunc(const SpaceInfo *info, const Token *tok);
 
     const Token *initBaseInfo(SpaceInfo *info, const Token *tok);

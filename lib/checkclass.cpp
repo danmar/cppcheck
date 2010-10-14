@@ -2139,6 +2139,37 @@ bool CheckClass::isMemberVar(const SpaceInfo *info, const Token *tok)
     return false;
 }
 
+bool CheckClass::isConstMemberFunc(const SpaceInfo *info, const Token *tok)
+{
+    std::list<Func>::const_iterator    func;
+
+    for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
+    {
+        if (func->tokenDef->str() == tok->str() && func->isConst)
+            return true;
+    }
+
+    // not found in this class
+    if (!info->derivedFrom.empty())
+    {
+        // check each base class
+        for (unsigned int i = 0; i < info->derivedFrom.size(); ++i)
+        {
+            // find the base class
+            const SpaceInfo *spaceInfo = info->derivedFrom[i].spaceInfo;
+
+            // find the function in the base class
+            if (spaceInfo)
+            {
+                if (isConstMemberFunc(spaceInfo, tok))
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool CheckClass::checkConstFunc(const SpaceInfo *info, const Token *tok)
 {
     // if the function doesn't have any assignment nor function call,
@@ -2200,9 +2231,16 @@ bool CheckClass::checkConstFunc(const SpaceInfo *info, const Token *tok)
         }
 
         // function call..
-        else if ((Token::Match(tok1, "%var% (") &&
-                  !(Token::Match(tok1, "return|c_str|if|string") || tok1->isStandardType())) ||
-                 Token::Match(tok1, "%var% < %any% > ("))
+        else if (Token::Match(tok1, "%var% (") &&
+                 !(Token::Match(tok1, "return|c_str|if|string") || tok1->isStandardType()))
+        {
+            if (!isConstMemberFunc(info, tok1))
+            {
+                isconst = false;
+                break;
+            }
+        }
+        else if (Token::Match(tok1, "%var% < %any% > ("))
         {
             isconst = false;
             break;
