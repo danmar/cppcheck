@@ -550,6 +550,20 @@ private:
               "    memclr( str, 5 );   // ERROR\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #2097..
+        check("void foo(int *p)\n"
+              "{\n"
+              "    --p;\n"
+              "    p[2] = 0;\n"
+              "}\n"
+              "\n"
+              "void bar()\n"
+              "{\n"
+              "    int p[3];\n"
+              "    foo(p+1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

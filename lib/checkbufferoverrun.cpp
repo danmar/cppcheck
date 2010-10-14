@@ -589,6 +589,10 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
 
                 if (ftok->varId() == parameterVarId)
                 {
+                    if (Token::Match(ftok->previous(), "-- %var%") ||
+                        Token::Match(ftok, "%var% --"))
+                        break;
+
                     if (Token::Match(ftok->previous(), "[=+-*/;{}] %var% [ %num% ]"))
                     {
                         long index = MathLib::toLongNumber(ftok->strAt(2));
