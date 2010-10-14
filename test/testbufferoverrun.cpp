@@ -1688,9 +1688,23 @@ private:
 
     void buffer_overrun_16()
     {
+        // unknown types
         check("void f() {\n"
               "    struct Foo foo[5];\n"
               "    memset(foo, 0, sizeof(foo));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"	// ticket #2093
+              "    gchar x[3];\n"
+              "    strcpy(x, \"12\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("extern char a[10];\n"
+              "void f() {\n"
+              "    char b[25] = {0};\n"
+              "    std::memcpy(b, a, sizeof(a));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
