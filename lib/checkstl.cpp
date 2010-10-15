@@ -166,11 +166,14 @@ void CheckStl::mismatchingContainers()
 
 void CheckStl::stlOutOfBounds()
 {
+    // Scan through all tokens..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+        // only interested in "for" loops
         if (!Token::simpleMatch(tok, "for ("))
             continue;
 
+        // check if the for loop condition is wrong
         unsigned int indent = 0;
         for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
         {
@@ -287,18 +290,24 @@ private:
     /** @brief parse tokens */
     const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
     {
+        // bail out if there are assignments. We don't check the assignments properly.
         if (Token::Match(&tok, "[;{}] %var% =") || Token::Match(&tok, "= %var% ;"))
         {
             ExecutionPath::bailOutVar(checks, tok.next()->varId());
         }
 
+        // the loop stops here. Bail out all execution checks that reach
+        // this statement
         if (Token::Match(&tok, "[;{}] break ;"))
         {
             ExecutionPath::bailOut(checks);
         }
 
+        // erasing iterator => it is invalidated
         if (Token::Match(&tok, "erase ( ++|--| %var% )"))
         {
+            // check if there is a "it = ints.erase(it);" pattern. if so
+            // the it is not invalidated.
             const Token *token = &tok;
             while (NULL != (token = token ? token->previous() : 0))
             {
@@ -308,14 +317,17 @@ private:
                     token = 0;
             }
 
+            // the it is invalidated by the erase..
             if (token)
             {
+                // get variable id for the iterator
                 unsigned int iteratorId = 0;
                 if (tok.tokAt(2)->isName())
                     iteratorId = tok.tokAt(2)->varId();
                 else
                     iteratorId = tok.tokAt(3)->varId();
 
+                // invalidate this iterator in the corresponding checks
                 for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
                 {
                     EraseCheckLoop *c = dynamic_cast<EraseCheckLoop *>(*it);
@@ -326,6 +338,8 @@ private:
                 }
             }
         }
+
+        // don't skip any tokens. return the token that we received.
         return &tok;
     }
 
@@ -337,6 +351,7 @@ private:
      **/
     bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
     {
+        // no checking of conditions.
         (void)tok;
         (void)checks;
         return false;
@@ -345,6 +360,7 @@ private:
     /** @brief going out of scope - all execution paths end */
     void end(const std::list<ExecutionPath *> &checks, const Token * /*tok*/) const
     {
+        // check if there are any invalid iterators. If so there is an error.
         for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
         {
             EraseCheckLoop *c = dynamic_cast<EraseCheckLoop *>(*it);
