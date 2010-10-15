@@ -43,6 +43,7 @@ public:
         : Check(tokenizer, settings, errorLogger)
     { }
 
+    /** Simplified checks. The token list is simplified. */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckStl checkStl(tokenizer, settings, errorLogger);
@@ -80,11 +81,16 @@ public:
      */
     void mismatchingContainers();
 
-    /** Dereferencing an erased iterator */
+    /**
+     * Dereferencing an erased iterator
+     * @param tok token where error occurs
+     * @param itername iterator name
+     */
     void dereferenceErasedError(const Token *tok, const std::string &itername);
 
     /**
-     * Dangerous usage of erase
+     * Dangerous usage of erase. The iterator is invalidated by erase so
+     * it is bad to dereference it after the erase.
      */
     void erase();
     void eraseError(const Token *tok);
