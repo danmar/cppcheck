@@ -306,8 +306,6 @@ private:
                     break;
                 else if (token->str() == "=")
                     token = 0;
-                else
-                    token = token->previous();
             }
 
             if (token)

@@ -384,6 +384,16 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #2101
+        check("void f(vector< list<int> > &ints, unsigned int i)\n"
+              "{\n"
+              "    list<int>::iterator it;\n"
+              "    for(it = ints[i].begin(); it != ints[i].end(); it++) {\n"
+              "        if (*it % 2)\n"
+              "            it = ints[i].erase(it);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void erase2()
