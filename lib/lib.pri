@@ -8,6 +8,7 @@ HEADERS += $$PWD/check.h \
            $$PWD/checkmemoryleak.h \
            $$PWD/checkobsoletefunctions.h \
            $$PWD/checkother.h \
+           $$PWD/checkpostfixoperator.h \
            $$PWD/checkstl.h \
            $$PWD/checkunusedfunctions.h \
            $$PWD/cppcheck.h \
@@ -31,6 +32,7 @@ SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/checkmemoryleak.cpp \
            $$PWD/checkobsoletefunctions.cpp \
            $$PWD/checkother.cpp \
+           $$PWD/checkpostfixoperator.cpp \
            $$PWD/checkstl.cpp \
            $$PWD/checkunusedfunctions.cpp \
            $$PWD/cppcheck.cpp \
