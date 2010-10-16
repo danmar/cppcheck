@@ -128,6 +128,7 @@
     <ClCompile Include="..\lib\checkmemoryleak.cpp" />
     <ClCompile Include="..\lib\checkobsoletefunctions.cpp" />
     <ClCompile Include="..\lib\checkother.cpp" />
+    <ClCompile Include="..\lib\checkpostfixoperator.cpp" />
     <ClCompile Include="..\lib\checkstl.cpp" />
     <ClCompile Include="..\lib\checkunusedfunctions.cpp" />
     <ClCompile Include="..\lib\cppcheck.cpp" />
@@ -142,6 +143,7 @@
     <ClCompile Include="..\lib\timer.cpp" />
     <ClCompile Include="..\lib\token.cpp" />
     <ClCompile Include="..\lib\tokenize.cpp" />
+    <ClCompile Include="options.cpp" />
     <ClCompile Include="testautovariables.cpp" />
     <ClCompile Include="testbufferoverrun.cpp" />
     <ClCompile Include="testcharvar.cpp" />
@@ -157,6 +159,7 @@
     <ClCompile Include="testmemleak.cpp" />
     <ClCompile Include="testobsoletefunctions.cpp" />
     <ClCompile Include="testother.cpp" />
+    <ClCompile Include="testpostfixoperator.cpp" />
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testrunner.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />
@@ -181,6 +184,7 @@
     <ClInclude Include="..\lib\checkmemoryleak.h" />
     <ClInclude Include="..\lib\checkobsoletefunctions.h" />
     <ClInclude Include="..\lib\checkother.h" />
+    <ClInclude Include="..\lib\checkpostfixoperator.h" />
     <ClInclude Include="..\lib\checkstl.h" />
     <ClInclude Include="..\lib\checkunusedfunctions.h" />
     <ClInclude Include="..\lib\classinfo.h" />
@@ -196,6 +200,8 @@
     <ClInclude Include="..\lib\timer.h" />
     <ClInclude Include="..\lib\token.h" />
     <ClInclude Include="..\lib\tokenize.h" />
+    <ClInclude Include="options.h" />
+    <ClInclude Include="redirect.h" />
     <ClInclude Include="testsuite.h" />
     <ClInclude Include="tinyxml\tinyxml.h" />
   </ItemGroup>

@@ -221,6 +221,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\checkpostfixoperator.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\checkstl.cpp"
 				>
 			</File>
@@ -332,6 +336,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\checkother.h"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\checkpostfixoperator.h"
 				>
 			</File>
 			<File
