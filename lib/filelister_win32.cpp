@@ -148,6 +148,12 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
 #if defined(UNICODE)
         char * ansiFfd = new char[wcslen(ffd.cFileName) + 1];
         TransformUcs2ToAnsi(ffd.cFileName, ansiFfd, wcslen(ffd.cFileName) + 1);
+        if (strchr(ansiFfd, '?'))
+        {
+            delete [] ansiFfd;
+            ansiFfd = new char[wcslen(ffd.cAlternateFileName) + 1];
+            TransformUcs2ToAnsi(ffd.cAlternateFileName, ansiFfd, wcslen(ffd.cAlternateFileName) + 1);
+        }
 #else // defined(UNICODE)
         char * ansiFfd = &ffd.cFileName[0];
 #endif // defined(UNICODE)
