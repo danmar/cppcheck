@@ -43,6 +43,9 @@
 // ANSI to Unicode. Likewise we must convert data we get from WinAPI from
 // Unicode to ANSI.
 
+// Note that qmake creates VS project files that define UNICODE but don't
+// define _UNICODE! Which means e.g. TCHAR macros don't work properly.
+
 #if defined(UNICODE)
 
 static bool TransformUcs2ToAnsi(LPCWSTR psUcs, LPSTR psAnsi, int nAnsi)
