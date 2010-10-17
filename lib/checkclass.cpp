@@ -1352,7 +1352,7 @@ void CheckClass::privateFunctions()
                                 if (ftok->next()->str() == (*it)->str())
                                     FuncList.erase(it++);
                                 else
-                                    it++;
+                                    ++it;
                             }
                         }
                         ftok = ftok->next();
@@ -1385,7 +1385,7 @@ void CheckClass::privateFunctions()
                             if (tok2->str() == (*it)->str())
                                 FuncList.erase(it++);
                             else
-                                it++;
+                                ++it;
                         }
                     }
                 }
