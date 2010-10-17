@@ -90,5 +90,5 @@ void CheckPostfixOperator::postfixOperator()
 
 void CheckPostfixOperator::postfixOperatorError(const Token *tok)
 {
-    reportError(tok, Severity::style, "postfixOperator", "You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators");
+    reportError(tok, Severity::performance, "postfixOperator", "You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators");
 }

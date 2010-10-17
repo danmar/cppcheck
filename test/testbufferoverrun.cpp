@@ -1894,7 +1894,7 @@ private:
               "    strncpy(str, a, 10);\n"
               "    strncat(str, b, 10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append\n", errout.str());
     }
 
     void strncat2()
@@ -1904,7 +1904,7 @@ private:
               "    char str[5];\n"
               "    strncat(str, a, 5);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append\n", errout.str());
     }
 
     void strncat3()
@@ -2132,7 +2132,7 @@ private:
               "    char s[10];\n"
               "    memset(s, 5, '*');\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) The size argument is given as a char constant\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The size argument is given as a char constant\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2308,7 +2308,7 @@ private:
               "    strncpy(baz, bar, sizeof(baz));\n"
               "    bar[99] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) After a strncpy() the buffer should be zero-terminated\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) After a strncpy() the buffer should be zero-terminated\n", errout.str());
 
         // Test with invalid code that there is no segfault
         check("char baz[100];\n"
@@ -2323,7 +2323,7 @@ private:
               "    foo(baz);\n"
               "    foo(baz);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) After a strncpy() the buffer should be zero-terminated\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) After a strncpy() the buffer should be zero-terminated\n", errout.str());
     }
 
     void terminateStrncpy2()
@@ -2335,7 +2335,7 @@ private:
               "    bar[99] = 0;\n"
               "    return baz;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) After a strncpy() the buffer should be zero-terminated\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) After a strncpy() the buffer should be zero-terminated\n", errout.str());
     }
 
     void recursive_long_time()

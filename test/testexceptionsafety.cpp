@@ -62,7 +62,7 @@ private:
               "{\n"
               "    throw e;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Throwing exception in destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Throwing exception in destructor\n", errout.str());
     }
 
     void deallocThrow()

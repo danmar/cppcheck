@@ -69,7 +69,7 @@ private:
     /** Don't throw exceptions in destructors */
     void destructorsError(const Token * const tok)
     {
-        reportError(tok, Severity::style, "exceptThrowInDestructor", "Throwing exception in destructor");
+        reportError(tok, Severity::error, "exceptThrowInDestructor", "Throwing exception in destructor");
     }
 
     void deallocThrowError(const Token * const tok, const std::string &varname)

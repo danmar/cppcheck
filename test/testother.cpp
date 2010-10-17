@@ -2417,19 +2417,19 @@ private:
     void passedByValue()
     {
         testPassedByValue("void f(const std::string str) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'str' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("class Foo;\nvoid f(const Foo foo) {}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Function parameter 'foo' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::string &str) {}");
         ASSERT_EQUALS("", errout.str());
 
         testPassedByValue("void f(const std::vector<int> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::vector<std::string> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::vector<int> &v) {}");
         ASSERT_EQUALS("", errout.str());
@@ -2438,16 +2438,16 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         testPassedByValue("void f(const std::map<int,int> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::map<std::string,std::string> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::map<int,std::string> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
 
         testPassedByValue("void f(const std::map<std::string,int> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value. It could be passed by reference instead, to make it faster.\n", errout.str());
     }
 
     void mathfunctionCall1()
@@ -2633,31 +2633,31 @@ private:
               "        std::cout << str;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
 
         check("if (!strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
 
         check("if (strlen(str) == 0) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
 
         check("if (strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
 
         check("if (strlen(str) > 0) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
 
         check("if (strlen(str) != 0) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
 
         check("if (0 != strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
 
         check("if (0 == strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
 
         check("if (0 < strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
     }
 
     void fflushOnInputStreamTest()
@@ -2681,13 +2681,13 @@ private:
               "{\n"
               "    int i = sizeof sizeof char;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Suspicious code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent to 'sizeof(size_t)'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent to 'sizeof(size_t)'.\n", errout.str());
     }
 
     void sizeofCalculation()
     {
         check("sizeof(a+b)");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Found calculation inside sizeof()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
 
         check("sizeof(-a)");
         ASSERT_EQUALS("", errout.str());
@@ -2709,7 +2709,7 @@ private:
               "            y = 3;\n"
               "        }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Redundant assignment of \"y\" in switch\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant assignment of \"y\" in switch\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2724,7 +2724,7 @@ private:
               "            y = 3;\n"
               "        }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Redundant assignment of \"y\" in switch\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant assignment of \"y\" in switch\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2855,21 +2855,21 @@ private:
               "        x = x;\n"
               "        return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Redundant assignment of \"x\" to itself\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of \"x\" to itself\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "        int x = x;\n"
               "        return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant assignment of \"x\" to itself\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"x\" to itself\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "        std::string var = var = \"test\";\n"
               "        return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant assignment of \"var\" to itself\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"var\" to itself\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2893,8 +2893,8 @@ private:
               "    fclose(file);\n"
               "    return b;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) scanf without field width limits can crash with huge input data\n"
-                      "[test.cpp:7]: (style) scanf without field width limits can crash with huge input data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
+                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n", errout.str());
     }
 
     void testScanf2()
@@ -2910,8 +2910,8 @@ private:
               "    fclose(file);\n"
               "    return b;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) scanf without field width limits can crash with huge input data\n"
-                      "[test.cpp:7]: (style) scanf without field width limits can crash with huge input data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
+                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n", errout.str());
     }
 
     void trac1132()
@@ -3097,7 +3097,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (style) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -3114,7 +3114,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:4]: (style) Assert statement modifies 'b'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Assert statement modifies 'b'. If the modification is needed in release builds there is a bug.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -3122,7 +3122,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (style) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -3130,7 +3130,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (style) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -3138,7 +3138,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (style) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -3146,7 +3146,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (style) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
     }
 };
 

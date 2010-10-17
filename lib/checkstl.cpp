@@ -723,9 +723,9 @@ void CheckStl::if_find()
 void CheckStl::if_findError(const Token *tok, bool str)
 {
     if (str)
-        reportError(tok, Severity::style, "stlIfStrFind", "Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.");
+        reportError(tok, Severity::warning, "stlIfStrFind", "Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.");
     else
-        reportError(tok, Severity::style, "stlIfFind", "Suspicious condition. The result of find is an iterator, but it is not properly checked.");
+        reportError(tok, Severity::warning, "stlIfFind", "Suspicious condition. The result of find is an iterator, but it is not properly checked.");
 }
 
 
@@ -808,7 +808,7 @@ void CheckStl::sizeError(const Token *tok)
 {
     const std::string varname(tok ? tok->str().c_str() : "list");
     const bool verbose(_settings ? _settings->_verbose : true);
-    reportError(tok, Severity::style, "stlSize", "Use " + varname + ".empty() instead of " + varname + ".size() to guarantee fast code." + (verbose ? " size() can take linear time but empty() is guaranteed to take constant time." : ""));
+    reportError(tok, Severity::performance, "stlSize", "Use " + varname + ".empty() instead of " + varname + ".size() to guarantee fast code." + (verbose ? " size() can take linear time but empty() is guaranteed to take constant time." : ""));
 }
 
 
@@ -914,7 +914,7 @@ void CheckStl::missingComparisonError(const Token *incrementToken1, const Token 
            << " and then at line " << incrementToken2->linenr()
            << ". The loop might unintentionally skip an element in the container. There is no comparison between these increments to prevent that the iterator is incremented beyond the end.";
 
-    reportError(incrementToken1, Severity::style, "StlMissingComparison", errmsg.str());
+    reportError(incrementToken1, Severity::warning, "StlMissingComparison", errmsg.str());
 }
 
 

@@ -954,7 +954,7 @@ private:
               "{\n"
               "    if (s.find(12)) { }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Suspicious condition. The result of find is an iterator, but it is not properly checked.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious condition. The result of find is an iterator, but it is not properly checked.\n", errout.str());
 
         // ok
         check("void f(std::set<int> s)\n"
@@ -973,7 +973,7 @@ private:
               "{\n"
               "    if (std::find(a,b,c)) { }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Suspicious condition. The result of find is an iterator, but it is not properly checked.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious condition. The result of find is an iterator, but it is not properly checked.\n", errout.str());
 
         // ok
         check("void f()\n"
@@ -990,7 +990,7 @@ private:
               "{\n"
               "    if (s.find(\"abc\")) { }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.\n", errout.str());
     }
 
 
@@ -1001,28 +1001,28 @@ private:
               "    std::list<int> x;\n"
               "    if (x.size() == 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    if (x.size() != 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    if (x.size() > 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    if (x.size()) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1063,7 +1063,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) The iterator is incremented at line 4 and then at line 2. The loop might unintentionally skip an element in the container. There is no comparison between these increments to prevent that the iterator is incremented beyond the end.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The iterator is incremented at line 4 and then at line 2. The loop might unintentionally skip an element in the container. There is no comparison between these increments to prevent that the iterator is incremented beyond the end.\n", errout.str());
     }
 
     void missingInnerComparison2()

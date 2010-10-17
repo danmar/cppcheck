@@ -117,7 +117,7 @@ void CheckBufferOverrun::strncatUsage(const Token *tok)
     if (_settings && !_settings->_checkCodingStyle)
         return;
 
-    reportError(tok, Severity::style, "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
+    reportError(tok, Severity::warning, "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
 }
 
 void CheckBufferOverrun::outOfBounds(const Token *tok, const std::string &what)
@@ -129,13 +129,13 @@ void CheckBufferOverrun::sizeArgumentAsChar(const Token *tok)
 {
     if (_settings && !_settings->_checkCodingStyle)
         return;
-    reportError(tok, Severity::style, "sizeArgumentAsChar", "The size argument is given as a char constant");
+    reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument is given as a char constant");
 }
 
 
 void CheckBufferOverrun::terminateStrncpyError(const Token *tok)
 {
-    reportError(tok, Severity::style, "terminateStrncpy", "After a strncpy() the buffer should be zero-terminated");
+    reportError(tok, Severity::warning, "terminateStrncpy", "After a strncpy() the buffer should be zero-terminated");
 }
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)

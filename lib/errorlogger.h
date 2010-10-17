@@ -33,7 +33,7 @@ class Tokenizer;
 class Severity
 {
 public:
-    enum SeverityType { none, error, style, debug };
+    enum SeverityType { none, error, warning, style, performance, debug };
     static std::string toString(SeverityType severity)
     {
         switch (severity)
@@ -42,8 +42,12 @@ public:
             return "";
         case error:
             return "error";
+        case warning:
+            return "warning";
         case style:
             return "style";
+        case performance:
+            return "performance";
         case debug:
             return "debug";
         };
@@ -57,8 +61,12 @@ public:
             return none;
         if (severity == "error")
             return error;
+        if (severity == "warning")
+            return warning;
         if (severity == "style")
             return style;
+        if (severity == "performance")
+            return performance;
         if (severity == "debug")
             return debug;
         return none;
