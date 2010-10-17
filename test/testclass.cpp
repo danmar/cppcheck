@@ -516,7 +516,7 @@ private:
             "        return *this;\n"
             "    }\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) 'operator=' should check for assignment to self\n", errout.str());
 
         // this test has an assignment test but doesn't need it
         checkOpertorEqToSelf(
@@ -571,7 +571,7 @@ private:
             "    s = strdup(a.s);\n"
             "    return *this;\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self\n", errout.str());
 
         // ticket #1224
         checkOpertorEqToSelf(
@@ -658,7 +658,7 @@ private:
             "        }\n"
             "    };\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self\n", errout.str());
 
         // this test has an assignment test but doesn't need it
         checkOpertorEqToSelf(
@@ -729,7 +729,7 @@ private:
             "    s = strdup(b.s);\n"
             "    return *this;\n"
             " }\n");
-        ASSERT_EQUALS("[test.cpp:11]: (style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (warning) 'operator=' should check for assignment to self\n", errout.str());
     }
 
     void operatorEqToSelf3()
@@ -1155,7 +1155,7 @@ private:
             "private:\n"
             "    char * data;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) 'operator=' should check for assignment to self\n", errout.str());
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -1172,7 +1172,7 @@ private:
             "    strcpy(data, a.data);\n"
             "    return *this;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self\n", errout.str());
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -1188,7 +1188,7 @@ private:
             "private:\n"
             "    char * data;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) 'operator=' should check for assignment to self\n", errout.str());
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -1205,7 +1205,7 @@ private:
             "    *data = *a.data;\n"
             "    return *this;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self\n", errout.str());
     }
 
     void operatorEqToSelf7()
@@ -1489,7 +1489,7 @@ private:
                        "    ECODES _code;\n"
                        "};\n");
 
-        ASSERT_EQUALS("[test.cpp:10]: (style) Member variable not initialized in the constructor 'Fred::_code'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable not initialized in the constructor 'Fred::_code'\n", errout.str());
 
 
         checkUninitVar("class A{};\n"
@@ -1501,7 +1501,7 @@ private:
                        "private:\n"
                        "  float f;\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Member variable not initialized in the constructor 'B::f'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable not initialized in the constructor 'B::f'\n", errout.str());
 
         checkUninitVar("class C\n"
                        "{\n"
@@ -1555,7 +1555,7 @@ private:
                        "    };\n"
                        "    Bar bars[2];\n"
                        "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Foo::bars'\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable not initialized in the constructor 'Foo::bars'\n", errout.str());
         ASSERT_EQUALS("", errout.str());	// So we notice if something is reported.
     }
 
@@ -1636,7 +1636,7 @@ private:
                        "    }\n"
                        "    return *this;\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Member variable 'Foo::a' is not assigned a value in 'Foo::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable 'Foo::a' is not assigned a value in 'Foo::operator='\n", errout.str());
     }
 
     void uninitVar9() // ticket #1730
@@ -1651,7 +1651,7 @@ private:
                        "{\n"
                        "    SetMinSize( wxSize( 48,48 ) );\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Prefs::xasd'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable not initialized in the constructor 'Prefs::xasd'\n", errout.str());
     }
 
     void uninitVar10() // ticket #1993
@@ -1664,7 +1664,7 @@ private:
                        "        int var2;\n"
                        "};\n"
                        "A::A() : var1(0) { }\n");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Member variable not initialized in the constructor 'A::var2'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable not initialized in the constructor 'A::var2'\n", errout.str());
     }
 
     void uninitVar11()
@@ -1676,7 +1676,7 @@ private:
                        "        int var;\n"
                        "};\n"
                        "A::A(int a) { }\n");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'A::var'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable not initialized in the constructor 'A::var'\n", errout.str());
     }
 
     void uninitVar12() // ticket #2078
@@ -1693,8 +1693,8 @@ private:
                        "    {}\n"
                        "    int x, y;\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Point::x'\n"
-                      "[test.cpp:4]: (style) Member variable not initialized in the constructor 'Point::y'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable not initialized in the constructor 'Point::x'\n"
+                      "[test.cpp:4]: (warning) Member variable not initialized in the constructor 'Point::y'\n", errout.str());
     }
 
     void uninitVarArray1()
@@ -1707,7 +1707,7 @@ private:
                        "private:\n"
                        "    char name[255];\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'John::name'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable not initialized in the constructor 'John::name'\n", errout.str());
 
         checkUninitVar("class John\n"
                        "{\n"
@@ -1754,7 +1754,7 @@ private:
                        "    John() { }\n"
                        "    A *a[5];\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Member variable not initialized in the constructor 'John::a'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable not initialized in the constructor 'John::a'\n", errout.str());
     }
 
     void uninitVarArray2()
@@ -1877,7 +1877,7 @@ private:
                        "private:\n"
                        "    int i;\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
 
         // Unknown non-member function
         checkUninitVar("class Fred\n"
@@ -1887,7 +1887,7 @@ private:
                        "private:\n"
                        "    int i;\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
 
         // Unknown non-member function
         checkUninitVar("class ABC { };\n"
@@ -1898,7 +1898,7 @@ private:
                        "private:\n"
                        "    int i;\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
 
     }
 
@@ -1913,7 +1913,7 @@ private:
                        "    unsigned int i;\n"
                        "};\n");
 
-        ASSERT_EQUALS("[test.cpp:5]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
     void uninitVarStream()
@@ -1979,7 +1979,7 @@ private:
                        "    Foo(int _i) { }\n"
                        "};\n");
 
-        ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
     }
 
 
@@ -2030,7 +2030,7 @@ private:
                        "    Fred() { }\n"
                        "};\n"
                        "#endfile\n");
-        ASSERT_EQUALS("[fred.h:6]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[fred.h:6]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
     void uninitVarHeader3()
@@ -2044,7 +2044,7 @@ private:
                        "    Fred() { }\n"
                        "};\n"
                        "#endfile\n");
-        ASSERT_EQUALS("[fred.h:6]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[fred.h:6]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
     // Borland C++: No FP for published pointers - they are automaticly initialized
@@ -2181,7 +2181,7 @@ private:
                        "    Foo() { }\n"
                        "};\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (style) Member variable not initialized in the constructor 'Foo::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (warning) Member variable not initialized in the constructor 'Foo::i'\n", errout.str());
 
         checkUninitVar("namespace n1\n"
                        "{\n"
@@ -2423,20 +2423,20 @@ private:
     void this_subtraction()
     {
         checkThisSubtraction("; this-x ;");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Suspicious pointer subtraction\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Suspicious pointer subtraction\n", errout.str());
 
         checkThisSubtraction("; *this = *this-x ;");
         ASSERT_EQUALS("", errout.str());
 
         checkThisSubtraction("; *this = *this-x ;\n"
                              "this-x ;");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious pointer subtraction\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious pointer subtraction\n", errout.str());
 
         checkThisSubtraction("; *this = *this-x ;\n"
                              "this-x ;\n"
                              "this-x ;\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious pointer subtraction\n"
-                      "[test.cpp:3]: (style) Suspicious pointer subtraction\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious pointer subtraction\n"
+                      "[test.cpp:3]: (warning) Suspicious pointer subtraction\n", errout.str());
     }
 
     void checkConst(const char code[], const Settings *s = 0)

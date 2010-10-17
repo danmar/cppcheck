@@ -378,7 +378,7 @@ private:
         // Test the errorlogger..
         ErrorLogger::ErrorMessage errorMessage;
         errorMessage._msg = "ab<cd>ef";
-        ASSERT_EQUALS("<error id=\"\" severity=\"\" msg=\"ab&lt;cd&gt;ef\"/>", errorMessage.toXML());
+        ASSERT_EQUALS("<error id=\"\" severity=\"style\" msg=\"ab&lt;cd&gt;ef\"/>", errorMessage.toXML());
     }
 
 
@@ -389,7 +389,7 @@ private:
         loc.setfile("ab/cd/../ef.h");
         errorMessage._callStack.push_back(loc);
         const std::string fname(Path::toNativeSeparators("ab/ef.h"));
-        ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"0\" id=\"\" severity=\"\" msg=\"\"/>", errorMessage.toXML());
+        ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"0\" id=\"\" severity=\"style\" msg=\"\"/>", errorMessage.toXML());
         ASSERT_EQUALS("[" + fname + ":0]: ", errorMessage.toString());
     }
 

@@ -1888,7 +1888,7 @@ void CheckClass::virtualDestructor()
 
 void CheckClass::thisSubtractionError(const Token *tok)
 {
-    reportError(tok, Severity::style, "thisSubtraction", "Suspicious pointer subtraction");
+    reportError(tok, Severity::warning, "thisSubtraction", "Suspicious pointer subtraction");
 }
 
 void CheckClass::thisSubtraction()
@@ -2272,17 +2272,18 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
 
 void CheckClass::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
+    // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
     reportError(tok, Severity::style, "noConstructor", "The " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' has no constructor. Member variables not initialized.");
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    reportError(tok, Severity::style, "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
+    reportError(tok, Severity::warning, "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    reportError(tok, Severity::style, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
+    reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
 }
 
 void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
@@ -2317,5 +2318,5 @@ void CheckClass::operatorEqRetRefThisError(const Token *tok)
 
 void CheckClass::operatorEqToSelfError(const Token *tok)
 {
-    reportError(tok, Severity::style, "operatorEqToSelf", "'operator=' should check for assignment to self");
+    reportError(tok, Severity::warning, "operatorEqToSelf", "'operator=' should check for assignment to self");
 }

@@ -157,7 +157,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
         xml << " line=\"" << _callStack.back().line << "\"";
     }
     xml << " id=\"" << _id << "\"";
-    xml << " severity=\"" << Severity::toString(_severity) << "\"";
+    xml << " severity=\"" << (_severity == Severity::error ? "error" : "style") << "\"";
     xml << " msg=\"" << stringToXml(_msg) << "\"";
     xml << "/>";
     return xml.str();

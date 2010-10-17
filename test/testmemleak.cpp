@@ -3578,7 +3578,7 @@ private:
               "    void xy()\n"
               "    { s = malloc(100); }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
 
         check("class Fred\n"
               "{\n"
@@ -3606,7 +3606,7 @@ private:
               "    const Fred & operator = (const Fred &f)\n"
               "    { s = malloc(100); }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
     }
 };
 

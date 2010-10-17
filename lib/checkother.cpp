@@ -383,7 +383,7 @@ void CheckOther::invalidScanf()
 
 void CheckOther::invalidScanfError(const Token *tok)
 {
-    reportError(tok, Severity::style,
+    reportError(tok, Severity::warning,
                 "invalidscanf", "scanf without field width limits can crash with huge input data\n"
                 "To fix this error message add a field width specifier:\n"
                 "    %s => %20s\n"
@@ -3952,22 +3952,22 @@ void CheckOther::unusedStructMemberError(const Token *tok, const std::string &st
 
 void CheckOther::passedByValueError(const Token *tok, const std::string &parname)
 {
-    reportError(tok, Severity::style, "passedByValue", "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead, to make it faster.");
+    reportError(tok, Severity::performance, "passedByValue", "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead, to make it faster.");
 }
 
 void CheckOther::constStatementError(const Token *tok, const std::string &type)
 {
-    reportError(tok, Severity::style, "constStatement", "Redundant code: Found a statement that begins with " + type + " constant");
+    reportError(tok, Severity::warning, "constStatement", "Redundant code: Found a statement that begins with " + type + " constant");
 }
 
 void CheckOther::charArrayIndexError(const Token *tok)
 {
-    reportError(tok, Severity::style, "charArrayIndex", "Warning - using char variable as array index");
+    reportError(tok, Severity::warning, "charArrayIndex", "Warning - using char variable as array index");
 }
 
 void CheckOther::charBitOpError(const Token *tok)
 {
-    reportError(tok, Severity::style, "charBitOp", "Warning - using char variable in bit operation");
+    reportError(tok, Severity::warning, "charBitOp", "Warning - using char variable in bit operation");
 }
 
 void CheckOther::variableScopeError(const Token *tok, const std::string &varname)
@@ -4055,12 +4055,12 @@ void CheckOther::emptyStringTestError(const Token *tok, const std::string &var_n
 {
     if (isTestForEmpty)
     {
-        reportError(tok, Severity::style,
+        reportError(tok, Severity::performance,
                     "emptyStringTest", "Empty string test can be simplified to \"*" + var_name + " == '\\0'\"");
     }
     else
     {
-        reportError(tok, Severity::style,
+        reportError(tok, Severity::performance,
                     "emptyStringTest", "Non-empty string test can be simplified to \"*" + var_name + " != '\\0'\"");
     }
 }
@@ -4084,7 +4084,7 @@ void CheckOther::sizeofsizeof()
 
 void CheckOther::sizeofsizeofError(const Token *tok)
 {
-    reportError(tok, Severity::style,
+    reportError(tok, Severity::warning,
                 "sizeofsizeof", "Suspicious code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent to 'sizeof(size_t)'.");
 }
 
@@ -4119,25 +4119,25 @@ void CheckOther::sizeofCalculation()
 
 void CheckOther::sizeofCalculationError(const Token *tok)
 {
-    reportError(tok, Severity::style,
+    reportError(tok, Severity::warning,
                 "sizeofCalculation", "Found calculation inside sizeof()");
 }
 
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style,
+    reportError(tok, Severity::warning,
                 "redundantAssignInSwitch", "Redundant assignment of \"" + varname + "\" in switch");
 }
 
 void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style,
+    reportError(tok, Severity::warning,
                 "selfAssignment", "Redundant assignment of \"" + varname + "\" to itself");
 }
 
 void CheckOther::assignmentInAssertError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style,
+    reportError(tok, Severity::warning,
                 "assignmentInAssert", "Assert statement modifies '" + varname + "'. If the modification is needed in release builds there is a bug.");
 }
 
