@@ -98,6 +98,9 @@ private:
         TEST_CASE(missingInnerComparison1);
         TEST_CASE(missingInnerComparison2);     // no FP when there is comparison
         TEST_CASE(missingInnerComparison3);     // no FP when there is iterator shadowing
+
+        // catch common problems when using the string::c_str() function
+        TEST_CASE(cstr);
     }
 
     void check(const std::string &code)
@@ -1089,6 +1092,22 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void cstr()
+    {
+        check("void f() {\n"
+              "    std::string errmsg;\n"
+              "    throw errmsg.c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+
+        check("std::string f();\n"
+              "\n"
+              "void foo() {\n"
+              "    const char *c = f().c_str();\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str()\n", errout.str());
     }
 };
 

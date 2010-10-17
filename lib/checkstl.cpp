@@ -918,3 +918,49 @@ void CheckStl::missingComparisonError(const Token *incrementToken1, const Token 
 }
 
 
+void CheckStl::string_c_str()
+{
+    // Try to detect common problems when using string::c_str()
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        // Locate executable scopes:
+        if (Token::Match(tok, ") const| {"))
+        {
+            std::set<unsigned int> localvar;
+
+            // scan through this executable scope:
+            unsigned int indentlevel = 0;
+            while (NULL != (tok = tok->next()))
+            {
+                if (tok->str() == "{")
+                    ++indentlevel;
+                else if (tok->str() == "}")
+                {
+                    if (indentlevel <= 1)
+                        break;
+                    --indentlevel;
+                }
+
+                // Variable declarations..
+                else if (Token::Match(tok->previous(), "[;{}] std :: %type% %var% ;"))
+                    localvar.insert(tok->tokAt(3)->varId());
+                else if (Token::Match(tok->previous(), "[;{}] %type% %var% ;"))
+                    localvar.insert(tok->next()->varId());
+
+                // Invalid usage..
+                else if (Token::Match(tok, "throw %var% . c_str ( ) ;") &&
+                         tok->next()->varId() > 0 &&
+                         localvar.find(tok->next()->varId()) != localvar.end())
+                {
+                    string_c_strError(tok);
+                }
+            }
+        }
+    }
+}
+
+void CheckStl::string_c_strError(const Token *tok)
+{
+    reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str()");
+}
+

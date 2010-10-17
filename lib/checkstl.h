@@ -55,6 +55,7 @@ public:
         checkStl.pushback();
         checkStl.stlBoundries();
         checkStl.if_find();
+        checkStl.string_c_str();
 
         // Style check
         checkStl.size();
@@ -129,6 +130,10 @@ public:
     void missingComparison();
     void missingComparisonError(const Token *incrementToken1, const Token *incrementToken2);
 
+    /** Check for common mistakes when using the function string::c_str() */
+    void string_c_str();
+    void string_c_strError(const Token *tok);
+
 private:
 
     /**
@@ -163,6 +168,7 @@ private:
         stlBoundriesError(0, "container");
         if_findError(0, false);
         if_findError(0, true);
+        string_c_strError(0);
         sizeError(0);
         eraseByValueError(0, "container", "iterator");
         redundantIfRemoveError(0);
@@ -183,7 +189,8 @@ private:
                "* for vectors: using iterator/pointer after push_back has been used\n"
                "* optimisation: use empty() instead of size() to guarantee fast code\n"
                "* suspicious condition when using find\n"
-               "* redundant condition\n";
+               "* redundant condition\n"
+               "* common mistakes when using string::c_str()";
     }
 
     bool isStlContainer(const Token *tok);
