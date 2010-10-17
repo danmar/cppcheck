@@ -110,10 +110,48 @@ Checking path/file2.cpp...
     </section>
 
     <section>
-      <title>Stylistic issues</title>
+      <title>Warning, Style and Performance</title>
 
-      <para>By default Cppcheck will only check for bugs. There are also a few
-      checks for stylistic issues.</para>
+      <para>By default Cppcheck will only check for bugs. There are more
+      checks:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>warning</term>
+
+          <listitem>
+            <para>suggestions about defensive programming to prevent
+            bugs</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>style</term>
+
+          <listitem>
+            <para>stylistic issues related to code cleanup (unused functions,
+            redundant code, constness, and such)</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>performance</term>
+
+          <listitem>
+            <para>suggestions for making the code faster</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>The scope of <literal>style</literal> is limited. The focus of
+      <literal>Cppcheck</literal> development is to detect bugs.
+      <literal>Cppcheck</literal> is not a style-checker.</para>
+
+      <para>You should always be skeptic about <literal>performance</literal>
+      messages. Fixing them doesn't necessarily make your code more readable,
+      at least that is not the intention. Cppcheck doesn't try to detect
+      hotspots so fixing <literal>performance</literal> messages might have no
+      measurable difference.</para>
 
       <para>Here is a simple code example:</para>
 
@@ -126,13 +164,15 @@ Checking path/file2.cpp...
     }
 }</programlisting>
 
-      <para>To enable stylistic checks, use the --style flag:</para>
+      <para>To enable these checks, use the --enable=style command:</para>
 
-      <programlisting>cppcheck --enable=style file1.c</programlisting>
+      <programlisting>cppcheck --enable=style file3.c</programlisting>
 
-      <para>The reported error is:</para>
+      <para>The output from Cppcheck is:</para>
 
-      <programlisting>[file3.c:3]: (style) The scope of the variable i can be limited</programlisting>
+      <programlisting>Checking file3.c...
+[file3.c:3]: (style) Variable 'i' is assigned a value that is never used
+[file3.c:3]: (style) The scope of the variable i can be reduced</programlisting>
     </section>
 
     <section>
