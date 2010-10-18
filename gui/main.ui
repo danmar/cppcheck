@@ -177,7 +177,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="mActionShowErrors"/>
+   <addaction name="mActionShowWarnings"/>
    <addaction name="mActionShowStyle"/>
+   <addaction name="mActionShowPerformance"/>
   </widget>
   <action name="mActionLicense">
    <property name="text">
@@ -427,6 +429,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/showwarnings.png</normaloff>:/images/showwarnings.png</iconset>
+   </property>
    <property name="text">
     <string>Warnings</string>
    </property>
@@ -440,6 +446,10 @@
   <action name="mActionShowPerformance">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/showperformance.png</normaloff>:/images/showperformance.png</iconset>
    </property>
    <property name="text">
     <string>Performance warnings</string>
