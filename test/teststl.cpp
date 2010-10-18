@@ -98,6 +98,7 @@ private:
         TEST_CASE(missingInnerComparison1);
         TEST_CASE(missingInnerComparison2);     // no FP when there is comparison
         TEST_CASE(missingInnerComparison3);     // no FP when there is iterator shadowing
+        TEST_CASE(missingInnerComparison4);     // no FP when "break;" is used
 
         // catch common problems when using the string::c_str() function
         TEST_CASE(cstr);
@@ -1091,6 +1092,19 @@ private:
               "        { }\n"
               "    }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void missingInnerComparison4()
+    {
+        check("function f1(std::list<int> &l1) {\n"
+              "    for(std::list<int>::iterator i = l1.begin(); i != l1.end(); i++) {\n"
+              "        if (*i == 44) {\n"
+              "            l1.insert(++i, 55);\n"
+              "            break;\n"
+              "        }\n"
+              "    }\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
