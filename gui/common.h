@@ -30,7 +30,9 @@
 typedef enum
 {
     SHOW_STYLE = 0,
-    SHOW_ERRORS,
+    SHOW_WARNINGS,
+    SHOW_PERFORMANCE,
+    SHOW_ERRORS, // Keep this as last real item
     SHOW_NONE
 }
 ShowTypes;
@@ -43,6 +45,8 @@ ShowTypes;
 #define SETTINGS_WINDOW_HEIGHT          "Window height"
 #define SETTINGS_SHOW_STYLE             "Show style"
 #define SETTINGS_SHOW_ERRORS            "Show errors"
+#define SETTINGS_SHOW_WARNINGS          "Show warnings"
+#define SETTINGS_SHOW_PERFORMANCE       "Show performance"
 #define SETTINGS_CHECK_PATH             "Check path"
 #define SETTINGS_CHECK_FORCE            "Check force"
 #define SETTINGS_CHECK_THREADS          "Check threads"

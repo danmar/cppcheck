@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -96,8 +96,10 @@
     </widget>
     <addaction name="mMenuToolbars"/>
     <addaction name="separator"/>
-    <addaction name="mActionShowStyle"/>
     <addaction name="mActionShowErrors"/>
+    <addaction name="mActionShowWarnings"/>
+    <addaction name="mActionShowStyle"/>
+    <addaction name="mActionShowPerformance"/>
     <addaction name="mActionCheckAll"/>
     <addaction name="mActionUncheckAll"/>
     <addaction name="separator"/>
@@ -284,7 +286,7 @@
      <normaloff>:/images/showstylewarnings.png</normaloff>:/images/showstylewarnings.png</iconset>
    </property>
    <property name="text">
-    <string>Show style errors</string>
+    <string>Show style warnings</string>
    </property>
   </action>
   <action name="mActionShowErrors">
@@ -407,6 +409,34 @@
    </property>
    <property name="text">
     <string>&amp;Statistics</string>
+   </property>
+  </action>
+  <action name="mActionShowWarnings">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Warnings</string>
+   </property>
+   <property name="iconText">
+    <string>Show warnings</string>
+   </property>
+   <property name="toolTip">
+    <string>Show warnings</string>
+   </property>
+  </action>
+  <action name="mActionShowPerformance">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Performance warnings</string>
+   </property>
+   <property name="iconText">
+    <string>Show performance warnings</string>
+   </property>
+   <property name="toolTip">
+    <string>Show performance warnings</string>
    </property>
   </action>
  </widget>

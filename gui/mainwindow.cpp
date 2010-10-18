@@ -63,6 +63,8 @@ MainWindow::MainWindow() :
 
     connect(mUI.mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
     connect(mUI.mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
+    connect(mUI.mActionShowWarnings, SIGNAL(toggled(bool)), this, SLOT(ShowWarnings(bool)));
+    connect(mUI.mActionShowPerformance, SIGNAL(toggled(bool)), this, SLOT(ShowPerformance(bool)));
     connect(mUI.mActionCheckAll, SIGNAL(triggered()), this, SLOT(CheckAll()));
     connect(mUI.mActionUncheckAll, SIGNAL(triggered()), this, SLOT(UncheckAll()));
     connect(mUI.mActionCollapseAll, SIGNAL(triggered()), mUI.mResults, SLOT(CollapseAllResults()));
@@ -169,6 +171,8 @@ void MainWindow::LoadSettings()
 
     mUI.mActionShowStyle->setChecked(mSettings->value(SETTINGS_SHOW_STYLE, true).toBool());
     mUI.mActionShowErrors->setChecked(mSettings->value(SETTINGS_SHOW_ERRORS, true).toBool());
+    mUI.mActionShowWarnings->setChecked(mSettings->value(SETTINGS_SHOW_WARNINGS, true).toBool());
+    mUI.mActionShowPerformance->setChecked(mSettings->value(SETTINGS_SHOW_PERFORMANCE, true).toBool());
 
     mUI.mResults->ShowResults(SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
     mUI.mResults->ShowResults(SHOW_STYLE, mUI.mActionShowStyle->isChecked());
@@ -193,6 +197,8 @@ void MainWindow::SaveSettings()
 
     mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
     mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_WARNINGS, mUI.mActionShowWarnings->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_PERFORMANCE, mUI.mActionShowPerformance->isChecked());
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI.mToolBarMain->isVisible());
     mSettings->setValue(SETTINGS_TOOLBARS_VIEW_SHOW, mUI.mToolBarView->isVisible());
 
@@ -473,6 +479,16 @@ void MainWindow::ShowErrors(bool checked)
     mUI.mResults->ShowResults(SHOW_ERRORS, checked);
 }
 
+void MainWindow::ShowWarnings(bool checked)
+{
+    mUI.mResults->ShowResults(SHOW_WARNINGS, checked);
+}
+
+void MainWindow::ShowPerformance(bool checked)
+{
+    mUI.mResults->ShowResults(SHOW_PERFORMANCE, checked);
+}
+
 void MainWindow::CheckAll()
 {
     ToggleAllChecked(true);
@@ -523,9 +539,12 @@ void MainWindow::ToggleAllChecked(bool checked)
 {
     mUI.mActionShowStyle->setChecked(checked);
     ShowStyle(checked);
-
     mUI.mActionShowErrors->setChecked(checked);
     ShowErrors(checked);
+    mUI.mActionShowWarnings->setChecked(checked);
+    ShowWarnings(checked);
+    mUI.mActionShowPerformance->setChecked(checked);
+    ShowPerformance(checked);
 }
 
 void MainWindow::About()

@@ -226,6 +226,10 @@ ShowTypes ResultsTree::SeverityToShowType(const QString & severity) const
         return SHOW_ERRORS;
     if (severity == "style")
         return SHOW_STYLE;
+    if (severity == "warning")
+        return SHOW_WARNINGS;
+    if (severity == "performance")
+        return SHOW_PERFORMANCE;
 
     return SHOW_NONE;
 }

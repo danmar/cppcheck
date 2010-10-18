@@ -92,6 +92,18 @@ public slots:
     void ShowErrors(bool checked);
 
     /**
+    * @brief Show errors with type "warning"
+    * @param checked Should errors be shown (true) or hidden (false)
+    */
+    void ShowWarnings(bool checked);
+
+    /**
+    * @brief Show errors with type "performance"
+    * @param checked Should errors be shown (true) or hidden (false)
+    */
+    void ShowPerformance(bool checked);
+
+    /**
     * @brief Slot to check all "Show errors" menu items
     */
     void CheckAll();
