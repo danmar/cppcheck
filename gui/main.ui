@@ -286,6 +286,12 @@
      <normaloff>:/images/showstylewarnings.png</normaloff>:/images/showstylewarnings.png</iconset>
    </property>
    <property name="text">
+    <string>Style warnings</string>
+   </property>
+   <property name="iconText">
+    <string>Show style warnings</string>
+   </property>
+   <property name="toolTip">
     <string>Show style warnings</string>
    </property>
   </action>
@@ -298,6 +304,12 @@
      <normaloff>:/images/showerrors.png</normaloff>:/images/showerrors.png</iconset>
    </property>
    <property name="text">
+    <string>Common errors</string>
+   </property>
+   <property name="iconText">
+    <string>Show common errors</string>
+   </property>
+   <property name="toolTip">
     <string>Show common errors</string>
    </property>
   </action>
