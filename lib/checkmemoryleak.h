@@ -182,6 +182,13 @@ public:
     /** @brief run all simplified checks */
     void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
     {
+        // Don't use these check for Java and C# programs..
+        if (tokenizr->getFiles()->at(0).find(".java") != std::string::npos ||
+            tokenizr->getFiles()->at(0).find(".cs") != std::string::npos)
+        {
+            return;
+        }
+
         CheckMemoryLeakInFunction checkMemoryLeak(tokenizr, settings, errLog);
         checkMemoryLeak.checkReallocUsage();
         checkMemoryLeak.check();
@@ -355,6 +362,13 @@ public:
 
     void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
     {
+        // Don't use these check for Java and C# programs..
+        if (tokenizr->getFiles()->at(0).find(".java") != std::string::npos ||
+            tokenizr->getFiles()->at(0).find(".cs") != std::string::npos)
+        {
+            return;
+        }
+
         CheckMemoryLeakInClass checkMemoryLeak(tokenizr, settings, errLog);
         checkMemoryLeak.check();
     }

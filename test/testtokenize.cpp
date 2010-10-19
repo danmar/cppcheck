@@ -264,6 +264,9 @@ private:
 
         // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
         TEST_CASE(simplifyAssignmentInFunctionCall);
+
+        // Tokenize C#
+        TEST_CASE(cs);
     }
 
 
@@ -4562,6 +4565,11 @@ private:
     void simplifyAssignmentInFunctionCall()
     {
         ASSERT_EQUALS("; x = g ( ) ; f ( x ) ;", tokenizeAndStringify(";f(x=g());"));
+    }
+
+    void cs()
+    {
+        ASSERT_EQUALS("; int * i ;", tokenizeAndStringify("; int [] i;"));
     }
 };
 

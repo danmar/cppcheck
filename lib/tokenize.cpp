@@ -1722,6 +1722,20 @@ bool Tokenizer::tokenize(std::istream &code,
 
     createTokens(code);
 
+    // Convert C# code
+    if (_files[0].find(".cs"))
+    {
+        for (Token *tok = _tokens; tok; tok = tok->next())
+        {
+            if (Token::Match(tok, "[;{}] %type% [ ] %var% [=;]"))
+            {
+                tok = tok->next()->next();
+                tok->str("*");
+                tok->deleteNext();
+            }
+        }
+    }
+
     // remove inline SQL (Oracle PRO*C). Ticket: #1959
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
