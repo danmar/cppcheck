@@ -1116,12 +1116,18 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
 
+        check("void f() {\n"
+              "    std::ostringstream errmsg;\n"
+              "    const char *c = errmsg.str().c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+
         check("std::string f();\n"
               "\n"
               "void foo() {\n"
               "    const char *c = f().c_str();\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str()\n", errout.str());
     }
 };
 

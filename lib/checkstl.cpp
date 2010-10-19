@@ -929,6 +929,7 @@ void CheckStl::string_c_str()
         if (Token::Match(tok, ") const| {"))
         {
             std::set<unsigned int> localvar;
+            std::set<unsigned int> pointers;
 
             // scan through this executable scope:
             unsigned int indentlevel = 0;
@@ -948,11 +949,29 @@ void CheckStl::string_c_str()
                     localvar.insert(tok->tokAt(3)->varId());
                 else if (Token::Match(tok->previous(), "[;{}] %type% %var% ;"))
                     localvar.insert(tok->next()->varId());
+                else if (Token::Match(tok->previous(), "[;{}] %type% * %var% ;"))
+                    pointers.insert(tok->tokAt(2)->varId());
+                else if (Token::Match(tok->previous(), "[;{}] %type% %type% * %var% ;"))
+                    pointers.insert(tok->tokAt(3)->varId());
 
                 // Invalid usage..
                 else if (Token::Match(tok, "throw %var% . c_str ( ) ;") &&
                          tok->next()->varId() > 0 &&
                          localvar.find(tok->next()->varId()) != localvar.end())
+                {
+                    string_c_strError(tok);
+                }
+                else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
+                         tok->next()->varId() > 0 &&
+                         pointers.find(tok->next()->varId()) != pointers.end())
+                {
+                    string_c_strError(tok);
+                }
+                else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
+                         Token::Match(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
+                         tok->next()->varId() > 0 &&
+                         pointers.find(tok->next()->varId()) != pointers.end() &&
+                         Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str()))
                 {
                     string_c_strError(tok);
                 }
