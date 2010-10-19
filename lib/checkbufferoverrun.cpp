@@ -1474,6 +1474,9 @@ unsigned int CheckBufferOverrun::countSprintfLength(const std::string &input_str
 
 void CheckBufferOverrun::checkSprintfCall(const Token *tok, const unsigned int size)
 {
+    if (size == 0)
+        return;
+
     const Token *end = tok->next()->link();
 
     // Count the number of tokens in the buffer variable's name
