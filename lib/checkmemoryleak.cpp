@@ -1311,6 +1311,36 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // Assignment..
         if (varid)
         {
+            if (Token::Match(tok, "= {"))
+            {
+                unsigned int indentlevel2 = 0;
+                bool use = false;
+                for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "{")
+                        ++indentlevel2;
+                    else if (tok2->str() == "}")
+                    {
+                        if (indentlevel2 <= 1)
+                            break;
+                        --indentlevel2;
+                    }
+                    else if (tok2->varId() == varid)
+                    {
+                        use = true;
+                        break;
+                    }
+                }
+
+                if (use)
+                {
+                    addtoken(&rettail, tok, "use");
+                    addtoken(&rettail, tok, ";");
+                    tok = tok->next()->link();
+                    continue;
+                }
+            }
+
             if (Token::Match(tok, "[)=] %varid% [+;)]", varid) ||
                 Token::Match(tok, "%var% + %varid%", varid) ||
                 Token::Match(tok, "%varid% +=|-=", varid) ||

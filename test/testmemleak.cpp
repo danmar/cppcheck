@@ -530,6 +530,7 @@ private:
         ASSERT_EQUALS(";;use;if{;}", getcode("char *s; if (foo(s)) ;", "s"));
         ASSERT_EQUALS(";;use;", getcode("char *s; map1[s] = 0;", "s"));
         ASSERT_EQUALS(";;;;", getcode("char *p; const char *q; q = p;", "p"));
+        ASSERT_EQUALS(";;use;;", getcode("char *s; x = {1,s};", "s"));
 
         // return..
         ASSERT_EQUALS(";;return;", getcode("char *s; return;", "s"));
