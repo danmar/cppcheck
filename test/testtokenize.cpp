@@ -62,6 +62,7 @@ private:
         TEST_CASE(removeCast3);
         TEST_CASE(removeCast4);
         TEST_CASE(removeCast5);
+        TEST_CASE(removeCast6);
 
         TEST_CASE(inlineasm);
 
@@ -530,6 +531,12 @@ private:
     {
         // ticket #1817
         ASSERT_EQUALS("a . data = f ;", tokenizeAndStringify("a->data = reinterpret_cast<void*>(static_cast<intptr_t>(f));", true));
+    }
+
+    void removeCast6()
+    {
+        // ticket #2103
+        ASSERT_EQUALS("if ( ! x )", tokenizeAndStringify("if (x == (char *) ((void *)0))", true));
     }
 
     void inlineasm()
