@@ -36,6 +36,11 @@ void CheckObsoleteFunctions::obsoleteFunctions()
     if (!_settings->_checkCodingStyle)
         return;
 
+    // Don't check C# and Java code
+    if (_tokenizer->getFiles()->at(0).find(".java") != std::string::npos ||
+        _tokenizer->getFiles()->at(0).find(".cs") != std::string::npos)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         std::list< std::pair<const std::string, const std::string> >::const_iterator it(_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());

@@ -1981,6 +1981,13 @@ void CheckClass::checkConst()
     if (!_settings->_checkCodingStyle || _settings->ifcfg)
         return;
 
+    // Don't check C# and JAVA classes
+    if (_tokenizer->getFiles()->at(0).find(".java") != std::string::npos ||
+        _tokenizer->getFiles()->at(0).find(".cs") != std::string::npos)
+    {
+        return;
+    }
+
     createSymbolDatabase();
 
     std::multimap<std::string, SpaceInfo *>::iterator it;

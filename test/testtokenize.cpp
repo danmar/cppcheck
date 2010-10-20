@@ -268,6 +268,9 @@ private:
 
         // Tokenize C#
         TEST_CASE(cs);
+
+        // Tokenize JAVA
+        TEST_CASE(java);
     }
 
 
@@ -4577,6 +4580,30 @@ private:
     void cs()
     {
         ASSERT_EQUALS("; int * i ;", tokenizeAndStringify("; int [] i;"));
+    }
+
+    std::string javatest(const char javacode[])
+    {
+        // tokenize..
+        Tokenizer tokenizer(0, this);
+        std::istringstream istr(javacode);
+        tokenizer.tokenize(istr, "test.java");
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        {
+            ostr << tok->str();
+            if (tok->next())
+                ostr << " ";
+        }
+
+        return ostr.str();
+    }
+
+
+    void java()
+    {
+        ASSERT_EQUALS("void f ( ) { }", javatest("void f() throws Exception { }"));
     }
 };
 

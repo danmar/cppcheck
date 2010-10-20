@@ -1744,6 +1744,22 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // Simplify JAVA code
+    if (_files[0].find(".java") != std::string::npos)
+    {
+        for (Token *tok = _tokens; tok; tok = tok->next())
+        {
+            if (Token::Match(tok, ") throws %var% {"))
+                Token::eraseTokens(tok, tok->tokAt(3));
+            else if (tok->str() == "private")
+                tok->str("private:");
+            else if (tok->str() == "protected")
+                tok->str("protected:");
+            else if (tok->str() == "public")
+                tok->str("public:");
+        }
+    }
+
     // remove inline SQL (Oracle PRO*C). Ticket: #1959
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -6612,6 +6628,10 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
 
 void Tokenizer::simplifyEnum()
 {
+    // Don't simplify enums in java files
+    if (_files[0].find(".java") != std::string::npos)
+        return;
+
     std::string className;
     int classLevel = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
