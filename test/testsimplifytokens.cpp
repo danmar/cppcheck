@@ -4478,18 +4478,60 @@ private:
 
     void simplifyTypedef62() // ticket #2082
     {
-        const char code[] = "typedef char TString[256];\n"
-                            "void f()\n"
-                            "{\n"
-                            "    TString a, b;\n"
-                            "}";
+        const char code1[] = "typedef char TString[256];\n"
+                             "void f()\n"
+                             "{\n"
+                             "    TString a, b;\n"
+                             "}";
 
         // The expected tokens..
-        const std::string expected("; void f ( ) { char a [ 256 ] ; char b [ 256 ] ; }");
-        ASSERT_EQUALS(expected, sizeof_(code, false));
+        const std::string expected1("; void f ( ) { char a [ 256 ] ; char b [ 256 ] ; }");
+        ASSERT_EQUALS(expected1, sizeof_(code1, false));
 
         // Check for output..
-        checkSimplifyTypedef(code);
+        checkSimplifyTypedef(code1);
+        ASSERT_EQUALS("", errout.str());
+
+        const char code2[] = "typedef char TString[256];\n"
+                             "void f()\n"
+                             "{\n"
+                             "    TString a = { 0 }, b = { 0 };\n"
+                             "}";
+
+        // The expected tokens..
+        const std::string expected2("; void f ( ) { char a [ 256 ] = { 0 } ; char b [ 256 ] = { 0 } ; }");
+        ASSERT_EQUALS(expected2, tok(code2, false));
+
+        // Check for output..
+        checkSimplifyTypedef(code2);
+        ASSERT_EQUALS("", errout.str());
+
+        const char code3[] = "typedef char TString[256];\n"
+                             "void f()\n"
+                             "{\n"
+                             "    TString a = \"\", b = \"\";\n"
+                             "}";
+
+        // The expected tokens..
+        const std::string expected3("; void f ( ) { char a [ 256 ] = \"\" ; char b [ 256 ] = \"\" ; }");
+        ASSERT_EQUALS(expected3, tok(code3, false));
+
+        // Check for output..
+        checkSimplifyTypedef(code3);
+        ASSERT_EQUALS("", errout.str());
+
+        const char code4[] = "typedef char TString[256];\n"
+                             "void f()\n"
+                             "{\n"
+                             "    TString a = \"1234\", b = \"5678\";\n"
+                             "}";
+
+        // The expected tokens..
+        const std::string expected4("; void f ( ) { char a [ 256 ] = \"1234\" ; char b [ 256 ] = \"5678\" ; }");
+        ASSERT_EQUALS(expected4, tok(code4, false));
+
+        // Check for output..
+        checkSimplifyTypedef(code4);
         ASSERT_EQUALS("", errout.str());
     }
 

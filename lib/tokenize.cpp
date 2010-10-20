@@ -1619,8 +1619,16 @@ void Tokenizer::simplifyTypedef()
                             }
 
                             tok2 = tok2->next();
+
+                            if (tok2->str() == "=")
+                            {
+                                if (tok2->next()->str() == "{")
+                                    tok2 = tok2->next()->link()->next();
+                                else if (tok2->next()->str().at(0) == '\"')
+                                    tok2 = tok2->next()->next();
+                            }
                         }
-                        while (Token::Match(tok2, ", %var% ;|'"));
+                        while (Token::Match(tok2, ", %var% ;|'|="));
                     }
 
                     simplifyType = false;
