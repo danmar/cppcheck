@@ -2724,7 +2724,7 @@ private:
               "{\n"
               "  int handle;\n"
               "  \n"
-              "  handle = std::open(\"myfile\");\n"
+              "  handle = open(\"myfile\");\n"
               "  if (handle < 0) return 1;\n"
               "  \n"
               "    while (some_condition()) \n"
@@ -2742,7 +2742,7 @@ private:
               "{\n"
               "  int handle;\n"
               "  \n"
-              "  handle = std::open(\"myfile\");\n"
+              "  handle = open(\"myfile\");\n"
               "  if (handle < 0) return 1;\n"
               "  \n"
               "    while (some_condition()) \n"
@@ -2752,8 +2752,7 @@ private:
               "      }\n"
               "  close(handle);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Resource leak: handle\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Resource leak: handle\n", errout.str());
     }
 
     void fd_functions()
