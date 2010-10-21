@@ -569,6 +569,13 @@ private:
 
         // call memcpy in class function..
         ASSERT_EQUALS(";;alloc;;", getcode("char *s; s = new char[10]; memcpy(s,a);", "s", true));
+
+        // #2112 - Segmentation fault in the getcode function
+        getcode("page *one = foo();\n"
+                "ASSERT(one, return 0)\n"
+                "const int two = rand();\n"
+                "return 0;\n"
+                "}", "one");
     }
 
 

@@ -1282,7 +1282,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
                     if (tok2->str() == "(")
                         f.push(tok2->previous());
-                    else if (tok2->str() == ")")
+                    else if (!f.empty() && tok2->str() == ")")
                         f.pop();
 
                     if (tok2->varId() == varid)
