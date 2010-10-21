@@ -20,6 +20,7 @@ BuildTmp/
 # XCode build folders and files
 build/
 *.pbxuser
+*.mode[0-9]v[0-9]
 # GUI build folders
 gui/debug/
 gui/release/
