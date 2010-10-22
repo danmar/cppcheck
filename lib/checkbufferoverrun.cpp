@@ -1174,7 +1174,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             varid = tok->tokAt(1)->varId();
             nextTok = 8;
         }
-        else if (indentlevel > 0 && Token::Match(tok, "[;{}] %var% = %str% ;"))
+        else if (indentlevel > 0 &&
+                 Token::Match(tok, "[;{}] %var% = %str% ;") &&
+                 NULL != Token::findmatch(_tokenizer->tokens(), "[;{}] const| %type% * %varid% ;", tok->next()->varId()))
         {
             size = 1 + int(tok->tokAt(3)->strValue().size());
             type = "char";

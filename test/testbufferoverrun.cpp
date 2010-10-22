@@ -137,6 +137,7 @@ private:
         TEST_CASE(sprintf7);
         TEST_CASE(sprintf8);
         TEST_CASE(sprintf9);
+        TEST_CASE(sprintf10);
 
         TEST_CASE(snprintf1);
         TEST_CASE(snprintf2);
@@ -1830,6 +1831,16 @@ private:
         check("void f()\n"
               "{\n"
               "  gchar str[3];\n"
+              "  sprintf(str, \"1\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void sprintf10()
+    {
+        check("void f()\n"
+              "{\n"
+              "  TString str = \"\";\n"
               "  sprintf(str, \"1\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
