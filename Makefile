@@ -94,8 +94,8 @@ cppcheck:	$(LIBOBJ)	$(CLIOBJ)
 
 all:	cppcheck	testrunner
 
-testrunner:	$(TESTOBJ)	$(LIBOBJ)	cli/threadexecutor.o	cli/cmdlineparser.o
-	$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cmdlineparser.o $(LDFLAGS)
+testrunner:	$(TESTOBJ)	$(LIBOBJ)	cli/threadexecutor.o	cli/cmdlineparser.o	cli/cppcheckexecutor.o
+	$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o $(LDFLAGS)
 
 test:	all
 	./testrunner

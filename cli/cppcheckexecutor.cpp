@@ -70,7 +70,15 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             cppcheck->addFile(*iter);
     }
 
-    return true;
+    if(filenames.empty())
+    {
+        std::cout << "cppcheck: error: could not find or open any of the paths given." << std::endl;
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 int CppCheckExecutor::check(int argc, const char* const argv[])

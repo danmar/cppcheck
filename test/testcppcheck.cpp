@@ -22,6 +22,7 @@
 
 
 #include "cppcheck.h"
+#include "cppcheckexecutor.h"
 #include "testsuite.h"
 #include "path.h"
 
@@ -55,6 +56,7 @@ private:
 
     void run()
     {
+        TEST_CASE(nonexistingpath);
         TEST_CASE(linenumbers);
         // TEST_CASE(linenumbers2);
 
@@ -341,6 +343,15 @@ private:
         }
     }
 #endif
+
+    void nonexistingpath()
+    {
+        CppCheckExecutor exec;
+        char *argv[] = { "", "idontexist" };
+        int retval = exec.check(2, argv);
+
+        ASSERT_EQUALS(retval, EXIT_FAILURE);
+    }
 
     void linenumbers()
     {

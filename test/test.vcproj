@@ -239,6 +239,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\cli\cppcheckexecutor.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\errorlogger.cpp"
 				>
 			</File>
@@ -482,6 +486,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\cppcheck.h"
+				>
+			</File>
+			<File
+				RelativePath="..\cli\cppcheckexecutor.h"
 				>
 			</File>
 			<File
