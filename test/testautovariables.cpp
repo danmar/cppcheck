@@ -68,6 +68,7 @@ private:
         TEST_CASE(testautovar_return);
         TEST_CASE(testautovar_extern);
         TEST_CASE(testinvaliddealloc);
+        TEST_CASE(testassign);  // Ticket #1819
 
         TEST_CASE(returnLocalVariable1);
         TEST_CASE(returnLocalVariable2);
@@ -145,6 +146,15 @@ private:
               "        abc(0, psz_title);\n"
               "        free(psz_title);\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void testassign()
+    {
+        check("void f(EventPtr *eventP, ActionPtr **actionsP) {\n"
+              "    EventPtr event = *eventP;\n"
+              "    *actionsP = &event->actions;\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }

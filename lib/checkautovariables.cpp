@@ -137,6 +137,9 @@ void CheckAutoVariables::autoVariables()
     bool begin_function_decl = false;
     int bindent = 0;
 
+    // Which variables have an unknown type?
+    std::set<unsigned int> unknown_type;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
 
@@ -188,17 +191,24 @@ void CheckAutoVariables::autoVariables()
         else if (Token::Match(tok, "%var% %var% ;") && !isExternOrStatic(tok) && isTypeName(tok))
         {
             addVD(tok->next()->varId());
+            if (!tok->isStandardType() &&
+                NULL == Token::findmatch(_tokenizer->tokens(), ("struct|class " + tok->str()).c_str()))
+            {
+                unknown_type.insert(tok->next()->varId());
+            }
         }
         else if (Token::Match(tok, "const %var% %var% ;") && !isExternOrStatic(tok) && isTypeName(tok->next()))
         {
             addVD(tok->tokAt(2)->varId());
         }
+
         //Critical assignment
         else if (Token::Match(tok, "[;{}] %var% = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(4)))
         {
             errorAutoVariableAssignment(tok);
         }
-        else if (Token::Match(tok, "[;{}] * %var% = & %var%") && errorAv(tok->tokAt(2), tok->tokAt(5)))
+        else if (Token::Match(tok, "[;{}] * %var% = & %var%") && errorAv(tok->tokAt(2), tok->tokAt(5)) &&
+                 unknown_type.find(tok->tokAt(5)->varId()) == unknown_type.end())
         {
             errorAutoVariableAssignment(tok);
         }
