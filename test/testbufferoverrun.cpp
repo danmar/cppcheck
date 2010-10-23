@@ -154,7 +154,8 @@ private:
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
 
-        TEST_CASE(memfunc);		// memchr/memset/memcpy
+        TEST_CASE(memfunc1);		// memchr/memset/memcpy
+        TEST_CASE(memfunc2);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -2001,7 +2002,7 @@ private:
 
 
     // memchr/memset/memcpy/etc
-    void memfunc()
+    void memfunc1()
     {
         check("struct S {\n"
               "    char a[5];\n"
@@ -2044,6 +2045,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    // ticket #2121 - buffer access out of bounds when using uint32_t
+    void memfunc2()
+    {
+        check("void f()\n"
+              "{\n"
+              "    unknown_type_t buf[4];\n"
+              "    memset(buf, 0, 100);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void varid1()
     {

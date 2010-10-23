@@ -458,6 +458,11 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 
 void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo)
 {
+    // unknown element size : don't report errors
+    if (arrayInfo.element_size == 0)
+        return;
+
+
     std::map<std::string, unsigned int> total_size;
     total_size["fgets"] = 2;	// The second argument for fgets can't exceed the total size of the array
     total_size["memcmp"] = 3;
