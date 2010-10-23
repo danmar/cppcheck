@@ -81,6 +81,7 @@ private:
         TEST_CASE(uninitFunction3);			// No FP when initialized in function
         TEST_CASE(uninitSameClassName);		// No FP when two classes have the same name
         TEST_CASE(uninitFunctionOverload); 	// No FP when there are overloaded functions
+        TEST_CASE(uninitJava);              // Java: no FP when variable is initialized in declaration
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -2224,6 +2225,15 @@ private:
                        "\n"
                        "    void init(int value)\n"
                        "    { i = value; }\n"
+                       "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitJava()
+    {
+        checkUninitVar("class A {\n"
+                       "    private: int i = 0;\n"
+                       "    public: A() { }\n"
                        "};");
         ASSERT_EQUALS("", errout.str());
     }

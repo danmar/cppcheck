@@ -743,7 +743,7 @@ void CheckClass::SpaceInfo::getVarList()
         }
 
         // If the vartok was set in the if-blocks above, create a entry for this variable..
-        if (vartok && vartok->str() != "operator")
+        if (vartok && vartok->str() != "operator" && !Token::Match(vartok->next(), "; %varid% =", vartok->varId()))
         {
             if (vartok->varId() == 0 && check->_settings->debugwarnings)
             {
