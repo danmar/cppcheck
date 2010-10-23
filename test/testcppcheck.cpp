@@ -347,7 +347,7 @@ private:
     void nonexistingpath()
     {
         CppCheckExecutor exec;
-        char *argv[] = { "", "idontexist" };
+        const char *argv[] = { "", "idontexist" };
         int retval = exec.check(2, argv);
 
         ASSERT_EQUALS(retval, EXIT_FAILURE);
