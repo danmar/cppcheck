@@ -104,6 +104,7 @@ private:
         TEST_CASE(array_index_28); // ticket #1418
         TEST_CASE(array_index_29); // ticket #1734
         TEST_CASE(array_index_30); // ticket #2086 - out of bounds when type is unknown
+        TEST_CASE(array_index_31); // ticket #2120 - out of bounds in subfunction when type is unknown
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
@@ -1002,6 +1003,39 @@ private:
               "    x[5] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'x[2]' index 5 out of bounds\n", errout.str());
+    }
+
+    void array_index_31()
+    {
+        // ticket #2120 - sub function, unknown type
+        check("struct s1 {\n"
+              "    unknown_type_t delay[3];\n"
+              "};\n"
+              "\n"
+              "void x(unknown_type_t *delay, const int *net) {\n"
+              "    delay[0] = 0;\n"
+              "}\n"
+              "\n"
+              "void y() {\n"
+              "    struct s1 obj;\n"
+              "    x(obj.delay, 123);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct s1 {\n"
+              "    unknown_type_t delay[3];\n"
+              "};\n"
+              "\n"
+              "void x(unknown_type_t *delay, const int *net) {\n"
+              "    delay[4] = 0;\n"
+              "}\n"
+              "\n"
+              "void y() {\n"
+              "    struct s1 obj;\n"
+              "    x(obj.delay, 123);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6] (error) array index 4 is out of bounds", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim()

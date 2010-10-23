@@ -596,7 +596,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
                     if (Token::Match(ftok->previous(), "[=+-*/;{}] %var% [ %num% ]"))
                     {
                         long index = MathLib::toLongNumber(ftok->strAt(2));
-                        if (index >= 0 && static_cast<unsigned long>(index) >= arrayInfo.num[0])
+                        if (index >= 0 && arrayInfo.num[0] > 0 && static_cast<unsigned long>(index) >= arrayInfo.num[0])
                         {
                             std::list<const Token *> callstack;
                             callstack.push_back(&tok);
