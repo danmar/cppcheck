@@ -2821,6 +2821,20 @@ private:
 
         return ExecutionPath::parseCondition(tok, checks);
     }
+
+
+    void parseLoopBody(const Token *tok, std::list<ExecutionPath *> &checks) const
+    {
+        while (tok)
+        {
+            if (tok->str() == "{" || tok->str() == "}")
+                return;
+            const Token *next = parse(*tok, checks);
+            if (next)
+                tok = tok->next();
+        }
+    }
+
 };
 
 

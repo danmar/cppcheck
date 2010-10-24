@@ -1100,6 +1100,14 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference\n"
                       "[test.cpp:6]: (error) Null pointer dereference\n", errout.str());
 
+        // loops..
+        checkNullPointer("void f() {\n"
+                         "    int *p = 0;\n"
+                         "    for (int i = 0; i < 10; ++i) {\n"
+                         "        int x = *p + 1;\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer7()
