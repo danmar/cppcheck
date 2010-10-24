@@ -169,6 +169,9 @@
     <ClInclude Include="..\lib\checkobsoletefunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cppcheckexecutor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppcheck.rc" />

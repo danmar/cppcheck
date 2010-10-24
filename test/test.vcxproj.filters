@@ -182,6 +182,9 @@
     <ClCompile Include="..\cli\threadexecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\cli\cppcheckexecutor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="testsuite.h">
@@ -272,6 +275,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\cli\threadexecutor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cli\cppcheckexecutor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

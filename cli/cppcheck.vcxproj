@@ -176,6 +176,7 @@
     <ClInclude Include="..\lib\token.h" />
     <ClInclude Include="..\lib\tokenize.h" />
     <ClInclude Include="cmdlineparser.h" />
+    <ClInclude Include="cppcheckexecutor.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

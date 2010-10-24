@@ -121,6 +121,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\cli\cmdlineparser.cpp" />
+    <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
     <ClCompile Include="..\lib\checkautovariables.cpp" />
     <ClCompile Include="..\lib\checkbufferoverrun.cpp" />
@@ -180,6 +181,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\cli\cmdlineparser.h" />
+    <ClInclude Include="..\cli\cppcheckexecutor.h" />
     <ClInclude Include="..\cli\threadexecutor.h" />
     <ClInclude Include="..\lib\check.h" />
     <ClInclude Include="..\lib\checkautovariables.h" />
