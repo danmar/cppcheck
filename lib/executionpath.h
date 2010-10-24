@@ -112,6 +112,17 @@ public:
      **/
     virtual bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks);
 
+    /**
+     * Parse loop body
+     * @param tok the first token in the loop body (the token after the {)
+     * @param checks The execution paths
+     */
+    virtual void parseLoopBody(const Token *tok, std::list<ExecutionPath *> &checks) const
+    {
+        (void)tok;
+        (void)checks;
+    }
+
     /** going out of scope - all execution paths end */
     virtual void end(const std::list<ExecutionPath *> & /*checks*/, const Token * /*tok*/) const
     { }

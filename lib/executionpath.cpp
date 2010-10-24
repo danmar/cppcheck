@@ -258,6 +258,11 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                 return;
             }
 
+            if (tok->str() != "switch")
+            {
+                check->parseLoopBody(tok2->next(), checks);
+            }
+
             // skip { .. }
             tok2 = tok2->link();
 

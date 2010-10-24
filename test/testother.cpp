@@ -1754,6 +1754,14 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
 
+        checkUninitVar("void f() {\n"
+                       "    int k;\n"
+                       "    for (int i = 0; i < 4; ++i) {\n"
+                       "        k = k + 2;\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: k\n", errout.str());
+
         // while..
         checkUninitVar("int f()\n"
                        "{\n"

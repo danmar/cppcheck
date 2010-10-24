@@ -3647,6 +3647,73 @@ private:
         return ExecutionPath::parseCondition(tok, checks);
     }
 
+    void parseLoopBody(const Token *tok_, std::list<ExecutionPath *> &checks) const
+    {
+        for (; tok_; tok_ = tok_->next())
+        {
+            if (tok_->str() == "{")
+                return;
+
+            const Token &tok = *tok_;
+
+            if (Token::Match(tok.previous(), "[;{}] %var% [=[.]"))
+            {
+                if (tok.next()->str() == ".")
+                {
+                    if (use_dead_pointer(checks, &tok))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    // check variable usages in rhs/index
+                    for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
+                    {
+                        if (Token::Match(tok2, "[;)=?]"))
+                            break;
+                        if (Token::Match(tok2, "%var% ("))
+                            break;
+                        if (tok2->varId() &&
+                            !Token::Match(tok2->previous(), "&|::") &&
+                            !Token::simpleMatch(tok2->next(), "="))
+                        {
+                            // Multiple assignments..
+                            if (Token::simpleMatch(tok2->next(), "["))
+                            {
+                                const Token * tok3 = tok2;
+                                while (Token::simpleMatch(tok3->next(), "["))
+                                    tok3 = tok3->next()->link();
+                                if (Token::simpleMatch(tok3, "] ="))
+                                    continue;
+                            }
+                            bool foundError;
+                            if (tok2->previous()->str() == "*" || tok2->next()->str() == "[")
+                                foundError = use_array_or_pointer_data(checks, tok2);
+                            else
+                                foundError = use(checks, tok2);
+
+                            // prevent duplicate error messages
+                            if (foundError)
+                            {
+                                bailOutVar(checks, tok2->varId());
+                            }
+                        }
+                    }
+                }
+
+                // pointer aliasing?
+                if (Token::Match(tok.tokAt(2), "%var% ;"))
+                {
+                    pointer_assignment(checks, &tok, tok.tokAt(2));
+                }
+            }
+
+
+
+        }
+    }
+
 public:
 
     /** Functions that don't handle uninitialized variables well */
