@@ -1769,6 +1769,16 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: k\n", errout.str());
 
+        checkUninitVar("enum ABCD { A, B, C, D };\n"
+                       "\n"
+                       "static void f(char *str ) {\n"
+                       "	enum ABCD i;\n"
+                       "	for (i = 0; i < D; i++) {\n"
+                       "		str[i] = 0;\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // while..
         checkUninitVar("int f()\n"
                        "{\n"

@@ -260,6 +260,11 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
 
             if (tok->str() != "switch")
             {
+                for (const Token *tok3 = tok; tok3 && tok3 != tok2; tok3 = tok3->next())
+                {
+                    if (tok3->varId())
+                        ExecutionPath::bailOutVar(checks, tok3->varId());
+                }
                 check->parseLoopBody(tok2->next(), checks);
             }
 
