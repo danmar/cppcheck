@@ -1452,8 +1452,7 @@ private:
                          "        *p = 0;\n"
                          "    }\n"
                          "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: p\n"   // <-- duplicate
-                      "[test.cpp:5]: (error) Uninitialized variable: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: p\n", errout.str());
 
         // +=
         checkUninitVar("void f()\n"
