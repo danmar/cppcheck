@@ -157,6 +157,7 @@ private:
         TEST_CASE(constVirtualFunc);
         TEST_CASE(constIfCfg);  // ticket #1881 - fp when there are #if
         TEST_CASE(constFriend); // ticket #1921 - fp for friend function
+        TEST_CASE(constUnion);	// ticket #2111 - fp when there are union
 
         TEST_CASE(symboldatabase1);
         TEST_CASE(symboldatabase2);
@@ -4406,6 +4407,21 @@ private:
                             "    friend void f() { }\n"
                             "};";
         checkConst(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void constUnion() // ticket #2111
+    {
+        checkConst("class foo {\n"
+                   "public:\n"
+                   "    union {\n"
+                   "        int i;\n"
+                   "        float f;\n"
+                   "    } d;\n"
+                   "    void setf(float x) {\n"
+                   "        d.f = x;\n"
+                   "    }\n"
+                   "}");
         ASSERT_EQUALS("", errout.str());
     }
 

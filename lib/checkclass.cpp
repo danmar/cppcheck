@@ -2221,6 +2221,13 @@ bool CheckClass::checkConstFunc(const SpaceInfo *info, const Token *tok)
                 isconst = false;
                 break;
             }
+
+            // FIXME: I assume that a member union/struct variable is assigned.
+            else if (Token::Match(tok1->tokAt(-2), ". %var%"))
+            {
+                isconst = false;
+                break;
+            }
         }
 
         // streaming: <<
