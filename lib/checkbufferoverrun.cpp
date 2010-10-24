@@ -458,11 +458,6 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 
 void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo)
 {
-    // unknown element size : don't report errors
-    if (arrayInfo.element_size == 0)
-        return;
-
-
     std::map<std::string, unsigned int> total_size;
     total_size["fgets"] = 2;	// The second argument for fgets can't exceed the total size of the array
     total_size["memcmp"] = 3;
@@ -494,6 +489,9 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
     std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok.str());
     if (it != total_size.end())
     {
+        if (arrayInfo.element_size == 0)
+            return;
+
         unsigned int arg = it->second;
         for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
         {
@@ -716,7 +714,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // memset, memcmp, memcpy, strncpy, fgets..
         if (varid == 0)
         {
-            ArrayInfo arrayInfo(0U, varnames, 1U, static_cast<unsigned int>(total_size));
+            ArrayInfo arrayInfo(0U, varnames, total_size / size, size);
             if (Token::Match(tok, ("%var% ( " + varnames + " ,").c_str()))
                 checkFunctionCall(*tok, 1, arrayInfo);
             if (Token::Match(tok, ("%var% ( %var% , " + varnames + " ,").c_str()))

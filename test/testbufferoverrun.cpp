@@ -1035,8 +1035,7 @@ private:
               "    struct s1 obj;\n"
               "    x(obj.delay, 123);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6] (error) array index 4 is out of bounds", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (error) Array 'obj . delay[3]' index 4 out of bounds\n", errout.str());
     }
 
     void array_index_multidim()
