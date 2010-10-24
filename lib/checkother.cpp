@@ -249,7 +249,7 @@ void CheckOther::checkAssignmentInAssert()
         {
             assignmentInAssertError(tok, varTok->str());
         }
-        else if ((varTok = Token::findmatch(tok->tokAt(2), "--|++ %var%", endTok)))
+        else if (NULL != (varTok = Token::findmatch(tok->tokAt(2), "--|++ %var%", endTok)))
         {
             assignmentInAssertError(tok, varTok->strAt(1));
         }
