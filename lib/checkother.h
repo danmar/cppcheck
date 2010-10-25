@@ -89,6 +89,9 @@ public:
         // New type of check: Check execution paths
         checkOther.executionPaths();
         checkOther.checkMisusedScopedObject();
+
+        // FIXME: I get a deadlock if I uncomment this:
+        //nullPointerByCheckAndDeRef();
     }
 
 
@@ -323,6 +326,12 @@ private:
      * Dereferencing a pointer and then checking if it's NULL..
      */
     void nullPointerByDeRefAndChec();
+
+    /**
+     * @brief Does one part of the check for nullPointer().
+     * Checking if pointer is NULL and then dereferencing it..
+     */
+    void nullPointerByCheckAndDeRef();
 
     /**
      * @brief Does one part of the check for nullPointer().

@@ -2534,6 +2534,69 @@ void CheckOther::nullPointerByDeRefAndChec()
     }
 }
 
+void CheckOther::nullPointerByCheckAndDeRef()
+{
+    // Check if pointer is NULL and then dereference it..
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "if ( ! %var% ) {"))
+        {
+            bool null = true;
+            const unsigned int varid(tok->tokAt(3)->varId());
+            unsigned int indentlevel = 1;
+            for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{")
+                    ++indentlevel;
+                else if (tok2->str() == "}")
+                {
+                    if (indentlevel == 0)
+                        break;
+                    --indentlevel;
+                    if (null && indentlevel == 0)
+                    {
+                        // skip all "else" blocks because they are not executed in this execution path
+                        while (Token::Match(tok2, "} else {"))
+                            tok2 = tok2->tokAt(2)->link();
+                        null = false;
+                    }
+                }
+
+                if (Token::Match(tok2, "goto|return|continue|break|if"))
+                {
+                    if (Token::Match(tok2, "return * %var%"))
+                        nullPointerError(tok2, tok->strAt(3));
+                    break;
+                }
+
+                if (tok2->varId() == varid)
+                {
+                    if (Token::Match(tok2->previous(), "[;{}=] %var% = 0 ;"))
+                        ;
+
+                    else if (Token::Match(tok2->tokAt(-2), "[;{}=+-/(,] * %var%"))
+                        nullPointerError(tok2, tok->strAt(3));
+
+                    else if (!Token::simpleMatch(tok2->tokAt(-2), "& (") && Token::Match(tok2->next(), ". %var%"))
+                        nullPointerError(tok2, tok->strAt(3));
+
+                    else if (Token::Match(tok2->previous(), "[;{}=+-/(,] %var% [ %any% ]"))
+                        nullPointerError(tok2, tok->strAt(3));
+
+                    else if (Token::Match(tok2->previous(), "return %var% [ %any% ]"))
+                        nullPointerError(tok2, tok->strAt(3));
+
+                    else if (Token::Match(tok2, "%var% ("))
+                        nullPointerError(tok2, tok->strAt(3));
+
+                    else
+                        break;
+                }
+            }
+        }
+    }
+}
+
 
 void CheckOther::nullPointer()
 {
@@ -2541,6 +2604,7 @@ void CheckOther::nullPointer()
     nullPointerLinkedList();
     nullPointerStructByDeRefAndChec();
     nullPointerByDeRefAndChec();
+    nullPointerByCheckAndDeRef();
 }
 
 /** Derefencing null constant (simplified token list) */

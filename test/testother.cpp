@@ -68,6 +68,7 @@ private:
         TEST_CASE(nullpointer7);
         TEST_CASE(nullpointer8);
         TEST_CASE(nullpointer9);
+        TEST_CASE(nullpointer10);	// check if pointer is null and then dereference it
 
         TEST_CASE(uninitvar1);
         TEST_CASE(uninitvar_alloc);     // data is allocated but not initialized
@@ -1146,6 +1147,25 @@ private:
                          "  *x = \"test\";\n"
                          "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
+    }
+
+    // Check if pointer is null and the dereference it
+    void nullpointer10()
+    {
+        checkNullPointer("void foo(char *p) {\n"
+                         "    if (!p) {\n"
+                         "    }\n"
+                         "    *p = 0;\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        checkNullPointer("void foo(abc *p) {\n"
+                         "    if (!p) {\n"
+                         "    }\n"
+                         "    else if (!p->x) {\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkUninitVar(const char code[])
