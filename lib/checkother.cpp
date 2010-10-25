@@ -3778,7 +3778,7 @@ private:
     {
         while (tok)
         {
-            if (tok->str() == "{" || tok->str() == "}")
+            if (tok->str() == "{" || tok->str() == "}" || tok->str() == "for")
                 return;
             const Token *next = parse(*tok, checks);
             if (next)

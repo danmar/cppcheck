@@ -1801,6 +1801,16 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void x() {\n"
+                       "    do  {\n"
+                       "        Token * tok;\n"
+                       "        for (tok = a; tok; tok = tok->next())\n"
+                       "        {\n"
+                       "        }\n"
+                       "    } while (tok2);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // while..
         checkUninitVar("int f()\n"
                        "{\n"
