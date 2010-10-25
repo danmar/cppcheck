@@ -2273,6 +2273,13 @@ private:
               "    str[10] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
+
+        check("void foo() {\n"
+              "    char *str = malloc(10);\n"
+              "    free(str);\n"
+              "    strcpy(str, p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
     }
 
 

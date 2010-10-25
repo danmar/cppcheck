@@ -661,7 +661,23 @@ bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname)
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &allocpar, unsigned int sz)
 {
     if (test_white_list(tok->str()))
-        return 0;
+    {
+        if (tok->str() == "asprintf" ||
+            tok->str() == "delete" ||
+            tok->str() == "fclose" ||
+            tok->str() == "for" ||
+            tok->str() == "free" ||
+            tok->str() == "if" ||
+            tok->str() == "realloc" ||
+            tok->str() == "return" ||
+            tok->str() == "switch" ||
+            tok->str() == "while")
+        {
+            return 0;
+        }
+
+        return "use_";
+    }
 
     if (noreturn.find(tok->str()) != noreturn.end())
         return "exit";
@@ -1366,6 +1382,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             }
             else if (Token::Match(tok->previous(), "[;{}=(,+-*/] %varid% [", varid))
             {
+                // warning is written for "dealloc ; use_ ;".
+                // but this use doesn't affect the leak-checking
                 addtoken(&rettail, tok, "use_");
             }
         }
