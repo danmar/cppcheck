@@ -42,8 +42,13 @@ GUI
 ---
 
 Software needed:
-- Visual Studio 2010 Express (Free download from MS) or VS 2010 Pro
-- latest Windows SDK (currently v 7.1) if compiling with VS Express
+- Visual Studio 2008 or 2010 Express edition
+- Windows SDK 7.0 (for VS2008) or Windows SDK 7.1 (for VS2010)
 - latest Qt SDK (4.7.0 or later, earlier versions don't support VS 2010)
 
-TODO.
+Turns out you just need to use Windows SDK's Command prompt and 64-bit
+environment to configure and build Qt. No extra steps needed. But of course you
+should build 64-bit Qt to different folder than 32-bit Qt.
+
+64-bit CppCheck GUI must also be build from Windows SDK Command prompt. I have
+not yet succeeded in building 64-bit GUI from Visual Studio IDE.
