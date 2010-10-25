@@ -115,6 +115,7 @@ private:
         TEST_CASE(trac2084);
 
         TEST_CASE(assignmentInAssert);
+        TEST_CASE(incorrectLogicOperator);
     }
 
     void check(const char code[])
@@ -147,6 +148,7 @@ private:
         checkOther.checkSelfAssignment();
         checkOther.invalidScanf();
         checkOther.checkMisusedScopedObject();
+        checkOther.checkIncorrectLogicOperator();
     }
 
 
@@ -3172,6 +3174,72 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+    }
+
+    void incorrectLogicOperator()
+    {
+        check("void f() {\n"
+              "    if ((x != 1) || (x != 3))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+
+        check("void f() {\n"
+              "    if (x != 1 || x != 3)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+
+        check("void f() {\n"
+              "    if (1 != x || 3 != x)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+
+        check("void f() {\n"
+              "    if (x != 1 || y != 1)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if ((y == 1) && (x != 1) || (x != 3))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if ((x != 1) || (x != 3) && (y == 1))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if ((x != 1) && (x != 3))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if ((x == 1) || (x == 3))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if ((x != 1) || (y != 3))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

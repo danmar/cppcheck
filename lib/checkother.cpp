@@ -260,6 +260,55 @@ void CheckOther::checkAssignmentInAssert()
 }
 
 //---------------------------------------------------------------------------
+//    if ((x != 1) || (x != 3))            // <- always true
+//---------------------------------------------------------------------------
+void CheckOther::checkIncorrectLogicOperator()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const char conditionPattern[] = "if|while (";
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), conditionPattern);
+    const Token *endTok = tok ? tok->next()->link() : NULL;
+
+    while (tok && endTok)
+    {
+        // Find a pair of OR'd terms, with or without parenthesis
+        const Token *logicTok = NULL, *term1Tok = NULL, *term2Tok = NULL;
+        if ((logicTok = Token::findmatch(tok, "( %any% != %any% ) %oror% ( %any% != %any% ) !!&&", endTok)))
+        {
+            term1Tok = logicTok->next();
+            term2Tok = logicTok->tokAt(7);
+        }
+        else if ((logicTok = Token::findmatch(tok, "%any% != %any% %oror% %any% != %any% !!&&", endTok)))
+        {
+            term1Tok = logicTok;
+            term2Tok = logicTok->tokAt(4);
+        }
+
+        // If both terms reference a common variable and are not AND'd with anything, this is an error
+        if (logicTok && (logicTok->strAt(-1) != "&&"))
+        {
+            if (Token::Match(term1Tok, "%var%") &&
+                ((term1Tok->str() == term2Tok->str()) ||
+                 (term1Tok->str() == term2Tok->strAt(2))))
+            {
+                incorrectLogicOperatorError(term1Tok);
+            }
+            else if (Token::Match(term1Tok->tokAt(2), "%var%") &&
+                     ((term1Tok->strAt(2) == term2Tok->str()) ||
+                      (term1Tok->strAt(2) == term2Tok->strAt(2))))
+            {
+                incorrectLogicOperatorError(term1Tok->tokAt(2));
+            }
+        }
+
+        tok = Token::findmatch(endTok->next(), conditionPattern);
+        endTok = tok ? tok->next()->link() : NULL;
+    }
+}
+
+//---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
 
@@ -4172,6 +4221,12 @@ void CheckOther::assignmentInAssertError(const Token *tok, const std::string &va
 {
     reportError(tok, Severity::warning,
                 "assignmentInAssert", "Assert statement modifies '" + varname + "'. If the modification is needed in release builds there is a bug.");
+}
+
+void CheckOther::incorrectLogicOperatorError(const Token *tok)
+{
+    reportError(tok, Severity::warning,
+                "incorrectLogicOperator", "Mutual exclusion over || always evaluates to true. Did you intend to use && instead?");
 }
 
 void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)

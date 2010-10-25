@@ -103,6 +103,8 @@ public:
      * - "%bool%" true or false
      * - "%str%" Any token starting with &quot;-character (C-string).
      * - "%varid%" Match with parameter varid
+     * - "%or%" A bitwise-or operator '|'
+     * - "%oror%" A logical-or operator '||'
      * - "[abc]" Any of the characters 'a' or 'b' or 'c'
      * - "int|void|char" Any of the strings, int, void or char
      * - "int|void|char|" Any of the strings, int, void or char or empty string
@@ -116,7 +118,6 @@ public:
      * match its pattern, false is returned.
      *
      * @todo pattern "%type%|%num%" should mean either a type or a num.
-     * @todo pattern "%OR%|%OROR%" should mean either a "|" or a "||"
      *
      * @param tok List of tokens to be compared to the pattern
      * @param pattern The pattern against which the tokens are compared,

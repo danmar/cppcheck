@@ -44,6 +44,7 @@ private:
         TEST_CASE(matchNothingOrAnyNotElse);
         TEST_CASE(matchNumeric);
         TEST_CASE(matchBoolean);
+        TEST_CASE(matchOr);
     }
 
     void nextprevious()
@@ -210,6 +211,16 @@ private:
         ASSERT_EQUALS(true, Token::Match(negative.tokens(), "%bool%"));
     }
 
+    void matchOr()
+    {
+        givenACodeSampleToTokenize bitwiseOr("|");
+        ASSERT_EQUALS(true, Token::Match(bitwiseOr.tokens(), "%or%"));
+
+        givenACodeSampleToTokenize logicalOr("||");
+        ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "%oror%"));
+        ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "%or%"));
+        ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%oror%"));
+    }
 
     class givenACodeSampleToTokenize
     {

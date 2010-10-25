@@ -454,6 +454,20 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 p += 5;
             }
 
+            else if (firstWordEquals(p, "%or%") == 0)
+            {
+                if (tok->str() != "|")
+                    return false;
+                p += 4;
+            }
+
+            else if (firstWordEquals(p, "%oror%") == 0)
+            {
+                if (tok->str() != "||")
+                    return false;
+                p += 6;
+            }
+
             else if (firstWordEquals(p, tok->_str.c_str()))
             {
                 p += tok->_str.length();

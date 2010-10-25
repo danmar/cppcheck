@@ -84,6 +84,7 @@ public:
 
         checkOther.nullConstantDereference();
         checkOther.checkSelfAssignment();
+        checkOther.checkIncorrectLogicOperator();
 
         // New type of check: Check execution paths
         checkOther.executionPaths();
@@ -184,6 +185,9 @@ public:
     /** @brief %Check for assignment to a variable in an assert test*/
     void checkAssignmentInAssert();
 
+    /** @brief %Check for testing for mutual exclusion over ||*/
+    void checkIncorrectLogicOperator();
+
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
 
@@ -213,6 +217,7 @@ public:
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
+    void incorrectLogicOperatorError(const Token *tok);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
 
     void getErrorMessages()
@@ -246,6 +251,7 @@ public:
         selfAssignmentError(0, "varname");
         assignmentInAssertError(0, "varname");
         invalidScanfError(0);
+        incorrectLogicOperatorError(0);
 
         emptyStringTestError(0, "varname", true);
     }
@@ -285,6 +291,7 @@ public:
                "* look for 'sizeof sizeof ..'\n"
                "* look for calculations inside sizeof()\n"
                "* assignment of a variable to itself\n"
+               "* mutual exclusion over || always evaluating to true\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n"
