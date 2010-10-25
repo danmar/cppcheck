@@ -21,10 +21,10 @@ Windows SDK.
 To compile 64-bit binaries you need to start VS Express to 64-bit environment.
 (by default VS Express starts to 32-bit enviroment). To do this, open Windows
 SDK Command Prompt and switch to 64-bit environment with command:
-> setevn /x64 /debug
+> setenv /x64 /debug
 
 Then start VS Express:
-> "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\VCExpress"
+> "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\VCExpress" /useenv
 VC Express starts otherwise normally but now all environment variables point to
 64-bit folders for libraries.
 
