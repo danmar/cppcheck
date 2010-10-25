@@ -2,19 +2,18 @@ Cppcheck for 64-bit Windows
 ===========================
 
 This is quick start to get you started with compiling Cppcheck for 64-bit
-Windows. This is work in progress so these instructions will be updated as we
-progress with the work...
+Windows with free VS Express editions. This is work in progress so these
+instructions will be updated as we progress with the work...
 
 Software needed:
-- Visual Studio 2010 Express (Free download from MS) or VS 2010 Pro
-- latest Windows SDK (currently v 7.1) if compiling with VS Express
+- Visual Studio 2008 or 2010 Express edition
+- Windows SDK 7.0 (for VS2008) or Windows SDK 7.1 (for VS2010)
 
 
 Cppcheck.exe
 ------------
 
-With VS Express:
-Make sure you have the Windows SDK installed! VS Express doesn't install 64-bit
+Make sure you have the Windows SDK installed! VS Express doesn't have 64-bit
 tools, libraries or headers so you cannot compile 64-bit binaries without
 Windows SDK.
 
@@ -24,15 +23,16 @@ SDK Command Prompt and switch to 64-bit environment with command:
 > setenv /x64 /debug
 
 Then start VS Express:
-> "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\VCExpress" /useenv
-VC Express starts otherwise normally but now all environment variables point to
+> "C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\VCExpress" /useenv
+
+VS Express starts otherwise normally but now all environment variables point to
 64-bit folders for libraries.
 
-Now you can open the cppcheck_vs2010.sln solution file and compile 64-bit
-targets. Remember that you cannot compile 32-bit targets from this VS intance!
-
-With VS Pro (and other commercial editions) you can just open the
-cppcheck_vs2010.sln solution file and compile 64-bit targets.
+Now you can open the cppcheck.sln (or cppcheck_vs2010.sln) solution file and
+compile 64-bit targets. With VS 2008 there are configurations Debug-x64 and
+Release-x64 for 64-bit targets. This is because VS 2008 express does not allow
+adding new platform. For VS 2010 there is platform x64 and Debug/Release
+configurations.
 
 You can use e.g. Dependency Walker -program (http://www.dependencywalker.com/)
 to check that build binaries are really 64-bit binaries.
