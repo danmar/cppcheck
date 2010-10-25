@@ -91,7 +91,7 @@ public:
         checkOther.checkMisusedScopedObject();
 
         // FIXME: I get a deadlock if I uncomment this:
-        //nullPointerByCheckAndDeRef();
+        checkOther.nullPointerByCheckAndDeRef();
     }
 
 
@@ -146,6 +146,12 @@ public:
 
     /** @brief possible null pointer dereference */
     void nullPointer();
+
+    /**
+     * @brief Does one part of the check for nullPointer().
+     * Checking if pointer is NULL and then dereferencing it..
+     */
+    void nullPointerByCheckAndDeRef();
 
     /** @brief dereferencing null constant (after Tokenizer::simplifyKnownVariables) */
     void nullConstantDereference();
@@ -326,12 +332,6 @@ private:
      * Dereferencing a pointer and then checking if it's NULL..
      */
     void nullPointerByDeRefAndChec();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
-     * Checking if pointer is NULL and then dereferencing it..
-     */
-    void nullPointerByCheckAndDeRef();
 
     /**
      * @brief Does one part of the check for nullPointer().

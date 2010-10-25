@@ -2604,7 +2604,6 @@ void CheckOther::nullPointer()
     nullPointerLinkedList();
     nullPointerStructByDeRefAndChec();
     nullPointerByDeRefAndChec();
-    nullPointerByCheckAndDeRef();
 }
 
 /** Derefencing null constant (simplified token list) */

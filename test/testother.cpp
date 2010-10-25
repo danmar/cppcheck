@@ -613,6 +613,9 @@ private:
         tokenizer.simplifyTokenList();
         checkOther.nullConstantDereference();
         checkOther.executionPaths();
+
+        tokenizer.simplifyTokenList();
+        checkOther.nullPointerByCheckAndDeRef();
     }
 
 
