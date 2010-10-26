@@ -2128,6 +2128,15 @@ bool Tokenizer::tokenize(std::istream &code,
 
     _tokens->assignProgressValues();
 
+    // remove redundant semicolon:
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "(")
+            tok = tok->link();
+        while (Token::simpleMatch(tok, "; ;"))
+            tok->deleteNext();
+    }
+
     return validate();
 }
 //---------------------------------------------------------------------------
@@ -3944,6 +3953,16 @@ bool Tokenizer::simplifyTokenList()
     }
 
     _tokens->assignProgressValues();
+
+    // remove redundant semicolon:
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "(")
+            tok = tok->link();
+        while (Token::simpleMatch(tok, "; ;"))
+            tok->deleteNext();
+    }
+
 
     return validate();
 }

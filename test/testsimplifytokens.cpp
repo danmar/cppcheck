@@ -289,6 +289,8 @@ private:
         TEST_CASE(simplifyCallingConvention);
 
         TEST_CASE(simplifyFunctorCall);
+
+        TEST_CASE(redundant_semicolon);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -414,7 +416,7 @@ private:
 
         {
             const char code1[] = "void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; }";
-            const char code2[] = "void f ( ) { ; ; ; { ; } ; ; }";
+            const char code2[] = "void f ( ) { ; { ; } ; }";
             ASSERT_EQUALS(code2, tok(code1));
         }
 
@@ -671,8 +673,8 @@ private:
                             "    if (c>0) { c++; }\n"
                             "    c++;\n"
                             "}\n";
-        TODO_ASSERT_EQUALS("void f ( int & c ) { c = 3 ; ; { ; } ; }", tok(code));
-        ASSERT_EQUALS("void f ( int & c ) { c = 1 ; ; { c ++ ; } c ++ ; }", tok(code));
+        TODO_ASSERT_EQUALS("void f ( int & c ) { c = 3 ; { ; } ; }", tok(code));
+        ASSERT_EQUALS("void f ( int & c ) { c = 1 ; { c ++ ; } c ++ ; }", tok(code));
     }
 
 
@@ -686,8 +688,8 @@ private:
                                 "    if (c>0) { ++c; }\n"
                                 "    ++c;\n"
                                 "}\n";
-            TODO_ASSERT_EQUALS("void f ( int & c ) { c = 3 ; ; { ; } ; }", tok(code));
-            ASSERT_EQUALS("void f ( int & c ) { c = 1 ; ; { ++ c ; } ++ c ; }", tok(code));
+            TODO_ASSERT_EQUALS("void f ( int & c ) { c = 3 ; { ; } ; }", tok(code));
+            ASSERT_EQUALS("void f ( int & c ) { c = 1 ; { ++ c ; } ++ c ; }", tok(code));
         }
 
         {
@@ -1457,7 +1459,7 @@ private:
         const char code[] = "template <classname T> class Fred { T a; };\n"
                             "Fred<int> fred;";
 
-        const std::string expected("; ; "
+        const std::string expected("; "
                                    "Fred<int> fred ; "
                                    "class Fred<int> { int a ; }");
 
@@ -1469,7 +1471,7 @@ private:
         const char code[] = "template <classname T, int sz> class Fred { T data[sz]; };\n"
                             "Fred<float,4> fred;";
 
-        const std::string expected("; ; "
+        const std::string expected("; "
                                    "Fred<float,4> fred ; "
                                    "class Fred<float,4> { float data [ 4 ] ; }");
 
@@ -1481,7 +1483,7 @@ private:
         const char code[] = "template <classname T> class Fred { Fred(); };\n"
                             "Fred<float> fred;";
 
-        const std::string expected("; ; "
+        const std::string expected("; "
                                    "Fred<float> fred ; "
                                    "class Fred<float> { Fred<float> ( ) ; }");
 
@@ -1494,8 +1496,7 @@ private:
                             "template <classname T> Fred<T>::Fred() { }\n"
                             "Fred<float> fred;";
 
-        const std::string expected("; ; "
-                                   "; "
+        const std::string expected("; "
                                    "Fred<float> fred ; "
                                    "class Fred<float> { } "
                                    "Fred<float> :: Fred<float> ( ) { }");
@@ -1509,7 +1510,7 @@ private:
                             "Fred<float> fred1;\n"
                             "Fred<float> fred2;";
 
-        const std::string expected("; ;"
+        const std::string expected(";"
                                    " Fred<float> fred1 ;"
                                    " Fred<float> fred2 ;"
                                    " class Fred<float> { }");
@@ -1529,7 +1530,7 @@ private:
                                 "\n"
                                 "};\n";
 
-            const std::string expected("; ;");
+            const std::string expected(";");
 
             ASSERT_EQUALS(expected, sizeof_(code));
         }
@@ -1545,7 +1546,7 @@ private:
                                 "    return 0;\n"
                                 "}\n";
 
-            const std::string expected("; ; "
+            const std::string expected("; "
                                        "int main ( ) { "
                                        "std :: vector < int > v ; "
                                        "v . push_back ( 4 ) ; "
@@ -1566,7 +1567,7 @@ private:
                                 "    }\n"
                                 "};\n";
 
-            const std::string expected("; ;");
+            const std::string expected(";");
 
             ASSERT_EQUALS(expected, sizeof_(code));
         }
@@ -1592,7 +1593,7 @@ private:
                             "\n"
                             "template<typename T> inline B<T> h() { return B<T>(); }\n";
 
-        ASSERT_EQUALS("; ; ; ; ; ; ;", sizeof_(code));
+        ASSERT_EQUALS(";", sizeof_(code));
 
         ASSERT_EQUALS("class A { ; } ;", sizeof_("class A{ template<typename T> int foo(T d);};"));
     }
@@ -1613,7 +1614,7 @@ private:
                             "} ;\n";
 
         // The expected result..
-        std::string expected("; ; void f ( ) { A<int> a ; } ; ; class A<int> { }");
+        std::string expected("; void f ( ) { A<int> a ; } ; class A<int> { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -1670,7 +1671,7 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("; ; "
+        const std::string expected("; "
                                    "void f ( ) "
                                    "{"
                                    " A<12,12,11> a ; "
@@ -1799,7 +1800,7 @@ private:
         const char code[] = "template <class T> class foo { T a; };\n"
                             "foo<int> *f;";
 
-        const std::string expected("; ; "
+        const std::string expected("; "
                                    "foo<int> * f ; "
                                    "class foo<int> { int a ; }");
 
@@ -1842,7 +1843,7 @@ private:
                             "A<int> a;\n";
 
         // The expected result..
-        const std::string expected("; ; ; A<int> a ; "
+        const std::string expected("; A<int> a ; "
                                    "class A<int> { public: ~ A<int> ( ) ; } "
                                    "A<int> :: ~ A<int> ( ) { }");
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -1854,7 +1855,7 @@ private:
             const char code[] = "template <classname T> struct Fred { T a; };\n"
                                 "Fred<int> fred;";
 
-            const std::string expected("; ; "
+            const std::string expected("; "
                                        "Fred<int> fred ; "
                                        "struct Fred<int> { int a ; }");
 
@@ -1865,7 +1866,7 @@ private:
             const char code[] = "template <classname T, int sz> struct Fred { T data[sz]; };\n"
                                 "Fred<float,4> fred;";
 
-            const std::string expected("; ; "
+            const std::string expected("; "
                                        "Fred<float,4> fred ; "
                                        "struct Fred<float,4> { float data [ 4 ] ; }");
 
@@ -1876,7 +1877,7 @@ private:
             const char code[] = "template <classname T> struct Fred { Fred(); };\n"
                                 "Fred<float> fred;";
 
-            const std::string expected("; ; "
+            const std::string expected("; "
                                        "Fred<float> fred ; "
                                        "struct Fred<float> { Fred<float> ( ) ; }");
 
@@ -1888,8 +1889,7 @@ private:
                                 "template <classname T> Fred<T>::Fred() { }\n"
                                 "Fred<float> fred;";
 
-            const std::string expected("; ; "
-                                       "; "
+            const std::string expected("; "
                                        "Fred<float> fred ; "
                                        "struct Fred<float> { } "
                                        "Fred<float> :: Fred<float> ( ) { }");
@@ -1902,7 +1902,7 @@ private:
                                 "Fred<float> fred1;\n"
                                 "Fred<float> fred2;";
 
-            const std::string expected("; ;"
+            const std::string expected(";"
                                        " Fred<float> fred1 ;"
                                        " Fred<float> fred2 ;"
                                        " struct Fred<float> { }");
@@ -1931,7 +1931,7 @@ private:
                                 "}\n";
 
             // The expected result..
-            const std::string expected("; ; "
+            const std::string expected("; "
                                        "void f ( ) "
                                        "{"
                                        " A<int,2> a1 ;"
@@ -1955,7 +1955,7 @@ private:
                                 "}\n";
 
             // The expected result..
-            const std::string expected("; ; "
+            const std::string expected("; "
                                        "void f ( ) "
                                        "{"
                                        " A<int,3,2> a1 ;"
@@ -2453,7 +2453,7 @@ private:
                                 "  bool x = false;\n"
                                 "  int b = x ? 44 : 3;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { ; ; ; ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; }", tok(code));
         }
 
         {
@@ -2843,7 +2843,6 @@ private:
             "; "
             "void foo ( ) { } "
             "} ; "
-            "; "
             "int main ( ) "
             "{ "
             "A a ; "
@@ -2866,7 +2865,6 @@ private:
 
         const std::string expected =
             "class A ; "
-            "; "
             "class A "
             "{ "
             "public: "
@@ -2893,7 +2891,6 @@ private:
 
         const std::string expected =
             "class A { } ; "
-            "; "
             "wchar_t foo ( ) "
             "{ "
             "; "
@@ -2919,7 +2916,6 @@ private:
                             "}\n";
 
         const std::string expected =
-            "; "
             "; "
             "void f ( ) "
             "{ "
@@ -2999,13 +2995,6 @@ private:
 
         const char expected[] =
             "; "
-            "; "
-            "; "
-            "; "
-            "; "
-            "; "
-            "; "
-            "; "
             "int ti ; "
             "unsigned int tui ; "
             "int * tpi ; "
@@ -3033,9 +3022,9 @@ private:
 
         const char expected[] =
             "; "
-            "struct t { int a ; } ; ; "
-            "struct U { int a ; } ; ; "
-            "struct Unnamed0 { int a ; } ; ; "
+            "struct t { int a ; } ; "
+            "struct U { int a ; } ; "
+            "struct Unnamed0 { int a ; } ; "
             "struct s s ; "
             "struct s * ps ; "
             "struct t t ; "
@@ -3061,9 +3050,9 @@ private:
 
         const char expected[] =
             "; "
-            "union t { int a ; float b ; } ; ; "
-            "union U { int a ; float b ; } ; ; "
-            "union Unnamed1 { int a ; float b ; } ; ; "
+            "union t { int a ; float b ; } ; "
+            "union U { int a ; float b ; } ; "
+            "union Unnamed1 { int a ; float b ; } ; "
             "union s s ; "
             "union s * ps ; "
             "union t t ; "
@@ -3082,8 +3071,7 @@ private:
                             "XYZ e2;";
 
         const char expected[] =
-            "; ; "
-            "; ; "
+            "; "
             "int e1 ; "
             "int e2 ;";
 
@@ -3102,9 +3090,6 @@ private:
                             "IntListIterator iter;";
 
         const char expected[] =
-            "; "
-            "; "
-            "; "
             "; "
             "vector < int > v1 ; "
             "std :: vector < int > v2 ; "
@@ -3247,7 +3232,7 @@ private:
                                 "C c;";
 
             const char expected[] =
-                "struct A { } ; ; "
+                "struct A { } ; "
                 "struct A a ; "
                 "struct A * b ; "
                 "struct A * * c ;";
@@ -3261,7 +3246,7 @@ private:
                                 "B b;";
 
             const char expected[] =
-                "struct A { } ; ; "
+                "struct A { } ; "
                 "struct A a ; "
                 "struct A * * * * * * * * * b ;";
 
@@ -3275,7 +3260,7 @@ private:
                                 "C c;";
 
             const char expected[] =
-                "struct Unnamed2 { } ; ; "
+                "struct Unnamed2 { } ; "
                 "struct Unnamed2 * * * * * * * * * * a ; "
                 "struct Unnamed2 * b ; "
                 "struct Unnamed2 c ;";
@@ -3574,9 +3559,6 @@ private:
 
         const char expected[] =
             "; "
-            "; "
-            "; "
-            "; "
             "int a [ ice_or < is_int < int > :: value , is_int < UDT > :: value > :: value ? 1 : - 1 ] ; "
             "int a1 [ N ] ; "
             "int a2 [ N ] [ M ] ; "
@@ -3596,8 +3578,6 @@ private:
                             "int_list_array ila;";
 
         const char expected[] =
-            "; "
-            "; "
             "; "
             ":: std :: list < int > il ; "
             ":: std :: list < int > :: iterator ili ; "
@@ -3665,8 +3645,6 @@ private:
                             "LPCSTR ccp;";
 
         const char expected[] =
-            "; "
-            "; "
             "; "
             "char c ; "
             "char * cp ; "
@@ -3748,7 +3726,6 @@ private:
                             "}";
         const char expected[] =
             "class X { } ; "
-            "; "
             "int main ( ) "
             "{ "
             "X ( * * Foo ) ( const X & ) = new X ( * ) ( const X & ) [ 2 ] ; "
@@ -3830,7 +3807,7 @@ private:
                                 "float fun2 ( float a ) { float A ; A = a ++ ; return A ; } "
                                 "float fun3 ( int a ) "
                                 "{ "
-                                "struct A { int a ; } ; ; "
+                                "struct A { int a ; } ; "
                                 "struct A s ; s . a = a ; "
                                 "return s . a ; "
                                 "} "
@@ -3911,7 +3888,7 @@ private:
     {
         const char code[] = "typedef int A;\n"
                             "template <const A, volatile A>::value;";
-        const char expected[] = "; ;";
+        const char expected[] = ";";
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
@@ -3923,7 +3900,7 @@ private:
         const char code[] = "typedef int A;\n"
                             "typedef int B;\n"
                             "template <class A, class B> class C { };";
-        const char expected[] = "; ; ; ;";
+        const char expected[] = ";";
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
@@ -4123,7 +4100,7 @@ private:
                                 "};\n";
 
             // The expected result..
-            const std::string expected("struct foo { } ; ; "
+            const std::string expected("struct foo { } ; "
                                        "struct MyA : public foo "
                                        "{ "
                                        "} ;");
@@ -4140,7 +4117,7 @@ private:
                                 "};\n";
 
             // The expected result..
-            const std::string expected("class foo { } ; ; "
+            const std::string expected("class foo { } ; "
                                        "class MyA : public foo "
                                        "{ "
                                        "} ;");
@@ -4169,7 +4146,7 @@ private:
                             "AP ap;\n";
 
         // The expected result..
-        const std::string expected("struct A { int a ; } ; ; "
+        const std::string expected("struct A { int a ; } ; "
                                    "const struct A * ap ;");
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -4206,7 +4183,7 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("struct string { } ; ; "
+        const std::string expected("struct string { } ; "
                                    "void foo ( LIST * module_name ) "
                                    "{ "
                                    "bar ( module_name ? module_name . string : 0 ) ; "
@@ -4244,7 +4221,7 @@ private:
                             "type4 t4;";
 
         // The expected result..
-        const std::string expected("; ; ; ; "
+        const std::string expected("; "
                                    "char ( * t1 ) [ 10 ] ; "
                                    "char ( * ( * tp1 ) [ 2 ] ) [ 10 ] ; "
                                    "char ( & t2 ) [ 10 ] ; "
@@ -4260,7 +4237,7 @@ private:
                             "type1 t1 = &A::i;";
 
         // The expected result..
-        const std::string expected("class A { public: int i ; } ; ; "
+        const std::string expected("class A { public: int i ; } ; "
                                    "const char ( A :: * t1 ) = & A :: i ;");
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -4345,7 +4322,7 @@ private:
                             "_Iterator v3;\n";
 
         // The expected result..
-        const std::string expected("; ; ; "
+        const std::string expected("; "
                                    "long * v1 ; "
                                    "void * v2 [ 2 ] ; "
                                    "int * * v3 ;");
@@ -4433,7 +4410,7 @@ private:
                             "    typedef void (SomeTemplateClass<DISPATCHER>::*MessageDispatcherFunc)(SerialInputMessage&);\n"
                             "};\n";
         // The expected result..
-        const std::string expected("; ;");
+        const std::string expected(";");
         ASSERT_EQUALS(expected, sizeof_(code));
 
         // Check for output..
@@ -4451,7 +4428,7 @@ private:
                             "    localEntitiyAddFunc_t f;\n"
                             "}\n";
         // The expected result..
-        const std::string expected("; ; ; void f ( ) { int b ; int * f ; }");
+        const std::string expected("; void f ( ) { int b ; int * f ; }");
         ASSERT_EQUALS(expected, sizeof_(code, false));
 
         // Check for output..
@@ -4852,7 +4829,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const std::string expected("; ; ; ; ; ; ; "
+            const std::string expected("; "
                                        "C f1 ( ) ; "
                                        "C * f2 ; " // this gets simplified to a regular pointer
                                        "C ( & f3 ) ( ) ; "
@@ -4884,7 +4861,7 @@ private:
 
             // The expected result..
             // C const -> const C
-            const std::string expected("; ; ; ; ; ; ; "
+            const std::string expected("; "
                                        "const C f1 ( ) ; "
                                        "const C * f2 ; " // this gets simplified to a regular pointer
                                        "const C ( & f3 ) ( ) ; "
@@ -4915,7 +4892,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const std::string expected("; ; ; ; ; ; ; "
+            const std::string expected("; "
                                        "const C f1 ( ) ; "
                                        "const C * f2 ; " // this gets simplified to a regular pointer
                                        "const C ( & f3 ) ( ) ; "
@@ -4946,7 +4923,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const std::string expected("; ; ; ; ; ; ; "
+            const std::string expected("; "
                                        "C * f1 ( ) ; "
                                        "C * * f2 ; " // this gets simplified to a regular pointer
                                        "C * ( & f3 ) ( ) ; "
@@ -4977,7 +4954,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const std::string expected("; ; ; ; ; ; ; "
+            const std::string expected("; "
                                        "const C * f1 ( ) ; "
                                        "const C * * f2 ; " // this gets simplified to a regular pointer
                                        "const C * ( & f3 ) ( ) ; "
@@ -5009,7 +4986,7 @@ private:
 
             // The expected result..
             // C const -> const C
-            const std::string expected("; ; ; ; ; ; ; "
+            const std::string expected("; "
                                        "const C * f1 ( ) ; "
                                        "const C * * f2 ; " // this gets simplified to a regular pointer
                                        "const C * ( & f3 ) ( ) ; "
@@ -5034,7 +5011,7 @@ private:
                             "type3 t3;";
 
         // The expected result..
-        const std::string expected("; ; ; "
+        const std::string expected("; "
                                    "int ( * ( * t1 ) ( bool ) ) ( int , int ) ; "
                                    "int ( * t2 ( bool ) ) ( int , int ) ; "
                                    "int ( * t3 ( bool ) ) ( int , int ) ;");
@@ -5072,7 +5049,7 @@ private:
                             "type12 t12;";
 
         // The expected result..
-        const std::string expected("; ; ; ; ; ; ; ; ; ; ; ; "
+        const std::string expected("; "
                                    "int * t1 ; " // simplified to regular pointer
                                    "int ( * const t2 ) ( float ) ; "
                                    "int * t3 ; " // volatile removed, gets simplified to regular pointer
@@ -5108,7 +5085,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { ; ; { g ( ) ; } }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; { g ( ) ; } }", tok(code));
         }
 
         {
@@ -5121,7 +5098,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { ; ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; }", tok(code));
         }
 
         {
@@ -5134,7 +5111,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { ; ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; }", tok(code));
         }
 
         {
@@ -5147,7 +5124,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { ; ; { g ( ) ; } }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; { g ( ) ; } }", tok(code));
         }
 
         {
@@ -5201,7 +5178,6 @@ private:
             const char expected[] = "void f ( ) "
                                     "{ "
                                     "char buf [ 100 ] ; "
-                                    "; ; "
                                     "free ( buf ) ; "
                                     "}";
 
@@ -5253,7 +5229,6 @@ private:
             const char expected[] = "int * foo ( ) "
                                     "{ "
                                     "int a [ 10 ] ; "
-                                    "; ; "
                                     "return a ; "
                                     "}";
 
@@ -5284,7 +5259,6 @@ private:
         const char expected[] = "void f ( ) "
                                 "{ "
                                 "int i ; "
-                                "; ; "
                                 "return i ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
@@ -5353,7 +5327,7 @@ private:
 
     void while0()
     {
-        ASSERT_EQUALS("; x = 1 ; ;", tok("; do { x = 1 ; } while (0);"));
+        ASSERT_EQUALS("; x = 1 ;", tok("; do { x = 1 ; } while (0);"));
         ASSERT_EQUALS("; do { continue ; } while ( false ) ;", tok("; do { continue ; } while (0);"));
         ASSERT_EQUALS("; do { break ; } while ( false ) ;", tok("; do { break; } while (0);"));
     }
@@ -5703,23 +5677,23 @@ private:
         // ticket #1005 - int *p(0); => int *p = 0;
         {
             const char code[] = "void foo() { int *p(0); }";
-            ASSERT_EQUALS("void foo ( ) { ; ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { ; }", tok(code));
         }
 
         {
             const char code[] = "void foo() { int p(0); }";
-            ASSERT_EQUALS("void foo ( ) { ; ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { ; }", tok(code));
         }
 
         {
             const char code[] = "void a() { foo *p(0); }";
-            ASSERT_EQUALS("void a ( ) { ; ; }", tok(code));
+            ASSERT_EQUALS("void a ( ) { ; }", tok(code));
         }
     }
 
     void simplifyReference()
     {
-        ASSERT_EQUALS("void f ( ) { int a ; ; a ++ ; }",
+        ASSERT_EQUALS("void f ( ) { int a ; a ++ ; }",
                       tok("void f() { int a; int &b(a); b++; }"));
         ASSERT_EQUALS("void f ( ) { int a ; a ++ ; }",
                       tok("void f() { int a; int &b = a; b++; }"));
@@ -5890,7 +5864,7 @@ private:
 
         {
             const char code[] = "struct { int x; };";
-            const char expected[] = "int x ; ;";
+            const char expected[] = "int x ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
@@ -5950,6 +5924,12 @@ private:
     void simplifyFunctorCall()
     {
         ASSERT_EQUALS("IncrementFunctor ( ) ( a ) ;", tok("IncrementFunctor()(a);", true));
+    }
+
+    void redundant_semicolon()
+    {
+        ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { ; }", false));
+        ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { do { ; } while (0); }", true));
     }
 };
 
