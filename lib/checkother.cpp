@@ -2495,7 +2495,7 @@ void CheckOther::nullPointerByDeRefAndChec()
 
             // Check that variable is a pointer..
             const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
-            if (!Token::Match(decltok->tokAt(-3), "[;,(] %type% *"))
+            if (!Token::Match(decltok->tokAt(-3), "[{};,(] %type% *"))
                 continue;
 
             for (const Token *tok1 = tok->previous(); tok1 && tok1 != decltok; tok1 = tok1->previous())
@@ -2516,7 +2516,7 @@ void CheckOther::nullPointerByDeRefAndChec()
                         break;
                     }
                     // dereference in function call
-                    else if (Token::Match(tok1->tokAt(-2), "[(,] *"))
+                    else if (Token::Match(tok1->tokAt(-3), "!!sizeof [(,] *"))
                     {
                         nullPointerError(tok1, varname, tok->linenr());
                     }

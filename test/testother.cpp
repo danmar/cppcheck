@@ -695,6 +695,17 @@ private:
                          "    if (a) { }\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #2134 - sizeof doesn't dereference
+        checkNullPointer("void f() {\n"
+                         "    int c = 1;\n"
+                         "    int *list = NULL;\n"
+                         "    sizeof(*list);\n"
+                         "    if (!list)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void nullpointer2()
