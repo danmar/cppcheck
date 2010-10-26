@@ -676,7 +676,16 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             return 0;
         }
 
-        return "use_";
+        // is the varid a parameter?
+        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "(" || tok2->str() == ")")
+                break;
+            if (tok2->varId() == varid)
+                return "use_";
+        }
+
+        return 0;
     }
 
     if (noreturn.find(tok->str()) != noreturn.end())

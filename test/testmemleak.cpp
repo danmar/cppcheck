@@ -2280,6 +2280,13 @@ private:
               "    strcpy(str, p);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
+
+        check("void foo(int x) {\n"
+              "    char *str = malloc(10);\n"
+              "    free(str);\n"
+              "    assert(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
