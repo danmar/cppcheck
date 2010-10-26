@@ -712,7 +712,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
 
         // memset, memcmp, memcpy, strncpy, fgets..
-        if (varid == 0)
+        if (varid == 0 && size > 0)
         {
             ArrayInfo arrayInfo(0U, varnames, total_size / size, size);
             if (Token::Match(tok, ("%var% ( " + varnames + " ,").c_str()))
