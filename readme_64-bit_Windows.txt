@@ -50,5 +50,6 @@ Turns out you just need to use Windows SDK's Command prompt and 64-bit
 environment to configure and build Qt. No extra steps needed. But of course you
 should build 64-bit Qt to different folder than 32-bit Qt.
 
-64-bit CppCheck GUI must also be build from Windows SDK Command prompt. I have
-not yet succeeded in building 64-bit GUI from Visual Studio IDE.
+Compiling 64-bit GUI works fine from Windows SDK Console. But seems there is no
+easy way to make it work with VS 2008 Express IDE. With VS2010 Express IDE
+everything works fine after adding new x64 platform for the project.
