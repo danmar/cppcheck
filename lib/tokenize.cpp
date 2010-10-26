@@ -1876,7 +1876,7 @@ bool Tokenizer::tokenize(std::istream &code,
         for (const Token *tok = _tokens; tok; tok = tok->next())
         {
             // skip executing scopes..
-            if (Token::Match(tok, ") const| {"))
+            if (Token::Match(tok, ") const| {") || Token::simpleMatch(tok, ", {"))
             {
                 while (tok->str() != "{")
                     tok = tok->next();

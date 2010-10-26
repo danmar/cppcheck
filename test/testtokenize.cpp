@@ -49,6 +49,7 @@ private:
         TEST_CASE(tokenize9);
         TEST_CASE(tokenize10);
         TEST_CASE(tokenize11);
+        TEST_CASE(tokenize12);
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -434,6 +435,16 @@ private:
     void tokenize11()
     {
         ASSERT_EQUALS("X * sizeof ( Y ( ) ) ;", tokenizeAndStringify("X * sizeof(Y());", false));
+    }
+
+    // ticket #2118 - invalid syntax error
+    void tokenize12()
+    {
+        tokenizeAndStringify("Q_GLOBAL_STATIC_WITH_INITIALIZER(Qt4NodeStaticData, qt4NodeStaticData, {\n"
+                             "    for (unsigned i = 0 ; i < count; i++) {\n"
+                             "    }\n"
+                             "});");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void wrong_syntax()
