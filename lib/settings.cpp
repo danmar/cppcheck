@@ -64,6 +64,10 @@ std::string Settings::Suppressions::parseFile(std::istream &istr)
         if (line.empty())
             continue;
 
+        // Skip comments
+        if (line.length() >= 2 && line[0] == '/' && line[1] == '/')
+            continue;
+
         std::istringstream lineStream(line);
         std::string id;
         std::string file;
