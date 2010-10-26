@@ -2569,6 +2569,13 @@ void CheckOther::nullPointerByCheckAndDeRef()
                     break;
                 }
 
+                // abort function..
+                if (Token::Match(tok2->previous(), "[;{}] %var% (") &&
+                    Token::simpleMatch(tok2->next()->link(), ") ; }"))
+                {
+                    break;
+                }
+
                 if (tok2->varId() == varid)
                 {
                     if (Token::Match(tok2->previous(), "[;{}=] %var% = 0 ;"))
