@@ -1179,6 +1179,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         }
         else if (indentlevel > 0 &&
                  Token::Match(tok, "[;{}] %var% = %str% ;") &&
+                 tok->next()->varId() > 0 &&
                  NULL != Token::findmatch(_tokenizer->tokens(), "[;{}] const| %type% * %varid% ;", tok->next()->varId()))
         {
             size = 1 + int(tok->tokAt(3)->strValue().size());
