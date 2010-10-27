@@ -1197,6 +1197,13 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNullPointer("void foo() {\n"
+                         "    if (!p) {\n"
+                         "        switch (x) { }\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void checkUninitVar(const char code[])

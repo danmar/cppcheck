@@ -2543,6 +2543,8 @@ void CheckOther::nullPointerByCheckAndDeRef()
         {
             bool null = true;
             const unsigned int varid(tok->tokAt(3)->varId());
+            if (varid == 0)
+                continue;
             unsigned int indentlevel = 1;
             for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
             {
