@@ -56,6 +56,7 @@ private:
         TEST_CASE(uninitVar10); // ticket #1993
         TEST_CASE(uninitVar11);
         TEST_CASE(uninitVar12); // ticket #2078
+        TEST_CASE(uninitVar13); // ticket #1195
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1698,6 +1699,18 @@ private:
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable not initialized in the constructor 'Point::x'\n"
                       "[test.cpp:4]: (warning) Member variable not initialized in the constructor 'Point::y'\n", errout.str());
+    }
+
+    void uninitVar13() // ticket #1195
+    {
+        checkUninitVar("class A {\n"
+                       "private:\n"
+                       "    std::vector<int> *ints;\n"
+                       "public:\n"
+                       "    A()\n"
+                       "    {}\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable not initialized in the constructor 'A::ints'\n", errout.str());
     }
 
     void uninitVarArray1()

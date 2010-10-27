@@ -722,7 +722,6 @@ void CheckClass::SpaceInfo::getVarList()
         else if (Token::Match(next, "%type% :: %type% <") ||
                  Token::Match(next, "%type% <"))
         {
-            isClass = true;
             // find matching ">"
             int level = 0;
             for (; next; next = next->next())
@@ -737,7 +736,10 @@ void CheckClass::SpaceInfo::getVarList()
                 }
             }
             if (next && Token::Match(next, "> %var% ;"))
+            {
+                isClass = true;
                 vartok = next->tokAt(1);
+            }
             else if (next && Token::Match(next, "> * %var% ;"))
                 vartok = next->tokAt(2);
         }
