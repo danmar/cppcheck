@@ -613,9 +613,6 @@ private:
         tokenizer.simplifyTokenList();
         checkOther.nullConstantDereference();
         checkOther.executionPaths();
-
-        tokenizer.simplifyTokenList();
-        checkOther.nullPointerByCheckAndDeRef();
     }
 
 
@@ -1125,6 +1122,17 @@ private:
                          "    }\n"
                          "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        checkNullPointer("void f(int a) {\n"
+                         "    const char *p = 0;\n"
+                         "    if (a) {\n"
+                         "    	 p = \"abcd\";\n"
+                         "    }\n"
+                         "    for (int i = 0; i < 3; i++) {\n"
+                         "        if (a && (p[i] == '1'));\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer7()
@@ -1204,6 +1212,13 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // This is why this check can't be used on the simplified token list
+        checkNullPointer("void f(Foo *foo) {\n"
+                         "    if (!dynamic_cast<bar *>(foo)) {\n"
+                         "        *foo = 0;\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkUninitVar(const char code[])

@@ -89,9 +89,6 @@ public:
         // New type of check: Check execution paths
         checkOther.executionPaths();
         checkOther.checkMisusedScopedObject();
-
-        // FIXME: I get a deadlock if I uncomment this:
-        checkOther.nullPointerByCheckAndDeRef();
     }
 
 

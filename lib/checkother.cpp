@@ -2613,6 +2613,7 @@ void CheckOther::nullPointer()
     nullPointerLinkedList();
     nullPointerStructByDeRefAndChec();
     nullPointerByDeRefAndChec();
+    nullPointerByCheckAndDeRef();
 }
 
 /** Derefencing null constant (simplified token list) */
@@ -2948,7 +2949,7 @@ private:
     {
         while (tok)
         {
-            if (tok->str() == "{" || tok->str() == "}")
+            if (Token::Match(tok, "{|}|return|goto|break|if"))
                 return;
             const Token *next = parse(*tok, checks);
             if (next)
