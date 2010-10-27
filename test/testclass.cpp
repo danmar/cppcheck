@@ -146,6 +146,7 @@ private:
         TEST_CASE(const35); // ticket #2001
         TEST_CASE(const36); // ticket #2003
         TEST_CASE(const37); // ticket #2081 and #2085
+        TEST_CASE(const38); // ticket #2135
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -4086,6 +4087,23 @@ private:
                    "    }\n"
                    "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (style) The function 'Fred::isValid' can be const\n", errout.str());
+    }
+
+    void const38() // ticket #2135
+    {
+        checkConst("class Foo {\n"
+                   "public:\n"
+                   "    ~Foo() { delete oArq; }\n"
+                   "    Foo(): oArq(new std::ofstream(\"...\")) {}\n"
+                   "    void MyMethod();\n"
+                   "private:\n"
+                   "    std::ofstream *oArq;\n"
+                   "};\n"
+                   "void Foo::MyMethod()\n"
+                   "{\n"
+                   "    (*oArq) << \"</table>\";\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const

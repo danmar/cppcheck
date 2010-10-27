@@ -2098,6 +2098,8 @@ void CheckClass::checkConst()
 
 bool CheckClass::isMemberVar(const SpaceInfo *info, const Token *tok)
 {
+    const Token *tok1 = tok;
+
     while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:|return|:|?"))
     {
         if (Token::Match(tok->previous(),  "* this"))
@@ -2109,7 +2111,7 @@ bool CheckClass::isMemberVar(const SpaceInfo *info, const Token *tok)
     if (tok->str() == "this")
         return true;
 
-    if (Token::Match(tok, "( * %var% ) ["))
+    if (Token::Match(tok, "( * %var% ) [") || (Token::Match(tok, "( * %var% ) <<") && tok1->next()->str() == "<<"))
         tok = tok->tokAt(2);
 
     // ignore class namespace
