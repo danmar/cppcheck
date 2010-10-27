@@ -2562,7 +2562,7 @@ void CheckOther::nullPointerByCheckAndDeRef()
                     }
                 }
 
-                if (Token::Match(tok2, "goto|return|continue|break|if"))
+                if (Token::Match(tok2, "goto|return|continue|break|throw|if"))
                 {
                     if (Token::Match(tok2, "return * %var%"))
                         nullPointerError(tok2, tok->strAt(3));
