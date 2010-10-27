@@ -704,7 +704,7 @@ private:
                             "{\n"
                             "    char *str = malloc(10);\n"
                             "    if (somecondition)\n"
-                            "        for ( ; )\n"
+                            "        for ( ; ; )\n"
                             "        { }\n"
                             "    return str;\n"
                             "}\n";
@@ -712,7 +712,7 @@ private:
                       "{\n"
                       "char * str ; str = malloc ( 10 ) ;\n"
                       "if ( somecondition ) {\n"
-                      "for ( ; )\n"
+                      "for ( ; ; )\n"
                       "{ } }\n"
                       "return str ;\n"
                       "}", tokenizeAndStringify(code, true));
