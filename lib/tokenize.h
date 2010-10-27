@@ -290,6 +290,11 @@ public:
      */
     bool removeReduntantConditions();
 
+    /**
+     * Reduces "; ;" to ";", except in "( ; ; )"
+     */
+    void removeRedundantSemicolons();
+
     /** Simplify function calls - constant return value
      * @return true if something is modified
      *         false if nothing is done.
