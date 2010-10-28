@@ -719,6 +719,14 @@ QString ResultsTree::ShowTypeToString(ShowTypes type)
         return tr("error");
         break;
 
+    case SHOW_WARNINGS:
+        return tr("warning");
+        break;
+
+    case SHOW_PERFORMANCE:
+        return tr("performance");
+        break;
+
     case SHOW_NONE:
         return "";
         break;
