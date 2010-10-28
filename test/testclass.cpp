@@ -2244,12 +2244,30 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void checkUninitVarJava(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.java");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        settings._checkCodingStyle = true;
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.constructors();
+    }
+
     void uninitJava()
     {
-        checkUninitVar("class A {\n"
-                       "    private: int i = 0;\n"
-                       "    public: A() { }\n"
-                       "};");
+        checkUninitVarJava("class A {\n"
+                           "    private: int i = 0;\n"
+                           "    public: A() { }\n"
+                           "};");
         ASSERT_EQUALS("", errout.str());
     }
 
