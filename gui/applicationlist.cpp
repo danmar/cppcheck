@@ -59,7 +59,7 @@ void ApplicationList::LoadSettings(QSettings *programSettings)
             const QString appPath(getenv("ProgramFiles"));
             if (!appPath.isNull() && QFileInfo(appPath + "\\Notepad++\\notepad++.exe").isExecutable())
             {
-                AddApplicationType("notepad++", QString(appPath) + "\\Notepad++\\notepad++.exe -n(line) (file)");
+                AddApplicationType("Notepad++", QString(appPath) + "\\Notepad++\\notepad++.exe -n(line) (file)");
                 break;
             }
         }
