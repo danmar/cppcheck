@@ -165,7 +165,7 @@ void SettingsDialog::ModifyApplication()
 
         ApplicationDialog dialog(mTempApplications->GetApplicationName(row),
                                  mTempApplications->GetApplicationPath(row),
-                                 tr("Modify an application"));
+                                 tr("Modify an application"), this);
 
         if (dialog.exec() == QDialog::Accepted)
         {
