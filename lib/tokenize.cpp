@@ -1744,8 +1744,8 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
-    // Simplify JAVA code
-    if (_files[0].find(".java") != std::string::npos)
+    // Simplify JAVA/C# code
+    if (isJavaOrCSharp() && _files[0].find(".java") != std::string::npos)
     {
         for (Token *tok = _tokens; tok; tok = tok->next())
         {
@@ -6649,7 +6649,7 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
 void Tokenizer::simplifyEnum()
 {
     // Don't simplify enums in java files
-    if (_files[0].find(".java") != std::string::npos)
+    if (isJavaOrCSharp())
         return;
 
     std::string className;

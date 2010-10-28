@@ -1984,8 +1984,7 @@ void CheckClass::checkConst()
         return;
 
     // Don't check C# and JAVA classes
-    if (_tokenizer->getFiles()->at(0).find(".java") != std::string::npos ||
-        _tokenizer->getFiles()->at(0).find(".cs") != std::string::npos)
+    if (_tokenizer->isJavaOrCSharp())
     {
         return;
     }

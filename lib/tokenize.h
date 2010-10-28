@@ -45,6 +45,18 @@ public:
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
     virtual ~Tokenizer();
 
+    /** Is the code JAVA/C#. Used for bailouts */
+    bool isJavaOrCSharp() const
+    {
+        if (_files.size() != 1)
+            return false;
+        const std::string::size_type pos = _files[0].rfind(".");
+        if (pos != std::string::npos)
+            return (_files[0].substr(pos) == ".java" ||
+                    _files[0].substr(pos) == ".cs");
+        return false;
+    }
+
     /**
      * Tokenize code
      * @param code input stream for code, e.g.

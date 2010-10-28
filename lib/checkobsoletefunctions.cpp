@@ -37,8 +37,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
         return;
 
     // Don't check C# and Java code
-    if (_tokenizer->getFiles()->at(0).find(".java") != std::string::npos ||
-        _tokenizer->getFiles()->at(0).find(".cs") != std::string::npos)
+    if (_tokenizer->isJavaOrCSharp())
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())

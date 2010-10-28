@@ -2212,8 +2212,7 @@ void CheckOther::checkIncompleteStatement()
 void CheckOther::strPlusChar()
 {
     // Don't use this check for Java and C# programs..
-    if (_tokenizer->getFiles()->at(0).find(".java") != std::string::npos ||
-        _tokenizer->getFiles()->at(0).find(".cs") != std::string::npos)
+    if (_tokenizer->isJavaOrCSharp())
     {
         return;
     }
