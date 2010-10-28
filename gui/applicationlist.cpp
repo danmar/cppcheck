@@ -56,12 +56,8 @@ void ApplicationList::LoadSettings(QSettings *programSettings)
                 break;
             }
             // use as default for windows environments
-            const QString appPath(getenv("ProgramFiles"));
-            if (!appPath.isNull() && QFileInfo(appPath + "\\Notepad++\\notepad++.exe").isExecutable())
-            {
-                AddApplicationType("Notepad++", "\"" + QString(appPath) + "\\Notepad++\\notepad++.exe\" -n(line) (file)");
+            if (FindDefaultWindowsEditor())
                 break;
-            }
         }
         while (0);
     }
@@ -176,3 +172,22 @@ void ApplicationList::Clear()
     mApplications.clear();
 }
 
+bool ApplicationList::FindDefaultWindowsEditor()
+{
+    const QString appPath(getenv("ProgramFiles"));
+    const QString notepadppPath = appPath + "\\Notepad++\\notepad++.exe";
+    if (QFileInfo(notepadppPath).isExecutable())
+    {
+        AddApplicationType("Notepad++", "\"" + notepadppPath + "\" -n(line) (file)");
+        return true;
+    }
+
+    const QString windowsPath(getenv("windir"));
+    const QString notepadPath = windowsPath + "\\system32\\notepad.exe";
+    if (QFileInfo(notepadPath).isExecutable())
+    {
+        AddApplicationType("Notepad", notepadPath + " (file)");
+        return true;
+    }
+    return false;
+}

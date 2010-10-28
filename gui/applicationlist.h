@@ -155,6 +155,13 @@ protected:
     *
     */
     void Clear();
+
+    /**
+    * @brief Find editor used by default in Windows.
+    * Check if Notepad++ is installed and use it. If not, use Notepad.
+    */
+    bool FindDefaultWindowsEditor();
+
     /**
     * @brief List of applications
     *
