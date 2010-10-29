@@ -35,9 +35,6 @@
     <ClCompile Include="testexceptionsafety.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testfilelister.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="testincompletestatement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -183,6 +180,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\cli\cppcheckexecutor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testpath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

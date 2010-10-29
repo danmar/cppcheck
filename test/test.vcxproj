@@ -260,13 +260,13 @@
     <ClCompile Include="testcppcheck.cpp" />
     <ClCompile Include="testdivision.cpp" />
     <ClCompile Include="testexceptionsafety.cpp" />
-    <ClCompile Include="testfilelister.cpp" />
     <ClCompile Include="testincompletestatement.cpp" />
     <ClCompile Include="testmathlib.cpp" />
     <ClCompile Include="testmemleak.cpp" />
     <ClCompile Include="testobsoletefunctions.cpp" />
     <ClCompile Include="testoptions.cpp" />
     <ClCompile Include="testother.cpp" />
+    <ClCompile Include="testpath.cpp" />
     <ClCompile Include="testpostfixoperator.cpp" />
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testrunner.cpp" />
