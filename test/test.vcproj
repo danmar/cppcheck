@@ -487,10 +487,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\testfilelister.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\testincompletestatement.cpp"
 				>
 			</File>
@@ -508,6 +504,10 @@
 			</File>
 			<File
 				RelativePath=".\testother.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testpath.cpp"
 				>
 			</File>
 			<File
