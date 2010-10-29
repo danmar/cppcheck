@@ -20,7 +20,6 @@
 #include "preprocessor.h"
 #include "tokenize.h"
 #include "token.h"
-#include "filelister.h"
 #include "path.h"
 #include "errorlogger.h"
 #include "settings.h"
@@ -1545,7 +1544,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
         if (fileOpened)
         {
-            filename = getFileLister()->simplifyPath(filename.c_str());
+            filename = Path::simplifyPath(filename.c_str());
             std::string tempFile = filename;
             std::transform(tempFile.begin(), tempFile.end(), tempFile.begin(), tolowerWrapper);
             if (handledFiles.find(tempFile) != handledFiles.end())

@@ -47,6 +47,13 @@ public:
       * @return converted path.
       */
     static std::string fromNativeSeparators(const std::string &path);
+
+    /**
+     * @brief Simplify path "foo/bar/.." => "foo"
+     * @param originalPath path to be simplified
+     * @return simplified path
+     */
+    static std::string simplifyPath(const char *originalPath);
 };
 
 /// @}

@@ -29,6 +29,7 @@
 #include "settings.h"
 #include "errorlogger.h"
 #include "check.h"
+#include "path.h"
 
 #include <locale>
 #include <fstream>
@@ -306,7 +307,7 @@ void Tokenizer::createTokens(std::istream &code)
                 if (!foundOurfile)
                 {
                     // The "_files" vector remembers what files have been tokenized..
-                    _files.push_back(getFileLister()->simplifyPath(line.c_str()));
+                    _files.push_back(Path::simplifyPath(line.c_str()));
                     FileIndex = static_cast<unsigned int>(_files.size() - 1);
                 }
 
@@ -1726,7 +1727,7 @@ bool Tokenizer::tokenize(std::istream &code,
     _configuration = configuration;
 
     // The "_files" vector remembers what files have been tokenized..
-    _files.push_back(getFileLister()->simplifyPath(FileName));
+    _files.push_back(Path::simplifyPath(FileName));
 
     createTokens(code);
 

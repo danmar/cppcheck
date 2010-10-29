@@ -31,7 +31,6 @@ class FileListerUnix : public FileLister
 {
 public:
     virtual void recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive);
-//    virtual static std::string simplifyPath(const char *originalPath);
     virtual bool sameFileName(const std::string &fname1, const std::string &fname2);
 //    virtual static bool acceptFile(const std::string &filename);
 private:

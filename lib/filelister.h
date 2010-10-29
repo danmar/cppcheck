@@ -51,13 +51,6 @@ public:
                                    const std::string &path, bool recursive) = 0;
 
     /**
-     * @brief Simplify path "foo/bar/.." => "foo"
-     * @param originalPath path to be simplified
-     * @return simplified path
-     */
-    virtual std::string simplifyPath(const char *originalPath);
-
-    /**
      * @brief Compare filenames to see if they are the same.
      * On Linux the comparison is case-sensitive. On Windows it is case-insensitive.
      * @param fname1 one filename
