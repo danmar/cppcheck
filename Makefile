@@ -61,13 +61,13 @@ TESTOBJ =     test/options.o \
               test/testcppcheck.o \
               test/testdivision.o \
               test/testexceptionsafety.o \
-              test/testfilelister.o \
               test/testincompletestatement.o \
               test/testmathlib.o \
               test/testmemleak.o \
               test/testobsoletefunctions.o \
               test/testoptions.o \
               test/testother.o \
+              test/testpath.o \
               test/testpostfixoperator.o \
               test/testpreprocessor.o \
               test/testrunner.o \
@@ -158,7 +158,7 @@ lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunction
 lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/preprocessor.h lib/filelister.h lib/path.h lib/timer.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/cppcheck.o lib/cppcheck.cpp
 
-lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/filelister.h lib/path.h
+lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/path.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/errorlogger.o lib/errorlogger.cpp
 
 lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h
@@ -179,7 +179,7 @@ lib/mathlib.o: lib/mathlib.cpp lib/mathlib.h lib/tokenize.h
 lib/path.o: lib/path.cpp lib/path.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/path.o lib/path.cpp
 
-lib/preprocessor.o: lib/preprocessor.cpp lib/preprocessor.h lib/tokenize.h lib/token.h lib/filelister.h lib/path.h lib/errorlogger.h lib/settings.h
+lib/preprocessor.o: lib/preprocessor.cpp lib/preprocessor.h lib/tokenize.h lib/token.h lib/path.h lib/errorlogger.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/preprocessor.o lib/preprocessor.cpp
 
 lib/settings.o: lib/settings.cpp lib/settings.h
@@ -191,7 +191,7 @@ lib/timer.o: lib/timer.cpp lib/timer.h
 lib/token.o: lib/token.cpp lib/token.h lib/errorlogger.h lib/check.h lib/tokenize.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/token.o lib/token.cpp
 
-lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/token.h lib/filelister.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h
+lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/token.h lib/filelister.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h lib/path.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/tokenize.o lib/tokenize.cpp
 
 cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/timer.h cli/cmdlineparser.h
@@ -236,9 +236,6 @@ test/testdivision.o: test/testdivision.cpp lib/tokenize.h lib/checkother.h lib/c
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/tokenize.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
 
-test/testfilelister.o: test/testfilelister.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/filelister_win32.h lib/filelister.h lib/filelister_unix.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testfilelister.o test/testfilelister.cpp
-
 test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testincompletestatement.o test/testincompletestatement.cpp
 
@@ -256,6 +253,9 @@ test/testoptions.o: test/testoptions.cpp test/options.h test/testsuite.h lib/err
 
 test/testother.o: test/testother.cpp lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testother.o test/testother.cpp
+
+test/testpath.o: test/testpath.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/path.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testpath.o test/testpath.cpp
 
 test/testpostfixoperator.o: test/testpostfixoperator.cpp lib/tokenize.h lib/checkpostfixoperator.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testpostfixoperator.o test/testpostfixoperator.cpp
