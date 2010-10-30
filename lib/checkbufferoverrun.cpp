@@ -1804,7 +1804,7 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
     _element_size = 0;
     _varname.clear();
 
-    if (!tok->isName())
+    if (!tok->isName() || tok->str() == "return")
         return false;
 
     while (tok && (tok->str() == "static" ||

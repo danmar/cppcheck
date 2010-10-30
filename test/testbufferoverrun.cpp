@@ -180,6 +180,7 @@ private:
 
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
+        TEST_CASE(executionPaths3);   // no FP for function parameter
 
         TEST_CASE(cmdLineArgs1);
 
@@ -2510,6 +2511,20 @@ private:
                 "    int sz = sizeof(a);\n"
                 "    bar(&sz);\n"
                 "    a[sz] = 0;\n"
+                "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void executionPaths3()
+    {
+        epcheck("void f(char *VLtext)\n"
+                "{\n"
+                "    if ( x ) {\n"
+                "        return VLtext[0];\n"
+                "    } else {\n"
+                "        int wordlen = ab();\n"
+                "        VLtext[wordlen] = 0;\n"
+                "    }\n"
                 "}\n");
         ASSERT_EQUALS("", errout.str());
     }
