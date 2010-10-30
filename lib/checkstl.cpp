@@ -880,6 +880,9 @@ void CheckStl::missingComparison()
                 }
 
                 const unsigned int &iteratorId(tok2->varId());
+                if (iteratorId == 0)
+                    continue;
+
                 const Token *incrementToken = 0;
                 unsigned int indentlevel = 0;
                 // Parse loop..

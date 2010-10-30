@@ -99,6 +99,7 @@ private:
         TEST_CASE(missingInnerComparison2);     // no FP when there is comparison
         TEST_CASE(missingInnerComparison3);     // no FP when there is iterator shadowing
         TEST_CASE(missingInnerComparison4);     // no FP when "break;" is used
+        TEST_CASE(missingInnerComparison5);     // Ticket #2154 - FP
 
         // catch common problems when using the string::c_str() function
         TEST_CASE(cstr);
@@ -1103,6 +1104,16 @@ private:
               "            l1.insert(++i, 55);\n"
               "            break;\n"
               "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void missingInnerComparison5()
+    {
+        check("void f() {\n"
+              "    for(it = map1.begin(); it != map1.end(); it++) {\n"
+              "        str[i++] = (*it).first;\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
