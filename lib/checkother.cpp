@@ -21,6 +21,7 @@
 #include "checkother.h"
 #include "mathlib.h"
 
+#include <cctype> // std::isupper
 #include <cmath> // fabs()
 //---------------------------------------------------------------------------
 
