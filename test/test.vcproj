@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="test"
 	ProjectGUID="{BA98E531-D8B3-39CB-8171-064854404B81}"
 	Keyword="Qt4VSv1.0"
@@ -379,6 +379,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\checknullpointer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\checkobsoletefunctions.cpp"
 				>
 			</File>
@@ -392,6 +396,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\checkstl.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\checkuninitvar.cpp"
 				>
 			</File>
 			<File
@@ -499,6 +507,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\testnullpointer.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\testobsoletefunctions.cpp"
 				>
 			</File>
@@ -548,6 +560,10 @@
 			</File>
 			<File
 				RelativePath=".\testtokenize.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testuninitvar.cpp"
 				>
 			</File>
 			<File
@@ -625,6 +641,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\checknullpointer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\checkobsoletefunctions.h"
 				>
 			</File>
@@ -638,6 +658,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\checkstl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\checkuninitvar.h"
 				>
 			</File>
 			<File
