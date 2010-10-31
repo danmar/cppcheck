@@ -236,10 +236,12 @@
     <ClCompile Include="..\lib\checkclass.cpp" />
     <ClCompile Include="..\lib\checkexceptionsafety.cpp" />
     <ClCompile Include="..\lib\checkmemoryleak.cpp" />
+    <ClCompile Include="..\lib\checknullpointer.cpp" />
     <ClCompile Include="..\lib\checkobsoletefunctions.cpp" />
     <ClCompile Include="..\lib\checkother.cpp" />
     <ClCompile Include="..\lib\checkpostfixoperator.cpp" />
     <ClCompile Include="..\lib\checkstl.cpp" />
+    <ClCompile Include="..\lib\checkuninitvar.cpp" />
     <ClCompile Include="..\lib\checkunusedfunctions.cpp" />
     <ClCompile Include="..\lib\cppcheck.cpp" />
     <ClCompile Include="..\lib\errorlogger.cpp" />
@@ -265,10 +267,12 @@
     <ClInclude Include="..\lib\checkclass.h" />
     <ClInclude Include="..\lib\checkexceptionsafety.h" />
     <ClInclude Include="..\lib\checkmemoryleak.h" />
+    <ClInclude Include="..\lib\checknullpointer.h" />
     <ClInclude Include="..\lib\checkobsoletefunctions.h" />
     <ClInclude Include="..\lib\checkother.h" />
     <ClInclude Include="..\lib\checkpostfixoperator.h" />
     <ClInclude Include="..\lib\checkstl.h" />
+    <ClInclude Include="..\lib\checkuninitvar.h" />
     <ClInclude Include="..\lib\checkunusedfunctions.h" />
     <ClInclude Include="..\lib\classinfo.h" />
     <ClInclude Include="..\lib\cppcheck.h" />

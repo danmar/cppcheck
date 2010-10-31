@@ -233,10 +233,12 @@
     <ClCompile Include="..\lib\checkclass.cpp" />
     <ClCompile Include="..\lib\checkexceptionsafety.cpp" />
     <ClCompile Include="..\lib\checkmemoryleak.cpp" />
+    <ClCompile Include="..\lib\checknullpointer.cpp" />
     <ClCompile Include="..\lib\checkobsoletefunctions.cpp" />
     <ClCompile Include="..\lib\checkother.cpp" />
     <ClCompile Include="..\lib\checkpostfixoperator.cpp" />
     <ClCompile Include="..\lib\checkstl.cpp" />
+    <ClCompile Include="..\lib\checkuninitvar.cpp" />
     <ClCompile Include="..\lib\checkunusedfunctions.cpp" />
     <ClCompile Include="..\lib\cppcheck.cpp" />
     <ClCompile Include="..\lib\errorlogger.cpp" />
@@ -263,6 +265,7 @@
     <ClCompile Include="testincompletestatement.cpp" />
     <ClCompile Include="testmathlib.cpp" />
     <ClCompile Include="testmemleak.cpp" />
+    <ClCompile Include="testnullpointer.cpp" />
     <ClCompile Include="testobsoletefunctions.cpp" />
     <ClCompile Include="testoptions.cpp" />
     <ClCompile Include="testother.cpp" />
@@ -277,6 +280,7 @@
     <ClCompile Include="testthreadexecutor.cpp" />
     <ClCompile Include="testtoken.cpp" />
     <ClCompile Include="testtokenize.cpp" />
+    <ClCompile Include="testuninitvar.cpp" />
     <ClCompile Include="testunusedfunctions.cpp" />
     <ClCompile Include="testunusedprivfunc.cpp" />
     <ClCompile Include="testunusedvar.cpp" />
@@ -294,10 +298,12 @@
     <ClInclude Include="..\lib\checkclass.h" />
     <ClInclude Include="..\lib\checkexceptionsafety.h" />
     <ClInclude Include="..\lib\checkmemoryleak.h" />
+    <ClInclude Include="..\lib\checknullpointer.h" />
     <ClInclude Include="..\lib\checkobsoletefunctions.h" />
     <ClInclude Include="..\lib\checkother.h" />
     <ClInclude Include="..\lib\checkpostfixoperator.h" />
     <ClInclude Include="..\lib\checkstl.h" />
+    <ClInclude Include="..\lib\checkuninitvar.h" />
     <ClInclude Include="..\lib\checkunusedfunctions.h" />
     <ClInclude Include="..\lib\classinfo.h" />
     <ClInclude Include="..\lib\cppcheck.h" />
