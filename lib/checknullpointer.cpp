@@ -112,7 +112,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     unknown = false;
 
     // Dereferencing pointer..
-    if (Token::Match(tok->tokAt(-2), "[;{}=+-/(,] * %var%"))
+    if (Token::Match(tok->tokAt(-3), "!!sizeof [;{}=+-/(,] * %var%"))
         return true;
 
     if (!Token::simpleMatch(tok->tokAt(-2), "& (") && Token::Match(tok->next(), ". %var%"))
@@ -401,7 +401,8 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             {
                 if (tok1->varId() == varid)
                 {
-                    if (Token::Match(tok1->tokAt(-2), "[=;{}] *"))
+                    bool unknown = false;
+                    if (CheckNullPointer::isPointerDeRef(tok1, unknown))
                     {
                         nullPointerError(tok1, varname, tok->linenr());
                         break;
@@ -413,11 +414,6 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     else if (Token::simpleMatch(tok1->next(), "="))
                     {
                         break;
-                    }
-                    // dereference in function call
-                    else if (Token::Match(tok1->tokAt(-3), "!!sizeof [(,] *"))
-                    {
-                        nullPointerError(tok1, varname, tok->linenr());
                     }
                 }
 
