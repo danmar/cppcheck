@@ -118,10 +118,10 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     if (!Token::simpleMatch(tok->tokAt(-2), "& (") && Token::Match(tok->next(), ". %var%"))
         return true;
 
-    if (Token::Match(tok->previous(), "[;{}=+-/(,] %var% [ %any% ]"))
+    if (Token::Match(tok->previous(), "[;{}=+-/(,] %var% ["))
         return true;
 
-    if (Token::Match(tok->previous(), "return %var% [ %any% ]"))
+    if (Token::Match(tok->previous(), "return %var% ["))
         return true;
 
     if (Token::Match(tok, "%var% ("))
