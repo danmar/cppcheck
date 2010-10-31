@@ -6,6 +6,7 @@ HEADERS += $$PWD/check.h \
            $$PWD/checkclass.h \
            $$PWD/checkexceptionsafety.h \
            $$PWD/checkmemoryleak.h \
+           $$PWD/checknullpointer.h \
            $$PWD/checkobsoletefunctions.h \
            $$PWD/checkother.h \
            $$PWD/checkpostfixoperator.h \
@@ -30,6 +31,7 @@ SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/checkclass.cpp \
            $$PWD/checkexceptionsafety.cpp \
            $$PWD/checkmemoryleak.cpp \
+           $$PWD/checknullpointer.cpp \
            $$PWD/checkobsoletefunctions.cpp \
            $$PWD/checkother.cpp \
            $$PWD/checkpostfixoperator.cpp \

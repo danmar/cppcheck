@@ -50,8 +50,6 @@ public:
     {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
-        checkOther.nullPointer();
-
         // Coding style checks
         checkOther.warningOldStylePointerCast();
         checkOther.checkUnsignedDivision();
@@ -82,7 +80,6 @@ public:
         checkOther.checkFflushOnInputStream();
         checkOther.invalidScanf();
 
-        checkOther.nullConstantDereference();
         checkOther.checkSelfAssignment();
         checkOther.checkIncorrectLogicOperator();
 
@@ -141,18 +138,6 @@ public:
     /** @brief str plus char (unusual pointer arithmetic) */
     void strPlusChar();
 
-    /** @brief possible null pointer dereference */
-    void nullPointer();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
-     * Checking if pointer is NULL and then dereferencing it..
-     */
-    void nullPointerByCheckAndDeRef();
-
-    /** @brief dereferencing null constant (after Tokenizer::simplifyKnownVariables) */
-    void nullConstantDereference();
-
     /** @brief new type of check: check execution paths */
     void executionPaths();
 
@@ -210,9 +195,6 @@ public:
     void variableScopeError(const Token *tok, const std::string &varname);
     void conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse);
     void strPlusChar(const Token *tok);
-    void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
-    void nullPointerError(const Token *tok, const std::string &varname);
-    void nullPointerError(const Token *tok, const std::string &varname, const unsigned int line);
     void uninitstringError(const Token *tok, const std::string &varname);
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
@@ -231,7 +213,6 @@ public:
         // error
         sprintfOverlappingDataError(0, "varname");
         udivError(0);
-        nullPointerError(0, "pointer");
         uninitstringError(0, "varname");
         uninitdataError(0, "varname");
         uninitvarError(0, "varname");
@@ -278,7 +259,6 @@ public:
                // error
                "* [[OverlappingData|bad usage of the function 'sprintf' (overlapping data)]]\n"
                "* division with zero\n"
-               "* null pointer dereferencing\n"
                "* using uninitialized variables and data\n"
                "* using fflush() on an input stream\n"
                "* scoped object destroyed immediately after construction\n"
@@ -309,38 +289,6 @@ public:
     }
 
 private:
-
-    /**
-     * @brief Does one part of the check for nullPointer().
-     * Locate insufficient null-pointer handling after loop
-     */
-    void nullPointerAfterLoop();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
-     * looping through items in a linked list in a inner loop..
-     */
-    void nullPointerLinkedList();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
-     * Dereferencing a struct pointer and then checking if it's NULL..
-     */
-    void nullPointerStructByDeRefAndChec();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
-     * Dereferencing a pointer and then checking if it's NULL..
-     */
-    void nullPointerByDeRefAndChec();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
-     * -# initialize pointer to 0
-     * -# conditionally assign pointer
-     * -# dereference pointer
-     */
-    void nullPointerConditionalAssignment();
 
     /**
      * @brief Used in warningRedundantCode()
