@@ -909,8 +909,14 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
 {
     int next = 0;
 
+    // a = a + b;
+    if (Token::Match(tok, "%var% = %var% !!;") && tok->str() == tok->strAt(2))
+    {
+        return 2;
+    }
+
     // check for aliased variable
-    unsigned int varid1 = tok->varId();
+    const unsigned int varid1 = tok->varId();
     Variables::VariableUsage *var1 = variables.find(varid1);
 
     if (var1)
@@ -1641,9 +1647,6 @@ void CheckOther::functionVariableUsage()
             else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) &&
                      (Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false|new")))
                 variables.readAll(tok->next()->varId());
-
-            else if (Token::Match(tok, "-=|+=|*=|/=|&=|^= %var%") || Token::Match(tok, "|= %var%"))
-                variables.modified(tok->next()->varId());
 
             else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
                 variables.readAll(tok->varId());
