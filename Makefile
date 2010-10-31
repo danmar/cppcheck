@@ -32,6 +32,7 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/checkother.o \
               lib/checkpostfixoperator.o \
               lib/checkstl.o \
+              lib/checkuninitvar.o \
               lib/checkunusedfunctions.o \
               lib/cppcheck.o \
               lib/errorlogger.o \
@@ -80,6 +81,7 @@ TESTOBJ =     test/options.o \
               test/testthreadexecutor.o \
               test/testtoken.o \
               test/testtokenize.o \
+              test/testuninitvar.o \
               test/testunusedfunctions.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o \
@@ -148,7 +150,7 @@ lib/checknullpointer.o: lib/checknullpointer.cpp lib/checknullpointer.h lib/chec
 lib/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkobsoletefunctions.o lib/checkobsoletefunctions.cpp
 
-lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h lib/checknullpointer.h
+lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkother.o lib/checkother.cpp
 
 lib/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/checkpostfixoperator.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
@@ -156,6 +158,9 @@ lib/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/checkpostfixoperato
 
 lib/checkstl.o: lib/checkstl.cpp lib/checkstl.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/executionpath.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkstl.o lib/checkstl.cpp
+
+lib/checkuninitvar.o: lib/checkuninitvar.cpp lib/checkuninitvar.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h lib/checknullpointer.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkuninitvar.o lib/checkuninitvar.cpp
 
 lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkunusedfunctions.o lib/checkunusedfunctions.cpp
@@ -294,6 +299,9 @@ test/testtoken.o: test/testtoken.cpp test/testsuite.h lib/errorlogger.h test/red
 
 test/testtokenize.o: test/testtokenize.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/token.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testtokenize.o test/testtokenize.cpp
+
+test/testuninitvar.o: test/testuninitvar.cpp lib/tokenize.h lib/checkuninitvar.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testuninitvar.o test/testuninitvar.cpp
 
 test/testunusedfunctions.o: test/testunusedfunctions.cpp lib/tokenize.h test/testsuite.h lib/errorlogger.h test/redirect.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testunusedfunctions.o test/testunusedfunctions.cpp

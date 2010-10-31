@@ -11,6 +11,7 @@ HEADERS += $$PWD/check.h \
            $$PWD/checkother.h \
            $$PWD/checkpostfixoperator.h \
            $$PWD/checkstl.h \
+           $$PWD/checkuninitvar.h \
            $$PWD/checkunusedfunctions.h \
            $$PWD/cppcheck.h \
            $$PWD/errorlogger.h \
@@ -36,6 +37,7 @@ SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/checkother.cpp \
            $$PWD/checkpostfixoperator.cpp \
            $$PWD/checkstl.cpp \
+           $$PWD/checkuninitvar.cpp \
            $$PWD/checkunusedfunctions.cpp \
            $$PWD/cppcheck.cpp \
            $$PWD/errorlogger.cpp \

@@ -82,22 +82,8 @@ public:
 
         checkOther.checkSelfAssignment();
         checkOther.checkIncorrectLogicOperator();
-
-        // New type of check: Check execution paths
-        checkOther.executionPaths();
         checkOther.checkMisusedScopedObject();
     }
-
-
-    /**
-     * @brief Uninitialized variables: analyse functions to see how they work with uninitialized variables
-     * @param tokens [in] the token list
-     * @param func [out] names of functions that don't handle uninitialized variables well. the function names are added to the set. No clearing is made.
-     */
-    void analyse(const Token * tokens, std::set<std::string> &func) const;
-
-    /** Save analysis results */
-    void saveAnalysisData(const std::set<std::string> &data) const;
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
@@ -137,9 +123,6 @@ public:
 
     /** @brief str plus char (unusual pointer arithmetic) */
     void strPlusChar();
-
-    /** @brief new type of check: check execution paths */
-    void executionPaths();
 
     /** @brief %Check zero division*/
     void checkZeroDivision();
@@ -195,9 +178,6 @@ public:
     void variableScopeError(const Token *tok, const std::string &varname);
     void conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse);
     void strPlusChar(const Token *tok);
-    void uninitstringError(const Token *tok, const std::string &varname);
-    void uninitdataError(const Token *tok, const std::string &varname);
-    void uninitvarError(const Token *tok, const std::string &varname);
     void zerodivError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty);
@@ -213,9 +193,6 @@ public:
         // error
         sprintfOverlappingDataError(0, "varname");
         udivError(0);
-        uninitstringError(0, "varname");
-        uninitdataError(0, "varname");
-        uninitvarError(0, "varname");
         zerodivError(0);
         mathfunctionCallError(0);
         fflushOnInputStreamError(0, "stdin");
@@ -259,7 +236,6 @@ public:
                // error
                "* [[OverlappingData|bad usage of the function 'sprintf' (overlapping data)]]\n"
                "* division with zero\n"
-               "* using uninitialized variables and data\n"
                "* using fflush() on an input stream\n"
                "* scoped object destroyed immediately after construction\n"
                "* assignment in an assert statement\n"
