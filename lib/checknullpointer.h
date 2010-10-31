@@ -71,6 +71,17 @@ public:
                                   std::list<const Token *> &var,
                                   unsigned char value);
 
+    /**
+     * Is there a pointer dereference? Everything that should result in
+     * a nullpointer dereference error message will result in a true
+     * return value. If it's unknown if the pointer is dereferenced false
+     * is returned.
+     * @param tok token for the pointer
+     * @param unknown it is not known if there is a pointer dereference (could be reported as a debug message)
+     * @return true => there is a dereference
+     */
+    static bool isPointerDeRef(const Token *tok, bool &unknown);
+
     /** @brief possible null pointer dereference */
     void nullPointer();
 

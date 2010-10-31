@@ -98,6 +98,47 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
 }
 
 
+/**
+ * Is there a pointer dereference? Everything that should result in
+ * a nullpointer dereference error message will result in a true
+ * return value. If it's unknown if the pointer is dereferenced false
+ * is returned.
+ * @param tok token for the pointer
+ * @param unknown it is not known if there is a pointer dereference (could be reported as a debug message)
+ * @return true => there is a dereference
+ */
+bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
+{
+    unknown = false;
+
+    // Dereferencing pointer..
+    if (Token::Match(tok->tokAt(-2), "[;{}=+-/(,] * %var%"))
+        return true;
+
+    if (!Token::simpleMatch(tok->tokAt(-2), "& (") && Token::Match(tok->next(), ". %var%"))
+        return true;
+
+    if (Token::Match(tok->previous(), "[;{}=+-/(,] %var% [ %any% ]"))
+        return true;
+
+    if (Token::Match(tok->previous(), "return %var% [ %any% ]"))
+        return true;
+
+    if (Token::Match(tok, "%var% ("))
+        return true;
+
+    // Not a dereference..
+    if (Token::Match(tok->previous(), "[;{}] %var% ="))
+        return false;
+
+    // unknown if it's a dereference
+    unknown = true;
+
+    // assume that it's not a dereference (no false positives)
+    return false;
+}
+
+
 
 void CheckNullPointer::nullPointerAfterLoop()
 {
@@ -432,22 +473,12 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
                 if (tok2->varId() == varid)
                 {
+                    bool unknown = false;
+
                     if (Token::Match(tok2->previous(), "[;{}=] %var% = 0 ;"))
                         ;
 
-                    else if (Token::Match(tok2->tokAt(-2), "[;{}=+-/(,] * %var%"))
-                        nullPointerError(tok2, tok->strAt(3));
-
-                    else if (!Token::simpleMatch(tok2->tokAt(-2), "& (") && Token::Match(tok2->next(), ". %var%"))
-                        nullPointerError(tok2, tok->strAt(3));
-
-                    else if (Token::Match(tok2->previous(), "[;{}=+-/(,] %var% [ %any% ]"))
-                        nullPointerError(tok2, tok->strAt(3));
-
-                    else if (Token::Match(tok2->previous(), "return %var% [ %any% ]"))
-                        nullPointerError(tok2, tok->strAt(3));
-
-                    else if (Token::Match(tok2, "%var% ("))
+                    else if (CheckNullPointer::isPointerDeRef(tok2, unknown))
                         nullPointerError(tok2, tok->strAt(3));
 
                     else
@@ -680,21 +711,14 @@ private:
 
         if (tok.varId() != 0)
         {
+            bool unknown = false;
             if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
                 setnull(checks, tok.varId());
-            else if (Token::Match(tok.tokAt(-2), "[;{}=+-/(,] * %var%"))
-                dereference(checks, &tok);
-            else if (Token::Match(tok.tokAt(-2), "return * %var%"))
-                dereference(checks, &tok);
-            else if (!Token::simpleMatch(tok.tokAt(-2), "& (") && Token::Match(tok.next(), ". %var%"))
-                dereference(checks, &tok);
-            else if (Token::Match(tok.previous(), "[;{}=+-/(,] %var% [ %any% ]"))
-                dereference(checks, &tok);
-            else if (Token::Match(tok.previous(), "return %var% [ %any% ]"))
-                dereference(checks, &tok);
-            else if (Token::Match(&tok, "%var% ("))
+            else if (CheckNullPointer::isPointerDeRef(&tok, unknown))
                 dereference(checks, &tok);
             else
+                // TODO: Report debug warning that it's unknown if a
+                // pointer is dereferenced
                 bailOutVar(checks, tok.varId());
         }
 
