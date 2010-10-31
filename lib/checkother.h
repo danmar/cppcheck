@@ -240,7 +240,7 @@ public:
         fflushOnInputStreamError(0, "stdin");
         misusedScopeObjectError(NULL, "varname");
 
-        // style
+        // style/warning
         cstyleCastError(0);
         dangerousUsageStrtolError(0);
         unusedStructMemberError(0, "structname", "variable");
@@ -258,7 +258,11 @@ public:
         assignmentInAssertError(0, "varname");
         invalidScanfError(0);
         incorrectLogicOperatorError(0);
+        unusedVariableError(0, "varname");
+        unreadVariableError(0, "varname");
+        unassignedVariableError(0, "varname");
 
+        // performance
         emptyStringTestError(0, "varname", true);
     }
 
