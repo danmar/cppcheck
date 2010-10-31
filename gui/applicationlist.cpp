@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "applicationlist.h"
 #include <QStringList>
 #include <QFileInfo>
+#include <QObject>
+#include <QSettings>
+#include <QStringList>
 #include <stdlib.h>
 #include "common.h"
+#include "applicationlist.h"
+
 
 ApplicationList::ApplicationList(QObject *parent) :
     QObject(parent)
@@ -113,7 +117,6 @@ QString ApplicationList::GetApplicationPath(const int index) const
 
 }
 
-
 void ApplicationList::SetApplicationType(const int index,
         const QString &name,
         const QString &path)
@@ -143,7 +146,6 @@ void ApplicationList::RemoveApplication(const int index)
     mApplications.removeAt(index);
 }
 
-
 void ApplicationList::MoveFirst(const int index)
 {
     if (index < mApplications.size() && index > 0)
@@ -151,7 +153,6 @@ void ApplicationList::MoveFirst(const int index)
         mApplications.move(index, 0);
     }
 }
-
 
 void ApplicationList::Copy(ApplicationList *list)
 {

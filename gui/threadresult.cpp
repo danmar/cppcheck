@@ -17,8 +17,13 @@
  */
 
 
+#include <QString>
+#include <QMutexLocker>
+#include <QList>
+#include <QStringList>
 #include <QDebug>
 #include "erroritem.h"
+#include "errorlogger.h"
 #include "threadresult.h"
 
 ThreadResult::ThreadResult() : mMaxProgress(0), mProgress(0)

@@ -18,6 +18,7 @@
 
 #include <QDialog>
 #include <QWidget>
+#include <QString>
 #include "aboutdialog.h"
 
 AboutDialog::AboutDialog(const QString &version, QWidget *parent)

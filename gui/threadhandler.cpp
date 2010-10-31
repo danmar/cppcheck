@@ -16,9 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include "threadhandler.h"
+#include <QObject>
+#include <QStringList>
 #include <QDebug>
+#include "settings.h"
+#include "threadhandler.h"
+#include "resultsview.h"
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent),

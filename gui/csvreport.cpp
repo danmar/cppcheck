@@ -16,9 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QObject>
+#include <QString>
 #include <QDir>
 #include <QFile>
 #include <QTextStream>
+#include "report.h"
 #include "csvreport.h"
 
 CsvReport::CsvReport(const QString &filename, QObject * parent) :

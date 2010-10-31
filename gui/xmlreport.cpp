@@ -16,10 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QObject>
+#include <QString>
+#include <QList>
 #include <QDir>
 #include <QFile>
 #include <QXmlStreamWriter>
 #include <QDebug>
+#include "report.h"
 #include "erroritem.h"
 #include "xmlreport.h"
 

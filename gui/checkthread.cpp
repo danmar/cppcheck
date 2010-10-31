@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include "checkthread.h"
+#include <QString>
 #include <QDebug>
+#include "checkthread.h"
+#include "threadresult.h"
+#include "cppcheck.h"
 
 CheckThread::CheckThread(ThreadResult &result) :
     mState(Ready),

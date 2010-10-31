@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QWidget>
+#include <QDialog>
+#include <QString>
 #include <QStringList>
 #include <QFileInfo>
 #include "projectfiledialog.h"

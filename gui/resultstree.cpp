@@ -17,17 +17,30 @@
  */
 
 #include <QApplication>
+#include <QWidget>
+#include <QStandardItem>
+#include <QModelIndex>
 #include <QDebug>
+#include <QString>
+#include <QStringList>
+#include <QList>
+#include <QMap>
+#include <QVariant>
 #include <QMenu>
 #include <QSignalMapper>
 #include <QProcess>
 #include <QDir>
 #include <QMessageBox>
+#include <QAction>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QClipboard>
+#include <QContextMenuEvent>
 #include "erroritem.h"
+#include "settings.h"
+#include "applicationlist.h"
 #include "resultstree.h"
+#include "report.h"
 #include "xmlreport.h"
 
 ResultsTree::ResultsTree(QWidget * parent) :

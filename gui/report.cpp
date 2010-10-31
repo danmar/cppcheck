@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QObject>
+#include <QString>
 #include <QFile>
 #include "erroritem.h"
 #include "report.h"
