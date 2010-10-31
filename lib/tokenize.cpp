@@ -4365,13 +4365,17 @@ void Tokenizer::simplifyDoWhileAddBraces()
 
 void Tokenizer::simplifyCompoundAssignment()
 {
+    // Simplify compound assignments:
+    // "a+=b" => "a = a + b"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "; %var%"))
         {
-            const Token *vartok = tok->next();
+            const Token * const vartok = tok->next();
             const std::string str = tok->strAt(2);
-            std::string op;
+
+            // Is it a +=|-=|.. ?
+            std::string op;  // operator used in assignment
             if (str.size() == 2 && str[1] == '=' && str.find_first_of("+-*/%&|^")==0)
                 op = str.substr(0, 1);
             else if (str=="<<=" || str==">>=")
@@ -4379,6 +4383,7 @@ void Tokenizer::simplifyCompoundAssignment()
             else
                 continue;
 
+            // modify the token list..
             tok = tok->tokAt(2);
             tok->str("=");
             tok->insertToken(op);
