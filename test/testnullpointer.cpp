@@ -362,6 +362,14 @@ private:
               "      p = p->next();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(Document *doc) {\n"
+              "    int x = doc && doc->x;\n"
+              "    if (!doc) {\n"
+              "        return;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer5()
