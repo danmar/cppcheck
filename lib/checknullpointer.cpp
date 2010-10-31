@@ -127,6 +127,11 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     if (Token::Match(tok, "%var% ("))
         return true;
 
+    if (Token::Match(tok, "%var% = %var% .") &&
+        tok->varId() > 0 &&
+        tok->varId() == tok->tokAt(2)->varId())
+        return true;
+
     // Not a dereference..
     if (Token::Match(tok->previous(), "[;{}] %var% ="))
         return false;
@@ -176,7 +181,8 @@ void CheckNullPointer::nullPointerAfterLoop()
 
             if (tok2->varId() == varid)
             {
-                if (tok2->next()->str() == "." || Token::Match(tok2->next(), "= %varid% .", varid))
+                bool unknown = false;
+                if (CheckNullPointer::isPointerDeRef(tok2, unknown))
                 {
                     // Is this variable a pointer?
                     const Token *tok3 = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid);
