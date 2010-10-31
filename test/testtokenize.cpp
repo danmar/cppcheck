@@ -267,6 +267,9 @@ private:
         // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
         TEST_CASE(simplifyAssignmentInFunctionCall);
 
+        // "x += .." => "x = x + .."
+        TEST_CASE(simplifyCompoundAssignment);
+
         // Tokenize C#
         TEST_CASE(cs);
 
@@ -4581,6 +4584,20 @@ private:
         ASSERT_EQUALS("if ( ~ b )", tokenizeAndStringify("if (compl b)"));
         ASSERT_EQUALS("if ( ! b )", tokenizeAndStringify("if (not b)"));
         ASSERT_EQUALS("if ( a != b )", tokenizeAndStringify("if (a not_eq b)"));
+    }
+
+    void simplifyCompoundAssignment()
+    {
+        ASSERT_EQUALS("; x = x + y ;", tokenizeAndStringify("; x += y;"));
+        ASSERT_EQUALS("; x = x - y ;", tokenizeAndStringify("; x -= y;"));
+        ASSERT_EQUALS("; x = x * y ;", tokenizeAndStringify("; x *= y;"));
+        ASSERT_EQUALS("; x = x / y ;", tokenizeAndStringify("; x /= y;"));
+        ASSERT_EQUALS("; x = x % y ;", tokenizeAndStringify("; x %= y;"));
+        ASSERT_EQUALS("; x = x & y ;", tokenizeAndStringify("; x &= y;"));
+        ASSERT_EQUALS("; x = x | y ;", tokenizeAndStringify("; x |= y;"));
+        ASSERT_EQUALS("; x = x ^ y ;", tokenizeAndStringify("; x ^= y;"));
+        ASSERT_EQUALS("; x = x << y ;", tokenizeAndStringify("; x <<= y;"));
+        ASSERT_EQUALS("; x = x >> y ;", tokenizeAndStringify("; x >>= y;"));
     }
 
     void simplifyAssignmentInFunctionCall()

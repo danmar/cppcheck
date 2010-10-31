@@ -194,6 +194,12 @@ public:
     bool simplifyQuestionMark();
 
     /**
+     * Simplify compound assignments
+     * Example: ";a+=b;" => ";a=a+b;"
+     */
+    void simplifyCompoundAssignment();
+
+    /**
      * simplify if-assignments
      * Example: "if(a=b);" => "a=b;if(a);"
      */

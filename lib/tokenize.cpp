@@ -1840,11 +1840,16 @@ bool Tokenizer::tokenize(std::istream &code,
             {
                 tok->str(tok->str() + c2);
                 tok->deleteNext();
+                if (c1 == '<' && tok->next()->str() == "=")
+                {
+                    tok->str("<<=");
+                    tok->deleteNext();
+                }
                 continue;
             }
 
             // combine +-*/ and =
-            else if (c2 == '=' && (strchr("+-*/&|=!<>", c1)))
+            else if (c2 == '=' && (strchr("+-*/%&|^=!<>", c1)))
             {
                 tok->str(tok->str() + c2);
                 tok->deleteNext();
@@ -1860,6 +1865,12 @@ bool Tokenizer::tokenize(std::istream &code,
             }
         }
 
+        else if (tok->str() == ">>" && tok->next()->str() == "=")
+        {
+            tok->str(">>=");
+            tok->deleteNext();
+        }
+
         else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":")
         {
             if (tok->str() == "private" || tok->str() == "protected" || tok->str() == "public" || tok->str() == "__published")
@@ -1870,6 +1881,9 @@ bool Tokenizer::tokenize(std::istream &code,
             }
         }
     }
+
+    // ";a+=b;" => ";a=a+b;"
+    simplifyCompoundAssignment();
 
     // check for more complicated syntax errors when using templates..
     if (!preprocessorCondition)
@@ -4345,6 +4359,31 @@ void Tokenizer::simplifyDoWhileAddBraces()
                 // handle do-while inside do-while
 
             }
+        }
+    }
+}
+
+void Tokenizer::simplifyCompoundAssignment()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "; %var%"))
+        {
+            const Token *vartok = tok->next();
+            const std::string str = tok->strAt(2);
+            std::string op;
+            if (str.size() == 2 && str[1] == '=' && str.find_first_of("+-*/%&|^")==0)
+                op = str.substr(0, 1);
+            else if (str=="<<=" || str==">>=")
+                op = str.substr(0, 2);
+            else
+                continue;
+
+            tok = tok->tokAt(2);
+            tok->str("=");
+            tok->insertToken(op);
+            tok->insertToken(vartok->str());
+            tok->next()->varId(vartok->varId());
         }
     }
 }

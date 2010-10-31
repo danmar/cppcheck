@@ -2281,7 +2281,8 @@ private:
                               "    int b = 2;\n"
                               "    a |= b;\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarFor()
