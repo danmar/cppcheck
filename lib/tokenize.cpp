@@ -4377,7 +4377,16 @@ void Tokenizer::simplifyCompoundAssignment()
                     continue;
             }
 
-            const Token * const vartok = tok->next();
+            // variable..
+            std::stack<Token *> vartok;
+            vartok.push(tok->next());
+            while (Token::Match(tok->tokAt(2), ". %var%"))
+            {
+                tok = tok->tokAt(2);
+                vartok.push(tok->next());
+            }
+
+            // assignment..
             const std::string str = tok->strAt(2);
 
             // Is it a +=|-=|.. ?
@@ -4393,8 +4402,14 @@ void Tokenizer::simplifyCompoundAssignment()
             tok = tok->tokAt(2);
             tok->str("=");
             tok->insertToken(op);
-            tok->insertToken(vartok->str());
-            tok->next()->varId(vartok->varId());
+            while (!vartok.empty())
+            {
+                tok->insertToken(vartok.top()->str());
+                tok->next()->varId(vartok.top()->varId());
+                vartok.pop();
+                if (!vartok.empty())
+                    tok->insertToken(".");
+            }
         }
     }
 }
