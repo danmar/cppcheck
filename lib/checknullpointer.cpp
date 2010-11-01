@@ -461,7 +461,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
                 if (Token::Match(tok2, "goto|return|continue|break|throw|if"))
                 {
-                    if (Token::Match(tok2, "return * %var%"))
+                    if (Token::Match(tok2, "return * %varid%", varid))
                         nullPointerError(tok2, tok->strAt(3));
                     break;
                 }

@@ -43,7 +43,7 @@ private:
         TEST_CASE(nullpointer7);
         TEST_CASE(nullpointer8);
         TEST_CASE(nullpointer9);
-        TEST_CASE(nullpointer10);	// check if pointer is null and then dereference it
+        TEST_CASE(checkAndDeRef);	// check if pointer is null and then dereference it
     }
 
     void check(const char code[])
@@ -631,7 +631,7 @@ private:
     }
 
     // Check if pointer is null and the dereference it
-    void nullpointer10()
+    void checkAndDeRef()
     {
         check("void foo(char *p) {\n"
               "    if (!p) {\n"
@@ -668,6 +668,13 @@ private:
               "    if (!p) {\n"
               "        switch (x) { }\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(bool p) {\n"
+              "    if (!p) {\n"
+              "    }\n"
+              "    return *x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
