@@ -4369,7 +4369,7 @@ void Tokenizer::simplifyCompoundAssignment()
     // "a+=b" => "a = a + b"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "; %var%"))
+        if (Token::Match(tok, "[;{}] %var%"))
         {
             const Token * const vartok = tok->next();
             const std::string str = tok->strAt(2);
