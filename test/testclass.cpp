@@ -57,6 +57,7 @@ private:
         TEST_CASE(uninitVar11);
         TEST_CASE(uninitVar12); // ticket #2078
         TEST_CASE(uninitVar13); // ticket #1195
+        TEST_CASE(uninitVar14); // ticket #2149
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1713,6 +1714,193 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable not initialized in the constructor 'A::ints'\n", errout.str());
     }
 
+    void uninitVar14() // ticket #2149
+    {
+        // no namespace
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "public:\n"
+                       "    Foo();\n"
+                       "private:\n"
+                       "    bool mMember;\n"
+                       "};\n"
+                       "Foo::Foo()\n"
+                       "{\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable not initialized in the constructor 'Foo::mMember'\n", errout.str());
+
+        // single namespace
+        checkUninitVar("namespace Output\n"
+                       "{\n"
+                       "    class Foo\n"
+                       "    {\n"
+                       "    public:\n"
+                       "        Foo();\n"
+                       "    private:\n"
+                       "        bool mMember;\n"
+                       "    };\n"
+                       "    Foo::Foo()\n"
+                       "    {\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable not initialized in the constructor 'Foo::mMember'\n", errout.str());
+
+        // constructor outside namespace
+        checkUninitVar("namespace Output\n"
+                       "{\n"
+                       "    class Foo\n"
+                       "    {\n"
+                       "    public:\n"
+                       "        Foo();\n"
+                       "    private:\n"
+                       "        bool mMember;\n"
+                       "    };\n"
+                       "}\n"
+                       "Foo::Foo()\n"
+                       "{\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // constructor outside namespace
+        checkUninitVar("namespace Output\n"
+                       "{\n"
+                       "    class Foo\n"
+                       "    {\n"
+                       "    public:\n"
+                       "        Foo();\n"
+                       "    private:\n"
+                       "        bool mMember;\n"
+                       "    };\n"
+                       "}\n"
+                       "Output::Foo::Foo()\n"
+                       "{\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (warning) Member variable not initialized in the constructor 'Foo::mMember'\n", errout.str());
+
+        // constructor in seperate namespace
+        checkUninitVar("namespace Output\n"
+                       "{\n"
+                       "    class Foo\n"
+                       "    {\n"
+                       "    public:\n"
+                       "        Foo();\n"
+                       "    private:\n"
+                       "        bool mMember;\n"
+                       "    };\n"
+                       "}\n"
+                       "namespace Output\n"
+                       "{\n"
+                       "    Foo::Foo()\n"
+                       "    {\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable not initialized in the constructor 'Foo::mMember'\n", errout.str());
+
+        // constructor in different seperate namespace
+        checkUninitVar("namespace Output\n"
+                       "{\n"
+                       "    class Foo\n"
+                       "    {\n"
+                       "    public:\n"
+                       "        Foo();\n"
+                       "    private:\n"
+                       "        bool mMember;\n"
+                       "    };\n"
+                       "}\n"
+                       "namespace Input\n"
+                       "{\n"
+                       "    Foo::Foo()\n"
+                       "    {\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // constructor in different seperate namespace (won't compile)
+        checkUninitVar("namespace Output\n"
+                       "{\n"
+                       "    class Foo\n"
+                       "    {\n"
+                       "    public:\n"
+                       "        Foo();\n"
+                       "    private:\n"
+                       "        bool mMember;\n"
+                       "    };\n"
+                       "}\n"
+                       "namespace Input\n"
+                       "{\n"
+                       "    Output::Foo::Foo()\n"
+                       "    {\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // constructor in nested seperate namespace
+        checkUninitVar("namespace A\n"
+                       "{\n"
+                       "    namespace Output\n"
+                       "    {\n"
+                       "        class Foo\n"
+                       "        {\n"
+                       "        public:\n"
+                       "            Foo();\n"
+                       "        private:\n"
+                       "            bool mMember;\n"
+                       "        };\n"
+                       "    }\n"
+                       "    namespace Output\n"
+                       "    {\n"
+                       "        Foo::Foo()\n"
+                       "        {\n"
+                       "        }\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:15]: (warning) Member variable not initialized in the constructor 'Foo::mMember'\n", errout.str());
+
+        // constructor in nested different seperate namespace
+        checkUninitVar("namespace A\n"
+                       "{\n"
+                       "    namespace Output\n"
+                       "    {\n"
+                       "        class Foo\n"
+                       "        {\n"
+                       "        public:\n"
+                       "            Foo();\n"
+                       "        private:\n"
+                       "            bool mMember;\n"
+                       "        };\n"
+                       "    }\n"
+                       "    namespace Input\n"
+                       "    {\n"
+                       "        Foo::Foo()\n"
+                       "        {\n"
+                       "        }\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // constructor in nested different seperate namespace
+        checkUninitVar("namespace A\n"
+                       "{\n"
+                       "    namespace Output\n"
+                       "    {\n"
+                       "        class Foo\n"
+                       "        {\n"
+                       "        public:\n"
+                       "            Foo();\n"
+                       "        private:\n"
+                       "            bool mMember;\n"
+                       "        };\n"
+                       "    }\n"
+                       "    namespace Input\n"
+                       "    {\n"
+                       "        Output::Foo::Foo()\n"
+                       "        {\n"
+                       "        }\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void uninitVarArray1()
     {
         checkUninitVar("class John\n"
@@ -2156,6 +2344,33 @@ private:
                        "    i = 0;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class B\n"
+                       "{\n"
+                       "public:\n"
+                       "    B();\n"
+                       "    int j;\n"
+                       "};\n"
+                       "\n"
+                       "class A\n"
+                       "{\n"
+                       "    class B\n"
+                       "    {\n"
+                       "    public:\n"
+                       "        B();\n"
+                       "        int i;\n"
+                       "    };\n"
+                       "};\n"
+                       "\n"
+                       "B::B()\n"
+                       "{\n"
+                       "}\n"
+                       "\n"
+                       "A::B::B()\n"
+                       "{\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:18]: (warning) Member variable not initialized in the constructor 'B::j'\n"
+                      "[test.cpp:22]: (warning) Member variable not initialized in the constructor 'B::i'\n", errout.str());
 
         // Ticket #1700
         checkUninitVar("namespace n1\n"
@@ -2887,8 +3102,9 @@ private:
                    "        };\n"
                    "    };\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n"
-                      "[test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n"
+                      "[test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n"
+                      , errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -2902,8 +3118,23 @@ private:
                    "    };\n"
                    "    int B::getB() { return b; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n"
-                      "[test.cpp:11] -> [test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n"
+                      "[test.cpp:9] -> [test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n" , errout.str());
+
+        checkConst("class Fred {\n"
+                   "    class B {\n"
+                   "        int b;\n"
+                   "        int getB();\n"
+                   "        class A {\n"
+                   "            int a;\n"
+                   "            int getA();\n"
+                   "        };\n"
+                   "    };\n"
+                   "    int B::A::getA() { return a; }\n"
+                   "    int B::getB() { return b; }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n"
+                      "[test.cpp:10] -> [test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n" , errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -2917,8 +3148,8 @@ private:
                    "};\n"
                    "int Fred::B::A::getA() { return a; }\n"
                    "int Fred::B::getB() { return b; }\n");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n"
-                      "[test.cpp:12] -> [test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:4]: (style) The function 'Fred::B::getB' can be const\n"
+                      "[test.cpp:11] -> [test.cpp:7]: (style) The function 'Fred::B::A::getA' can be const\n" , errout.str());
     }
 
     // operator< can often be const
@@ -4059,8 +4290,7 @@ private:
                    "{\n"
                    "        int Base::getResourceName() { return var; }\n"
                    "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:6]: (style) The function 'N::Base::getResourceName' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:6]: (style) The function 'N::Base::getResourceName' can be const\n", errout.str());
 
         checkConst("namespace N\n"
                    "{\n"

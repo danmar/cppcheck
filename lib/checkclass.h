@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "settings.h"
-#include <map>
 
 class Token;
 
@@ -230,12 +229,14 @@ private:
     class SpaceInfo
     {
     public:
+        enum SpaceType { Class, Struct, Union, Namespace, Function };
+
         SpaceInfo(CheckClass *check_, const Token *classDef_, SpaceInfo *nestedIn_);
 
         CheckClass *check;
-        bool isNamespace;
+        SpaceType type;
         std::string className;
-        const Token *classDef;   // class/struct/namespace token
+        const Token *classDef;   // class/struct/union/namespace token
         const Token *classStart; // '{' token
         const Token *classEnd;   // '}' token
         std::list<Func> functionList;
@@ -246,6 +247,22 @@ private:
         std::list<SpaceInfo *> nestedList;
         AccessControl access;
         unsigned int numConstructors;
+
+        /**
+         * @brief find if name is in nested list
+         * @param name name of nested space
+         */
+        SpaceInfo * findInNestedList(const std::string & name)
+        {
+            std::list<SpaceInfo *>::iterator it;
+
+            for (it = nestedList.begin(); it != nestedList.end(); ++it)
+            {
+                if ((*it)->className == name)
+                    return (*it);
+            }
+            return 0;
+        }
 
         /**
          * @brief assign a variable in the varlist
@@ -299,8 +316,11 @@ private:
         bool isBaseClassFunc(const Token *tok);
     };
 
+    void addFunction(SpaceInfo **info, const Token **tok);
+    void addNewFunction(SpaceInfo **info, const Token **tok);
+
     /** @brief Information about all namespaces/classes/structrues */
-    std::multimap<std::string, SpaceInfo *> spaceInfoMMap;
+    std::list<SpaceInfo *> spaceInfoList;
 
     bool argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
 
