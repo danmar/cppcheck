@@ -4377,19 +4377,21 @@ void Tokenizer::simplifyCompoundAssignment()
                     continue;
             }
 
+            // backup current token..
+            const Token * const tok1 = tok;
+
             // variable..
-            std::stack<Token *> vartok;
-            vartok.push(tok->next());
-            while (Token::Match(tok->tokAt(2), ". %var%"))
-            {
+            tok = tok->tokAt(2);
+            while (Token::Match(tok, ". %var%"))
                 tok = tok->tokAt(2);
-                vartok.push(tok->next());
-            }
+            while (Token::Match(tok, "[ %any% ]"))
+                tok = tok->tokAt(3);
 
-            // assignment..
-            const std::string str = tok->strAt(2);
+            if (!tok)
+                break;
 
-            // Is it a +=|-=|.. ?
+            // Is current token at a compound assignment: +=|-=|.. ?
+            const std::string &str = tok->str();
             std::string op;  // operator used in assignment
             if (str.size() == 2 && str[1] == '=' && str.find_first_of("+-*/%&|^")==0)
                 op = str.substr(0, 1);
@@ -4399,16 +4401,14 @@ void Tokenizer::simplifyCompoundAssignment()
                 continue;
 
             // modify the token list..
-            tok = tok->tokAt(2);
             tok->str("=");
             tok->insertToken(op);
-            while (!vartok.empty())
+            for (const Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous())
             {
-                tok->insertToken(vartok.top()->str());
-                tok->next()->varId(vartok.top()->varId());
-                vartok.pop();
-                if (!vartok.empty())
-                    tok->insertToken(".");
+                tok->insertToken(tok2->str());
+                tok->next()->varId(tok2->varId());
+                if (Token::Match(tok->next(), "[ %any% ]"))
+                    Token::createMutualLinks(tok->next(), tok->next()->next()->next());
             }
         }
     }
