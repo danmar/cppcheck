@@ -1647,11 +1647,21 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "; %var% ;"))
                 variables.readAll(tok->next()->varId());
 
-            else if (Token::Match(tok, "++|-- %var%"))
-                variables.modified(tok->next()->varId());
+            if (Token::Match(tok, "++|-- %var%"))
+            {
+                if (tok->strAt(-1) != ";")
+                    variables.use(tok->next()->varId());
+                else
+                    variables.modified(tok->next()->varId());
+            }
 
             else if (Token::Match(tok, "%var% ++|--"))
-                variables.modified(tok->varId());
+            {
+                if (tok->strAt(-1) != ";")
+                    variables.use(tok->varId());
+                else
+                    variables.modified(tok->varId());
+            }
         }
 
         // Check usage of all variables in the current scope..

@@ -73,6 +73,7 @@ private:
         TEST_CASE(localvar24); // ticket #1803
         TEST_CASE(localvar25); // ticket #1729
         TEST_CASE(localvar26); // ticket #1894
+        TEST_CASE(localvar27); // ticket #2160
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1267,6 +1268,15 @@ private:
                               "    const Fred &fred = getfred();\n"
                               "    int *p = fred.x();\n"
                               "    *p = 0;"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar27() // ticket #2160
+    {
+        functionVariableUsage("void f(struct s *ptr) {\n"
+                              "    int param = 1;\n"
+                              "    ptr->param = param++;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
