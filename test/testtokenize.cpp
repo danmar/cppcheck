@@ -150,7 +150,8 @@ private:
         TEST_CASE(varid24);
         TEST_CASE(varid25);
         TEST_CASE(varid26);  // ticket #1967 (list of function pointers)
-        TEST_CASE(varid27);
+        TEST_CASE(varidFunctionCall1);
+        TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -2394,7 +2395,7 @@ private:
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
-    void varid27()
+    void varidFunctionCall1()
     {
         const std::string code("void f() {\n"
                                "    int x;\n"
@@ -2406,6 +2407,20 @@ private:
                                    "3: x@1 = a ( y * x@1 , 10 ) ;\n"
                                    "4: }\n");
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varidFunctionCall2()
+    {
+        const std::string code("void f(int b) {\n"
+                               "    x(a*b,10);\n"
+                               "}");
+        const std::string expected1("\n\n##file 0\n"
+                                    "1: void f ( int b@1 ) {\n"
+                                    "2: x ( a * b");
+        const std::string expected2(" , 10 ) ;\n"
+                                    "3: }\n");
+        TODO_ASSERT_EQUALS(expected1+"@1"+expected2, tokenizeDebugListing(code));
+        ASSERT_EQUALS(expected1+"@2"+expected2, tokenizeDebugListing(code));
     }
 
 
