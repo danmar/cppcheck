@@ -67,8 +67,6 @@ private:
 
         TEST_CASE(mathfunctionCall1);
 
-        TEST_CASE(emptyStringTest);
-
         TEST_CASE(fflushOnInputStreamTest);
 
         TEST_CASE(sizeofsizeof);
@@ -121,7 +119,6 @@ private:
 
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
-        checkOther.checkEmptyStringTest();
         checkOther.checkFflushOnInputStream();
         checkOther.checkSelfAssignment();
         checkOther.invalidScanf();
@@ -894,42 +891,6 @@ private:
         ASSERT_EQUALS("", errout.str());
 
 
-    }
-
-    void emptyStringTest()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    if (strlen(str) == 0)\n"
-              "    {\n"
-              "        std::cout << str;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
-
-        check("if (!strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
-
-        check("if (strlen(str) == 0) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
-
-        check("if (strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
-
-        check("if (strlen(str) > 0) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
-
-        check("if (strlen(str) != 0) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
-
-        check("if (0 != strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
-
-        check("if (0 == strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
-
-        check("if (0 < strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
     }
 
     void fflushOnInputStreamTest()

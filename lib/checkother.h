@@ -72,7 +72,6 @@ public:
         // Coding style checks
         checkOther.checkConstantFunctionParameter();
         checkOther.checkIncompleteStatement();
-        checkOther.checkEmptyStringTest();
 
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
@@ -132,9 +131,6 @@ public:
 
     void lookupVar(const Token *tok1, const std::string &varname);
 
-    /** @brief %Check for inefficient empty string test*/
-    void checkEmptyStringTest();
-
     /** @brief %Check for using fflush() on an input stream*/
     void checkFflushOnInputStream();
 
@@ -180,7 +176,6 @@ public:
     void strPlusChar(const Token *tok);
     void zerodivError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
-    void emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
     void selfAssignmentError(const Token *tok, const std::string &varname);
@@ -219,9 +214,6 @@ public:
         unusedVariableError(0, "varname");
         unreadVariableError(0, "varname");
         unassignedVariableError(0, "varname");
-
-        // performance
-        emptyStringTestError(0, "varname", true);
     }
 
     std::string name() const
@@ -260,8 +252,7 @@ public:
                "* mutual exclusion over || always evaluating to true\n"
 
                // optimisations
-               "* optimisation: detect post increment/decrement\n"
-               "* optimisation: simplify empty string tests\n";
+               "* optimisation: detect post increment/decrement\n";
     }
 
 private:

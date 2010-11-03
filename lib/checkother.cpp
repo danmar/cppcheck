@@ -64,43 +64,6 @@ void CheckOther::warningOldStylePointerCast()
     }
 }
 
-
-
-//---------------------------------------------------------------------------
-// "if (strlen(s))" can be rewritten as "if (*s != '\0')"
-//---------------------------------------------------------------------------
-void CheckOther::checkEmptyStringTest()
-{
-    if (!_settings->_checkCodingStyle)
-        return;
-
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        // Non-empty string tests
-        if (Token::Match(tok, "if ( strlen ( %any% ) )"))
-        {
-            emptyStringTestError(tok, tok->strAt(4), false);
-        }
-        else if (Token::Match(tok, "strlen ( %any% ) !=|> 0"))
-        {
-            emptyStringTestError(tok, tok->strAt(2), false);
-        }
-        else if (Token::Match(tok, "0 < strlen ( %any% )"))
-        {
-            emptyStringTestError(tok, tok->strAt(4), false);
-        }
-
-        // Empty string tests
-        else if (Token::Match(tok, "! strlen ( %any% )"))
-        {
-            emptyStringTestError(tok, tok->strAt(3), true);
-        }
-        else if (Token::Match(tok, "strlen ( %any% ) == 0"))
-        {
-            emptyStringTestError(tok, tok->strAt(2), true);
-        }
-    }
-}
 //---------------------------------------------------------------------------
 // fflush(stdin) <- fflush only applies to output streams in ANSI C
 //---------------------------------------------------------------------------
@@ -2501,20 +2464,6 @@ void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numP
     }
     else
         reportError(tok, Severity::error, "wrongmathcall", "Passing value " " to " "() leads to undefined result");
-}
-
-void CheckOther::emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty)
-{
-    if (isTestForEmpty)
-    {
-        reportError(tok, Severity::performance,
-                    "emptyStringTest", "Empty string test can be simplified to \"*" + var_name + " == '\\0'\"");
-    }
-    else
-    {
-        reportError(tok, Severity::performance,
-                    "emptyStringTest", "Non-empty string test can be simplified to \"*" + var_name + " != '\\0'\"");
-    }
 }
 
 void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &varname)
