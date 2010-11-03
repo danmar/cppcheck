@@ -165,6 +165,7 @@ private:
         TEST_CASE(symboldatabase1);
         TEST_CASE(symboldatabase2);
         TEST_CASE(symboldatabase3); // ticket #2000
+        TEST_CASE(symboldatabase4);
     }
 
     // Check the operator Equal
@@ -4737,6 +4738,34 @@ private:
                    "struct A {\n"
                    "    friend func_type f : 2;\n"
                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase4()
+    {
+        checkConst("static void function_declaration_before(void) __attribute__((__used__));\n"
+                   "static void function_declaration_before(void) {}\n"
+                   "static void function_declaration_after(void) {}\n"
+                   "static void function_declaration_after(void) __attribute__((__used__));\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("main(int argc, char *argv[]) { }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("namespace boost {\n"
+                   "    std::locale generate_locale()\n"
+                   "    {\n"
+                   "        return std::locale();\n"
+                   "    }\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("namespace X {\n"
+                   "    static void function_declaration_before(void) __attribute__((__used__));\n"
+                   "    static void function_declaration_before(void) {}\n"
+                   "    static void function_declaration_after(void) {}\n"
+                   "    static void function_declaration_after(void) __attribute__((__used__));\n"
+                   "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

@@ -446,8 +446,20 @@ void CheckClass::createSymbolDatabase()
                 const Token *argStart = 0;
 
                 // function?
-                if (tok->previous()->str() == "::" && isFunction(tok, &funcStart, &argStart))
-                    addFunction(&info, &tok);
+                if (isFunction(tok, &funcStart, &argStart))
+                {
+                    // has body?
+                    if (Token::Match(argStart->link(), ") const| {|:"))
+                    {
+                        // class function
+                        if (tok->previous()->str() == "::")
+                            addFunction(&info, &tok);
+
+                        // regular function
+                        else
+                            addNewFunction(&info, &tok);
+                    }
+                }
             }
         }
 
@@ -460,13 +472,17 @@ void CheckClass::createSymbolDatabase()
             // function?
             if (isFunction(tok, &funcStart, &argStart))
             {
-                // class function
-                if (tok->previous()->str() == "::")
-                    addFunction(&info, &tok);
+                // has body?
+                if (Token::Match(argStart->link(), ") const| {|:"))
+                {
+                    // class function
+                    if (tok->previous() && tok->previous()->str() == "::")
+                        addFunction(&info, &tok);
 
-                // regular function
-                else
-                    addNewFunction(&info, &tok);
+                    // regular function
+                    else
+                        addNewFunction(&info, &tok);
+                }
             }
         }
     }
