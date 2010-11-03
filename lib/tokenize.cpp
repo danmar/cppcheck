@@ -2908,7 +2908,7 @@ void Tokenizer::setVarId()
     unsigned int _varId = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok != _tokens && !Token::Match(tok, "[,;{}(] %type%"))
+        if (tok != _tokens && !Token::Match(tok, "[;{}(,] %type%"))
             continue;
 
         if (_errorLogger)
@@ -2927,7 +2927,15 @@ void Tokenizer::setVarId()
         }
 
         if (Token::Match(tok, "[,;{}(] %type%"))
+        {
+            // not function declaration?
+            // TODO: Better checking
+            if (Token::Match(tok->tokAt(-2), "= %var% ("))
+            {
+                continue;
+            }
             tok = tok->next();
+        }
 
         if (tok->str() == "new")
             continue;
