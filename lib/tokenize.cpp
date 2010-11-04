@@ -4390,11 +4390,24 @@ void Tokenizer::simplifyCompoundAssignment()
 
             // variable..
             tok = tok->tokAt(2);
-            while (Token::Match(tok, ". %var%"))
-                tok = tok->tokAt(2);
-            while (Token::Match(tok, "[ %any% ]"))
-                tok = tok->tokAt(3);
-
+            while (Token::Match(tok, ". %var%") || (tok && tok->str() == "["))
+            {
+                if (tok->str() != "[")
+                    tok = tok->tokAt(2);
+                else
+                {
+                    // goto "]"
+                    tok = tok->next();
+                    while (tok && !Token::Match(tok, "++|--|(|[|]"))
+                        tok = tok->next();
+                    if (!tok)
+                        break;
+                    else if (tok->str() == "]")
+                        tok = tok->next();
+                    else
+                        break;
+                }
+            }
             if (!tok)
                 break;
 
