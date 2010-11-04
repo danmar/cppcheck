@@ -4767,6 +4767,11 @@ private:
                    "    static void function_declaration_after(void) __attribute__((__used__));\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("testing::testing()\n"
+                   "{\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

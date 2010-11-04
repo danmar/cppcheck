@@ -111,7 +111,7 @@ void CheckClass::addFunction(SpaceInfo **info, const Token **tok)
     unsigned int path_length = 0;
 
     // back up to head of path
-    while (tok1->previous()->str() == "::")
+    while (tok1->previous() && tok1->previous()->str() == "::")
     {
         path = tok1->str() + " :: " + path;
         tok1 = tok1->tokAt(-2);
@@ -225,6 +225,28 @@ void CheckClass::addNewFunction(SpaceInfo **info, const Token **tok)
     spaceInfoList.push_back(new_info);
 
     *tok = tok1;
+}
+
+void CheckClass::addIfFunction(SpaceInfo **info, const Token **tok)
+{
+    const Token *funcStart = 0;
+    const Token *argStart = 0;
+
+    // function?
+    if (isFunction(*tok, &funcStart, &argStart))
+    {
+        // has body?
+        if (Token::Match(argStart->link(), ") const| {|:"))
+        {
+            // class function
+            if ((*tok)->previous() && (*tok)->previous()->str() == "::")
+                addFunction(info, tok);
+
+            // regular function
+            else
+                addNewFunction(info, tok);
+        }
+    }
 }
 
 void CheckClass::createSymbolDatabase()
@@ -441,50 +463,12 @@ void CheckClass::createSymbolDatabase()
                 }
             }
             else if (info->type == SpaceInfo::Namespace)
-            {
-                const Token *funcStart = 0;
-                const Token *argStart = 0;
-
-                // function?
-                if (isFunction(tok, &funcStart, &argStart))
-                {
-                    // has body?
-                    if (Token::Match(argStart->link(), ") const| {|:"))
-                    {
-                        // class function
-                        if (tok->previous()->str() == "::")
-                            addFunction(&info, &tok);
-
-                        // regular function
-                        else
-                            addNewFunction(&info, &tok);
-                    }
-                }
-            }
+                addIfFunction(&info, &tok);
         }
 
         // not in SpaceInfo
         else
-        {
-            const Token *funcStart = 0;
-            const Token *argStart = 0;
-
-            // function?
-            if (isFunction(tok, &funcStart, &argStart))
-            {
-                // has body?
-                if (Token::Match(argStart->link(), ") const| {|:"))
-                {
-                    // class function
-                    if (tok->previous() && tok->previous()->str() == "::")
-                        addFunction(&info, &tok);
-
-                    // regular function
-                    else
-                        addNewFunction(&info, &tok);
-                }
-            }
-        }
+            addIfFunction(&info, &tok);
     }
 
     std::list<SpaceInfo *>::iterator it;

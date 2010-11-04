@@ -318,6 +318,8 @@ private:
 
     void addFunction(SpaceInfo **info, const Token **tok);
     void addNewFunction(SpaceInfo **info, const Token **tok);
+    void addIfFunction(SpaceInfo **info, const Token **tok);
+
 
     /** @brief Information about all namespaces/classes/structrues */
     std::list<SpaceInfo *> spaceInfoList;
