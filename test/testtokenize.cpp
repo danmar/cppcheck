@@ -4640,6 +4640,8 @@ private:
         ASSERT_EQUALS("{ x = x << y ; }", tokenizeAndStringify("{ x <<= y;}"));
         ASSERT_EQUALS("{ x = x >> y ; }", tokenizeAndStringify("{ x >>= y;}"));
 
+        ASSERT_EQUALS("; * p = * p + y ;", tokenizeAndStringify("; *p += y;"));
+
         ASSERT_EQUALS("case 0 : x = x + y ; break ;", tokenizeAndStringify("case 0: x += y; break;"));
 
         ASSERT_EQUALS("; x . y = x . y + 1 ;", tokenizeAndStringify("; x.y += 1;"));
