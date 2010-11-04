@@ -67,6 +67,7 @@ private:
         TEST_CASE(teststream);
         TEST_CASE(testvolatile);
         TEST_CASE(testiterator);
+        TEST_CASE(test2168);
     }
 
     void testsimple()
@@ -364,7 +365,12 @@ private:
 
     }
 
-
+    void test2168()
+    {
+        check("--> declare allocator lock here\n"
+              "int main(){}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestPostfixOperator)

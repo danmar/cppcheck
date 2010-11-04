@@ -37,7 +37,13 @@ void CheckPostfixOperator::postfixOperator()
     if (!_settings->_checkCodingStyle)
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    const Token *tok = _tokenizer->tokens();
+
+    // prevent crash if first token is ++ or --
+    if (Token::Match(tok, "++|--"))
+        tok = tok->next();
+
+    for (; tok; tok = tok->next())
     {
         bool result = false;
         if (Token::Match(tok, "++|--"))
