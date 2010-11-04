@@ -246,10 +246,10 @@ void CheckOther::checkIncorrectLogicOperator()
         if (logicTok && (logicTok->strAt(-1) != "&&"))
         {
             // (var11 != var12) || (var21 != var22)
-            const int varId11 = term1Tok->varId();
-            const int varId12 = term1Tok->tokAt(2)->varId();
-            const int varId21 = term2Tok->varId();
-            const int varId22 = term2Tok->tokAt(2)->varId();
+            const unsigned int varId11 = term1Tok->varId();
+            const unsigned int varId12 = term1Tok->tokAt(2)->varId();
+            const unsigned int varId21 = term2Tok->varId();
+            const unsigned int varId22 = term2Tok->tokAt(2)->varId();
 
             // (var != const1) || (var != const2)
             if (Token::Match(term1Tok, "%var%") &&
