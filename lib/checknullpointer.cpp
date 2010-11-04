@@ -442,16 +442,30 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         if (Token::Match(tok, "* %var% [;,)=]"))
             pointerVariables.insert(tok->next()->varId());
 
-        else if (Token::Match(tok, "if ( ! %var% ) {"))
+        else if (Token::Match(tok, "if ("))
         {
+            const Token *vartok = 0;
+            if (Token::Match(tok, "if ( ! %var% ) {"))
+                vartok = tok->tokAt(3);
+            else if (Token::Match(tok, "if ( NULL|0 == %var% ) {"))
+                vartok = tok->tokAt(4);
+            else if (Token::Match(tok, "if ( %var% == NULL|0 ) {"))
+                vartok = tok->tokAt(2);
+            else
+                continue;
+
             bool null = true;
-            const unsigned int varid(tok->tokAt(3)->varId());
+            const unsigned int varid(vartok->varId());
             if (varid == 0)
                 continue;
             if (pointerVariables.find(varid) == pointerVariables.end())
                 continue;
+
+            // Name of the pointer
+            const std::string &pointerName = vartok->str();
+
             unsigned int indentlevel = 1;
-            for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
+            for (const Token *tok2 = tok->next()->link()->tokAt(2); tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "{")
                     ++indentlevel;
@@ -491,7 +505,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                         ;
 
                     else if (CheckNullPointer::isPointerDeRef(tok2, unknown))
-                        nullPointerError(tok2, tok->strAt(3));
+                        nullPointerError(tok2, pointerName);
 
                     else
                         break;
