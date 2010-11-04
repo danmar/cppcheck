@@ -245,15 +245,23 @@ void CheckOther::checkIncorrectLogicOperator()
         // If both terms reference a common variable and are not AND'd with anything, this is an error
         if (logicTok && (logicTok->strAt(-1) != "&&"))
         {
+            // (var11 != var12) || (var21 != var22)
+            const int varId11 = term1Tok->varId();
+            const int varId12 = term1Tok->tokAt(2)->varId();
+            const int varId21 = term2Tok->varId();
+            const int varId22 = term2Tok->tokAt(2)->varId();
+
+            // (var != const1) || (var != const2)
             if (Token::Match(term1Tok, "%var%") &&
-                ((term1Tok->str() == term2Tok->str()) ||
-                 (term1Tok->str() == term2Tok->strAt(2))))
+                varId11 != 0 &&
+                (varId11 == varId21 || varId11 == varId22))
             {
                 incorrectLogicOperatorError(term1Tok);
             }
+            // (const1 != var) || (const2 != var)
             else if (Token::Match(term1Tok->tokAt(2), "%var%") &&
-                     ((term1Tok->strAt(2) == term2Tok->str()) ||
-                      (term1Tok->strAt(2) == term2Tok->strAt(2))))
+                     varId12 != 0 &&
+                     (varId12 == varId21 || varId12 == varId22))
             {
                 incorrectLogicOperatorError(term1Tok->tokAt(2));
             }

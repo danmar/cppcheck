@@ -1384,64 +1384,96 @@ private:
 
     void incorrectLogicOperator()
     {
-        check("void f() {\n"
+        check("void f(int x) {\n"
               "    if ((x != 1) || (x != 3))\n"
               "        a++;\n"
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
 
-        check("void f() {\n"
+        check("void f(int x) {\n"
               "    if (x != 1 || x != 3)\n"
               "        a++;\n"
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
 
-        check("void f() {\n"
+        check("void f(int x) {\n"
               "    if (1 != x || 3 != x)\n"
               "        a++;\n"
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
 
-        check("void f() {\n"
+        check("void f(int x, int y) {\n"
               "    if (x != 1 || y != 1)\n"
               "        a++;\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
+        check("void f(int x, int y) {\n"
               "    if ((y == 1) && (x != 1) || (x != 3))\n"
               "        a++;\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
+        check("void f(int x, int y) {\n"
               "    if ((x != 1) || (x != 3) && (y == 1))\n"
               "        a++;\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
+        check("void f(int x) {\n"
               "    if ((x != 1) && (x != 3))\n"
               "        a++;\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
+        check("void f(int x) {\n"
               "    if ((x == 1) || (x == 3))\n"
               "        a++;\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
+        check("void f(int x, int y) {\n"
               "    if ((x != 1) || (y != 3))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x, int y) {\n"
+              "    if ((x != hotdog) || (y != hotdog))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x, int y) {\n"
+              "    if ((x != 5) || (y != 5))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("void f(int x) {\n"
+              "    const int ERR1 = 5;\n"
+              "    const int ERR2 = 6;\n"
+              "    if ((x != ERR1) || (x != ERR2))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+
+        check("void f(int x, int y) {\n"
+              "    const int ERR1 = 5;\n"
+              "    if ((x != ERR1) || (y != ERR1))\n"
               "        a++;\n"
               "}\n"
              );
