@@ -4424,12 +4424,15 @@ void Tokenizer::simplifyCompoundAssignment()
             // modify the token list..
             tok->str("=");
             tok->insertToken(op);
+            Token *tokend = 0;
             for (const Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous())
             {
                 tok->insertToken(tok2->str());
                 tok->next()->varId(tok2->varId());
-                if (Token::Match(tok->next(), "[ %any% ]"))
-                    Token::createMutualLinks(tok->next(), tok->next()->next()->next());
+                if (Token::simpleMatch(tok->next(), "]"))
+                    tokend = tok->next();
+                else if (Token::simpleMatch(tok->next(), "["))
+                    Token::createMutualLinks(tok->next(), tokend);
             }
         }
     }
