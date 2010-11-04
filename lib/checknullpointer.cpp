@@ -402,7 +402,11 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                 if (tok1->varId() == varid)
                 {
                     bool unknown = false;
-                    if (CheckNullPointer::isPointerDeRef(tok1, unknown))
+                    if (Token::Match(tok1->tokAt(-2), "%varid% = %varid% .", varid))
+                    {
+                        break;
+                    }
+                    else if (CheckNullPointer::isPointerDeRef(tok1, unknown))
                     {
                         nullPointerError(tok1, varname, tok->linenr());
                         break;

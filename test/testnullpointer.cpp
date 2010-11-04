@@ -36,8 +36,8 @@ private:
     {
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
-        TEST_CASE(nullpointer3);    // dereferencing struct and then checking if it's null
-        TEST_CASE(nullpointer4);
+        TEST_CASE(structDerefAndCheck);    // dereferencing struct and then checking if it's null
+        TEST_CASE(pointerDerefAndCheck);
         TEST_CASE(nullpointer5);    // References should not be checked
         TEST_CASE(nullpointer6);
         TEST_CASE(nullpointer7);
@@ -171,7 +171,7 @@ private:
     // Dereferencing a struct and then checking if it is null
     // This is checked by this function:
     //        CheckOther::nullPointerStructByDeRefAndChec
-    void nullpointer3()
+    void structDerefAndCheck()
     {
         // errors..
         check("void foo(struct ABC *abc)\n"
@@ -289,7 +289,7 @@ private:
     }
 
     // Dereferencing a pointer and then checking if it is null
-    void nullpointer4()
+    void pointerDerefAndCheck()
     {
         // errors..
         check("void foo(int *p)\n"
@@ -369,6 +369,14 @@ private:
               "        return;\n"
               "    }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(x *p)\n"
+              "{\n"
+              "    p = p->next;\n"
+              "    if (!p)\n"
+              "        ;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
