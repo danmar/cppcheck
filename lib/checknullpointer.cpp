@@ -436,13 +436,19 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 void CheckNullPointer::nullPointerByCheckAndDeRef()
 {
     // Check if pointer is NULL and then dereference it..
+    std::set<unsigned int> pointerVariables;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "if ( ! %var% ) {"))
+        if (Token::Match(tok, "* %var% [;,)=]"))
+            pointerVariables.insert(tok->next()->varId());
+
+        else if (Token::Match(tok, "if ( ! %var% ) {"))
         {
             bool null = true;
             const unsigned int varid(tok->tokAt(3)->varId());
             if (varid == 0)
+                continue;
+            if (pointerVariables.find(varid) == pointerVariables.end())
                 continue;
             unsigned int indentlevel = 1;
             for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())

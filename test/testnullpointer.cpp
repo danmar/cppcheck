@@ -672,17 +672,26 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo() {\n"
+        check("void foo(char *p) {\n"
               "    if (!p) {\n"
               "        switch (x) { }\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(bool p) {\n"
+        check("void foo(char *p) {\n"
               "    if (!p) {\n"
               "    }\n"
               "    return *x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // operator!
+        check("void f() {\n"
+              "    A a;\n"
+              "    if (!a) {\n"
+              "        a.x();\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
