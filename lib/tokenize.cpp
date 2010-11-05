@@ -6270,6 +6270,29 @@ bool Tokenizer::simplifyCalculations()
 
         if (tok->isNumber())
         {
+            if (tok->str() == "0")
+            {
+                if (Token::Match(tok->previous(), "[+-] 0"))
+                {
+                    tok = tok->previous();
+                    tok->deleteThis();
+                    tok->deleteThis();
+                    ret = true;
+                }
+                else if (Token::Match(tok->previous(), "[=([,] 0 +"))
+                {
+                    tok->deleteThis();
+                    tok->deleteThis();
+                    ret = true;
+                }
+                else if (Token::Match(tok->previous(), "[=[(,] 0 * %any% [+-*/,]);]"))
+                {
+                    tok->deleteNext();
+                    tok->deleteNext();
+                    ret = true;
+                }
+            }
+
             if (Token::simpleMatch(tok->previous(), "* 1") || Token::simpleMatch(tok, "1 *"))
             {
                 if (Token::simpleMatch(tok->previous(), "*"))

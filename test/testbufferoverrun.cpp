@@ -1193,8 +1193,7 @@ private:
               "        data[(i-0)/2] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[8]' index 17 out of bounds\n", errout.str());
     }
 
     void array_index_negative()
