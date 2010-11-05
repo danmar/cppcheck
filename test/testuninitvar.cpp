@@ -381,10 +381,9 @@ private:
         checkUninitVar("void f()\n"
                        "{\n"
                        "    int a[10];\n"
-                       "    a[0] += 10;\n"
+                       "    a[0] = 10 - a[1];\n"
                        "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
 
         // goto/setjmp/longjmp..
         checkUninitVar("void foo(int x)\n"

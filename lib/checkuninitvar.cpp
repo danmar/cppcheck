@@ -360,6 +360,49 @@ private:
             checks.push_back(new UninitVar(owner, vartok->varId(), vartok->str(), p, a));
     }
 
+    /**
+     * Parse right hand side expression in statement
+     * @param tok2 start token of rhs
+     * @param checks the execution paths
+     */
+    void parserhs(const Token *tok2, std::list<ExecutionPath *> &checks) const
+    {
+        // check variable usages in rhs/index
+        while (NULL != (tok2 = tok2->next()))
+        {
+            if (Token::Match(tok2, "[;)=?]"))
+                break;
+            if (Token::Match(tok2, "%var% ("))
+                break;
+            if (tok2->varId() &&
+                !Token::Match(tok2->previous(), "&|::") &&
+                !Token::simpleMatch(tok2->next(), "="))
+            {
+                // Multiple assignments..
+                if (Token::simpleMatch(tok2->next(), "["))
+                {
+                    const Token * tok3 = tok2;
+                    while (Token::simpleMatch(tok3->next(), "["))
+                        tok3 = tok3->next()->link();
+                    if (Token::simpleMatch(tok3, "] ="))
+                        continue;
+                }
+                bool foundError;
+                if (tok2->previous()->str() == "*" || tok2->next()->str() == "[")
+                    foundError = use_array_or_pointer_data(checks, tok2);
+                else
+                    foundError = use(checks, tok2);
+
+                // prevent duplicate error messages
+                if (foundError)
+                {
+                    bailOutVar(checks, tok2->varId());
+                }
+            }
+        }
+
+    }
+
     /** parse tokens. @sa ExecutionPath::parse */
     const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
     {
@@ -436,39 +479,13 @@ private:
                 }
                 else
                 {
-                    // check variable usages in rhs/index
-                    for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
+                    const Token *tok2 = tok.next();
+                    if (tok2->str() == "[" && Token::simpleMatch(tok2->link(), "] ="))
                     {
-                        if (Token::Match(tok2, "[;)=?]"))
-                            break;
-                        if (Token::Match(tok2, "%var% ("))
-                            break;
-                        if (tok2->varId() &&
-                            !Token::Match(tok2->previous(), "&|::") &&
-                            !Token::simpleMatch(tok2->next(), "="))
-                        {
-                            // Multiple assignments..
-                            if (Token::simpleMatch(tok2->next(), "["))
-                            {
-                                const Token * tok3 = tok2;
-                                while (Token::simpleMatch(tok3->next(), "["))
-                                    tok3 = tok3->next()->link();
-                                if (Token::simpleMatch(tok3, "] ="))
-                                    continue;
-                            }
-                            bool foundError;
-                            if (tok2->previous()->str() == "*" || tok2->next()->str() == "[")
-                                foundError = use_array_or_pointer_data(checks, tok2);
-                            else
-                                foundError = use(checks, tok2);
-
-                            // prevent duplicate error messages
-                            if (foundError)
-                            {
-                                bailOutVar(checks, tok2->varId());
-                            }
-                        }
+                        parserhs(tok2, checks);
+                        tok2 = tok2->link()->next();
                     }
+                    parserhs(tok2, checks);
                 }
 
                 // pointer aliasing?
