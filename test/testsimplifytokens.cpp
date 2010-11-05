@@ -1434,7 +1434,7 @@ private:
                                     " const char s [ 5 ] = \"abcd\" ;"
                                     " 4 ; "
                                     "}";
-            TODO_ASSERT_EQUALS(expected, tok(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
     }

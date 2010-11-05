@@ -5773,6 +5773,7 @@ bool Tokenizer::simplifyKnownVariables()
                      (Token::Match(tok2, "%var% = %num% ;") ||
                       Token::Match(tok2, "%var% = %str% ;") ||
                       Token::Match(tok2, "%var% [ ] = %str% ;") ||
+                      Token::Match(tok2, "%var% [ %num% ] = %str% ;") ||
                       Token::Match(tok2, "%var% = %bool% ;") ||
                       Token::Match(tok2, "%var% = %var% ;") ||
                       Token::Match(tok2, "%var% = & %var% ;") ||
@@ -5834,10 +5835,10 @@ bool Tokenizer::simplifyKnownVariables()
                 {
                     value = tok2->strAt(2);
                     valueVarId = tok2->tokAt(2)->varId();
-                    if (value == "]")
+                    if (Token::simpleMatch(tok2->next(), "["))
                     {
-                        value = tok2->strAt(4);
-                        valueVarId = tok2->tokAt(4)->varId();
+                        value = tok2->next()->link()->strAt(2);
+                        valueVarId = 0;
                     }
                     else if (value == "&")
                     {
