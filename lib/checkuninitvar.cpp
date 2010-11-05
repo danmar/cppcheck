@@ -486,9 +486,28 @@ private:
             if (Token::Match(tok.tokAt(-2), "[;{}] *"))
             {
                 if (Token::simpleMatch(tok.next(), "="))
-                    init_pointer(checks, &tok);
+                {
+                    // is the pointer used in the rhs?
+                    bool used = false;
+                    for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
+                    {
+                        if (Token::Match(tok2, "[,;=(]"))
+                            break;
+                        else if (Token::Match(tok2, "* %varid%", tok.varId()))
+                        {
+                            used = true;
+                            break;
+                        }
+                    }
+                    if (used)
+                        use_pointer(checks, &tok);
+                    else
+                        init_pointer(checks, &tok);
+                }
                 else
+                {
                     use_pointer(checks, &tok);
+                }
                 return &tok;
             }
 

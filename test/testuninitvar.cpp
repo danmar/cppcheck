@@ -376,8 +376,7 @@ private:
                        "    char *s = malloc(100);\n"
                        "    *s += 10;\n"
                        "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: s\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: s\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
