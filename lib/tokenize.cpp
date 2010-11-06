@@ -5982,7 +5982,8 @@ bool Tokenizer::simplifyKnownVariables()
                     }
 
                     // Variable is used in calculation..
-                    if (Token::Match(tok3, "[=+-*/[] %varid% [=?+-*/;])]", varid) ||
+                    if (((tok3->previous()->varId() > 0) && Token::Match(tok3, "& %varid%", varid)) ||
+                        Token::Match(tok3, "[=+-*/[] %varid% [=?+-*/;])]", varid) ||
                         Token::Match(tok3, "[(=+-*/[] %varid% <<|>>", varid) ||
                         Token::Match(tok3, "<< %varid% [+-*/;])]", varid) ||
                         Token::Match(tok3, ">> %varid% [+-*/;])]", varid) ||

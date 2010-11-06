@@ -1598,7 +1598,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 & v@2 ;\n"
                                     "6: }\n";
-            TODO_ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
         }
 
         {
