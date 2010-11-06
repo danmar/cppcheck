@@ -218,6 +218,7 @@ private:
         TEST_CASE(simplifyTypedef60); // ticket #2035
         TEST_CASE(simplifyTypedef61); // ticket #2074 and 2075
         TEST_CASE(simplifyTypedef62); // ticket #2082
+        TEST_CASE(simplifyTypedef63); // ticket #2175 'typedef float x[3];'
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4514,6 +4515,16 @@ private:
 
         // Check for output..
         checkSimplifyTypedef(code4);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef63() // ticket #2175 'typedef float x[3];'
+    {
+        const char code[] = "typedef float x[3];\n"
+                            "x a,b,c;\n";
+        const std::string actual(sizeof_(code));
+        TODO_ASSERT_EQUALS("; float a [ 3 ] ; float b [ 3 ] ; float c [ 3 ] ;", actual);
+        ASSERT_EQUALS("; float a [ 3 ] ; float b ; float c ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
 
