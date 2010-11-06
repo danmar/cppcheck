@@ -1855,7 +1855,7 @@ private:
               "  struct Foo x;\n"
               "  sprintf(x.a, \"aa\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sprintf8()
@@ -1937,7 +1937,7 @@ private:
               "  struct Foo x;\n"
               "  snprintf(x.a, 2, \"aa\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void snprintf6()
@@ -2198,6 +2198,13 @@ private:
               "    s[10] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[4]' index 10 out of bounds\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *s; s = \"\";\n"
+              "    s[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[1]' index 10 out of bounds\n", errout.str());
     }
 
     void memset1()

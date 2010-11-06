@@ -48,7 +48,7 @@ CheckBufferOverrun instance;
 
 void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, int size, int index)
 {
-    if (size > 1)
+    if (size >= 1)
     {
         std::ostringstream errmsg;
         errmsg << "Array '";
@@ -1276,6 +1276,11 @@ void CheckBufferOverrun::checkStructVariable()
 
             // Only handling 1-dimensional arrays yet..
             if (arrayInfo.num.size() > 1)
+                continue;
+
+            // Skip array with only 0/1 elements because those are
+            // often overrun intentionally
+            if (arrayInfo.num[0] <= 1)
                 continue;
 
             std::vector<std::string> varname;
