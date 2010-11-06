@@ -4648,6 +4648,12 @@ private:
 
         ASSERT_EQUALS("; x [ 0 ] = x [ 0 ] + 1 ;", tokenizeAndStringify("; x[0] += 1;"));
         ASSERT_EQUALS("; x [ y - 1 ] = x [ y - 1 ] + 1 ;", tokenizeAndStringify("; x[y-1] += 1;"));
+
+        ASSERT_EQUALS(";", tokenizeAndStringify(";x += 0;"));
+        ASSERT_EQUALS(";", tokenizeAndStringify(";x -= 0;"));
+        ASSERT_EQUALS(";", tokenizeAndStringify(";x |= 0;"));
+        ASSERT_EQUALS(";", tokenizeAndStringify(";x *= 1;"));
+        ASSERT_EQUALS(";", tokenizeAndStringify(";x /= 1;"));
     }
 
     void simplifyAssignmentInFunctionCall()

@@ -4386,7 +4386,7 @@ void Tokenizer::simplifyCompoundAssignment()
             }
 
             // backup current token..
-            const Token * const tok1 = tok;
+            Token * const tok1 = tok;
 
             if (tok->strAt(1) == "*")
                 tok = tok->next();
@@ -4424,18 +4424,28 @@ void Tokenizer::simplifyCompoundAssignment()
             else
                 continue;
 
-            // modify the token list..
-            tok->str("=");
-            tok->insertToken(op);
-            Token *tokend = 0;
-            for (const Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous())
+            // Remove the whole statement if it says: "+=0;", "-=0;", "*=1;" or "/=1;"
+            if (Token::Match(tok, "+=|-= 0 ;") || Token::simpleMatch(tok, "|= 0 ;") || Token::Match(tok, "*=|/= 1 ;"))
             {
-                tok->insertToken(tok2->str());
-                tok->next()->varId(tok2->varId());
-                if (Token::simpleMatch(tok->next(), "]"))
-                    tokend = tok->next();
-                else if (Token::simpleMatch(tok->next(), "["))
-                    Token::createMutualLinks(tok->next(), tokend);
+                tok = tok1;
+                while (tok->next()->str() != ";")
+                    tok->deleteNext();
+            }
+            else
+            {
+                // simplify the compound assignment..
+                tok->str("=");
+                tok->insertToken(op);
+                Token *tokend = 0;
+                for (const Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous())
+                {
+                    tok->insertToken(tok2->str());
+                    tok->next()->varId(tok2->varId());
+                    if (Token::simpleMatch(tok->next(), "]"))
+                        tokend = tok->next();
+                    else if (Token::simpleMatch(tok->next(), "["))
+                        Token::createMutualLinks(tok->next(), tokend);
+                }
             }
         }
     }
