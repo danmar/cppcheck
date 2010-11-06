@@ -6033,8 +6033,7 @@ bool Tokenizer::simplifyKnownVariables()
                     if (((tok3->previous()->varId() > 0) && Token::Match(tok3, "& %varid%", varid)) ||
                         Token::Match(tok3, "[=+-*/[] %varid% [=?+-*/;])]", varid) ||
                         Token::Match(tok3, "[(=+-*/[] %varid% <<|>>", varid) ||
-                        Token::Match(tok3, "<< %varid% [+-*/;])]", varid) ||
-                        Token::Match(tok3, ">> %varid% [+-*/;])]", varid) ||
+                        Token::Match(tok3, "<<|>> %varid% [+-*/;])]", varid) ||
                         Token::Match(tok3->previous(), "[=+-*/[] ( %varid%", varid))
                     {
                         tok3 = tok3->next();
