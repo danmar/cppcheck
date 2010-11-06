@@ -246,6 +246,23 @@ void CheckClass::addIfFunction(SpaceInfo **info, const Token **tok)
             else
                 addNewFunction(info, tok);
         }
+
+        // function returning function pointer with body
+        else if (Token::simpleMatch(argStart->link(), ") ) (") &&
+                 Token::Match(argStart->link()->tokAt(2)->link(), ") const| {"))
+        {
+            const Token *tok1 = funcStart;
+
+            // class function
+            if (tok1->previous()->str() == "::")
+                addFunction(info, &tok1);
+
+            // regular function
+            else
+                addNewFunction(info, &tok1);
+
+            *tok = tok1;
+        }
     }
 }
 
