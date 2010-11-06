@@ -5973,6 +5973,11 @@ bool Tokenizer::simplifyKnownVariables()
                     // Variable is used somehow in a non-defined pattern => bail out
                     if (tok3->varId() == varid)
                     {
+                        // calling member function.. bail out because this might
+                        // have different effects to the variable.
+                        if (Token::Match(tok3->next(), ". %var% ("))
+                            break;
+
                         // This is a really generic bailout so let's try to avoid this.
                         // There might be lots of false negatives.
                         if (_settings && _settings->debugwarnings)
@@ -6027,6 +6032,15 @@ bool Tokenizer::simplifyKnownVariables()
                                 break;
                             }
                         }
+                    }
+
+                    // array usage
+                    if (Token::Match(tok3, "( %varid% [", varid))
+                    {
+                        tok3 = tok3->next();
+                        tok3->str(value);
+                        tok3->varId(valueVarId);
+                        ret = true;
                     }
 
                     // Variable is used in calculation..

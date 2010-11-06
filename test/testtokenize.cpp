@@ -121,6 +121,8 @@ private:
         TEST_CASE(simplifyKnownVariables28);
         TEST_CASE(simplifyKnownVariables29); // ticket #1811
         TEST_CASE(simplifyKnownVariables30);
+        TEST_CASE(simplifyKnownVariables31);
+        TEST_CASE(simplifyKnownVariablesBailOut1);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -1834,6 +1836,34 @@ private:
                                 "iterator it1 ; it1 = ints . begin ( ) ;\n"
                                 "iterator it2 ; it2 = it1 ;\n"
                                 "for ( ++ it2 ; it2 != ints . end ( ) ; ++ it2 ) { ; }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables31()
+    {
+        const char code[] = "void foo(const char str[]) {\n"
+                            "    const char *p = str;\n"
+                            "    if (p[0] == 0) {\n"
+                            "    }\n"
+                            "}\n";
+        const char expected[] = "void foo ( const char str [ ] ) {\n"
+                                "const char * p ; p = str ;\n"
+                                "if ( str [ 0 ] == 0 ) {\n"
+                                "}\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOut1()
+    {
+        const char code[] = "void foo(obj a) {\n"
+                            "    obj b = a;\n"
+                            "    b.f();\n"
+                            "}\n";
+        const char expected[] = "void foo ( obj a ) {\n"
+                                "obj b ; b = a ;\n"
+                                "b . f ( ) ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
