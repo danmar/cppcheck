@@ -1371,9 +1371,14 @@ void Tokenizer::simplifyTypedef()
                                     else if (!inOperator && !Token::Match(tok2->next(), "[|>|;"))
                                     {
                                         tok2 = tok2->next();
+
                                         while (Token::Match(tok2, "*|&") &&
                                                !Token::Match(tok2->next(), ")|>"))
                                             tok2 = tok2->next();
+
+                                        // skip over namespace
+                                        while (Token::Match(tok2, "%var% ::"))
+                                            tok2 = tok2->tokAt(2);
 
                                         // skip over typedef parameter
                                         if (tok2->next()->str() == "(")

@@ -225,6 +225,7 @@ private:
         TEST_CASE(simplifyTypedefFunction3);
         TEST_CASE(simplifyTypedefFunction4);
         TEST_CASE(simplifyTypedefFunction5);
+        TEST_CASE(simplifyTypedefFunction6);
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -5077,6 +5078,37 @@ private:
                                    "int ( :: C :: * const t10 ) ( float ) ; "
                                    "int ( :: C :: * t11 ) ( float ) ; " // volatile removed
                                    "int ( :: C :: * const t12 ) ( float ) ;"); // volatile removed
+        ASSERT_EQUALS(expected, tok(code, false));
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedefFunction6()
+    {
+        const char code[] = "typedef void (*testfp)();\n"
+                            "struct Fred\n"
+                            "{\n"
+                            "    testfp get1() { return 0; }\n"
+                            "    void ( * get2 ( ) ) ( ) { return 0 ; }\n"
+                            "    testfp get3();\n"
+                            "    void ( * get4 ( ) ) ( );\n"
+                            "};\n"
+                            "testfp Fred::get3() { return 0; }\n"
+                            "void ( * Fred::get4 ( ) ) ( ) { return 0 ; }\n";
+
+        // The expected result..
+        const std::string expected("; "
+                                   "struct Fred "
+                                   "{ "
+                                   "void ( * get1 ( ) ) ( ) { return 0 ; } "
+                                   "void ( * get2 ( ) ) ( ) { return 0 ; } "
+                                   "void ( * get3 ( ) ) ( ) ; "
+                                   "void ( * get4 ( ) ) ( ) ; "
+                                   "} ; "
+                                   "void ( * Fred :: get3 ( ) ) ( ) { return 0 ; } "
+                                   "void ( * Fred :: get4 ( ) ) ( ) { return 0 ; }");
+
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
