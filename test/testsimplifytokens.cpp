@@ -4523,8 +4523,7 @@ private:
         const char code[] = "typedef float x[3];\n"
                             "x a,b,c;\n";
         const std::string actual(sizeof_(code));
-        TODO_ASSERT_EQUALS("; float a [ 3 ] ; float b [ 3 ] ; float c [ 3 ] ;", actual);
-        ASSERT_EQUALS("; float a [ 3 ] ; float b ; float c ;", actual);
+        ASSERT_EQUALS("; float a [ 3 ] ; float b [ 3 ] ; float c [ 3 ] ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -1629,7 +1629,7 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->next()->next();
                             }
                         }
-                        while (Token::Match(tok2, ", %var% ;|'|="));
+                        while (Token::Match(tok2, ", %var% ;|'|=|,"));
                     }
 
                     simplifyType = false;
