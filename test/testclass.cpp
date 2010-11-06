@@ -149,6 +149,7 @@ private:
         TEST_CASE(const36); // ticket #2003
         TEST_CASE(const37); // ticket #2081 and #2085
         TEST_CASE(const38); // ticket #2135
+        TEST_CASE(const39);
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -4365,6 +4366,28 @@ private:
                    "{\n"
                    "    (*oArq) << \"</table>\";\n"
                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const39()
+    {
+        checkConst("class Foo\n"
+                   "{\n"
+                   "    int * p;\n"
+                   "public:\n"
+                   "    Foo () : p(0) { }\n"
+                   "    int * f();\n"
+                   "    const int * f() const;\n"
+                   "};\n"
+                   "const int * Foo::f() const\n"
+                   "{\n"
+                   "    return p;\n"
+                   "}\n"
+                   "int * Foo::f()\n"
+                   "{\n"
+                   "    return p;\n"
+                   "}\n");
+
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -186,8 +186,24 @@ void CheckClass::addFunction(SpaceInfo **info, const Token **tok)
                     {
                         if (argsMatch(func->tokenDef->next(), (*tok)->next(), path, path_length))
                         {
-                            func->hasBody = true;
-                            func->token = (*tok);
+                            // normal function?
+                            if (!func->retFuncPtr && (*tok)->next()->link())
+                            {
+                                if ((func->isConst && (*tok)->next()->link()->next()->str() == "const") ||
+                                    (!func->isConst && (*tok)->next()->link()->next()->str() != "const"))
+                                {
+                                    func->hasBody = true;
+                                    func->token = (*tok);
+                                }
+                            }
+
+                            // function returning function pointer?
+                            else if (func->retFuncPtr)
+                            {
+                                // todo check for const
+                                func->hasBody = true;
+                                func->token = (*tok);
+                            }
                         }
                     }
 
