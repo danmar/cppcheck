@@ -5252,15 +5252,18 @@ private:
         }
 
         {
-            const char code[] = "int a[10];\n"
-                                "int *b = a;\n"
-                                "memset(b,0,sizeof(a));";
+            const char code[] = "void f() {\n"
+                                "    int a[10];\n"
+                                "    int *b = a;\n"
+                                "    memset(b,0,sizeof(a));\n"
+                                "}";
 
-            const char expected[] = "int a [ 10 ] ; "
-                                    "int * b ; b = a ; "
-                                    "memset ( a , 0 , 40 ) ;";
+            const char expected[] = "void f ( ) {"
+                                    " int a [ 10 ] ;"
+                                    " memset ( a , 0 , 40 ) ; "
+                                    "}";
 
-            TODO_ASSERT_EQUALS(expected, tok(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 

@@ -5981,6 +5981,26 @@ bool Tokenizer::simplifyKnownVariables()
                         ret = true;
                     }
 
+                    // Variable is used in function call..
+                    if (Token::Match(tok3, "%var% ( %varid% ,", varid))
+                    {
+                        const char * const functionName[] =
+                        {
+                            "memcmp","memcpy","memmove","memset",
+                            "strcmp","strcpy","strncpy","strdup"
+                        };
+                        for (unsigned int i = 0; i < (sizeof(functionName) / sizeof(*functionName)); ++i)
+                        {
+                            if (tok3->str() == functionName[i])
+                            {
+                                Token *par1 = tok3->next()->next();
+                                par1->str(value);
+                                par1->varId(valueVarId);
+                                break;
+                            }
+                        }
+                    }
+
                     // Variable is used in calculation..
                     if (((tok3->previous()->varId() > 0) && Token::Match(tok3, "& %varid%", varid)) ||
                         Token::Match(tok3, "[=+-*/[] %varid% [=?+-*/;])]", varid) ||
