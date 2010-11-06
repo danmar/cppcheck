@@ -4951,7 +4951,7 @@ bool Tokenizer::simplifyFunctionReturn()
         else if (tok->str() == "}")
             --indentlevel;
 
-        else if (indentlevel == 0 && Token::Match(tok, "%var% ( ) { return %num% ; }"))
+        else if (indentlevel == 0 && Token::Match(tok, "%var% ( ) { return %num% ; }") && tok->str() != ")")
         {
             std::ostringstream pattern;
             pattern << "[(=+-*/] " << tok->str() << " ( ) [;)+-*/]";

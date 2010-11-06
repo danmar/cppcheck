@@ -291,6 +291,8 @@ private:
         TEST_CASE(simplifyFunctorCall);
 
         TEST_CASE(redundant_semicolon);
+
+        TEST_CASE(simplifyFunctionReturn);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -5933,6 +5935,27 @@ private:
     {
         ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { ; }", false));
         ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { do { ; } while (0); }", true));
+    }
+
+    void simplifyFunctionReturn()
+    {
+        const char code[] = "typedef void (*testfp)();\n"
+                            "struct Fred\n"
+                            "{\n"
+                            "    testfp get1() { return 0; }\n"
+                            "    void ( * get2 ( ) ) ( ) { return 0 ; }\n"
+                            "    testfp get3();\n"
+                            "    void ( * get4 ( ) ) ( );\n"
+                            "};";
+        const char expected[] = "; "
+                                "struct Fred "
+                                "{ "
+                                "void ( * get1 ( ) ) ( ) { return 0 ; } "
+                                "void ( * get2 ( ) ) ( ) { return 0 ; } "
+                                "void ( * get3 ( ) ) ( ) ; "
+                                "void ( * get4 ( ) ) ( ) ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 };
 
