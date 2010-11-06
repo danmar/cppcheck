@@ -1096,8 +1096,16 @@ private:
                                 "  }\n"
                                 "}\n";
 
+            const std::string expected1("void f ( ) {"
+                                        " bool b ; b = false ;"
+                                        " { b = true ; }");
+
             TODO_ASSERT_EQUALS(
-                "void f ( ) { bool b ; b = false ; { b = true ; } if ( true ) { a ( ) ; } }",
+                expected1 + " if ( true ) { a ( ) ; } }",
+                simplifyKnownVariables(code));
+
+            ASSERT_EQUALS(
+                expected1 + " if ( b ) { a ( ) ; } }",
                 simplifyKnownVariables(code));
         }
 
