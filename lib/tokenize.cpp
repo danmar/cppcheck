@@ -5972,7 +5972,30 @@ bool Tokenizer::simplifyKnownVariables()
 
                     // Variable is used somehow in a non-defined pattern => bail out
                     if (tok3->varId() == varid)
+                    {
+                        // This is a really generic bailout so let's try to avoid this.
+                        // There might be lots of false negatives.
+                        if (_settings && _settings->debugwarnings)
+                        {
+                            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                            ErrorLogger::ErrorMessage::FileLocation loc;
+                            loc.line = tok3->linenr();
+                            loc.setfile(file(tok3));
+                            locationList.push_back(loc);
+
+                            const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                                   Severity::debug,
+                                                                   "simplifyKnownVariables: bailing out (variable="+tok3->str()+", value="+value+")",
+                                                                   "debug");
+
+                            if (_errorLogger)
+                                _errorLogger->reportErr(errmsg);
+                            else
+                                Check::reportError(errmsg);
+                        }
+
                         break;
+                    }
 
                     // Using the variable in condition..
                     if (Token::Match(tok3->previous(), "if ( %varid% ==|!=|<|<=|>|>=|)", varid) ||
