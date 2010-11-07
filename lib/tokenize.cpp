@@ -5773,7 +5773,6 @@ bool Tokenizer::simplifyKnownVariables()
         Token *tok2 = tok;
         for (; tok2; tok2 = tok2->next())
         {
-
             if (tok2->str() == "{")
                 ++indentlevel;
 
@@ -5797,6 +5796,12 @@ bool Tokenizer::simplifyKnownVariables()
                 const unsigned int varid = tok2->varId();
                 if (varid == 0)
                     continue;
+
+                if (Token::Match(tok2->tokAt(-3), "for ( %type% %var% = %num% ;"))
+                {
+                    // skip loop variable
+                    continue;
+                }
 
                 if (tok2->str() == tok2->strAt(2))
                     continue;

@@ -122,7 +122,8 @@ private:
         TEST_CASE(simplifyKnownVariables29); // ticket #1811
         TEST_CASE(simplifyKnownVariables30);
         TEST_CASE(simplifyKnownVariables31);
-        TEST_CASE(simplifyKnownVariablesBailOut1);
+        TEST_CASE(simplifyKnownVariablesBailOutFor);
+        TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -1855,7 +1856,18 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
-    void simplifyKnownVariablesBailOut1()
+    void simplifyKnownVariablesBailOutFor()
+    {
+        const char code[] = "void foo() {\n"
+                            "    for (int i = 0; i < 10; ++i) { }\n"
+                            "}\n";
+        const char expected[] = "void foo ( ) {\n"
+                                "for ( int i = 0 ; i < 10 ; ++ i ) { }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutMemberFunction()
     {
         const char code[] = "void foo(obj a) {\n"
                             "    obj b = a;\n"
