@@ -6095,7 +6095,7 @@ bool Tokenizer::simplifyKnownVariables()
                     }
 
                     // array usage
-                    if (Token::Match(tok3, "( %varid% [", varid))
+                    if (Token::Match(tok3, "[(,] %varid% [+-*/[]", varid))
                     {
                         tok3 = tok3->next();
                         tok3->str(value);

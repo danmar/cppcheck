@@ -1359,8 +1359,7 @@ private:
               "char str[i];\n"
               "fread(str,sizeof(char),i+1,fd);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());	// catch changes
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: str\n", errout.str());
 
         check("void f(FILE* fd)\n"
               "{\n"
@@ -1383,8 +1382,7 @@ private:
               "char str[i];\n"
               "fwrite(str,sizeof(char),i+1,fd);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());	// catch changes
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: str\n", errout.str());
 
         check("void f(FILE* fd)\n"
               "{\n"
