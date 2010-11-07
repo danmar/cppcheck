@@ -123,7 +123,8 @@ private:
         TEST_CASE(simplifyKnownVariables30);
         TEST_CASE(simplifyKnownVariables31);
         TEST_CASE(simplifyKnownVariables32);    // const
-        TEST_CASE(simplifyKnownVariablesBailOutFor);
+        TEST_CASE(simplifyKnownVariablesBailOutFor1);
+        TEST_CASE(simplifyKnownVariablesBailOutFor2);
         TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
 
         TEST_CASE(varid1);
@@ -1870,13 +1871,26 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
-    void simplifyKnownVariablesBailOutFor()
+    void simplifyKnownVariablesBailOutFor1()
     {
         const char code[] = "void foo() {\n"
                             "    for (int i = 0; i < 10; ++i) { }\n"
                             "}\n";
         const char expected[] = "void foo ( ) {\n"
                                 "for ( int i = 0 ; i < 10 ; ++ i ) { }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutFor2()
+    {
+        const char code[] = "void foo() {\n"
+                            "    int i = 0;\n"
+                            "    while (i < 10) { ++i; }\n"
+                            "}\n";
+        const char expected[] = "void foo ( ) {\n"
+                                "int i ; i = 0 ;\n"
+                                "while ( i < 10 ) { ++ i ; }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }

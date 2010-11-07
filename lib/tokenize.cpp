@@ -5961,9 +5961,11 @@ bool Tokenizer::simplifyKnownVariables()
                         break;
 
                     // Stop if something like 'while (--var)' is found
-                    if (tok3->str() == "while" || tok3->str() == "do")
+                    if (tok3->str() == "for" || tok3->str() == "while" || tok3->str() == "do")
                     {
                         const Token *endpar = tok3->next()->link();
+                        if (Token::simpleMatch(endpar, ") {"))
+                            endpar = endpar->next()->link();
                         bool bailout = false;
                         for (const Token *tok4 = tok3; tok4 && tok4 != endpar; tok4 = tok4->next())
                         {
