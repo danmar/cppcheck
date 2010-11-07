@@ -5844,6 +5844,12 @@ bool Tokenizer::simplifyKnownVariables()
                     continue;
                 }
 
+                if (Token::Match(tok2->tokAt(-2), "for ("))
+                {
+                    // skip loop variable
+                    continue;
+                }
+
                 if (tok2->str() == tok2->strAt(2))
                     continue;
 
