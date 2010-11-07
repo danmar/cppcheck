@@ -6029,6 +6029,19 @@ bool Tokenizer::simplifyKnownVariables()
                             if (Token::Match(tok3->next(), ". %var% ("))
                                 break;
 
+                            // suppress debug-warning when assignment
+                            if (Token::simpleMatch(tok3->next(), "="))
+                                break;
+
+                            // taking address of variable..
+                            if (Token::Match(tok3->tokAt(-2), "return|= & %var% ;"))
+                                break;
+
+                            // parameter in function call..
+                            if (Token::Match(tok3->tokAt(-2), "%var% ( %var% ,|)") ||
+                                Token::Match(tok3->previous(), ", %var% ,|)"))
+                                break;
+
                             std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                             ErrorLogger::ErrorMessage::FileLocation loc;
                             loc.line = tok3->linenr();

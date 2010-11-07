@@ -123,6 +123,7 @@ private:
         TEST_CASE(simplifyKnownVariables30);
         TEST_CASE(simplifyKnownVariables31);
         TEST_CASE(simplifyKnownVariables32);    // const
+        TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
         TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
@@ -299,8 +300,12 @@ private:
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false)
     {
+        errout.str("");
+
         // tokenize..
-        Tokenizer tokenizer(0, this);
+        Settings settings;
+        settings.debugwarnings = true;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         if (simplify)
@@ -1867,6 +1872,21 @@ private:
         const char expected[] = "void foo ( ) {\n"
                                 ";\n"
                                 "bar ( 0 , 0 ) ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutAssign()
+    {
+        const char code[] = "int foo() {\n"
+                            "    int i; i = 0;\n"
+                            "    if (x) { i = 10; }\n"
+                            "    return i;\n"
+                            "}\n";
+        const char expected[] = "int foo ( ) {\n"
+                                "int i ; i = 0 ;\n"
+                                "if ( x ) { i = 10 ; }\n"
+                                "return i ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
