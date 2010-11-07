@@ -36,7 +36,7 @@ private:
 
 
 
-    void check(const char code[], bool showAll = true)
+    void check(const char code[], bool inconclusive = true)
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -54,7 +54,7 @@ private:
 
         // Check for buffer overruns..
         Settings settings;
-        settings.inconclusive = showAll;
+        settings.inconclusive = inconclusive;
         settings._checkCodingStyle = true;
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.bufferOverrun();
@@ -174,6 +174,7 @@ private:
 
         TEST_CASE(terminateStrncpy1);
         TEST_CASE(terminateStrncpy2);
+        TEST_CASE(terminateStrncpy3);
         TEST_CASE(recursive_long_time);
 
         TEST_CASE(crash);	// Ticket #1587 - crash
@@ -2418,6 +2419,22 @@ private:
               "    return baz;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) After a strncpy() the buffer should be zero-terminated\n", errout.str());
+    }
+
+    void terminateStrncpy3()
+    {
+        // Ticket #2170 - false positive
+        // The function bar is risky. But it might work that way intentionally.
+        check("char str[100];\n"
+              "\n"
+              "void foo(char *a) {\n"
+              "    strncpy(str, a, 100);\n"
+              "}\n"
+              "\n"
+              "void bar(char *p) {\n"
+              "    strncpy(p, str, 100);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void recursive_long_time()
