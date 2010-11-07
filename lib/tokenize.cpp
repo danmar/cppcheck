@@ -5762,6 +5762,47 @@ Token * Tokenizer::initVar(Token * tok)
 bool Tokenizer::simplifyKnownVariables()
 {
     bool ret = false;
+
+    // constants..
+    {
+        std::map<unsigned int, std::string> constantValues;
+        for (Token *tok = _tokens; tok; tok = tok->next())
+        {
+            if (Token::Match(tok, "static| const %type% %var% = %any% ;"))
+            {
+                Token *tok1 = tok;
+
+                // start of statement
+                if (tok != _tokens && !Token::Match(tok->previous(),"[;{}]"))
+                    continue;
+                // skip "static"
+                if (tok->str() == "static")
+                    tok = tok->next();
+                // pod type
+                if (!tok->next()->isStandardType())
+                    continue;
+
+                const Token * const vartok = tok->tokAt(2);
+                const Token * const valuetok = tok->tokAt(4);
+                if (valuetok->isNumber() || Token::Match(valuetok, "%str% ;"))
+                {
+                    constantValues[vartok->varId()] = valuetok->str();
+
+                    // remove statement
+                    while (tok1->str() != ";")
+                        tok1->deleteThis();
+                    tok = tok1;
+                }
+            }
+
+            else if (tok->varId() && constantValues.find(tok->varId()) != constantValues.end())
+            {
+                tok->str(constantValues[tok->varId()]);
+            }
+        }
+    }
+
+    // auto variables..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         // Search for a block of code

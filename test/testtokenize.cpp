@@ -119,9 +119,10 @@ private:
         TEST_CASE(simplifyKnownVariables26);
         TEST_CASE(simplifyKnownVariables27);
         TEST_CASE(simplifyKnownVariables28);
-        TEST_CASE(simplifyKnownVariables29); // ticket #1811
+        TEST_CASE(simplifyKnownVariables29);    // ticket #1811
         TEST_CASE(simplifyKnownVariables30);
         TEST_CASE(simplifyKnownVariables31);
+        TEST_CASE(simplifyKnownVariables32);    // const
         TEST_CASE(simplifyKnownVariablesBailOutFor);
         TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
 
@@ -1159,7 +1160,7 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-            "const int foo = 0 ; int main ( ) { int foo ; foo = 0 ; }",
+            "; int main ( ) { int foo ; foo = 0 ; }",
             simplifyKnownVariables(code));
     }
 
@@ -1852,6 +1853,19 @@ private:
                                 "const char * p ; p = str ;\n"
                                 "if ( str [ 0 ] == 0 ) {\n"
                                 "}\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables32()
+    {
+        const char code[] = "void foo() {\n"
+                            "    const int x = 0;\n"
+                            "    bar(0,x);\n"
+                            "}\n";
+        const char expected[] = "void foo ( ) {\n"
+                                ";\n"
+                                "bar ( 0 , 0 ) ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
@@ -3406,7 +3420,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { const int a = 45 ; { ; } } void g ( ) { ; }", ostr.str());
+        ASSERT_EQUALS(" void f ( ) { ; { ; } } void g ( ) { ; }", ostr.str());
     }
 
     void simplify_constants2()
@@ -3432,7 +3446,7 @@ private:
             ostr << " " << tok->str();
 
         std::ostringstream oss;
-        oss << " void f ( Foo & foo , Foo * foo2 ) { const int a = 45 ; foo . a = 90 ; foo2 . a = 45 ; }";
+        oss << " void f ( Foo & foo , Foo * foo2 ) { ; foo . a = 90 ; foo2 . a = 45 ; }";
         ASSERT_EQUALS(oss.str(), ostr.str());
     }
 
