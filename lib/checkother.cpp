@@ -231,12 +231,12 @@ void CheckOther::checkIncorrectLogicOperator()
     {
         // Find a pair of OR'd terms, with or without parenthesis
         const Token *logicTok = NULL, *term1Tok = NULL, *term2Tok = NULL;
-        if ((logicTok = Token::findmatch(tok, "( %any% != %any% ) %oror% ( %any% != %any% ) !!&&", endTok)))
+        if (NULL != (logicTok = Token::findmatch(tok, "( %any% != %any% ) %oror% ( %any% != %any% ) !!&&", endTok)))
         {
             term1Tok = logicTok->next();
             term2Tok = logicTok->tokAt(7);
         }
-        else if ((logicTok = Token::findmatch(tok, "%any% != %any% %oror% %any% != %any% !!&&", endTok)))
+        else if (NULL != (logicTok = Token::findmatch(tok, "%any% != %any% %oror% %any% != %any% !!&&", endTok)))
         {
             term1Tok = logicTok;
             term2Tok = logicTok->tokAt(4);
