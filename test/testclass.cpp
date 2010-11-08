@@ -167,6 +167,7 @@ private:
         TEST_CASE(symboldatabase2);
         TEST_CASE(symboldatabase3); // ticket #2000
         TEST_CASE(symboldatabase4);
+        TEST_CASE(symboldatabase5); // ticket #2178
     }
 
     // Check the operator Equal
@@ -4793,6 +4794,15 @@ private:
 
         checkConst("testing::testing()\n"
                    "{\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase5()
+    {
+        // ticket #2178 - segmentation fault
+        checkConst("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
+                   "    return (sign ? cl_I() : 0);\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
     }

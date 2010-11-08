@@ -499,7 +499,19 @@ void CheckClass::createSymbolDatabase()
 
         // not in SpaceInfo
         else
+        {
+            // found a "?" skip until the end of statement is found to avoid detecting
+            // false functions..
+            if (tok->str() == "?")
+            {
+                while (tok && !Token::Match(tok, "[;{}]"))
+                    tok = tok->next();
+                if (!tok)
+                    break;
+            }
+
             addIfFunction(&info, &tok);
+        }
     }
 
     std::list<SpaceInfo *>::iterator it;
