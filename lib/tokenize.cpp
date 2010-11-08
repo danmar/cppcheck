@@ -2652,20 +2652,21 @@ void Tokenizer::simplifyTemplates()
 
                 if (type2.empty() || type.size() != types2.size())
                 {
-#ifndef NDEBUG
-                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                    ErrorLogger::ErrorMessage::FileLocation loc;
-                    loc.line = tok2->linenr();
-                    loc.setfile(file(tok2));
-                    locationList.push_back(loc);
+                    if (_settings && _settings->debugwarnings)
+                    {
+                        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                        ErrorLogger::ErrorMessage::FileLocation loc;
+                        loc.line = tok2->linenr();
+                        loc.setfile(file(tok2));
+                        locationList.push_back(loc);
 
-                    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                           Severity::debug,
-                                                           "Failed to instantiate template. The checking continues anyway.",
-                                                           "templateInstantiate");
+                        const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                               Severity::debug,
+                                                               "Failed to instantiate template. The checking continues anyway.",
+                                                               "debug");
 
-                    _errorLogger->reportErr(errmsg);
-#endif
+                        _errorLogger->reportErr(errmsg);
+                    }
                     if (type2.empty())
                         continue;
                     break;
