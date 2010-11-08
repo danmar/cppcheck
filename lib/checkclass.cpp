@@ -300,11 +300,9 @@ void CheckClass::createSymbolDatabase()
             SpaceInfo *new_info = new SpaceInfo(this, tok, info);
             const Token *tok2 = tok->tokAt(2);
 
-            // only create variable list and base list for classes and structures
+            // only create base list for classes and structures
             if (new_info->type == SpaceInfo::Class || new_info->type == SpaceInfo::Struct)
             {
-                new_info->getVarList();
-
                 // goto initial '{'
                 tok2 = initBaseInfo(new_info, tok);
             }
@@ -510,7 +508,7 @@ void CheckClass::createSymbolDatabase()
     {
         info = *it;
 
-        // skip namespaces
+        // skip namespaces and functions
         if (info->type == SpaceInfo::Namespace || info->type == SpaceInfo::Function)
             continue;
 
@@ -542,6 +540,9 @@ void CheckClass::createSymbolDatabase()
                 }
             }
         }
+
+        // find variables
+        info->getVarList();
     }
 }
 
@@ -664,10 +665,9 @@ CheckClass::SpaceInfo::SpaceInfo(CheckClass *check_, const Token *classDef_, Che
 void CheckClass::SpaceInfo::getVarList()
 {
     // Get variable list..
-    const Token *tok1 = classDef;
     unsigned int indentlevel = 0;
-    AccessControl varaccess = tok1->str() == "struct" ? Public : Private;
-    for (const Token *tok = tok1; tok; tok = tok->next())
+    AccessControl varaccess = type == Struct ? Public : Private;
+    for (const Token *tok = classStart; tok; tok = tok->next())
     {
         if (!tok->next())
             break;
@@ -718,17 +718,6 @@ void CheckClass::SpaceInfo::getVarList()
             varaccess = Private;
             b = true;
         }
-        else if (Token::Match(tok, "public|protected|private %var% :"))
-        {
-            if (tok->str() == "public")
-                varaccess = Public;
-            else if (tok->str() == "protected")
-                varaccess = Protected;
-            else if (tok->str() == "private")
-                varaccess = Private;
-            tok = tok->tokAt(2);
-            b = true;
-        }
 
         // Search for start of statement..
         if (! Token::Match(tok, "[;{}]") && ! b)
@@ -741,18 +730,6 @@ void CheckClass::SpaceInfo::getVarList()
         // If next token contains a ":".. it is not part of a variable declaration
         if (next->str().find(":") != std::string::npos)
             continue;
-
-        if (Token::Match(next, "public|protected|private %var% :"))
-        {
-            if (next->str() == "public")
-                varaccess = Public;
-            else if (next->str() == "protected")
-                varaccess = Protected;
-            else if (next->str() == "private")
-                varaccess = Private;
-            tok = tok->tokAt(2);
-            continue;
-        }
 
         // Is it a forward declaration?
         if (Token::Match(next, "class|struct|union %var% ;"))
@@ -789,15 +766,6 @@ void CheckClass::SpaceInfo::getVarList()
         if (next->str() == "const")
         {
             next = next->next();
-        }
-
-        // It it a nested derived class or structure?
-        if (Token::Match(next, "class|struct %type% :"))
-        {
-            next = next->tokAt(2);
-            while (next->str() != "{")
-                next = next->next();
-            continue;
         }
 
         // Is it a variable declaration?
