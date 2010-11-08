@@ -125,7 +125,8 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
             break;
         default:
             oss << "\\*";
-            bdir << cleanedPath << '\\';
+            if (cleanedPath != ".")
+                bdir << cleanedPath << '\\';
         }
     }
     else
