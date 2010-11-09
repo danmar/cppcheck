@@ -68,11 +68,7 @@ bool FileLister::acceptFile(const std::string &filename)
         extension == ".c" ||
         extension == ".c++" ||
         extension == ".tpp" ||
-        extension == ".txx" ||
-        extension == ".m" ||        // Objective C
-        extension == ".mm" ||       // Objective C++
-        extension == ".java" ||     // Java source file
-        extension == ".cs")         // C# source file
+        extension == ".txx")
     {
         return true;
     }

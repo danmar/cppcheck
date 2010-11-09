@@ -53,7 +53,7 @@ void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, cons
         if (filename[filename.length()-1] != '/')
         {
             // File
-            if (FileLister::acceptFile(filename))
+            if (sameFileName(path,filename) || FileLister::acceptFile(filename))
                 filenames.push_back(filename);
         }
         else
