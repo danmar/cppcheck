@@ -100,7 +100,7 @@ static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
 
 #endif // defined(UNICODE)
 
-void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
+void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path)
 {
     // oss is the search string passed into FindFirst and FindNext.
     // bdir is the base directory which is used to form pathnames.

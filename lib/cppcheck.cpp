@@ -53,7 +53,7 @@ void CppCheck::settings(const Settings &currentSettings)
 
 void CppCheck::addFile(const std::string &path)
 {
-    getFileLister()->recursiveAddFiles(_filenames, path.c_str(), true);
+    getFileLister()->recursiveAddFiles(_filenames, path.c_str());
 }
 
 void CppCheck::addFile(const std::string &path, const std::string &content)

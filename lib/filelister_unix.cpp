@@ -35,7 +35,7 @@
 ////// This code is POSIX-style systems ///////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
+void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path)
 {
     std::ostringstream oss;
     oss << path;
@@ -46,22 +46,20 @@ void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, cons
     glob(oss.str().c_str(), GLOB_MARK, 0, &glob_results);
     for (unsigned int i = 0; i < glob_results.gl_pathc; i++)
     {
-        std::string filename = glob_results.gl_pathv[i];
+        const std::string filename = glob_results.gl_pathv[i];
         if (filename == "." || filename == ".." || filename.length() == 0)
             continue;
 
         if (filename[filename.length()-1] != '/')
         {
             // File
-
-            // If recursive is not used, accept all files given by user
-            if (!recursive || FileLister::acceptFile(filename))
+            if (FileLister::acceptFile(filename))
                 filenames.push_back(filename);
         }
-        else if (recursive)
+        else
         {
             // Directory
-            getFileLister()->recursiveAddFiles(filenames, filename, recursive);
+            getFileLister()->recursiveAddFiles(filenames, filename);
         }
     }
     globfree(&glob_results);

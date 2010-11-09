@@ -45,10 +45,9 @@ public:
      * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
      * @param filenames output vector that filenames are written to
      * @param path root path
-     * @param recursive Should files be added recursively or not?
      */
     virtual void recursiveAddFiles(std::vector<std::string> &filenames,
-                                   const std::string &path, bool recursive) = 0;
+                                   const std::string &path) = 0;
 
     /**
      * @brief Compare filenames to see if they are the same.

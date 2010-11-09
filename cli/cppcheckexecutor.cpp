@@ -64,7 +64,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // Execute recursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
         for (iter = pathnames.begin(); iter != pathnames.end(); ++iter)
-            getFileLister()->recursiveAddFiles(filenames, iter->c_str(), true);
+            getFileLister()->recursiveAddFiles(filenames, iter->c_str());
 
         for (iter = filenames.begin(); iter != filenames.end(); ++iter)
             cppcheck->addFile(*iter);
