@@ -104,6 +104,7 @@ private:
         TEST_CASE(operatorEqToSelf5);   // ticket # 1233
         TEST_CASE(operatorEqToSelf6);   // ticket # 1550
         TEST_CASE(operatorEqToSelf7);
+        TEST_CASE(operatorEqToSelf8);   // ticket #2179
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetVector);
         TEST_CASE(memsetOnClass);
@@ -1231,6 +1232,26 @@ private:
             "        return assign(a);\n"
             "    }\n"
             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void operatorEqToSelf8()
+    {
+        checkOpertorEqToSelf(
+            "class FMat\n"
+            "{\n"
+            "public:\n"
+            "    FMat& copy(const FMat& rhs);\n"
+            "    FMat& operator=(const FMat& in);\n"
+            "};\n"
+            "FMat& FMat::copy(const FMat& rhs)\n"
+            "{\n"
+            "    return *this;\n"
+            "}\n"
+            "FMat& FMat::operator=(const FMat& in)\n"
+            "{\n"
+            "    return copy(in);\n"
+            "}");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -102,7 +102,7 @@ static bool isFunction(const Token *tok, const Token **funcStart, const Token **
     return false;
 }
 
-void CheckClass::addFunction(SpaceInfo **info, const Token **tok)
+void CheckClass::addFunction(SpaceInfo **info, const Token **tok, const Token *argStart)
 {
     const Token *tok1 = (*tok)->tokAt(-2);
     int count = 0;
@@ -180,6 +180,7 @@ void CheckClass::addFunction(SpaceInfo **info, const Token **tok)
                         {
                             func->hasBody = true;
                             func->token = (*tok)->next();
+                            func->arg = argStart;
                         }
                     }
                     else if (func->tokenDef->str() == (*tok)->str())
@@ -194,6 +195,7 @@ void CheckClass::addFunction(SpaceInfo **info, const Token **tok)
                                 {
                                     func->hasBody = true;
                                     func->token = (*tok);
+                                    func->arg = argStart;
                                 }
                             }
 
@@ -203,6 +205,7 @@ void CheckClass::addFunction(SpaceInfo **info, const Token **tok)
                                 // todo check for const
                                 func->hasBody = true;
                                 func->token = (*tok);
+                                func->arg = argStart;
                             }
                         }
                     }
@@ -256,7 +259,7 @@ void CheckClass::addIfFunction(SpaceInfo **info, const Token **tok)
         {
             // class function
             if ((*tok)->previous() && (*tok)->previous()->str() == "::")
-                addFunction(info, tok);
+                addFunction(info, tok, argStart);
 
             // regular function
             else
@@ -271,7 +274,7 @@ void CheckClass::addIfFunction(SpaceInfo **info, const Token **tok)
 
             // class function
             if (tok1->previous()->str() == "::")
-                addFunction(info, &tok1);
+                addFunction(info, &tok1, argStart);
 
             // regular function
             else
@@ -479,7 +482,7 @@ void CheckClass::createSymbolDatabase()
 
                 // nested class function?
                 else if (tok->previous()->str() == "::" && isFunction(tok, &funcStart, &argStart))
-                    addFunction(&info, &tok);
+                    addFunction(&info, &tok, argStart);
 
                 // friend class declaration?
                 else if (Token::Match(tok, "friend class| %any% ;"))

@@ -279,7 +279,6 @@ private:
         void addVar(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool class_)
         {
             varlist.push_back(Var(token_, varlist.size(), access_, mutable_, static_, class_));
-
         }
 
         /**
@@ -316,10 +315,9 @@ private:
         bool isBaseClassFunc(const Token *tok);
     };
 
-    void addFunction(SpaceInfo **info, const Token **tok);
+    void addFunction(SpaceInfo **info, const Token **tok, const Token *argStart);
     void addNewFunction(SpaceInfo **info, const Token **tok);
     void addIfFunction(SpaceInfo **info, const Token **tok);
-
 
     /** @brief Information about all namespaces/classes/structrues */
     std::list<SpaceInfo *> spaceInfoList;
