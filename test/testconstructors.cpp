@@ -490,6 +490,51 @@ private:
               "}\n");
 
         ASSERT_EQUALS("", errout.str());
+
+        check("class Foo {\n"
+              "    void func1()\n"
+              "    {\n"
+              "        struct Fred\n"
+              "        {\n"
+              "            int a;\n"
+              "            Fred() { a = 0; }\n"
+              "        };\n"
+              "    }\n"
+              "\n"
+              "    void func2()\n"
+              "    {\n"
+              "        struct Fred\n"
+              "        {\n"
+              "            int b;\n"
+              "            Fred() { b = 0; }\n"
+              "        };\n"
+              "    }\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Foo {\n"
+              "    void func1()\n"
+              "    {\n"
+              "        struct Fred\n"
+              "        {\n"
+              "            int a;\n"
+              "            Fred() { }\n"
+              "        };\n"
+              "    }\n"
+              "\n"
+              "    void func2()\n"
+              "    {\n"
+              "        struct Fred\n"
+              "        {\n"
+              "            int b;\n"
+              "            Fred() { }\n"
+              "        };\n"
+              "    }\n"
+              "};\n");
+
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable not initialized in the constructor 'Fred::a'\n"
+                      "[test.cpp:16]: (warning) Member variable not initialized in the constructor 'Fred::b'\n", errout.str());
     }
 
     void initvar_chained_assign()

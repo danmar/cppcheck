@@ -232,18 +232,21 @@ void CheckClass::addNewFunction(SpaceInfo **info, const Token **tok)
     SpaceInfo *new_info = new SpaceInfo(this, tok1, *info);
 
     // skip to start of function
-    while (tok1->str() != "{")
+    while (tok1 && tok1->str() != "{")
         tok1 = tok1->next();
 
-    new_info->classStart = tok1;
-    new_info->classEnd = tok1->link();
+    if (tok1)
+    {
+        new_info->classStart = tok1;
+        new_info->classEnd = tok1->link();
 
-    *info = new_info;
+        *info = new_info;
 
-    // add space
-    spaceInfoList.push_back(new_info);
+        // add space
+        spaceInfoList.push_back(new_info);
 
-    *tok = tok1;
+        *tok = tok1;
+    }
 }
 
 void CheckClass::addIfFunction(SpaceInfo **info, const Token **tok)
@@ -459,6 +462,8 @@ void CheckClass::createSymbolDatabase()
                     {
                         // find the function implementation later
                         tok = end->next();
+
+                        info->functionList.push_back(function);
                     }
 
                     // inline function
@@ -468,16 +473,14 @@ void CheckClass::createSymbolDatabase()
                         function.hasBody = true;
                         function.arg = function.argDef;
 
-                        // skip over function body
-                        tok = end->next();
-                        while (tok && tok->str() != "{")
-                            tok = tok->next();
-                        if (!tok)
-                            return;
-                        tok = tok->link();
-                    }
+                        info->functionList.push_back(function);
 
-                    info->functionList.push_back(function);
+                        const Token *tok2 = funcStart;
+
+                        addNewFunction(&info, &tok2);
+
+                        tok = tok2;
+                    }
                 }
 
                 // nested class function?
@@ -502,19 +505,7 @@ void CheckClass::createSymbolDatabase()
 
         // not in SpaceInfo
         else
-        {
-            // found a "?" skip until the end of statement is found to avoid detecting
-            // false functions..
-            if (tok->str() == "?")
-            {
-                while (tok && !Token::Match(tok, "[;{}]"))
-                    tok = tok->next();
-                if (!tok)
-                    break;
-            }
-
             addIfFunction(&info, &tok);
-        }
     }
 
     std::list<SpaceInfo *>::iterator it;
@@ -1417,7 +1408,14 @@ void CheckClass::privateFunctions()
 
         std::list<const Token *> FuncList;
         /** @todo embedded class have access to private functions */
-        if (info->nestedList.empty())
+        int nested = 0;
+        std::list<SpaceInfo *>::const_iterator ni;
+        for (ni = info->nestedList.begin(); ni != info->nestedList.end(); ++ni)
+        {
+            if ((*ni)->type != SpaceInfo::Function)
+                nested++;
+        }
+        if (!nested)
         {
             for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
             {
