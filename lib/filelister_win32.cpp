@@ -168,16 +168,16 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
             // File
 
             // If recursive is not used, accept all files given by user
-            if (!recursive || FileLister::acceptFile(ansiFfd))
+            if (sameFileName(path,ansiFfd) || FileLister::acceptFile(ansiFfd))
             {
                 const std::string nativename = Path::fromNativeSeparators(fname.str());
                 filenames.push_back(nativename);
             }
         }
-        else if (recursive)
+        else
         {
             // Directory
-            getFileLister()->recursiveAddFiles(filenames, fname.str().c_str(), recursive);
+            getFileLister()->recursiveAddFiles(filenames, fname.str());
         }
 #if defined(UNICODE)
         delete [] ansiFfd;
