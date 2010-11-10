@@ -312,6 +312,24 @@ private:
             return 0;
         }
 
+        /**
+         * @brief get the number of nested spaces that are not functions
+         *
+         * This returns the number of user defined types (class, struct, union)
+         * that are defined in this user defined type or namespace.
+         */
+        unsigned int getNestedNonFunctions() const
+        {
+            unsigned int nested = 0;
+            std::list<SpaceInfo *>::const_iterator ni;
+            for (ni = nestedList.begin(); ni != nestedList.end(); ++ni)
+            {
+                if ((*ni)->type != SpaceInfo::Function)
+                    nested++;
+            }
+            return nested;
+        }
+
         bool isBaseClassFunc(const Token *tok);
     };
 

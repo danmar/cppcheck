@@ -1408,14 +1408,7 @@ void CheckClass::privateFunctions()
 
         std::list<const Token *> FuncList;
         /** @todo embedded class have access to private functions */
-        int nested = 0;
-        std::list<SpaceInfo *>::const_iterator ni;
-        for (ni = info->nestedList.begin(); ni != info->nestedList.end(); ++ni)
-        {
-            if ((*ni)->type != SpaceInfo::Function)
-                nested++;
-        }
-        if (!nested)
+        if (!info->getNestedNonFunctions())
         {
             for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
             {
