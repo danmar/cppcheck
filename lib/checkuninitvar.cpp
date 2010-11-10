@@ -427,7 +427,8 @@ private:
             }
 
             // Variable declaration for array..
-            if (Token::Match(vartok, "%type% %var% [ %num% ] ;"))
+            if (Token::Match(vartok, "%type% %var% [") &&
+                Token::simpleMatch(vartok->tokAt(2)->link(), "] ;"))
             {
                 vartok = vartok->next();
                 declare(checks, vartok, tok, false, true);
