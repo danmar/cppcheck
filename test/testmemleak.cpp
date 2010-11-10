@@ -728,6 +728,7 @@ private:
         ASSERT_EQUALS("; alloc ; dealloc ; return ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } }"));
         ASSERT_EQUALS("; alloc ; dealloc ; return ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } if { continue ; } }"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } if { break ; } }"));
+        ASSERT_EQUALS("; alloc ; use ; }", simplifycode("; alloc ; while1 { if { dealloc ; return ; } continue ; } ; }"));
 
         ASSERT_EQUALS(";", simplifycode("; do { dealloc ; alloc ; } while(var) ;"));
         ASSERT_EQUALS("dealloc ; alloc ;", simplifycode("loop { dealloc ; alloc ; }"));
