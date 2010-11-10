@@ -1425,7 +1425,10 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             // The "::use" means that a member function was probably called but it wasn't analyzed further
             else if (classmember)
             {
-                if (!test_white_list(tok->str()))
+                if (noreturn.find(tok->str()) != noreturn.end())
+                    addtoken(&rettail, tok, "exit");
+
+                else if (!test_white_list(tok->str()))
                 {
                     int innerParlevel = 1;
                     for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
@@ -2512,6 +2515,7 @@ void CheckMemoryLeakInFunction::check()
                 tok = tok->next();
             parseFunctionScope(tok, tok1, classmember);
             tok = tok->link();
+            classmember = false;
             continue;
         }
 

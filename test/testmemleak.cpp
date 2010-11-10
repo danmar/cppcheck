@@ -311,6 +311,7 @@ private:
         TEST_CASE(func17);
         TEST_CASE(func18);
         TEST_CASE(func19);      // Ticket #2056 - if (!f(p)) return 0;
+        TEST_CASE(func20);		// Ticket #2182 - exit is not handled
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -1694,6 +1695,43 @@ private:
               "    int *p = malloc(16);\n"
               "    if (!a(p)) return;\n"
               "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void func20()
+    {
+        // Ticket #2182 - false positive when there is unused class.
+        // If the unused class is removed the false positive goes away.
+        // [test.cpp:12]: (error) Deallocating a deallocated pointer: p
+        check("class test {\n"
+              "    void f();\n"
+              "};\n"
+              "void test::f() { }\n"
+              "\n"
+              "void b(int i) {\n"
+              "    char *p = new char[10];\n"
+              "    if (i) {\n"
+              "        delete [] p;\n"
+              "        exit(0);\n"
+              "    }\n"
+              "    delete [] p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // False positive in classmember
+        // same code as above but the implementation is used in the
+        // class member function
+        check("class test {\n"
+              "    void f(int i);\n"
+              "};\n"
+              "void test::f(int i) {\n"
+              "    char *p = new char[10];\n"
+              "    if (i) {\n"
+              "        delete [] p;\n"
+              "        exit(0);\n"
+              "    }\n"
+              "    delete [] p;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
