@@ -398,7 +398,8 @@ void CheckOther::invalidScanfError(const Token *tok)
 {
     reportError(tok, Severity::warning,
                 "invalidscanf", "scanf without field width limits can crash with huge input data\n"
-                "To fix this error message add a field width specifier:\n"
+                "scanf without field width limits can crash with huge input data. To fix this error "
+                "message add a field width specifier:\n"
                 "    %s => %20s\n"
                 "    %i => %3i\n"
                 "\n"
@@ -2429,8 +2430,9 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
                 Severity::style,
                 "variableScope",
                 "The scope of the variable " + varname + " can be reduced\n"
-                "Warning: It can be unsafe to fix this message. Be careful. Especially when there are inner loops.\n"
-                "Here is an example where cppcheck will write that the scope for 'i' can be reduced:\n"
+                "The scope of the variable " + varname + " can be reduced. Warning: It can be unsafe "
+                "to fix this message. Be careful. Especially when there are inner loops. Here is an "
+                "example where cppcheck will write that the scope for 'i' can be reduced:\n"
                 "void f(int x)\n"
                 "{\n"
                 "    int i = 0;\n"
@@ -2442,7 +2444,6 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
                 "        }\n"
                 "    }\n"
                 "}\n"
-                "\n"
                 "When you see this message it is always safe to reduce the variable scope 1 level.");
 }
 

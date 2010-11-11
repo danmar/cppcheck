@@ -32,8 +32,23 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
 {
     _callStack = callStack;
     _severity = severity;
-    _msg = msg;
+    setmsg(msg);
     _id = id;
+}
+
+void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
+{
+    const std::string::size_type pos = msg.find("\n");
+    if (pos == std::string::npos)
+    {
+        _shortMessage = msg;
+        _verboseMessage = msg;
+    }
+    else
+    {
+        _shortMessage = msg.substr(0, pos - 1);
+        _verboseMessage = msg.substr(pos + 1);
+    }
 }
 
 std::string ErrorLogger::ErrorMessage::serialize() const
@@ -41,7 +56,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     std::ostringstream oss;
     oss << _id.length() << " " << _id;
     oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
-    oss << _msg.length() << " " << _msg;
+    oss << _shortMessage.length() << " " << _shortMessage;
     oss << _callStack.size() << " ";
 
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok)
@@ -79,7 +94,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
 
     _id = results[0];
     _severity = Severity::fromString(results[1]);
-    _msg = results[2];
+    _shortMessage = results[2];
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -146,7 +161,7 @@ static std::string stringToXml(std::string s)
     return s;
 }
 
-std::string ErrorLogger::ErrorMessage::toXML() const
+std::string ErrorLogger::ErrorMessage::toXML(bool verbose) const
 {
     std::ostringstream xml;
     xml << "<error";
@@ -157,7 +172,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
     }
     xml << " id=\"" << _id << "\"";
     xml << " severity=\"" << (_severity == Severity::error ? "error" : "style") << "\"";
-    xml << " msg=\"" << stringToXml(_msg) << "\"";
+    xml << " msg=\"" << stringToXml(verbose ? _verboseMessage : _shortMessage) << "\"";
     xml << "/>";
     return xml.str();
 }
@@ -172,7 +187,7 @@ void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::s
     }
 }
 
-std::string ErrorLogger::ErrorMessage::toString(const std::string &outputFormat) const
+std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string &outputFormat) const
 {
     if (outputFormat.length() == 0)
     {
@@ -181,7 +196,7 @@ std::string ErrorLogger::ErrorMessage::toString(const std::string &outputFormat)
             text << callStackToString(_callStack) << ": ";
         if (_severity != Severity::none)
             text << "(" << Severity::toString(_severity) << ") ";
-        text << _msg;
+        text << (verbose ? _verboseMessage : _shortMessage);
         return text.str();
     }
     else
@@ -189,7 +204,7 @@ std::string ErrorLogger::ErrorMessage::toString(const std::string &outputFormat)
         std::string result = outputFormat;
         findAndReplace(result, "{id}", _id);
         findAndReplace(result, "{severity}", Severity::toString(_severity));
-        findAndReplace(result, "{message}", _msg);
+        findAndReplace(result, "{message}", verbose ? _verboseMessage : _shortMessage);
 
         if (!_callStack.empty())
         {

@@ -120,18 +120,50 @@ public:
 
         ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id);
         ErrorMessage();
-        std::string toXML() const;
+
+        /**
+         * Format the error message in XML format
+         * @param verbose use verbose message
+         */
+        std::string toXML(bool verbose) const;
 
         static std::string getXMLHeader();
         static std::string getXMLFooter();
 
         /**
          * Format the error message into a string.
+         * @param verbose use verbose message
          * @param outputFormat Empty string to use default output format
          * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
          */
-        std::string toString(const std::string &outputFormat = "") const;
+        std::string toString(bool verbose, const std::string &outputFormat = "") const;
 
+        std::string serialize() const;
+        bool deserialize(const std::string &data);
+
+        std::list<FileLocation> _callStack;
+        Severity::SeverityType _severity;
+        std::string _id;
+
+        /** source file (not header) */
+        std::string file0;
+
+        /** set short and verbose messages */
+        void setmsg(const std::string &msg);
+
+        /** Short message (single line short message) */
+        const std::string &shortMessage() const
+        {
+            return _shortMessage;
+        }
+
+        /** Verbose message (may be the same as the short message) */
+        const std::string &verboseMessage() const
+        {
+            return _verboseMessage;
+        }
+
+    private:
         /**
          * Replace all occurances of searchFor with replaceWith in the
          * given source.
@@ -140,15 +172,12 @@ public:
          * @param replaceWith What will replace the found item
          */
         static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
-        std::string serialize() const;
-        bool deserialize(const std::string &data);
-        std::list<FileLocation> _callStack;
-        Severity::SeverityType _severity;
-        std::string _msg;
-        std::string _id;
 
-        /** source file (not header) */
-        std::string file0;
+        /** Short message */
+        std::string _shortMessage;
+
+        /** Verbose message */
+        std::string _verboseMessage;
     };
 
     ErrorLogger() { }

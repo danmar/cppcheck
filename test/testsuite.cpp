@@ -271,7 +271,7 @@ void TestFixture::reportOut(const std::string & outmsg)
 
 void TestFixture::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    const std::string errormessage(msg.toString());
+    const std::string errormessage(msg.toString(false));
     if (errout.str().find(errormessage) == std::string::npos)
         errout << errormessage << std::endl;
 }

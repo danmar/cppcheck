@@ -845,7 +845,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 loc.line = linenr;
                 errmsg._callStack.push_back(loc);
                 errmsg._severity = Severity::fromString("error");
-                errmsg._msg = "mismatching number of '(' and ')' in this line: " + def;
+                errmsg.setmsg("mismatching number of '(' and ')' in this line: " + def);
                 errmsg._id  = "preprocessor" + lineStream.str();
                 _errorLogger->reportErr(errmsg);
                 ret.clear();
@@ -993,8 +993,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 loc.setfile(filename);
                 loc.line = 1;
                 errmsg._callStack.push_back(loc);
-                errmsg._severity = Severity::fromString("error");
-                errmsg._msg = "Error parsing this: " + s;
+                errmsg._severity = Severity::error;
+                errmsg.setmsg("Error parsing this: " + s);
                 errmsg._id  = "preprocessor" + lineStream.str();
                 _errorLogger->reportErr(errmsg);
             }
@@ -2402,11 +2402,11 @@ void Preprocessor::getErrorMessages(std::ostream &ostr)
                                            Severity::style,
                                            "Include file: \"\" not found.",
                                            "missingInclude");
-    ostr << errmsg.toXML() << std::endl;
+    ostr << errmsg.toXML(false) << std::endl;
 
     const ErrorLogger::ErrorMessage errmsg2(locationList,
                                             Severity::error,
                                             "#error ...",
                                             "preprocessorErrorDirective");
-    ostr << errmsg2.toXML() << std::endl;
+    ostr << errmsg2.toXML(false) << std::endl;
 }

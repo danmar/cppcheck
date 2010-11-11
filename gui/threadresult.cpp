@@ -69,7 +69,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
     item.files = files;
     item.id = QString(msg._id.c_str());
     item.lines = lines;
-    item.msg = QString(msg._msg.c_str());
+    item.msg = QString::fromStdString(msg.verboseMessage());
     item.severity = QString::fromStdString(Severity::toString(msg._severity));
 
     if (msg._severity != Severity::debug)

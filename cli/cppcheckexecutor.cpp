@@ -184,10 +184,10 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
     if (_settings._xml)
     {
-        reportErr(msg.toXML());
+        reportErr(msg.toXML(_settings._verbose));
     }
     else
     {
-        reportErr(msg.toString(_settings._outputFormat));
+        reportErr(msg.toString(_settings._verbose, _settings._outputFormat));
     }
 }

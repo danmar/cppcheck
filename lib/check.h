@@ -110,7 +110,7 @@ public:
      */
     static void reportError(const ErrorLogger::ErrorMessage &errmsg)
     {
-        std::cout << errmsg.toXML() << std::endl;
+        std::cout << errmsg.toXML(true) << std::endl;
     }
 
 protected:
@@ -130,14 +130,6 @@ protected:
     /** report an error */
     void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg)
     {
-        // If the verbose flag hasn't been given, don't show verbose information
-        if (!_settings || !_settings->_verbose)
-        {
-            std::string::size_type pos = msg.find("\n");
-            if (pos != std::string::npos)
-                msg.erase(pos);
-        }
-
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
         {
