@@ -76,7 +76,7 @@ void TxtReport::WriteError(const ErrorItem &error)
         }
     }
 
-    line += QString("(%1) %2").arg(error.severity).arg(error.msg);
+    line += QString("(%1) %2").arg(error.severity).arg(error.message);
 
     mTxtWriter << line << endl;
 }

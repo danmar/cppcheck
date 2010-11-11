@@ -99,7 +99,7 @@ void XmlReport::WriteError(const ErrorItem &error)
     mXmlWriter->writeAttribute(LineAttribute, line);
     mXmlWriter->writeAttribute(IdAttribute, error.id);
     mXmlWriter->writeAttribute(SeverityAttribute, error.severity);
-    mXmlWriter->writeAttribute(MsgAttribute, error.msg);
+    mXmlWriter->writeAttribute(MsgAttribute, error.message);
     mXmlWriter->writeEndElement();
 }
 
@@ -159,7 +159,7 @@ ErrorLine XmlReport::ReadError(QXmlStreamReader *reader)
         line.line = attribs.value("", LineAttribute).toString().toUInt();
         line.id = attribs.value("", IdAttribute).toString();
         line.severity = attribs.value("", SeverityAttribute).toString();
-        line.msg = attribs.value("", MsgAttribute).toString();
+        line.message = attribs.value("", MsgAttribute).toString();
     }
     return line;
 }

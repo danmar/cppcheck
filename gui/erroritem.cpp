@@ -25,7 +25,8 @@ ErrorItem::ErrorItem(const ErrorItem &item)
     lines = item.lines;
     id = item.id;
     severity = item.severity;
-    msg = item.msg;
+    summary = item.summary;
+    message = item.message;
 }
 
 ErrorItem::ErrorItem(const ErrorLine &line)
@@ -35,13 +36,15 @@ ErrorItem::ErrorItem(const ErrorLine &line)
     lines.append(line.line);
     id = line.id;
     severity = line.severity;
-    msg = line.msg;
+    summary = line.summary;
+    message = line.message;
 }
 
 QString ErrorItem::ToString() const
 {
     QString str = file + " - " + id + " - " + severity +"\n";
-    str += "  " + msg;
+    str += "  " + summary;
+    str += "\n" + message;
     for (int i = 0; i < files.size(); i++)
         str += "  " + files[i] + ": " + lines[i] + "\n";
     return str;

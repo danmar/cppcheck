@@ -50,7 +50,8 @@ public:
     QList<unsigned int> lines;
     QString id;
     QString severity;
-    QString msg;
+    QString summary;
+    QString message;
 };
 
 Q_DECLARE_METATYPE(ErrorItem);
@@ -65,7 +66,8 @@ public:
     unsigned int line;
     QString id;
     QString severity;
-    QString msg;
+    QString summary;
+    QString message;
 };
 
 /// @}

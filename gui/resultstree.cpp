@@ -107,7 +107,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     line.file = realfile;
     line.id = item.id;
     line.line = item.lines[0];
-    line.msg = item.msg;
+    line.message = item.message;
     line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
@@ -122,7 +122,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     //Add user data to that item
     QMap<QString, QVariant> data;
     data["severity"]  = SeverityToShowType(item.severity);
-    data["message"]  = item.msg;
+    data["message"]  = item.message;
     data["file"]  = item.files[0];
     data["line"]  = item.lines[0];
     data["id"]  = item.id;
@@ -142,7 +142,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
         //Add user data to that item
         QMap<QString, QVariant> child_data;
         child_data["severity"]  = SeverityToShowType(line.severity);
-        child_data["message"]  = line.msg;
+        child_data["message"]  = line.message;
         child_data["file"]  = item.files[i];
         child_data["line"]  = line.line;
         child_data["id"]  = line.id;
@@ -176,7 +176,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     list << CreateItem(QString("%1").arg(item.line));
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
-    list << CreateItem(tr(item.msg.toLatin1()));
+    list << CreateItem(tr(item.message.toLatin1()));
 
     // Check for duplicate rows and don't add them if found
     for (int i = 0; i < parent->rowCount(); i++)
@@ -693,7 +693,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
 
         ErrorItem item;
         item.severity = ShowTypeToString(VariantToShowType(data["severity"]));
-        item.msg = data["message"].toString();
+        item.message = data["message"].toString();
         item.id = data["id"].toString();
         QString file = StripPath(data["file"].toString(), true);
         unsigned int line = data["line"].toUInt();

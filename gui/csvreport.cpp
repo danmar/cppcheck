@@ -65,7 +65,7 @@ void CsvReport::WriteError(const ErrorItem &error)
     QString line;
     const QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
     line += QString("%1,%2,").arg(file).arg(error.lines[error.lines.size() - 1]);
-    line += QString("%1,%2").arg(error.severity).arg(error.msg);
+    line += QString("%1,%2").arg(error.severity).arg(error.message);
 
     mTxtWriter << line << endl;
 }
