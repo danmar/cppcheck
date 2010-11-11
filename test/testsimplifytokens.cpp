@@ -227,6 +227,7 @@ private:
         TEST_CASE(simplifyTypedefFunction4);
         TEST_CASE(simplifyTypedefFunction5);
         TEST_CASE(simplifyTypedefFunction6);
+        TEST_CASE(simplifyTypedefFunction7);
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -5118,6 +5119,21 @@ private:
                                    "} ; "
                                    "void ( * Fred :: get3 ( ) ) ( ) { return 0 ; } "
                                    "void ( * Fred :: get4 ( ) ) ( ) { return 0 ; }");
+
+        ASSERT_EQUALS(expected, tok(code, false));
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedefFunction7()
+    {
+        const char code[] = "typedef void ( __gnu_cxx :: _SGIAssignableConcept < _Tp > :: * _func_Tp_SGIAssignableConcept ) () ;"
+                            "_func_Tp_SGIAssignableConcept X;\n";
+
+        // The expected result..
+        const std::string expected("; "
+                                   "void ( __gnu_cxx :: _SGIAssignableConcept < _Tp > :: * X ) ( ) ;");
 
         ASSERT_EQUALS(expected, tok(code, false));
 

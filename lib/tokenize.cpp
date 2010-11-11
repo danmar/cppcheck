@@ -809,6 +809,8 @@ void Tokenizer::simplifyTypedef()
         Token *argFuncRetEnd = 0;
         Token *const1 = 0;
         Token *const2 = 0;
+        Token *funcStart = 0;
+        Token *funcEnd = 0;
         int offset = 1;
         bool function = false;
         bool functionPtr = false;
@@ -961,7 +963,7 @@ void Tokenizer::simplifyTypedef()
             }
         }
 
-        // typeof
+        // typeof: typedef __typeof__ ( ... ) type;
         else if (Token::simpleMatch(tok->tokAt(offset - 1), "__typeof__ (") &&
                  Token::Match(tok->tokAt(offset)->link(), ") %type% ;"))
         {
@@ -972,37 +974,17 @@ void Tokenizer::simplifyTypedef()
             typeOf = true;
         }
 
-        else if (Token::Match(tok->tokAt(offset), "( *|&| const|volatile| const|volatile| %type% ) ("))
+        // function: typedef ... ( .... type )( ... );
+        else if (tok->tokAt(offset)->str() == "(" &&
+                 Token::Match(tok->tokAt(offset)->link()->previous(), "%type% ) (") &&
+                 Token::Match(tok->tokAt(offset)->link()->next()->link(), ") const|volatile|;"))
         {
-            functionPtr = tok->tokAt(offset + 1)->str() == "*";
-            functionRef = tok->tokAt(offset + 1)->str() == "&";
-            function = tok->tokAt(offset + 2)->str() == ")";
-            if (!function)
-            {
-                offset++;
-                if (Token::Match(tok->tokAt(offset + 1), "const|volatile"))
-                {
-                    const1= tok->tokAt(offset + 1);
-                    offset++;
-                    if (Token::Match(tok->tokAt(offset + 1), "const|volatile"))
-                    {
-                        const2 = tok->tokAt(offset + 1);
-                        offset++;
-                    }
-                }
-            }
-            if (tok->tokAt(offset + 3)->link()->next())
-            {
-                typeName = tok->tokAt(offset + 1);
-                argStart = tok->tokAt(offset + 3);
-                argEnd = tok->tokAt(offset + 3)->link();
-                tok = argEnd->next();
-            }
-            else
-            {
-                // internal error
-                continue;
-            }
+            funcStart = tok->tokAt(offset + 1);
+            funcEnd = tok->tokAt(offset)->link()->tokAt(-2);
+            typeName = tok->tokAt(offset)->link()->previous();
+            argStart = tok->tokAt(offset)->link()->next();
+            argEnd = tok->tokAt(offset)->link()->next()->link();
+            tok = argEnd->next();
             Token *spec = tok;
             if (Token::Match(spec, "const|volatile"))
             {
@@ -1016,57 +998,7 @@ void Tokenizer::simplifyTypedef()
                 tok = specEnd->next();
             }
         }
-        else if (Token::Match(tok->tokAt(offset), "( ::| %var% :: *|&| const|volatile| const|volatile| %type% ) (") ||
-                 Token::Match(tok->tokAt(offset), "( ::| %var% < %type% > :: *|&| const|volatile| const|volatile| %type% ) ("))
-        {
-            namespaceStart = tok->tokAt(offset + 1);
-            if (tok->tokAt(offset + 1)->str() == "::")
-                offset++;
-            if (tok->tokAt(offset + 2)->str() == "<")
-                offset += 3;
-            namespaceEnd = tok->tokAt(offset + 2);
-            functionPtr = tok->tokAt(offset + 3)->str() == "*";
-            functionRef = tok->tokAt(offset + 3)->str() == "&";
-            function = tok->tokAt(offset + 4)->str() == ")";
-            if (!function)
-            {
-                offset++;
-                if (Token::Match(tok->tokAt(offset + 3), "const|volatile"))
-                {
-                    const1 = tok->tokAt(offset + 3);
-                    offset++;
-                    if (Token::Match(tok->tokAt(offset + 3), "const|volatile"))
-                    {
-                        const2 = tok->tokAt(offset + 3);
-                        offset++;
-                    }
-                }
-            }
-            if (tok->tokAt(offset + 5)->link()->next())
-            {
-                typeName = tok->tokAt(offset + 3);
-                argStart = tok->tokAt(offset + 5);
-                argEnd = tok->tokAt(offset + 5)->link();
-                tok = argEnd->next();
-            }
-            else
-            {
-                // internal error
-                continue;
-            }
-            Token *spec = tok;
-            if (Token::Match(spec, "const|volatile"))
-            {
-                specStart = spec;
-                specEnd = spec;
-                while (Token::Match(spec->next(), "const|volatile"))
-                {
-                    specEnd = spec->next();
-                    spec = specEnd;
-                }
-                tok = specEnd->next();
-            }
-        }
+
         else if (Token::Match(tok->tokAt(offset), "( %type% ("))
         {
             function = true;
@@ -1322,7 +1254,111 @@ void Tokenizer::simplifyTypedef()
                         }
                     }
 
-                    if (functionPtr || functionRef || function)
+                    if (funcStart && funcEnd)
+                    {
+                        tok2->insertToken("(");
+                        tok2 = tok2->next();
+                        Token *tok3 = tok2;
+                        Token *nextTok;
+                        for (nextTok = funcStart; nextTok != funcEnd->next(); nextTok = nextTok->next())
+                        {
+                            tok2->insertToken(nextTok->strAt(0));
+                            tok2 = tok2->next();
+
+                            // Check for links and fix them up
+                            if (tok2->str() == "(" || tok2->str() == "[")
+                                links.push(tok2);
+                            if (tok2->str() == ")" || tok2->str() == "]")
+                            {
+                                Token * link = links.top();
+
+                                tok2->link(link);
+                                link->link(tok2);
+
+                                links.pop();
+                            }
+                        }
+
+                        if (!inCast)
+                        {
+                            if (tok2->next() && tok2->next()->str() != ")" &&
+                                tok2->next()->str() != ",")
+                            {
+                                if (Token::Match(tok2->next(), "( * %type% ) ("))
+                                    tok2 = tok2->tokAt(5)->link();
+                                else
+                                {
+                                    if (tok2->next()->str() == "(")
+                                        tok2 = tok2->next()->link();
+                                    else if (!inOperator && !Token::Match(tok2->next(), "[|>|;"))
+                                    {
+                                        tok2 = tok2->next();
+
+                                        while (Token::Match(tok2, "*|&") &&
+                                               !Token::Match(tok2->next(), ")|>"))
+                                            tok2 = tok2->next();
+
+                                        // skip over namespace
+                                        while (Token::Match(tok2, "%var% ::"))
+                                            tok2 = tok2->tokAt(2);
+
+                                        // skip over typedef parameter
+                                        if (tok2->next()->str() == "(")
+                                        {
+                                            tok2 = tok2->next()->link();
+
+                                            if (tok2->next()->str() == "(")
+                                                tok2 = tok2->next()->link();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        tok2->insertToken(")");
+                        tok2 = tok2->next();
+                        Token::createMutualLinks(tok2, tok3);
+
+                        tok2->insertToken("(");
+                        tok2 = tok2->next();
+                        tok3 = tok2;
+                        for (nextTok = argStart->next(); nextTok != argEnd; nextTok = nextTok->next())
+                        {
+                            tok2->insertToken(nextTok->strAt(0));
+                            tok2 = tok2->next();
+
+                            // Check for links and fix them up
+                            if (tok2->str() == "(" || tok2->str() == "[")
+                                links.push(tok2);
+                            if (tok2->str() == ")" || tok2->str() == "]")
+                            {
+                                Token * link = links.top();
+
+                                tok2->link(link);
+                                link->link(tok2);
+
+                                links.pop();
+                            }
+                        }
+                        tok2->insertToken(")");
+                        tok2 = tok2->next();
+                        Token::createMutualLinks(tok2, tok3);
+
+                        if (specStart)
+                        {
+                            Token *spec = specStart;
+                            tok2->insertToken(spec->str());
+                            tok2 = tok2->next();
+                            while (spec != specEnd)
+                            {
+                                spec = spec->next();
+                                tok2->insertToken(spec->str());
+                                tok2 = tok2->next();
+                            }
+                        }
+                    }
+
+                    else if (functionPtr || functionRef || function)
                     {
                         // don't add parenthesis around function names because it
                         // confuses other simplifications
