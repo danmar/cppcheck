@@ -818,6 +818,7 @@ void Tokenizer::simplifyTypedef()
         bool ptrToArray = false;
         bool refToArray = false;
         bool ptrMember = false;
+        bool typeOf = false;
         Token *namespaceStart = 0;
         Token *namespaceEnd = 0;
 
@@ -959,6 +960,18 @@ void Tokenizer::simplifyTypedef()
                 continue;
             }
         }
+
+        // typeof
+        else if (Token::simpleMatch(tok->tokAt(offset - 1), "__typeof__ (") &&
+                 Token::Match(tok->tokAt(offset)->link(), ") %type% ;"))
+        {
+            argStart = tok->tokAt(offset);
+            argEnd = tok->tokAt(offset)->link();
+            typeName = tok->tokAt(offset)->link()->next();
+            tok = typeName->next();
+            typeOf = true;
+        }
+
         else if (Token::Match(tok->tokAt(offset), "( *|&| const|volatile| const|volatile| %type% ) ("))
         {
             functionPtr = tok->tokAt(offset + 1)->str() == "*";
@@ -1591,6 +1604,36 @@ void Tokenizer::simplifyTypedef()
                         tok2->insertToken(")");
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok3);
+                    }
+                    else if (typeOf)
+                    {
+                        tok2->insertToken("(");
+                        tok2 = tok2->next();
+                        Token *tok3 = tok2;
+                        Token *nextArgTok;
+                        std::stack<Token *> argLinks;
+                        for (nextArgTok = argStart->next(); nextArgTok != argEnd; nextArgTok = nextArgTok->next())
+                        {
+                            tok2->insertToken(nextArgTok->strAt(0));
+                            tok2 = tok2->next();
+
+                            // Check for links and fix them up
+                            if (tok2->str() == "(" || tok2->str() == "[")
+                                argLinks.push(tok2);
+                            if (tok2->str() == ")" || tok2->str() == "]")
+                            {
+                                Token * link = argLinks.top();
+
+                                tok2->link(link);
+                                link->link(tok2);
+
+                                argLinks.pop();
+                            }
+                        }
+                        tok2->insertToken(")");
+                        tok2 = tok2->next();
+                        Token::createMutualLinks(tok2, tok3);
+
                     }
                     else if (tok2->tokAt(2) && tok2->tokAt(2)->str() == "[")
                     {
