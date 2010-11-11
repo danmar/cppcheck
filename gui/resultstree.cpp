@@ -53,7 +53,7 @@ ResultsTree::ResultsTree(QWidget * parent) :
 
     setModel(&mModel);
     QStringList labels;
-    labels << tr("File") << tr("Severity") << tr("Line") << tr("Message");
+    labels << tr("File") << tr("Severity") << tr("Line") << tr("Summary") << tr("Message");
     mModel.setHorizontalHeaderLabels(labels);
     setExpandsOnDoubleClick(false);
     setSortingEnabled(true);
@@ -107,6 +107,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     line.file = realfile;
     line.id = item.id;
     line.line = item.lines[0];
+    line.summary = item.summary;
     line.message = item.message;
     line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
@@ -122,6 +123,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     //Add user data to that item
     QMap<QString, QVariant> data;
     data["severity"]  = SeverityToShowType(item.severity);
+    data["summary"] = item.summary;
     data["message"]  = item.message;
     data["file"]  = item.files[0];
     data["line"]  = item.lines[0];
@@ -142,6 +144,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
         //Add user data to that item
         QMap<QString, QVariant> child_data;
         child_data["severity"]  = SeverityToShowType(line.severity);
+        child_data["summary"] = line.summary;
         child_data["message"]  = line.message;
         child_data["file"]  = item.files[i];
         child_data["line"]  = line.line;
@@ -176,6 +179,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     list << CreateItem(QString("%1").arg(item.line));
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
+    list << CreateItem(tr(item.summary.toLatin1()));
     list << CreateItem(tr(item.message.toLatin1()));
 
     // Check for duplicate rows and don't add them if found
@@ -192,18 +196,23 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
             // the second column is the severity so check it next
             if (parent->child(i, 1)->text() == list[1]->text())
             {
-                // the fourth column is the message so check it last
+                // the fourth column is the summary so check it last
                 if (parent->child(i, 3)->text() == list[3]->text())
                 {
+
+                    // the fifth column is the message so check it last
+                    if (parent->child(i, 4)->text() == list[4]->text())
+                    {
 #if defined(_WIN32)
-                    const QString first = parent->child(i, 0)->text().toLower();
-                    const QString second = list[0]->text().toLower();
-                    if (first == second)
-                        return 0;
+                        const QString first = parent->child(i, 0)->text().toLower();
+                        const QString second = list[0]->text().toLower();
+                        if (first == second)
+                            return 0;
 #else
-                    // this row matches so don't add it
-                    return 0;
+                        // this row matches so don't add it
+                        return 0;
 #endif // _WIN32
+                    }
                 }
             }
         }
@@ -693,6 +702,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
 
         ErrorItem item;
         item.severity = ShowTypeToString(VariantToShowType(data["severity"]));
+        item.summary = data["summary"].toString();
         item.message = data["message"].toString();
         item.id = data["id"].toString();
         QString file = StripPath(data["file"].toString(), true);
@@ -868,7 +878,7 @@ bool ResultsTree::HasResults() const
 void ResultsTree::Translate()
 {
     QStringList labels;
-    labels << tr("File") << tr("Severity") << tr("Line") << tr("Message");
+    labels << tr("File") << tr("Severity") << tr("Line") << tr("Summary") << tr("Message");
     mModel.setHorizontalHeaderLabels(labels);
     //TODO go through all the errors in the tree and translate severity and message
 }
