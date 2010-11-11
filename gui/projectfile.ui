@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>131</height>
+    <height>159</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,6 +46,13 @@
      <item>
       <widget class="QLineEdit" name="mEditPaths"/>
      </item>
+     <item>
+      <widget class="QPushButton" name="mBtnBrowsePaths">
+       <property name="text">
+        <string>Browse...</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -62,6 +69,13 @@
      </item>
      <item>
       <widget class="QLineEdit" name="mEditIncludePaths"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="mBtnBrowseIncludes">
+       <property name="text">
+        <string>Browse...</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -110,7 +124,9 @@
  <tabstops>
   <tabstop>mEditProjectRoot</tabstop>
   <tabstop>mEditPaths</tabstop>
+  <tabstop>mBtnBrowsePaths</tabstop>
   <tabstop>mEditIncludePaths</tabstop>
+  <tabstop>mBtnBrowseIncludes</tabstop>
   <tabstop>mEditDefines</tabstop>
   <tabstop>mButtons</tabstop>
  </tabstops>
@@ -123,12 +139,12 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>257</x>
+     <y>148</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
-     <y>274</y>
+     <y>158</y>
     </hint>
    </hints>
   </connection>
@@ -139,12 +155,12 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>325</x>
+     <y>148</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
-     <y>274</y>
+     <y>158</y>
     </hint>
    </hints>
   </connection>

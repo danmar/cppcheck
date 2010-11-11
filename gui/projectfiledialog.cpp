@@ -21,6 +21,8 @@
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
+#include <QFileDialog>
+#include <QLineEdit>
 #include "projectfiledialog.h"
 
 ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
@@ -34,6 +36,8 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     setWindowTitle(title);
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(mUI.mBtnBrowseIncludes, SIGNAL(clicked()), this, SLOT(BrowseIncludes()));
+    connect(mUI.mBtnBrowsePaths, SIGNAL(clicked()), this, SLOT(BrowsePaths()));
 }
 
 QString ProjectFileDialog::GetRootPath() const
@@ -136,4 +140,36 @@ void ProjectFileDialog::SetPaths(const QStringList &paths)
     if (pathstr.endsWith(';'))
         pathstr = pathstr.left(pathstr.length() - 1);
     mUI.mEditPaths->setText(pathstr);
+}
+
+void ProjectFileDialog::BrowseIncludes()
+{
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                          tr("Select include directory"),
+                          QString());
+
+    if (!selectedDir.isEmpty())
+    {
+        AppendDirname(mUI.mEditIncludePaths, selectedDir);
+    }
+}
+
+void ProjectFileDialog::BrowsePaths()
+{
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                          tr("Select directory to check"),
+                          QString());
+
+    if (!selectedDir.isEmpty())
+    {
+        AppendDirname(mUI.mEditPaths, selectedDir);
+    }
+}
+
+void ProjectFileDialog::AppendDirname(QLineEdit *edit, const QString &dir)
+{
+    QString wholeText = edit->text();
+    wholeText += ";";
+    wholeText += dir;
+    edit->setText(wholeText);
 }

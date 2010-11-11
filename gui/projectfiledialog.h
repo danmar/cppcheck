@@ -26,6 +26,8 @@
 #include "ui_projectfile.h"
 
 class ProjectFile;
+class QWidget;
+class QLineEdit;
 
 /// @addtogroup GUI
 /// @{
@@ -87,6 +89,26 @@ public:
     * @param paths List of path names to set to dialog control.
     */
     void SetPaths(const QStringList &paths);
+
+protected slots:
+    /**
+    * @brief Browse for include directory.
+    * Allow user to choose new include directory.
+    */
+    void BrowseIncludes();
+    /**
+    * @brief Browse for checked directory.
+    * Allow user to choose new checked directory.
+    */
+    void BrowsePaths();
+
+protected:
+    /**
+    * @brief Append new path to the edit control.
+    * @param edit Edit control to modify.
+    * @param dir Path to add.
+    */
+    void AppendDirname(QLineEdit *edit, const QString &dir);
 
 private:
     Ui::ProjectFile mUI;
