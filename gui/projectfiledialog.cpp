@@ -176,5 +176,7 @@ void ProjectFileDialog::AppendDirname(QLineEdit *edit, const QString &dir)
     QString wholeText = edit->text();
     wholeText += ";";
     wholeText += dir;
+    if (!wholeText.endsWith(QDir::separator()))
+        wholeText += QDir::separator();
     edit->setText(wholeText);
 }
