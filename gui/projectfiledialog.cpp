@@ -23,6 +23,7 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QLineEdit>
+#include <QDir>
 #include "projectfiledialog.h"
 
 ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
@@ -54,6 +55,7 @@ QStringList ProjectFileDialog::GetIncludePaths() const
     if (!include.isEmpty())
     {
         include = include.trimmed();
+        include = QDir::fromNativeSeparators(include);
         if (include.indexOf(';') != -1)
             includes = include.split(";");
         else
@@ -84,6 +86,7 @@ QStringList ProjectFileDialog::GetPaths() const
     if (!path.isEmpty())
     {
         path = path.trimmed();
+        path = QDir::fromNativeSeparators(path);
         if (path.indexOf(';') != -1)
             paths = path.split(";");
         else
@@ -109,6 +112,7 @@ void ProjectFileDialog::SetIncludepaths(const QStringList &includes)
     // Remove ; from the end of the string
     if (includestr.endsWith(';'))
         includestr = includestr.left(includestr.length() - 1);
+    includestr = QDir::toNativeSeparators(includestr);
     mUI.mEditIncludePaths->setText(includestr);
 }
 
@@ -139,6 +143,7 @@ void ProjectFileDialog::SetPaths(const QStringList &paths)
     // Remove ; from the end of the string
     if (pathstr.endsWith(';'))
         pathstr = pathstr.left(pathstr.length() - 1);
+    pathstr = QDir::toNativeSeparators(pathstr);
     mUI.mEditPaths->setText(pathstr);
 }
 
