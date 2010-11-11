@@ -1317,7 +1317,9 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             Token::simpleMatch(tok2->next(), "["))
                         {
                         }
-                        else if (f.empty() || !test_white_list(f.top()->str()))
+                        else if (f.empty() ||
+                                 !test_white_list(f.top()->str()) ||
+                                 getDeallocationType(f.top(),varid))
                         {
                             use = true;
                         }

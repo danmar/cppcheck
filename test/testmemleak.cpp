@@ -485,6 +485,7 @@ private:
         ASSERT_EQUALS(";;dealloc;", getcode("void *p; foo(fclose(p));", "p"));
         ASSERT_EQUALS(";;dealloc;", getcode("void *p; foo(close(p));", "p"));
         ASSERT_EQUALS(";;;;", getcode("FILE *f1; FILE *f2; fclose(f1);", "f2"));
+        ASSERT_EQUALS(";;returnuse;", getcode("FILE *f; return fclose(f) == EOF ? 1 : 2;", "f"));
 
         // if..
         ASSERT_EQUALS(";;if{}", getcode("char *s; if (a) { }", "s"));
