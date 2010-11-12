@@ -46,7 +46,7 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     }
     else
     {
-        _shortMessage = msg.substr(0, pos - 1);
+        _shortMessage = msg.substr(0, pos);
         _verboseMessage = msg.substr(pos + 1);
     }
 }
