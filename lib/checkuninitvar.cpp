@@ -925,7 +925,7 @@ public:
             }
             if (tok->str() != "::" && Token::Match(tok->next(), "%var% ( %type%"))
             {
-                if (!Token::simpleMatch(tok->tokAt(2)->link(), ") {"))
+                if (!Token::Match(tok->tokAt(2)->link(), ") [{;]"))
                     continue;
                 const Token *tok2 = tok->tokAt(3);
                 while (tok2 && tok2->str() != ")")

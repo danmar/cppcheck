@@ -1128,6 +1128,7 @@ private:
     {
         // function analysis..
         ASSERT_EQUALS("foo", analyseFunctions("void foo(int x) { }"));
+        ASSERT_EQUALS("foo", analyseFunctions("void foo(int x);"));
         ASSERT_EQUALS("foo", analyseFunctions("void foo(const int &x) { }"));
         ASSERT_EQUALS("foo", analyseFunctions("void foo(int &x) { ++x; }"));
         ASSERT_EQUALS("", analyseFunctions("void foo(int &x) { x = 0; }"));
