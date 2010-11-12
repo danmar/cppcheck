@@ -879,6 +879,14 @@ private:
                        "        s = y[0]*y[1];\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "        int a[2];\n"
+                       "        init(a - 1);\n"
+                       "        int b = a[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // alloc..

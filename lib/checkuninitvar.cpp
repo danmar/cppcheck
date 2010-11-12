@@ -673,7 +673,7 @@ private:
                         bailouts.insert(tok2->varId());
 
                     // array initialization..
-                    if (Token::Match(tok2->previous(), "[,(] %var% +"))
+                    if (Token::Match(tok2->previous(), "[,(] %var% [+-]"))
                     {
                         // if var is array, bailout
                         for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
