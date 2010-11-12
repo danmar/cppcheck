@@ -434,6 +434,46 @@ private:
         return "Don't forget to deallocate struct members";
     }
 };
+
+
+
+/** @brief detect simple memory leaks (address not taken) */
+
+class CheckMemoryLeakNoVar : private Check, private CheckMemoryLeak
+{
+public:
+    CheckMemoryLeakNoVar() : Check(), CheckMemoryLeak(0, 0)
+    { }
+
+    CheckMemoryLeakNoVar(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
+        : Check(tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
+    { }
+
+    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
+    {
+        CheckMemoryLeakNoVar checkMemoryLeak(tokenizr, settings, errLog);
+        checkMemoryLeak.check();
+    }
+
+    void check();
+
+private:
+
+    void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
+
+    void getErrorMessages()
+    { }
+
+    std::string name() const
+    {
+        return "Memory leaks (address not taken)";
+    }
+
+    std::string classInfo() const
+    {
+        return "Not taking the address to allocated memory";
+    }
+};
 /// @}
 //---------------------------------------------------------------------------
 #endif

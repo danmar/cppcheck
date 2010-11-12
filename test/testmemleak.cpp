@@ -3909,3 +3909,56 @@ private:
 
 static TestMemleakStructMember testMemleakStructMember;
 
+
+
+
+
+class TestMemleakNoVar : public TestFixture
+{
+public:
+    TestMemleakNoVar() : TestFixture("TestMemleakNoVar")
+    { }
+
+private:
+    void check(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for memory leaks..
+        Settings settings;
+        CheckMemoryLeakNoVar checkMemoryLeakNoVar(&tokenizer, &settings, this);
+        checkMemoryLeakNoVar.check();
+    }
+
+    void run()
+    {
+        // pass allocated memory to function..
+        TEST_CASE(functionParameter);
+    }
+
+    void functionParameter()
+    {
+        // standard function..
+        check("void x() {\n"
+              "    strcpy(a, strdup(p));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
+
+        // user function..
+        check("void set_error(const char *msg) {\n"
+              "}\n"
+              "\n"
+              "void x() {\n"
+              "    set_error(strdup(p));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Allocation with strdup, set_error doesn't release it.\n", errout.str());
+    }
+};
+static TestMemleakNoVar testMemleakNoVar;

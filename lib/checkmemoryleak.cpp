@@ -38,6 +38,7 @@ namespace
 CheckMemoryLeakInFunction instance1;
 CheckMemoryLeakInClass instance2;
 CheckMemoryLeakStructMember instance3;
+CheckMemoryLeakNoVar instance4;
 }
 
 
@@ -3214,4 +3215,78 @@ void CheckMemoryLeakInFunction::localleaks()
     CheckLocalLeaks c(this);
     checkExecutionPaths(_tokenizer->tokens(), &c);
 }
+
+
+
+#include "checkuninitvar.h"		// CheckUninitVar::analyse
+
+void CheckMemoryLeakNoVar::check()
+{
+    std::set<std::string> uvarFunctions;
+    {
+        const CheckUninitVar c(_tokenizer, _settings, _errorLogger);
+        c.analyse(_tokenizer->tokens(), uvarFunctions);
+    }
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        // Search for executable scopes..
+        if (!Token::Match(tok, ") const| {"))
+            continue;
+
+        // goto the "{"
+        tok = tok->next();
+        if (tok->str() != "{")
+            tok = tok->next();
+
+        // goto the "}" that ends the executable scope..
+        tok = tok->link();
+
+        // parse the executable scope until tok is reached...
+        for (const Token *tok2 = tok->link(); tok2 && tok2 != tok; tok2 = tok2->next())
+        {
+            // allocating memory in parameter for function call..
+            if (Token::Match(tok2, "[(,] %var% (") && Token::Match(tok2->tokAt(2)->link(), ") [,)]"))
+            {
+                const AllocType allocType = getAllocationType(tok2->next(), 0);
+                if (allocType != No)
+                {
+                    // locate outer function call..
+                    for (const Token *tok3 = tok2; tok3; tok3 = tok3->previous())
+                    {
+                        if (tok3->str() == "(")
+                        {
+                            // Is it a function call..
+                            if (Token::Match(tok3->tokAt(-2), "[(,;{}] %var% ("))
+                            {
+                                const std::string functionName = tok3->strAt(-1);
+                                if (CheckMemoryLeakInFunction::test_white_list(functionName))
+                                {
+                                    functionCallLeak(tok2, tok2->strAt(1), functionName);
+                                    break;
+                                }
+                                if (uvarFunctions.find(functionName) != uvarFunctions.end())
+                                {
+                                    functionCallLeak(tok2, tok2->strAt(1), functionName);
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                        else if (tok3->str() == ")")
+                            tok3 = tok3->link();
+                        else if (Token::Match(tok3, "[;{}]"))
+                            break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckMemoryLeakNoVar::functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall)
+{
+    reportError(loc, Severity::error, "leakNoVarFunctionCall", "Allocation with " + alloc + ", " + functionCall + " doesn't release it.");
+}
+
 
