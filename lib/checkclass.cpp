@@ -744,6 +744,17 @@ void CheckClass::SpaceInfo::getVarList()
             continue;
         }
 
+        // It it a nested class or structure?
+        if (Token::Match(next, "class|struct|union %type% :|{"))
+        {
+            tok = tok->tokAt(2);
+            while (tok->str() != "{")
+                tok = tok->next();
+            // skip implementation
+            tok = tok->link();
+            continue;
+        }
+
         // Borland C++: Ignore properties..
         if (next->str() == "__property")
             continue;
