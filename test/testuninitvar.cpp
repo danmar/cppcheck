@@ -1131,7 +1131,7 @@ private:
         ASSERT_EQUALS("foo", analyseFunctions("void foo(int x);"));
         ASSERT_EQUALS("foo", analyseFunctions("void foo(const int &x) { }"));
         ASSERT_EQUALS("foo", analyseFunctions("void foo(int &x) { ++x; }"));
-        ASSERT_EQUALS("rename", analyseFunctions("int rename (const char* oldname, const char* newname);"));
+        ASSERT_EQUALS("rename", analyseFunctions("int rename (const char* oldname, const char* newname);"));	// Ticket #914
         ASSERT_EQUALS("rename", analyseFunctions("int rename (const char oldname[], const char newname[]);"));
         ASSERT_EQUALS("", analyseFunctions("void foo(int &x) { x = 0; }"));
         ASSERT_EQUALS("", analyseFunctions("void foo(s x) { }"));
@@ -1212,6 +1212,13 @@ private:
                        "    memcpy(p, s, 100);\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int calc(const int *p, int n);\n"
+                       "void f() {\n"
+                       "    int x[10];\n"
+                       "    calc(x,10);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
 
         // using uninitialized function pointer..
         checkUninitVar("void foo()\n"
