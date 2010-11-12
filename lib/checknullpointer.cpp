@@ -491,8 +491,8 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 }
 
                 // abort function..
-                if (Token::Match(tok2->previous(), "[;{}] %var% (") &&
-                    Token::simpleMatch(tok2->next()->link(), ") ; }"))
+                if (Token::simpleMatch(tok2, ") ; }") &&
+                    Token::Match(tok2->link()->tokAt(-2), "[;{}] %var% ("))
                 {
                     break;
                 }
