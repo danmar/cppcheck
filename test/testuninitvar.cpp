@@ -1131,6 +1131,8 @@ private:
         ASSERT_EQUALS("foo", analyseFunctions("void foo(int x);"));
         ASSERT_EQUALS("foo", analyseFunctions("void foo(const int &x) { }"));
         ASSERT_EQUALS("foo", analyseFunctions("void foo(int &x) { ++x; }"));
+        ASSERT_EQUALS("rename", analyseFunctions("int rename (const char* oldname, const char* newname);"));
+        ASSERT_EQUALS("rename", analyseFunctions("int rename (const char oldname[], const char newname[]);"));
         ASSERT_EQUALS("", analyseFunctions("void foo(int &x) { x = 0; }"));
         ASSERT_EQUALS("", analyseFunctions("void foo(s x) { }"));
 

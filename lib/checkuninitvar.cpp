@@ -991,6 +991,12 @@ public:
                         continue;
                     }
 
+                    if (Token::Match(tok2, "const %type% %var% [ ] ,|)") && tok2->next()->isStandardType())
+                    {
+                        tok2 = tok2->tokAt(5);
+                        continue;
+                    }
+
                     break;
                 }
 
