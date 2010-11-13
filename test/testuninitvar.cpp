@@ -1180,6 +1180,14 @@ private:
 
         checkUninitVar("void f()\n"
                        "{\n"
+                       "    char *p = malloc(10);\n"
+                       "    read(p + 1);\n"
+                       "    return p;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
                        "    Abc *p;\n"
                        "    int sz = sizeof(*p);\n"
                        "}");

@@ -677,7 +677,7 @@ private:
                     }
 
                     // it is possible that the variable is initialized here
-                    if (Token::Match(tok2->previous(), "[(,] %var% [,)]"))
+                    if (Token::Match(tok2->previous(), "[(,] %var% [+-,)]"))
                         bailouts.insert(tok2->varId());
 
                     // array initialization..
