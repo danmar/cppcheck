@@ -48,6 +48,7 @@ public:
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();
         checkAutoVariables.returnReference();
+        checkAutoVariables.returncstr();
     }
 
     /** Check auto variables */

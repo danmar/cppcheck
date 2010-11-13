@@ -224,6 +224,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Returning pointer to auto variable\n", errout.str());
 
+        check("const char *Foo::f()\n"
+              "{\n"
+              "    std::string s;\n"
+              "    return s.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Returning pointer to auto variable\n", errout.str());
+
         check("std::string hello()\n"
               "{\n"
               "     return \"hello\";\n"

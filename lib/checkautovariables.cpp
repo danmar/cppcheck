@@ -442,13 +442,17 @@ void CheckAutoVariables::returncstr()
         }
 
         // have we reached a function that returns a reference?
-        if (Token::Match(tok, "const char * %var% ("))
+        if (Token::Match(tok, "const char *"))
         {
             // go to the '('
-            const Token *tok2 = tok->tokAt(4);
+            const Token *tok2 = tok->tokAt(3);
+            while (Token::Match(tok2, "%var% ::"))
+                tok2 = tok2->tokAt(2);
+            if (!Token::Match(tok2, "%var% ("))
+                continue;
 
             // go to the ')'
-            tok2 = tok2->link();
+            tok2 = tok2->next()->link();
 
             // is this a function implementation?
             if (Token::Match(tok2, ") const| {"))
@@ -482,7 +486,7 @@ void CheckAutoVariables::returncstr()
                             tok2 = tok2->tokAt(2);
 
                         // is it a variable declaration?
-                        if (Token::Match(tok2, "%type% %var% ;"))
+                        if (Token::Match(tok2, "%type% %var% [;=]"))
                             localvar.insert(tok2->next()->varId());
                     }
 
