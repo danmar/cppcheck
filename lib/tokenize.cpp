@@ -5918,7 +5918,6 @@ bool Tokenizer::simplifyKnownVariables()
                 if (varid == 0)
                     continue;
 
-
                 // skip loop variable
                 if (Token::Match(tok2->tokAt(-2), "(|:: %type%"))
                 {
@@ -5928,6 +5927,11 @@ bool Tokenizer::simplifyKnownVariables()
                     if (Token::Match(tok3->tokAt(-2), "for ( %type%"))
                         continue;
                 }
+
+                // struct name..
+                const std::string structname(Token::Match(tok2->tokAt(-3), "[;{}] %var% .") ?
+                                             (tok2->strAt(-2) + " .") :
+                                             std::string(""));
 
                 if (tok2->str() == tok2->strAt(2))
                     continue;
@@ -6148,11 +6152,16 @@ bool Tokenizer::simplifyKnownVariables()
                     }
 
                     // Using the variable in condition..
-                    if (Token::Match(tok3->previous(), "if ( %varid% ==|!=|<|<=|>|>=|)", varid) ||
-                        Token::Match(tok3, "( %varid% ==|!=|<|<=|>|>=", varid) ||
-                        Token::Match(tok3, "!|==|!=|<|<=|>|>= %varid% ==|!=|<|<=|>|>=|)", varid) ||
+                    if (Token::Match(tok3->previous(), ("if ( " + structname + " %varid% ==|!=|<|<=|>|>=|)").c_str(), varid) ||
+                        Token::Match(tok3, ("( " + structname + " %varid% ==|!=|<|<=|>|>=").c_str(), varid) ||
+                        Token::Match(tok3, ("!|==|!=|<|<=|>|>= " + structname + " %varid% ==|!=|<|<=|>|>=|)").c_str(), varid) ||
                         Token::Match(tok3->previous(), "strlen|free ( %varid% )", varid))
                     {
+                        if (!structname.empty())
+                        {
+                            tok3->deleteNext();
+                            tok3->deleteNext();
+                        }
                         tok3 = tok3->next();
                         tok3->str(value);
                         tok3->varId(valueVarId);
@@ -6160,7 +6169,7 @@ bool Tokenizer::simplifyKnownVariables()
                     }
 
                     // Variable is used in function call..
-                    if (Token::Match(tok3, "%var% ( %varid% ,", varid))
+                    if (Token::Match(tok3, ("%var% ( " + structname + " %varid% ,").c_str(), varid))
                     {
                         const char * const functionName[] =
                         {
@@ -6172,6 +6181,11 @@ bool Tokenizer::simplifyKnownVariables()
                             if (tok3->str() == functionName[i])
                             {
                                 Token *par1 = tok3->next()->next();
+                                if (!structname.empty())
+                                {
+                                    par1->deleteThis();
+                                    par1->deleteThis();
+                                }
                                 par1->str(value);
                                 par1->varId(valueVarId);
                                 break;
@@ -6180,8 +6194,13 @@ bool Tokenizer::simplifyKnownVariables()
                     }
 
                     // array usage
-                    if (Token::Match(tok3, "[(,] %varid% [+-*/[]", varid))
+                    if (Token::Match(tok3, ("[(,] " + structname + " %varid% [+-*/[]").c_str(), varid))
                     {
+                        if (!structname.empty())
+                        {
+                            tok3->deleteNext();
+                            tok3->deleteNext();
+                        }
                         tok3 = tok3->next();
                         tok3->str(value);
                         tok3->varId(valueVarId);
@@ -6189,12 +6208,17 @@ bool Tokenizer::simplifyKnownVariables()
                     }
 
                     // Variable is used in calculation..
-                    if (((tok3->previous()->varId() > 0) && Token::Match(tok3, "& %varid%", varid)) ||
-                        Token::Match(tok3, "[=+-*/[] %varid% [=?+-*/;])]", varid) ||
-                        Token::Match(tok3, "[(=+-*/[] %varid% <<|>>", varid) ||
-                        Token::Match(tok3, "<<|>> %varid% [+-*/;])]", varid) ||
-                        Token::Match(tok3->previous(), "[=+-*/[] ( %varid%", varid))
+                    if (((tok3->previous()->varId() > 0) && Token::Match(tok3, ("& " + structname + " %varid%").c_str(), varid)) ||
+                        Token::Match(tok3, ("[=+-*/[] " + structname + " %varid% [=?+-*/;])]").c_str(), varid) ||
+                        Token::Match(tok3, ("[(=+-*/[] " + structname + " %varid% <<|>>").c_str(), varid) ||
+                        Token::Match(tok3, ("<<|>> " + structname + " %varid% [+-*/;])]").c_str(), varid) ||
+                        Token::Match(tok3->previous(), ("[=+-*/[] ( " + structname + " %varid%").c_str(), varid))
                     {
+                        if (!structname.empty())
+                        {
+                            tok3->deleteNext();
+                            tok3->deleteNext();
+                        }
                         tok3 = tok3->next();
                         tok3->str(value);
                         tok3->varId(valueVarId);
