@@ -1180,6 +1180,13 @@ private:
 
         checkUninitVar("void f()\n"
                        "{\n"
+                       "    int i;\n"
+                       "    x(i+2);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
                        "    char *p = malloc(10);\n"
                        "    read(p + 1);\n"
                        "    return p;\n"

@@ -677,7 +677,7 @@ private:
                     }
 
                     // it is possible that the variable is initialized here
-                    if (Token::Match(tok2->previous(), "[(,] %var% [+-,)]"))
+                    if (Token::Match(tok2->previous(), "[(,] %var% [,)]"))
                         bailouts.insert(tok2->varId());
 
                     // array initialization..
@@ -689,7 +689,7 @@ private:
                             if ((*it)->varId == tok2->varId())
                             {
                                 const UninitVar *c = dynamic_cast<const UninitVar *>(*it);
-                                if (c && c->array)
+                                if (c && (c->array || (c->pointer && c->alloc)))
                                     bailouts.insert(tok2->varId());
                                 break;
                             }
