@@ -912,8 +912,7 @@ private:
             if (tok->str() == "{" || tok->str() == "}" || tok->str() == "for")
                 return;
             const Token *next = parse(*tok, checks);
-            if (next)
-                tok = tok->next();
+            tok = next->next();
         }
     }
 

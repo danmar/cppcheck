@@ -670,6 +670,14 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: k\n", errout.str());
 
+        checkUninitVar("void f() {\n"
+                       "    gchar sel[10];\n"
+                       "    for (int i = 0; i < 4; ++i) {\n"
+                       "        int sz = sizeof(sel);\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("enum ABCD { A, B, C, D };\n"
                        "\n"
                        "static void f(char *str ) {\n"
