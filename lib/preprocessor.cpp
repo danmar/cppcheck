@@ -1580,7 +1580,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         }
         else if (!fileOpened)
         {
-            if (headerType == UserHeader && _errorLogger && _settings && _settings->isEnabled("missingInclude"))
+            if (_errorLogger && _settings && _settings->isEnabled("missingInclude"))
             {
                 // Determine line number of include
                 unsigned int linenr = 1;
