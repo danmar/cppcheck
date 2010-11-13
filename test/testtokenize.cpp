@@ -217,7 +217,8 @@ private:
         TEST_CASE(vardecl11);
         TEST_CASE(vardecl12);
         TEST_CASE(vardecl13);
-        TEST_CASE(vardecl_stl);
+        TEST_CASE(vardecl_stl_1);
+        TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template);
         TEST_CASE(vardecl_union);
         TEST_CASE(volatile_variables);
@@ -3578,7 +3579,7 @@ private:
         ASSERT_EQUALS(res4, tokenizeAndStringify(code4));
     }
 
-    void vardecl_stl()
+    void vardecl_stl_1()
     {
         // ticket #520
 
@@ -3593,6 +3594,17 @@ private:
         const char code3[] = "std::vector<std::pair<std::string, std::string > > *c, d;";
         const char res3[]  = "std :: vector < std :: pair < std :: string , std :: string > > * c ; std :: vector < std :: pair < std :: string , std :: string > > d ;";
         ASSERT_EQUALS(res3, tokenizeAndStringify(code3));
+    }
+
+    void vardecl_stl_2()
+    {
+        const char code1[] = "{ std::string x = \"abc\"; }";
+        TODO_ASSERT_EQUALS("{ std :: string x ; x = \"abc\" ; }", tokenizeAndStringify(code1));
+        ASSERT_EQUALS("{ std :: string x = \"abc\" ; }", tokenizeAndStringify(code1));
+
+        const char code2[] = "{ std::vector<int> x = y; }";
+        TODO_ASSERT_EQUALS("{ std :: vector < int > x ; x = y ; }", tokenizeAndStringify(code2));
+        ASSERT_EQUALS("{ std :: vector < int > x = y ; }", tokenizeAndStringify(code2));
     }
 
     void vardecl_template()
