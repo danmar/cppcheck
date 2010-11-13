@@ -5918,10 +5918,15 @@ bool Tokenizer::simplifyKnownVariables()
                 if (varid == 0)
                     continue;
 
-                if (Token::Match(tok2->tokAt(-3), "for ( %type% %var% = %num% ;"))
+
+                // skip loop variable
+                if (Token::Match(tok2->tokAt(-2), "(|:: %type%"))
                 {
-                    // skip loop variable
-                    continue;
+                    const Token *tok3 = tok2->previous();
+                    while (Token::Match(tok3->previous(), ":: %type%"))
+                        tok3 = tok3->tokAt(-2);
+                    if (Token::Match(tok3->tokAt(-2), "for ( %type%"))
+                        continue;
                 }
 
                 if (tok2->str() == tok2->strAt(2))

@@ -126,6 +126,7 @@ private:
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
+        TEST_CASE(simplifyKnownVariablesBailOutFor3);
         TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
 
         TEST_CASE(varid1);
@@ -1914,6 +1915,20 @@ private:
                                 "while ( i < 10 ) { ++ i ; }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutFor3()
+    {
+        const char code[] = "void foo() {\n"
+                            "    for (std::string::size_type pos = 0; pos < 10; ++pos)\n"
+                            "    { }\n"
+                            "}\n";
+        const char expected[] = "void foo ( ) {\n"
+                                "for ( std :: string :: size_type pos = 0 ; pos < 10 ; ++ pos )\n"
+                                "{ }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS("", errout.str());	// debug warnings
     }
 
     void simplifyKnownVariablesBailOutMemberFunction()
