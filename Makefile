@@ -44,6 +44,7 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/path.o \
               lib/preprocessor.o \
               lib/settings.o \
+              lib/symboldatabase.o \
               lib/timer.o \
               lib/token.o \
               lib/tokenize.o
@@ -135,7 +136,7 @@ lib/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h li
 lib/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkbufferoverrun.o lib/checkbufferoverrun.cpp
 
-lib/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
+lib/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkclass.o lib/checkclass.cpp
 
 lib/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafety.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
@@ -195,6 +196,9 @@ lib/preprocessor.o: lib/preprocessor.cpp lib/preprocessor.h lib/tokenize.h lib/t
 lib/settings.o: lib/settings.cpp lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/settings.o lib/settings.cpp
 
+lib/symboldatabase.o: lib/symboldatabase.cpp lib/symboldatabase.h lib/tokenize.h lib/token.h lib/settings.h lib/errorlogger.h lib/check.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/symboldatabase.o lib/symboldatabase.cpp
+
 lib/timer.o: lib/timer.cpp lib/timer.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/timer.o lib/timer.cpp
 
@@ -228,13 +232,13 @@ test/testbufferoverrun.o: test/testbufferoverrun.cpp lib/tokenize.h lib/checkbuf
 test/testcharvar.o: test/testcharvar.cpp lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testcharvar.o test/testcharvar.cpp
 
-test/testclass.o: test/testclass.cpp lib/tokenize.h lib/checkclass.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
+test/testclass.o: test/testclass.cpp lib/tokenize.h lib/checkclass.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testclass.o test/testclass.cpp
 
 test/testcmdlineparser.o: test/testcmdlineparser.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testcmdlineparser.o test/testcmdlineparser.cpp
 
-test/testconstructors.o: test/testconstructors.cpp lib/tokenize.h lib/checkclass.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
+test/testconstructors.o: test/testconstructors.cpp lib/tokenize.h lib/checkclass.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testconstructors.o test/testconstructors.cpp
 
 test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h test/testsuite.h test/redirect.h lib/path.h test/tinyxml/tinyxml.h test/tinyxml/tinystr.h
@@ -306,7 +310,7 @@ test/testuninitvar.o: test/testuninitvar.cpp lib/tokenize.h lib/checkuninitvar.h
 test/testunusedfunctions.o: test/testunusedfunctions.cpp lib/tokenize.h test/testsuite.h lib/errorlogger.h test/redirect.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testunusedfunctions.o test/testunusedfunctions.cpp
 
-test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/tokenize.h lib/checkclass.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
+test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/tokenize.h lib/checkclass.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testunusedprivfunc.o test/testunusedprivfunc.cpp
 
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h
