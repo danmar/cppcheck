@@ -1902,6 +1902,7 @@ private:
                                 "for ( int i = 0 ; i < 10 ; ++ i ) { }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS("", errout.str());	// debug warnings
     }
 
     void simplifyKnownVariablesBailOutFor2()
@@ -1915,6 +1916,7 @@ private:
                                 "while ( i < 10 ) { ++ i ; }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS("", errout.str());	// debug warnings
     }
 
     void simplifyKnownVariablesBailOutFor3()
