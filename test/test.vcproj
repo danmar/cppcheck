@@ -459,6 +459,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\symboldatabase.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\testautovariables.cpp"
 				>
 			</File>
@@ -718,6 +722,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\settings.h"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\symboldatabase.h"
 				>
 			</File>
 			<File
