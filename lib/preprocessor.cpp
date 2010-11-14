@@ -1472,17 +1472,12 @@ static int tolowerWrapper(int c)
 }
 
 
-void Preprocessor::handleIncludes(std::string &code, const std::string &filePath, const std::list<std::string> &includePaths)
+void Preprocessor::handleIncludes(std::string &code,
+                                  const std::string &filePath,
+                                  const std::list<std::string> &includePaths,
+                                  std::set<std::string> handledFiles)
 {
-    std::list<std::string> paths;
-    std::string path;
-    path = filePath;
-    path.erase(1 + path.find_last_of("\\/"));
-    paths.push_back(path);
     std::string::size_type pos = 0;
-    std::string::size_type endfilePos = 0;
-    std::set<std::string> handledFiles;
-    endfilePos = pos;
     while ((pos = code.find("#include", pos)) != std::string::npos)
     {
         // Accept only includes that are at the start of a line
@@ -1492,15 +1487,6 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
             continue;
         }
 
-        // If endfile is encountered, we have moved to a next file in our stack,
-        // so remove last path in our list.
-        while ((endfilePos = code.find("\n#endfile", endfilePos)) != std::string::npos && endfilePos < pos)
-        {
-            paths.pop_back();
-            endfilePos += 9; // size of #endfile
-        }
-
-        endfilePos = pos;
         std::string::size_type end = code.find("\n", pos);
         std::string filename = code.substr(pos, end - pos);
 
@@ -1534,11 +1520,17 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
         if (headerType == UserHeader && !fileOpened)
         {
-            fin.open((paths.back() + filename).c_str());
-            if (fin.is_open())
+            if (filePath.find_first_of("\\/") != std::string::npos)
             {
-                filename = paths.back() + filename;
-                fileOpened = true;
+                std::string path(filePath);
+                path.erase(1 + path.find_last_of("\\/"));
+
+                fin.open((path + filename).c_str());
+                if (fin.is_open())
+                {
+                    filename = path + filename;
+                    fileOpened = true;
+                }
             }
         }
 
@@ -1571,12 +1563,10 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
             // Remove space characters that are after or before new line character
             processedFile = removeSpaceNearNL(processedFile);
+            handleIncludes(processedFile, filename, includePaths, handledFiles);
             processedFile = "#file \"" + filename + "\"\n" + processedFile + "\n#endfile";
             code.insert(pos, processedFile);
-
-            path = filename;
-            path.erase(1 + path.find_last_of("\\/"));
-            paths.push_back(path);
+            pos += processedFile.size();
         }
         else if (!fileOpened)
         {

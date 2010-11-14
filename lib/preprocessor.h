@@ -25,6 +25,7 @@
 #include <istream>
 #include <string>
 #include <list>
+#include <set>
 
 class ErrorLogger;
 class Settings;
@@ -208,9 +209,14 @@ private:
      * There must be a path separator at the end. Default parameter is empty list.
      * Note that if path from given filename is also extracted and that is used as
      * a last include path if include file was not found from earlier paths.
+     * @param handledFiles used in the recursive handling. Should be empty unless
+     * a recursive call is made.
      * @return modified source code
      */
-    void handleIncludes(std::string &code, const std::string &filePath, const std::list<std::string> &includePaths);
+    void handleIncludes(std::string &code,
+                        const std::string &filePath,
+                        const std::list<std::string> &includePaths,
+                        std::set<std::string> handledFiles = std::set<std::string>());
 
     Settings *_settings;
     ErrorLogger *_errorLogger;
