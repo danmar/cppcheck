@@ -151,6 +151,22 @@ void CheckClass::constructors()
     }
 }
 
+void CheckClass::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
+{
+    // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
+    reportError(tok, Severity::style, "noConstructor", "The " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' has no constructor. Member variables not initialized.");
+}
+
+void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
+{
+    reportError(tok, Severity::warning, "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
+}
+
+void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
+{
+    reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
+}
+
 //---------------------------------------------------------------------------
 // ClassCheck: Unused private functions
 //---------------------------------------------------------------------------
@@ -325,6 +341,11 @@ void CheckClass::privateFunctions()
     }
 }
 
+void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
+{
+    reportError(tok, Severity::style, "unusedPrivateFunction", "Unused private function '" + classname + "::" + funcname + "'");
+}
+
 //---------------------------------------------------------------------------
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
@@ -409,10 +430,16 @@ void CheckClass::noMemset()
         }
     }
 }
-//---------------------------------------------------------------------------
 
+void CheckClass::memsetClassError(const Token *tok, const std::string &memfunc)
+{
+    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on class");
+}
 
-
+void CheckClass::memsetStructError(const Token *tok, const std::string &memfunc, const std::string &classname)
+{
+    reportError(tok, Severity::error, "memsetStruct", "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'");
+}
 
 //---------------------------------------------------------------------------
 // ClassCheck: "void operator=(" and "const type & operator=("
@@ -440,6 +467,11 @@ void CheckClass::operatorEq()
             }
         }
     }
+}
+
+void CheckClass::operatorEqReturnError(const Token *tok)
+{
+    reportError(tok, Severity::style, "operatorEq", "'operator=' should return something");
 }
 
 //---------------------------------------------------------------------------
@@ -533,10 +565,10 @@ void CheckClass::operatorEqRetRefThis()
     }
 }
 
-//---------------------------------------------------------------------------
-
-
-
+void CheckClass::operatorEqRetRefThisError(const Token *tok)
+{
+    reportError(tok, Severity::style, "operatorEqRetRefThis", "'operator=' should return reference to self");
+}
 
 //---------------------------------------------------------------------------
 // ClassCheck: "C& operator=(const C& rhs) { if (this == &rhs) ... }"
@@ -552,7 +584,66 @@ void CheckClass::operatorEqRetRefThis()
 // assignment to self.
 //---------------------------------------------------------------------------
 
-static bool hasDeallocation(const Token *first, const Token *last)
+void CheckClass::operatorEqToSelf()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    createSymbolDatabase();
+
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+
+    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    {
+        const SymbolDatabase::SpaceInfo *info = *i;
+        std::list<SymbolDatabase::Func>::const_iterator it;
+
+        // skip classes with multiple inheritance
+        if (info->derivedFrom.size() > 1)
+            continue;
+
+        for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
+        {
+            if (it->type == SymbolDatabase::Func::OperatorEqual && it->hasBody)
+            {
+                // make sure return signature is correct
+                if (Token::Match(it->tokenDef->tokAt(-4), ";|}|{|public:|protected:|private: %type% &") &&
+                    it->tokenDef->strAt(-3) == info->className)
+                {
+                    // check for proper function parameter signature
+                    if ((Token::Match(it->tokenDef->next(), "( const %var% & )") ||
+                         Token::Match(it->tokenDef->next(), "( const %var% & %var% )")) &&
+                        it->tokenDef->strAt(3) == info->className)
+                    {
+                        // find the parameter name
+                        const Token *rhs = it->token;
+                        while (rhs->str() != "&")
+                            rhs = rhs->next();
+                        rhs = rhs->next();
+
+                        // find the ')'
+                        const Token *tok = it->token->next()->link();
+                        const Token *tok1 = tok;
+
+                        if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
+                        {
+                            const Token *first = tok1->tokAt(1);
+                            const Token *last = first->link();
+
+                            if (!hasAssignSelf(first, last, rhs))
+                            {
+                                if (hasDeallocation(first, last))
+                                    operatorEqToSelfError(tok);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+bool CheckClass::hasDeallocation(const Token *first, const Token *last)
 {
     // This function is called when no simple check was found for assignment
     // to self.  We are currently looking for a specific sequence of:
@@ -626,7 +717,7 @@ static bool hasDeallocation(const Token *first, const Token *last)
     return false;
 }
 
-static bool hasAssignSelf(const Token *first, const Token *last, const Token *rhs)
+bool CheckClass::hasAssignSelf(const Token *first, const Token *last, const Token *rhs)
 {
     for (const Token *tok = first; tok && tok != last; tok = tok->next())
     {
@@ -657,68 +748,10 @@ static bool hasAssignSelf(const Token *first, const Token *last, const Token *rh
     return false;
 }
 
-void CheckClass::operatorEqToSelf()
+void CheckClass::operatorEqToSelfError(const Token *tok)
 {
-    if (!_settings->_checkCodingStyle)
-        return;
-
-    createSymbolDatabase();
-
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
-
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
-    {
-        const SymbolDatabase::SpaceInfo *info = *i;
-        std::list<SymbolDatabase::Func>::const_iterator it;
-
-        // skip classes with multiple inheritance
-        if (info->derivedFrom.size() > 1)
-            continue;
-
-        for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
-        {
-            if (it->type == SymbolDatabase::Func::OperatorEqual && it->hasBody)
-            {
-                // make sure return signature is correct
-                if (Token::Match(it->tokenDef->tokAt(-4), ";|}|{|public:|protected:|private: %type% &") &&
-                    it->tokenDef->strAt(-3) == info->className)
-                {
-                    // check for proper function parameter signature
-                    if ((Token::Match(it->tokenDef->next(), "( const %var% & )") ||
-                         Token::Match(it->tokenDef->next(), "( const %var% & %var% )")) &&
-                        it->tokenDef->strAt(3) == info->className)
-                    {
-                        // find the parameter name
-                        const Token *rhs = it->token;
-                        while (rhs->str() != "&")
-                            rhs = rhs->next();
-                        rhs = rhs->next();
-
-                        // find the ')'
-                        const Token *tok = it->token->next()->link();
-                        const Token *tok1 = tok;
-
-                        if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
-                        {
-                            const Token *first = tok1->tokAt(1);
-                            const Token *last = first->link();
-
-                            if (!hasAssignSelf(first, last, rhs))
-                            {
-                                if (hasDeallocation(first, last))
-                                    operatorEqToSelfError(tok);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    reportError(tok, Severity::warning, "operatorEqToSelf", "'operator=' should check for assignment to self");
 }
-//---------------------------------------------------------------------------
-
-
-
 
 //---------------------------------------------------------------------------
 // A destructor in a base class should be virtual
@@ -803,12 +836,15 @@ void CheckClass::virtualDestructor()
         }
     }
 }
-//---------------------------------------------------------------------------
 
-void CheckClass::thisSubtractionError(const Token *tok)
+void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived)
 {
-    reportError(tok, Severity::warning, "thisSubtraction", "Suspicious pointer subtraction");
+    reportError(tok, Severity::error, "virtualDestructor", "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor");
 }
+
+//---------------------------------------------------------------------------
+// warn for "this-x". The indented code may be "this->x"
+//---------------------------------------------------------------------------
 
 void CheckClass::thisSubtraction()
 {
@@ -828,9 +864,16 @@ void CheckClass::thisSubtraction()
         tok = tok->next();
     }
 }
+
+void CheckClass::thisSubtractionError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "thisSubtraction", "Suspicious pointer subtraction");
+}
+
+//---------------------------------------------------------------------------
+// can member function be const?
 //---------------------------------------------------------------------------
 
-// Can a function be const?
 void CheckClass::checkConst()
 {
     if (!_settings->_checkCodingStyle || _settings->ifcfg)
@@ -948,7 +991,6 @@ void CheckClass::checkConst()
     }
 }
 
-
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
     reportError(tok, Severity::style, "functionConst", "The function '" + classname + "::" + funcname + "' can be const");
@@ -960,55 +1002,4 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
     toks.push_back(tok1);
     toks.push_back(tok2);
     reportError(toks, Severity::style, "functionConst", "The function '" + classname + "::" + funcname + "' can be const");
-}
-
-void CheckClass::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
-{
-    // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
-    reportError(tok, Severity::style, "noConstructor", "The " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' has no constructor. Member variables not initialized.");
-}
-
-void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
-{
-    reportError(tok, Severity::warning, "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
-}
-
-void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
-{
-    reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
-}
-
-void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
-{
-    reportError(tok, Severity::style, "unusedPrivateFunction", "Unused private function '" + classname + "::" + funcname + "'");
-}
-
-void CheckClass::memsetClassError(const Token *tok, const std::string &memfunc)
-{
-    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on class");
-}
-
-void CheckClass::memsetStructError(const Token *tok, const std::string &memfunc, const std::string &classname)
-{
-    reportError(tok, Severity::error, "memsetStruct", "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'");
-}
-
-void CheckClass::operatorEqReturnError(const Token *tok)
-{
-    reportError(tok, Severity::style, "operatorEq", "'operator=' should return something");
-}
-
-void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived)
-{
-    reportError(tok, Severity::error, "virtualDestructor", "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor");
-}
-
-void CheckClass::operatorEqRetRefThisError(const Token *tok)
-{
-    reportError(tok, Severity::style, "operatorEqRetRefThis", "'operator=' should return reference to self");
-}
-
-void CheckClass::operatorEqToSelfError(const Token *tok)
-{
-    reportError(tok, Severity::warning, "operatorEqToSelf", "'operator=' should check for assignment to self");
 }

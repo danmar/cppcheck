@@ -126,7 +126,6 @@ private:
     void thisSubtractionError(const Token *tok);
     void operatorEqRetRefThisError(const Token *tok);
     void operatorEqToSelfError(const Token *tok);
-
     void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
 
@@ -164,8 +163,14 @@ private:
                "* Constness for member functions\n";
     }
 
-private:
+    // operatorEqRetRefThis helper function
     void checkReturnPtrThis(const SymbolDatabase::SpaceInfo *info, const SymbolDatabase::Func *func, const Token *tok, const Token *last);
+
+    // operatorEqToSelf helper functions
+    bool hasDeallocation(const Token *first, const Token *last);
+    bool hasAssignSelf(const Token *first, const Token *last, const Token *rhs);
+
+
 };
 /// @}
 //---------------------------------------------------------------------------
