@@ -8633,25 +8633,13 @@ void Tokenizer::simplifyAsm()
             Token::eraseTokens(tok, tok->tokAt(2)->link()->next());
         }
 
-        else if (Token::Match(tok->next(), "__asm__ (") &&
-                 tok->tokAt(2)->link() &&
-                 tok->tokAt(2)->link()->next())
+        else if (Token::Match(tok->next(), "asm|__asm|__asm__ volatile|__volatile__| ("))
         {
-            Token::eraseTokens(tok, tok->tokAt(2)->link()->next());
-        }
-
-        else if (Token::Match(tok->next(), "__asm|__asm__ __volatile__ (") &&
-                 tok->tokAt(3)->link() &&
-                 tok->tokAt(3)->link()->next())
-        {
-            Token::eraseTokens(tok, tok->tokAt(3)->link()->next());
-        }
-
-        else if (Token::Match(tok->next(), "asm volatile (") &&
-                 tok->tokAt(3)->link() &&
-                 tok->tokAt(3)->link()->next())
-        {
-            Token::eraseTokens(tok, tok->tokAt(3)->link()->next());
+            // Goto "("
+            Token *partok = tok->tokAt(2);
+            if (partok->str() != "(")
+                partok = partok->next();
+            Token::eraseTokens(tok, partok->link() ? partok->link()->next() : NULL);
         }
 
         else if (Token::simpleMatch(tok->next(), "__asm"))
