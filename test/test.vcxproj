@@ -249,6 +249,7 @@
     <ClCompile Include="..\lib\path.cpp" />
     <ClCompile Include="..\lib\preprocessor.cpp" />
     <ClCompile Include="..\lib\settings.cpp" />
+    <ClCompile Include="..\lib\symboldatabase.cpp" />
     <ClCompile Include="..\lib\timer.cpp" />
     <ClCompile Include="..\lib\token.cpp" />
     <ClCompile Include="..\lib\tokenize.cpp" />
@@ -315,6 +316,7 @@
     <ClInclude Include="..\lib\path.h" />
     <ClInclude Include="..\lib\preprocessor.h" />
     <ClInclude Include="..\lib\settings.h" />
+    <ClInclude Include="..\lib\symboldatabase.h" />
     <ClInclude Include="..\lib\timer.h" />
     <ClInclude Include="..\lib\token.h" />
     <ClInclude Include="..\lib\tokenize.h" />
