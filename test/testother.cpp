@@ -789,6 +789,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
 
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(2.0) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
 
         // acos
         check("void foo()\n"

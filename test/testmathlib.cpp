@@ -59,15 +59,17 @@ private:
         ASSERT_EQUALS("0"  , MathLib::subtract("0", "0."));
 
         // multiply
-        ASSERT_EQUALS("-0.003", MathLib::multiply("-1e-3", "3"));
-        ASSERT_EQUALS("-11.96", MathLib::multiply("-2.3", "5.2"));
-        ASSERT_EQUALS("3000"  , MathLib::multiply("1E3", "3"));
-        ASSERT_EQUALS("3000"  , MathLib::multiply("1E+3", "3"));
-        ASSERT_EQUALS("3000"  , MathLib::multiply("1.0E3", "3"));
-        ASSERT_EQUALS("-3000" , MathLib::multiply("-1.0E3", "3"));
-        ASSERT_EQUALS("-3000" , MathLib::multiply("-1.0E+3", "3"));
-        ASSERT_EQUALS("0" 	  , MathLib::multiply("-1.0E+3", "0"));
-        ASSERT_EQUALS("0" 	  , MathLib::multiply("+1.0E+3", "0"));
+        ASSERT_EQUALS("-0.003"          , MathLib::multiply("-1e-3", "3"));
+        ASSERT_EQUALS("-11.96"          , MathLib::multiply("-2.3", "5.2"));
+        ASSERT_EQUALS("3000"            , MathLib::multiply("1E3", "3"));
+        ASSERT_EQUALS("3000"            , MathLib::multiply("1E+3", "3"));
+        ASSERT_EQUALS("3000"            , MathLib::multiply("1.0E3", "3"));
+        ASSERT_EQUALS("-3000"           , MathLib::multiply("-1.0E3", "3"));
+        ASSERT_EQUALS("-3000"           , MathLib::multiply("-1.0E+3", "3"));
+        ASSERT_EQUALS("0" 	            , MathLib::multiply("-1.0E+3", "0"));
+        ASSERT_EQUALS("0" 	            , MathLib::multiply("+1.0E+3", "0"));
+        TODO_ASSERT_EQUALS("2147483648" , MathLib::multiply("2","1024*1024*1024"));
+        TODO_ASSERT_EQUALS("536870912"  , MathLib::multiply("512","1024*1024"));
 
         // divide
         ASSERT_EQUALS("1"	, MathLib::divide("1", "1"));
