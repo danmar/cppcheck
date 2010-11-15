@@ -546,6 +546,27 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Ticket #2207 - False negative
+        checkUninitVar("void foo(int x) {\n"
+                       "    int a;\n"
+                       "    if (x)\n"
+                       "        a = 1;\n"
+                       "    b = c - a;\n"
+                       "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5] (error) uninitialized variable a", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        // Ticket #2207 - False positive
+        checkUninitVar("void foo(int x) {\n"
+                       "    int a;\n"
+                       "    if (x)\n"
+                       "        a = 1;\n"
+                       "    if (!x)\n"
+                       "        return;\n"
+                       "    b = (c - a);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("int foo()\n"
                        "{\n"
                        "    int ret;\n"

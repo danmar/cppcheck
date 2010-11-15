@@ -425,6 +425,20 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                 if (countif.find((*it)->varId) != countif.end())
                     (*it)->numberOfIf++;
             }
+
+            // Delete checks that have numberOfIf >= 2
+            for (it = checks.begin(); it != checks.end();)
+            {
+                if ((*it)->varId > 0 && (*it)->numberOfIf >= 2)
+                {
+                    delete *it;
+                    checks.erase(it++);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
         }
 
 
