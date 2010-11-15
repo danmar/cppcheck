@@ -1543,7 +1543,8 @@ void CheckOther::functionVariableUsage()
                 variables.readAll(tok->next()->varId());
 
             // assignment
-            else if (Token::Match(tok, "*| (| ++|--| %var% ++|--| )| ="))
+            else if (Token::Match(tok, "*| (| ++|--| %var% ++|--| )| =") ||
+                     Token::Match(tok, "*| ( const| %type% *| ) %var% ="))
             {
                 bool dereference = false;
                 bool pre = false;
@@ -1555,7 +1556,10 @@ void CheckOther::functionVariableUsage()
                     tok = tok->next();
                 }
 
-                if (tok->str() == "(")
+                if (Token::Match(tok, "( const| %type% *| ) %var% ="))
+                    tok = tok->link()->next();
+
+                else if (tok->str() == "(")
                     tok = tok->next();
 
                 if (Token::Match(tok, "++|--"))
