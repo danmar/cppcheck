@@ -102,6 +102,7 @@ public:
     /** @brief %Check for unused function variables */
     void functionVariableUsage();
     void unusedVariableError(const Token *tok, const std::string &varname);
+    void allocatedButUnusedVariableError(const Token *tok, const std::string &varname);
     void unreadVariableError(const Token *tok, const std::string &varname);
     void unassignedVariableError(const Token *tok, const std::string &varname);
 
@@ -212,6 +213,7 @@ public:
         invalidScanfError(0);
         incorrectLogicOperatorError(0);
         unusedVariableError(0, "varname");
+        allocatedButUnusedVariableError(0, "varname");
         unreadVariableError(0, "varname");
         unassignedVariableError(0, "varname");
     }

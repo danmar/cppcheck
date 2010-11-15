@@ -86,6 +86,7 @@ private:
         TEST_CASE(localvaralias10); // ticket #2004
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
+        TEST_CASE(localvardynamic);
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -2421,6 +2422,85 @@ private:
                               "    return x ? a : c;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
+    }
+
+    void localvardynamic()
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    void* ptr = malloc(16);\n"
+                              "    free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    void* ptr = g_malloc(16);\n"
+                              "    g_free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    void* ptr = kmalloc(16, GFP_KERNEL);\n"
+                              "    kfree(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    void* ptr = vmalloc(16, GFP_KERNEL);\n"
+                              "    vfree(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char* ptr = new char[16];\n"
+                              "    delete[] ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char* ptr = new char;\n"
+                              "    delete ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    void* ptr = malloc(16);\n"
+                              "    ptr[0] = 123;\n"
+                              "    free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char* ptr = new char[16];\n"
+                              "    ptr[0] = 123;\n"
+                              "    delete[] ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    string* txt = new string(\"test\");\n"
+                              "    std::cout << \"test\" << std::endl;\n"
+                              "    delete txt;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'txt' is allocated memory that is never used\n", errout.str());
+
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char* ptr = names[i];\n"
+                              "    delete[] ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 };
 

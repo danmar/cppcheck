@@ -559,13 +559,15 @@ public:
                       Scope *scope = NULL,
                       bool read = false,
                       bool write = false,
-                      bool modified = false) :
+                      bool modified = false,
+                      bool allocateMemory = false) :
             _name(name),
             _type(type),
             _scope(scope),
             _read(read),
             _write(write),
-            _modified(modified)
+            _modified(modified),
+            _allocateMemory(allocateMemory)
         {
         }
 
@@ -588,6 +590,7 @@ public:
         bool _read;
         bool _write;
         bool _modified; // read/modify/write
+        bool _allocateMemory;
         std::set<unsigned int> _aliases;
         std::set<Scope *> _assignments;
     };
@@ -603,6 +606,7 @@ public:
         return _varUsage;
     }
     void addVar(const Token *name, VariableType type, Scope *scope, bool write_);
+    void allocateMemory(unsigned int varid);
     void read(unsigned int varid);
     void readAliases(unsigned int varid);
     void readAll(unsigned int varid);
@@ -725,6 +729,14 @@ void Variables::addVar(const Token *name,
 {
     if (name->varId() > 0)
         _varUsage.insert(std::make_pair(name->varId(), VariableUsage(name, type, scope, false, write_, false)));
+}
+
+void Variables::allocateMemory(unsigned int varid)
+{
+    VariableUsage *usage = find(varid);
+
+    if (usage)
+        usage->_allocateMemory = true;
 }
 
 void Variables::read(unsigned int varid)
@@ -1293,6 +1305,9 @@ void CheckOther::functionVariableUsage()
                 if (tok->str() == "const")
                     tok = tok->next();
 
+                if (tok->strAt(1) == "::")
+                    tok = tok->tokAt(2);
+
                 if (tok->str() != "return" && tok->str() != "throw")
                 {
                     Variables::VariableType type;
@@ -1495,7 +1510,36 @@ void CheckOther::functionVariableUsage()
                 tok = tok->tokAt(6);
             }
 
-            else if (Token::Match(tok, "delete|return|throw %var%"))
+            // Freeing memory (not considered "using" the pointer if it was also allocated in this function)
+            else if (Token::Match(tok, "free|g_free|kfree|vfree ( %var% )") ||
+                     Token::Match(tok, "delete %var% ;") ||
+                     Token::Match(tok, "delete [ ] %var% ;"))
+            {
+                unsigned int varid = 0;
+                if (tok->str() != "delete")
+                {
+                    varid = tok->tokAt(2)->varId();
+                    tok = tok->tokAt(3);
+                }
+                else if (tok->strAt(1) == "[")
+                {
+                    varid = tok->tokAt(3)->varId();
+                    tok = tok->tokAt(4);
+                }
+                else
+                {
+                    varid = tok->next()->varId();
+                    tok = tok->tokAt(2);
+                }
+
+                Variables::VariableUsage *var = variables.find(varid);
+                if (var && !var->_allocateMemory)
+                {
+                    variables.readAll(varid);
+                }
+            }
+
+            else if (Token::Match(tok, "return|throw %var%"))
                 variables.readAll(tok->next()->varId());
 
             // assignment
@@ -1544,8 +1588,16 @@ void CheckOther::functionVariableUsage()
                         variables.writeAliases(varid1);
                         variables.read(varid1);
                     }
+                    // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
+                    else if (var && var->_type == Variables::pointer &&
+                             Token::Match(start, "%var% = new|malloc|calloc|g_malloc|kmalloc|vmalloc"))
+                    {
+                        variables.allocateMemory(varid1);
+                    }
                     else
+                    {
                         variables.write(varid1);
+                    }
 
                     Variables::VariableUsage *var2 = variables.find(tok->varId());
                     if (var2 && var2->_type == Variables::reference)
@@ -1580,7 +1632,13 @@ void CheckOther::functionVariableUsage()
 
                 if (var)
                 {
-                    if (var->_type == Variables::pointer || var->_type == Variables::reference)
+                    // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
+                    if (var->_type == Variables::pointer &&
+                        Token::Match(tok->next()->link(), "] = new|malloc|calloc|g_malloc|kmalloc|vmalloc"))
+                    {
+                        variables.allocateMemory(varid);
+                    }
+                    else if (var->_type == Variables::pointer || var->_type == Variables::reference)
                     {
                         variables.read(varid);
                         variables.writeAliases(varid);
@@ -1653,8 +1711,13 @@ void CheckOther::functionVariableUsage()
                 usage._type == Variables::referenceArray)
                 continue;
 
+            // variable has had memory allocated for it, but hasn't done
+            // anything with that memory other than, perhaps, freeing it
+            if (usage.unused() && !usage._modified && usage._allocateMemory)
+                allocatedButUnusedVariableError(usage._name, varname);
+
             // variable has not been written, read, or modified
-            if (usage.unused() && !usage._modified)
+            else if (usage.unused() && !usage._modified)
                 unusedVariableError(usage._name, varname);
 
             // variable has not been written but has been modified
@@ -1666,7 +1729,7 @@ void CheckOther::functionVariableUsage()
                 unreadVariableError(usage._name, varname);
 
             // variable has been read but not written
-            else if (!usage._write)
+            else if (!usage._write && !usage._allocateMemory)
                 unassignedVariableError(usage._name, varname);
         }
     }
@@ -1675,6 +1738,11 @@ void CheckOther::functionVariableUsage()
 void CheckOther::unusedVariableError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::style, "unusedVariable", "Unused variable: " + varname);
+}
+
+void CheckOther::allocatedButUnusedVariableError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::style, "unusedVariable", "Variable '" + varname + "' is allocated memory that is never used");
 }
 
 void CheckOther::unreadVariableError(const Token *tok, const std::string &varname)
