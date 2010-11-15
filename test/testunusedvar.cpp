@@ -75,6 +75,7 @@ private:
         TEST_CASE(localvar26); // ticket #1894
         TEST_CASE(localvar27); // ticket #2160
         TEST_CASE(localvar28); // ticket #2205
+        TEST_CASE(localvar29); // ticket #2206 (array initialization)
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1289,6 +1290,16 @@ private:
                               "    char* pos = buffer;\n"
                               "    int size = value;\n"
                               "    *(int*)pos = size;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar29() // ticket #2206
+    {
+        functionVariableUsage("void f() {\n"
+                              "    float s_ranges[] = { 0, 256 };\n"
+                              "    float* ranges[] = { s_ranges };\n"
+                              "    cout << ranges[0][0];\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

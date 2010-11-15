@@ -1258,34 +1258,48 @@ void CheckOther::functionVariableUsage()
 
             // standard type declaration of array of with possible initialization
             // int i[10]; int j[2] = { 0, 1 }; static int k[2] = { 2, 3 };
-            else if (Token::Match(tok, "[;{}] static| %type% %var% [ %any% ] ;|=") &&
+            else if (Token::Match(tok, "[;{}] static| const| %type% *| %var% [ %any% ] ;|=") &&
                      nextIsStandardType(tok))
             {
+                bool isStatic = false;
+
                 tok = tok->next();
 
                 if (tok->str() == "static")
+                {
+                    tok = tok->next();
+                    isStatic = true;
+                }
+
+                if (tok->str() == "const")
                     tok = tok->next();
 
-                variables.addVar(tok->tokAt(1), Variables::array, scope,
-                                 tok->tokAt(5)->str() == "=" || tok->str() == "static");
-
-                // check for reading array size from local variable
-                if (tok->tokAt(3)->varId() != 0)
-                    variables.read(tok->tokAt(3)->varId());
-
-                // look at initializers
-                if (Token::Match(tok->tokAt(5), "= {"))
+                if (tok->str() != "return" && tok->str() != "throw")
                 {
-                    tok = tok->tokAt(7);
-                    while (tok->str() != "}")
+                    bool isPointer = bool(tok->strAt(1) == "*");
+                    const Token * const nametok = tok->tokAt(isPointer ? 2 : 1);
+
+                    variables.addVar(nametok, isPointer ? Variables::pointerArray : Variables::array, scope,
+                                     nametok->tokAt(4)->str() == "=" || isStatic);
+
+                    // check for reading array size from local variable
+                    if (nametok->tokAt(2)->varId() != 0)
+                        variables.read(nametok->tokAt(2)->varId());
+
+                    // look at initializers
+                    if (Token::Match(nametok->tokAt(4), "= {"))
                     {
-                        if (Token::Match(tok, "%var%"))
-                            variables.read(tok->varId());
-                        tok = tok->next();
+                        tok = nametok->tokAt(6);
+                        while (tok->str() != "}")
+                        {
+                            if (Token::Match(tok, "%var%"))
+                                variables.read(tok->varId());
+                            tok = tok->next();
+                        }
                     }
+                    else
+                        tok = nametok->tokAt(3);
                 }
-                else
-                    tok = tok->tokAt(4);
             }
 
             // pointer or reference declaration with possible initialization
