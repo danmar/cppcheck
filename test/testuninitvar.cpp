@@ -73,6 +73,12 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
+        checkUninitVar("void foo() {\n"
+                       "    int a;\n"
+                       "    b = a - c;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
         // dereferencing uninitialized pointer..
         checkUninitVar("static void foo()\n"
                        "{\n"
