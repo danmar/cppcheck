@@ -465,7 +465,7 @@ private:
             }
 
             // Used..
-            if (Token::Match(tok.previous(), "[[(,+-*/] %var% []),+-*/]"))
+            if (Token::Match(tok.previous(), "[[(,+-*/] %var% []),;+-*/]"))
             {
                 use(checks, &tok);
                 return &tok;

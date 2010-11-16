@@ -66,6 +66,13 @@ private:
 
     void uninitvar1()
     {
+        // Ticket #2207 - False negative
+        checkUninitVar("void foo() {\n"
+                       "    int a;\n"
+                       "    b = c - a;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
         // dereferencing uninitialized pointer..
         checkUninitVar("static void foo()\n"
                        "{\n"
@@ -544,16 +551,6 @@ private:
                        "        return 3;\n"
                        "    return i;\n"
                        "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        // Ticket #2207 - False negative
-        checkUninitVar("void foo(int x) {\n"
-                       "    int a;\n"
-                       "    if (x)\n"
-                       "        a = 1;\n"
-                       "    b = c - a;\n"
-                       "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5] (error) uninitialized variable a", errout.str());
         ASSERT_EQUALS("", errout.str());
 
         // Ticket #2207 - False positive
