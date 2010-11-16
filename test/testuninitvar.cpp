@@ -35,6 +35,7 @@ private:
     void run()
     {
         TEST_CASE(uninitvar1);
+        TEST_CASE(uninitvar_bitop);		// using uninitialized operand in bit operation
         TEST_CASE(uninitvar_alloc);     // data is allocated but not initialized
         TEST_CASE(uninitvar_arrays);    // arrays
         TEST_CASE(uninitvar_class);     // class/struct
@@ -448,6 +449,22 @@ private:
                        "exit:\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void uninitvar_bitop()
+    {
+        checkUninitVar("void foo() {\n"
+                       "    int b;\n"
+                       "    c = a | b;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: b\n", errout.str());
+
+        checkUninitVar("void foo() {\n"
+                       "    int b;\n"
+                       "    c = b | a;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: b\n", errout.str());
     }
 
     // if..
