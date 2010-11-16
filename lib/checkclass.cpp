@@ -122,6 +122,9 @@ void CheckClass::constructors()
                 if (var->assign || var->init || var->isStatic)
                     continue;
 
+                if (var->isConst && var->token->previous()->str() != "*")
+                    continue;
+
                 // It's non-static and it's not initialized => error
                 if (it->type == SymbolDatabase::Func::OperatorEqual)
                 {

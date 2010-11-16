@@ -824,9 +824,11 @@ void SymbolDatabase::SpaceInfo::getVarList()
             continue;
 
         // Is it const..?
+        bool isConst = false;
         if (next->str() == "const")
         {
             next = next->next();
+            isConst = true;
         }
 
         // Is it a static variable?
@@ -847,6 +849,7 @@ void SymbolDatabase::SpaceInfo::getVarList()
         if (next->str() == "const")
         {
             next = next->next();
+            isConst = true;
         }
 
         // Is it a variable declaration?
@@ -951,7 +954,7 @@ void SymbolDatabase::SpaceInfo::getVarList()
                     Check::reportError(errmsg);
             }
 
-            addVar(vartok, varaccess, isMutable, isStatic, isClass);
+            addVar(vartok, varaccess, isMutable, isStatic, isConst, isClass);
         }
     }
 }

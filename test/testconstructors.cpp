@@ -65,6 +65,7 @@ private:
         TEST_CASE(initvar_operator_eq1);     // BUG 2190376
         TEST_CASE(initvar_operator_eq2);     // BUG 2190376
         TEST_CASE(initvar_operator_eq3);
+        TEST_CASE(initvar_operator_eq4);     // ticket #2204
         TEST_CASE(initvar_same_classname);      // BUG 2208157
         TEST_CASE(initvar_chained_assign);      // BUG 2270433
         TEST_CASE(initvar_2constructors);       // BUG 2270353
@@ -423,6 +424,69 @@ private:
               "private:\n"
               "    void Init() { i = 0; }\n"
               "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void initvar_operator_eq4()
+    {
+        check("class Fred\n"
+              "{\n"
+              "    int i;\n"
+              "public:\n"
+              "    Fred() : i(5) { }\n"
+              "    Fred & operator=(const Fred &fred)\n"
+              "    {\n"
+              "        if (&fred != this)\n"
+              "        {\n"
+              "        }\n"
+              "        return *this\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "    int * i;\n"
+              "public:\n"
+              "    Fred() : i(NULL) { }\n"
+              "    Fred & operator=(const Fred &fred)\n"
+              "    {\n"
+              "        if (&fred != this)\n"
+              "        {\n"
+              "        }\n"
+              "        return *this\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "    const int * i;\n"
+              "public:\n"
+              "    Fred() : i(NULL) { }\n"
+              "    Fred & operator=(const Fred &fred)\n"
+              "    {\n"
+              "        if (&fred != this)\n"
+              "        {\n"
+              "        }\n"
+              "        return *this\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "    const int i;\n"
+              "public:\n"
+              "    Fred() : i(5) { }\n"
+              "    Fred & operator=(const Fred &fred)\n"
+              "    {\n"
+              "        if (&fred != this)\n"
+              "        {\n"
+              "        }\n"
+              "        return *this\n"
+              "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }

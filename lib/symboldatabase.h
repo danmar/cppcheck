@@ -45,7 +45,7 @@ public:
     class Var
     {
     public:
-        Var(const Token *token_, unsigned int index_, AccessControl access_ = Public, bool mutable_ = false, bool static_ = false, bool class_ = false)
+        Var(const Token *token_, unsigned int index_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_)
             : token(token_),
               index(index_),
               assign(false),
@@ -53,6 +53,7 @@ public:
               access(access_),
               isMutable(mutable_),
               isStatic(static_),
+              isConst(const_),
               isClass(class_)
         {
         }
@@ -77,6 +78,9 @@ public:
 
         /** @brief is this variable static? */
         bool        isStatic;
+
+        /** @brief is this variable const? */
+        bool        isConst;
 
         /** @brief is this variable a class (or unknown type)? */
         bool        isClass;
@@ -180,9 +184,9 @@ public:
          */
         void initVar(const std::string &varname);
 
-        void addVar(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool class_)
+        void addVar(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_)
         {
-            varlist.push_back(Var(token_, varlist.size(), access_, mutable_, static_, class_));
+            varlist.push_back(Var(token_, varlist.size(), access_, mutable_, static_, const_, class_));
         }
 
         /**
