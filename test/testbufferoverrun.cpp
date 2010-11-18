@@ -146,6 +146,7 @@ private:
         TEST_CASE(snprintf4);
         TEST_CASE(snprintf5);
         TEST_CASE(snprintf6);
+        TEST_CASE(snprintf7);
 
         TEST_CASE(strncat1);
         TEST_CASE(strncat2);
@@ -1946,6 +1947,16 @@ private:
               "{\n"
               "  struct Foo x;\n"
               "  snprintf(x.a, 2, \"aa\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void snprintf7()
+    {
+        check("void x() {\n"
+              "    const int nBezString = 1024;\n"
+              "    sal_Char pString[nBezString];\n"
+              "    snprintf(pString, nBezString, \"ab\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

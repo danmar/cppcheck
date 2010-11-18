@@ -1056,7 +1056,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
         // snprintf..
-        if (Token::Match(tok, "snprintf ( %varid% , %num% ,", arrayInfo.varid))
+        if (total_size > 0 && Token::Match(tok, "snprintf ( %varid% , %num% ,", arrayInfo.varid))
         {
             const long n = MathLib::toLongNumber(tok->strAt(4));
             if (static_cast<unsigned long>(n) > total_size)
