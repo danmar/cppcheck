@@ -270,12 +270,12 @@ protected:
     QString AskFileDir(const QString &file);
 
     /**
-    * @brief Create a new QStandardItem
+    * @brief Create new normal item.
     *
     * @param name name for the item
     * @return new QStandardItem
     */
-    QStandardItem *CreateItem(const QString &name);
+    QStandardItem *CreateNormalItem(const QString &name);
 
     /**
     * @brief Finds a file item
