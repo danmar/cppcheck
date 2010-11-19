@@ -272,10 +272,20 @@ protected:
     /**
     * @brief Create new normal item.
     *
+    * Normal item has left alignment and text set also as tooltip.
     * @param name name for the item
     * @return new QStandardItem
     */
     QStandardItem *CreateNormalItem(const QString &name);
+
+    /**
+    * @brief Create new line number item.
+    *
+    * Line number item has right align and text set as tooltip.
+    * @param name name for the item
+    * @return new QStandardItem
+    */
+    QStandardItem *CreateLineNumberItem(const QString &linenumber);
 
     /**
     * @brief Finds a file item

@@ -82,6 +82,15 @@ QStandardItem *ResultsTree::CreateNormalItem(const QString &name)
     return item;
 }
 
+QStandardItem *ResultsTree::CreateLineNumberItem(const QString &linenumber)
+{
+    QStandardItem *item = new QStandardItem(linenumber);
+    item->setData(linenumber, Qt::ToolTipRole);
+    item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    item->setEditable(false);
+    return item;
+}
+
 void ResultsTree::AddErrorItem(const ErrorItem &item)
 {
     if (item.files.isEmpty())
@@ -177,7 +186,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     const QString file = QDir::toNativeSeparators(item.file);
     list << CreateNormalItem(file);
     list << CreateNormalItem(tr(item.severity.toLatin1()));
-    list << CreateNormalItem(QString("%1").arg(item.line));
+    list << CreateLineNumberItem(QString("%1").arg(item.line));
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
     list << CreateNormalItem(tr(item.summary.toLatin1()));
