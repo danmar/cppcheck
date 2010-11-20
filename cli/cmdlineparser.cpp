@@ -291,9 +291,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 return false;
             }
 
-            if (_settings->_jobs > 1000)
+            if (_settings->_jobs > 10000)
             {
-                PrintMessage("cppcheck: argument for '-j' is allowed to be 1000 at max");
+                // This limit is here just to catch typos. If someone has 
+                // need for more jobs, this value should be increased. 
+                PrintMessage("cppcheck: argument for '-j' is allowed to be 10000 at max");
                 return false;
             }
         }
