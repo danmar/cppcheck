@@ -6571,9 +6571,9 @@ bool Tokenizer::simplifyCalculations()
                 const std::string after(tok->tokAt(3) ? tok->strAt(3).c_str() : "");
                 if ((prev == "(" || prev == "&&" || prev == "||") && (after == ")" || after == "&&" || after == "||"))
                 {
-                    const int op1(MathLib::toLongNumber(tok->str()));
+                    const MathLib::bigint op1(MathLib::toLongNumber(tok->str()));
                     const std::string &cmp(tok->next()->str());
-                    const int op2(MathLib::toLongNumber(tok->tokAt(2)->str()));
+                    const MathLib::bigint op2(MathLib::toLongNumber(tok->tokAt(2)->str()));
 
                     std::string result;
 
@@ -6598,16 +6598,16 @@ bool Tokenizer::simplifyCalculations()
 
             if (Token::Match(tok->previous(), "[([,=] %num% <<|>> %num%"))
             {
-                const int op1(MathLib::toLongNumber(tok->str()));
-                const int op2(MathLib::toLongNumber(tok->tokAt(2)->str()));
-                int result;
+                const MathLib::bigint op1(MathLib::toLongNumber(tok->str()));
+                const MathLib::bigint op2(MathLib::toLongNumber(tok->tokAt(2)->str()));
+                MathLib::bigint result;
 
                 if (tok->next()->str() == "<<")
                     result = op1 << op2;
                 else
                     result = op1 >> op2;
 
-                std::stringstream ss;
+                std::ostringstream ss;
                 ss << result;
 
                 tok->str(ss.str());
@@ -7091,7 +7091,7 @@ void Tokenizer::simplifyEnum()
 
             end = tok1->tokAt(-1)->link();
 
-            long lastValue = -1;
+            MathLib::bigint lastValue = -1;
             Token * lastEnumValueStart = 0;
             Token * lastEnumValueEnd = 0;
 
@@ -7146,7 +7146,7 @@ void Tokenizer::simplifyEnum()
                         // value is previous expression + 1
                         tok1->insertToken("+");
                         tok1 = tok1->next();
-                        tok1->insertToken(MathLib::toString<long>(lastValue));
+                        tok1->insertToken(MathLib::toString<MathLib::bigint>(lastValue));
                         enumValue = 0;
                         enumValueStart = valueStart->next();
                         enumValueEnd = tok1->next();
@@ -7154,7 +7154,7 @@ void Tokenizer::simplifyEnum()
                     else
                     {
                         // value is previous numeric value + 1
-                        tok1->insertToken(MathLib::toString<long>(lastValue));
+                        tok1->insertToken(MathLib::toString<MathLib::bigint>(lastValue));
                         enumValue = tok1->next();
                     }
                 }

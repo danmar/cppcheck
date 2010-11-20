@@ -605,7 +605,7 @@ private:
                     if (Token::Match(tok.tokAt(6), "%num% )"))
                     {
                         const unsigned int len = Token::getStrLength(tok.tokAt(4));
-                        const long sz = MathLib::toLongNumber(tok.strAt(6));
+                        const MathLib::bigint sz = MathLib::toLongNumber(tok.strAt(6));
                         if (sz >= 0 && len >= static_cast<unsigned long>(sz))
                         {
                             init_strncpy(checks, tok.tokAt(2));

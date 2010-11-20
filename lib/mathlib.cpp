@@ -30,23 +30,37 @@
 #include <cmath>
 #include <cctype>
 
-long MathLib::toLongNumber(const std::string &str)
+MathLib::bigint MathLib::toLongNumber(const std::string &str)
 {
+    // hexadecimal numbers:
     if (str.compare(0, 2, "0x") == 0
         || str.compare(0, 3, "+0x") == 0
         || str.compare(0, 3, "-0x") == 0)
     {
-        return std::strtol(str.c_str(), '\0', 16);
+        bigint ret = 0;
+        std::istringstream istr(str.substr((str[0]=='0') ? 2 : 3));
+        istr >> std::hex >> ret;
+        return (str[0]=='-') ? -ret : ret;
     }
+
+    // octal numbers:
     if (str.compare(0, 1, "0") == 0
         ||  str.compare(0, 2, "+0") == 0
         ||  str.compare(0, 2, "-0") == 0)
     {
-        return std::strtol(str.c_str(), '\0', 8);
+        bigint ret = 0;
+        std::istringstream istr(str.substr((str[0]=='0') ? 1 : 2));
+        istr >> std::oct >> ret;
+        return (str[0]=='-') ? -ret : ret;
     }
-    return (str.find("E", 0) != std::string::npos || str.find("e", 0) != std::string::npos)
-           ? static_cast<long>(std::atof(str.c_str()))
-           : std::atol(str.c_str());
+
+    if (str.find_first_of("eE") != std::string::npos)
+        return static_cast<bigint>(std::atof(str.c_str()));
+
+    bigint ret = 0;
+    std::istringstream istr(str);
+    istr >> ret;
+    return ret;
 }
 
 double MathLib::toDoubleNumber(const std::string &str)
@@ -199,7 +213,7 @@ std::string MathLib::add(const std::string & first, const std::string & second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second))
     {
-        return toString<long>(toLongNumber(first) + toLongNumber(second));
+        return toString<bigint>(toLongNumber(first) + toLongNumber(second));
     }
     return toString<double>(toDoubleNumber(first) + toDoubleNumber(second));
 }
@@ -208,7 +222,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
 {
     if (MathLib::isInt(first) && MathLib::isInt(second))
     {
-        return toString<long>(toLongNumber(first) - toLongNumber(second));
+        return toString<bigint>(toLongNumber(first) - toLongNumber(second));
     }
     return toString<double>(toDoubleNumber(first) - toDoubleNumber(second));
 }
@@ -217,7 +231,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second))
     {
-        return toString<long>(toLongNumber(first) / toLongNumber(second));
+        return toString<bigint>(toLongNumber(first) / toLongNumber(second));
     }
     return toString<double>(toDoubleNumber(first) / toDoubleNumber(second));
 }
@@ -226,7 +240,7 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
 {
     if (MathLib::isInt(first) && MathLib::isInt(second))
     {
-        return toString<long>(toLongNumber(first) * toLongNumber(second));
+        return toString<bigint>(toLongNumber(first) * toLongNumber(second));
     }
     return toString<double>(toDoubleNumber(first) * toDoubleNumber(second));
 }
