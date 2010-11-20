@@ -4283,6 +4283,13 @@ private:
         }
 
         {
+            const char *code = "struct A {"
+                               "  void operator = (void *) = delete;"
+                               "}";
+            ASSERT_EQUALS("struct A { }", tokenizeAndStringify(code));
+        }
+
+        {
             const char *code = "struct foo {"
                                "    foo();"
                                "}"

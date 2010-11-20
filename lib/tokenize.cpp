@@ -2106,7 +2106,7 @@ bool Tokenizer::tokenize(std::istream &code,
                     tok2 = tok2->link()->previous();
 
                     // operator ==|>|<|..
-                    if (Token::Match(tok->previous(), "operator %any%"))
+                    if (Token::Match(tok2->previous(), "operator %any%"))
                         tok2 = tok2->previous();
                     else if (Token::simpleMatch(tok2->tokAt(-2), "operator [ ]"))
                         tok2 = tok2->tokAt(-2);
