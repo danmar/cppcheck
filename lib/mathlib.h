@@ -46,7 +46,7 @@ public:
     static double toDoubleNumber(const std::string & str);
 
     template<typename T>
-    static std::string toString(T d)
+    static std::string toString(const T &d)
     {
         std::ostringstream result;
         result << d;
