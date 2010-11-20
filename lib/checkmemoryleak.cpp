@@ -214,11 +214,12 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
     if (Token::Match(tok, "delete [ ] ( %varid% ) ;", varid))
         return NewArray;
 
-    if (Token::Match(tok, "free ( %varid% ) ;", varid) ||
-        Token::Match(tok, "kfree ( %varid% ) ;", varid))
+    if (Token::Match(tok, "free|kfree ( %varid% ) ;", varid) ||
+        Token::Match(tok, "free|kfree ( %varid% -", varid))
         return Malloc;
 
-    if (Token::Match(tok, "g_free ( %varid% ) ;", varid))
+    if (Token::Match(tok, "g_free ( %varid% ) ;", varid) ||
+        Token::Match(tok, "g_free ( %varid% -", varid))
         return gMalloc;
 
     if (Token::Match(tok, "fclose ( %varid% )", varid) ||
@@ -1016,19 +1017,24 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 {
                     // is the pointer in rhs?
                     bool rhs = false;
-                    for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+                    for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
                     {
                         if (tok2->str() == ";")
+                        {
+                            if (rhs)
+                                tok = tok2;
                             break;
+                        }
 
                         if (Token::Match(tok2, "[=+] %varid%", varid))
                         {
                             rhs = true;
-                            break;
                         }
                     }
 
-                    addtoken(&rettail, tok, (rhs ? "use" : "assign"));
+                    if (!rhs)
+                        addtoken(&rettail, tok, "assign");
+                    continue;
                 }
             }
 

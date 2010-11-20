@@ -534,6 +534,9 @@ private:
         ASSERT_EQUALS(";;;;", getcode("char *p; const char *q; q = p;", "p"));
         ASSERT_EQUALS(";;use;;", getcode("char *s; x = {1,s};", "s"));
 
+        // non-use..
+        ASSERT_EQUALS(";;", getcode("char *s; s = s + 1;", "s"));
+
         // return..
         ASSERT_EQUALS(";;return;", getcode("char *s; return;", "s"));
         ASSERT_EQUALS(";;returnuse;", getcode("char *s; return s;", "s"));
