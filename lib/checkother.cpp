@@ -220,6 +220,10 @@ void CheckOther::checkAssignmentInAssert()
 //---------------------------------------------------------------------------
 void CheckOther::checkIncorrectLogicOperator()
 {
+    // Inconclusive until #2162 is fixed:
+    if (!_settings->inconclusive)
+        return;
+
     if (!_settings->_checkCodingStyle)
         return;
 
@@ -2639,6 +2643,8 @@ void CheckOther::assignmentInAssertError(const Token *tok, const std::string &va
 
 void CheckOther::incorrectLogicOperatorError(const Token *tok)
 {
+    if (!_settings->inconclusive)
+        return;
     reportError(tok, Severity::warning,
                 "incorrectLogicOperator", "Mutual exclusion over || always evaluates to true. Did you intend to use && instead?");
 }

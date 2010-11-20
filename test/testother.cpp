@@ -104,6 +104,7 @@ private:
         // Check..
         Settings settings;
         settings._checkCodingStyle = true;
+        settings.inconclusive = true;
         CheckOther checkOther(&tokenizer, &settings, this);
 
         // Clear the error buffer..
