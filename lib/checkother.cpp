@@ -304,7 +304,7 @@ void CheckOther::invalidFunctionUsage()
                 {
                     if (Token::Match(tok2, ", %num% )"))
                     {
-                        int radix = MathLib::toLongNumber(tok2->next()->str());
+                        const MathLib::bigint radix = MathLib::toLongNumber(tok2->next()->str());
                         if (!(radix == 0 || (radix >= 2 && radix <= 36)))
                         {
                             dangerousUsageStrtolError(tok2);
