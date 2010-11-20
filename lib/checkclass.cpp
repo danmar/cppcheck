@@ -79,8 +79,8 @@ void CheckClass::constructors()
     {
         SymbolDatabase::SpaceInfo *info = *i;
 
-        // don't check namespaces
-        if (info->type == SymbolDatabase::SpaceInfo::Namespace || info->type == SymbolDatabase::SpaceInfo::Function)
+        // only check classes and structures
+        if (!info->isClassOrStruct())
             continue;
 
         // There are no constructors.
@@ -98,25 +98,25 @@ void CheckClass::constructors()
             }
         }
 
-        std::list<SymbolDatabase::Func>::const_iterator it;
+        std::list<SymbolDatabase::Func>::const_iterator func;
 
-        for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
+        for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
         {
-            if (!it->hasBody || !(it->type == SymbolDatabase::Func::Constructor || it->type == SymbolDatabase::Func::CopyConstructor || it->type == SymbolDatabase::Func::OperatorEqual))
+            if (!func->hasBody || !(func->type == SymbolDatabase::Func::Constructor || func->type == SymbolDatabase::Func::CopyConstructor || func->type == SymbolDatabase::Func::OperatorEqual))
                 continue;
 
             // Mark all variables not used
             info->clearAllVar();
 
             std::list<std::string> callstack;
-            info->initializeVarList(*it, callstack);
+            info->initializeVarList(*func, callstack);
 
             // Check if any variables are uninitialized
             std::list<SymbolDatabase::Var>::const_iterator var;
             for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
             {
                 // skip classes for regular constructor
-                if (var->isClass && it->type == SymbolDatabase::Func::Constructor)
+                if (var->isClass && func->type == SymbolDatabase::Func::Constructor)
                     continue;
 
                 if (var->assign || var->init || var->isStatic)
@@ -126,13 +126,13 @@ void CheckClass::constructors()
                     continue;
 
                 // It's non-static and it's not initialized => error
-                if (it->type == SymbolDatabase::Func::OperatorEqual)
+                if (func->type == SymbolDatabase::Func::OperatorEqual)
                 {
                     const Token *operStart = 0;
-                    if (it->token->str() == "=")
-                        operStart = it->token->tokAt(1);
+                    if (func->token->str() == "=")
+                        operStart = func->token->tokAt(1);
                     else
-                        operStart = it->token->tokAt(3);
+                        operStart = func->token->tokAt(3);
 
                     bool classNameUsed = false;
                     for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next())
@@ -145,10 +145,10 @@ void CheckClass::constructors()
                     }
 
                     if (classNameUsed)
-                        operatorEqVarError(it->token, info->className, var->token->str());
+                        operatorEqVarError(func->token, info->className, var->token->str());
                 }
-                else if (it->access != SymbolDatabase::Private)
-                    uninitVarError(it->token, info->className, var->token->str());
+                else if (func->access != SymbolDatabase::Private)
+                    uninitVarError(func->token, info->className, var->token->str());
             }
         }
     }
@@ -196,8 +196,8 @@ void CheckClass::privateFunctions()
     {
         SymbolDatabase::SpaceInfo *info = *i;
 
-        // don't check namespaces
-        if (info->type == SymbolDatabase::SpaceInfo::Namespace || info->type == SymbolDatabase::SpaceInfo::Function)
+        // only check classes and structures
+        if (!info->isClassOrStruct())
             continue;
 
         // dont check derived classes
@@ -545,7 +545,8 @@ void CheckClass::operatorEqRetRefThis()
     {
         const SymbolDatabase::SpaceInfo *info = *i;
 
-        if (info->type == SymbolDatabase::SpaceInfo::Class || info->type == SymbolDatabase::SpaceInfo::Struct)
+        // only check classes and structures
+        if (info->isClassOrStruct())
         {
             std::list<SymbolDatabase::Func>::const_iterator func;
 
@@ -896,6 +897,10 @@ void CheckClass::checkConst()
     {
         SymbolDatabase::SpaceInfo *info = *it;
 
+        // only check classes and structures
+        if (!info->isClassOrStruct())
+            continue;
+
         std::list<SymbolDatabase::Func>::const_iterator func;
 
         for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
@@ -905,7 +910,7 @@ void CheckClass::checkConst()
             {
                 // get last token of return type
                 const Token *previous = func->tokenDef->isName() ? func->token->previous() : func->token->tokAt(-2);
-                while (previous->str() == "::")
+                while (previous && previous->str() == "::")
                     previous = previous->tokAt(-2);
 
                 // does the function return a pointer or reference?
@@ -970,7 +975,7 @@ void CheckClass::checkConst()
                 {
                     std::string classname = info->className;
                     SymbolDatabase::SpaceInfo *nest = info->nestedIn;
-                    while (nest)
+                    while (nest && nest->type != SymbolDatabase::SpaceInfo::Global)
                     {
                         classname = std::string(nest->className + "::" + classname);
                         nest = nest->nestedIn;

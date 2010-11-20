@@ -147,7 +147,7 @@ public:
     class SpaceInfo
     {
     public:
-        enum SpaceType { Class, Struct, Union, Namespace, Function };
+        enum SpaceType { Global, Class, Struct, Union, Namespace, Function };
 
         SpaceInfo(SymbolDatabase *check_, const Token *classDef_, SpaceInfo *nestedIn_);
 
@@ -165,6 +165,11 @@ public:
         std::list<SpaceInfo *> nestedList;
         AccessControl access;
         unsigned int numConstructors;
+
+        bool isClassOrStruct() const
+        {
+            return (type == Class || type == Struct);
+        }
 
         /**
          * @brief find if name is in nested list
@@ -237,7 +242,6 @@ public:
 private:
     void addFunction(SpaceInfo **info, const Token **tok, const Token *argStart);
     void addNewFunction(SpaceInfo **info, const Token **tok);
-    void addIfFunction(SpaceInfo **info, const Token **tok);
 
     bool isFunction(const Token *tok, const Token **funcStart, const Token **argStart) const;
     bool argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth) const;

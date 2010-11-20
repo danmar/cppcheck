@@ -39,7 +39,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
 {
     // find all namespaces (class,struct and namespace)
-    SpaceInfo *info = 0;
+    SpaceInfo *info = new SpaceInfo(this, NULL, NULL);
+    spaceInfoList.push_back(info);
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Locate next class
@@ -49,7 +50,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             const Token *tok2 = tok->tokAt(2);
 
             // only create base list for classes and structures
-            if (new_info->type == SpaceInfo::Class || new_info->type == SpaceInfo::Struct)
+            if (new_info->isClassOrStruct())
             {
                 // goto initial '{'
                 tok2 = initBaseInfo(new_info, tok);
@@ -66,8 +67,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             tok = tok2;
         }
 
-        // check if in space
-        else if (info)
+        else
         {
             // check for end of space
             if (tok == info->classEnd)
@@ -241,13 +241,66 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     info->friendList.push_back(friendInfo);
                 }
             }
-            else if (info->type == SpaceInfo::Namespace)
-                addIfFunction(&info, &tok);
-        }
+            else if (info->type == SpaceInfo::Namespace || info->type == SpaceInfo::Global)
+            {
+                const Token *funcStart = 0;
+                const Token *argStart = 0;
 
-        // not in SpaceInfo
-        else
-            addIfFunction(&info, &tok);
+                // function?
+                if (isFunction(tok, &funcStart, &argStart))
+                {
+                    // has body?
+                    if (Token::Match(argStart->link(), ") const| {|:"))
+                    {
+                        // class function
+                        if (tok->previous() && tok->previous()->str() == "::")
+                            addFunction(&info, &tok, argStart);
+
+                        // regular function
+                        else
+                        {
+                            Func function;
+
+                            // save the function definition argument start '('
+                            function.argDef = argStart;
+
+                            // save the access type
+                            function.access = Public;
+
+                            // save the function name location
+                            function.tokenDef = funcStart;
+                            function.token = funcStart;
+
+                            function.isInline = false;
+                            function.hasBody = true;
+                            function.arg = function.argDef;
+                            function.type = Func::Function;
+
+                            info->functionList.push_back(function);
+
+                            addNewFunction(&info, &tok);
+                        }
+                    }
+
+                    // function returning function pointer with body
+                    else if (Token::simpleMatch(argStart->link(), ") ) (") &&
+                             Token::Match(argStart->link()->tokAt(2)->link(), ") const| {"))
+                    {
+                        const Token *tok1 = funcStart;
+
+                        // class function
+                        if (tok1->previous()->str() == "::")
+                            addFunction(&info, &tok1, argStart);
+
+                        // regular function
+                        else
+                            addNewFunction(&info, &tok1);
+
+                        tok = tok1;
+                    }
+                }
+            }
+        }
     }
 
     std::list<SpaceInfo *>::iterator it;
@@ -440,14 +493,14 @@ bool SymbolDatabase::argsMatch(const Token *first, const Token *second, const st
 
 void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Token *argStart)
 {
-    const Token *tok1 = (*tok)->tokAt(-2);
+    const Token *tok1 = (*tok)->tokAt(-2); // skip class/struct name
     int count = 0;
     bool added = false;
     std::string path;
     unsigned int path_length = 0;
 
     // back up to head of path
-    while (tok1->previous() && tok1->previous()->str() == "::")
+    while (tok1 && tok1->previous() && tok1->previous()->str() == "::")
     {
         path = tok1->str() + " :: " + path;
         tok1 = tok1->tokAt(-2);
@@ -468,35 +521,28 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
     {
         SpaceInfo *info1 = *it1;
 
-        // is this class at global scope?
-        if (*info)
-        {
-            if (!info1->nestedIn)
-                continue;
-        }
-        else
-        {
-            if (info1->nestedIn)
-                continue;
-        }
-
         bool match = false;
-        if (info1->className == tok1->str() &&
-            ((*info) ? (info1->nestedIn->className == (*info)->className) : true))
+        if (info1->className == tok1->str() && (info1->type != SpaceInfo::Function))
         {
-            SpaceInfo *info2 = info1;
-
-            while (info2 && count > 0)
+            // do the spaces match (same space) or do their names match (multiple namespaces)
+            if ((*info == info1->nestedIn) || (*info && info1 &&
+                                               (*info)->className == info1->nestedIn->className && !(*info)->className.empty() &&
+                                               (*info)->type == info1->nestedIn->type))
             {
-                count--;
-                tok1 = tok1->tokAt(2);
-                info2 = info2->findInNestedList(tok1->str());
-            }
+                SpaceInfo *info2 = info1;
 
-            if (count == 0 && info2)
-            {
-                match = true;
-                info1 = info2;
+                while (info2 && count > 0)
+                {
+                    count--;
+                    tok1 = tok1->tokAt(2);
+                    info2 = info2->findInNestedList(tok1->str());
+                }
+
+                if (count == 0 && info2)
+                {
+                    match = true;
+                    info1 = info2;
+                }
             }
         }
 
@@ -585,45 +631,6 @@ void SymbolDatabase::addNewFunction(SymbolDatabase::SpaceInfo **info, const Toke
     }
 }
 
-void SymbolDatabase::addIfFunction(SpaceInfo **info, const Token **tok)
-{
-    const Token *funcStart = 0;
-    const Token *argStart = 0;
-
-    // function?
-    if (isFunction(*tok, &funcStart, &argStart))
-    {
-        // has body?
-        if (Token::Match(argStart->link(), ") const| {|:"))
-        {
-            // class function
-            if ((*tok)->previous() && (*tok)->previous()->str() == "::")
-                addFunction(info, tok, argStart);
-
-            // regular function
-            else
-                addNewFunction(info, tok);
-        }
-
-        // function returning function pointer with body
-        else if (Token::simpleMatch(argStart->link(), ") ) (") &&
-                 Token::Match(argStart->link()->tokAt(2)->link(), ") const| {"))
-        {
-            const Token *tok1 = funcStart;
-
-            // class function
-            if (tok1->previous()->str() == "::")
-                addFunction(info, &tok1, argStart);
-
-            // regular function
-            else
-                addNewFunction(info, &tok1);
-
-            *tok = tok1;
-        }
-    }
-}
-
 const Token *SymbolDatabase::initBaseInfo(SpaceInfo *info, const Token *tok)
 {
     // goto initial '{'
@@ -697,7 +704,12 @@ SymbolDatabase::SpaceInfo::SpaceInfo(SymbolDatabase *check_, const Token *classD
     nestedIn(nestedIn_),
     numConstructors(0)
 {
-    if (classDef->str() == "class")
+    if (!classDef)
+    {
+        type = SpaceInfo::Global;
+        access = Public;
+    }
+    else if (classDef->str() == "class")
     {
         type = SpaceInfo::Class;
         className = classDef->next()->str();
@@ -732,31 +744,48 @@ SymbolDatabase::SpaceInfo::SpaceInfo(SymbolDatabase *check_, const Token *classD
         nestedIn->nestedList.push_back(this);
 }
 
+// Get variable list..
 void SymbolDatabase::SpaceInfo::getVarList()
 {
-    // Get variable list..
-    unsigned int indentlevel = 0;
-    AccessControl varaccess = type == Struct ? Public : Private;
-    for (const Token *tok = classStart; tok; tok = tok->next())
+    AccessControl varaccess = type == Class ? Private : Public;
+    const Token *start;
+
+    if (classStart)
+        start = classStart->next();
+    else
+        start = check->_tokenizer->tokens();
+
+    for (const Token *tok = start; tok; tok = tok->next())
     {
-        if (!tok->next())
+        if (tok->str() == "}")
             break;
 
-        if (tok->str() == "{")
-            ++indentlevel;
-        else if (tok->str() == "}")
+        // Is it a function?
+        else if (tok->str() == "{")
         {
-            if (indentlevel <= 1)
-                break;
-            --indentlevel;
+            tok = tok->link();
+            continue;
         }
 
-        if (indentlevel != 1)
-            continue;
+        // Is it a nested class or structure?
+        else if (Token::Match(tok, "class|struct|union|namespace %type% :|{"))
+        {
+            tok = tok->tokAt(2);
+            while (tok && tok->str() != "{")
+                tok = tok->next();
+            if (tok)
+            {
+                // skip implementation
+                tok = tok->link();
+                continue;
+            }
+            else
+                break;
+        }
 
         // Borland C++: Skip all variables in the __published section.
         // These are automaticly initialized.
-        if (tok->str() == "__published:")
+        else if (tok->str() == "__published:")
         {
             for (; tok; tok = tok->next())
             {
@@ -772,165 +801,177 @@ void SymbolDatabase::SpaceInfo::getVarList()
         }
 
         // "private:" "public:" "protected:" etc
-        bool b = false;
-        if (tok->str() == "public:")
+        else if (tok->str() == "public:")
         {
             varaccess = Public;
-            b = true;
+            continue;
         }
         else if (tok->str() == "protected:")
         {
             varaccess = Protected;
-            b = true;
+            continue;
         }
         else if (tok->str() == "private:")
         {
             varaccess = Private;
-            b = true;
+            continue;
         }
-
-        // Search for start of statement..
-        if (! Token::Match(tok, "[;{}]") && ! b)
-            continue;
-
-        // This is the start of a statement
-        const Token *next = tok->next();
-        const Token *vartok = 0;
-
-        // If next token contains a ":".. it is not part of a variable declaration
-        if (next->str().find(":") != std::string::npos)
-            continue;
 
         // Is it a forward declaration?
-        if (Token::Match(next, "class|struct|union %var% ;"))
+        else if (Token::Match(tok, "class|struct|union %var% ;"))
         {
             tok = tok->tokAt(2);
-            continue;
-        }
-
-        // It it a nested class or structure?
-        if (Token::Match(next, "class|struct|union %type% :|{"))
-        {
-            tok = tok->tokAt(2);
-            while (tok->str() != "{")
-                tok = tok->next();
-            // skip implementation
-            tok = tok->link();
             continue;
         }
 
         // Borland C++: Ignore properties..
-        if (next->str() == "__property")
+        else if (tok->str() == "__property")
             continue;
+
+        // Search for start of statement..
+        else if (!tok->previous() || !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
+            continue;
+
+        // This is the start of a statement
+        const Token *vartok = 0;
 
         // Is it const..?
         bool isConst = false;
-        if (next->str() == "const")
+        if (tok->str() == "const")
         {
-            next = next->next();
+            tok = tok->next();
             isConst = true;
         }
 
         // Is it a static variable?
-        const bool isStatic(Token::simpleMatch(next, "static"));
+        const bool isStatic(Token::simpleMatch(tok, "static"));
         if (isStatic)
         {
-            next = next->next();
+            tok = tok->next();
         }
 
         // Is it a mutable variable?
-        const bool isMutable(Token::simpleMatch(next, "mutable"));
+        const bool isMutable(Token::simpleMatch(tok, "mutable"));
         if (isMutable)
         {
-            next = next->next();
+            tok = tok->next();
         }
 
         // Is it const..?
-        if (next->str() == "const")
+        if (tok->str() == "const")
         {
-            next = next->next();
+            tok = tok->next();
             isConst = true;
         }
 
-        // Is it a variable declaration?
         bool isClass = false;
-        if (Token::Match(next, "%type% %var% ;|:"))
+
+        // Is it a variable declaration?
+        if (Token::Match(tok, "%type% %var% ;|:"))
         {
-            if (!next->isStandardType())
+            if (!tok->isStandardType())
                 isClass = true;
 
-            vartok = next->tokAt(1);
+            vartok = tok->tokAt(1);
+            tok = vartok->next();
+        }
+        else if (Token::Match(tok, "%type% :: %type% %var% ;"))
+        {
+            isClass = true;
+            vartok = tok->tokAt(3);
+            tok = vartok->next();
+        }
+        else if (Token::Match(tok, "%type% :: %type% :: %type% %var% ;"))
+        {
+            isClass = true;
+            vartok = tok->tokAt(5);
+            tok = vartok->next();
         }
 
         // Structure?
-        else if (Token::Match(next, "struct|union %type% %var% ;"))
+        else if (Token::Match(tok, "struct|union %type% %var% ;"))
         {
-            vartok = next->tokAt(2);
+            vartok = tok->tokAt(2);
+            tok = vartok->next();
         }
 
         // Pointer?
-        else if (Token::Match(next, "%type% * %var% ;"))
-            vartok = next->tokAt(2);
-        else if (Token::Match(next, "%type% %type% * %var% ;"))
-            vartok = next->tokAt(3);
-        else if (Token::Match(next, "%type% :: %type% * %var% ;"))
-            vartok = next->tokAt(4);
-        else if (Token::Match(next, "%type% :: %type% :: %type% * %var% ;"))
-            vartok = next->tokAt(6);
+        else if (Token::Match(tok, "%type% * %var% ;"))
+        {
+            vartok = tok->tokAt(2);
+            tok = vartok->next();
+        }
+        else if (Token::Match(tok, "%type% %type% * %var% ;"))
+        {
+            vartok = tok->tokAt(3);
+            tok = vartok->next();
+        }
+        else if (Token::Match(tok, "%type% :: %type% * %var% ;"))
+        {
+            vartok = tok->tokAt(4);
+            tok = vartok->next();
+        }
+        else if (Token::Match(tok, "%type% :: %type% :: %type% * %var% ;"))
+        {
+            vartok = tok->tokAt(6);
+            tok = vartok->next();
+        }
 
         // Array?
-        else if (Token::Match(next, "%type% %var% [") && next->next()->str() != "operator")
+        else if (Token::Match(tok, "%type% %var% [") && tok->next()->str() != "operator")
         {
-            if (!next->isStandardType())
+            if (!tok->isStandardType())
                 isClass = true;
 
-            vartok = next->tokAt(1);
+            vartok = tok->tokAt(1);
+            tok = vartok->next()->link()->next();
         }
 
         // Pointer array?
-        else if (Token::Match(next, "%type% * %var% ["))
-            vartok = next->tokAt(2);
-        else if (Token::Match(next, "%type% :: %type% * %var% ["))
-            vartok = next->tokAt(4);
-        else if (Token::Match(next, "%type% :: %type% :: %type% * %var% ["))
-            vartok = next->tokAt(6);
-
-        // std::string..
-        else if (Token::Match(next, "%type% :: %type% %var% ;"))
+        else if (Token::Match(tok, "%type% * %var% ["))
         {
-            isClass = true;
-            vartok = next->tokAt(3);
+            vartok = tok->tokAt(2);
+            tok = vartok->next();
         }
-        else if (Token::Match(next, "%type% :: %type% :: %type% %var% ;"))
+        else if (Token::Match(tok, "%type% :: %type% * %var% ["))
         {
-            isClass = true;
-            vartok = next->tokAt(5);
+            vartok = tok->tokAt(4);
+            tok = vartok->next();
+        }
+        else if (Token::Match(tok, "%type% :: %type% :: %type% * %var% ["))
+        {
+            vartok = tok->tokAt(6);
+            tok = vartok->next();
         }
 
         // Container..
-        else if (Token::Match(next, "%type% :: %type% <") ||
-                 Token::Match(next, "%type% <"))
+        else if (Token::Match(tok, "%type% :: %type% <") ||
+                 Token::Match(tok, "%type% <"))
         {
             // find matching ">"
             int level = 0;
-            for (; next; next = next->next())
+            for (; tok; tok = tok->next())
             {
-                if (next->str() == "<")
+                if (tok->str() == "<")
                     level++;
-                else if (next->str() == ">")
+                else if (tok->str() == ">")
                 {
                     level--;
                     if (level == 0)
                         break;
                 }
             }
-            if (next && Token::Match(next, "> %var% ;"))
+            if (tok && Token::Match(tok, "> %var% ;"))
             {
                 isClass = true;
-                vartok = next->tokAt(1);
+                vartok = tok->tokAt(1);
+                tok = vartok->next();
             }
-            else if (next && Token::Match(next, "> * %var% ;"))
-                vartok = next->tokAt(2);
+            else if (tok && Token::Match(tok, "> * %var% ;"))
+            {
+                vartok = tok->tokAt(2);
+                tok = vartok->next();
+            }
         }
 
         // If the vartok was set in the if-blocks above, create a entry for this variable..
