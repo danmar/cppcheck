@@ -232,8 +232,8 @@ static bool for_condition(const Token * const tok2, unsigned int varid, std::str
     if (Token::Match(tok2, "%varid% < %num% ;", varid))
     {
         maxMinFlipped = false;
-        long value = MathLib::toLongNumber(tok2->strAt(2));
-        max_value = MathLib::toString<long>(value - 1);
+        const MathLib::bigint value = MathLib::toLongNumber(tok2->strAt(2));
+        max_value = MathLib::toString<MathLib::bigint>(value - 1);
     }
     else if (Token::Match(tok2, "%varid% <= %num% ;", varid))
     {
@@ -243,9 +243,9 @@ static bool for_condition(const Token * const tok2, unsigned int varid, std::str
     else if (Token::Match(tok2, " %num% < %varid% ;", varid))
     {
         maxMinFlipped = true;
-        long value = MathLib::toLongNumber(tok2->str());
+        const MathLib::bigint value = MathLib::toLongNumber(tok2->str());
         max_value = min_value;
-        min_value = MathLib::toString<long>(value + 1);
+        min_value = MathLib::toString<MathLib::bigint>(value + 1);
     }
     else if (Token::Match(tok2, "%num% <= %varid% ;", varid))
     {
@@ -286,28 +286,28 @@ static bool for3(const Token * const tok,
         if (!MathLib::isInt(tok->strAt(2)))
             return false;
 
-        const int num = MathLib::toLongNumber(tok->strAt(2));
+        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(2));
 
         // We have for example code: "for(i=2;i<22;i+=6)
         // We can calculate that max value for i is 20, not 21
         // 21-2 = 19
         // 19/6 = 3
         // 6*3+2 = 20
-        long max = MathLib::toLongNumber(max_value);
-        long min = MathLib::toLongNumber(min_value);
+        MathLib::bigint max = MathLib::toLongNumber(max_value);
+        MathLib::bigint min = MathLib::toLongNumber(min_value);
         max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<long>(max);
+        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "%varid% = %varid% + %num% )", varid))
     {
         if (!MathLib::isInt(tok->strAt(4)))
             return false;
 
-        const int num = MathLib::toLongNumber(tok->strAt(4));
-        long max = MathLib::toLongNumber(max_value);
-        long min = MathLib::toLongNumber(min_value);
+        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(4));
+        MathLib::bigint max = MathLib::toLongNumber(max_value);
+        MathLib::bigint min = MathLib::toLongNumber(min_value);
         max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<long>(max);
+        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "%varid% -= %num% )", varid) ||
              Token::Match(tok, "%varid%  = %num% - %varid% )", varid))
@@ -315,23 +315,23 @@ static bool for3(const Token * const tok,
         if (!MathLib::isInt(tok->strAt(2)))
             return false;
 
-        const int num = MathLib::toLongNumber(tok->strAt(2));
+        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(2));
 
-        long max = MathLib::toLongNumber(max_value);
-        long min = MathLib::toLongNumber(min_value);
+        MathLib::bigint max = MathLib::toLongNumber(max_value);
+        MathLib::bigint min = MathLib::toLongNumber(min_value);
         max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<long>(max);
+        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "%varid% = %varid% - %num% )", varid))
     {
         if (!MathLib::isInt(tok->strAt(4)))
             return false;
 
-        const int num = MathLib::toLongNumber(tok->strAt(4));
-        long max = MathLib::toLongNumber(max_value);
-        long min = MathLib::toLongNumber(min_value);
+        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(4));
+        MathLib::bigint max = MathLib::toLongNumber(max_value);
+        MathLib::bigint min = MathLib::toLongNumber(min_value);
         max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<long>(max);
+        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "--| %varid% --| )", varid))
     {
@@ -509,7 +509,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
                 {
                     if (Token::Match(tok2, ", %num% ,|)"))
                     {
-                        const long sz = MathLib::toLongNumber(tok2->strAt(1));
+                        const MathLib::bigint sz = MathLib::toLongNumber(tok2->strAt(1));
                         unsigned int elements = 1;
                         for (unsigned int i = 0; i < arrayInfo.num.size(); ++i)
                             elements *= arrayInfo.num[i];
@@ -531,7 +531,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
                 {
                     if (Token::Match(tok2, ", %num% , %num% ,|)"))
                     {
-                        const long sz = MathLib::toLongNumber(tok2->strAt(1)) * MathLib::toLongNumber(tok2->strAt(3));
+                        const MathLib::bigint sz = MathLib::toLongNumber(MathLib::multiply(tok2->strAt(1), tok2->strAt(3)));
                         unsigned int elements = 1;
                         for (unsigned int i = 0; i < arrayInfo.num.size(); ++i)
                             elements *= arrayInfo.num[i];
@@ -813,7 +813,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         const std::string snprintfPattern = varid > 0 ? std::string("snprintf ( %varid% , %num% ,") : ("snprintf ( " + varnames + " , %num% ,");
         if (Token::Match(tok, snprintfPattern.c_str(), varid))
         {
-            const long n = MathLib::toLongNumber(tok->strAt(4 + varc));
+            const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4 + varc));
             if (n > total_size)
                 outOfBounds(tok->tokAt(4 + varc), "snprintf size");
         }
@@ -851,7 +851,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             std::vector<unsigned int> indexes;
             for (const Token *tok2 = tok->next(); Token::Match(tok2, "[ %num% ]"); tok2 = tok2->tokAt(3))
             {
-                const long index = MathLib::toLongNumber(tok2->strAt(1));
+                const MathLib::bigint index = MathLib::toLongNumber(tok2->strAt(1));
                 if (index < 0)
                 {
                     indexes.clear();
@@ -1006,7 +1006,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         {
             if (tok->str() == "strncat")
             {
-                const long n = MathLib::toLongNumber(tok->strAt(6));
+                const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6));
                 if (static_cast<unsigned long>(n) >= total_size)
                     strncatUsage(tok);
             }
@@ -1014,7 +1014,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             // Dangerous usage of strncpy + strncat..
             if (Token::Match(tok->tokAt(8), "; strncat ( %varid% , %any% , %num% )", arrayInfo.varid))
             {
-                const long n = MathLib::toLongNumber(tok->strAt(6)) + MathLib::toLongNumber(tok->strAt(15));
+                const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6)) + MathLib::toLongNumber(tok->strAt(15));
                 if (static_cast<unsigned long>(n) > total_size)
                     strncatUsage(tok->tokAt(9));
             }
@@ -1058,7 +1058,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         // snprintf..
         if (total_size > 0 && Token::Match(tok, "snprintf ( %varid% , %num% ,", arrayInfo.varid))
         {
-            const long n = MathLib::toLongNumber(tok->strAt(4));
+            const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4));
             if (static_cast<unsigned long>(n) > total_size)
                 outOfBounds(tok->tokAt(4), "snprintf size");
         }
