@@ -104,7 +104,6 @@ private:
         // Check..
         Settings settings;
         settings._checkCodingStyle = true;
-        settings.inconclusive = true;
         CheckOther checkOther(&tokenizer, &settings, this);
 
         // Clear the error buffer..
@@ -1482,6 +1481,16 @@ private:
               "    const int ERR1 = 5;\n"
               "    if ((x != ERR1) || (y != ERR1))\n"
               "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(unsigned int a, unsigned int b, unsigned int c) {\n"
+              "    if((a != b) || (c != b) || (c != a))\n"
+              "    {\n"
+              "        return true;\n"
+              "    }\n"
+              "    return false;\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());

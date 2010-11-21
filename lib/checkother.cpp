@@ -220,10 +220,6 @@ void CheckOther::checkAssignmentInAssert()
 //---------------------------------------------------------------------------
 void CheckOther::checkIncorrectLogicOperator()
 {
-    // Inconclusive until #2162 is fixed:
-    if (!_settings->inconclusive)
-        return;
-
     if (!_settings->_checkCodingStyle)
         return;
 
@@ -234,6 +230,7 @@ void CheckOther::checkIncorrectLogicOperator()
     while (tok && endTok)
     {
         // Find a pair of OR'd terms, with or without parenthesis
+        // e.g. if (x != 3 || x != 4)
         const Token *logicTok = NULL, *term1Tok = NULL, *term2Tok = NULL;
         if (NULL != (logicTok = Token::findmatch(tok, "( %any% != %any% ) %oror% ( %any% != %any% ) !!&&", endTok)))
         {
@@ -246,28 +243,54 @@ void CheckOther::checkIncorrectLogicOperator()
             term2Tok = logicTok->tokAt(4);
         }
 
-        // If both terms reference a common variable and are not AND'd with anything, this is an error
+        // The terms must not be AND'd with anything, to prevent false positives
         if (logicTok && (logicTok->strAt(-1) != "&&"))
         {
-            // (var11 != var12) || (var21 != var22)
-            const unsigned int varId11 = term1Tok->varId();
-            const unsigned int varId12 = term1Tok->tokAt(2)->varId();
-            const unsigned int varId21 = term2Tok->varId();
-            const unsigned int varId22 = term2Tok->tokAt(2)->varId();
+            // Find the common variable and the two different-valued constants
+            unsigned int variableTested = 0;
+            std::string firstConstant, secondConstant;
+            if (Token::Match(term1Tok, "%var% != %num%"))
+            {
+                const unsigned int varId = term1Tok->varId();
+                firstConstant = term1Tok->tokAt(2)->str();
 
-            // (var != const1) || (var != const2)
-            if (Token::Match(term1Tok, "%var%") &&
-                varId11 != 0 &&
-                (varId11 == varId21 || varId11 == varId22))
+                if (Token::Match(term2Tok, "%varid% != %num%", varId))
+                {
+                    variableTested = varId;
+                    secondConstant = term2Tok->tokAt(2)->str();
+                }
+                else if (Token::Match(term2Tok, "%num% != %varid%", varId))
+                {
+                    variableTested = varId;
+                    secondConstant = term2Tok->str();
+                }
+            }
+            else if (Token::Match(term1Tok, "%num% != %var%"))
+            {
+                const unsigned int varId = term1Tok->tokAt(2)->varId();
+                firstConstant = term1Tok->str();
+
+                if (Token::Match(term2Tok, "%varid% != %num%", varId))
+                {
+                    variableTested = varId;
+                    secondConstant = term2Tok->tokAt(2)->str();
+                }
+                else if (Token::Match(term2Tok, "%num% != %varid%", varId))
+                {
+                    variableTested = varId;
+                    secondConstant = term2Tok->str();
+                }
+            }
+
+            // If there is a common variable tested for inequality against
+            // either of two different-valued constants, then the expression
+            // will always evaluate to true and the || probably should be an &&
+            if (variableTested != 0 &&
+                !firstConstant.empty() &&
+                !secondConstant.empty() &&
+                firstConstant != secondConstant)
             {
                 incorrectLogicOperatorError(term1Tok);
-            }
-            // (const1 != var) || (const2 != var)
-            else if (Token::Match(term1Tok->tokAt(2), "%var%") &&
-                     varId12 != 0 &&
-                     (varId12 == varId21 || varId12 == varId22))
-            {
-                incorrectLogicOperatorError(term1Tok->tokAt(2));
             }
         }
 
@@ -2643,8 +2666,6 @@ void CheckOther::assignmentInAssertError(const Token *tok, const std::string &va
 
 void CheckOther::incorrectLogicOperatorError(const Token *tok)
 {
-    if (!_settings->inconclusive)
-        return;
     reportError(tok, Severity::warning,
                 "incorrectLogicOperator", "Mutual exclusion over || always evaluates to true. Did you intend to use && instead?");
 }

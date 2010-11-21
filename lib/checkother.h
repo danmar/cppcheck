@@ -251,7 +251,7 @@ public:
                "* look for 'sizeof sizeof ..'\n"
                "* look for calculations inside sizeof()\n"
                "* assignment of a variable to itself\n"
-               //"* mutual exclusion over || always evaluating to true\n"
+               "* mutual exclusion over || always evaluating to true\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
