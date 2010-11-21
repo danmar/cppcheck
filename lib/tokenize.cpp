@@ -6114,6 +6114,11 @@ bool Tokenizer::simplifyKnownVariables()
                         // There might be lots of false negatives.
                         if (_settings && _settings->debugwarnings)
                         {
+                            // FIXME: Fix all the debug warnings for values and then
+                            // remove this bailout
+                            if (pointeralias)
+                                break;
+
                             // suppress debug-warning when calling member function
                             if (Token::Match(tok3->next(), ". %var% ("))
                                 break;
