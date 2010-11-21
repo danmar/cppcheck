@@ -72,6 +72,11 @@ public:
     void ShowResults(ShowTypes type, bool show);
 
     /**
+    * @brief Function to show results that were previous hidden with HideResult()
+    */
+    void ShowHiddenResults();
+
+    /**
     * @brief Save results to a text stream
     *
     */
@@ -149,6 +154,12 @@ protected slots:
     *
     */
     void CopyMessage();
+
+    /**
+    * @brief Slot for context menu item to hide the current error message
+    *
+    */
+    void HideResult();
 
 protected:
 

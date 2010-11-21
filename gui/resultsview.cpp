@@ -89,6 +89,11 @@ void ResultsView::ExpandAllResults()
     mUI.mTree->expandAll();
 }
 
+void ResultsView::ShowHiddenResults()
+{
+    mUI.mTree->ShowHiddenResults();
+}
+
 void ResultsView::Save(const QString &filename, Report::Type type)
 {
     if (!mErrorsFound)

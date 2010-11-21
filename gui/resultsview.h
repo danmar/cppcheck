@@ -173,6 +173,11 @@ public slots:
     */
     void ExpandAllResults();
 
+    /**
+    * @brief Show hidden results in the result list.
+    */
+    void ShowHiddenResults();
+
 protected:
     /**
     * @brief Have any errors been found

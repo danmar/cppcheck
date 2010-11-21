@@ -132,6 +132,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
 
     //Add user data to that item
     QMap<QString, QVariant> data;
+    data["hide"] = false;
     data["severity"]  = SeverityToShowType(item.severity);
     data["summary"] = item.summary;
     data["message"]  = item.message;
@@ -313,6 +314,35 @@ void ResultsTree::ShowResults(ShowTypes type, bool show)
     }
 }
 
+void ResultsTree::ShowHiddenResults()
+{
+    //Clear the "hide" flag for each item
+    int filecount = mModel.rowCount();
+    for (int i = 0; i < filecount; i++)
+    {
+        QStandardItem *file = mModel.item(i, 0);
+        if (!file)
+            continue;
+
+        QVariantMap data = file->data().toMap();
+        data["hide"] = false;
+        file->setData(QVariant(data));
+
+        int errorcount = file->rowCount();
+        for (int j = 0; j < errorcount; j++)
+        {
+            QStandardItem *child = file->child(j, 0);
+            if (child)
+            {
+                data = child->data().toMap();
+                data["hide"] = false;
+                child->setData(QVariant(data));
+            }
+        }
+    }
+    RefreshTree();
+}
+
 
 void ResultsTree::RefreshTree()
 {
@@ -350,7 +380,7 @@ void ResultsTree::RefreshTree()
             QVariantMap data = userdata.toMap();
 
             //Check if this error should be hidden
-            bool hide = !mShowTypes[VariantToShowType(data["severity"])];
+            bool hide = (data["hide"].toBool() || !mShowTypes[VariantToShowType(data["severity"])]);
 
             if (!hide)
             {
@@ -365,6 +395,12 @@ void ResultsTree::RefreshTree()
             {
                 show = true;
             }
+        }
+
+        //Hide the file if its "hide" attribute is set
+        if (file->data().toMap()["hide"].toBool())
+        {
+            show = false;
         }
 
         //Show the file if any of it's errors are visible
@@ -463,14 +499,17 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             QAction *copyfilename 	= new QAction(tr("Copy filename"), &menu);
             QAction *copypath 		= new QAction(tr("Copy full path"), &menu);
             QAction *copymessage 	= new QAction(tr("Copy message"), &menu);
+            QAction *hide        	= new QAction(tr("Hide"), &menu);
 
             menu.addAction(copyfilename);
             menu.addAction(copypath);
             menu.addAction(copymessage);
+            menu.addAction(hide);
 
             connect(copyfilename, SIGNAL(triggered()), this, SLOT(CopyFilename()));
             connect(copypath, SIGNAL(triggered()), this, SLOT(CopyFullPath()));
             connect(copymessage, SIGNAL(triggered()), this, SLOT(CopyMessage()));
+            connect(hide, SIGNAL(triggered()), this, SLOT(HideResult()));
         }
 
         //Start the menu
@@ -618,6 +657,19 @@ void ResultsTree::CopyMessage()
 
         QClipboard *clipboard = QApplication::clipboard();
         clipboard->setText(message);
+    }
+}
+
+void ResultsTree::HideResult()
+{
+    if (mContextItem)
+    {
+        //Set the "hide" flag for this item
+        QVariantMap data = mContextItem->data().toMap();
+        data["hide"] = true;
+        mContextItem->setData(QVariant(data));
+
+        RefreshTree();
     }
 }
 
