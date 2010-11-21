@@ -38,7 +38,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
         || str.compare(0, 3, "-0x") == 0)
     {
         bigint ret = 0;
-        std::istringstream istr(str.substr((str[0]=='0') ? 2 : 3));
+        std::istringstream istr(str.substr((str[0]=='0') ? 2U : 3U));
         istr >> std::hex >> ret;
         return (str[0]=='-') ? -ret : ret;
     }
@@ -49,7 +49,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
         ||  str.compare(0, 2, "-0") == 0)
     {
         bigint ret = 0;
-        std::istringstream istr(str.substr((str[0]=='0') ? 1 : 2));
+        std::istringstream istr(str.substr((str[0]=='0') ? 1U : 2U));
         istr >> std::oct >> ret;
         return (str[0]=='-') ? -ret : ret;
     }
