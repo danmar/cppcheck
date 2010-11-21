@@ -24,6 +24,7 @@
 
 #include "check.h"
 #include "settings.h"
+#include "mathlib.h"
 #include <list>
 #include <vector>
 #include <string>
@@ -105,7 +106,7 @@ public:
     void negativeIndex();
 
     /** Check for buffer overruns */
-    void checkScope(const Token *tok, const std::vector<std::string> &varname, const int size, const int total_size, unsigned int varid);
+    void checkScope(const Token *tok, const std::vector<std::string> &varname, const MathLib::bigint size, const MathLib::bigint total_size, unsigned int varid);
 
     /** Information about N-dimensional array */
     class ArrayInfo
@@ -137,7 +138,7 @@ public:
         ArrayInfo(unsigned int id, const std::string &name, unsigned int size1, unsigned int n);
 
         /** Create a copy ArrayInfo where the number of elements have been limited by a value */
-        ArrayInfo limit(long value) const;
+        ArrayInfo limit(MathLib::bigint value) const;
 
         /**
          * Declare array - set info
@@ -175,7 +176,7 @@ public:
      */
     void checkFunctionCall(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo);
 
-    void arrayIndexOutOfBounds(const Token *tok, int size, int index);
+    void arrayIndexOutOfBounds(const Token *tok, MathLib::bigint size, MathLib::bigint index);
     void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<unsigned int> &index);
     void arrayIndexOutOfBounds(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<unsigned int> &index);
     void bufferOverrun(const Token *tok, const std::string &varnames = "");
@@ -183,7 +184,7 @@ public:
     void outOfBounds(const Token *tok, const std::string &what);
     void sizeArgumentAsChar(const Token *tok);
     void terminateStrncpyError(const Token *tok);
-    void negativeIndexError(const Token *tok, long index);
+    void negativeIndexError(const Token *tok, MathLib::bigint index);
     void cmdLineArgsError(const Token *tok);
 
     void getErrorMessages()
