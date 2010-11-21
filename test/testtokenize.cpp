@@ -129,6 +129,7 @@ private:
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
         TEST_CASE(simplifyKnownVariablesBailOutFor3);
         TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
+        TEST_CASE(simplifyKnownVariablesBailOutConditionalIncrement);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -1959,6 +1960,19 @@ private:
                                 "b . f ( ) ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutConditionalIncrement()
+    {
+        const char code[] = "int f() {\n"
+                            "    int a = 0;\n"
+                            "    if (x) {\n"
+                            "        ++a;\n"	// conditional increment
+                            "    }\n"
+                            "    return a;\n"
+                            "}\n";
+        tokenizeAndStringify(code,true);
+        ASSERT_EQUALS("", errout.str());	// no debug warnings
     }
 
     std::string tokenizeDebugListing(const std::string &code, bool simplify = false)

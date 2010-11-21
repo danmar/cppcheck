@@ -6131,6 +6131,11 @@ bool Tokenizer::simplifyKnownVariables()
                                 Token::Match(tok3->previous(), ", %var% ,|)"))
                                 break;
 
+                            // conditional increment
+                            if (Token::Match(tok3->tokAt(-3), ") { ++|--") ||
+                                Token::Match(tok3->tokAt(-2), ") { %var% ++|--"))
+                                break;
+
                             std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                             ErrorLogger::ErrorMessage::FileLocation loc;
                             loc.line = tok3->linenr();
