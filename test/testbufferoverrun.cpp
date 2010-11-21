@@ -1196,6 +1196,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[8]' index 17 out of bounds\n", errout.str());
+
+        // #2199 - false negative: array out of bounds in loop when there is calculation
+        check("void f()\n"
+              "{\n"
+              "    char arr[5];\n"
+              "    for (int i = 0; i < 5; ++i) {\n"
+              "        arr[i + 7] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'arr[5]' index 11 out of bounds\n", errout.str());
     }
 
     void array_index_negative()
