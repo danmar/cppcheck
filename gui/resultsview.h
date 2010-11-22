@@ -178,6 +178,13 @@ public slots:
     */
     void ShowHiddenResults();
 
+    /**
+    * @brief Update detailed message when item is clicked.
+    *
+    * @param index Position of item clicked.
+    */
+    void ItemClicked(const QModelIndex &index);
+
 protected:
     /**
     * @brief Have any errors been found

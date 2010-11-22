@@ -33,6 +33,7 @@ ResultsView::ResultsView(QWidget * parent) :
     mShowNoErrorsMessage(true)
 {
     mUI.setupUi(this);
+    connect(mUI.mTree, SIGNAL(clicked(const QModelIndex &)), this, SLOT(ItemClicked(const QModelIndex &)));
 }
 
 void ResultsView::Initialize(QSettings *settings, ApplicationList *list)
@@ -252,4 +253,18 @@ void ResultsView::ReadErrorsXml(const QString &filename)
         mUI.mTree->AddErrorItem(item);
     }
     mUI.mTree->SetCheckDirectory("");
+}
+
+void ResultsView::ItemClicked(const QModelIndex &index)
+{
+    QStandardItemModel *model = qobject_cast<QStandardItemModel*>(mUI.mTree->model());
+    QStandardItem *item = model->itemFromIndex(index);
+
+    // Make sure we are working with the first column
+    if (item->parent() && item->column() != 0)
+        item = item->parent()->child(item->row(), 0);
+
+    QVariantMap data = item->data().toMap();
+    QString message = data["message"].toString();
+    mUI.mDetails->setText(message);
 }
