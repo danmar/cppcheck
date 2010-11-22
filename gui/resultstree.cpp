@@ -53,7 +53,7 @@ ResultsTree::ResultsTree(QWidget * parent) :
 
     setModel(&mModel);
     QStringList labels;
-    labels << tr("File") << tr("Severity") << tr("Line") << tr("Summary") << tr("Message");
+    labels << tr("File") << tr("Severity") << tr("Line") << tr("Summary");
     mModel.setHorizontalHeaderLabels(labels);
     setExpandsOnDoubleClick(false);
     setSortingEnabled(true);
@@ -191,7 +191,6 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
     list << CreateNormalItem(tr(item.summary.toLatin1()));
-    list << CreateNormalItem(tr(item.message.toLatin1()));
 
     // Check for duplicate rows and don't add them if found
     for (int i = 0; i < parent->rowCount(); i++)
@@ -210,20 +209,15 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
                 // the fourth column is the summary so check it last
                 if (parent->child(i, 3)->text() == list[3]->text())
                 {
-
-                    // the fifth column is the message so check it last
-                    if (parent->child(i, 4)->text() == list[4]->text())
-                    {
 #if defined(_WIN32)
-                        const QString first = parent->child(i, 0)->text().toLower();
-                        const QString second = list[0]->text().toLower();
-                        if (first == second)
-                            return 0;
-#else
-                        // this row matches so don't add it
+                    const QString first = parent->child(i, 0)->text().toLower();
+                    const QString second = list[0]->text().toLower();
+                    if (first == second)
                         return 0;
+#else
+                    // this row matches so don't add it
+                    return 0;
 #endif // _WIN32
-                    }
                 }
             }
         }
@@ -940,7 +934,7 @@ bool ResultsTree::HasResults() const
 void ResultsTree::Translate()
 {
     QStringList labels;
-    labels << tr("File") << tr("Severity") << tr("Line") << tr("Summary") << tr("Message");
+    labels << tr("File") << tr("Severity") << tr("Line") << tr("Summary");
     mModel.setHorizontalHeaderLabels(labels);
     //TODO go through all the errors in the tree and translate severity and message
 }
