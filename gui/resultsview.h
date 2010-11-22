@@ -29,6 +29,7 @@
 #include "ui_resultsview.h"
 
 class ErrorItem;
+class QModelIndex;
 
 /// @addtogroup GUI
 /// @{

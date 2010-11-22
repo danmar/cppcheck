@@ -19,6 +19,11 @@
 #include <QDebug>
 #include <QFile>
 #include <QMessageBox>
+#include <QStandardItemModel>
+#include <QStandardItem>
+#include <QVariant>
+#include <QString>
+#include <QModelIndex>
 #include "erroritem.h"
 #include "resultsview.h"
 #include "resultstree.h"
