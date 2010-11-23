@@ -206,7 +206,7 @@ void MainWindow::SaveSettings()
     mApplications->SaveSettings(mSettings);
 
     mSettings->setValue(SETTINGS_LANGUAGE, mTranslation->GetCurrentLanguage());
-    mUI.mResults->SaveSettings();
+    mUI.mResults->SaveSettings(mSettings);
 }
 
 void MainWindow::DoCheckFiles(const QStringList &files)

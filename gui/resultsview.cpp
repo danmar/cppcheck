@@ -24,6 +24,7 @@
 #include <QVariant>
 #include <QString>
 #include <QModelIndex>
+#include <QSettings>
 #include "erroritem.h"
 #include "resultsview.h"
 #include "resultstree.h"
@@ -43,9 +44,11 @@ ResultsView::ResultsView(QWidget * parent) :
 
 void ResultsView::Initialize(QSettings *settings, ApplicationList *list)
 {
-
     mUI.mProgress->setMinimum(0);
     mUI.mProgress->setVisible(false);
+
+    QByteArray state = settings->value(SETTINGS_MAINWND_SPLITTER_STATE).toByteArray();
+    mUI.mVerticalSplitter->restoreState(state);
     mShowNoErrorsMessage = settings->value(SETTINGS_SHOW_NO_ERRORS, true).toBool();
 
     mUI.mTree->Initialize(settings, list);
@@ -210,9 +213,12 @@ bool ResultsView::HasResults() const
     return mUI.mTree->HasResults();
 }
 
-void ResultsView::SaveSettings()
+void ResultsView::SaveSettings(QSettings *settings)
 {
     mUI.mTree->SaveSettings();
+    QByteArray state = mUI.mVerticalSplitter->saveState();
+    settings->setValue(SETTINGS_MAINWND_SPLITTER_STATE, state);
+    mUI.mVerticalSplitter->restoreState(state);
 }
 
 void ResultsView::Translate()

@@ -30,6 +30,7 @@
 
 class ErrorItem;
 class QModelIndex;
+class QSettings;
 
 /// @addtogroup GUI
 /// @{
@@ -121,8 +122,9 @@ public:
     /**
     * @brief Save View's settings
     *
+    * @param settings program settings.
     */
-    void SaveSettings();
+    void SaveSettings(QSettings *settings);
 
     /**
     * @brief Translate this view
