@@ -2573,81 +2573,49 @@ void CheckMemoryLeakInFunction::check()
 
 void CheckMemoryLeakInClass::check()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (tok->str() == "{")
-            tok = tok->link();
+    SymbolDatabase * symbolDatabase = _tokenizer->_symbolDatabase;
+    bool ownSymbolDatabase = false;
 
-        else if (Token::Match(tok, "class %var% [{:]"))
+    if (symbolDatabase == NULL)
+    {
+        symbolDatabase = new SymbolDatabase(_tokenizer, _settings, _errorLogger);
+        ownSymbolDatabase = true;
+    }
+
+    std::list<SymbolDatabase::SpaceInfo *>::iterator i;
+
+    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    {
+        const SymbolDatabase::SpaceInfo *info = *i;
+
+        // only check classes and structures
+        if (info->type == SymbolDatabase::SpaceInfo::Class)
         {
-            std::vector<std::string> classname;
-            classname.push_back(tok->strAt(1));
-            parseClass(tok, classname);
+            std::list<SymbolDatabase::Var>::const_iterator var;
+            for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
+            {
+                if (!var->isStatic && var->token->previous()->str() == "*")
+                {
+                    // allocation but no deallocation of private variables in public function..
+                    if (var->access == SymbolDatabase::Private && var->token->tokAt(-2)->isStandardType())
+                        checkPublicFunctions(var->token, var->token->varId());
+
+                    if (var->token->tokAt(-2)->isStandardType())
+                        variable(info, var->token);
+                }
+            }
         }
     }
+
+    if (ownSymbolDatabase)
+        delete symbolDatabase;
 }
 
 
-void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::string> &classname)
-{
-    // Go into class.
-    while (tok1 && tok1->str() != "{")
-        tok1 = tok1->next();
-    tok1 = tok1 ? tok1->next() : 0;
-
-    // are we parsing the private scope of the class?
-    bool privateScope = true;
-
-    unsigned int indentlevel = 0;
-    for (const Token *tok = tok1; tok; tok = tok->next())
-    {
-        if (tok->str() == "{")
-            ++indentlevel;
-
-        else if (tok->str() == "}")
-        {
-            if (indentlevel == 0)
-                return;
-            --indentlevel;
-        }
-
-        else if (tok->isName() && tok->str().find(":") != std::string::npos)
-            privateScope = bool(tok->str() == "private:");
-
-        // Only parse this particular class.. not subclasses
-        if (indentlevel > 0)
-            continue;
-
-        // skip static variables..
-        if (Token::Match(tok, "static %type% * %var% ;"))
-        {
-            tok = tok->tokAt(4);
-        }
-
-        // Declaring subclass.. recursive checking
-        if (Token::Match(tok, "class %var% [{:]"))
-        {
-            classname.push_back(tok->strAt(1));
-            parseClass(tok, classname);
-            classname.pop_back();
-        }
-
-        // Declaring member variable.. check allocations and deallocations
-        if (Token::Match(tok->previous(), ";|{|}|private:|protected:|public: %type% * %var% ;"))
-        {
-            // allocation but no deallocation of private variables in public function..
-            if (privateScope && tok->isStandardType())
-                checkPublicFunctions(tok1, tok->tokAt(2)->varId());
-
-            if (!isclass(_tokenizer, tok))
-                variable(classname.back(), tok->tokAt(2));
-        }
-    }
-}
-
-void CheckMemoryLeakInClass::variable(const std::string &classname, const Token *tokVarname)
+void CheckMemoryLeakInClass::variable(const SymbolDatabase::SpaceInfo *classinfo, const Token *tokVarname)
 {
     const std::string varname = tokVarname->strAt(0);
+    const std::string classname = classinfo->className;
 
     // Check if member variable has been allocated and deallocated..
     CheckMemoryLeak::AllocType Alloc = CheckMemoryLeak::No;
@@ -2656,14 +2624,13 @@ void CheckMemoryLeakInClass::variable(const std::string &classname, const Token 
     bool allocInConstructor = false;
     bool deallocInDestructor = false;
 
-    // Loop through all tokens. Inspect member functions
-    int indent_ = 0;
-    const Token *functionToken = _tokenizer->findClassFunction(_tokenizer->tokens(), classname.c_str(), "~| %var%", indent_);
-    while (functionToken)
+    // Inspect member functions
+    std::list<SymbolDatabase::Func>::const_iterator func;
+    for (func = classinfo->functionList.begin(); func != classinfo->functionList.end(); ++func)
     {
-        const bool constructor(Token::Match(functionToken, (classname + " (").c_str()) || Token::Match(functionToken, (classname + " :: " + classname + " (").c_str()));
-        const bool destructor(functionToken->str() == "~" || functionToken->tokAt(2)->str() == "~");
-
+        const Token *functionToken = func->token;
+        const bool constructor = func->type == SymbolDatabase::Func::Constructor;
+        const bool destructor = func->type == SymbolDatabase::Func::Destructor;
         unsigned int indent = 0;
         bool initlist = false;
         for (const Token *tok = functionToken; tok; tok = tok->next())
@@ -2765,8 +2732,6 @@ void CheckMemoryLeakInClass::variable(const std::string &classname, const Token 
                 }
             }
         }
-
-        functionToken = _tokenizer->Tokenizer::findClassFunction(functionToken->next(), classname.c_str(), "~| %var%", indent_);
     }
 
     if (allocInConstructor && !deallocInDestructor)

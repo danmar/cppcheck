@@ -36,7 +36,7 @@ class CheckClass : public Check
 {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(), symbolDatabase(NULL)
+    CheckClass() : Check(), symbolDatabase(NULL), ownSymbolDatabase(false)
     { }
 
     /** @brief This constructor is used when running checks. */
@@ -113,6 +113,7 @@ private:
     void createSymbolDatabase();
 
     SymbolDatabase *symbolDatabase;
+    bool ownSymbolDatabase;
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);

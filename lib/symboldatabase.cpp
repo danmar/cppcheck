@@ -256,6 +256,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         if (tok->previous() && tok->previous()->str() == "::")
                             addFunction(&info, &tok, argStart);
 
+                        // class destructor
+                        else if (tok->previous() && tok->previous()->str() == "~" &&
+                                 tok->previous()->previous() && tok->previous()->previous()->str() == "::")
+                            addFunction(&info, &tok, argStart);
+
                         // regular function
                         else
                         {
@@ -493,11 +498,17 @@ bool SymbolDatabase::argsMatch(const Token *first, const Token *second, const st
 
 void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Token *argStart)
 {
-    const Token *tok1 = (*tok)->tokAt(-2); // skip class/struct name
     int count = 0;
     bool added = false;
     std::string path;
     unsigned int path_length = 0;
+    const Token *tok1;
+
+    // skip class/struct name
+    if ((*tok)->previous()->str() == "~")
+        tok1 = (*tok)->tokAt(-3);
+    else
+        tok1 = (*tok)->tokAt(-2);
 
     // back up to head of path
     while (tok1 && tok1->previous() && tok1->previous()->str() == "::")
@@ -565,6 +576,17 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                             func->arg = argStart;
                         }
                     }
+                    else if (func->type == SymbolDatabase::Func::Destructor &&
+                             (*tok)->previous()->str() == "~" &&
+                             func->tokenDef->str() == (*tok)->str())
+                    {
+                        if (argsMatch(func->tokenDef->next(), (*tok)->next(), path, path_length))
+                        {
+                            func->hasBody = true;
+                            func->token = *tok;
+                            func->arg = argStart;
+                        }
+                    }
                     else if (func->tokenDef->str() == (*tok)->str())
                     {
                         if (argsMatch(func->tokenDef->next(), (*tok)->next(), path, path_length))
@@ -576,7 +598,7 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                                     (!func->isConst && (*tok)->next()->link()->next()->str() != "const"))
                                 {
                                     func->hasBody = true;
-                                    func->token = (*tok);
+                                    func->token = *tok;
                                     func->arg = argStart;
                                 }
                             }
@@ -586,7 +608,7 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                             {
                                 // todo check for const
                                 func->hasBody = true;
-                                func->token = (*tok);
+                                func->token = *tok;
                                 func->arg = argStart;
                             }
                         }

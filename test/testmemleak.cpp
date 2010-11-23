@@ -3139,6 +3139,7 @@ private:
         TEST_CASE(class16);
         TEST_CASE(class17);
         TEST_CASE(class18);
+        TEST_CASE(class19); // ticket #2219
 
         TEST_CASE(staticvar);
 
@@ -3525,6 +3526,25 @@ private:
               "private:\n"
               "  char *a;\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void class19()
+    {
+        // Ticket #2219
+        check("class Foo\n"
+              "{\n"
+              "private:\n"
+              "    TRadioButton* rp1;\n"
+              "    TRadioButton* rp2;\n"
+              "public:\n"
+              "    Foo();\n"
+              "};\n"
+              "Foo::Foo()\n"
+              "{\n"
+              "    rp1 = new TRadioButton(this);\n"
+              "    rp2 = new TRadioButton(this);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

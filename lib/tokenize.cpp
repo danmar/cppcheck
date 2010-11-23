@@ -30,6 +30,7 @@
 #include "errorlogger.h"
 #include "check.h"
 #include "path.h"
+#include "symboldatabase.h"
 
 #include <locale>
 #include <fstream>
@@ -52,6 +53,7 @@ Tokenizer::Tokenizer()
     _tokens = 0;
     _tokensBack = 0;
     _codeWithTemplates = false;
+    _symbolDatabase = NULL;
 }
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
@@ -60,11 +62,13 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
     _tokens = 0;
     _tokensBack = 0;
     _codeWithTemplates = false;
+    _symbolDatabase = NULL;
 }
 
 Tokenizer::~Tokenizer()
 {
     deallocateTokens();
+    delete _symbolDatabase;
 }
 
 //---------------------------------------------------------------------------
@@ -3737,7 +3741,8 @@ void Tokenizer::simplifySizeof()
 bool Tokenizer::simplifyTokenList()
 {
     // clear the _functionList so it can't contain dead pointers
-    _functionList.clear();
+    delete _symbolDatabase;
+    _symbolDatabase = NULL;
 
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -7461,11 +7466,19 @@ void Tokenizer::simplifyStd()
 
 const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 {
-    for (unsigned int i = 0; i < _functionList.size(); ++i)
+    if (_symbolDatabase == NULL)
+        return NULL;
+
+    std::list<SymbolDatabase::SpaceInfo *>::iterator i;
+
+    for (i = _symbolDatabase->spaceInfoList.begin(); i != _symbolDatabase->spaceInfoList.end(); ++i)
     {
-        if (_functionList[i]->str() == funcname)
+        SymbolDatabase::SpaceInfo *info = *i;
+
+        if (info->type == SymbolDatabase::SpaceInfo::Function)
         {
-            return _functionList[i];
+            if (info->classDef->str() == funcname)
+                return info->classDef;
         }
     }
     return NULL;
@@ -7474,80 +7487,7 @@ const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 
 void Tokenizer::fillFunctionList()
 {
-    _functionList.clear();
-
-    for (const Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (tok->str() == "{")
-        {
-            tok = tok->link();
-            if (!tok)
-                break;
-            continue;
-        }
-
-        if (Token::Match(tok, "%var% ("))
-        {
-            // Check if this is the first token of a function implementation..
-            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == ";")
-                {
-                    tok = tok2;
-                    break;
-                }
-
-                else if (tok2->str() == "{")
-                {
-                    break;
-                }
-
-                else if (tok2->str() == ")")
-                {
-                    if (Token::Match(tok2, ") const| {"))
-                    {
-                        _functionList.push_back(tok);
-                        tok = tok2;
-                    }
-                    else
-                    {
-                        tok = tok2;
-                        while (tok->next() && !Token::Match(tok->next(), "[;{]"))
-                            tok = tok->next();
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    // If the _functionList functions with duplicate names, remove them
-    /** @todo handle when functions with the same name */
-    for (unsigned int func1 = 0; func1 < _functionList.size();)
-    {
-        bool hasDuplicates = false;
-        for (unsigned int func2 = func1 + 1; func2 < _functionList.size();)
-        {
-            if (_functionList[func1]->str() == _functionList[func2]->str())
-            {
-                hasDuplicates = true;
-                _functionList.erase(_functionList.begin() + static_cast<int>(func2));
-            }
-            else
-            {
-                ++func2;
-            }
-        }
-
-        if (! hasDuplicates)
-        {
-            ++func1;
-        }
-        else
-        {
-            _functionList.erase(_functionList.begin() + static_cast<int>(func1));
-        }
-    }
+    _symbolDatabase = new SymbolDatabase(this, _settings, _errorLogger);
 }
 
 //---------------------------------------------------------------------------
@@ -7602,106 +7542,6 @@ std::string Tokenizer::file(const Token *tok) const
     return _files.at(tok->fileIndex());
 }
 
-//---------------------------------------------------------------------------
-
-const Token * Tokenizer::findClassFunction(const Token *tok, const std::string &classname, const std::string &funcname, int &indentlevel, bool isStruct) const
-{
-    if (indentlevel < 0 || tok == NULL)
-        return NULL;
-    /*
-    // TODO: This is currently commented out as updateClassList doesn't
-    // fully work yet and call to updateClassList is currently also
-    // commented out.
-
-    //std::cout << tok->str()<<"--\n";
-    if( tok == _tokens || tok->str() == "class" || tok->str() == "struct")
-        tok = 0;
-
-    std::map<std::string, ClassInfo>::const_iterator iter;
-    iter = _classInfoList.find(classname);
-    if( iter == _classInfoList.end() )
-        return NULL;
-
-    for( size_t i = 0; i < iter->second._memberFunctions.size(); i++ )
-        if( Token::Match( iter->second._memberFunctions[i]._declaration, funcname ) )
-        {
-            if( tok != 0 )
-            {
-                if( tok == iter->second._memberFunctions[i]._implementation ||
-                    tok->previous() == iter->second._memberFunctions[i]._implementation)
-                    tok = 0;
-                continue;
-            }
-
-            return iter->second._memberFunctions[i]._implementation;
-        }
-
-        return NULL;
-    */
-    const std::string classPattern(std::string(isStruct ? "struct " : "class ") + classname + " :|{");
-    const std::string internalPattern(std::string("!!~ ") + funcname + " (");
-    const std::string externalPattern(classname + " :: " + funcname + " (");
-
-    for (; tok; tok = tok->next())
-    {
-        if (indentlevel == 0 && Token::Match(tok, classPattern.c_str()))
-        {
-            while (tok && tok->str() != "{")
-                tok = tok->next();
-            if (tok)
-                tok = tok->next();
-            if (! tok)
-                break;
-            indentlevel = 1;
-        }
-
-        if (tok->str() == "{")
-        {
-            // If indentlevel==0 don't go to indentlevel 1. Skip the block.
-            if (indentlevel > 0)
-                ++indentlevel;
-
-            else
-            {
-                // skip the block
-                tok = tok->link();
-                if (tok == NULL)
-                    return NULL;
-
-                continue;
-            }
-        }
-
-        if (tok->str() == "}")
-        {
-            --indentlevel;
-            if (indentlevel < 0)
-                return NULL;
-        }
-
-        if (indentlevel == 1)
-        {
-            // Member function implemented in the class declaration?
-            if (Token::Match(tok->previous(), internalPattern.c_str()))
-            {
-                const Token *tok2 = tok;
-                while (tok2 && tok2->str() != "{" && tok2->str() != ";")
-                    tok2 = tok2->next();
-                if (tok2 && tok2->str() == "{")
-                    return tok;
-            }
-        }
-
-        else if (indentlevel == 0 && Token::Match(tok, externalPattern.c_str()))
-        {
-            if (!Token::simpleMatch(tok->previous(), "::"))
-                return tok;
-        }
-    }
-
-    // Not found
-    return NULL;
-}
 //---------------------------------------------------------------------------
 
 void Tokenizer::syntaxError(const Token *tok)

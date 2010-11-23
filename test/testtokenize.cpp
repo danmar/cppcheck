@@ -67,10 +67,6 @@ private:
 
         TEST_CASE(inlineasm);
 
-        TEST_CASE(dupfuncname);
-
-        TEST_CASE(const_and_volatile_functions);
-
         TEST_CASE(ifAddBraces1);
         TEST_CASE(ifAddBraces2);
         TEST_CASE(ifAddBraces3);
@@ -203,9 +199,6 @@ private:
         TEST_CASE(tokenize_strings);
         TEST_CASE(simplify_constants);
         TEST_CASE(simplify_constants2);
-
-        TEST_CASE(findClassFunction1);
-        TEST_CASE(findClassFunction2);
 
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
@@ -586,61 +579,6 @@ private:
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm__ volatile ( \"mov ax,bx\" );"));
     }
 
-
-    void dupfuncname()
-    {
-        const char code[] = "void a()\n"
-                            "{ }\n"
-                            "void a(int i)\n"
-                            "{ }\n"
-                            "void b()\n"
-                            "{ }\n";
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.fillFunctionList();
-
-        ASSERT_EQUALS(1, static_cast<unsigned int>(tokenizer._functionList.size()));
-        ASSERT_EQUALS("b", tokenizer._functionList[0]->str());
-    }
-
-    void const_and_volatile_functions()
-    {
-        const char code[] = "class B\n\
-                            {\n\
-                            public:\n\
-                            void a();\n\
-                            void b() const;\n\
-                            void c() volatile;\n\
-                            };\n\
-                            \n\
-                            void B::a()\n\
-                            {}\n\
-                            \n\
-                            void B::b() const\n\
-                            {}\n\
-                            \n\
-                            void B::c() volatile\n\
-                            {}\n";
-
-
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.fillFunctionList();
-
-        ASSERT_EQUALS(3, static_cast<unsigned int>(tokenizer._functionList.size()));
-        if (tokenizer._functionList.size() == 3)
-        {
-            ASSERT_EQUALS("a", tokenizer._functionList[0]->str());
-            ASSERT_EQUALS("b", tokenizer._functionList[1]->str());
-            ASSERT_EQUALS("c", tokenizer._functionList[2]->str());
-        }
-    }
 
     void pointers_condition()
     {
@@ -3529,54 +3467,6 @@ private:
         std::ostringstream oss;
         oss << " void f ( Foo & foo , Foo * foo2 ) { ; foo . a = 90 ; foo2 . a = 45 ; }";
         ASSERT_EQUALS(oss.str(), ostr.str());
-    }
-
-
-    void findClassFunction1()
-    {
-        const char code[] =
-            "class Fred"
-            "{\n"
-            "public:\n"
-            "    Fred()\n"
-            "    { }\n"
-            "};\n";
-
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        int i;
-
-        i = 0;
-        const Token *tok = tokenizer.findClassFunction(tokenizer.tokens(), "Fred", "%var%", i);
-        ASSERT_EQUALS(true, Token::simpleMatch(tok, "Fred ( ) {"));
-        tok = tokenizer.findClassFunction(tok->next(), "Fred", "%var%", i);
-        ASSERT_EQUALS(0, tok ? 1 : 0);
-    }
-
-    void findClassFunction2()
-    {
-        const char code[] =
-            "struct Fred"
-            "{\n"
-            "    Fred()\n"
-            "    { }\n"
-            "};\n";
-
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        int i;
-
-        i = 0;
-        const Token *tok = tokenizer.findClassFunction(tokenizer.tokens(), "Fred", "%var%", i, true);
-        ASSERT_EQUALS(true, Token::simpleMatch(tok, "Fred ( ) {"));
-        tok = tokenizer.findClassFunction(tok->next(), "Fred", "%var%", i, false);
-        ASSERT_EQUALS(0, tok ? 1 : 0);
     }
 
     void vardecl1()

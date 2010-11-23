@@ -29,6 +29,7 @@
 class Token;
 class ErrorLogger;
 class Settings;
+class SymbolDatabase;
 
 /// @addtogroup Core
 /// @{
@@ -123,17 +124,6 @@ public:
     const Token *tokens() const;
 
     std::string file(const Token *tok) const;
-
-    /**
-     * Find a class or struct member function
-     * @param tok where to begin the search
-     * @param classname name of class
-     * @param funcname name of function ("~ Fred" => destructor for fred, "%var%" => any function)
-     * @param indentlevel Just an integer that you initialize to 0 before the first call.
-     * @param isStruct is it a struct
-     * @return First matching token or NULL.
-     */
-    const Token *findClassFunction(const Token *tok, const std::string &classname, const std::string &funcname, int &indentlevel, bool isStruct = false) const;
 
     /**
      * get error messages
@@ -285,7 +275,7 @@ public:
     /** Simplify "if else" */
     void elseif();
 
-    std::vector<const Token *> _functionList;
+    SymbolDatabase * _symbolDatabase;
 
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno, bool split = false);
     void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);

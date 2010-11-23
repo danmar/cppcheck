@@ -35,6 +35,7 @@
  */
 
 #include "check.h"
+#include "symboldatabase.h"
 
 #include <list>
 #include <string>
@@ -376,8 +377,7 @@ public:
     void check();
 
 private:
-    void parseClass(const Token *tok1, std::vector<std::string> &classname);
-    void variable(const std::string &classname, const Token *tokVarname);
+    void variable(const SymbolDatabase::SpaceInfo *spaceinfo, const Token *tokVarname);
 
     /** Public functions: possible double-allocation */
     void checkPublicFunctions(const Token *classtok, const unsigned int varid);
