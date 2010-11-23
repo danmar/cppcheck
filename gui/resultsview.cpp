@@ -39,7 +39,7 @@ ResultsView::ResultsView(QWidget * parent) :
     mShowNoErrorsMessage(true)
 {
     mUI.setupUi(this);
-    connect(mUI.mTree, SIGNAL(clicked(const QModelIndex &)), this, SLOT(ItemClicked(const QModelIndex &)));
+    connect(mUI.mTree, SIGNAL(SelectionChanged(const QModelIndex &)), this, SLOT(UpdateDetails(const QModelIndex &)));
 }
 
 void ResultsView::Initialize(QSettings *settings, ApplicationList *list)
@@ -54,12 +54,10 @@ void ResultsView::Initialize(QSettings *settings, ApplicationList *list)
     mUI.mTree->Initialize(settings, list);
 }
 
-
 ResultsView::~ResultsView()
 {
     //dtor
 }
-
 
 void ResultsView::Clear()
 {
@@ -266,7 +264,7 @@ void ResultsView::ReadErrorsXml(const QString &filename)
     mUI.mTree->SetCheckDirectory("");
 }
 
-void ResultsView::ItemClicked(const QModelIndex &index)
+void ResultsView::UpdateDetails(const QModelIndex &index)
 {
     QStandardItemModel *model = qobject_cast<QStandardItemModel*>(mUI.mTree->model());
     QStandardItem *item = model->itemFromIndex(index);

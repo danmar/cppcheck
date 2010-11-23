@@ -36,6 +36,7 @@
 #include <QFileDialog>
 #include <QClipboard>
 #include <QContextMenuEvent>
+#include <QModelIndex>
 #include "erroritem.h"
 #include "settings.h"
 #include "applicationlist.h"
@@ -939,3 +940,8 @@ void ResultsTree::Translate()
     //TODO go through all the errors in the tree and translate severity and message
 }
 
+void ResultsTree::currentChanged(const QModelIndex &current, const QModelIndex &previous)
+{
+    QTreeView::currentChanged(current, previous);
+    emit SelectionChanged(current);
+}

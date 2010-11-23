@@ -182,11 +182,11 @@ public slots:
     void ShowHiddenResults();
 
     /**
-    * @brief Update detailed message when item is clicked.
+    * @brief Update detailed message when selected item is changed.
     *
-    * @param index Position of item clicked.
+    * @param index Position of new selected item.
     */
-    void ItemClicked(const QModelIndex &index);
+    void UpdateDetails(const QModelIndex &index);
 
 protected:
     /**
