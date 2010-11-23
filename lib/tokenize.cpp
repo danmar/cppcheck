@@ -4467,7 +4467,7 @@ void Tokenizer::simplifyCompoundAssignment()
     // "a+=b" => "a = a + b"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[;{}:] *| %var%"))
+        if (Token::Match(tok, "[;{}:] *| (| %var%"))
         {
             if (tok->str() == ":")
             {
@@ -4481,24 +4481,31 @@ void Tokenizer::simplifyCompoundAssignment()
             if (tok->strAt(1) == "*")
                 tok = tok->next();
 
-            // variable..
-            tok = tok->tokAt(2);
-            while (Token::Match(tok, ". %var%") || (tok && tok->str() == "["))
+            if (tok->strAt(1) == "(")
             {
-                if (tok->str() != "[")
-                    tok = tok->tokAt(2);
-                else
+                tok = tok->next()->link()->next();
+            }
+            else
+            {
+                // variable..
+                tok = tok->tokAt(2);
+                while (Token::Match(tok, ". %var%") || (tok && tok->str() == "["))
                 {
-                    // goto "]"
-                    tok = tok->next();
-                    while (tok && !Token::Match(tok, "++|--|(|[|]"))
-                        tok = tok->next();
-                    if (!tok)
-                        break;
-                    else if (tok->str() == "]")
-                        tok = tok->next();
+                    if (tok->str() != "[")
+                        tok = tok->tokAt(2);
                     else
-                        break;
+                    {
+                        // goto "]"
+                        tok = tok->next();
+                        while (tok && !Token::Match(tok, "++|--|(|[|]"))
+                            tok = tok->next();
+                        if (!tok)
+                            break;
+                        else if (tok->str() == "]")
+                            tok = tok->next();
+                        else
+                            break;
+                    }
                 }
             }
             if (!tok)
@@ -4526,15 +4533,18 @@ void Tokenizer::simplifyCompoundAssignment()
                 // simplify the compound assignment..
                 tok->str("=");
                 tok->insertToken(op);
-                Token *tokend = 0;
+                std::stack<Token *> tokend;
                 for (const Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous())
                 {
                     tok->insertToken(tok2->str());
                     tok->next()->varId(tok2->varId());
-                    if (Token::simpleMatch(tok->next(), "]"))
-                        tokend = tok->next();
-                    else if (Token::simpleMatch(tok->next(), "["))
-                        Token::createMutualLinks(tok->next(), tokend);
+                    if (Token::Match(tok->next(), "]|)"))
+                        tokend.push(tok->next());
+                    else if (Token::Match(tok->next(), "(|["))
+                    {
+                        Token::createMutualLinks(tok->next(), tokend.top());
+                        tokend.pop();
+                    }
                 }
             }
         }

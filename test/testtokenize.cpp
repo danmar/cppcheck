@@ -4694,6 +4694,7 @@ private:
         ASSERT_EQUALS("{ x = x >> y ; }", tokenizeAndStringify("{ x >>= y;}"));
 
         ASSERT_EQUALS("; * p = * p + y ;", tokenizeAndStringify("; *p += y;"));
+        ASSERT_EQUALS("; * ( p [ 0 ] ) = * ( p [ 0 ] ) + y ;", tokenizeAndStringify("; *(p[0]) += y;"));
 
         ASSERT_EQUALS("case 0 : x = x + y ; break ;", tokenizeAndStringify("case 0: x += y; break;"));
 
