@@ -872,7 +872,7 @@ void SymbolDatabase::SpaceInfo::getVarList()
             if (!tok->isStandardType())
                 isClass = true;
 
-            vartok = tok->tokAt(1);
+            vartok = tok->next();
             tok = vartok->next();
         }
         else if (Token::Match(tok, "%type% :: %type% %var% ;"))
@@ -923,7 +923,7 @@ void SymbolDatabase::SpaceInfo::getVarList()
             if (!tok->isStandardType())
                 isClass = true;
 
-            vartok = tok->tokAt(1);
+            vartok = tok->next();
             tok = vartok->next()->link()->next();
         }
 
@@ -948,6 +948,10 @@ void SymbolDatabase::SpaceInfo::getVarList()
         else if (Token::Match(tok, "%type% :: %type% <") ||
                  Token::Match(tok, "%type% <"))
         {
+            // got an unhandled template?
+            if (tok->str() == "template")
+                continue;
+
             // find matching ">"
             int level = 0;
             for (; tok; tok = tok->next())
@@ -960,14 +964,26 @@ void SymbolDatabase::SpaceInfo::getVarList()
                     if (level == 0)
                         break;
                 }
+                else if (tok->str() == ">>")
+                {
+                    level-=2;
+                    if (level <= 0)
+                        break;
+                }
+                else if (tok->str() == "(")
+                    tok = tok->link();
+
+                // don't crash on unhandled templates
+                if (tok->next() == NULL)
+                    break;
             }
-            if (tok && Token::Match(tok, "> %var% ;"))
+            if (tok && (Token::Match(tok, "> %var% ;") || Token::Match(tok, ">> %var% ;")))
             {
                 isClass = true;
-                vartok = tok->tokAt(1);
+                vartok = tok->next();
                 tok = vartok->next();
             }
-            else if (tok && Token::Match(tok, "> * %var% ;"))
+            else if (tok && (Token::Match(tok, "> * %var% ;") || Token::Match(tok, ">> * %var% ;")))
             {
                 vartok = tok->tokAt(2);
                 tok = vartok->next();

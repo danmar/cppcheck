@@ -169,6 +169,7 @@ private:
         TEST_CASE(symboldatabase3); // ticket #2000
         TEST_CASE(symboldatabase4);
         TEST_CASE(symboldatabase5); // ticket #2178
+        TEST_CASE(symboldatabase6); // ticket #2221
     }
 
     // Check the operator Equal
@@ -4825,6 +4826,19 @@ private:
         checkConst("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
                    "    return (sign ? cl_I() : 0);\n"
                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase6()
+    {
+        // ticket #2221 - segmentation fault
+        checkConst("template<int i> class X { };\n"
+                   "X< 1>2 > x1;\n"
+                   "X<(1>2)> x2;\n"
+                   "template<class T> class Y { };\n"
+                   "Y<X<1>> x3;\n"
+                   "Y<X<6>>1>> x4;\n"
+                   "Y<X<(6>>1)>> x5;\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
