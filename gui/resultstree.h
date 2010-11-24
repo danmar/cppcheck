@@ -122,6 +122,15 @@ public:
     *
     */
     void Translate();
+
+signals:
+    /**
+    * @brief Signal that results have been hidden or shown
+    *
+    * @param hidden true if there are some hidden results, or false if there are not
+    */
+    void ResultsHidden(bool hidden);
+
 protected slots:
     /**
     * @brief Slot to quickstart an error with default application

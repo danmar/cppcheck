@@ -33,6 +33,8 @@ ResultsView::ResultsView(QWidget * parent) :
     mShowNoErrorsMessage(true)
 {
     mUI.setupUi(this);
+
+    connect(mUI.mTree, SIGNAL(ResultsHidden(bool)), this, SIGNAL(ResultsHidden(bool)));
 }
 
 void ResultsView::Initialize(QSettings *settings, ApplicationList *list)

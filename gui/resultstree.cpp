@@ -341,6 +341,7 @@ void ResultsTree::ShowHiddenResults()
         }
     }
     RefreshTree();
+    emit ResultsHidden(false);
 }
 
 
@@ -670,6 +671,7 @@ void ResultsTree::HideResult()
         mContextItem->setData(QVariant(data));
 
         RefreshTree();
+        emit ResultsHidden(true);
     }
 }
 

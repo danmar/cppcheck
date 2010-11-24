@@ -464,6 +464,9 @@
    </property>
   </action>
   <action name="mActionShowHidden">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Show &amp;hidden</string>
    </property>
