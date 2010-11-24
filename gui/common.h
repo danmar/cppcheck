@@ -65,6 +65,7 @@ ShowTypes;
 #define SETTINGS_TOOLBARS_VIEW_SHOW     "Toolbars/ShowView"
 #define SETTINGS_LOG_VIEW_WIDTH         "Log/View width"
 #define SETTINGS_LOG_VIEW_HEIGHT        "Log/View height"
+#define SETTINGS_MAINWND_SPLITTER_STATE "Mainwindow/Vertical splitter state"
 
 /// @}
 #endif

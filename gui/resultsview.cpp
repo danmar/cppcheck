@@ -19,6 +19,12 @@
 #include <QDebug>
 #include <QFile>
 #include <QMessageBox>
+#include <QStandardItemModel>
+#include <QStandardItem>
+#include <QVariant>
+#include <QString>
+#include <QModelIndex>
+#include <QSettings>
 #include "erroritem.h"
 #include "resultsview.h"
 #include "resultstree.h"
@@ -35,28 +41,30 @@ ResultsView::ResultsView(QWidget * parent) :
     mUI.setupUi(this);
 
     connect(mUI.mTree, SIGNAL(ResultsHidden(bool)), this, SIGNAL(ResultsHidden(bool)));
+    connect(mUI.mTree, SIGNAL(SelectionChanged(const QModelIndex &)), this, SLOT(UpdateDetails(const QModelIndex &)));
 }
 
 void ResultsView::Initialize(QSettings *settings, ApplicationList *list)
 {
-
     mUI.mProgress->setMinimum(0);
     mUI.mProgress->setVisible(false);
+
+    QByteArray state = settings->value(SETTINGS_MAINWND_SPLITTER_STATE).toByteArray();
+    mUI.mVerticalSplitter->restoreState(state);
     mShowNoErrorsMessage = settings->value(SETTINGS_SHOW_NO_ERRORS, true).toBool();
 
     mUI.mTree->Initialize(settings, list);
 }
-
 
 ResultsView::~ResultsView()
 {
     //dtor
 }
 
-
 void ResultsView::Clear()
 {
     mUI.mTree->Clear();
+    mUI.mDetails->setText("");
     mErrorsFound = false;
 
     //Clear the progressbar
@@ -206,9 +214,12 @@ bool ResultsView::HasResults() const
     return mUI.mTree->HasResults();
 }
 
-void ResultsView::SaveSettings()
+void ResultsView::SaveSettings(QSettings *settings)
 {
     mUI.mTree->SaveSettings();
+    QByteArray state = mUI.mVerticalSplitter->saveState();
+    settings->setValue(SETTINGS_MAINWND_SPLITTER_STATE, state);
+    mUI.mVerticalSplitter->restoreState(state);
 }
 
 void ResultsView::Translate()
@@ -254,4 +265,18 @@ void ResultsView::ReadErrorsXml(const QString &filename)
         mUI.mTree->AddErrorItem(item);
     }
     mUI.mTree->SetCheckDirectory("");
+}
+
+void ResultsView::UpdateDetails(const QModelIndex &index)
+{
+    QStandardItemModel *model = qobject_cast<QStandardItemModel*>(mUI.mTree->model());
+    QStandardItem *item = model->itemFromIndex(index);
+
+    // Make sure we are working with the first column
+    if (item->parent() && item->column() != 0)
+        item = item->parent()->child(item->row(), 0);
+
+    QVariantMap data = item->data().toMap();
+    QString message = data["message"].toString();
+    mUI.mDetails->setText(message);
 }

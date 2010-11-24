@@ -29,6 +29,8 @@
 #include "ui_resultsview.h"
 
 class ErrorItem;
+class QModelIndex;
+class QSettings;
 
 /// @addtogroup GUI
 /// @{
@@ -120,8 +122,9 @@ public:
     /**
     * @brief Save View's settings
     *
+    * @param settings program settings.
     */
-    void SaveSettings();
+    void SaveSettings(QSettings *settings);
 
     /**
     * @brief Translate this view
@@ -183,6 +186,13 @@ public slots:
     * @brief Show hidden results in the result list.
     */
     void ShowHiddenResults();
+
+    /**
+    * @brief Update detailed message when selected item is changed.
+    *
+    * @param index Position of new selected item.
+    */
+    void UpdateDetails(const QModelIndex &index);
 
 protected:
     /**

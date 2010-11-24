@@ -32,6 +32,8 @@
 class Report;
 class ErrorItem;
 class ErrorLine;
+class QModelIndex;
+class QWidget;
 
 /// @addtogroup GUI
 /// @{
@@ -131,6 +133,13 @@ signals:
     */
     void ResultsHidden(bool hidden);
 
+    /**
+    * @brief Signal for selection change in result tree.
+    *
+    * @param index Model index to specify new selected item.
+    */
+    void SelectionChanged(const QModelIndex &current);
+
 protected slots:
     /**
     * @brief Slot to quickstart an error with default application
@@ -169,6 +178,14 @@ protected slots:
     *
     */
     void HideResult();
+
+    /**
+    * @brief Slot for selection change in the results tree.
+    *
+    * @param index Model index to specify new selected item.
+    * @param index Model index to specify previous selected item.
+    */
+    virtual void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
 protected:
 
