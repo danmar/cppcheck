@@ -19,6 +19,12 @@
             <File Id='cppcheck.exe' Name='cppcheck.exe' DiskId='1' Source='$(var.CliBuildDir)\cppcheck.exe' KeyPath='yes' />
             <Environment Id='UpdatePath' Name='PATH' Action='set' System='yes' Part='last' Value='[INSTALLDIR]' />
           </Component>
+          <Component Id='RegistryEntries' Guid='$(var.registrykeysGUID)'>
+            <RegistryKey Root="HKCU" Key="SOFTWARE\$(var.ProductNameShort)" Action="createAndRemoveOnUninstall">
+              <RegistryValue Name="IntallationPath" Value="[INSTALLDIR]" Type="string" KeyPath="yes" />
+              <RegistryValue Name="Version" Value="$(var.ProductVersion)" Type="string" />
+            </RegistryKey>
+          </Component>
           <Component Id='GuiExecutable' DiskId='1' Guid='$(var.guiGUID)'>
             <File Id='cppcheckguiexe' Name='cppcheckgui.exe' Source='$(var.GuiBuildDir)\cppcheck-gui.exe' KeyPath='yes'>
               <Shortcut Id='startmenuGui' Directory="ProgramMenuDir" Name='$(var.ProductNameShort)'
@@ -75,6 +81,7 @@
       Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR' >
       <Feature Id='MainProgram' Title='Command line interface' Description='Command line tool' Level='1'>
         <ComponentRef Id='cppcheck.exe' />
+        <ComponentRef Id='RegistryEntries' />
         <ComponentRef Id='GuiExecutable' />
         <ComponentRef Id='GuiTranslations' />
         <ComponentRef Id='BaseDocs' />

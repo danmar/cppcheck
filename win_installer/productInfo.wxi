@@ -13,4 +13,5 @@
   <?define guiGUID = "D7D3FF8E-1D82-4215-B59B-4715A748C540" ?>
   <?define guiTranslationsGUID = "24738151-890D-4fcc-824C-DA7FF63E0D7F" ?>
   <?define basedocsGUID = "9F62B23C-CD2B-4826-A567-6AB6F75A2AEA" ?>
+  <?define registrykeysGUID = "8CB515B1-6EF6-4A2A-97A0-F8A13E3A505E" ?>
 </Include>
