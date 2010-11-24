@@ -32,6 +32,7 @@
 #include "txtreport.h"
 #include "xmlreport.h"
 #include "csvreport.h"
+#include "applicationlist.h"
 
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
