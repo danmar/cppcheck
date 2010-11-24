@@ -62,6 +62,7 @@ ResultsView::~ResultsView()
 void ResultsView::Clear()
 {
     mUI.mTree->Clear();
+    mUI.mDetails->setText("");
     mErrorsFound = false;
 
     //Clear the progressbar
