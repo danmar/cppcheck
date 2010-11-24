@@ -790,13 +790,15 @@ private:
             const Token *tok2;
 
             // parse setup
-            for (tok2 = tok.tokAt(3); tok2; tok2 = tok2->next())
+            for (tok2 = tok.tokAt(3); tok2 != tok.link(); tok2 = tok2->next())
             {
                 if (tok2->str() == ";")
                     break;
                 if (tok2->varId())
                     varid1.insert(tok2->varId());
             }
+            if (tok2 == tok.link())
+                return &tok;
 
             // parse condition
             if (Token::Match(tok2, "; %var% <|<=|>=|> %num% ;"))

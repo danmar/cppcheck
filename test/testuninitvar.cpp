@@ -757,6 +757,15 @@ private:
                        "    a++;"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: a\n", errout.str());
+
+        // Ticket #2226: C++0x loop
+        checkUninitVar("void f() {\n"
+                       "    container c;\n"
+                       "    for (iterator it : c) {\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     // switch..
