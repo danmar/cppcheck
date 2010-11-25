@@ -4708,6 +4708,8 @@ private:
         ASSERT_EQUALS(";", tokenizeAndStringify(";x |= 0;"));
         ASSERT_EQUALS(";", tokenizeAndStringify(";x *= 1;"));
         ASSERT_EQUALS(";", tokenizeAndStringify(";x /= 1;"));
+
+        ASSERT_EQUALS("; a . x ( ) = a . x ( ) + 1 ;", tokenizeAndStringify("; a.x() += 1;"));
     }
 
     void simplifyAssignmentInFunctionCall()
