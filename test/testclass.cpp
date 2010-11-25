@@ -151,6 +151,7 @@ private:
         TEST_CASE(const37); // ticket #2081 and #2085
         TEST_CASE(const38); // ticket #2135
         TEST_CASE(const39);
+        TEST_CASE(const40); // ticket #2228
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -4409,6 +4410,24 @@ private:
                    "int * Foo::f()\n"
                    "{\n"
                    "    return p;\n"
+                   "}\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const40() // ticket #2228
+    {
+        checkConst("class SharedPtrHolder\n"
+                   "{\n"
+                   "  private:\n"
+                   "   std::tr1::shared_ptr<int> pView;\n"
+                   "  public:\n"
+                   "   SharedPtrHolder()\n"
+                   "   { }\n"
+                   "   void SetView(const std::shared_ptr<int> & aView)\n"
+                   "   {\n"
+                   "      pView = aView;\n"
+                   "   }\n"
                    "}\n");
 
         ASSERT_EQUALS("", errout.str());

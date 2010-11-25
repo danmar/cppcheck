@@ -967,7 +967,8 @@ void SymbolDatabase::SpaceInfo::getVarList()
         }
 
         // Container..
-        else if (Token::Match(tok, "%type% :: %type% <") ||
+        else if (Token::Match(tok, "%type% :: %type% :: %type% <") ||
+                 Token::Match(tok, "%type% :: %type% <") ||
                  Token::Match(tok, "%type% <"))
         {
             // got an unhandled template?
