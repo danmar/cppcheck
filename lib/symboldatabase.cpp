@@ -1025,7 +1025,7 @@ void SymbolDatabase::SpaceInfo::getVarList()
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         if (vartok && vartok->str() != "operator")
         {
-            if (vartok->varId() == 0 && check->_settings->debugwarnings)
+            if (vartok->varId() == 0 && check->_settings && check->_settings->debugwarnings)
             {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
