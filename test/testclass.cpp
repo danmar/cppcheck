@@ -171,6 +171,7 @@ private:
         TEST_CASE(symboldatabase4);
         TEST_CASE(symboldatabase5); // ticket #2178
         TEST_CASE(symboldatabase6); // ticket #2221
+        TEST_CASE(symboldatabase7); // ticket #2230
     }
 
     // Check the operator Equal
@@ -4858,6 +4859,23 @@ private:
                    "Y<X<1>> x3;\n"
                    "Y<X<6>>1>> x4;\n"
                    "Y<X<(6>>1)>> x5;\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase7()
+    {
+        // ticket #2230 - segmentation fault
+        checkConst("template<template<class> class E,class D> class C : E<D>\n"
+                   "{\n"
+                   "public:\n"
+                   "	int f();\n"
+                   "};\n"
+                   "class E : C<D,int>\n"
+                   "{\n"
+                   "public:\n"
+                   "	int f() { return C< ::D,int>::f(); }\n"
+                   "};\n");
+
         ASSERT_EQUALS("", errout.str());
     }
 };

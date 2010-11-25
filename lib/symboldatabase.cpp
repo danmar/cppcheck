@@ -705,11 +705,20 @@ const Token *SymbolDatabase::initBaseInfo(SpaceInfo *info, const Token *tok)
             }
 
             base.name += tok2->str();
-
             base.spaceInfo = 0;
 
+            // don't add unhandled templates
+            if (tok2->next()->str() == "<")
+            {
+                while (tok2->str() != ">")
+                    tok2 = tok2->next();
+            }
+
             // save pattern for base class name
-            info->derivedFrom.push_back(base);
+            else
+            {
+                info->derivedFrom.push_back(base);
+            }
         }
         tok2 = tok2->next();
     }
