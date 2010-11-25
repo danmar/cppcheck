@@ -2597,11 +2597,17 @@ void CheckMemoryLeakInClass::check()
                 if (!var->isStatic && var->token->previous()->str() == "*")
                 {
                     // allocation but no deallocation of private variables in public function..
-                    if (var->access == SymbolDatabase::Private && var->token->tokAt(-2)->isStandardType())
-                        checkPublicFunctions(var->token, var->token->varId());
-
                     if (var->token->tokAt(-2)->isStandardType())
+                    {
+                        if (var->access == SymbolDatabase::Private)
+                            checkPublicFunctions(info, var->token);
+
                         variable(info, var->token);
+                    }
+                    else
+                    {
+                        /** @todo false negative: check classes here someday */
+                    }
                 }
             }
         }
@@ -2745,7 +2751,7 @@ void CheckMemoryLeakInClass::variable(const SymbolDatabase::SpaceInfo *classinfo
 }
 
 
-void CheckMemoryLeakInClass::checkPublicFunctions(const Token *classtok, const unsigned int varid)
+void CheckMemoryLeakInClass::checkPublicFunctions(const SymbolDatabase::SpaceInfo *spaceinfo, const Token *classtok)
 {
     // Check that public functions deallocate the pointers that they allocate.
     // There is no checking how these functions are used and therefore it
@@ -2753,34 +2759,27 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Token *classtok, const u
     if (!_settings->_checkCodingStyle)
         return;
 
+    const unsigned int varid = classtok->varId();
+
     // Parse public functions..
     // If they allocate member variables, they should also deallocate
-    bool publicScope = false;
-    for (const Token *tok = classtok; tok; tok = tok->next())
-    {
-        if (tok->str() == "{")
-            tok = tok->link();
-        else if (tok->str() == "}")
-            break;
-        else if (tok->isName() && tok->str().find(":") != std::string::npos)
-            publicScope = bool(tok->str() == "public:");
+    std::list<SymbolDatabase::Func>::const_iterator func;
 
-        // scope of public function..
-        // TODO: parse into any function scope that is not a constructor
-        else if (publicScope && (Token::Match(tok, "void %type% (") || Token::simpleMatch(tok, "operator = (")))
+    // TODO: parse into any function scope that is not a constructor
+    for (func = spaceinfo->functionList.begin(); func != spaceinfo->functionList.end(); ++func)
+    {
+        /** @todo false negative: why do we only check inline functions? */
+        if (func->access == SymbolDatabase::Public && func->hasBody && func->isInline)
         {
-            tok = tok->tokAt(2)->link();
-            if (Token::Match(tok, ") const| {"))
+            const Token *tok2 = func->token;
+            while (tok2->str() != "{")
+                tok2 = tok2->next();
+            /** @todo false negative: why do we only check for this specific case? */
+            if (Token::Match(tok2, "{ %varid% =", varid))
             {
-                const Token *tok2 = tok;
-                while (tok2->str() != "{")
-                    tok2 = tok2->next();
-                if (Token::Match(tok2, "{ %varid% =", varid))
-                {
-                    const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(3), varid);
-                    if (alloc != CheckMemoryLeak::No)
-                        publicAllocationError(tok2, tok2->strAt(1));
-                }
+                const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(3), varid);
+                if (alloc != CheckMemoryLeak::No)
+                    publicAllocationError(tok2, tok2->strAt(1));
             }
         }
     }
