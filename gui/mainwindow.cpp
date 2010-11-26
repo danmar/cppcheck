@@ -338,6 +338,24 @@ bool MainWindow::GetCheckProject()
     return false;
 }
 
+void MainWindow::AddIncludeDirs(const QStringList &includeDirs, Settings &result)
+{
+    QString dir;
+    foreach(dir, includeDirs)
+    {
+        QString incdir;
+        if (!QDir::isAbsolutePath(dir))
+            incdir = mCurrentDirectory + "/";
+        incdir += dir;
+        incdir = QDir::cleanPath(incdir);
+
+        // include paths must end with '/'
+        if (!incdir.endsWith("/"))
+            incdir += "/";
+        result._includePaths.push_back(incdir.toStdString());
+    }
+}
+
 Settings MainWindow::GetCppcheckSettings()
 {
     Settings result;
@@ -346,20 +364,7 @@ Settings MainWindow::GetCppcheckSettings()
     if (!globalIncludes.isEmpty())
     {
         QStringList includes = globalIncludes.split(";");
-        QString dir;
-        foreach(dir, includes)
-        {
-            QString incdir;
-            if (!QDir::isAbsolutePath(dir))
-                incdir = mCurrentDirectory + "/";
-            incdir += dir;
-            incdir = QDir::cleanPath(incdir);
-
-            // include paths must end with '/'
-            if (!incdir.endsWith("/"))
-                incdir += "/";
-            result._includePaths.push_back(incdir.toStdString());
-        }
+        AddIncludeDirs(includes, result);
     }
 
     bool projectRead = GetCheckProject();
@@ -367,20 +372,8 @@ Settings MainWindow::GetCppcheckSettings()
     {
         ProjectFile *pfile = mProject->GetProjectFile();
         QStringList dirs = pfile->GetIncludeDirs();
-        QString dir;
-        foreach(dir, dirs)
-        {
-            QString incdir;
-            if (!QDir::isAbsolutePath(dir))
-                incdir = mCurrentDirectory + "/";
-            incdir += dir;
-            incdir = QDir::cleanPath(incdir);
+        AddIncludeDirs(dirs, result);
 
-            // include paths must end with '/'
-            if (!incdir.endsWith("/"))
-                incdir += "/";
-            result._includePaths.push_back(incdir.toStdString());
-        }
         QStringList defines = pfile->GetDefines();
         QString define;
         foreach(define, defines)

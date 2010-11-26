@@ -25,6 +25,7 @@
 #include <QSignalMapper>
 #include <QActionGroup>
 #include <QToolBar>
+#include <QStringList>
 
 #include "resultsview.h"
 #include "settingsdialog.h"
@@ -345,6 +346,13 @@ protected:
     * @param enable If true then actions are enabled.
     */
     void EnableProjectOpenActions(bool enable);
+
+    /**
+    * @brief Add include directories.
+    * @param includeDirs List of include directories to add.
+    * @param result Settings class where include directories are added.
+    */
+    void AddIncludeDirs(const QStringList &includeDirs, Settings &result);
 
     /**
     * @brief Program settings
