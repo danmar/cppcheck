@@ -25,6 +25,7 @@
 #include <QListWidgetItem>
 #include <QTabWidget>
 #include <QSettings>
+#include <QFileDialog>
 #include "settingsdialog.h"
 #include "applicationdialog.h"
 #include "applicationlist.h"
@@ -41,35 +42,32 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
     mUI.setupUi(this);
     mTempApplications->Copy(list);
 
-    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
-    connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
-
+    mUI.mEditIncludePaths->setText(programSettings->value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString());
     mUI.mJobs->setText(programSettings->value(SETTINGS_CHECK_THREADS, 1).toString());
     mUI.mForce->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_CHECK_FORCE, false).toBool()));
     mUI.mShowFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_FULL_PATH, false).toBool()));
     mUI.mShowNoErrorsMessage->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_NO_ERRORS, false).toBool()));
     mUI.mShowDebugWarnings->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool()));
+    mUI.mSaveAllErrors->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_ALL_ERRORS, false).toBool()));
+    mUI.mSaveFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
 
+    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
+    connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
     connect(mUI.mButtonAdd, SIGNAL(clicked()),
             this, SLOT(AddApplication()));
-
     connect(mUI.mButtonDelete, SIGNAL(clicked()),
             this, SLOT(DeleteApplication()));
-
     connect(mUI.mButtonModify, SIGNAL(clicked()),
             this, SLOT(ModifyApplication()));
-
     connect(mUI.mButtonDefault, SIGNAL(clicked()),
             this, SLOT(DefaultApplication()));
-
     connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
             this, SLOT(ModifyApplication()));
+    connect(mUI.mBtnAddIncludePath, SIGNAL(clicked()),
+            this, SLOT(AddIncludePath()));
 
     mUI.mListWidget->setSortingEnabled(false);
     PopulateListWidget();
-
-    mUI.mSaveAllErrors->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_ALL_ERRORS, false).toBool()));
-    mUI.mSaveFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
 
     LoadSettings();
 }
@@ -110,7 +108,7 @@ void SettingsDialog::SaveSettings()
     mSettings->setValue(SETTINGS_CHECK_DIALOG_HEIGHT, size().height());
 }
 
-void SettingsDialog::SaveCheckboxValues()
+void SettingsDialog::SaveSettingValues()
 {
     int jobs = mUI.mJobs->text().toInt();
     if (jobs <= 0)
@@ -125,6 +123,7 @@ void SettingsDialog::SaveCheckboxValues()
     SaveCheckboxValue(mUI.mShowFullPath, SETTINGS_SHOW_FULL_PATH);
     SaveCheckboxValue(mUI.mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
     SaveCheckboxValue(mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
+    mSettings->setValue(SETTINGS_GLOBAL_INCLUDE_PATHS, mUI.mEditIncludePaths->text());
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
@@ -229,5 +228,18 @@ bool SettingsDialog::ShowNoErrorsMessage()
     return CheckStateToBool(mUI.mShowNoErrorsMessage->checkState());
 }
 
+void SettingsDialog::AddIncludePath()
+{
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                          tr("Select include directory"),
+                          QString());
 
-
+    if (!selectedDir.isEmpty())
+    {
+        QString text = mUI.mEditIncludePaths->text();
+        if (!text.isEmpty())
+            text += ';';
+        text += selectedDir;
+        mUI.mEditIncludePaths->setText(text);
+    }
+}

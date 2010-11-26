@@ -341,6 +341,27 @@ bool MainWindow::GetCheckProject()
 Settings MainWindow::GetCppcheckSettings()
 {
     Settings result;
+
+    QString globalIncludes = mSettings->value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
+    if (!globalIncludes.isEmpty())
+    {
+        QStringList includes = globalIncludes.split(";");
+        QString dir;
+        foreach(dir, includes)
+        {
+            QString incdir;
+            if (!QDir::isAbsolutePath(dir))
+                incdir = mCurrentDirectory + "/";
+            incdir += dir;
+            incdir = QDir::cleanPath(incdir);
+
+            // include paths must end with '/'
+            if (!incdir.endsWith("/"))
+                incdir += "/";
+            result._includePaths.push_back(incdir.toStdString());
+        }
+    }
+
     bool projectRead = GetCheckProject();
     if (projectRead)
     {
@@ -417,7 +438,7 @@ void MainWindow::ProgramSettings()
     SettingsDialog dialog(mSettings, mApplications, this);
     if (dialog.exec() == QDialog::Accepted)
     {
-        dialog.SaveCheckboxValues();
+        dialog.SaveSettingValues();
         mUI.mResults->UpdateSettings(dialog.ShowFullPath(),
                                      dialog.SaveFullPath(),
                                      dialog.SaveAllErrors(),

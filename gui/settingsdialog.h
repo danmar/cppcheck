@@ -48,7 +48,7 @@ public:
     * @brief Save all values to QSettings
     *
     */
-    void SaveCheckboxValues();
+    void SaveSettingValues();
 
     /**
     * @brief Get checkbox value for mShowFullPath
@@ -109,6 +109,13 @@ protected slots:
     *
     */
     void DefaultApplication();
+
+    /**
+    * @brief Slot for adding new include path
+    *
+    */
+    void AddIncludePath();
+
 protected:
 
     /**

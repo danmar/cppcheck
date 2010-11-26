@@ -66,6 +66,7 @@ ShowTypes;
 #define SETTINGS_LOG_VIEW_WIDTH         "Log/View width"
 #define SETTINGS_LOG_VIEW_HEIGHT        "Log/View height"
 #define SETTINGS_MAINWND_SPLITTER_STATE "Mainwindow/Vertical splitter state"
+#define SETTINGS_GLOBAL_INCLUDE_PATHS   "Global include paths"
 
 /// @}
 #endif
