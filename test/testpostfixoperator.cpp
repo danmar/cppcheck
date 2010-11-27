@@ -101,7 +101,7 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
         check("\n"
               "#include <iostream>\n"
@@ -116,7 +116,7 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
         check("\n"
               "#include <iostream>\n"
@@ -132,7 +132,7 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
 
         check("\n"
@@ -146,7 +146,7 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
         check("\n"
               "#include <iostream>\n"
@@ -199,7 +199,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
         check("\n"
               "#include <iostream>\n"
@@ -223,7 +223,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
         check("\n"
               "#include <iostream>\n"
@@ -264,7 +264,7 @@ private:
               "    std::cout << k-- << std::endl;\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
         check("\n"
               "#include <iostream>\n"
@@ -311,7 +311,7 @@ private:
               "    v.clear();\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
         check("\n"
               "#include <iostream>\n"
@@ -328,7 +328,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:12]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
         check("\n"
               "#include <iostream>\n"
@@ -344,7 +344,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
         check("\n"
               "#include <iostream>\n"
@@ -361,7 +361,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:12]: (performance) You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
     }
 

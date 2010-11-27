@@ -96,5 +96,10 @@ void CheckPostfixOperator::postfixOperator()
 
 void CheckPostfixOperator::postfixOperatorError(const Token *tok)
 {
-    reportError(tok, Severity::performance, "postfixOperator", "You should use ++ and -- as prefix whenever possible as these are more efficient than postfix operators");
+    reportError(tok, Severity::performance, "postfixOperator",
+                "Prefer prefix ++/-- operators for non-primitive types.\n "
+                "Pre-increment/decrement can be more efficient than "
+                "post-increment/decrement. Post-increment/decrement usually "
+                "involves keeping a copy of the previous value around and "
+                "adds a little extra code.");
 }
