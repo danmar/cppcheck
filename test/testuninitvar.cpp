@@ -999,6 +999,13 @@ private:
                        "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    Fred *fred = malloc(sizeof(Fred));\n"
+                       "    x(fred->f);\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("void foo(char *s)\n"
                        "{\n"
                        "    char *a = malloc(100);\n"

@@ -751,13 +751,7 @@ private:
 
             if (Token::simpleMatch(tok.next(), "."))
             {
-                const Token *tok2 = tok.next();
-                while (Token::Match(tok2, ". %var%"))
-                    tok2 = tok2->tokAt(2);
-                if (tok2 && tok2->str() != "=" && tok.strAt(-1) != "&")
-                    use_pointer(checks, &tok);
-                else
-                    bailOutVar(checks, tok.varId());
+                bailOutVar(checks, tok.varId());
                 return &tok;
             }
 
