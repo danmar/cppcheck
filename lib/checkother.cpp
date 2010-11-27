@@ -2520,8 +2520,8 @@ void CheckOther::unusedStructMemberError(const Token *tok, const std::string &st
 void CheckOther::passedByValueError(const Token *tok, const std::string &parname)
 {
     reportError(tok, Severity::performance, "passedByValue",
-                "Function parameter '" + parname + "' should be passed by reference.\n "
-                "parameter '" +  parname + "' is passed as a value. It could be passed "
+                "Function parameter '" + parname + "' should be passed by reference.\n"
+                "Parameter '" +  parname + "' is passed as a value. It could be passed "
                 "as a (const) reference which is usually faster and recommended in C++.");
 }
 
