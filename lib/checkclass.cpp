@@ -164,7 +164,11 @@ void CheckClass::constructors()
 void CheckClass::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
     // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
-    reportError(tok, Severity::style, "noConstructor", "The " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' has no constructor. Member variables not initialized.");
+    reportError(tok, Severity::style, "noConstructor",
+                "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
+                "' does not have a constructor.\n"
+                "The class 'classname' does not have a constructor but it has attributes. "
+                "The attributes are not initialized which may cause bugs or undefined behavior.");
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)

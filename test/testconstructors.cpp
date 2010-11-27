@@ -96,7 +96,7 @@ private:
               "private:\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' has no constructor. Member variables not initialized.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' does not have a constructor.\n", errout.str());
 
         check("struct Fred\n"
               "{\n"
@@ -109,7 +109,7 @@ private:
               "private:\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The struct 'Fred' has no constructor. Member variables not initialized.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The struct 'Fred' does not have a constructor.\n", errout.str());
     }
 
 
