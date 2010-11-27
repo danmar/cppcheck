@@ -1068,7 +1068,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The iterator is incremented at line 4 and then at line 2. The loop might unintentionally skip an element in the container. There is no comparison between these increments to prevent that the iterator is incremented beyond the end.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Missing bounds check for extra iterator increment in loop.\n", errout.str());
     }
 
     void missingInnerComparison2()
