@@ -1716,6 +1716,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                     done = false;
                 }
 
+                // Reduce "if continue ; if continue ;" => "if continue ;"
+                else if (Token::Match(tok2->next(), "if continue ; if continue ;"))
+                {
+                    Token::eraseTokens(tok2, tok2->tokAt(4));
+                    done = false;
+                }
+
                 // Reduce "if return ; alloc ;" => "alloc ;"
                 else if (Token::Match(tok2, "[;{}] if return ; alloc|return ;"))
                 {
@@ -1756,6 +1763,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 else if (Token::Match(tok2->next(), "if continue|break ; if|else return ;"))
                 {
                     Token::eraseTokens(tok2->next(), tok2->tokAt(5));
+                    done = false;
+                }
+
+                // Remove "else" after "if continue|break|return"
+                else if (Token::Match(tok2->next(), "if continue|break|return ; else"))
+                {
+                    tok2->tokAt(4)->deleteThis();
                     done = false;
                 }
 
@@ -2273,6 +2287,8 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
             tok2->str("use");
         else if (tok2->str() == "use_")
             tok2->str(";");
+        else if (Token::simpleMatch(tok2, "loop use_ {"))
+            tok2->deleteNext();
         else if (tok2->str() == "::use")    // Some kind of member function usage. Not analyzed very well.
             tok2->str("use");
         else if (tok2->str() == "recursive")
