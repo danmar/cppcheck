@@ -920,7 +920,7 @@ private:
               "{\n"
               "    int i = sizeof sizeof char;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent to 'sizeof(size_t)'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling sizeof for 'sizeof'.\n", errout.str());
     }
 
     void sizeofCalculation()
