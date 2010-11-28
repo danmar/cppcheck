@@ -37,6 +37,7 @@
 #include <QClipboard>
 #include <QContextMenuEvent>
 #include <QModelIndex>
+#include <QItemSelectionModel>
 #include "erroritem.h"
 #include "settings.h"
 #include "applicationlist.h"
@@ -47,7 +48,8 @@
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mContextItem(0),
-    mVisibleErrors(false)
+    mVisibleErrors(false),
+    mSelectionModel(0)
 {
     for (int i = 0; i < SHOW_NONE; i++)
         mShowTypes[i] = false;
@@ -446,6 +448,11 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
     QModelIndex index = indexAt(e->pos());
     if (index.isValid())
     {
+        bool multipleSelection = false;
+        mSelectionModel = selectionModel();
+        if (mSelectionModel->selectedRows().count() > 1)
+            multipleSelection = true;
+
         mContextItem = mModel.itemFromIndex(index);
 
         //Create a new context menu
@@ -465,6 +472,8 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             {
                 //Create an action for the application
                 QAction *start = new QAction(mApplications->GetApplicationName(i), &menu);
+                if (multipleSelection)
+                    start->setDisabled(true);
 
                 //Add it to our list so we can disconnect later on
                 actions << start;
@@ -496,6 +505,13 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             QAction *copypath 		= new QAction(tr("Copy full path"), &menu);
             QAction *copymessage 	= new QAction(tr("Copy message"), &menu);
             QAction *hide        	= new QAction(tr("Hide"), &menu);
+
+            if (multipleSelection)
+            {
+                copyfilename->setDisabled(true);
+                copypath->setDisabled(true);
+                copymessage->setDisabled(true);
+            }
 
             menu.addAction(copyfilename);
             menu.addAction(copypath);
@@ -658,12 +674,18 @@ void ResultsTree::CopyMessage()
 
 void ResultsTree::HideResult()
 {
-    if (mContextItem)
+    if (!mSelectionModel)
+        return;
+
+    QModelIndexList selectedRows = mSelectionModel->selectedRows();
+    QModelIndex index;
+    foreach(index, selectedRows)
     {
+        QStandardItem *item = mModel.itemFromIndex(index);
         //Set the "hide" flag for this item
-        QVariantMap data = mContextItem->data().toMap();
+        QVariantMap data = item->data().toMap();
         data["hide"] = true;
-        mContextItem->setData(QVariant(data));
+        item->setData(QVariant(data));
 
         RefreshTree();
         emit ResultsHidden(true);

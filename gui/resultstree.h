@@ -34,6 +34,7 @@ class ErrorItem;
 class ErrorLine;
 class QModelIndex;
 class QWidget;
+class QItemSelectionModel;
 
 /// @addtogroup GUI
 /// @{
@@ -411,6 +412,7 @@ protected:
     bool mVisibleErrors;
 
 private:
+    QItemSelectionModel *mSelectionModel;
 };
 /// @}
 #endif // RESULTSTREE_H
