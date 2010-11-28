@@ -1984,12 +1984,16 @@ bool Tokenizer::tokenize(std::istream &code,
                 while (tok->str() != "{")
                     tok = tok->next();
                 tok = tok->link();
+                if (!tok)
+                    break;
             }
 
             // skip executing scopes (ticket #1984)..
             if (Token::simpleMatch(tok, "; {"))
             {
                 tok = tok->next()->link();
+                if (!tok)
+                    break;
             }
 
             // skip executing scopes (ticket #1985)..
@@ -2002,6 +2006,8 @@ bool Tokenizer::tokenize(std::istream &code,
                     if (Token::simpleMatch(tok, ") {"))
                         tok = tok->next()->link();
                 }
+                if (!tok)
+                    break;
             }
 
             // not start of statement?
@@ -8650,7 +8656,11 @@ void Tokenizer::simplifyBorland()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->str() == "{")
+        {
             tok = tok->link();
+            if (!tok)
+                break;
+        }
 
         if (Token::Match(tok, "class %var% :|{"))
         {
