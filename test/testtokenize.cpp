@@ -4704,6 +4704,7 @@ private:
         ASSERT_EQUALS("; x [ y - 1 ] = x [ y - 1 ] + 1 ;", tokenizeAndStringify("; x[y-1] += 1;"));
 
         ASSERT_EQUALS(";", tokenizeAndStringify(";x += 0;"));
+        ASSERT_EQUALS(";", tokenizeAndStringify(";x += '\\0';"));
         ASSERT_EQUALS(";", tokenizeAndStringify(";x -= 0;"));
         ASSERT_EQUALS(";", tokenizeAndStringify(";x |= 0;"));
         ASSERT_EQUALS(";", tokenizeAndStringify(";x *= 1;"));

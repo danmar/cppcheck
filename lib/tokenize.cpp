@@ -4532,7 +4532,10 @@ void Tokenizer::simplifyCompoundAssignment()
                 continue;
 
             // Remove the whole statement if it says: "+=0;", "-=0;", "*=1;" or "/=1;"
-            if (Token::Match(tok, "+=|-= 0 ;") || Token::simpleMatch(tok, "|= 0 ;") || Token::Match(tok, "*=|/= 1 ;"))
+            if (Token::Match(tok, "+=|-= 0 ;") ||
+                Token::Match(tok, "+=|-= '\\0' ;") ||
+                Token::simpleMatch(tok, "|= 0 ;") ||
+                Token::Match(tok, "*=|/= 1 ;"))
             {
                 tok = tok1;
                 while (tok->next()->str() != ";")
