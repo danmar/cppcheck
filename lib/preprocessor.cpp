@@ -1570,7 +1570,13 @@ void Preprocessor::handleIncludes(std::string &code,
         }
         else if (!fileOpened)
         {
+            // TODO: Fix the handling of system includes and then
+            // remove the "headerType == UserHeader"
+#ifdef NDEBUG
+            if (headerType == UserHeader && _errorLogger && _settings && _settings->isEnabled("missingInclude"))
+#else
             if (_errorLogger && _settings && _settings->isEnabled("missingInclude"))
+#endif
             {
                 // Determine line number of include
                 unsigned int linenr = 1;
