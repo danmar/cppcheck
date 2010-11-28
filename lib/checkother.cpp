@@ -2612,8 +2612,8 @@ void CheckOther::sizeofsizeofError(const Token *tok)
 {
     reportError(tok, Severity::warning,
                 "sizeofsizeof", "Calling sizeof for 'sizeof'.\n"
-				"This is suspicious code and most likely there should be just"
-				"one 'sizeof'. The current code is equivalent to 'sizeof(size_t)'");
+                "This is suspicious code and most likely there should be just"
+                "one 'sizeof'. The current code is equivalent to 'sizeof(size_t)'");
 }
 
 void CheckOther::sizeofCalculation()
