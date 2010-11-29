@@ -126,6 +126,13 @@ public:
     */
     void Translate();
 
+    /**
+    * @brief Convert severity string to ShowTypes value
+    * @param severity Error severity string
+    * @return Severity converted to ShowTypes value
+    */
+    static ShowTypes SeverityToShowType(const QString &severity);
+
 signals:
     /**
     * @brief Signal that results have been hidden or shown
@@ -279,13 +286,6 @@ protected:
     * @return data converted to ShowTypes
     */
     ShowTypes VariantToShowType(const QVariant &data);
-
-    /**
-    * @brief Convert severity string to ShowTypes value
-    * @param severity Error severity string
-    * @return Severity converted to ShowTypes value
-    */
-    ShowTypes SeverityToShowType(const QString &severity) const;
 
     /**
     * @brief Convert ShowType to severity string

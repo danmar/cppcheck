@@ -860,6 +860,7 @@ void MainWindow::ShowStatistics()
     statsDialog.setPathSelected(mCurrentDirectory);
     statsDialog.setNumberOfFilesScanned(mThread->GetPreviousFilesCount());
     statsDialog.setScanDuration(mThread->GetPreviousScanDuration() / 1000.0);
+    statsDialog.setStatistics(mUI.mResults->GetStatistics());
 
     statsDialog.exec();
 }

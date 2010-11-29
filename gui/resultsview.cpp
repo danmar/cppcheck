@@ -33,11 +33,13 @@
 #include "xmlreport.h"
 #include "csvreport.h"
 #include "applicationlist.h"
+#include "checkstatistics.h"
 
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
     mErrorsFound(false),
-    mShowNoErrorsMessage(true)
+    mShowNoErrorsMessage(true),
+    mStatistics(new CheckStatistics(this))
 {
     mUI.setupUi(this);
 
@@ -67,6 +69,7 @@ void ResultsView::Clear()
     mUI.mTree->Clear();
     mUI.mDetails->setText("");
     mErrorsFound = false;
+    mStatistics->Clear();
 
     //Clear the progressbar
     mUI.mProgress->setMaximum(100);
@@ -83,6 +86,7 @@ void ResultsView::Error(const ErrorItem &item)
     mErrorsFound = true;
     mUI.mTree->AddErrorItem(item);
     emit GotResults();
+    mStatistics->AddItem(ResultsTree::SeverityToShowType(item.severity));
 }
 
 void ResultsView::ShowResults(ShowTypes type, bool show)

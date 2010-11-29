@@ -31,6 +31,7 @@ class ErrorItem;
 class ApplicationList;
 class QModelIndex;
 class QSettings;
+class CheckStatistics;
 
 /// @addtogroup GUI
 /// @{
@@ -141,6 +142,16 @@ public:
     */
     void ReadErrorsXml(const QString &filename);
 
+    /**
+    * @brief Return checking statistics.
+    * @param Pointer to checking statistics.
+    *
+    */
+    CheckStatistics *GetStatistics() const
+    {
+        return mStatistics;
+    }
+
 signals:
 
     /**
@@ -206,6 +217,9 @@ protected:
     bool mShowNoErrorsMessage;
 
     Ui::ResultsView mUI;
+
+    CheckStatistics *mStatistics;
+
 
 private:
 };

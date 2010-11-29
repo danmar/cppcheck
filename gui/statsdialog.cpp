@@ -25,6 +25,7 @@
 #include "project.h"
 #include "projectfile.h"
 #include "statsdialog.h"
+#include "checkstatistics.h"
 
 StatsDialog::StatsDialog(QWidget *parent)
     : QDialog(parent)
@@ -125,3 +126,10 @@ void StatsDialog::copyToClipboard()
     }
 }
 
+void StatsDialog::setStatistics(const CheckStatistics *stats)
+{
+    mUI.mLblErrors->setText(QString("%1").arg(stats->GetCount(SHOW_ERRORS)));
+    mUI.mLblWarnings->setText(QString("%1").arg(stats->GetCount(SHOW_WARNINGS)));
+    mUI.mLblStyle->setText(QString("%1").arg(stats->GetCount(SHOW_STYLE)));
+    mUI.mLblPerformance->setText(QString("%1").arg(stats->GetCount(SHOW_PERFORMANCE)));
+}

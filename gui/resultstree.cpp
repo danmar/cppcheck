@@ -250,7 +250,7 @@ ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
     return (ShowTypes)value;
 }
 
-ShowTypes ResultsTree::SeverityToShowType(const QString & severity) const
+ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
 {
     if (severity == "error")
         return SHOW_ERRORS;

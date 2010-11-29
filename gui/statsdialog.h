@@ -23,6 +23,7 @@
 #include "ui_stats.h"
 
 class Project;
+class CheckStatistics;
 
 /// @addtogroup GUI
 /// @{
@@ -56,6 +57,11 @@ public:
     * @brief Sets the number of seconds to display beside "Scan Duration:"
     */
     void setScanDuration(double seconds);
+
+    /**
+    * @brief Sets the numbers of different error/warnings found."
+    */
+    void setStatistics(const CheckStatistics *stats);
 
 private slots:
     void copyToClipboard();

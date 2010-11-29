@@ -69,7 +69,8 @@ HEADERS += mainwindow.h \
            logview.h \
            filelist.h \
            helpwindow.h \
-           statsdialog.h
+           statsdialog.h \
+           checkstatistics.h 
 
 SOURCES += main.cpp \
            mainwindow.cpp\
@@ -95,7 +96,8 @@ SOURCES += main.cpp \
            logview.cpp \
            filelist.cpp \
            helpwindow.cpp \
-           statsdialog.cpp
+           statsdialog.cpp \
+           checkstatistics.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS
