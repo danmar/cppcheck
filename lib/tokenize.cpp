@@ -3551,6 +3551,11 @@ void Tokenizer::simplifySizeof()
         if (Token::simpleMatch(tok->next(), "sizeof"))
             continue;
 
+        if (Token::simpleMatch(tok->next(), ". . ."))
+        {
+            Token::eraseTokens(tok, tok->tokAt(4));
+        }
+
         // sizeof 'x'
         if (tok->strAt(1)[0] == '\'')
         {

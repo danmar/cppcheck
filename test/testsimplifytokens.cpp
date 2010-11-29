@@ -83,6 +83,7 @@ private:
         TEST_CASE(sizeof18);
         TEST_CASE(sizeof19);    // #1891 - sizeof 'x'
         TEST_CASE(sizeof20);    // #2024 - sizeof a)
+        TEST_CASE(sizeof21);    // #2232 - sizeof...(Args)
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
@@ -1359,6 +1360,26 @@ private:
                       " struct_a a ;"
                       " append ( 100 ) . append ( ) ; "
                       "}", tok(code));
+    }
+
+    void sizeof21()
+    {
+        // ticket #2232 - sizeof...(Args)
+        const char code[] = "struct Internal {\n"
+                            "    int operator()(const Args&... args) const {\n"
+                            "        int n = sizeof...(Args);\n"
+                            "        return n;\n"
+                            "    }\n"
+                            "};\n"
+                            "\n"
+                            "int main() {\n"
+                            "    Internal internal;\n"
+                            "    int n = 0; n = internal(1);\n"
+                            "    return 0;\n"
+                            "}\n";
+
+        // don't segfault
+        tok(code);
     }
 
 
