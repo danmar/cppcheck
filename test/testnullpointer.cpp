@@ -609,6 +609,14 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #2251: taking the address of member
+        check("void f() {\n"
+              "    Fred *fred = 0;\n"
+              "    int x = &fred->x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void nullpointer7()
