@@ -142,7 +142,7 @@ lib/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/check.h lib/token.h li
 lib/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafety.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkexceptionsafety.o lib/checkexceptionsafety.cpp
 
-lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h lib/checkuninitvar.h
+lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h lib/executionpath.h lib/checkuninitvar.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkmemoryleak.o lib/checkmemoryleak.cpp
 
 lib/checknullpointer.o: lib/checknullpointer.cpp lib/checknullpointer.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/executionpath.h lib/mathlib.h
@@ -205,7 +205,7 @@ lib/timer.o: lib/timer.cpp lib/timer.h
 lib/token.o: lib/token.cpp lib/token.h lib/errorlogger.h lib/check.h lib/tokenize.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/token.o lib/token.cpp
 
-lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/token.h lib/filelister.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h lib/path.h
+lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/token.h lib/filelister.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h lib/path.h lib/symboldatabase.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/tokenize.o lib/tokenize.cpp
 
 cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/timer.h cli/cmdlineparser.h
@@ -226,7 +226,7 @@ test/options.o: test/options.cpp test/options.h
 test/testautovariables.o: test/testautovariables.cpp lib/tokenize.h lib/checkautovariables.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testautovariables.o test/testautovariables.cpp
 
-test/testbufferoverrun.o: test/testbufferoverrun.cpp lib/tokenize.h lib/checkbufferoverrun.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
+test/testbufferoverrun.o: test/testbufferoverrun.cpp lib/tokenize.h lib/checkbufferoverrun.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h lib/mathlib.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testbufferoverrun.o test/testbufferoverrun.cpp
 
 test/testcharvar.o: test/testcharvar.cpp lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
@@ -256,7 +256,7 @@ test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.
 test/testmathlib.o: test/testmathlib.cpp lib/mathlib.h test/testsuite.h lib/errorlogger.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testmathlib.o test/testmathlib.cpp
 
-test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/checkmemoryleak.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
+test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/checkmemoryleak.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testmemleak.o test/testmemleak.cpp
 
 test/testnullpointer.o: test/testnullpointer.cpp lib/tokenize.h lib/checknullpointer.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
