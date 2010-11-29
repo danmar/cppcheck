@@ -1044,7 +1044,7 @@ private:
               "    if (haystack.find(needle) != haystack.end())\n"
               "        haystack.remove(needle);"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. The remove function in the STL will not do anything if element doesn't exist\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant checking of STL container element.\n", errout.str());
     }
 
     void redundantCondition2()
@@ -1056,7 +1056,7 @@ private:
               "        haystack.remove(needle);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. The remove function in the STL will not do anything if element doesn't exist\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant checking of STL container element.\n", errout.str());
     }
 
     void missingInnerComparison1()

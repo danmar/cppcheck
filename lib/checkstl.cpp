@@ -845,10 +845,9 @@ void CheckStl::redundantCondition()
 
 void CheckStl::redundantIfRemoveError(const Token *tok)
 {
-    reportError(tok, Severity::style, "redundantIfRemove", "Redundant condition. The remove function in the STL will not do anything if element doesn't exist");
+    reportError(tok, Severity::style, "redundantIfRemove", "Redundant checking of STL container element.\n"
+                "The remove method in the STL will not do anything if element doesn't exist");
 }
-
-
 
 void CheckStl::missingComparison()
 {
