@@ -914,7 +914,7 @@ void CheckStl::missingComparison()
 void CheckStl::missingComparisonError(const Token *incrementToken1, const Token *incrementToken2)
 {
     std::ostringstream errmsg;
-    errmsg << "Missing bounds check for extra iterator increment in loop.\n "
+    errmsg << "Missing bounds check for extra iterator increment in loop.\n"
            << "The iterator incrementing is suspicious - it is incremented at line "
            << incrementToken1->linenr() << " and then at line " << incrementToken2->linenr()
            << " The loop might unintentionally skip an element in the container. "
