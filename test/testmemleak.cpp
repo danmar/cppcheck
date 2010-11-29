@@ -531,8 +531,9 @@ private:
         ASSERT_EQUALS(";;use;", getcode("char *s; s2 = x + s;", "s"));
         ASSERT_EQUALS(";;use;if{;}", getcode("char *s; if (foo(s)) ;", "s"));
         ASSERT_EQUALS(";;use;", getcode("char *s; map1[s] = 0;", "s"));
-        ASSERT_EQUALS(";;;;", getcode("char *p; const char *q; q = p;", "p"));
+        ASSERT_EQUALS(";;;use;", getcode("char *p; const char *q; q = p;", "p"));
         ASSERT_EQUALS(";;use;;", getcode("char *s; x = {1,s};", "s"));
+        ASSERT_EQUALS(";{};;alloc;;use;", getcode("struct Foo { }; Foo *p; p = malloc(10); const Foo *q; q = p;", "p"));
 
         // non-use..
         ASSERT_EQUALS(";;", getcode("char *s; s = s + 1;", "s"));
