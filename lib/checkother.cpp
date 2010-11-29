@@ -2666,7 +2666,10 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
 void CheckOther::assignmentInAssertError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::warning,
-                "assignmentInAssert", "Assert statement modifies '" + varname + "'. If the modification is needed in release builds there is a bug.");
+                "assignmentInAssert", "Assert statement modifies '" + varname + "'.\n"
+                "Assert statements are removed from release builds so the code inside "
+                "assert statement is not run. If the code is needed also in release "
+                "builds this is a bug.");
 }
 
 void CheckOther::incorrectLogicOperatorError(const Token *tok)

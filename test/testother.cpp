@@ -1336,7 +1336,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -1353,7 +1353,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Assert statement modifies 'b'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Assert statement modifies 'b'.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -1361,7 +1361,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -1369,7 +1369,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -1377,7 +1377,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 0;\n"
@@ -1385,7 +1385,7 @@ private:
               "    return a;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'. If the modification is needed in release builds there is a bug.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
     }
 
     void incorrectLogicOperator()
