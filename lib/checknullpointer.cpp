@@ -490,6 +490,13 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     break;
                 }
 
+                // parameters to sizeof are not dereferenced
+                if (Token::Match(tok2, "decltype|sizeof ("))
+                {
+                    tok2 = tok2->next()->link();
+                    continue;
+                }
+
                 // abort function..
                 if (Token::simpleMatch(tok2, ") ; }") &&
                     Token::Match(tok2->link()->tokAt(-2), "[;{}] %var% ("))
@@ -550,7 +557,7 @@ void CheckNullPointer::nullConstantDereference()
                     --indentlevel;
             }
 
-            if (tok->str() == "(" && Token::simpleMatch(tok->previous(), "sizeof"))
+            if (tok->str() == "(" && Token::Match(tok->previous(), "sizeof|decltype"))
                 tok = tok->link();
 
             else if (Token::simpleMatch(tok, "exit ( )"))

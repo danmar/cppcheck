@@ -154,6 +154,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // ticket #2245 - sizeof doesn't dereference
+        check("void f(Bar *p) {\n"
+              "    if (!p) {\n"
+              "        int sz = sizeof(p->x);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void nullpointer2()
