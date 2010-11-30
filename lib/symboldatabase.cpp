@@ -912,10 +912,22 @@ void SymbolDatabase::SpaceInfo::getVarList()
             vartok = tok->tokAt(3);
             tok = vartok->next();
         }
+        else if (Token::Match(tok, ":: %type% :: %type% %var% ;"))
+        {
+            isClass = true;
+            vartok = tok->tokAt(4);
+            tok = vartok->next();
+        }
         else if (Token::Match(tok, "%type% :: %type% :: %type% %var% ;"))
         {
             isClass = true;
             vartok = tok->tokAt(5);
+            tok = vartok->next();
+        }
+        else if (Token::Match(tok, ":: %type% :: %type% :: %type% %var% ;"))
+        {
+            isClass = true;
+            vartok = tok->tokAt(6);
             tok = vartok->next();
         }
 
@@ -976,8 +988,11 @@ void SymbolDatabase::SpaceInfo::getVarList()
         }
 
         // Container..
-        else if (Token::Match(tok, "%type% :: %type% :: %type% <") ||
+        else if (Token::Match(tok, ":: %type% :: %type% :: %type% <") ||
+                 Token::Match(tok, "%type% :: %type% :: %type% <") ||
+                 Token::Match(tok, ":: %type% :: %type% <") ||
                  Token::Match(tok, "%type% :: %type% <") ||
+                 Token::Match(tok, ":: %type% <") ||
                  Token::Match(tok, "%type% <"))
         {
             // got an unhandled template?
@@ -1013,6 +1028,12 @@ void SymbolDatabase::SpaceInfo::getVarList()
             {
                 isClass = true;
                 vartok = tok->next();
+                tok = vartok->next();
+            }
+            else if (tok && (Token::Match(tok, "> :: %type% %var% ;") || Token::Match(tok, ">> :: %type% %var% ;")))
+            {
+                isClass = true;
+                vartok = tok->tokAt(3);
                 tok = vartok->next();
             }
             else if (tok && (Token::Match(tok, "> * %var% ;") || Token::Match(tok, ">> * %var% ;")))

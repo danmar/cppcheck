@@ -152,6 +152,7 @@ private:
         TEST_CASE(const38); // ticket #2135
         TEST_CASE(const39);
         TEST_CASE(const40); // ticket #2228
+        TEST_CASE(const41); // ticket #2255
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -4430,6 +4431,83 @@ private:
                    "      pView = aView;\n"
                    "   }\n"
                    "}\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const41() // ticket #2255
+    {
+        checkConst("class Fred\n"
+                   "{\n"
+                   "   ::std::string m_name;\n"
+                   "public:\n"
+                   "   void SetName(const ::std::string & name)\n"
+                   "   {\n"
+                   "      m_name = name;\n"
+                   "   }\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class SharedPtrHolder\n"
+                   "{\n"
+                   "   ::std::tr1::shared_ptr<int> pNum;\n"
+                   "  public :\n"
+                   "   void SetNum(const ::std::tr1::shared_ptr<int> & apNum)\n"
+                   "   {\n"
+                   "      pNum = apNum;\n"
+                   "   }\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class SharedPtrHolder2\n"
+                   "{\n"
+                   "  public:\n"
+                   "   typedef ::std::tr1::shared_ptr<int> IntSharedPtr;\n"
+                   "  private:\n"
+                   "   IntSharedPtr pNum;\n"
+                   "  public :\n"
+                   "   void SetNum(const IntSharedPtr & apNum)\n"
+                   "   {\n"
+                   "      pNum = apNum;\n"
+                   "   }\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct IntPtrTypes\n"
+                   "{\n"
+                   "   typedef ::std::tr1::shared_ptr<int> Shared;\n"
+                   "};\n"
+                   "class SharedPtrHolder3\n"
+                   "{\n"
+                   "  private:\n"
+                   "   IntPtrTypes::Shared pNum;\n"
+                   "  public :\n"
+                   "   void SetNum(const IntPtrTypes::Shared & apNum)\n"
+                   "   {\n"
+                   "      pNum = apNum;\n"
+                   "   }\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("template <typename T>\n"
+                   "struct PtrTypes\n"
+                   "{\n"
+                   "   typedef ::std::tr1::shared_ptr<T> Shared;\n"
+                   "};\n"
+                   "class SharedPtrHolder4\n"
+                   "{\n"
+                   "  private:\n"
+                   "   PtrTypes<int>::Shared pNum;\n"
+                   "  public :\n"
+                   "   void SetNum(const PtrTypes<int>::Shared & apNum)\n"
+                   "   {\n"
+                   "      pNum = apNum;\n"
+                   "   }\n"
+                   "};\n");
 
         ASSERT_EQUALS("", errout.str());
     }
