@@ -282,6 +282,10 @@ void ResultsView::UpdateDetails(const QModelIndex &index)
         item = item->parent()->child(item->row(), 0);
 
     QVariantMap data = item->data().toMap();
-    QString message = data["message"].toString();
-    mUI.mDetails->setText(message);
+    const QString summary = data["summary"].toString();
+    const QString message = data["message"].toString();
+    const QString formattedMsg = QString("%1: %2\n%3: %4")
+                                 .arg(tr("Summary")).arg(summary)
+                                 .arg(tr("Message")).arg(message);
+    mUI.mDetails->setText(formattedMsg);
 }
