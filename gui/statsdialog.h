@@ -68,6 +68,7 @@ private slots:
 
 private:
     Ui::StatsDialog mUI;
+    CheckStatistics *mStatistics;
 };
 
 /// @}

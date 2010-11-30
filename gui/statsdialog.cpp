@@ -85,6 +85,11 @@ void StatsDialog::copyToClipboard()
                                   "\tPath selected:\t%5\n"
                                   "\tNumber of files scanned:\t%6\n"
                                   "\tScan duration:\t%7\n"
+                                  "Statistics\n"
+                                  "\tErrors:\t%8\n"
+                                  "\tWarnings:\t%9\n"
+                                  "\tStyle warnings:\t%10\n"
+                                  "\tPerformance warnings:\t%11\n"
                               )
                               .arg(mUI.mProject->text())
                               .arg(mUI.mPaths->text())
@@ -92,7 +97,11 @@ void StatsDialog::copyToClipboard()
                               .arg(mUI.mDefines->text())
                               .arg(mUI.mPath->text())
                               .arg(mUI.mNumberOfFilesScanned->text())
-                              .arg(mUI.mScanDuration->text());
+                              .arg(mUI.mScanDuration->text())
+                              .arg(mStatistics->GetCount(SHOW_ERRORS))
+                              .arg(mStatistics->GetCount(SHOW_WARNINGS))
+                              .arg(mStatistics->GetCount(SHOW_STYLE))
+                              .arg(mStatistics->GetCount(SHOW_PERFORMANCE));
 
         // HTML summary
         QString htmlSummary = tr(
@@ -109,6 +118,12 @@ void StatsDialog::copyToClipboard()
                                   " <tr><th>Number of files scanned:</th><td>%6</td></tr>\n"
                                   " <tr><th>Scan duration:</th><td>%7</td></tr>\n"
                                   "</table>\n"
+                                  "<h3>Statistics</h3>\n"
+                                  " <tr><th>Errors:</th><td>%8</td></tr>\n"
+                                  " <tr><th>Warnings:</th><td>%9</td></tr>\n"
+                                  " <tr><th>Style warnings:</th><td>%10</td></tr>\n"
+                                  " <tr><th>Performance warnings:</th><td>%11</td></tr>\n"
+                                  "</table>\n"
                               )
                               .arg(mUI.mProject->text())
                               .arg(mUI.mPaths->text())
@@ -116,7 +131,11 @@ void StatsDialog::copyToClipboard()
                               .arg(mUI.mDefines->text())
                               .arg(mUI.mPath->text())
                               .arg(mUI.mNumberOfFilesScanned->text())
-                              .arg(mUI.mScanDuration->text());
+                              .arg(mUI.mScanDuration->text())
+                              .arg(mStatistics->GetCount(SHOW_ERRORS))
+                              .arg(mStatistics->GetCount(SHOW_WARNINGS))
+                              .arg(mStatistics->GetCount(SHOW_STYLE))
+                              .arg(mStatistics->GetCount(SHOW_PERFORMANCE));
 
         QMimeData *mimeData = new QMimeData();
         mimeData->setText(textSummary);
@@ -128,6 +147,7 @@ void StatsDialog::copyToClipboard()
 
 void StatsDialog::setStatistics(const CheckStatistics *stats)
 {
+    mStatistics = const_cast<CheckStatistics*>(stats);
     mUI.mLblErrors->setText(QString("%1").arg(stats->GetCount(SHOW_ERRORS)));
     mUI.mLblWarnings->setText(QString("%1").arg(stats->GetCount(SHOW_WARNINGS)));
     mUI.mLblStyle->setText(QString("%1").arg(stats->GetCount(SHOW_STYLE)));
