@@ -1108,6 +1108,12 @@ private:
                        "    return i;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f(int x) {\n"
+                       "    struct AB ab;\n"
+                       "    x = ab.x = 12;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // enum..

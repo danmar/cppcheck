@@ -379,12 +379,19 @@ private:
                 !Token::simpleMatch(tok2->next(), "="))
             {
                 // Multiple assignments..
-                if (Token::simpleMatch(tok2->next(), "["))
+                if (Token::Match(tok2->next(), ".|["))
                 {
                     const Token * tok3 = tok2;
-                    while (Token::simpleMatch(tok3->next(), "["))
-                        tok3 = tok3->next()->link();
-                    if (Token::simpleMatch(tok3, "] ="))
+                    while (tok3)
+                    {
+                        if (Token::Match(tok3->next(), ". %var%"))
+                            tok3 = tok3->tokAt(2);
+                        else if (tok3->strAt(1) == "[")
+                            tok3 = tok3->next()->link();
+                        else
+                            break;
+                    }
+                    if (tok3->strAt(1) == "=")
                         continue;
                 }
                 bool foundError;
