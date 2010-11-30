@@ -1518,6 +1518,16 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         }
     }
 
+    for (Token *tok1 = rethead; tok1; tok1 = tok1->next())
+    {
+        if (Token::simpleMatch(tok1, "callfunc alloc ;"))
+        {
+            tok1->deleteThis();
+            tok1->insertToken("use");
+            tok1->insertToken(";");
+        }
+    }
+
     return rethead;
 }
 
