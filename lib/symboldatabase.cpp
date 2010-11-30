@@ -710,8 +710,20 @@ const Token *SymbolDatabase::initBaseInfo(SpaceInfo *info, const Token *tok)
             // don't add unhandled templates
             if (tok2->next()->str() == "<")
             {
-                while (tok2->str() != ">")
+                int level1 = 1;
+                while (tok2->next())
+                {
+                    if (tok2->next()->str() == ">")
+                    {
+                        level1--;
+                        if (level == 0)
+                            break;
+                    }
+                    else if (tok2->next()->str() == "<")
+                        level1++;
+
                     tok2 = tok2->next();
+                }
             }
 
             // save pattern for base class name

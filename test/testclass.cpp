@@ -173,6 +173,7 @@ private:
         TEST_CASE(symboldatabase5); // ticket #2178
         TEST_CASE(symboldatabase6); // ticket #2221
         TEST_CASE(symboldatabase7); // ticket #2230
+        TEST_CASE(symboldatabase8); // ticket #2252
     }
 
     // Check the operator Equal
@@ -4952,6 +4953,21 @@ private:
                    "{\n"
                    "public:\n"
                    "	int f() { return C< ::D,int>::f(); }\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase8()
+    {
+        // ticket #2252 - segmentation fault
+        checkConst("struct PaletteColorSpaceHolder: public rtl::StaticWithInit<uno::Reference<rendering::XColorSpace>,\n"
+                   "                                                           PaletteColorSpaceHolder>\n"
+                   "{\n"
+                   "    uno::Reference<rendering::XColorSpace> operator()()\n"
+                   "    {\n"
+                   "        return vcl::unotools::createStandardColorSpace();\n"
+                   "    }\n"
                    "};\n");
 
         ASSERT_EQUALS("", errout.str());
