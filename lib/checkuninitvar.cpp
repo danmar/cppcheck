@@ -391,7 +391,7 @@ private:
                         else
                             break;
                     }
-                    if (tok3->strAt(1) == "=")
+                    if (tok3 && tok3->strAt(1) == "=")
                         continue;
                 }
                 bool foundError;
