@@ -277,6 +277,12 @@ void ResultsView::UpdateDetails(const QModelIndex &index)
     QStandardItemModel *model = qobject_cast<QStandardItemModel*>(mUI.mTree->model());
     QStandardItem *item = model->itemFromIndex(index);
 
+    if (!item)
+    {
+        mUI.mDetails->setText("");
+        return;
+    }
+
     // Make sure we are working with the first column
     if (item->parent() && item->column() != 0)
         item = item->parent()->child(item->row(), 0);
