@@ -1115,7 +1115,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
 void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &variables, std::string &condition, bool match)
 {
-    Tokenizer tokenizer;
+    Settings settings;
+    Tokenizer tokenizer(&settings, NULL);
     std::istringstream istr(("(" + condition + ")").c_str());
     tokenizer.tokenize(istr, "", "", true);
 
@@ -1307,7 +1308,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
 
             if (line.find("=") != std::string::npos)
             {
-                Tokenizer tokenizer;
+                Tokenizer tokenizer(settings, NULL);
                 line.erase(0, sizeof("#pragma endasm"));
                 std::istringstream tempIstr(line.c_str());
                 tokenizer.tokenize(tempIstr, "");
@@ -1732,6 +1733,8 @@ static void getparams(const std::string &line,
 class PreprocessorMacro
 {
 private:
+    Settings settings;
+
     /** tokens of this macro */
     Tokenizer tokenizer;
 
@@ -1824,6 +1827,8 @@ public:
     PreprocessorMacro(const std::string &macro)
         : _macro(macro), _prefix("__cppcheck__")
     {
+        tokenizer.setSettings(&settings);
+
         // Tokenize the macro to make it easier to handle
         std::istringstream istr(macro.c_str());
         tokenizer.createTokens(istr);

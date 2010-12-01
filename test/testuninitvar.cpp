@@ -50,17 +50,18 @@ private:
 
     void checkUninitVar(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check for redundant code..
-        Settings settings;
         CheckUninitVar check(&tokenizer, &settings, this);
         check.executionPaths();
     }
@@ -1187,8 +1188,13 @@ private:
 
     std::string analyseFunctions(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 

@@ -51,17 +51,18 @@ private:
 
     void check(const char code[])
     {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
 
-        // Check for unused functions..
         Settings settings;
         settings._checkCodingStyle = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
         checkUnusedFunctions.parseTokens(tokenizer);
         checkUnusedFunctions.check(this);
@@ -198,7 +199,12 @@ private:
             std::ostringstream fname;
             fname << "test" << i << ".cpp";
 
-            Tokenizer tokenizer;
+            // Clear the error buffer..
+            errout.str("");
+
+            Settings settings;
+
+            Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, fname.str().c_str());
 

@@ -179,18 +179,19 @@ private:
     // Check the operator Equal
     void checkOpertorEq(const char code[])
     {
+        // Clear the error log
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error log
-        errout.str("");
-
         // Check..
-        Settings settings;
-        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.operatorEq();
     }
@@ -250,18 +251,19 @@ private:
     // Check that operator Equal returns reference to this
     void checkOpertorEqRetRefThis(const char code[])
     {
+        // Clear the error log
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error log
-        errout.str("");
-
         // Check..
-        Settings settings;
-        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.operatorEqRetRefThis();
     }
@@ -463,18 +465,19 @@ private:
     // Check that operator Equal checks for assignment to self
     void checkOpertorEqToSelf(const char code[])
     {
+        // Clear the error log
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error log
-        errout.str("");
-
         // Check..
-        Settings settings;
-        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.operatorEqToSelf();
     }
@@ -1263,18 +1266,19 @@ private:
     // Check that base classes have virtual destructors
     void checkVirtualDestructor(const char code[])
     {
+        // Clear the error log
+        errout.str("");
+
+        Settings settings;
+        settings.inconclusive = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error log
-        errout.str("");
-
         // Check..
-        Settings settings;
-        settings.inconclusive = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.virtualDestructor();
     }
@@ -1490,18 +1494,19 @@ private:
 
     void checkUninitVar(const char code[])
     {
+        // Clear the error log
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error log
-        errout.str("");
-
         // Check..
-        Settings settings;
-        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
@@ -2490,18 +2495,19 @@ private:
 
     void checkUninitVarJava(const char code[])
     {
+        // Clear the error log
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.java");
         tokenizer.simplifyTokenList();
 
-        // Clear the error log
-        errout.str("");
-
         // Check..
-        Settings settings;
-        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
@@ -2518,18 +2524,19 @@ private:
 
     void checkNoConstructor(const char code[])
     {
+        // Clear the error log
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error log
-        errout.str("");
-
         // Check..
-        Settings settings;
-        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
@@ -2588,17 +2595,17 @@ private:
 
     void checkNoMemset(const char code[])
     {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-
         // Clear the error log
         errout.str("");
 
-        // Check..
         Settings settings;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.noMemset();
     }
@@ -2691,18 +2698,19 @@ private:
 
     void checkThisSubtraction(const char code[])
     {
+        // Clear the error log
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error log
-        errout.str("");
-
         // Check..
-        Settings settings;
-        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.thisSubtraction();
     }
@@ -2728,12 +2736,6 @@ private:
 
     void checkConst(const char code[], const Settings *s = 0)
     {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
-
         // Clear the error log
         errout.str("");
 
@@ -2743,6 +2745,13 @@ private:
             settings = *s;
         else
             settings._checkCodingStyle = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkConst();
     }

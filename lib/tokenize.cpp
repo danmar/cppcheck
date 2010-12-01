@@ -59,6 +59,9 @@ Tokenizer::Tokenizer()
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
     : _settings(settings), _errorLogger(errorLogger)
 {
+    // make sure settings are specified
+    assert(_settings);
+
     _tokens = 0;
     _tokensBack = 0;
     _codeWithTemplates = false;
@@ -1812,6 +1815,9 @@ bool Tokenizer::tokenize(std::istream &code,
                          const std::string &configuration,
                          const bool preprocessorCondition)
 {
+    // make sure settings specified
+    assert(_settings);
+
     _configuration = configuration;
 
     // The "_files" vector remembers what files have been tokenized..

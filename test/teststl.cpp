@@ -107,19 +107,20 @@ private:
 
     void check(const std::string &code)
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.inconclusive = true;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code.c_str());
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check..
-        Settings settings;
-        settings.inconclusive = true;
-        settings._checkCodingStyle = true;
         CheckStl checkStl;
         checkStl.runSimplifiedChecks(&tokenizer, &settings, this);
     }
@@ -888,7 +889,8 @@ private:
                                 "    for ( \n"
                                 "}\n";
 
-        Tokenizer tokenizer(0, this);
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(src);
         ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
         ASSERT_EQUALS("[test.cpp:3]: (error) Invalid number of character (() when these macros are defined: ''.\n", errout.str());

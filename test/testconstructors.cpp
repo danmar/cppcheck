@@ -36,19 +36,20 @@ private:
 
     void check(const char code[], bool showAll = false)
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.inconclusive = showAll;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check class constructors..
-        Settings settings;
-        settings.inconclusive = showAll;
-        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }

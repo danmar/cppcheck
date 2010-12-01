@@ -40,18 +40,19 @@ private:
 
     void check(const std::string &code)
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.addEnabled("all");
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code.c_str());
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check char variable usage..
-        Settings settings;
-        settings.addEnabled("all");
         CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
         checkExceptionSafety.runSimplifiedChecks(&tokenizer, &settings, this);
     }

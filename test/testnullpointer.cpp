@@ -48,17 +48,18 @@ private:
 
     void check(const char code[])
     {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
 
-        // Check for redundant code..
         Settings settings;
         settings._checkCodingStyle = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check for redundant code..
         CheckNullPointer checkNullPointer(&tokenizer, &settings, this);
         checkNullPointer.nullPointer();
         tokenizer.simplifyTokenList();

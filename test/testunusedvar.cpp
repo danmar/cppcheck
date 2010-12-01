@@ -111,18 +111,18 @@ private:
 
     void checkStructMemberUsage(const char code[])
     {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-
         // Clear the error buffer..
         errout.str("");
 
+        Settings settings;
+        settings._checkCodingStyle = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check for unused variables..
-        Settings settings;
-        settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkStructMemberUsage();
     }
@@ -339,18 +339,18 @@ private:
 
     void functionVariableUsage(const char code[])
     {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-
         // Clear the error buffer..
         errout.str("");
 
+        Settings settings;
+        settings._checkCodingStyle = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check for unused variables..
-        Settings settings;
-        settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.functionVariableUsage();
     }

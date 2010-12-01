@@ -38,16 +38,16 @@ public:
 private:
     void check(const char code[], bool style = true)
     {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings._checkCodingStyle = style;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
 
         // Check for unsigned divisions..
         CheckOther checkOther(&tokenizer, &settings, this);

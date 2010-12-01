@@ -19,6 +19,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 #include "token.h"
+#include "settings.h"
 
 #include <cstring>
 
@@ -227,6 +228,7 @@ private:
     private:
         std::istringstream _sample;
         const Token* _tokens;
+        Settings _settings;
         Tokenizer _tokenizer;
 
     public:
@@ -234,6 +236,7 @@ private:
             :_sample(sample)
             ,_tokens(NULL)
         {
+            _tokenizer.setSettings(&_settings);
             _tokenizer.tokenize(_sample, "test.cpp");
             _tokens = _tokenizer.tokens();
         }

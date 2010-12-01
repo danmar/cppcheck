@@ -38,8 +38,15 @@ private:
 
     void check(const char code[], bool inconclusive = true)
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.inconclusive = inconclusive;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -49,13 +56,7 @@ private:
         // Fill function list
         tokenizer.fillFunctionList();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check for buffer overruns..
-        Settings settings;
-        settings.inconclusive = inconclusive;
-        settings._checkCodingStyle = true;
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.negativeIndex();
@@ -302,13 +303,15 @@ private:
 
     void arrayInfo()
     {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr("XY(1) const int a[2] = { 1, 2 };");
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
+
+        Settings settings;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr("XY(1) const int a[2] = { 1, 2 };");
+        tokenizer.tokenize(istr, "test.cpp");
 
         tokenizer.simplifySizeof();
 
@@ -2506,17 +2509,18 @@ private:
 
     void epcheck(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check for buffer overruns..
-        Settings settings;
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.executionPaths();
     }

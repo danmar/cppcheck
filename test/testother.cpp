@@ -96,19 +96,19 @@ private:
 
     void check(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check..
-        Settings settings;
-        settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
-
-        // Clear the error buffer..
-        errout.str("");
-
         checkOther.sizeofsizeof();
         checkOther.sizeofCalculation();
         checkOther.checkRedundantAssignmentInSwitch();
@@ -239,19 +239,20 @@ private:
 
     void sprintfUsage(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
         //tokenizer.tokens()->printOut( "tokens" );
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check for redundant code..
-        Settings settings;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.invalidFunctionUsage();
     }
@@ -309,17 +310,18 @@ private:
 
     void strPlusChar(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check for redundant code..
-        Settings settings;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.strPlusChar();
     }
@@ -369,17 +371,18 @@ private:
 
     void varScope(const char code[])
     {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
 
-        // Check for redundant code..
         Settings settings;
         settings._checkCodingStyle = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check for redundant code..
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkVariableScope();
     }
@@ -570,23 +573,22 @@ private:
 
     void checkOldStylePointerCast(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizerCpp;
+        Tokenizer tokenizerCpp(&settings, this);
         std::istringstream istr(code);
         tokenizerCpp.tokenize(istr, "test.cpp");
         tokenizerCpp.setVarId();
 
-        Tokenizer tokenizerC;
+        Tokenizer tokenizerC(&settings, this);
         std::istringstream istr2(code);
         tokenizerC.tokenize(istr2, "test.c");
         tokenizerC.setVarId();
-
-        // Clear the error buffer..
-        errout.str("");
-
-        // Check for redundant code..
-        Settings settings;
-        settings._checkCodingStyle = true;
 
         CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
         checkOtherCpp.warningOldStylePointerCast();
@@ -670,15 +672,16 @@ private:
 
     void testPassedByValue(const char code[])
     {
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings._checkCodingStyle = true;
+
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkConstantFunctionParameter();
     }
@@ -1155,8 +1158,6 @@ private:
 
     void trac1132()
     {
-        errout.str("");
-
         std::istringstream code("#include <iostream>\n"
                                 "class Lock\n"
                                 "{\n"
@@ -1178,11 +1179,13 @@ private:
                                 "}\n"
                                );
 
-        Tokenizer tokenizer;
-        tokenizer.tokenize(code, "trac1132.cpp");
-        tokenizer.simplifyTokenList();
+        errout.str("");
 
         Settings settings;
+
+        Tokenizer tokenizer(&settings, this);
+        tokenizer.tokenize(code, "trac1132.cpp");
+        tokenizer.simplifyTokenList();
 
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkMisusedScopedObject();

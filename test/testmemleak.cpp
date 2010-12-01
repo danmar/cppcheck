@@ -45,18 +45,19 @@ private:
 
     void check(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check for memory leaks..
-        Settings settings;
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.localleaks();
     }
@@ -142,8 +143,13 @@ private:
 
     CheckMemoryLeak::AllocType functionReturnType(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
@@ -192,7 +198,13 @@ private:
                             "    int ret = open();\n"
                             "  }\n"
                             "};\n";
-        Tokenizer tokenizer;
+
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -218,20 +230,22 @@ public:
 private:
     void check(const char code[], bool showAll = false)
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.inconclusive = showAll;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
-        // Clear the error buffer..
-        errout.str("");
+        tokenizer.fillFunctionList();
 
         // Check for memory leaks..
-        Settings settings;
-        settings.inconclusive = showAll;
-        tokenizer.fillFunctionList();
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.checkReallocUsage();
         checkMemoryLeak.check();
@@ -417,8 +431,13 @@ private:
 
     std::string getcode(const char code[], const char varname[], bool classfunc=false) const
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, NULL);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
@@ -426,7 +445,7 @@ private:
         const unsigned int varId(Token::findmatch(tokenizer.tokens(), varname)->varId());
 
         // getcode..
-        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, 0, 0);
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, NULL);
         checkMemoryLeak.parse_noreturn();
         std::list<const Token *> callstack;
         callstack.push_back(0);
@@ -635,8 +654,13 @@ private:
 
     std::string simplifycode(const char code[]) const
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, NULL);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         Token *tokens = const_cast<Token *>(tokenizer.tokens());
@@ -657,7 +681,6 @@ private:
             }
         }
 
-        Settings settings;
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, NULL);
         checkMemoryLeak.simplifycode(tokens);
 
@@ -783,9 +806,13 @@ private:
     // is there a leak in given code? if so, return the linenr
     unsigned int dofindleak(const char code[]) const
     {
-        // Tokenize..
+        // Clear the error buffer..
+        errout.str("");
+
         Settings settings;
         settings.debug = settings.debugwarnings = true;
+
+        // Tokenize..
         Tokenizer tokenizer(&settings, NULL);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -2479,22 +2506,20 @@ private:
 
     void checkvcl(const char code[])
     {
-        // Tokenize..
-        Tokenizer tokenizer;
-        {
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-        }
-        tokenizer.setVarId();
-        tokenizer.simplifyTokenList();
-
         // Clear the error buffer..
         errout.str("");
 
-        // Check for memory leaks..
         Settings settings;
         settings.inconclusive = true;
 
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        // Check for memory leaks..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.check();
     }
@@ -3108,20 +3133,22 @@ private:
      */
     void check(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
-        // Clear the error buffer..
-        errout.str("");
+        tokenizer.fillFunctionList();
 
         // Check for memory leaks..
-        Settings settings;
-        settings._checkCodingStyle = true;
-        tokenizer.fillFunctionList();
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.check();
     }
@@ -3717,17 +3744,18 @@ public:
 private:
     void check(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check for memory leaks..
-        Settings settings;
         CheckMemoryLeakStructMember checkMemoryLeakStructMember(&tokenizer, &settings, this);
         checkMemoryLeakStructMember.check();
     }
@@ -3951,17 +3979,18 @@ public:
 private:
     void check(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check for memory leaks..
-        Settings settings;
         CheckMemoryLeakNoVar checkMemoryLeakNoVar(&tokenizer, &settings, this);
         checkMemoryLeakNoVar.check();
     }

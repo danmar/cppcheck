@@ -37,8 +37,15 @@ private:
 
     void check(const char code[])
     {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+        settings.inconclusive = true;
+
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
@@ -49,13 +56,7 @@ private:
         // Fill function list
         tokenizer.fillFunctionList();
 
-        // Clear the error buffer..
-        errout.str("");
-
         // Check for postfix operators..
-        Settings settings;
-        settings._checkCodingStyle = true;
-        settings.inconclusive = true;
         CheckPostfixOperator checkPostfixOperator(&tokenizer, &settings, this);
         checkPostfixOperator.postfixOperator();
     }

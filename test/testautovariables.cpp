@@ -37,10 +37,14 @@ private:
 
     void check(const char code[])
     {
-        // Tokenize..
+        // Clear the error buffer..
+        errout.str("");
+
         Settings settings;
         settings.debugwarnings = true;
-        Tokenizer tokenizer(&settings, 0);
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
@@ -50,9 +54,6 @@ private:
 
         // Fill function list
         tokenizer.fillFunctionList();
-
-        // Clear the error buffer..
-        errout.str("");
 
         // Check auto variables
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);

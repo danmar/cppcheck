@@ -712,9 +712,12 @@ private:
 
     std::string elseif(const char code[])
     {
-        std::istringstream istr(code);
+        errout.str("");
 
-        Tokenizer tokenizer;
+        Settings settings;
+
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
         tokenizer.createTokens(istr);
         tokenizer.elseif();
         return tokenizer.tokens()->stringifyList(false);
@@ -773,8 +776,11 @@ private:
     // Simplify 'sizeof'..
     std::string sizeof_(const char code[], bool simplify = true)
     {
-        // tokenize..
+        errout.str("");
+
         Settings settings;
+
+        // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -798,7 +804,11 @@ private:
 
     unsigned int sizeofFromTokenizer(const char type[])
     {
-        Tokenizer tokenizer;
+        errout.str("");
+
+        Settings settings;
+
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr("");
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
@@ -2072,8 +2082,10 @@ private:
                                 "    x(sizeof typename);\n"
                                 "    type = 0;\n"
                                 "}";
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            Tokenizer tokenizer;
             tokenizer.tokenize(istr, "test.c", "", false);
             std::ostringstream ostr;
             for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
@@ -2124,8 +2136,10 @@ private:
 
     std::string simplifyIfAssign(const char code[])
     {
+        errout.str("");
+        Settings settings;
         // tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -2203,8 +2217,10 @@ private:
 
     std::string simplifyIfNot(const char code[])
     {
+        errout.str("");
+        Settings settings;
         // tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -2236,8 +2252,10 @@ private:
 
     std::string simplifyLogicalOperators(const char code[])
     {
+        errout.str("");
+        Settings settings;
         // tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -2562,8 +2580,10 @@ private:
                                 "    c();\n"
                                 "}";
 
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            Tokenizer tokenizer;
             tokenizer.tokenize(istr, "test.cpp");
             tokenizer.simplifyTokenList();
             tokenizer.validate();
@@ -2595,8 +2615,10 @@ private:
                                 "}";
 
 
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            Tokenizer tokenizer;
             tokenizer.tokenize(istr, "test.cpp");
             tokenizer.simplifyTokenList();
             tokenizer.validate();
@@ -3136,12 +3158,13 @@ private:
                             "typedef std::vector<Func> CallQueue;"
                             "int main() {}";
 
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
 
         tokenizer.simplifyTokenList();
 
@@ -3163,12 +3186,13 @@ private:
                             "    FP_M(val);"
                             "};";
 
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
 
         tokenizer.simplifyTokenList();
 
@@ -3209,12 +3233,13 @@ private:
                             "   CHFOO freem;\n"
                             "} STRFOO;";
 
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
 
         tokenizer.simplifyTokenList();
 
@@ -3240,12 +3265,13 @@ private:
         const char code[] = "typedef vector<int[4]> a;\n"
                             "a b;\n";
 
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
 
         tokenizer.simplifyTokenList();
 
@@ -3304,12 +3330,13 @@ private:
         // ticket #1284
         const char code[] = "typedef jobject invoke_t (jobject, Proxy *, Method *, JArray< jobject > *);";
 
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
         // Clear the error buffer..
         errout.str("");
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
 
         tokenizer.simplifyTokenList();
 
@@ -3767,6 +3794,7 @@ private:
     // Check simplifyTypedef
     void checkSimplifyTypedef(const char code[])
     {
+        errout.str("");
         // Tokenize..
         Settings settings;
         settings.inconclusive = true;
@@ -3774,7 +3802,6 @@ private:
         settings.debugwarnings = true;   // show warnings about unhandled typedef
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
     }
 
@@ -5576,13 +5603,13 @@ private:
     // Check simplifyEnum
     void checkSimplifyEnum(const char code[])
     {
+        errout.str("");
         // Tokenize..
         Settings settings;
         settings.inconclusive = true;
         settings._checkCodingStyle = true;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
     }

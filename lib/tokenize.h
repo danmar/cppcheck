@@ -521,6 +521,11 @@ public:
         return _codeWithTemplates;
     }
 
+    void setSettings(const Settings *settings)
+    {
+        _settings = settings;
+    }
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);
@@ -531,7 +536,7 @@ private:
     Token *_tokens, *_tokensBack;
     std::map<std::string, unsigned int> _typeSize;
     std::vector<std::string> _files;
-    const Settings * const _settings;
+    const Settings * _settings;
     ErrorLogger * const _errorLogger;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
