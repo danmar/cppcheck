@@ -95,7 +95,11 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     _settings = cppCheck.settings();
     if (_settings._xml)
     {
-        reportErr(ErrorLogger::ErrorMessage::getXMLHeader());
+        reportErr(ErrorLogger::ErrorMessage::getXMLHeader(""));
+    }
+    else if (_settings._xml2)
+    {
+        reportErr(ErrorLogger::ErrorMessage::getXMLHeader(" version=\"2\""));
     }
 
     unsigned int returnValue = 0;
@@ -117,7 +121,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         returnValue = executor.check();
     }
 
-    if (_settings._xml)
+    if (_settings._xml || _settings._xml2)
     {
         reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
     }
@@ -182,9 +186,9 @@ void CppCheckExecutor::reportStatus(unsigned int index, unsigned int max)
 
 void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    if (_settings._xml)
+    if (_settings._xml || _settings._xml2)
     {
-        reportErr(msg.toXML(_settings._verbose));
+        reportErr(msg.toXML(_settings._verbose, _settings._xml2));
     }
     else
     {

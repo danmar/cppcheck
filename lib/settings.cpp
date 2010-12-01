@@ -35,6 +35,7 @@ Settings::Settings()
     _verbose = false;
     _force = false;
     _xml = false;
+    _xml2 = false;
     _jobs = 1;
     _exitCode = 0;
     _showtime = 0; // TODO: use enum
