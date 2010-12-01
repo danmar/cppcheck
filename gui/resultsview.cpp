@@ -288,6 +288,14 @@ void ResultsView::UpdateDetails(const QModelIndex &index)
         item = item->parent()->child(item->row(), 0);
 
     QVariantMap data = item->data().toMap();
+
+    // If there is no severity data then it is a parent item without summary and message
+    if (!data.contains("severity"))
+    {
+        mUI.mDetails->setText("");
+        return;
+    }
+
     const QString summary = data["summary"].toString();
     const QString message = data["message"].toString();
     const QString formattedMsg = QString("%1: %2\n%3: %4")
