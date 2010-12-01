@@ -167,7 +167,8 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
     reportError(tok, Severity::style, "noConstructor",
                 "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
                 "' does not have a constructor.\n"
-                "The class 'classname' does not have a constructor but it has attributes. "
+                "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
+                " 'does not have a constructor but it has attributes. "
                 "The attributes are not initialized which may cause bugs or undefined behavior.");
 }
 
