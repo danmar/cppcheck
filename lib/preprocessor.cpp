@@ -699,7 +699,8 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    handleIncludes(processedFile, filename, includePaths);
+    std::set<std::string> systemIncludes;
+    handleIncludes(processedFile, filename, includePaths, systemIncludes);
 
     processedFile = replaceIfDefined(processedFile);
 
@@ -1476,6 +1477,7 @@ static int tolowerWrapper(int c)
 void Preprocessor::handleIncludes(std::string &code,
                                   const std::string &filePath,
                                   const std::list<std::string> &includePaths,
+                                  std::set<std::string> &systemIncludes,
                                   std::set<std::string> handledFiles)
 {
     std::string::size_type pos = 0;
@@ -1540,7 +1542,8 @@ void Preprocessor::handleIncludes(std::string &code,
             filename = Path::simplifyPath(filename.c_str());
             std::string tempFile = filename;
             std::transform(tempFile.begin(), tempFile.end(), tempFile.begin(), tolowerWrapper);
-            if (handledFiles.find(tempFile) != handledFiles.end())
+            if (handledFiles.find(tempFile) != handledFiles.end() ||
+                (headerType == SystemHeader && systemIncludes.find(tempFile) != systemIncludes.end()))
             {
                 // We have processed this file already once, skip
                 // it this time to avoid ethernal loop.
@@ -1548,7 +1551,10 @@ void Preprocessor::handleIncludes(std::string &code,
                 continue;
             }
 
-            handledFiles.insert(tempFile);
+            if (headerType == SystemHeader)
+                systemIncludes.insert(tempFile);
+            else
+                handledFiles.insert(tempFile);
             processedFile = Preprocessor::read(fin, filename, _settings);
             fin.close();
         }
@@ -1564,7 +1570,7 @@ void Preprocessor::handleIncludes(std::string &code,
 
             // Remove space characters that are after or before new line character
             processedFile = removeSpaceNearNL(processedFile);
-            handleIncludes(processedFile, filename, includePaths, handledFiles);
+            handleIncludes(processedFile, filename, includePaths, systemIncludes, handledFiles);
             processedFile = "#file \"" + filename + "\"\n" + processedFile + "\n#endfile";
             code.insert(pos, processedFile);
             pos += processedFile.size();
