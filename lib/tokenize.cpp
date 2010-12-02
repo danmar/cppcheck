@@ -2154,6 +2154,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // remove Microsoft MFC..
     simplifyMicrosoftMFC();
 
+    // Remove Qt signals and slots
+    simplifyQtSignalsSlots();
+
     // remove Borland stuff..
     simplifyBorland();
 
@@ -8714,4 +8717,46 @@ void Tokenizer::simplifyBorland()
     }
 }
 
+// Remove Qt signals and slots
+void Tokenizer::simplifyQtSignalsSlots()
+{
+    Token *tok = _tokens;
+    while ((tok = const_cast<Token *>(Token::findmatch(tok, "class %var% :"))))
+    {
+        unsigned int indentlevel = 0;
+        for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "{")
+            {
+                indentlevel++;
+                if (indentlevel == 1)
+                    tok = tok2;
+                else
+                    tok2 = tok2->link();
+            }
+            else if (tok2->str() == "}")
+            {
+                indentlevel--;
+                if (indentlevel == 0)
+                    break;
+            }
 
+            if (Token::simpleMatch(tok2->next(), "Q_OBJECT"))
+            {
+                tok2->deleteNext();
+            }
+            else if (Token::Match(tok2->next(), "public|protected|private slots :"))
+            {
+                tok2 = tok2->next();
+                tok2->str(tok2->str() + ":");
+                tok2->deleteNext();
+                tok2->deleteNext();
+            }
+            else if (Token::simpleMatch(tok2->next(), "signals :"))
+            {
+                tok2->deleteNext();
+                tok2->deleteNext();
+            }
+        }
+    }
+}

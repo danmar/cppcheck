@@ -265,6 +265,8 @@ private:
 
         TEST_CASE(borland);
 
+        TEST_CASE(Qt);
+
         TEST_CASE(sql);
 
         TEST_CASE(simplifyLogicalOperators);
@@ -4768,6 +4770,37 @@ private:
         // __property
         ASSERT_EQUALS("class Fred { ; __property ; } ;",
                       tokenizeAndStringify("class Fred { __property int x = { } };", false));
+    }
+
+    void Qt()
+    {
+        const char code[] = "class Counter : public QObject "
+                            "{ "
+                            "    Q_OBJECT "
+                            "public: "
+                            "    Counter() { m_value = 0; } "
+                            "    int value() const { return m_value; } "
+                            "public slots: "
+                            "    void setValue(int value); "
+                            "signals: "
+                            "    void valueChanged(int newValue); "
+                            "private: "
+                            "    int m_value; "
+                            "};";
+
+        const char result [] = "class Counter : public QObject "
+                               "{ "
+                               "public: "
+                               "Counter ( ) { m_value = 0 ; } "
+                               "int value ( ) const { return m_value ; } "
+                               "public: "
+                               "void setValue ( int value ) ; "
+                               "void valueChanged ( int newValue ) ; "
+                               "private: "
+                               "int m_value ; "
+                               "} ;";
+
+        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
     }
 
     void sql()

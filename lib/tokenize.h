@@ -490,6 +490,11 @@ public:
     void simplifyBorland();
 
     /**
+     * Remove Qt signals and slots
+     */
+    void simplifyQtSignalsSlots();
+
+    /**
      * This will return a short name describing function parameters
      * e.g. parameters: (int a, char b) should get name "int,char,".
      * This should help to identify functions with the same name,
