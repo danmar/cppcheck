@@ -122,15 +122,24 @@ void CheckClass::constructors()
             std::list<SymbolDatabase::Var>::const_iterator var;
             for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
             {
-                // skip classes for regular constructor
-                if (var->isClass && func->type == SymbolDatabase::Func::Constructor)
-                    continue;
-
                 if (var->assign || var->init || var->isStatic)
                     continue;
 
                 if (var->isConst && var->token->previous()->str() != "*")
                     continue;
+
+                // Check if this is a class constructor
+                if (var->isClass && func->type == SymbolDatabase::Func::Constructor)
+                {
+                    // Unknown type so assume it is initialized
+                    if (!var->type)
+                        continue;
+
+                    // Known type that doesn't need initialization or
+                    // known type that has member variables of an unknown type
+                    else if (var->type->needInitialization != SymbolDatabase::SpaceInfo::True)
+                        continue;
+                }
 
                 // It's non-static and it's not initialized => error
                 if (func->type == SymbolDatabase::Func::OperatorEqual)

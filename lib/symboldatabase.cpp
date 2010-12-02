@@ -310,12 +310,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
     std::list<SpaceInfo *>::iterator it;
 
+    // fill in base class info
     for (it = spaceInfoList.begin(); it != spaceInfoList.end(); ++it)
     {
         info = *it;
 
         // skip namespaces and functions
-        if (info->type == SpaceInfo::Namespace || info->type == SpaceInfo::Function)
+        if (!info->isClassOrStruct())
             continue;
 
         // finish filling in base class info
@@ -346,9 +347,127 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 }
             }
         }
+    }
 
-        // find variables
-        info->getVarList();
+    // fill in variable info
+    for (it = spaceInfoList.begin(); it != spaceInfoList.end(); ++it)
+    {
+        info = *it;
+
+        // skip functions
+        if (info->type != SpaceInfo::Function)
+        {
+            // find variables
+            info->getVarList();
+        }
+    }
+
+    // determine if user defined type needs initialization
+    unsigned int unknowns = 0; // stop checking when there are no unknowns
+    unsigned int retry = 0;    // bail if we don't resolve all the variable types for some reason
+
+    do
+    {
+        unknowns = 0;
+
+        for (it = spaceInfoList.begin(); it != spaceInfoList.end(); ++it)
+        {
+            info = *it;
+
+            if (info->isClassOrStruct() && info->needInitialization == SpaceInfo::Unknown)
+            {
+                // check for default constructor
+                bool hasDefaultConstructor = false;
+
+                std::list<SymbolDatabase::Func>::const_iterator func;
+
+                for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
+                {
+                    if (func->type == SymbolDatabase::Func::Constructor)
+                    {
+                        // check for no arguments: func ( )
+                        /** @todo check for arguents with default values someday */
+                        if (func->argDef->next() == func->argDef->link())
+                        {
+                            hasDefaultConstructor = true;
+                            break;
+                        }
+                    }
+                }
+
+                // User defined types with user defined defaut constructor doesn't need initialization.
+                // We assume the default constructor initializes everything.
+                // Another check will figure out if the constructor actually initializes everything.
+                if (hasDefaultConstructor)
+                    info->needInitialization = SpaceInfo::False;
+
+                // check each member variable to see if it needs initialization
+                else
+                {
+                    bool needInitialization = false;
+                    bool unknown = false;
+
+                    std::list<Var>::const_iterator var;
+                    for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
+                    {
+                        if (var->isClass)
+                        {
+                            if (var->type)
+                            {
+                                // does this type need initialization?
+                                if (var->type->needInitialization == SpaceInfo::True)
+                                    needInitialization = true;
+                                else if (var->type->needInitialization == SpaceInfo::Unknown)
+                                    unknown = true;
+                            }
+                        }
+                        else
+                            needInitialization = true;
+                    }
+
+                    if (!unknown)
+                    {
+                        if (needInitialization)
+                            info->needInitialization = SpaceInfo::True;
+                        else
+                            info->needInitialization = SpaceInfo::False;
+                    }
+
+                    if (info->needInitialization == SpaceInfo::Unknown)
+                        unknowns++;
+                }
+            }
+        }
+
+        retry++;
+    }
+    while (unknowns && retry < 100);
+
+    // this shouldn't happen so output a debug warning
+    if (retry == 100 && _settings->debugwarnings)
+    {
+        for (it = spaceInfoList.begin(); it != spaceInfoList.end(); ++it)
+        {
+            info = *it;
+
+            if (info->isClassOrStruct() && info->needInitialization == SpaceInfo::Unknown)
+            {
+                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                ErrorLogger::ErrorMessage::FileLocation loc;
+                loc.line = info->classDef->linenr();
+                loc.setfile(_tokenizer->file(info->classDef));
+                locationList.push_back(loc);
+
+                const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                       Severity::debug,
+                                                       "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.",
+                                                       "debug");
+                if (_errorLogger)
+                    _errorLogger->reportErr(errmsg);
+                else
+                    Check::reportError(errmsg);
+            }
+        }
     }
 }
 
@@ -745,7 +864,8 @@ SymbolDatabase::SpaceInfo::SpaceInfo(SymbolDatabase *check_, const Token *classD
     classStart(NULL),
     classEnd(NULL),
     nestedIn(nestedIn_),
-    numConstructors(0)
+    numConstructors(0),
+    needInitialization(SpaceInfo::Unknown)
 {
     if (!classDef)
     {
@@ -874,9 +994,12 @@ void SymbolDatabase::SpaceInfo::getVarList()
         // Search for start of statement..
         else if (!tok->previous() || !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
             continue;
+        else if (Token::Match(tok, ";|{|}"))
+            continue;
 
         // This is the start of a statement
-        const Token *vartok = 0;
+        const Token *vartok = NULL;
+        const Token *typetok = NULL;
 
         // Is it const..?
         bool isConst = false;
@@ -913,7 +1036,10 @@ void SymbolDatabase::SpaceInfo::getVarList()
         if (Token::Match(tok, "%type% %var% ;|:"))
         {
             if (!tok->isStandardType())
+            {
                 isClass = true;
+                typetok = tok;
+            }
 
             vartok = tok->next();
             tok = vartok->next();
@@ -922,31 +1048,37 @@ void SymbolDatabase::SpaceInfo::getVarList()
         {
             isClass = true;
             vartok = tok->tokAt(3);
+            typetok = vartok->previous();
             tok = vartok->next();
         }
         else if (Token::Match(tok, ":: %type% :: %type% %var% ;"))
         {
             isClass = true;
             vartok = tok->tokAt(4);
+            typetok = vartok->previous();
             tok = vartok->next();
         }
         else if (Token::Match(tok, "%type% :: %type% :: %type% %var% ;"))
         {
             isClass = true;
             vartok = tok->tokAt(5);
+            typetok = vartok->previous();
             tok = vartok->next();
         }
         else if (Token::Match(tok, ":: %type% :: %type% :: %type% %var% ;"))
         {
             isClass = true;
             vartok = tok->tokAt(6);
+            typetok = vartok->previous();
             tok = vartok->next();
         }
 
         // Structure?
         else if (Token::Match(tok, "struct|union %type% %var% ;"))
         {
+            isClass = true;
             vartok = tok->tokAt(2);
+            typetok = vartok->previous();
             tok = vartok->next();
         }
 
@@ -976,7 +1108,10 @@ void SymbolDatabase::SpaceInfo::getVarList()
         else if (Token::Match(tok, "%type% %var% [") && tok->next()->str() != "operator")
         {
             if (!tok->isStandardType())
+            {
                 isClass = true;
+                typetok = tok;
+            }
 
             vartok = tok->next();
             tok = vartok->next()->link()->next();
@@ -1013,10 +1148,15 @@ void SymbolDatabase::SpaceInfo::getVarList()
 
             // find matching ">"
             int level = 0;
+            const Token *tok1 = NULL;
             for (; tok; tok = tok->next())
             {
                 if (tok->str() == "<")
+                {
+                    if (level == 0)
+                        tok1 = tok->previous();
                     level++;
+                }
                 else if (tok->str() == ">")
                 {
                     level--;
@@ -1040,12 +1180,14 @@ void SymbolDatabase::SpaceInfo::getVarList()
             {
                 isClass = true;
                 vartok = tok->next();
+                typetok = tok1;
                 tok = vartok->next();
             }
             else if (tok && (Token::Match(tok, "> :: %type% %var% ;") || Token::Match(tok, ">> :: %type% %var% ;")))
             {
                 isClass = true;
                 vartok = tok->tokAt(3);
+                typetok = vartok->previous();
                 tok = vartok->next();
             }
             else if (tok && (Token::Match(tok, "> * %var% ;") || Token::Match(tok, ">> * %var% ;")))
@@ -1076,9 +1218,56 @@ void SymbolDatabase::SpaceInfo::getVarList()
                     Check::reportError(errmsg);
             }
 
-            addVar(vartok, varaccess, isMutable, isStatic, isConst, isClass);
+            const SpaceInfo *spaceInfo = NULL;
+
+            if (isClass)
+                spaceInfo = check->findVarType(this, typetok);
+
+            addVar(vartok, varaccess, isMutable, isStatic, isConst, isClass, spaceInfo);
         }
     }
+}
+
+//---------------------------------------------------------------------------
+
+const SymbolDatabase::SpaceInfo *SymbolDatabase::findVarType(const SpaceInfo *start, const Token *type) const
+{
+    std::list<SpaceInfo *>::const_iterator it;
+
+    for (it = spaceInfoList.begin(); it != spaceInfoList.end(); ++it)
+    {
+        const SpaceInfo *info = *it;
+
+        // skip namespaces and functions
+        if (info->type == SpaceInfo::Namespace || info->type == SpaceInfo::Function || info->type == SpaceInfo::Global)
+            continue;
+
+        // do the names match?
+        if (info->className == type->str())
+        {
+            // check if type does not have a namespace
+            if (type->previous()->str() != "::")
+            {
+                const SpaceInfo *parent = start;
+
+                // check if in same namespace
+                while (parent && parent != info->nestedIn)
+                    parent = parent->nestedIn;
+
+                if (info->nestedIn == parent)
+                    return info;
+            }
+
+            // type has a namespace
+            else
+            {
+                // FIXME check if namespace path matches supplied path
+                return info;
+            }
+        }
+    }
+
+    return NULL;
 }
 
 //---------------------------------------------------------------------------

@@ -41,11 +41,13 @@ public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
     ~SymbolDatabase();
 
+    class SpaceInfo;
+
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     class Var
     {
     public:
-        Var(const Token *token_, unsigned int index_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_)
+        Var(const Token *token_, unsigned int index_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const SpaceInfo *type_)
             : token(token_),
               index(index_),
               assign(false),
@@ -54,7 +56,8 @@ public:
               isMutable(mutable_),
               isStatic(static_),
               isConst(const_),
-              isClass(class_)
+              isClass(class_),
+              type(type_)
         {
         }
 
@@ -84,6 +87,9 @@ public:
 
         /** @brief is this variable a class (or unknown type)? */
         bool        isClass;
+
+        /** @brief pointer to user defined type info (for known types) */
+        const SpaceInfo   *type;
     };
 
     class Func
@@ -129,8 +135,6 @@ public:
         Type type;             // constructor, destructor, ...
     };
 
-    class SpaceInfo;
-
     struct BaseInfo
     {
         AccessControl access;  // public/protected/private
@@ -148,6 +152,7 @@ public:
     {
     public:
         enum SpaceType { Global, Class, Struct, Union, Namespace, Function };
+        enum NeedInitialization { Unknown, True, False };
 
         SpaceInfo(SymbolDatabase *check_, const Token *classDef_, SpaceInfo *nestedIn_);
 
@@ -165,6 +170,7 @@ public:
         std::list<SpaceInfo *> nestedList;
         AccessControl access;
         unsigned int numConstructors;
+        NeedInitialization needInitialization;
 
         bool isClassOrStruct() const
         {
@@ -189,9 +195,9 @@ public:
          */
         void initVar(const std::string &varname);
 
-        void addVar(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_)
+        void addVar(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const SpaceInfo *type_)
         {
-            varlist.push_back(Var(token_, varlist.size(), access_, mutable_, static_, const_, class_));
+            varlist.push_back(Var(token_, varlist.size(), access_, mutable_, static_, const_, class_, type_));
         }
 
         /**
@@ -245,6 +251,8 @@ private:
 
     bool isFunction(const Token *tok, const Token **funcStart, const Token **argStart) const;
     bool argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
+
+    const SpaceInfo *findVarType(const SpaceInfo *start, const Token *type) const;
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;

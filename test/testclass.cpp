@@ -69,6 +69,8 @@ private:
         TEST_CASE(uninitVarArray5);
         TEST_CASE(uninitVarArray6);
         TEST_CASE(uninitVarArray2D);
+        TEST_CASE(uninitVarStruct1); // ticket #2172
+        TEST_CASE(uninitVarStruct2); // ticket #838
         TEST_CASE(uninitMissingFuncDef);	// can't expand function in constructor
         TEST_CASE(privateCtor1);        	// If constructor is private..
         TEST_CASE(privateCtor2);        	// If constructor is private..
@@ -1594,8 +1596,7 @@ private:
                        "    };\n"
                        "    Bar bars[2];\n"
                        "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable not initialized in the constructor 'Foo::bars'\n", errout.str());
-        ASSERT_EQUALS("", errout.str());	// So we notice if something is reported.
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable not initialized in the constructor 'Foo::bars'\n", errout.str());
     }
 
     void uninitVar4()
@@ -2079,6 +2080,102 @@ private:
                        "\n"
                        "private:\n"
                        "    char a[2][2];\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarStruct1() // ticket #2172
+    {
+        checkUninitVar("class A\n"
+                       "{\n"
+                       "private:\n"
+                       "    struct B {\n"
+                       "        std::string str1;\n"
+                       "        std::string str2;\n"
+                       "    }\n"
+                       "    struct B b;\n"
+                       "public:\n"
+                       "    A() {\n"
+                       "    }\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class A\n"
+                       "{\n"
+                       "private:\n"
+                       "    struct B {\n"
+                       "        char *str1;\n"
+                       "        char *str2;\n"
+                       "    }\n"
+                       "    struct B b;\n"
+                       "public:\n"
+                       "    A() {\n"
+                       "    }\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable not initialized in the constructor 'A::b'\n", errout.str());
+
+        checkUninitVar("class A\n"
+                       "{\n"
+                       "private:\n"
+                       "    struct B {\n"
+                       "        char *str1;\n"
+                       "        char *str2;\n"
+                       "        B() : str1(NULL), str2(NULL) { }\n"
+                       "    }\n"
+                       "    struct B b;\n"
+                       "public:\n"
+                       "    A() {\n"
+                       "    }\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarStruct2() // ticket #838
+    {
+        checkUninitVar("struct POINT\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    int y;\n"
+                       "};\n"
+                       "class Fred\n"
+                       "{\n"
+                       "private:\n"
+                       "    POINT p;\n"
+                       "public:\n"
+                       "    Fred()\n"
+                       "    { }\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:11]: (warning) Member variable not initialized in the constructor 'Fred::p'\n", errout.str());
+
+        checkUninitVar("struct POINT\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    int y;\n"
+                       "    POINT();\n"
+                       "};\n"
+                       "class Fred\n"
+                       "{\n"
+                       "private:\n"
+                       "    POINT p;\n"
+                       "public:\n"
+                       "    Fred()\n"
+                       "    { }\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct POINT\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    int y;\n"
+                       "    POINT() :x(0), y(0) { }\n"
+                       "};\n"
+                       "class Fred\n"
+                       "{\n"
+                       "private:\n"
+                       "    POINT p;\n"
+                       "public:\n"
+                       "    Fred()\n"
+                       "    { }\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
     }
