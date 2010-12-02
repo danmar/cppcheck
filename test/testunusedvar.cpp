@@ -102,7 +102,8 @@ private:
         TEST_CASE(localvarIfElse);      // return tmp1 ? tmp2 : tmp3;
         TEST_CASE(localvarOpAssign);    // a |= b;
         TEST_CASE(localvarFor);         // for ( ; var; )
-        TEST_CASE(localvarShift);       // 1 >> var
+        TEST_CASE(localvarShift1);      // 1 >> var
+        TEST_CASE(localvarShift2);      // x = x >> 1
         TEST_CASE(localvarCast);
         TEST_CASE(localvarClass);
         TEST_CASE(localvarUnused);
@@ -2327,12 +2328,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarShift()
+    void localvarShift1()
     {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    int var = 1;\n"
                               "    return 1 >> var;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarShift2()
+    {
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    int var = 1;\n"
+                              "    while (var = var >> 1) { }\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

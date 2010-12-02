@@ -1707,7 +1707,11 @@ void CheckOther::functionVariableUsage()
 
             // function
             else if (Token::Match(tok, " %var% ("))
+            {
                 variables.read(tok->varId());
+                if (Token::Match(tok->tokAt(2), "%var% ="))
+                    variables.read(tok->tokAt(2)->varId());
+            }
 
             else if (Token::Match(tok, " %var% ."))
                 variables.use(tok->varId());   // use = read + write
