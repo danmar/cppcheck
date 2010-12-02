@@ -129,10 +129,14 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     return true;
 }
 
-std::string ErrorLogger::ErrorMessage::getXMLHeader(const std::string &ver)
+std::string ErrorLogger::ErrorMessage::getXMLHeader(int version)
 {
+    std::ostringstream strver;
+    if (version > 1)
+        strver << " version=\"" << version << "\"";
+
     return  "<?xml version=\"1.0\"?>\n"
-            "<results" + ver + ">";
+            "<results" + strver.str() + ">";
 }
 
 std::string ErrorLogger::ErrorMessage::getXMLFooter()
@@ -161,11 +165,11 @@ static std::string stringToXml(std::string s)
     return s;
 }
 
-std::string ErrorLogger::ErrorMessage::toXML(bool verbose, bool xml2) const
+std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
 {
     std::ostringstream xml;
 
-    if (!xml2)
+    if (version == 1)
     {
         xml << "<error";
         if (!_callStack.empty())
@@ -178,7 +182,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, bool xml2) const
         xml << " msg=\"" << stringToXml(verbose ? _verboseMessage : _shortMessage) << "\"";
         xml << "/>";
     }
-    else
+    else if (version == 2)
     {
         xml << "  <error";
         xml << " id=\"" << _id << "\"";

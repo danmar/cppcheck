@@ -2403,11 +2403,11 @@ void Preprocessor::getErrorMessages(std::ostream &ostr)
                                            Severity::style,
                                            "Include file: \"\" not found.",
                                            "missingInclude");
-    ostr << errmsg.toXML(false, false) << std::endl;
+    ostr << errmsg.toXML(false, 1) << std::endl;
 
     const ErrorLogger::ErrorMessage errmsg2(locationList,
                                             Severity::error,
                                             "#error ...",
                                             "preprocessorErrorDirective");
-    ostr << errmsg2.toXML(false, false) << std::endl;
+    ostr << errmsg2.toXML(false, 1) << std::endl;
 }

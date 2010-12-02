@@ -87,8 +87,8 @@ public:
     /** @brief write xml results (--xml) */
     bool _xml;
 
-    /** @brief write xml2 results (--xml2) */
-    bool _xml2;
+    /** @brief xml version (--xmlver=..) */
+    bool _xml_version;
 
     /** @brief How many processes/threads should do checking at the same
         time. Default is 1. (-j N) */

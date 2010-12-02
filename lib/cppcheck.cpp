@@ -363,7 +363,7 @@ void CppCheck::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
 void CppCheck::getErrorMessages()
 {
     // call all "getErrorMessages" in all registered Check classes
-    std::cout << ErrorLogger::ErrorMessage::getXMLHeader("");
+    std::cout << ErrorLogger::ErrorMessage::getXMLHeader(1);
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
     {
         (*it)->getErrorMessages();
