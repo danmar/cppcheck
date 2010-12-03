@@ -58,6 +58,7 @@ private:
         TEST_CASE(uninitVar12); // ticket #2078
         TEST_CASE(uninitVar13); // ticket #1195
         TEST_CASE(uninitVar14); // ticket #2149
+        TEST_CASE(uninitVar15);
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1932,6 +1933,21 @@ private:
                        "        {\n"
                        "        }\n"
                        "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar15()
+    {
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "    int a;\n"
+                       "public:\n"
+                       "    Fred();\n"
+                       "    ~Fred();\n"
+                       "};\n"
+                       "Fred::~Fred()\n"
+                       "{\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }

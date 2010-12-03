@@ -656,7 +656,8 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
         {
             // do the spaces match (same space) or do their names match (multiple namespaces)
             if ((*info == info1->nestedIn) || (*info && info1 &&
-                                               (*info)->className == info1->nestedIn->className && !(*info)->className.empty() &&
+                                               (*info)->className == info1->nestedIn->className &&
+                                               !(*info)->className.empty() &&
                                                (*info)->type == info1->nestedIn->type))
             {
                 SpaceInfo *info2 = info1;
@@ -706,7 +707,7 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                             func->arg = argStart;
                         }
                     }
-                    else if (func->tokenDef->str() == (*tok)->str())
+                    else if (func->tokenDef->str() == (*tok)->str() && (*tok)->previous()->str() != "~")
                     {
                         if (argsMatch(func->tokenDef->next(), (*tok)->next(), path, path_length))
                         {
