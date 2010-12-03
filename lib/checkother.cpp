@@ -1650,6 +1650,8 @@ void CheckOther::functionVariableUsage()
                         variables.writeAliases(tok->varId());
                         variables.read(tok->varId());
                     }
+                    else if (tok->varId() != varid1 && Token::Match(tok, "%var% . %var%"))
+                        variables.use(tok->varId());
                 }
 
                 const Token *equal = tok->next();
