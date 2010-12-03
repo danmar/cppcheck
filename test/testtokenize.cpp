@@ -4774,33 +4774,63 @@ private:
 
     void Qt()
     {
-        const char code[] = "class Counter : public QObject "
-                            "{ "
-                            "    Q_OBJECT "
-                            "public: "
-                            "    Counter() { m_value = 0; } "
-                            "    int value() const { return m_value; } "
-                            "public slots: "
-                            "    void setValue(int value); "
-                            "signals: "
-                            "    void valueChanged(int newValue); "
-                            "private: "
-                            "    int m_value; "
-                            "};";
+        const char code1[] = "class Counter : public QObject "
+                             "{ "
+                             "    Q_OBJECT "
+                             "public: "
+                             "    Counter() { m_value = 0; } "
+                             "    int value() const { return m_value; } "
+                             "public slots: "
+                             "    void setValue(int value); "
+                             "signals: "
+                             "    void valueChanged(int newValue); "
+                             "private: "
+                             "    int m_value; "
+                             "};";
 
-        const char result [] = "class Counter : public QObject "
-                               "{ "
-                               "public: "
-                               "Counter ( ) { m_value = 0 ; } "
-                               "int value ( ) const { return m_value ; } "
-                               "public: "
-                               "void setValue ( int value ) ; "
-                               "void valueChanged ( int newValue ) ; "
-                               "private: "
-                               "int m_value ; "
-                               "} ;";
+        const char result1 [] = "class Counter : public QObject "
+                                "{ "
+                                "public: "
+                                "Counter ( ) { m_value = 0 ; } "
+                                "int value ( ) const { return m_value ; } "
+                                "public: "
+                                "void setValue ( int value ) ; "
+                                "protected: "
+                                "void valueChanged ( int newValue ) ; "
+                                "private: "
+                                "int m_value ; "
+                                "} ;";
 
-        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
+        ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
+
+        const char code2[] = "class Counter : public QObject "
+                             "{ "
+                             "    Q_OBJECT "
+                             "public: "
+                             "    Counter() { m_value = 0; } "
+                             "    int value() const { return m_value; } "
+                             "public Q_SLOTS: "
+                             "    void setValue(int value); "
+                             "Q_SIGNALS: "
+                             "    void valueChanged(int newValue); "
+                             "private: "
+                             "    int m_value; "
+                             "};";
+
+        const char result2 [] = "class Counter : public QObject "
+                                "{ "
+                                "public: "
+                                "Counter ( ) { m_value = 0 ; } "
+                                "int value ( ) const { return m_value ; } "
+                                "public: "
+                                "void setValue ( int value ) ; "
+                                "protected: "
+                                "void valueChanged ( int newValue ) ; "
+                                "private: "
+                                "int m_value ; "
+                                "} ;";
+
+        ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
     }
 
     void sql()

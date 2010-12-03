@@ -8745,16 +8745,17 @@ void Tokenizer::simplifyQtSignalsSlots()
             {
                 tok2->deleteNext();
             }
-            else if (Token::Match(tok2->next(), "public|protected|private slots :"))
+            else if (Token::Match(tok2->next(), "public|protected|private slots|Q_SLOTS :"))
             {
                 tok2 = tok2->next();
                 tok2->str(tok2->str() + ":");
                 tok2->deleteNext();
                 tok2->deleteNext();
             }
-            else if (Token::simpleMatch(tok2->next(), "signals :"))
+            else if (Token::Match(tok2->next(), "signals|Q_SIGNALS :"))
             {
-                tok2->deleteNext();
+                tok2 = tok2->next();
+                tok2->str("protected:");
                 tok2->deleteNext();
             }
         }
