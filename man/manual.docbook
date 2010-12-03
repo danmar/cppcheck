@@ -3,9 +3,9 @@
 "/usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.45</title>
+    <title>Cppcheck 1.46</title>
 
-    <date>2010-10-05</date>
+    <date>2010-12-03</date>
   </bookinfo>
 
   <chapter>
@@ -110,12 +110,19 @@ Checking path/file2.cpp...
     </section>
 
     <section>
-      <title>Warning, Style and Performance</title>
+      <title>Severities</title>
 
-      <para>By default Cppcheck will only check for bugs. There are more
-      checks:</para>
+      <para>The possible severities for messages are:</para>
 
       <variablelist>
+        <varlistentry>
+          <term>error</term>
+
+          <listitem>
+            <para>used when bugs are found</para>
+          </listitem>
+        </varlistentry>
+
         <varlistentry>
           <term>warning</term>
 
@@ -143,19 +150,33 @@ Checking path/file2.cpp...
         </varlistentry>
       </variablelist>
 
-      <para>The scope of <literal>style</literal> is limited. The focus of
-      <literal>Cppcheck</literal> development is to detect bugs.
-      <literal>Cppcheck</literal> is not a style-checker.</para>
+      <remark>The focus of <literal>Cppcheck</literal> development is to
+      detect bugs, <literal>Cppcheck</literal> is not a
+      style-checker.</remark>
 
-      <para>You should always be skeptic about <literal>performance</literal>
-      messages. Fixing them doesn't necessarily make your code more readable,
-      at least that is not the intention. Cppcheck doesn't try to detect
-      hotspots so fixing <literal>performance</literal> messages might have no
-      measurable difference.</para>
+      <remark> Cppcheck doesn't try to detect hotspots so fixing
+      <literal>performance</literal> messages might have no measurable
+      difference. Fixing performance messages doesn't make your code more
+      readable.</remark>
+    </section>
 
-      <para>Here is a simple code example:</para>
+    <section>
+      <title>Enable messages</title>
 
-      <programlisting>void f(int x)
+      <para>By default only <literal>error</literal> messages are shown.
+      Through the <literal>--enable</literal> command more checks can be
+      enabled.</para>
+
+      <section>
+        <title>Stylistic issues</title>
+
+        <para>With <literal>--enable=style</literal> you enable most
+        <literal>warning</literal>, <literal>style</literal> and
+        <literal>performance</literal> messages.</para>
+
+        <para>Here is a simple code example:</para>
+
+        <programlisting>void f(int x)
 {
     int i;
     if (x == 0)
@@ -164,15 +185,37 @@ Checking path/file2.cpp...
     }
 }</programlisting>
 
-      <para>To enable these checks, use the --enable=style command:</para>
+        <para>There are no bugs in that code so Cppcheck won't report anything
+        by default. To enable the stylistic messages, use the --enable=style
+        command:</para>
 
-      <programlisting>cppcheck --enable=style file3.c</programlisting>
+        <programlisting>cppcheck --enable=style file3.c</programlisting>
 
-      <para>The output from Cppcheck is:</para>
+        <para>The output from Cppcheck is now:</para>
 
-      <programlisting>Checking file3.c...
+        <para><programlisting>Checking file3.c...
 [file3.c:3]: (style) Variable 'i' is assigned a value that is never used
-[file3.c:3]: (style) The scope of the variable i can be reduced</programlisting>
+[file3.c:3]: (style) The scope of the variable i can be reduced</programlisting></para>
+      </section>
+
+      <section>
+        <title>Unused functions</title>
+
+        <para>This check will try to find unused functions. It is best to use
+        this when the whole program is checked, so that all usages is seen by
+        cppcheck.</para>
+
+        <programlisting>cppcheck --enable=unusedFunction path</programlisting>
+      </section>
+
+      <section>
+        <title>Enable all checks</title>
+
+        <para>To enable all checks your can use the
+        <literal>--enable=all</literal> flag:</para>
+
+        <programlisting>cppcheck --enable=all path</programlisting>
+      </section>
     </section>
 
     <section>
@@ -183,25 +226,6 @@ Checking path/file2.cpp...
       file.</para>
 
       <programlisting>cppcheck file1.c 2&gt; err.txt</programlisting>
-    </section>
-
-    <section>
-      <title>Unused functions</title>
-
-      <para>This check will try to find unused functions. It is best to use
-      this when the whole program is checked, so that all usages is seen by
-      cppcheck.</para>
-
-      <programlisting>cppcheck --enable=unusedFunctions path</programlisting>
-    </section>
-
-    <section>
-      <title>Enable all checks</title>
-
-      <para>To enable all checks your can use the
-      <literal>--enable=all</literal> flag:</para>
-
-      <programlisting>cppcheck --enable=all path</programlisting>
     </section>
 
     <section>
@@ -233,33 +257,6 @@ Checking path/file2.cpp...
     like this can be used:</para>
 
     <programlisting>cppcheck -DDEBUG=1 -D__cplusplus path</programlisting>
-
-    <para>An alternative for -D is to use #error.</para>
-
-    <programlisting>#if LIB_VERSION &lt;= 3
-#error "lib version must be greater than 3"
-#endif</programlisting>
-
-    <para>Using #error instead of -D have some advantages:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>the compiler will not be able to compile the code when invalid
-        defines are given. So #error makes your source code
-        safer/better.</para>
-      </listitem>
-
-      <listitem>
-        <para>Cppcheck will check all valid configurations instead of a single
-        configuration.</para>
-      </listitem>
-
-      <listitem>
-        <para>This information is added to the source code which means you
-        don't need to provide this information to Cppcheck (makes it simpler
-        to use Cppcheck)</para>
-      </listitem>
-    </itemizedlist>
   </chapter>
 
   <chapter>
@@ -310,7 +307,9 @@ Checking path/file2.cpp...
         <term>severity</term>
 
         <listitem>
-          <para>either error or style</para>
+          <para>either <literal>error</literal> or <literal>style</literal>.
+          <literal>warning</literal> and <literal>performance</literal> are
+          saved as <literal>style</literal>.</para>
         </listitem>
       </varlistentry>
 
@@ -498,7 +497,7 @@ int a(int sz)
   </chapter>
 
   <chapter>
-    <title>html report</title>
+    <title>Html report</title>
 
     <para>You can convert the xml output from cppcheck into a html report.
     You'll need python and the pygments module
