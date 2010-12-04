@@ -1008,28 +1008,28 @@ private:
               "    std::list<int> x;\n"
               "    if (x.size() == 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    if (x.size() != 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    if (x.size() > 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    if (x.size()) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
 
         check("void f()\n"
               "{\n"

@@ -807,11 +807,12 @@ void CheckStl::size()
 void CheckStl::sizeError(const Token *tok)
 {
     const std::string varname(tok ? tok->str().c_str() : "list");
-    const bool verbose(_settings ? _settings->_verbose : true);
-    reportError(tok, Severity::performance, "stlSize", "Use " + varname + ".empty() instead of " + varname + ".size() to guarantee fast code." + (verbose ? " size() can take linear time but empty() is guaranteed to take constant time." : ""));
+    reportError(tok, Severity::performance, "stlSize",
+                "Possible inefficient checking for '" + varname + "' emptiness.\n"
+                "Using " + varname + ".empty() instead of " + varname + ".size() can be faster. " +
+                varname + ".size() can take linear time but " + varname + ".empty() is "
+                "guaranteed to take constant time.");
 }
-
-
 
 void CheckStl::redundantCondition()
 {
