@@ -64,7 +64,7 @@
 
       <para>The token lists are designed for rule matching. All redundant
       information is removed. A number of transformations are made
-      automatically on the token lists to simplify writing rules. </para>
+      automatically on the token lists to simplify writing rules.</para>
 
       <para>The class <literal>Tokenizer</literal> create the token lists and
       perform all simplifications.</para>
@@ -169,18 +169,6 @@
 
         <para>http://cppcheck.sourceforge.net/doxyoutput/classTokenizer.html</para>
       </section>
-
-      <section>
-        <title>Reference</title>
-
-        <para>There are many </para>
-      </section>
-    </section>
-
-    <section>
-      <title>Symbol database</title>
-
-      <para>TODO: write more here.</para>
     </section>
   </section>
 
@@ -205,7 +193,7 @@
 
     <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;rule data="simple"&gt;
-  &lt;pattern&gt; / 0&lt;/pattern&gt;
+  &lt;pattern&gt;/ 0&lt;/pattern&gt;
   &lt;message&gt;
     &lt;id&gt;divbyzero&lt;/id&gt;
     &lt;severity&gt;error&lt;/severity&gt;
@@ -216,53 +204,18 @@
     <para>It is recommended that you use the <literal>simple</literal> token
     list whenever you can. If you need some information that is removed in it
     then try the <literal>normal</literal> token list.</para>
-  </section>
 
-  <section>
-    <title>C++</title>
+    <para>When you write the patterns remember that;</para>
 
-    <para>Advanced rules are created with C++.</para>
+    <itemizedlist>
+      <listitem>
+        <para>tokens are always separated by spaces. "1+2" is not
+        possible.</para>
+      </listitem>
 
-    <para>Here is a simple function that detects division by zero:</para>
-
-    <programlisting>void CheckDivByZero::check()
-{
-    // Scan through all tokens
-    for (const Token *tok = _tokens; tok; tok = tok-&gt;next()) {
-        // Match tokens to see if there is division with zero..
-        if (Token::Match(tok, "/ 0")) {
-            // Division by zero found. Report error
-            reportError(tok);
-        }
-    }
-}</programlisting>
-
-    <para>All rules must be encapsulated in classes. These classes must
-    inherit from the base class <literal>Check</literal>.</para>
-
-    <remark>It is also possible to inherit from
-    <literal>ExecutionPath</literal>, it provides better control-flow
-    analysis, but that is much more advanced. You should be a master on using
-    <literal>Check</literal> before you try to use
-    <literal>ExecutionPath</literal>.</remark>
-
-    <para>Adding your rules to Cppcheck is easy. Just make sure they are
-    linked with Cppcheck when it is compiled. Cppcheck will automatically use
-    all rules that are compiled into it.</para>
-
-    <para>TODO: A full example?</para>
-
-    <para></para>
-
-    <para>The recommendation is that you use the simple token list whenever
-    possible. Only use the normal token list when necessary.</para>
-
-    <para></para>
-
-    <para></para>
-
-    <para>TODO: more descriptions</para>
-
-    <para></para>
+      <listitem>
+        <para>there is no indentation, spaces, comments, line breaks.</para>
+      </listitem>
+    </itemizedlist>
   </section>
 </article>
