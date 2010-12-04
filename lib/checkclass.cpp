@@ -109,7 +109,9 @@ void CheckClass::constructors()
 
         for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
         {
-            if (!func->hasBody || !(func->type == SymbolDatabase::Func::Constructor || func->type == SymbolDatabase::Func::CopyConstructor || func->type == SymbolDatabase::Func::OperatorEqual))
+            if (!func->hasBody || !(func->type == SymbolDatabase::Func::Constructor ||
+                                    func->type == SymbolDatabase::Func::CopyConstructor ||
+                                    func->type == SymbolDatabase::Func::OperatorEqual))
                 continue;
 
             // Mark all variables not used

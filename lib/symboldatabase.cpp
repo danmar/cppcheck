@@ -1459,8 +1459,22 @@ void SymbolDatabase::SpaceInfo::initializeVarList(const Func &func, std::list<st
             break;
         }
 
+        // Calling member variable function?
         if (Token::Match(ftok->next(), "%var% . %var% ("))
+        {
+            std::list<Var>::const_iterator var;
+            for (var = varlist.begin(); var != varlist.end(); ++var)
+            {
+                if (var->token->varId() == ftok->next()->varId())
+                {
+                    /** @todo false negative: we assume function changes variable state */
+                    assignVar(ftok->next()->str());
+                    continue;
+                }
+            }
+
             ftok = ftok->tokAt(2);
+        }
 
         if (!Token::Match(ftok->next(), "%var%") &&
             !Token::Match(ftok->next(), "this . %var%") &&
