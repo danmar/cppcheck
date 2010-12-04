@@ -169,7 +169,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
 #ifndef NDEBUG
         // Experimental: Write results in xml2 format
-        else if (strcmp(argv[i], "--xmlver=2") == 0)
+        else if (strcmp(argv[i], "--xml-version=2") == 0)
         {
             _settings->_xml = true;
             _settings->_xml_version = 2;

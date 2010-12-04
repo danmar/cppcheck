@@ -88,7 +88,7 @@ public:
     bool _xml;
 
     /** @brief xml version (--xmlver=..) */
-    bool _xml_version;
+    int _xml_version;
 
     /** @brief How many processes/threads should do checking at the same
         time. Default is 1. (-j N) */
