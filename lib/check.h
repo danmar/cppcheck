@@ -110,7 +110,7 @@ public:
      */
     static void reportError(const ErrorLogger::ErrorMessage &errmsg)
     {
-        std::cout << errmsg.toXML(true) << std::endl;
+        std::cout << errmsg.toXML(true, 1) << std::endl;
     }
 
 protected:

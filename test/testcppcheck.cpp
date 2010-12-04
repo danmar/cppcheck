@@ -389,7 +389,7 @@ private:
         // Test the errorlogger..
         ErrorLogger::ErrorMessage errorMessage;
         errorMessage.setmsg("ab<cd>ef");
-        ASSERT_EQUALS("<error id=\"\" severity=\"style\" msg=\"ab&lt;cd&gt;ef\"/>", errorMessage.toXML(false));
+        ASSERT_EQUALS("<error id=\"\" severity=\"style\" msg=\"ab&lt;cd&gt;ef\"/>", errorMessage.toXML(false,1));
     }
 
 
@@ -400,7 +400,7 @@ private:
         loc.setfile("ab/cd/../ef.h");
         errorMessage._callStack.push_back(loc);
         const std::string fname(Path::toNativeSeparators("ab/ef.h"));
-        ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"0\" id=\"\" severity=\"style\" msg=\"\"/>", errorMessage.toXML(false));
+        ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"0\" id=\"\" severity=\"style\" msg=\"\"/>", errorMessage.toXML(false,1));
         ASSERT_EQUALS("[" + fname + ":0]: ", errorMessage.toString(false));
     }
 
@@ -415,7 +415,7 @@ private:
         errorMessage._severity = Severity::fromString("error");
         errorMessage.setmsg("long testMessage");
         const std::string fname(Path::toNativeSeparators("some/{file}file.cpp"));
-        ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"10\" id=\"testId\" severity=\"error\" msg=\"long testMessage\"/>", errorMessage.toXML(false));
+        ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"10\" id=\"testId\" severity=\"error\" msg=\"long testMessage\"/>", errorMessage.toXML(false,1));
         ASSERT_EQUALS("[" + fname + ":10]: (error) long testMessage", errorMessage.toString(false));
         ASSERT_EQUALS("testId-" + fname + ",error.10?{long testMessage}", errorMessage.toString(false, "{id}-{file},{severity}.{line}?{{message}}"));
     }

@@ -124,10 +124,11 @@ public:
         /**
          * Format the error message in XML format
          * @param verbose use verbose message
+         * @param ver xml version
          */
-        std::string toXML(bool verbose) const;
+        std::string toXML(bool verbose, int ver) const;
 
-        static std::string getXMLHeader();
+        static std::string getXMLHeader(int ver);
         static std::string getXMLFooter();
 
         /**

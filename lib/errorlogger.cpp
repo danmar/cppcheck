@@ -129,10 +129,14 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     return true;
 }
 
-std::string ErrorLogger::ErrorMessage::getXMLHeader()
+std::string ErrorLogger::ErrorMessage::getXMLHeader(int version)
 {
+    std::ostringstream strver;
+    if (version > 1)
+        strver << " version=\"" << version << "\"";
+
     return  "<?xml version=\"1.0\"?>\n"
-            "<results>";
+            "<results" + strver.str() + ">";
 }
 
 std::string ErrorLogger::ErrorMessage::getXMLFooter()
@@ -161,19 +165,43 @@ static std::string stringToXml(std::string s)
     return s;
 }
 
-std::string ErrorLogger::ErrorMessage::toXML(bool verbose) const
+std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
 {
     std::ostringstream xml;
-    xml << "<error";
-    if (!_callStack.empty())
+
+    if (version == 1)
     {
-        xml << " file=\"" << stringToXml(_callStack.back().getfile()) << "\"";
-        xml << " line=\"" << _callStack.back().line << "\"";
+        xml << "<error";
+        if (!_callStack.empty())
+        {
+            xml << " file=\"" << stringToXml(_callStack.back().getfile()) << "\"";
+            xml << " line=\"" << _callStack.back().line << "\"";
+        }
+        xml << " id=\"" << _id << "\"";
+        xml << " severity=\"" << (_severity == Severity::error ? "error" : "style") << "\"";
+        xml << " msg=\"" << stringToXml(verbose ? _verboseMessage : _shortMessage) << "\"";
+        xml << "/>";
     }
-    xml << " id=\"" << _id << "\"";
-    xml << " severity=\"" << (_severity == Severity::error ? "error" : "style") << "\"";
-    xml << " msg=\"" << stringToXml(verbose ? _verboseMessage : _shortMessage) << "\"";
-    xml << "/>";
+    else if (version == 2)
+    {
+        xml << "  <error";
+        xml << " id=\"" << _id << "\"";
+        xml << " severity=\"" << Severity::toString(_severity) << "\"";
+        xml << " msg=\"" << stringToXml(_shortMessage) << "\"";
+        xml << " verbose=\"" << stringToXml(_verboseMessage) << "\"";
+        xml << ">" << std::endl;
+
+        for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it)
+        {
+            xml << "    <location";
+            xml << " file=\"" << stringToXml((*it).getfile()) << "\"";
+            xml << " line=\"" << (*it).line << "\"";
+            xml << "/>" << std::endl;
+        }
+
+        xml << "  </error>";
+    }
+
     return xml.str();
 }
 

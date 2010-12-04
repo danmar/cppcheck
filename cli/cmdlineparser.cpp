@@ -167,6 +167,15 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--xml") == 0)
             _settings->_xml = true;
 
+#ifndef NDEBUG
+        // Experimental: Write results in xml2 format
+        else if (strcmp(argv[i], "--xmlver=2") == 0)
+        {
+            _settings->_xml = true;
+            _settings->_xml_version = 2;
+        }
+#endif
+
         // Only print something when there are errors
         else if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--quiet") == 0)
             _settings->_errorsOnly = true;

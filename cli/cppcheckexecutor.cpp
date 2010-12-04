@@ -95,7 +95,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     _settings = cppCheck.settings();
     if (_settings._xml)
     {
-        reportErr(ErrorLogger::ErrorMessage::getXMLHeader());
+        reportErr(ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version));
     }
 
     unsigned int returnValue = 0;
@@ -184,7 +184,7 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
     if (_settings._xml)
     {
-        reportErr(msg.toXML(_settings._verbose));
+        reportErr(msg.toXML(_settings._verbose, _settings._xml_version));
     }
     else
     {
