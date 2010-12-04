@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>Writing Cppcheck rules</title>
+
+    <author>
+      <firstname>Daniel</firstname>
+
+      <surname>Marjamäki</surname>
+
+      <affiliation>
+        <orgname>Cppcheck</orgname>
+      </affiliation>
+    </author>
+
+    <pubdate>2010</pubdate>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>This is supposed to be a manual for developers who want to write
+    Cppcheck rules.</para>
+
+    <para>There are two ways to write rules.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>Regular expressions</term>
+
+        <listitem>
+          <para>Simple rules can be created by using regular expressions. No
+          compilation is required.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>C++</term>
+
+        <listitem>
+          <para>Advanced rules must be created with C++. These rules must be
+          compiled and linked statically with Cppcheck.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>The data used by the rules are not the raw source code. Cppcheck
+    will read the source code and process it before the rules are used.</para>
+  </section>
+
+  <section>
+    <title>Data representation of the source code</title>
+
+    <para>There are two types of data you can use: symbol database and token
+    list.</para>
+
+    <section>
+      <title>Token lists</title>
+
+      <para>The code is stored in token lists (simple double-linked
+      lists).</para>
+
+      <para>The token lists are designed for rule matching. All redundant
+      information is removed. A number of transformations are made
+      automatically on the token lists to simplify writing rules. </para>
+
+      <para>The class <literal>Tokenizer</literal> create the token lists and
+      perform all simplifications.</para>
+
+      <para>The class <literal>Token</literal> is used for every token in the
+      token list. The <literal>Token</literal> class also contain
+      functionality for matching tokens.</para>
+
+      <section>
+        <title>Normal token list</title>
+
+        <para>The first token list that is created has many basic
+        simplifications. For example:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>There are no templates. Templates have been
+            instantiated.</para>
+          </listitem>
+
+          <listitem>
+            <para>There is no "else if". These are converted into "else { if
+            .."</para>
+          </listitem>
+
+          <listitem>
+            <para>The bodies of "if", "else", "while", "do" and "for" are
+            always enclosed in "{" and "}".</para>
+          </listitem>
+
+          <listitem>
+            <para>A declaration of multiple variables is split up into
+            multiple variable declarations. "int a,b;" =&gt; "int a; int
+            b;"</para>
+          </listitem>
+
+          <listitem>
+            <para>All variables have unique ID numbers</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+
+      <section>
+        <title>Simplified token list</title>
+
+        <para>The second token list that is created has all simplifications
+        the normal token list has and then many more simplifications. For
+        example:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>There is no sizeof</para>
+          </listitem>
+
+          <listitem>
+            <para>There are no templates.</para>
+          </listitem>
+
+          <listitem>
+            <para>Control flow transformations.</para>
+          </listitem>
+
+          <listitem>
+            <para>NULL is replaced with 0.</para>
+          </listitem>
+
+          <listitem>
+            <para>Static value flow analysis is made. Known values are
+            inserted into the code.</para>
+          </listitem>
+
+          <listitem>
+            <para>variable initialization is replaced with assignment</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>The simple token list is written if you use
+        <literal>--debug</literal>. For example, use <literal>cppcheck --debug
+        test1.cpp</literal> and check this code:</para>
+
+        <programlisting>void f1() {
+    int a = 1;
+    f2(a++);
+}</programlisting>
+
+        <para>The result is:</para>
+
+        <programlisting>##file test1.cpp
+1: void f1 ( ) {
+2: ; ;
+3: f2 ( 1 ) ;
+4: }</programlisting>
+
+        <para></para>
+      </section>
+
+      <section>
+        <title>Reference</title>
+
+        <para>To learn more about the token lists, the doxygen information for
+        the <literal>Tokenizer</literal> is recommended.</para>
+
+        <para>http://cppcheck.sourceforge.net/doxyoutput/classTokenizer.html</para>
+      </section>
+
+      <section>
+        <title>Reference</title>
+
+        <para>There are many </para>
+      </section>
+    </section>
+
+    <section>
+      <title>Symbol database</title>
+
+      <para>TODO: write more here.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Regular expressions</title>
+
+    <para>Simple rules can be defined through regular expressions.</para>
+
+    <para>A rule consist of:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>a pattern to search for.</para>
+      </listitem>
+
+      <listitem>
+        <para>an error message that is reported when pattern is found</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Here is an example:</para>
+
+    <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;rule data="simple"&gt;
+  &lt;pattern&gt; / 0&lt;/pattern&gt;
+  &lt;message&gt;
+    &lt;id&gt;divbyzero&lt;/id&gt;
+    &lt;severity&gt;error&lt;/severity&gt;
+    &lt;summary&gt;Division by zero&lt;/summary&gt;
+  &lt;/message&gt;
+&lt;/rule&gt;</programlisting>
+
+    <para>It is recommended that you use the <literal>simple</literal> token
+    list whenever you can. If you need some information that is removed in it
+    then try the <literal>normal</literal> token list.</para>
+  </section>
+
+  <section>
+    <title>C++</title>
+
+    <para>Advanced rules are created with C++.</para>
+
+    <para>Here is a simple function that detects division by zero:</para>
+
+    <programlisting>void CheckDivByZero::check()
+{
+    // Scan through all tokens
+    for (const Token *tok = _tokens; tok; tok = tok-&gt;next()) {
+        // Match tokens to see if there is division with zero..
+        if (Token::Match(tok, "/ 0")) {
+            // Division by zero found. Report error
+            reportError(tok);
+        }
+    }
+}</programlisting>
+
+    <para>All rules must be encapsulated in classes. These classes must
+    inherit from the base class <literal>Check</literal>.</para>
+
+    <remark>It is also possible to inherit from
+    <literal>ExecutionPath</literal>, it provides better control-flow
+    analysis, but that is much more advanced. You should be a master on using
+    <literal>Check</literal> before you try to use
+    <literal>ExecutionPath</literal>.</remark>
+
+    <para>Adding your rules to Cppcheck is easy. Just make sure they are
+    linked with Cppcheck when it is compiled. Cppcheck will automatically use
+    all rules that are compiled into it.</para>
+
+    <para>TODO: A full example?</para>
+
+    <para></para>
+
+    <para>The recommendation is that you use the simple token list whenever
+    possible. Only use the normal token list when necessary.</para>
+
+    <para></para>
+
+    <para></para>
+
+    <para>TODO: more descriptions</para>
+
+    <para></para>
+  </section>
+</article>
