@@ -1087,21 +1087,25 @@ void SymbolDatabase::SpaceInfo::getVarList()
         else if (Token::Match(tok, "%type% * %var% ;"))
         {
             vartok = tok->tokAt(2);
+            typetok = tok;
             tok = vartok->next();
         }
         else if (Token::Match(tok, "%type% %type% * %var% ;"))
         {
             vartok = tok->tokAt(3);
+            typetok = vartok->tokAt(-2);
             tok = vartok->next();
         }
         else if (Token::Match(tok, "%type% :: %type% * %var% ;"))
         {
             vartok = tok->tokAt(4);
+            typetok = vartok->tokAt(-2);
             tok = vartok->next();
         }
         else if (Token::Match(tok, "%type% :: %type% :: %type% * %var% ;"))
         {
             vartok = tok->tokAt(6);
+            typetok = vartok->tokAt(-2);
             tok = vartok->next();
         }
 
@@ -1221,7 +1225,7 @@ void SymbolDatabase::SpaceInfo::getVarList()
 
             const SpaceInfo *spaceInfo = NULL;
 
-            if (isClass)
+            if (typetok)
                 spaceInfo = check->findVarType(this, typetok);
 
             addVar(vartok, varaccess, isMutable, isStatic, isConst, isClass, spaceInfo);

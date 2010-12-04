@@ -2616,9 +2616,18 @@ void CheckMemoryLeakInClass::check()
 
                         variable(info, var->token);
                     }
-                    else
+
+                    // known class?
+                    else if (var->type)
                     {
-                        /** @todo false negative: check classes here someday */
+                        // not derived and no constructor?
+                        if (var->type->derivedFrom.empty() && var->type->numConstructors == 0)
+                        {
+                            if (var->access == SymbolDatabase::Private)
+                                checkPublicFunctions(info, var->token);
+
+                            variable(info, var->token);
+                        }
                     }
                 }
             }

@@ -3579,6 +3579,45 @@ private:
               "    rp2 = new TRadioButton(this);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class TRadioButton { };\n"
+              "class Foo\n"
+              "{\n"
+              "private:\n"
+              "    TRadioButton* rp1;\n"
+              "    TRadioButton* rp2;\n"
+              "public:\n"
+              "    Foo();\n"
+              "};\n"
+              "Foo::Foo()\n"
+              "{\n"
+              "    rp1 = new TRadioButton;\n"
+              "    rp2 = new TRadioButton;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: Foo::rp1\n"
+                      "[test.cpp:6]: (error) Memory leak: Foo::rp2\n", errout.str());
+
+        check("class TRadioButton { };\n"
+              "class Foo\n"
+              "{\n"
+              "private:\n"
+              "    TRadioButton* rp1;\n"
+              "    TRadioButton* rp2;\n"
+              "public:\n"
+              "    Foo();\n"
+              "    ~Foo();\n"
+              "};\n"
+              "Foo::Foo()\n"
+              "{\n"
+              "    rp1 = new TRadioButton;\n"
+              "    rp2 = new TRadioButton;\n"
+              "}\n"
+              "Foo::~Foo()\n"
+              "{\n"
+              "    delete rp1;\n"
+              "    delete rp2;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void staticvar()
