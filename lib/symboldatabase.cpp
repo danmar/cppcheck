@@ -1614,6 +1614,13 @@ void SymbolDatabase::SpaceInfo::initializeVarList(const Func &func, std::list<st
             assignVar(ftok->str());
         }
 
+        // Assignment of member of array item of member variable?
+        else if (Token::Match(ftok, "%var% [ %any% ] . %var%  =") ||
+                 Token::Match(ftok, "%var% [ %any% ] . %var% . %var%  ="))
+        {
+            assignVar(ftok->str());
+        }
+
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "%var% [ %any% ] [ %any% ] ="))
         {
