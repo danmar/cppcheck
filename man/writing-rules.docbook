@@ -21,8 +21,8 @@
   <section>
     <title>Introduction</title>
 
-    <para>This is supposed to be a manual for developers who want to write
-    Cppcheck rules.</para>
+    <para>This is a short guide for developers who want to write Cppcheck
+    rules.</para>
 
     <para>There are two ways to write rules.</para>
 
@@ -46,130 +46,73 @@
       </varlistentry>
     </variablelist>
 
-    <para>The data used by the rules are not the raw source code. Cppcheck
-    will read the source code and process it before the rules are used.</para>
+    <para>It is a good first step to use regular expressions. It is easier.
+    You'll get results quicker. Therefore this guide will focus on regular
+    expressions.</para>
   </section>
 
   <section>
     <title>Data representation of the source code</title>
 
-    <para>There are two types of data you can use: symbol database and token
-    list.</para>
+    <para>The data used by the rules are not the raw source code.
+    <literal>Cppcheck</literal> will read the source code and process it
+    before the rules are used.</para>
 
-    <section>
-      <title>Token lists</title>
+    <para>Cppcheck is designed to find bugs and dangerous code. Stylistic
+    information such as indentation, comments, etc are filtered out at an
+    early state. You don't need to worry about such stylistic information when
+    you write rules.</para>
 
-      <para>The code is stored in token lists (simple double-linked
-      lists).</para>
+    <para>Between each token in the code there is always a space. For instance
+    the raw code "1+f()" is processed into "1 + f ( )".</para>
 
-      <para>The token lists are designed for rule matching. All redundant
-      information is removed. A number of transformations are made
-      automatically on the token lists to simplify writing rules.</para>
+    <para>The code is simplified in many ways. For example:</para>
 
-      <para>The class <literal>Tokenizer</literal> create the token lists and
-      perform all simplifications.</para>
+    <itemizedlist>
+      <listitem>
+        <para>The templates are instantiated</para>
+      </listitem>
 
-      <para>The class <literal>Token</literal> is used for every token in the
-      token list. The <literal>Token</literal> class also contain
-      functionality for matching tokens.</para>
+      <listitem>
+        <para>The typedefs are handled</para>
+      </listitem>
 
-      <section>
-        <title>Normal token list</title>
+      <listitem>
+        <para>There is no "else if". These are converted into "else {
+        if.."</para>
+      </listitem>
 
-        <para>The first token list that is created has many basic
-        simplifications. For example:</para>
+      <listitem>
+        <para>The bodies of "if", "else", "while", "do" and "for" are always
+        enclosed in "{" and "}"</para>
+      </listitem>
 
-        <itemizedlist>
-          <listitem>
-            <para>There are no templates. Templates have been
-            instantiated.</para>
-          </listitem>
+      <listitem>
+        <para>A declaration of multiple variables is split up into multiple
+        variable declarations. "int a,b;" =&gt; "int a; int b;"</para>
+      </listitem>
 
-          <listitem>
-            <para>There is no "else if". These are converted into "else { if
-            .."</para>
-          </listitem>
+      <listitem>
+        <para>There is no sizeof</para>
+      </listitem>
 
-          <listitem>
-            <para>The bodies of "if", "else", "while", "do" and "for" are
-            always enclosed in "{" and "}".</para>
-          </listitem>
+      <listitem>
+        <para>NULL is replaced with 0</para>
+      </listitem>
 
-          <listitem>
-            <para>A declaration of multiple variables is split up into
-            multiple variable declarations. "int a,b;" =&gt; "int a; int
-            b;"</para>
-          </listitem>
+      <listitem>
+        <para>Static value flow analysis is made. Known values are inserted
+        into the code.</para>
+      </listitem>
 
-          <listitem>
-            <para>All variables have unique ID numbers</para>
-          </listitem>
-        </itemizedlist>
-      </section>
+      <listitem>
+        <para>.. and many more</para>
+      </listitem>
+    </itemizedlist>
 
-      <section>
-        <title>Simplified token list</title>
-
-        <para>The second token list that is created has all simplifications
-        the normal token list has and then many more simplifications. For
-        example:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>There is no sizeof</para>
-          </listitem>
-
-          <listitem>
-            <para>There are no templates.</para>
-          </listitem>
-
-          <listitem>
-            <para>Control flow transformations.</para>
-          </listitem>
-
-          <listitem>
-            <para>NULL is replaced with 0.</para>
-          </listitem>
-
-          <listitem>
-            <para>Static value flow analysis is made. Known values are
-            inserted into the code.</para>
-          </listitem>
-
-          <listitem>
-            <para>variable initialization is replaced with assignment</para>
-          </listitem>
-        </itemizedlist>
-
-        <para>The simple token list is written if you use
-        <literal>--debug</literal>. For example, use <literal>cppcheck --debug
-        test1.cpp</literal> and check this code:</para>
-
-        <programlisting>void f1() {
-    int a = 1;
-    f2(a++);
-}</programlisting>
-
-        <para>The result is:</para>
-
-        <programlisting>##file test1.cpp
-1: void f1 ( ) {
-2: ; ;
-3: f2 ( 1 ) ;
-4: }</programlisting>
-
-        <para></para>
-      </section>
-
-      <section>
-        <title>Reference</title>
-
-        <para>To learn more about the token lists, the doxygen information for
-        the <literal>Tokenizer</literal> is recommended.</para>
-
-        <para>http://cppcheck.sourceforge.net/doxyoutput/classTokenizer.html</para>
-      </section>
-    </section>
+    <para>The simplifications are made in the <literal>Cppcheck</literal>
+    <literal>Tokenizer</literal>. For more information see:
+    <uri>http://cppcheck.sourceforge.net/doxyoutput/classTokenizer.html</uri></para>
   </section>
 
   <section>
@@ -189,10 +132,10 @@
       </listitem>
     </itemizedlist>
 
-    <para>Here is an example:</para>
+    <para>Here is a simple example:</para>
 
     <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;rule data="simple"&gt;
+&lt;rule version="1"&gt;
   &lt;pattern&gt;/ 0&lt;/pattern&gt;
   &lt;message&gt;
     &lt;id&gt;divbyzero&lt;/id&gt;
@@ -201,21 +144,8 @@
   &lt;/message&gt;
 &lt;/rule&gt;</programlisting>
 
-    <para>It is recommended that you use the <literal>simple</literal> token
-    list whenever you can. If you need some information that is removed in it
-    then try the <literal>normal</literal> token list.</para>
+    <para></para>
 
-    <para>When you write the patterns remember that;</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>tokens are always separated by spaces. "1+2" is not
-        possible.</para>
-      </listitem>
-
-      <listitem>
-        <para>there is no indentation, spaces, comments, line breaks.</para>
-      </listitem>
-    </itemizedlist>
+    <para></para>
   </section>
 </article>
