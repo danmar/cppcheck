@@ -108,6 +108,11 @@ public:
     static void deleteTokens(Token *tok);
     static const char *getParameterName(const Token *ftok, unsigned int par);
 
+    /**
+     * Get file:line for a given token
+     * @param tok given token
+     * @return location for given token
+     */
     std::string fileLine(const Token *tok) const;
 
     /**
@@ -516,6 +521,10 @@ public:
 
     bool duplicateTypedef(Token **tokPtr, const Token *name);
     void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type);
+
+    /**
+     * Report error - duplicate declarations
+     */
     void duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type);
 
     void unsupportedTypedef(const Token *tok) const;

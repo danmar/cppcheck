@@ -4422,6 +4422,7 @@ bool Tokenizer::simplifyDoWhileAddBracesHelper(Token *tok)
     {
         if (tok3->str() == "{")
         {
+            // skip all tokens until "}"
             tok3 = tok3->link();
         }
         else if (tok3->str() == "while")
