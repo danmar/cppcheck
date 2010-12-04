@@ -99,6 +99,31 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Filter errors
+        else if (strcmp(argv[i], "--exitcode-suppressions") == 0)
+        {
+            ++i;
+
+            if (i >= argc)
+            {
+                PrintMessage("cppcheck: No file specified for the --exitcode-suppressions option");
+                return false;
+            }
+
+            std::ifstream f(argv[i]);
+            if (!f.is_open())
+            {
+                PrintMessage("cppcheck: Couldn't open the file \"" + std::string(argv[i]) + "\"");
+                return false;
+            }
+            const std::string errmsg(_settings->nofail.parseFile(f));
+            if (!errmsg.empty())
+            {
+                PrintMessage(errmsg);
+                return false;
+            }
+        }
+
+        // Filter errors
         else if (strcmp(argv[i], "--suppressions") == 0)
         {
             ++i;

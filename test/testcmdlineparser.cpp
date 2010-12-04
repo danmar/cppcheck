@@ -52,7 +52,28 @@ private:
         TEST_CASE(includesnopath);
         TEST_CASE(includes);
         TEST_CASE(includes2);
+        TEST_CASE(enabledAll);
+        TEST_CASE(enabledStyle);
+        TEST_CASE(enabledUnusedFunction);
+        TEST_CASE(enabledMissingInclude);
+        TEST_CASE(errorExitcode);
+        TEST_CASE(errorExitcodeMissing);
+        TEST_CASE(errorExitcodeStr);
+        TEST_CASE(exitcodeSuppressions); // TODO: Create and test real suppression file
+        TEST_CASE(fileList); // TODO: Create and test real file listing file
+        TEST_CASE(inlineSuppr);
+        TEST_CASE(jobs);
+        TEST_CASE(jobsMissingCount);
+        TEST_CASE(jobsInvalid);
+        TEST_CASE(reportProgress);
+        TEST_CASE(suppressions); // TODO: Create and test real suppression file
+        TEST_CASE(templates);
+        TEST_CASE(templatesGcc);
+        TEST_CASE(templatesVs);
+        TEST_CASE(xml);
+        TEST_CASE(unknownParam);
     }
+
 
     void nooptions()
     {
@@ -265,6 +286,199 @@ private:
         ASSERT_EQUALS(" include/", settings._includePaths.front());
         settings._includePaths.pop_front();
         ASSERT_EQUALS(" framework/", settings._includePaths.front());
+    }
+
+    void enabledAll()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--enable=all", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings._checkCodingStyle);
+        ASSERT(settings.isEnabled("unusedFunction"));
+        ASSERT(settings.isEnabled("missingInclude"));
+    }
+
+    void enabledStyle()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--enable=style", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings._checkCodingStyle);
+    }
+
+    void enabledUnusedFunction()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--enable=unusedFunction", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings.isEnabled("unusedFunction"));
+    }
+
+    void enabledMissingInclude()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--enable=missingInclude", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings.isEnabled("missingInclude"));
+    }
+
+    void errorExitcode()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--error-exitcode=5", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(5, settings._exitCode);
+    }
+
+    void errorExitcodeMissing()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--error-exitcode=", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void errorExitcodeStr()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--error-exitcode=foo", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void exitcodeSuppressions()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--error-exitcode-suppressions suppr.txt", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void fileList()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--file-list files.txt", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void inlineSuppr()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--inline-suppr", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+    }
+
+    void jobs()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-j 3", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(3, settings._jobs);
+    }
+
+    void jobsMissingCount()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-j", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void jobsInvalid()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-j e", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void reportProgress()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--report-progress", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings.reportProgress);
+    }
+
+    void suppressions()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--suppressions suppr.txt", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void templates()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--template", "{file}:{line},{severity},{id},{message}", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS("{file}:{line},{severity},{id},{message}", settings._outputFormat);
+    }
+
+    void templatesGcc()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--template", "gcc", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS("{file}:{line}: {severity}: {message}", settings._outputFormat);
+    }
+
+    void templatesVs()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--template", "vs", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS("{file}({line}): {severity}: {message}", settings._outputFormat);
+    }
+
+    void xml()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--xml", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings._xml);
+    }
+
+    void unknownParam()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--foo", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
     }
 };
 
