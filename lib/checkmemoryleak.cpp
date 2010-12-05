@@ -2786,17 +2786,15 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const SymbolDatabase::SpaceInf
     // If they allocate member variables, they should also deallocate
     std::list<SymbolDatabase::Func>::const_iterator func;
 
-    // TODO: parse into any function scope that is not a constructor
     for (func = spaceinfo->functionList.begin(); func != spaceinfo->functionList.end(); ++func)
     {
-        /** @todo false negative: why do we only check inline functions? */
-        if (func->access == SymbolDatabase::Public && func->hasBody && func->isInline)
+        if (func->type != SymbolDatabase::Func::Constructor &&
+            func->access == SymbolDatabase::Public && func->hasBody)
         {
             const Token *tok2 = func->token;
             while (tok2->str() != "{")
                 tok2 = tok2->next();
-            /** @todo false negative: why do we only check for this specific case? */
-            if (Token::Match(tok2, "{ %varid% =", varid))
+            if (Token::Match(tok2, "{|}|; %varid% =", varid))
             {
                 const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(3), varid);
                 if (alloc != CheckMemoryLeak::No)
