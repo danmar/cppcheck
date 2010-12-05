@@ -31,7 +31,7 @@ gui/Makefile.debug
 gui/Makefile.release
 gui/gui.sln
 gui/gui.vcproj
-gui/gui
+gui/cppcheck-gui
 gui/qrc_gui.cpp
 gui/*.qm
 # Doxygen output folder
