@@ -2121,6 +2121,11 @@ void CheckOther::checkStructMemberUsage()
         {
             // Declaring struct variable..
             std::string varname;
+
+            // declaring a POD variable?
+            if (!tok->next()->isStandardType())
+                continue;
+
             if (Token::Match(tok->next(), "%type% %var% [;[]"))
                 varname = tok->strAt(2);
             else if (Token::Match(tok->next(), "%type% %type% %var% [;[]"))

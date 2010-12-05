@@ -46,6 +46,7 @@ private:
         TEST_CASE(structmember8);
         TEST_CASE(structmember9);  // #2017 - struct is inherited
         TEST_CASE(structmember_extern);		// No false positives for extern structs
+        TEST_CASE(structmember10);
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -294,6 +295,15 @@ private:
                                "\n"
                                "struct derived : public base {"
                                "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember10()
+    {
+        // Fred may have some useful side-effects
+        checkStructMemberUsage("struct abc {\n"
+                               "    Fred fred;\n"
+                               "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
