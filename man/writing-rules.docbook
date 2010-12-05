@@ -118,7 +118,8 @@
   <section>
     <title>Regular expressions</title>
 
-    <para>Simple rules can be defined through regular expressions.</para>
+    <para>Simple rules can be defined through regular expressions. Cppcheck
+    uses PCRE to handle regular expressions.</para>
 
     <section>
       <title>Creating regular expression</title>
@@ -128,35 +129,42 @@
       <programlisting>if (p)
     free(p);</programlisting>
 
-      <para>The condition is often redundant, it is valid to free a NULL
-      pointer.</para>
+      <para>The condition is often redundant, on most implementations it is
+      valid to free a NULL pointer.</para>
 
-      <para>It is important to write the regular expression so it matches the
-      simplified code. Create a source file that has the bad code:</para>
+      <para>The regular expression must match the simplified code. Create a
+      source file that has the bad code:</para>
 
       <programlisting>void f() {
-    if (p) free(p);
+    if (p)
+        free(p);
 }</programlisting>
 
-      <para>I intentionally put the whole pattern on a single line. The
-      simplified code is written on a single line of code.</para>
-
-      <para>To see the simplified code I use <literal>cppcheck --debug
-      file.cpp</literal>.</para>
+      <para>To see the simplified code use <literal>cppcheck --debug
+      dealloc.cpp</literal>.</para>
 
       <programlisting>##file dealloc.cpp
 1: void f ( ) {
-2: if ( p ) { free ( p ) ; }
-3: }</programlisting>
+2: if ( p ) {
+3: free ( p ) ; }
+4: }</programlisting>
 
-      <para>I save that in a file <literal>test.txt</literal>.</para>
+      <para>In the <literal>--debug</literal> output there are line feeds and
+      line numbers. But the newlines and line numbers are only there to make
+      the output easier to read. The real simplified code is written on a
+      single line:</para>
 
-      <para>Now we can use <literal>grep</literal> to develop a regular
-      expression.</para>
+      <programlisting>void f ( ) { if ( p ) { free ( p ) ; } }</programlisting>
 
-      <programlisting>grep "if [(] p [)] { free [(] p [)] ; }" test.txt</programlisting>
+      <para>Now we can use <literal>cppcheck --rule</literal> to develop a
+      regular expression.</para>
 
-      <para>Feel free to improve the pattern.</para>
+      <programlisting>$ cppcheck --rule="if \( p \) { free \( p \) ; }" dealloc.cpp
+Checking dealloc.cpp...
+[dealloc.cpp:2]: (style) found 'if ( p ) { free ( p ) ; }'</programlisting>
+
+      <para>Feel free to improve the pattern. Above, the pointer name must be
+      "p" to get a match.</para>
     </section>
 
     <section>
@@ -170,8 +178,8 @@
         </listitem>
 
         <listitem>
-          <para>an optional error message that is reported when pattern is
-          found</para>
+          <para>an error message that is reported when pattern is found - this
+          is optional, if none is given a default message is written.</para>
         </listitem>
       </itemizedlist>
 
@@ -179,7 +187,7 @@
 
       <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;rule version="1"&gt;
-  &lt;pattern&gt;if [(] p [)] { free [(] p [)] ; }&lt;/pattern&gt;
+  &lt;pattern&gt;if \( p \) { free \( p \) ; }&lt;/pattern&gt;
   &lt;message&gt;
     &lt;id&gt;redundantCondition&lt;/id&gt;
     &lt;severity&gt;style&lt;/severity&gt;
@@ -189,10 +197,14 @@
 
       <para>The <literal>message</literal>, <literal>id</literal>,
       <literal>severity</literal> and <literal>summary</literal> elements are
-      optional. If they are not written default values are used.</para>
+      optional. But highly recommended.</para>
 
-      <para>Now you can test this rule. Use the <literal>cppcheck
-      --rule-file=dealloc.rule test.cpp</literal> command.</para>
+      <para>If you save that xml data in <literal>dealloc.rule</literal> you
+      can test this rule:</para>
+
+      <programlisting>$ cppcheck --rule-file=dealloc.rule dealloc.cpp
+Checking dealloc.cpp...
+[dealloc.cpp:2]: (style) Redundant condition. It is valid to free a NULL pointer.</programlisting>
     </section>
   </section>
 </article>
