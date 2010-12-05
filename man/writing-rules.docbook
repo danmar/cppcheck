@@ -120,32 +120,79 @@
 
     <para>Simple rules can be defined through regular expressions.</para>
 
-    <para>A rule consist of:</para>
+    <section>
+      <title>Creating regular expression</title>
 
-    <itemizedlist>
-      <listitem>
-        <para>a pattern to search for.</para>
-      </listitem>
+      <para>Let's create a regular expression that checks for:</para>
 
-      <listitem>
-        <para>an error message that is reported when pattern is found</para>
-      </listitem>
-    </itemizedlist>
+      <programlisting>if (p)
+    free(p);</programlisting>
 
-    <para>Here is a simple example:</para>
+      <para>The condition is often redundant, it is valid to free a NULL
+      pointer.</para>
 
-    <programlisting>&lt;?xml version="1.0"?&gt;
+      <para>It is important to write the regular expression so it matches the
+      simplified code. Create a source file that has the bad code:</para>
+
+      <programlisting>void f() {
+    if (p) free(p);
+}</programlisting>
+
+      <para>I intentionally put the whole pattern on a single line. The
+      simplified code is written on a single line of code.</para>
+
+      <para>To see the simplified code I use <literal>cppcheck --debug
+      file.cpp</literal>.</para>
+
+      <programlisting>##file dealloc.cpp
+1: void f ( ) {
+2: if ( p ) { free ( p ) ; }
+3: }</programlisting>
+
+      <para>I save that in a file <literal>test.txt</literal>.</para>
+
+      <para>Now we can use <literal>grep</literal> to develop a regular
+      expression.</para>
+
+      <programlisting>grep "if [(] p [)] { free [(] p [)] ; }" test.txt</programlisting>
+
+      <para>Feel free to improve the pattern.</para>
+    </section>
+
+    <section>
+      <title>Create rule file</title>
+
+      <para>A rule consist of:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>a pattern to search for.</para>
+        </listitem>
+
+        <listitem>
+          <para>an optional error message that is reported when pattern is
+          found</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Here is a simple example:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;rule version="1"&gt;
-  &lt;pattern&gt;/ 0&lt;/pattern&gt;
+  &lt;pattern&gt;if [(] p [)] { free [(] p [)] ; }&lt;/pattern&gt;
   &lt;message&gt;
-    &lt;id&gt;divbyzero&lt;/id&gt;
-    &lt;severity&gt;error&lt;/severity&gt;
-    &lt;summary&gt;Division by zero&lt;/summary&gt;
+    &lt;id&gt;redundantCondition&lt;/id&gt;
+    &lt;severity&gt;style&lt;/severity&gt;
+    &lt;summary&gt;Redundant condition. It is valid to free a NULL pointer.&lt;/summary&gt;
   &lt;/message&gt;
 &lt;/rule&gt;</programlisting>
 
-    <para></para>
+      <para>The <literal>message</literal>, <literal>id</literal>,
+      <literal>severity</literal> and <literal>summary</literal> elements are
+      optional. If they are not written default values are used.</para>
 
-    <para></para>
+      <para>Now you can test this rule. Use the <literal>cppcheck
+      --rule-file=dealloc.rule test.cpp</literal> command.</para>
+    </section>
   </section>
 </article>
