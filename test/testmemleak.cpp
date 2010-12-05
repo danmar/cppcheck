@@ -3209,8 +3209,25 @@ private:
               "    delete [] str2;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: Fred::str1\n", errout.str());
-    }
 
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    char *str1;\n"
+              "    char *str2;\n"
+              "public:\n"
+              "    Fred()\n"
+              "    {\n"
+              "        str1 = new char[10];\n"
+              "        str2 = new char[10];\n"
+              "    }\n"
+              "    ~Fred()\n"
+              "    {\n"
+              "        delete [] str2;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: Fred::str1\n", errout.str());
+    }
 
     void class2()
     {
@@ -3233,6 +3250,22 @@ private:
               "    free(str1);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:17]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    char *str1;\n"
+              "public:\n"
+              "    Fred()\n"
+              "    {\n"
+              "        str1 = new char[10];\n"
+              "    }\n"
+              "    ~Fred()\n"
+              "    {\n"
+              "        free(str1);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:12]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
     }
 
     void class3()
@@ -3271,6 +3304,35 @@ private:
               "}\n");
 
         ASSERT_EQUALS("", errout.str());
+
+        check("class Token;\n"
+              "\n"
+              "class Tokenizer\n"
+              "{\n"
+              "private:\n"
+              "    Token *_tokens;\n"
+              "\n"
+              "public:\n"
+              "    Tokenizer()\n"
+              "    {\n"
+              "        _tokens = new Token;\n"
+              "    }\n"
+              "    ~Tokenizer()\n"
+              "    {\n"
+              "        deleteTokens(_tokens);\n"
+              "    }\n"
+              "    void deleteTokens(Token *tok)\n"
+              "    {\n"
+              "        while (tok)\n"
+              "        {\n"
+              "            Token *next = tok->next();\n"
+              "            delete tok;\n"
+              "            tok = next;\n"
+              "        }\n"
+              "    }\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void class4()
@@ -3295,6 +3357,23 @@ private:
               "    addAbc( p );\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct ABC;\n"
+              "class Fred\n"
+              "{\n"
+              "private:\n"
+              "    void addAbc(ABC* abc)\n"
+              "    {\n"
+              "        AbcPosts->Add(abc);\n"
+              "    }\n"
+              "public:\n"
+              "    void click()\n"
+              "    {\n"
+              "        ABC *p = new ABC;\n"
+              "        addAbc( p );\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void class6()
@@ -3311,6 +3390,18 @@ private:
               "    delete [] str;\n"
               "    hello();\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    void foo()\n"
+              "    {    \n"
+              "        char *str = new char[100];\n"
+              "        delete [] str;\n"
+              "        hello();\n"
+              "    }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3333,6 +3424,21 @@ private:
               "    delete this->i;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    int *i;\n"
+              "    Fred()\n"
+              "    {\n"
+              "        this->i = new int;\n"
+              "    }\n"
+              "    ~Fred()\n"
+              "    {\n"
+              "        delete this->i;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void class8()
@@ -3350,6 +3456,19 @@ private:
               "    delete c;\n"
               "    doNothing(c);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    void a()\n"
+              "    {\n"
+              "        int* c = new int(1);\n"
+              "        delete c;\n"
+              "        doNothing(c);\n"
+              "    }\n"
+              "    void doNothing() { }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3369,10 +3488,31 @@ private:
               "A::~A()\n"
               "{ delete (p); }\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    int * p;\n"
+              "    A()\n"
+              "    { p = new int; }\n"
+              "    ~A()\n"
+              "    { delete (p); }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void class10()
     {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    int * p;\n"
+              "    A();\n"
+              "};\n"
+              "A::A()\n"
+              "{ p = new int; }\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+
         check("class A\n"
               "{\n"
               "public:\n"
@@ -3384,6 +3524,15 @@ private:
 
     void class11()
     {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    int * p;\n"
+              "    A() : p(new int[10])\n"
+              "    { }"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+
         check("class A\n"
               "{\n"
               "public:\n"
@@ -3416,6 +3565,20 @@ private:
               "void A::cleanup()\n"
               "{ delete [] p; }\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "private:\n"
+              "    int *p;\n"
+              "public:\n"
+              "    A()\n"
+              "    { p = new int[10]; }\n"
+              "    ~A()\n"
+              "    { }\n"
+              "    void cleanup()\n"
+              "    { delete [] p; }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class13()
@@ -3438,7 +3601,21 @@ private:
               "\n"
               "void A::foo()\n"
               "{ p = new int[10]; delete [] p; }\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:17]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "private:\n"
+              "    int *p;\n"
+              "public:\n"
+              "    A()\n"
+              "    { }\n"
+              "    ~A()\n"
+              "    { }\n"
+              "    void foo()\n"
+              "    { p = new int[10]; delete [] p; }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:11]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n", errout.str());
     }
 
     void class14()
@@ -3452,7 +3629,19 @@ private:
               "\n"
               "void A::init()\n"
               "{ p = new int[10]; }\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
+                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "public:\n"
+              "    void init()\n"
+              "    { p = new int[10]; }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
+                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+
 
         check("class A\n"
               "{\n"
@@ -3463,7 +3652,19 @@ private:
               "\n"
               "void A::init()\n"
               "{ p = new int; }\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
+                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "public:\n"
+              "    void init()\n"
+              "    { p = new int; }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
+                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+
 
         check("class A\n"
               "{\n"
@@ -3474,7 +3675,18 @@ private:
               "\n"
               "void A::init()\n"
               "{ p = malloc(sizeof(int)*10); }\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
+                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "public:\n"
+              "    void init()\n"
+              "    { p = malloc(sizeof(int)*10); }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
+                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class15()
@@ -3494,6 +3706,17 @@ private:
               "{\n"
               "    int *p;\n"
               "public:\n"
+              "    A()\n"
+              "    { p = new int[10]; }\n"
+              "    ~A() { delete [] p; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "public:\n"
               "    A();\n"
               "    ~A() { delete p; }\n"
               "};\n"
@@ -3505,11 +3728,32 @@ private:
               "{\n"
               "    int *p;\n"
               "public:\n"
+              "    A()\n"
+              "    { p = new int; }\n"
+              "    ~A() { delete p; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "public:\n"
               "    A();\n"
               "    ~A() { free(p); }\n"
               "};\n"
               "A::A()\n"
               "{ p = malloc(sizeof(int)*10); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "public:\n"
+              "    A()\n"
+              "    { p = malloc(sizeof(int)*10); }\n"
+              "    ~A() { free(p); }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3543,6 +3787,33 @@ private:
               "    delete [] A::pd;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
+
+        check("class A {\n"
+              "private:\n"
+              "    char *pd;\n"
+              "public:\n"
+              "    void foo()\n"
+              "    {\n"
+              "        pd = new char[12];\n"
+              "        delete [] pd;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
+
+        check("class A {\n"
+              "private:\n"
+              "    char *pd;\n"
+              "public:\n"
+              "    void foo();\n"
+              "};\n"
+              "\n"
+              "void A::foo()\n"
+              "{\n"
+              "    pd = new char[12];\n"
+              "    delete [] pd;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
     }
 
     void class18()
@@ -3559,6 +3830,20 @@ private:
               "private:\n"
               "  char *a;\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class  A : public x\n"
+              "{\n"
+              "public:\n"
+              "  A();\n"
+              "private:\n"
+              "  char *a;\n"
+              "};\n"
+              "A::A()\n"
+              "{\n"
+              "  a = new char[10];\n"
+              "  foo(a);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
