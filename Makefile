@@ -63,6 +63,7 @@ TESTOBJ =     test/options.o \
               test/testconstructors.o \
               test/testcppcheck.o \
               test/testdivision.o \
+              test/testerrorlogger.o \
               test/testexceptionsafety.o \
               test/testincompletestatement.o \
               test/testmathlib.o \
@@ -247,6 +248,9 @@ test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/settings.h lib/err
 test/testdivision.o: test/testdivision.cpp lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testdivision.o test/testdivision.cpp
 
+test/testerrorlogger.o: test/testerrorlogger.cpp test/testsuite.h lib/errorlogger.h test/redirect.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testerrorlogger.o test/testerrorlogger.cpp
+
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/tokenize.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
 
@@ -298,7 +302,7 @@ test/testsuite.o: test/testsuite.cpp test/testsuite.h lib/errorlogger.h test/red
 test/testthreadexecutor.o: test/testthreadexecutor.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testthreadexecutor.o test/testthreadexecutor.cpp
 
-test/testtoken.o: test/testtoken.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/token.h
+test/testtoken.o: test/testtoken.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/token.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testtoken.o test/testtoken.cpp
 
 test/testtokenize.o: test/testtokenize.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/token.h lib/settings.h
