@@ -118,48 +118,50 @@
   <section>
     <title>Regular expressions</title>
 
-    <para>Simple rules can be defined through regular expressions. Cppcheck
-    uses PCRE to handle regular expressions.</para>
+    <para>Simple rules can be defined through regular expressions.</para>
+
+    <para>Cppcheck uses the <literal>PCRE</literal> library to handle regular
+    expressions. <literal>PCRE</literal> stands for "Perl Compatible Regular
+    Expressions". The homepage for <literal>PCRE</literal> is
+    <literal>http://www.pcre.org</literal>.</para>
 
     <section>
-      <title>Creating regular expression</title>
+      <title>Creating the regular expression</title>
 
       <para>Let's create a regular expression that checks for:</para>
 
       <programlisting>if (p)
     free(p);</programlisting>
 
-      <para>The condition is often redundant, on most implementations it is
-      valid to free a NULL pointer.</para>
+      <para>For such code the condition is often redundant, on most
+      implementations it is valid to free a NULL pointer.</para>
 
-      <para>The regular expression must match the simplified code. Create a
-      source file that has the bad code:</para>
+      <para>The regular expression must be written for the simplified code. To
+      see what the simplified code looks like you can create a source file
+      with some code:</para>
 
       <programlisting>void f() {
     if (p)
         free(p);
 }</programlisting>
 
-      <para>To see the simplified code you can use <literal>cppcheck
-      --rule=".+" dealloc.cpp</literal>:</para>
+      <para>Save that code as <literal>dealloc.cpp</literal> and use
+      <literal>cppcheck --rule=".+" dealloc.cpp</literal>:</para>
 
       <programlisting>$ ./cppcheck --rule=".+" dealloc.cpp 
 Checking dealloc.cpp...
 [dealloc.cpp:1]: (style) found ' void f ( ) { if ( p ) { free ( p ) ; } }'</programlisting>
 
-      <para>In short, the simplified code is:</para>
+      <para>From that output we can see that the simplified code is:</para>
 
       <programlisting> void f ( ) { if ( p ) { free ( p ) ; } }</programlisting>
 
-      <para>Now that the simplified code is known we can create a regular
-      expression:</para>
+      <para>Now that we know how the simplified code looks for a simple test
+      case, we can create a regular expression:</para>
 
       <programlisting>$ cppcheck --rule="if \( p \) { free \( p \) ; }" dealloc.cpp
 Checking dealloc.cpp...
 [dealloc.cpp:2]: (style) found 'if ( p ) { free ( p ) ; }'</programlisting>
-
-      <para>Feel free to improve the pattern. Above, the pointer name must be
-      "p" to get a match.</para>
     </section>
 
     <section>
@@ -169,12 +171,11 @@ Checking dealloc.cpp...
 
       <itemizedlist>
         <listitem>
-          <para>a pattern to search for.</para>
+          <para>a pattern to search for</para>
         </listitem>
 
         <listitem>
-          <para>an error message that is reported when pattern is found - this
-          is optional, if none is given a default message is written.</para>
+          <para>an error message that is reported when pattern is found</para>
         </listitem>
       </itemizedlist>
 
@@ -189,10 +190,6 @@ Checking dealloc.cpp...
     &lt;summary&gt;Redundant condition. It is valid to free a NULL pointer.&lt;/summary&gt;
   &lt;/message&gt;
 &lt;/rule&gt;</programlisting>
-
-      <para>The <literal>message</literal>, <literal>id</literal>,
-      <literal>severity</literal> and <literal>summary</literal> elements are
-      optional. But highly recommended.</para>
 
       <para>If you save that xml data in <literal>dealloc.rule</literal> you
       can test this rule:</para>
