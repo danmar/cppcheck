@@ -201,9 +201,6 @@ public:
     /** @brief Perform checking */
     void check();
 
-    /** @brief experimental: checking via ExecutionPath */
-    void localleaks();
-
     /**
      * Checking for a memory leak caused by improper realloc usage.
      */
