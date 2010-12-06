@@ -8,7 +8,7 @@
     <author>
       <firstname>Daniel</firstname>
 
-      <surname>Marjamäki</surname>
+      <surname>Marjamaki</surname>
 
       <affiliation>
         <orgname>Cppcheck</orgname>
@@ -21,34 +21,11 @@
   <section>
     <title>Introduction</title>
 
-    <para>This is a short guide for developers who want to write Cppcheck
-    rules.</para>
+    <para>This is a short and simple guide that describes how rules are
+    written for Cppcheck.</para>
 
-    <para>There are two ways to write rules.</para>
-
-    <variablelist>
-      <varlistentry>
-        <term>Regular expressions</term>
-
-        <listitem>
-          <para>Simple rules can be created by using regular expressions. No
-          compilation is required.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>C++</term>
-
-        <listitem>
-          <para>Advanced rules must be created with C++. These rules must be
-          compiled and linked statically with Cppcheck.</para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
-
-    <para>It is a good first step to use regular expressions. It is easier.
-    You'll get results quicker. Therefore this guide will focus on regular
-    expressions.</para>
+    <para>The patterns are defined with regular expressions. It is required
+    that you know how regular expressions work.</para>
   </section>
 
   <section>
@@ -59,105 +36,73 @@
     before the rules are used.</para>
 
     <para>Cppcheck is designed to find bugs and dangerous code. Stylistic
-    information such as indentation, comments, etc are filtered out at an
+    information (such as indentation, comments, etc) are filtered out at an
     early state. You don't need to worry about such stylistic information when
     you write rules.</para>
 
     <para>Between each token in the code there is always a space. For instance
     the raw code "1+f()" is processed into "1 + f ( )".</para>
 
-    <para>The code is simplified in many ways. For example:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>The templates are instantiated</para>
-      </listitem>
-
-      <listitem>
-        <para>The typedefs are handled</para>
-      </listitem>
-
-      <listitem>
-        <para>There is no "else if". These are converted into "else {
-        if.."</para>
-      </listitem>
-
-      <listitem>
-        <para>The bodies of "if", "else", "while", "do" and "for" are always
-        enclosed in "{" and "}"</para>
-      </listitem>
-
-      <listitem>
-        <para>A declaration of multiple variables is split up into multiple
-        variable declarations. "int a,b;" =&gt; "int a; int b;"</para>
-      </listitem>
-
-      <listitem>
-        <para>There is no sizeof</para>
-      </listitem>
-
-      <listitem>
-        <para>NULL is replaced with 0</para>
-      </listitem>
-
-      <listitem>
-        <para>Static value flow analysis is made. Known values are inserted
-        into the code.</para>
-      </listitem>
-
-      <listitem>
-        <para>.. and many more</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>The simplifications are made in the <literal>Cppcheck</literal>
-    <literal>Tokenizer</literal>. For more information see:
-    <uri>http://cppcheck.sourceforge.net/doxyoutput/classTokenizer.html</uri></para>
+    <para>The code is simplified in many ways.</para>
   </section>
 
   <section>
-    <title>Regular expressions</title>
+    <title>Creating a simple rule</title>
 
-    <para>Simple rules can be defined through regular expressions.</para>
+    <para>When creating a rule there are two steps:</para>
 
-    <para>Cppcheck uses the <literal>PCRE</literal> library to handle regular
-    expressions. <literal>PCRE</literal> stands for "Perl Compatible Regular
-    Expressions". The homepage for <literal>PCRE</literal> is
-    <literal>http://www.pcre.org</literal>.</para>
+    <orderedlist>
+      <listitem>
+        <para>Create the regular expression</para>
+      </listitem>
+
+      <listitem>
+        <para>Create a XML based rule file</para>
+      </listitem>
+    </orderedlist>
 
     <section>
-      <title>Creating the regular expression</title>
+      <title>Step 1 - Creating the regular expression</title>
 
-      <para>Let's create a regular expression that checks for:</para>
+      <para>Cppcheck uses the <literal>PCRE</literal> library to handle
+      regular expressions. <literal>PCRE</literal> stands for "Perl Compatible
+      Regular Expressions". The homepage for <literal>PCRE</literal> is
+      <literal>http://www.pcre.org</literal>.</para>
+
+      <para>Let's create a regular expression that checks for code such
+      as:</para>
 
       <programlisting>if (p)
     free(p);</programlisting>
 
-      <para>For such code the condition is often redundant, on most
-      implementations it is valid to free a NULL pointer.</para>
+      <para>For such code the condition is often redundant (on most
+      implementations it is valid to free a NULL pointer).</para>
 
       <para>The regular expression must be written for the simplified code. To
       see what the simplified code looks like you can create a source file
-      with some code:</para>
+      with the code:</para>
 
       <programlisting>void f() {
     if (p)
         free(p);
 }</programlisting>
 
-      <para>Save that code as <literal>dealloc.cpp</literal> and use
+      <para>Save that code as <literal>dealloc.cpp</literal> and then use
       <literal>cppcheck --rule=".+" dealloc.cpp</literal>:</para>
 
       <programlisting>$ ./cppcheck --rule=".+" dealloc.cpp 
 Checking dealloc.cpp...
 [dealloc.cpp:1]: (style) found ' void f ( ) { if ( p ) { free ( p ) ; } }'</programlisting>
 
+      <para>The regular expression <literal>.+</literal> matches everything
+      and the matching text is shown on the screen.</para>
+
       <para>From that output we can see that the simplified code is:</para>
 
       <programlisting> void f ( ) { if ( p ) { free ( p ) ; } }</programlisting>
 
-      <para>Now that we know how the simplified code looks for a simple test
-      case, we can create a regular expression:</para>
+      <para>Now that we know how the simplified code looks. We can create a
+      regular expression that matches it properly:</para>
 
       <programlisting>$ cppcheck --rule="if \( p \) { free \( p \) ; }" dealloc.cpp
 Checking dealloc.cpp...
@@ -165,9 +110,9 @@ Checking dealloc.cpp...
     </section>
 
     <section>
-      <title>Create rule file</title>
+      <title>Step 2 - Create rule file</title>
 
-      <para>A rule consist of:</para>
+      <para>A rule file is a simple XML file that contains:</para>
 
       <itemizedlist>
         <listitem>
