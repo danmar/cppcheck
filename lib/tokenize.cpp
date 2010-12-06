@@ -3207,7 +3207,7 @@ void Tokenizer::setVarId()
                 if (c == varname[0])
                 {
                     const std::string &prev = tok2->strAt(-1);
-                    if (tok2->str() == varname && prev != "struct" && prev != "union" && prev != "::" && prev != ".")
+                    if (tok2->str() == varname && prev != "struct" && prev != "union" && prev != "::" && prev != "." && tok2->strAt(1) != "::")
                         tok2->varId(_varId);
                 }
                 else if (c == '{')

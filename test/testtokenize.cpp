@@ -155,6 +155,7 @@ private:
         TEST_CASE(varid24);
         TEST_CASE(varid25);
         TEST_CASE(varid26);  // ticket #1967 (list of function pointers)
+        TEST_CASE(varid27);		// Ticket #2280 (same name for namespace and variable)
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidStl);
@@ -2498,6 +2499,16 @@ private:
         const std::string code("list<int (*)()> functions;\n");
         const std::string expected("\n\n##file 0\n"
                                    "1: list < int ( * ) ( ) > functions@1 ;\n");
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid27()
+    {
+        const std::string code("int fooled_ya;\n"
+                               "fooled_ya::iterator iter;\n");
+        const std::string expected("\n\n##file 0\n"
+                                   "1: int fooled_ya@1 ;\n"
+                                   "2: fooled_ya :: iterator iter@2 ;\n");
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
