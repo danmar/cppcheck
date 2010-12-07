@@ -114,7 +114,7 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varn
 
 void CheckBufferOverrun::strncatUsage(const Token *tok)
 {
-    if (_settings && !_settings->_checkCodingStyle)
+    if (!_settings->_checkCodingStyle)
         return;
 
     reportError(tok, Severity::warning, "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
@@ -127,7 +127,7 @@ void CheckBufferOverrun::outOfBounds(const Token *tok, const std::string &what)
 
 void CheckBufferOverrun::sizeArgumentAsChar(const Token *tok)
 {
-    if (_settings && !_settings->_checkCodingStyle)
+    if (!_settings->_checkCodingStyle)
         return;
     reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument is given as a char constant");
 }
@@ -990,7 +990,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                             if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
                             {
                                 // this is currently inconclusive. See TestBufferOverrun::terminateStrncpy3
-                                if (_settings && _settings->inconclusive)
+                                if (_settings->inconclusive)
                                     terminateStrncpyError(tok);
                             }
 

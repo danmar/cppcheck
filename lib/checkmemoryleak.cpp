@@ -761,7 +761,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             --parlevel;
             if (parlevel < 1)
             {
-                return (_settings && _settings->inconclusive) ? 0 : "callfunc";
+                return (_settings->inconclusive) ? 0 : "callfunc";
             }
         }
 

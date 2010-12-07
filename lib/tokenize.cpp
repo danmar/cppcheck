@@ -414,7 +414,7 @@ void Tokenizer::createTokens(std::istream &code)
 
 void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string &type)
 {
-    if (!(_settings && _settings->_checkCodingStyle))
+    if (!(_settings->_checkCodingStyle))
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -440,7 +440,7 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
 
 void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type)
 {
-    if (!(_settings && _settings->_checkCodingStyle))
+    if (!(_settings->_checkCodingStyle))
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -647,9 +647,6 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
 
 void Tokenizer::unsupportedTypedef(const Token *tok) const
 {
-    if (!_settings)
-        return;
-
     if (!_settings->debugwarnings)
         return;
 
@@ -2655,7 +2652,7 @@ void Tokenizer::simplifyTemplates()
             else
             {
                 // debug message that we bail out..
-                if (_settings && _settings->debugwarnings)
+                if (_settings->debugwarnings)
                 {
                     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                     ErrorLogger::ErrorMessage::FileLocation loc;
@@ -2750,7 +2747,7 @@ void Tokenizer::simplifyTemplates()
 
                 if (type2.empty() || type.size() != types2.size())
                 {
-                    if (_settings && _settings->debugwarnings)
+                    if (_settings->debugwarnings)
                     {
                         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                         ErrorLogger::ErrorMessage::FileLocation loc;
@@ -4073,7 +4070,7 @@ bool Tokenizer::simplifyTokenList()
     removeRedundantAssignment();
 
     simplifyComma();
-    if (_settings && _settings->debug)
+    if (_settings->debug)
     {
         _tokens->printOut(0, _files);
     }
@@ -6155,7 +6152,7 @@ bool Tokenizer::simplifyKnownVariables()
                     {
                         // This is a really generic bailout so let's try to avoid this.
                         // There might be lots of false negatives.
-                        if (_settings && _settings->debugwarnings)
+                        if (_settings->debugwarnings)
                         {
                             // FIXME: Fix all the debug warnings for values and then
                             // remove this bailout
@@ -6943,7 +6940,7 @@ void Tokenizer::simplifyNestedStrcat()
 
 void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const std::string & type)
 {
-    if (!(_settings && _settings->_checkCodingStyle))
+    if (!(_settings->_checkCodingStyle))
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
