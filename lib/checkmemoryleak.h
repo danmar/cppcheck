@@ -98,10 +98,10 @@ public:
     /**
      * @brief Get type of deallocation at given position
      * @param tok position
-     * @param varnames variable names
+     * @param varname variable name
      * @return type of deallocation
      */
-    AllocType getDeallocationType(const Token *tok, const char *varnames[]) const;
+    AllocType getDeallocationType(const Token *tok, const std::string &varname) const;
 
     /**
      * @brief Get type of deallocation at given position

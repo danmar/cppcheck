@@ -238,53 +238,43 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
     return No;
 }
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, const char *varnames[]) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, const std::string &varname) const
 {
-    int i = 0;
-    std::string names;
-    while (varnames[i])
-    {
-        if (i > 0)
-            names += " . ";
-
-        names += varnames[i];
-        i++;
-    }
-
-    if (Token::simpleMatch(tok, std::string("delete " + names + " ;").c_str()))
+    if (Token::simpleMatch(tok, std::string("delete " + varname + " ;").c_str()))
         return New;
 
-    if (Token::simpleMatch(tok, std::string("delete [ ] " + names + " ;").c_str()))
+    if (Token::simpleMatch(tok, std::string("delete [ ] " + varname + " ;").c_str()))
         return NewArray;
 
-    if (Token::simpleMatch(tok, std::string("delete ( " + names + " ) ;").c_str()))
+    if (Token::simpleMatch(tok, std::string("delete ( " + varname + " ) ;").c_str()))
         return New;
 
-    if (Token::simpleMatch(tok, std::string("delete [ ] ( " + names + " ) ;").c_str()))
+    if (Token::simpleMatch(tok, std::string("delete [ ] ( " + varname + " ) ;").c_str()))
         return NewArray;
 
-    if (Token::simpleMatch(tok, std::string("free ( " + names + " ) ;").c_str()) ||
-        Token::simpleMatch(tok, std::string("kfree ( " + names + " ) ;").c_str()))
+    if (Token::simpleMatch(tok, std::string("free ( " + varname + " ) ;").c_str()) ||
+        Token::simpleMatch(tok, std::string("kfree ( " + varname + " ) ;").c_str()))
         return Malloc;
 
-    if (Token::simpleMatch(tok, std::string("g_free ( " + names + " ) ;").c_str()))
+    if (Token::simpleMatch(tok, std::string("g_free ( " + varname + " ) ;").c_str()))
         return gMalloc;
 
-    if (Token::simpleMatch(tok, std::string("fclose ( " + names + " )").c_str()) ||
+    if (Token::simpleMatch(tok, std::string("fclose ( " + varname + " )").c_str()) ||
         Token::simpleMatch(tok, "fcloseall ( )"))
         return File;
 
-    if (Token::simpleMatch(tok, std::string("close ( " + names + " )").c_str()))
+    if (Token::simpleMatch(tok, std::string("close ( " + varname + " )").c_str()))
         return Fd;
 
-    if (Token::simpleMatch(tok, std::string("pclose ( " + names + " )").c_str()))
+    if (Token::simpleMatch(tok, std::string("pclose ( " + varname + " )").c_str()))
         return Pipe;
 
-    if (Token::simpleMatch(tok, std::string("closedir ( " + names + " )").c_str()))
+    if (Token::simpleMatch(tok, std::string("closedir ( " + varname + " )").c_str()))
         return Dir;
 
     return No;
 }
+
 //--------------------------------------------------------------------------
 
 
@@ -2689,8 +2679,9 @@ void CheckMemoryLeakInClass::variable(const SymbolDatabase::SpaceInfo *classinfo
                         return;
 
                     // Foo::var1 = ..
-                    // bail out
-                    if (Token::simpleMatch(tok->previous(), "::"))
+                    // bail out when not same class
+                    if (Token::simpleMatch(tok->previous(), "::") &&
+                        tok->strAt(-2) != classinfo->className)
                         return;
 
                     AllocType alloc = getAllocationType(tok->tokAt((indent > 0) ? 2 : 3), 0);
@@ -2718,14 +2709,16 @@ void CheckMemoryLeakInClass::variable(const SymbolDatabase::SpaceInfo *classinfo
                     continue;
 
                 // Deallocate..
-                const char *varnames[3] = { "var", 0, 0 };
-                varnames[0] = varname.c_str();
-                AllocType dealloc = getDeallocationType(tok, varnames);
+                AllocType dealloc = getDeallocationType(tok, varname);
                 if (dealloc == No)
                 {
-                    varnames[0] = "this";
-                    varnames[1] = varname.c_str();
-                    dealloc = getDeallocationType(tok, varnames);
+                    std::string temp = classinfo->className + " :: " + varname;
+                    dealloc = getDeallocationType(tok, temp);
+                }
+                if (dealloc == No)
+                {
+                    std::string temp = "this . " + varname;
+                    dealloc = getDeallocationType(tok, temp);
                 }
                 if (dealloc != CheckMemoryLeak::No)
                 {
@@ -2799,6 +2792,13 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const SymbolDatabase::SpaceInf
                 const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(3), varid);
                 if (alloc != CheckMemoryLeak::No)
                     publicAllocationError(tok2, tok2->strAt(1));
+            }
+            else if (Token::Match(tok2, "{|}|; %type% :: %varid% =", varid) &&
+                     tok2->next()->str() == spaceinfo->className)
+            {
+                const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(5), varid);
+                if (alloc != CheckMemoryLeak::No)
+                    publicAllocationError(tok2, tok2->strAt(3));
             }
         }
     }
