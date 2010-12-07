@@ -3072,6 +3072,7 @@ private:
         TEST_CASE(class17);
         TEST_CASE(class18);
         TEST_CASE(class19); // ticket #2219
+        TEST_CASE(class20);
 
         TEST_CASE(staticvar);
 
@@ -3801,6 +3802,128 @@ private:
               "    delete rp2;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void class20()
+    {
+        check("namespace ns1 {\n"
+              "    class Fred\n"
+              "    {\n"
+              "    private:\n"
+              "        char *str1;\n"
+              "        char *str2;\n"
+              "    public:\n"
+              "        Fred()\n"
+              "        {\n"
+              "            str1 = new char[10];\n"
+              "            str2 = new char[10];\n"
+              "        }\n"
+              "        ~Fred()\n"
+              "        {\n"
+              "            delete [] str2;\n"
+              "        }\n"
+              "    };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: Fred::str1\n", errout.str());
+
+        check("namespace ns1 {\n"
+              "    class Fred\n"
+              "    {\n"
+              "    private:\n"
+              "        char *str1;\n"
+              "        char *str2;\n"
+              "    public:\n"
+              "        Fred();\n"
+              "        ~Fred();\n"
+              "    };\n"
+              "\n"
+              "    Fred::Fred()\n"
+              "    {\n"
+              "        str1 = new char[10];\n"
+              "        str2 = new char[10];\n"
+              "    }\n"
+              "\n"
+              "    Fred::~Fred()\n"
+              "    {\n"
+              "        delete [] str2;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: Fred::str1\n", errout.str());
+
+        check("namespace ns1 {\n"
+              "    class Fred\n"
+              "    {\n"
+              "    private:\n"
+              "        char *str1;\n"
+              "        char *str2;\n"
+              "    public:\n"
+              "        Fred();\n"
+              "        ~Fred();\n"
+              "    };\n"
+              "}\n"
+              "ns1::Fred::Fred()\n"
+              "{\n"
+              "    str1 = new char[10];\n"
+              "    str2 = new char[10];\n"
+              "}\n"
+              "\n"
+              "ns1::Fred::~Fred()\n"
+              "{\n"
+              "    delete [] str2;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: Fred::str1\n", errout.str());
+
+        check("namespace ns1 {\n"
+              "    namespace ns2 {\n"
+              "        class Fred\n"
+              "        {\n"
+              "        private:\n"
+              "            char *str1;\n"
+              "            char *str2;\n"
+              "        public:\n"
+              "            Fred();\n"
+              "            ~Fred();\n"
+              "        };\n"
+              "    }\n"
+              "}\n"
+              "ns1::ns2::Fred::Fred()\n"
+              "{\n"
+              "    str1 = new char[10];\n"
+              "    str2 = new char[10];\n"
+              "}\n"
+              "\n"
+              "ns1::ns2::Fred::~Fred()\n"
+              "{\n"
+              "    delete [] str2;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: Fred::str1\n", errout.str());
+
+        check("namespace ns1 {\n"
+              "    namespace ns2 {\n"
+              "        namespace ns3 {\n"
+              "            class Fred\n"
+              "            {\n"
+              "            private:\n"
+              "                char *str1;\n"
+              "                char *str2;\n"
+              "            public:\n"
+              "                Fred();\n"
+              "                ~Fred();\n"
+              "            };\n"
+              "        }\n"
+              "    }\n"
+              "}\n"
+              "ns1::ns2::ns3::Fred::Fred()\n"
+              "{\n"
+              "    str1 = new char[10];\n"
+              "    str2 = new char[10];\n"
+              "}\n"
+              "\n"
+              "ns1::ns2::ns3::Fred::~Fred()\n"
+              "{\n"
+              "    delete [] str2;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: Fred::str1\n", errout.str());
     }
 
     void staticvar()
