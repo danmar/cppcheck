@@ -240,7 +240,7 @@
          <item>
           <widget class="QLabel" name="mLblErrors">
            <property name="text">
-            <string>TextLabel</string>
+            <string notr="true">TextLabel</string>
            </property>
           </widget>
          </item>
@@ -258,7 +258,7 @@
          <item>
           <widget class="QLabel" name="mLblWarnings">
            <property name="text">
-            <string>TextLabel</string>
+            <string notr="true">TextLabel</string>
            </property>
           </widget>
          </item>
@@ -276,7 +276,7 @@
          <item>
           <widget class="QLabel" name="mLblStyle">
            <property name="text">
-            <string>TextLabel</string>
+            <string notr="true">TextLabel</string>
            </property>
           </widget>
          </item>
@@ -294,7 +294,7 @@
          <item>
           <widget class="QLabel" name="mLblPerformance">
            <property name="text">
-            <string>TextLabel</string>
+            <string notr="true">TextLabel</string>
            </property>
           </widget>
          </item>
