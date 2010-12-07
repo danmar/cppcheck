@@ -158,6 +158,7 @@ private:
         TEST_CASE(const39);
         TEST_CASE(const40); // ticket #2228
         TEST_CASE(const41); // ticket #2255
+        TEST_CASE(const42); // ticket #2282
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -4701,6 +4702,83 @@ private:
                    "};\n");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const42() // ticket #2282
+    {
+        checkConst("class Fred\n"
+                   "{\n"
+                   "public:\n"
+                   "    struct AB { };\n"
+                   "    bool f(AB * ab);\n"
+                   "};\n"
+                   "bool Fred::f(Fred::AB * ab)\n"
+                   "{\n"
+                   "}\n");
+
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style) The function 'Fred::f' can be const\n", errout.str());
+
+        checkConst("class Fred\n"
+                   "{\n"
+                   "public:\n"
+                   "    struct AB {\n"
+                   "        struct CD { };\n"
+                   "    };\n"
+                   "    bool f(AB::CD * cd);\n"
+                   "};\n"
+                   "bool Fred::f(Fred::AB::CD * cd)\n"
+                   "{\n"
+                   "}\n");
+
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:7]: (style) The function 'Fred::f' can be const\n", errout.str());
+
+        checkConst("namespace NS {\n"
+                   "    class Fred\n"
+                   "    {\n"
+                   "    public:\n"
+                   "        struct AB {\n"
+                   "            struct CD { };\n"
+                   "        };\n"
+                   "        bool f(AB::CD * cd);\n"
+                   "    };\n"
+                   "    bool Fred::f(Fred::AB::CD * cd)\n"
+                   "    {\n"
+                   "    }\n"
+                   "}\n");
+
+        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:8]: (style) The function 'NS::Fred::f' can be const\n", errout.str());
+
+        checkConst("namespace NS {\n"
+                   "    class Fred\n"
+                   "    {\n"
+                   "    public:\n"
+                   "        struct AB {\n"
+                   "            struct CD { };\n"
+                   "        };\n"
+                   "        bool f(AB::CD * cd);\n"
+                   "    };\n"
+                   "}\n"
+                   "bool NS::Fred::f(NS::Fred::AB::CD * cd)\n"
+                   "{\n"
+                   "}\n");
+
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:8]: (style) The function 'NS::Fred::f' can be const\n", errout.str());
+
+        checkConst("class Foo {\n"
+                   "    class Fred\n"
+                   "    {\n"
+                   "    public:\n"
+                   "        struct AB {\n"
+                   "            struct CD { };\n"
+                   "        };\n"
+                   "        bool f(AB::CD * cd);\n"
+                   "    };\n"
+                   "};\n"
+                   "bool Foo::Fred::f(Foo::Fred::AB::CD * cd)\n"
+                   "{\n"
+                   "}\n");
+
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:8]: (style) The function 'Foo::Fred::f' can be const\n", errout.str());
     }
 
     // increment/decrement => not const

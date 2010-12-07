@@ -250,7 +250,7 @@ private:
     void addNewFunction(SpaceInfo **info, const Token **tok);
 
     bool isFunction(const Token *tok, const Token **funcStart, const Token **argStart) const;
-    bool argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
+    bool argsMatch(const SpaceInfo *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
 
     const SpaceInfo *findVarType(const SpaceInfo *start, const Token *type) const;
 

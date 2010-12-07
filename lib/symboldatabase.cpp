@@ -534,7 +534,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Token **funcStart, const
     return false;
 }
 
-bool SymbolDatabase::argsMatch(const Token *first, const Token *second, const std::string &path, unsigned int depth) const
+bool SymbolDatabase::argsMatch(const SpaceInfo *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const
 {
     bool match = false;
     while (first->str() == second->str())
@@ -606,6 +606,14 @@ bool SymbolDatabase::argsMatch(const Token *first, const Token *second, const st
                     second = second->tokAt((int(depth) - 1) * 2);
                 }
             }
+        }
+
+        // nested class variable
+        else if (depth == 0 && Token::Match(first->next(), "%var%") &&
+                 second->next()->str() == info->className && second->strAt(2) == "::" &&
+                 first->next()->str() == second->strAt(3))
+        {
+            second = second->tokAt(2);
         }
 
         first = first->next();
@@ -689,7 +697,7 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                         (*tok)->str() == "operator" &&
                         func->tokenDef->str() == (*tok)->strAt(1))
                     {
-                        if (argsMatch(func->tokenDef->tokAt(2), (*tok)->tokAt(3), path, path_length))
+                        if (argsMatch(info1, func->tokenDef->tokAt(2), (*tok)->tokAt(3), path, path_length))
                         {
                             func->hasBody = true;
                             func->token = (*tok)->next();
@@ -700,7 +708,7 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                              (*tok)->previous()->str() == "~" &&
                              func->tokenDef->str() == (*tok)->str())
                     {
-                        if (argsMatch(func->tokenDef->next(), (*tok)->next(), path, path_length))
+                        if (argsMatch(info1, func->tokenDef->next(), (*tok)->next(), path, path_length))
                         {
                             func->hasBody = true;
                             func->token = *tok;
@@ -709,7 +717,7 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                     }
                     else if (func->tokenDef->str() == (*tok)->str() && (*tok)->previous()->str() != "~")
                     {
-                        if (argsMatch(func->tokenDef->next(), (*tok)->next(), path, path_length))
+                        if (argsMatch(info1, func->tokenDef->next(), (*tok)->next(), path, path_length))
                         {
                             // normal function?
                             if (!func->retFuncPtr && (*tok)->next()->link())
@@ -1866,7 +1874,7 @@ bool SymbolDatabase::isVirtualFunc(const SymbolDatabase::SpaceInfo *info, const 
                         }
 
                         // check for matching function parameters
-                        if (returnMatch && argsMatch(tok->tokAt(2), functionToken->tokAt(2), std::string(""), 0))
+                        if (returnMatch && argsMatch(info, tok->tokAt(2), functionToken->tokAt(2), std::string(""), 0))
                         {
                             return true;
                         }
