@@ -43,15 +43,9 @@ CheckClass instance;
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : Check(tokenizer, settings, errorLogger),
-      symbolDatabase(NULL), ownSymbolDatabase(false)
+      symbolDatabase(NULL)
 {
 
-}
-
-CheckClass::~CheckClass()
-{
-    if (ownSymbolDatabase)
-        delete symbolDatabase;
 }
 
 void CheckClass::createSymbolDatabase()
@@ -60,13 +54,7 @@ void CheckClass::createSymbolDatabase()
     if (symbolDatabase)
         return;
 
-    if (_tokenizer->_symbolDatabase)
-        symbolDatabase = _tokenizer->_symbolDatabase;
-    else
-    {
-        symbolDatabase = new SymbolDatabase(_tokenizer, _settings, _errorLogger);
-        ownSymbolDatabase = true;
-    }
+    symbolDatabase = _tokenizer->getSymbolDatabase();
 }
 
 //---------------------------------------------------------------------------

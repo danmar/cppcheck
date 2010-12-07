@@ -7502,7 +7502,7 @@ void Tokenizer::simplifyStd()
 const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 {
     if (_symbolDatabase == NULL)
-        return NULL;
+        getSymbolDatabase();
 
     std::list<SymbolDatabase::SpaceInfo *>::iterator i;
 
@@ -8758,4 +8758,12 @@ void Tokenizer::simplifyQtSignalsSlots()
             }
         }
     }
+}
+
+SymbolDatabase *Tokenizer::getSymbolDatabase() const
+{
+    if (!_symbolDatabase)
+        _symbolDatabase = new SymbolDatabase(this, _settings, _errorLogger);
+
+    return _symbolDatabase;
 }

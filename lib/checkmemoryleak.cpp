@@ -2575,14 +2575,7 @@ void CheckMemoryLeakInFunction::check()
 
 void CheckMemoryLeakInClass::check()
 {
-    SymbolDatabase * symbolDatabase = _tokenizer->_symbolDatabase;
-    bool ownSymbolDatabase = false;
-
-    if (symbolDatabase == NULL)
-    {
-        symbolDatabase = new SymbolDatabase(_tokenizer, _settings, _errorLogger);
-        ownSymbolDatabase = true;
-    }
+    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<SymbolDatabase::SpaceInfo *>::iterator i;
 
@@ -2623,9 +2616,6 @@ void CheckMemoryLeakInClass::check()
             }
         }
     }
-
-    if (ownSymbolDatabase)
-        delete symbolDatabase;
 }
 
 

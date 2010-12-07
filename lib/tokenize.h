@@ -280,8 +280,6 @@ public:
     /** Simplify "if else" */
     void elseif();
 
-    SymbolDatabase * _symbolDatabase;
-
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno, bool split = false);
     void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
 
@@ -540,6 +538,8 @@ public:
         _settings = settings;
     }
 
+    SymbolDatabase * getSymbolDatabase() const;
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);
@@ -562,6 +562,8 @@ private:
      * removed from the token list
      */
     bool _codeWithTemplates;
+
+    mutable SymbolDatabase *_symbolDatabase;
 };
 
 /// @}
