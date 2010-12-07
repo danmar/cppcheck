@@ -733,106 +733,106 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="57"/>
-        <location filename="resultstree.cpp" line="940"/>
+        <location filename="resultstree.cpp" line="59"/>
+        <location filename="resultstree.cpp" line="962"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="57"/>
-        <location filename="resultstree.cpp" line="940"/>
+        <location filename="resultstree.cpp" line="59"/>
+        <location filename="resultstree.cpp" line="962"/>
         <source>Severity</source>
         <translation>Важность</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="57"/>
-        <location filename="resultstree.cpp" line="940"/>
+        <location filename="resultstree.cpp" line="59"/>
+        <location filename="resultstree.cpp" line="962"/>
         <source>Line</source>
         <translation>Строка</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="57"/>
-        <location filename="resultstree.cpp" line="940"/>
+        <location filename="resultstree.cpp" line="59"/>
+        <location filename="resultstree.cpp" line="962"/>
         <source>Summary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="106"/>
+        <location filename="resultstree.cpp" line="108"/>
         <source>Undefined file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="495"/>
+        <location filename="resultstree.cpp" line="504"/>
         <source>Copy filename</source>
         <translation>Скопировать имя файла</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="496"/>
+        <location filename="resultstree.cpp" line="505"/>
         <source>Copy full path</source>
         <translation>Скопировать полный путь</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="497"/>
+        <location filename="resultstree.cpp" line="506"/>
         <source>Copy message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="498"/>
+        <location filename="resultstree.cpp" line="507"/>
         <source>Hide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="538"/>
+        <location filename="resultstree.cpp" line="554"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="539"/>
+        <location filename="resultstree.cpp" line="555"/>
         <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
         <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="566"/>
+        <location filename="resultstree.cpp" line="582"/>
         <source>Could not find the file!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="604"/>
+        <location filename="resultstree.cpp" line="620"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="618"/>
+        <location filename="resultstree.cpp" line="634"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="625"/>
+        <location filename="resultstree.cpp" line="641"/>
         <source>Select Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="797"/>
+        <location filename="resultstree.cpp" line="819"/>
         <source>style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="801"/>
+        <location filename="resultstree.cpp" line="823"/>
         <source>error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="805"/>
+        <location filename="resultstree.cpp" line="827"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="809"/>
+        <location filename="resultstree.cpp" line="831"/>
         <source>performance</source>
         <translation type="unfinished"></translation>
     </message>
@@ -840,36 +840,46 @@ Please select the directory where file is located.</source>
 <context>
     <name>ResultsView</name>
     <message>
-        <location filename="resultsview.cpp" line="186"/>
-        <location filename="resultsview.cpp" line="198"/>
+        <location filename="resultsview.cpp" line="190"/>
+        <location filename="resultsview.cpp" line="202"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="187"/>
+        <location filename="resultsview.cpp" line="191"/>
         <source>No errors found.</source>
         <translation>Ошибок не найдено.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="195"/>
+        <location filename="resultsview.cpp" line="199"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="247"/>
-        <location filename="resultsview.cpp" line="257"/>
+        <location filename="resultsview.cpp" line="251"/>
+        <location filename="resultsview.cpp" line="261"/>
         <source>Failed to read the report.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="113"/>
+        <location filename="resultsview.cpp" line="302"/>
+        <source>Summary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultsview.cpp" line="303"/>
+        <source>Message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultsview.cpp" line="117"/>
         <source>No errors found, nothing to save.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="140"/>
-        <location filename="resultsview.cpp" line="150"/>
+        <location filename="resultsview.cpp" line="144"/>
+        <location filename="resultsview.cpp" line="154"/>
         <source>Failed to save the report.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -989,6 +999,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <name>StatsDialog</name>
     <message>
         <location filename="stats.ui" line="14"/>
+        <location filename="stats.ui" line="228"/>
         <source>Statistics</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1038,17 +1049,37 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="stats.ui" line="247"/>
+        <location filename="stats.ui" line="236"/>
+        <source>Errors:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="stats.ui" line="254"/>
+        <source>Warnings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="stats.ui" line="272"/>
+        <source>Stylistic warnings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="stats.ui" line="290"/>
+        <source>Performance issues:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="stats.ui" line="326"/>
         <source>Copy to Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="68"/>
+        <location filename="statsdialog.cpp" line="69"/>
         <source>%1 secs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="77"/>
+        <location filename="statsdialog.cpp" line="78"/>
         <source>Project Settings
 	Project:	%1
 	Paths:	%2
@@ -1058,11 +1089,16 @@ Previous Scan
 	Path selected:	%5
 	Number of files scanned:	%6
 	Scan duration:	%7
+Statistics
+	Errors:	%8
+	Warnings:	%9
+	Style warnings:	%10
+	Performance warnings:	%11
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="97"/>
+        <location filename="statsdialog.cpp" line="107"/>
         <source>&lt;h3&gt;Project Settings&lt;h3&gt;
 &lt;table&gt;
  &lt;tr&gt;&lt;th&gt;Project:&lt;/th&gt;&lt;td&gt;%1&lt;/td&gt;&lt;/tr&gt;
@@ -1075,6 +1111,12 @@ Previous Scan
  &lt;tr&gt;&lt;th&gt;Path selected:&lt;/th&gt;&lt;td&gt;%5&lt;/td&gt;&lt;/tr&gt;
  &lt;tr&gt;&lt;th&gt;Number of files scanned:&lt;/th&gt;&lt;td&gt;%6&lt;/td&gt;&lt;/tr&gt;
  &lt;tr&gt;&lt;th&gt;Scan duration:&lt;/th&gt;&lt;td&gt;%7&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+&lt;h3&gt;Statistics&lt;/h3&gt;
+ &lt;tr&gt;&lt;th&gt;Errors:&lt;/th&gt;&lt;td&gt;%8&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;th&gt;Warnings:&lt;/th&gt;&lt;td&gt;%9&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;th&gt;Style warnings:&lt;/th&gt;&lt;td&gt;%10&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;th&gt;Performance warnings:&lt;/th&gt;&lt;td&gt;%11&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 </source>
         <translation type="unfinished"></translation>
