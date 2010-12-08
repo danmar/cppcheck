@@ -36,7 +36,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
             << QT_TRANSLATE_NOOP("MainWindow", "German")
             << QT_TRANSLATE_NOOP("MainWindow", "Russian")
             << QT_TRANSLATE_NOOP("MainWindow", "Polish")
-            << QT_TRANSLATE_NOOP("MainWindow", "Japanease");
+            << QT_TRANSLATE_NOOP("MainWindow", "Japanese");
 
     mFiles  << "cppcheck_en"
             << "cppcheck_nl"
