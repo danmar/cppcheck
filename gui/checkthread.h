@@ -44,7 +44,7 @@ public:
     *
     * @param settings settings for cppcheck
     */
-    void Check(Settings settings);
+    void Check(const Settings &settings);
 
     /**
     * @brief method that is run in a thread

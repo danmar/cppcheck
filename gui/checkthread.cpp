@@ -35,7 +35,7 @@ CheckThread::~CheckThread()
     //dtor
 }
 
-void CheckThread::Check(Settings settings)
+void CheckThread::Check(const Settings &settings)
 {
     mCppcheck.settings(settings);
     start();
