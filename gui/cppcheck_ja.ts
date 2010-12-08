@@ -637,6 +637,11 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <source>Polish</source>
         <translation></translation>
     </message>
+    <message>
+        <location filename="translationhandler.cpp" line="39"/>
+        <source>Japanease</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Project</name>
@@ -712,17 +717,17 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="93"/>
+        <location filename="translationhandler.cpp" line="95"/>
         <source>Incorrect language specified!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="103"/>
+        <location filename="translationhandler.cpp" line="105"/>
         <source>Language file %1 not found!</source>
         <translation>言語ファイル %1 が見つかりません!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="109"/>
+        <location filename="translationhandler.cpp" line="111"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1056,14 +1061,6 @@ To toggle what kind of errors are shown, open view menu.</source>
         <location filename="stats.ui" line="236"/>
         <source>Errors:</source>
         <translation>エラー:</translation>
-    </message>
-    <message>
-        <location filename="stats.ui" line="243"/>
-        <location filename="stats.ui" line="261"/>
-        <location filename="stats.ui" line="279"/>
-        <location filename="stats.ui" line="297"/>
-        <source>TextLabel</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="stats.ui" line="254"/>
