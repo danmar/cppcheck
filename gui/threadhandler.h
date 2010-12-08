@@ -88,7 +88,7 @@ public:
     * @param settings Settings for checking
     * @param recheck Should we reuse the files we checked earleir
     */
-    void Check(Settings settings, bool recheck);
+    void Check(const Settings &settings, bool recheck);
 
     /**
     * @brief Is checking running?

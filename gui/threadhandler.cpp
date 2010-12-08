@@ -48,7 +48,7 @@ void ThreadHandler::SetFiles(const QStringList &files)
     mLastFiles = files;
 }
 
-void ThreadHandler::Check(Settings settings, bool recheck)
+void ThreadHandler::Check(const Settings &settings, bool recheck)
 {
     if (recheck && mRunningThreadCount == 0)
     {
