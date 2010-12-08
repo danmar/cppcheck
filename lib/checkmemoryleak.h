@@ -172,13 +172,16 @@ class CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak
 {
 public:
     /** @brief This constructor is used when registering this class */
-    CheckMemoryLeakInFunction() : Check(), CheckMemoryLeak(0, 0)
+    CheckMemoryLeakInFunction() : Check(), CheckMemoryLeak(0, 0), symbolDatabase(NULL)
     { }
 
     /** @brief This constructor is used when running checks */
     CheckMemoryLeakInFunction(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
         : Check(tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
-    { }
+    {
+        // get the symbol database
+        symbolDatabase = tokenizr->getSymbolDatabase();
+    }
 
     /** @brief run all simplified checks */
     void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
@@ -340,6 +343,8 @@ public:
 
     /** Function names for functions that are "noreturn" */
     std::set<std::string> noreturn;
+
+    SymbolDatabase *symbolDatabase;
 };
 
 

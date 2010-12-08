@@ -171,6 +171,7 @@ public:
         AccessControl access;
         unsigned int numConstructors;
         NeedInitialization needInitialization;
+        SpaceInfo * functionOf; // class/struct this function belongs to
 
         bool isClassOrStruct() const
         {

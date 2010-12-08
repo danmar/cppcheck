@@ -218,8 +218,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         info->functionList.push_back(function);
 
                         const Token *tok2 = funcStart;
+                        SpaceInfo *functionOf = info;
 
                         addNewFunction(&info, &tok2);
+                        info->functionOf = functionOf;
 
                         tok = tok2;
                     }
@@ -745,6 +747,7 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                     if (func->hasBody)
                     {
                         addNewFunction(info, tok);
+                        (*info)->functionOf = info1;
                         added = true;
                         break;
                     }
@@ -874,7 +877,8 @@ SymbolDatabase::SpaceInfo::SpaceInfo(SymbolDatabase *check_, const Token *classD
     classEnd(NULL),
     nestedIn(nestedIn_),
     numConstructors(0),
-    needInitialization(SpaceInfo::Unknown)
+    needInitialization(SpaceInfo::Unknown),
+    functionOf(NULL)
 {
     if (!classDef)
     {

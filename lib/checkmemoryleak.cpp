@@ -563,36 +563,32 @@ void CheckMemoryLeakInFunction::parse_noreturn()
     noreturn.insert("errx");
     noreturn.insert("verrx");
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+
+    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        if (tok->str() == "{")
-            tok = tok->link();
-        if (tok->str() == "(")
+        SymbolDatabase::SpaceInfo *info = *i;
+
+        // only check functions
+        if (info->type != SymbolDatabase::SpaceInfo::Function)
+            continue;
+
+        // parse this function to check if it contains an "exit" call..
+        unsigned int indentlevel = 1;
+        for (const Token *tok2 = info->classStart->next(); tok2; tok2 = tok2->next())
         {
-            const std::string function_name((tok->previous() && tok->previous()->isName()) ? tok->strAt(-1).c_str() : "");
-
-            tok = tok->link();
-
-            if (!function_name.empty() && Token::simpleMatch(tok, ") {"))
+            if (tok2->str() == "{")
+                ++indentlevel;
+            else if (tok2->str() == "}")
             {
-                // parse this function to check if it contains an "exit" call..
-                unsigned int indentlevel = 0;
-                for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
-                {
-                    if (tok2->str() == "{")
-                        ++indentlevel;
-                    else if (tok2->str() == "}")
-                    {
-                        if (indentlevel <= 1)
-                            break;
-                        --indentlevel;
-                    }
-                    if (Token::Match(tok2, "[;{}] exit ("))
-                    {
-                        noreturn.insert(function_name);
-                        break;
-                    }
-                }
+                --indentlevel;
+                if (indentlevel == 0)
+                    break;
+            }
+            if (Token::Match(tok2, "[;{}] exit ("))
+            {
+                noreturn.insert(info->className);
+                break;
             }
         }
     }
@@ -2374,32 +2370,38 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 //---------------------------------------------------------------------------
 void CheckMemoryLeakInFunction::checkReallocUsage()
 {
-    const Token *tok = _tokenizer->tokens();
-    while (NULL != (tok = Token::findmatch(tok, ") const| {")))
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+
+    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
+        SymbolDatabase::SpaceInfo *info = *i;
+
+        // only check functions
+        if (info->type != SymbolDatabase::SpaceInfo::Function)
+            continue;
+
         // Record the varid's of the function parameters
         std::set<unsigned int> parameterVarIds;
-        for (const Token *tok2 = tok->link(); tok2 && tok2->str() != ")"; tok2 = tok2->next())
+        for (const Token *tok2 = info->classDef->next(); tok2 && tok2->str() != ")"; tok2 = tok2->next())
         {
             if (tok2->varId() != 0)
                 parameterVarIds.insert(tok2->varId());
         }
 
-        while (tok->str() != "{")
-            tok = tok->next();
+        const Token *tok = info->classStart;
         const Token *startOfFunction = tok;
 
         // Search for the "var = realloc(var, 100);" pattern within this function
-        unsigned int indentlevel = 0;
+        unsigned int indentlevel = 1;
         for (tok = tok->next(); tok; tok = tok->next())
         {
             if (tok->str() == "{")
                 ++indentlevel;
             else if (tok->str() == "}")
             {
+                --indentlevel;
                 if (indentlevel == 0)
                     break;
-                --indentlevel;
             }
 
             if (tok->varId() > 0 &&
@@ -2507,34 +2509,24 @@ void CheckMemoryLeakInFunction::parseFunctionScope(const Token *tok, const Token
 
 void CheckMemoryLeakInFunction::check()
 {
-    // Parse the tokens and fill the "noreturn"
+    // fill the "noreturn"
     parse_noreturn();
 
-    bool classmember = false;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+
+    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        if (tok->str() == "(")
-        {
-            tok = tok->link();
-        }
+        SymbolDatabase::SpaceInfo *info = *i;
 
-        // Found a function scope
-        if (Token::Match(tok, ") const| {"))
-        {
-            const Token * const tok1 = tok->link();
-            while (tok->str() != "{")
-                tok = tok->next();
-            parseFunctionScope(tok, tok1, classmember);
-            tok = tok->link();
-            classmember = false;
+        // only check functions
+        if (info->type != SymbolDatabase::SpaceInfo::Function)
             continue;
-        }
 
-        if (tok->str() == "::")
-            classmember = true;
+        const Token *tok = info->classStart;
+        const Token *tok1 = info->classDef->next();
+        bool classmember = info->functionOf != NULL;
 
-        if (Token::Match(tok, "[;}]"))
-            classmember = false;
+        parseFunctionScope(tok, tok1, classmember);
     }
 }
 //---------------------------------------------------------------------------
