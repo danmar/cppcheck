@@ -654,7 +654,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="translationhandler.cpp" line="40"/>
         <source>Serbian</source>
-        <translation type="unfinished"></translation>
+        <translation>Serbian</translation>
     </message>
 </context>
 <context>

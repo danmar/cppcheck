@@ -601,47 +601,47 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="translationhandler.cpp" line="34"/>
         <source>Finnish</source>
-        <translation type="unfinished"></translation>
+        <translation>Finski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="32"/>
         <source>English</source>
-        <translation type="unfinished"></translation>
+        <translation>Engleski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="33"/>
         <source>Dutch</source>
-        <translation type="unfinished"></translation>
+        <translation>Holandski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="35"/>
         <source>Swedish</source>
-        <translation type="unfinished"></translation>
+        <translation>Švedski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="36"/>
         <source>German</source>
-        <translation type="unfinished"></translation>
+        <translation>Nemački</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="37"/>
         <source>Russian</source>
-        <translation type="unfinished"></translation>
+        <translation>Ruski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="38"/>
         <source>Polish</source>
-        <translation type="unfinished"></translation>
+        <translation>Poljski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="39"/>
         <source>Japanease</source>
-        <translation type="unfinished"></translation>
+        <translation>Japanski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="40"/>
         <source>Serbian</source>
-        <translation type="unfinished"></translation>
+        <translation>Srpski</translation>
     </message>
 </context>
 <context>
