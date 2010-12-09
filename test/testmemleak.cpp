@@ -668,7 +668,7 @@ private:
         ASSERT_EQUALS(";", simplifycode("; loop { if { continue ; } else { if continue ; } }"));
         ASSERT_EQUALS(";", simplifycode("; loop { { if continue ; if continue ; } }"));
 
-        ASSERT_EQUALS(";", simplifycode("; while1 { if { dealloc ; return ; } if { if { continue ; } } }"));
+        ASSERT_EQUALS("; use ;", simplifycode("; while1 { if { dealloc ; return ; } if { if { continue ; } } }"));
 
         // scope..
         // current result - ok
