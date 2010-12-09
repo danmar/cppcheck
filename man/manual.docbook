@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.46</title>
 
-    <date>2010-12-03</date>
+    <date>2010-12-09</date>
   </bookinfo>
 
   <chapter>
@@ -150,14 +150,10 @@ Checking path/file2.cpp...
         </varlistentry>
       </variablelist>
 
-      <remark>The focus of <literal>Cppcheck</literal> development is to
-      detect bugs, <literal>Cppcheck</literal> is not a
-      style-checker.</remark>
-
-      <remark> Cppcheck doesn't try to detect hotspots so fixing
-      <literal>performance</literal> messages might have no measurable
-      difference. Fixing performance messages doesn't make your code more
-      readable.</remark>
+      <remark>The performance messages are based on 'common knowledge'. It is
+      not certain that fixing performance messages will make any measurable
+      difference in speed. Fixing performance messages generally doesn't make
+      your code more readable.</remark>
     </section>
 
     <section>
