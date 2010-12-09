@@ -742,6 +742,9 @@ private:
                 dereference(checks, *it);
         }
 
+        else if (Token::simpleMatch(&tok, "( 0 &&"))
+            return tok.link();
+
         if (tok.varId() != 0)
         {
             bool unknown = false;

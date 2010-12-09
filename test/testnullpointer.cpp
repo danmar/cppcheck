@@ -513,6 +513,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    Foo *p = 0;\n"
+              "    bool b = (p && (p->type() == 1));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo()\n"
               "{\n"
               "    int sz = sizeof((*(struct dummy *)0).x);\n"
