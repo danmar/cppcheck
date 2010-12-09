@@ -3032,19 +3032,20 @@ void CheckMemoryLeakNoVar::check()
         c.analyse(_tokenizer->tokens(), uvarFunctions);
     }
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+
+    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        // Search for executable scopes..
-        if (!Token::Match(tok, ") const| {"))
+        SymbolDatabase::SpaceInfo *info = *i;
+
+        // only check functions
+        if (info->type != SymbolDatabase::SpaceInfo::Function)
             continue;
 
-        // goto the "{"
-        tok = tok->next();
-        if (tok->str() != "{")
-            tok = tok->next();
-
         // goto the "}" that ends the executable scope..
-        tok = tok->link();
+        const Token *tok = info->classEnd;
 
         // parse the executable scope until tok is reached...
         for (const Token *tok2 = tok->link(); tok2 && tok2 != tok; tok2 = tok2->next())
