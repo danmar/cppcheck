@@ -6,12 +6,12 @@
     <message>
         <location filename="about.ui" line="14"/>
         <source>About Cppcheck</source>
-        <translation type="unfinished"></translation>
+        <translation>O Cppcheck-u</translation>
     </message>
     <message>
         <location filename="about.ui" line="64"/>
         <source>Version %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Verzija %1</translation>
     </message>
     <message>
         <location filename="about.ui" line="71"/>
@@ -33,7 +33,7 @@ of the GNU General Public License version 3</source>
     <message>
         <location filename="about.ui" line="102"/>
         <source>Visit Cppcheck homepage at %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Posetite Cppcheck stranicu na %1</translation>
     </message>
 </context>
 <context>
