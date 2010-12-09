@@ -6566,6 +6566,14 @@ bool Tokenizer::simplifyCalculations()
                 if (Token::Match(tok->previous(), "[+-] 0"))
                 {
                     tok = tok->previous();
+                    if (Token::Match(tok->tokAt(-4), "[;{}] %var% = %var% [+-] 0 ;") &&
+                        tok->strAt(-3) == tok->strAt(-1))
+                    {
+                        tok = tok->previous()->previous()->previous();
+                        tok->deleteThis();
+                        tok->deleteThis();
+                        tok->deleteThis();
+                    }
                     tok->deleteThis();
                     tok->deleteThis();
                     ret = true;
