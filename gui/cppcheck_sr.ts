@@ -1,40 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="fi_FI">
+<TS version="2.0" language="sr_RS">
 <context>
     <name>About</name>
     <message>
         <location filename="about.ui" line="14"/>
         <source>About Cppcheck</source>
-        <translation>Tietoa ohjelmasta Cppcheck</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="about.ui" line="64"/>
         <source>Version %1</source>
-        <translation>Versio %1</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="about.ui" line="71"/>
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
-        <translation>Cppcheck - Työkalu C/C++ koodin staattiseen analysointiin.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message utf8="true">
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2010 Daniel Marjamäki and cppcheck team.</source>
         <oldsource>Copyright (C) 2007-2010 Daniel Marjamäki and cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright (C) 2007-2009 Daniel Marjamäki ja cppcheck tiimi.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
         <source>This program is licensed under the terms
 of the GNU General Public License version 3</source>
-        <translation>Tämä ohjelma on lisensoitu GNU General 
-Public lisenssin version 3 alaisuuteen</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="about.ui" line="102"/>
         <source>Visit Cppcheck homepage at %1</source>
-        <translation>Cppcheckin kotisivu löytyy osoitteesta %1</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -42,7 +41,7 @@ Public lisenssin version 3 alaisuuteen</translation>
     <message>
         <location filename="application.ui" line="17"/>
         <source>Add an application</source>
-        <translation>Lisää uusi ohjelma</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="application.ui" line="23"/>
@@ -68,19 +67,7 @@ The following texts are replaced with appriproate values when application is exe
 
 Example opening a file with Kate and make Kate scroll to the correct line:
 kate -l(line) (file)</oldsource>
-        <translation type="unfinished">Voi lisätä ohjelmia joilla avata virheen sisältämiä tiedostoja
-määrittämällä suoritettavan ohjelman ja nimen ohjelmalle.
-
-Suoritettavalle ohjelmalle voi määrittää parametreja jotka Cppcheck korvaa sopivilla arvoilla.
-Parametrit ovat seuraavat:
-(file) - Tiedosto joka sisältää virheen
-(line) - Rivinumero josta virhe löytyy
-(message) - Virheilmoitus
-(severity) - Virheen vakavuus
-
-Esimerkki virheen avaamisesta Kate nimisellä tekstinkäsittelyohjelmalla:
-kate -l(line) (file)
-</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="application.ui" line="47"/>
@@ -95,27 +82,27 @@ kate -l(line) (file)
     <message>
         <location filename="application.ui" line="96"/>
         <source>Browse</source>
-        <translation>Selaa</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="applicationdialog.cpp" line="56"/>
         <source>Executable files (*.exe);;All files(*.*)</source>
-        <translation>Suoritettavat tiedostot (*.exe);;Kaikki tiedostot(*.*)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="applicationdialog.cpp" line="59"/>
         <source>Select viewer application</source>
-        <translation>Valitse ohjelma jolla avata virhetiedosto</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="applicationdialog.cpp" line="96"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="applicationdialog.cpp" line="97"/>
         <source>You must specify a name and a path for the application!</source>
-        <translation>Suoritettava ohjelma tulee määrittää!</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -125,18 +112,18 @@ kate -l(line) (file)
         <source>Could not find the file: %1</source>
         <oldsource>Could not find the file:
 </oldsource>
-        <translation>Tiedostoa %1 ei löytynyt</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="fileviewdialog.cpp" line="47"/>
         <location filename="fileviewdialog.cpp" line="62"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="fileviewdialog.cpp" line="58"/>
         <source>Could not read the file: %1</source>
-        <translation>Tiedoston %1 lukeminen epäonnistui</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -206,22 +193,22 @@ kate -l(line) (file)
         <location filename="mainwindow.cpp" line="667"/>
         <location filename="mainwindow.cpp" line="831"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="154"/>
         <source>Standard</source>
-        <translation>Vakio</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="74"/>
         <source>&amp;File</source>
-        <translation>&amp;Tiedosto</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="88"/>
         <source>&amp;View</source>
-        <translation>&amp;Näytä</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="92"/>
@@ -231,92 +218,92 @@ kate -l(line) (file)
     <message>
         <location filename="main.ui" line="131"/>
         <source>&amp;Check</source>
-        <translation>&amp;Tarkista</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="140"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Muokkaa</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="188"/>
         <source>&amp;License...</source>
-        <translation>&amp;Lisenssi...</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="193"/>
         <source>A&amp;uthors...</source>
-        <translation>&amp;Tekijät...</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="202"/>
         <source>&amp;About...</source>
-        <translation>&amp;Tietoa ohjelmasta Cppcheck...</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="207"/>
         <source>&amp;Files...</source>
-        <translation>&amp;Tiedostot...</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="210"/>
         <source>Ctrl+F</source>
-        <translation>Ctrl+F</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="219"/>
         <source>&amp;Directory...</source>
-        <translation>&amp;Hakemisto...</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="222"/>
         <source>Ctrl+D</source>
-        <translation>Ctrl+D</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="231"/>
         <source>&amp;Recheck files</source>
-        <translation>Tarkista tiedostot &amp;uudelleen</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="234"/>
         <source>Ctrl+R</source>
-        <translation>Ctrl+R</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="243"/>
         <source>&amp;Stop</source>
-        <translation>&amp;Pysäytä</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="246"/>
         <source>Esc</source>
-        <translation>Esc</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="255"/>
         <source>&amp;Save results to file...</source>
-        <translation>&amp;Tallenna tulokset tiedostoon...</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="258"/>
         <source>Ctrl+S</source>
-        <translation>Ctrl+S</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="263"/>
         <source>&amp;Quit</source>
-        <translation>&amp;Lopeta</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="272"/>
         <source>&amp;Clear results</source>
-        <translation>&amp;Tyhjennä tulokset</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="281"/>
         <source>&amp;Preferences</source>
-        <translation>&amp;Asetukset</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="439"/>
@@ -349,27 +336,27 @@ kate -l(line) (file)
         <location filename="main.ui" line="314"/>
         <location filename="main.ui" line="317"/>
         <source>Show common errors</source>
-        <translation>Näytä yleiset virheet</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="322"/>
         <source>&amp;Check all</source>
-        <translation>&amp;Valitse kaikki</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="327"/>
         <source>&amp;Uncheck all</source>
-        <translation>&amp;Poista kaikista valinta</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="332"/>
         <source>Collapse &amp;all</source>
-        <translation>&amp;Pienennä kaikki</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="337"/>
         <source>&amp;Expand all</source>
-        <translation>&amp;Laajenna kaikki</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="345"/>
@@ -475,53 +462,53 @@ kate -l(line) (file)
     <message>
         <location filename="main.ui" line="116"/>
         <source>&amp;Language</source>
-        <translation>&amp;Kieli</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="121"/>
         <source>&amp;Help</source>
-        <translation>&amp;Ohje</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="277"/>
         <source>Select files to check</source>
-        <translation>Valitse tarkistettavat tiedostot</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="291"/>
         <source>Select directory to check</source>
-        <translation>Valitse tarkistettava hakemisto</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="232"/>
         <source>No suitable files found to check!</source>
-        <translation>Tarkistettavaksi sopivia tiedostoja ei löytynyt!</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="574"/>
         <source>License</source>
-        <translation>Lisenssi</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="581"/>
         <source>Authors</source>
-        <translation>Tekijät</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="589"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation>XML-tiedostot (*.xml);;Tekstitiedostot (*.txt);;CSV-tiedostot (*.csv)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="591"/>
         <source>Save the report file</source>
-        <translation>Tallenna raportti</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="464"/>
         <location filename="mainwindow.cpp" line="599"/>
         <source>XML files (*.xml)</source>
-        <translation>XML-tiedostot (*xml)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="262"/>
@@ -550,7 +537,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="mainwindow.cpp" line="605"/>
         <source>Text files (*.txt)</source>
-        <translation>Tekstitiedostot (*.txt)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="611"/>
@@ -560,7 +547,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="mainwindow.cpp" line="651"/>
         <source>Cppcheck - %1</source>
-        <translation>Cppcheck - %1</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="668"/>
@@ -572,11 +559,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <oldsource>Failed to change language:
 
 %1</oldsource>
-        <translation>Ohjelman kielen vaihtaminen epäonnistui:
-
-%1
-
-</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="729"/>
@@ -618,47 +601,47 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="translationhandler.cpp" line="34"/>
         <source>Finnish</source>
-        <translation>Suomi</translation>
+        <translation>Finski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="32"/>
         <source>English</source>
-        <translation>Englanti</translation>
+        <translation>Engleski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="33"/>
         <source>Dutch</source>
-        <translation type="unfinished"></translation>
+        <translation>Holandski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="35"/>
         <source>Swedish</source>
-        <translation>Ruotsi</translation>
+        <translation>Švedski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="36"/>
         <source>German</source>
-        <translation>Saksa</translation>
+        <translation>Nemački</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="37"/>
         <source>Russian</source>
-        <translation>Venäjä</translation>
+        <translation>Ruski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="38"/>
         <source>Polish</source>
-        <translation>Puola</translation>
+        <translation>Poljski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="39"/>
         <source>Japanease</source>
-        <translation type="unfinished"></translation>
+        <translation>Japanski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="40"/>
         <source>Serbian</source>
-        <translation type="unfinished"></translation>
+        <translation>Srpski</translation>
     </message>
 </context>
 <context>
@@ -667,7 +650,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <location filename="project.cpp" line="63"/>
         <location filename="project.cpp" line="103"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="project.cpp" line="64"/>
@@ -729,7 +712,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="projectfiledialog.cpp" line="165"/>
         <source>Select directory to check</source>
-        <translation type="unfinished">Valitse tarkistettava hakemisto</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -737,19 +720,19 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="translationhandler.cpp" line="97"/>
         <source>Incorrect language specified!</source>
-        <translation>Virheellinen kieli valittu!</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="107"/>
         <source>Language file %1 not found!</source>
         <oldsource>Language file %1.qm not found!</oldsource>
-        <translation>Käännöstiedostoa %1 ei löytynyt!</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="113"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
-        <translation>Käänöksen lataaminen kielelle %1 tiedostosta %2 epäonnistui</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -758,19 +741,19 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <location filename="resultstree.cpp" line="59"/>
         <location filename="resultstree.cpp" line="962"/>
         <source>File</source>
-        <translation>Tiedosto</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="59"/>
         <location filename="resultstree.cpp" line="962"/>
         <source>Severity</source>
-        <translation>Tyyppi</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="59"/>
         <location filename="resultstree.cpp" line="962"/>
         <source>Line</source>
-        <translation>Rivi</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="59"/>
@@ -781,17 +764,17 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="resultstree.cpp" line="108"/>
         <source>Undefined file</source>
-        <translation>Määrittelemätön tiedosto</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="504"/>
         <source>Copy filename</source>
-        <translation>Kopioi tiedostonimi</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="505"/>
         <source>Copy full path</source>
-        <translation>Kopioi tiedoston koko polku</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="506"/>
@@ -806,13 +789,13 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="resultstree.cpp" line="554"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="555"/>
         <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
         <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
-        <translation>Voit asetuksista määritellä muita ohjelmia joilla avata tämän virheen sisältävän tiedoston.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="582"/>
@@ -824,9 +807,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
-        <translation>Ohjelman %1 käynnistäminen epäonnistui
-
-Tarkista että ohjelman polku ja parametrit ovat oikeat.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="634"/>
@@ -843,12 +824,12 @@ Please select the directory where file is located.</source>
     <message>
         <location filename="resultstree.cpp" line="819"/>
         <source>style</source>
-        <translation>Tyyli</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="823"/>
         <source>error</source>
-        <translation>Yleinen</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="827"/>
@@ -867,19 +848,18 @@ Please select the directory where file is located.</source>
         <location filename="resultsview.cpp" line="190"/>
         <location filename="resultsview.cpp" line="202"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="191"/>
         <source>No errors found.</source>
-        <translation>Virheitä ei löytynyt.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="199"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
-        <translation>Virheitä löytyi, mutta asetuksissa kyseiset virheet on määritelty piilotettavaksi.
-Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valikko.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="251"/>
@@ -900,18 +880,18 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     <message>
         <location filename="resultsview.cpp" line="117"/>
         <source>No errors found, nothing to save.</source>
-        <translation>Virheitä ei löytynyt, ei mitään tallennettavaa.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="144"/>
         <location filename="resultsview.cpp" line="154"/>
         <source>Failed to save the report.</source>
-        <translation>Raportin tallentaminen epäonnistui.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="26"/>
         <source>Results</source>
-        <translation>Tulokset</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -919,12 +899,12 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     <message>
         <location filename="settings.ui" line="14"/>
         <source>Preferences</source>
-        <translation>Asetukset</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>
         <source>General</source>
-        <translation>Yleiset</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="32"/>
@@ -939,22 +919,22 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     <message>
         <location filename="settings.ui" line="56"/>
         <source>Number of threads: </source>
-        <translation>Säikeiden lukumäärä: </translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="78"/>
         <source>Check all #ifdef configurations</source>
-        <translation>Tarkista kaikki #ifdef kombinaatiot</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="85"/>
         <source>Show full path of files</source>
-        <translation>Näytä tiedostojen täysi polku</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="92"/>
         <source>Show &quot;No errors found&quot; message when no errors found</source>
-        <translation>Näytä &quot;virheitä ei löytynyt&quot;-viesti jos virheitä ei löydy</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="99"/>
@@ -964,42 +944,42 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     <message>
         <location filename="settings.ui" line="120"/>
         <source>Applications</source>
-        <translation>Ohjelmat</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="129"/>
         <source>Add application</source>
-        <translation>Lisää ohjelma</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="136"/>
         <source>Delete application</source>
-        <translation>Poista ohjelma</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="143"/>
         <source>Modify application</source>
-        <translation>Muokkaa ohjelmaa</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="150"/>
         <source>Set as default application</source>
-        <translation>Aseta oletusohjelmaksi</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="158"/>
         <source>Reports</source>
-        <translation>Raportit</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="164"/>
         <source>Save all errors when creating report</source>
-        <translation>Tallenna kaikki virheet raporttia luodessa</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="171"/>
         <source>Save full path to files in reports</source>
-        <translation>Tallenna tiedostojen koko polku raportteihin</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1007,12 +987,12 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     <message>
         <location filename="settingsdialog.cpp" line="136"/>
         <source>Add a new application</source>
-        <translation>Lisää uusi ohjelma</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="169"/>
         <source>Modify an application</source>
-        <translation>Muokkaa ohjelmaa</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="234"/>
