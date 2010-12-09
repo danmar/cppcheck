@@ -71,7 +71,8 @@ private:
         _obsoleteFunctions.push_back(std::make_pair("gethostbyaddr","Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getaddrinfo' function"));
         _obsoleteFunctions.push_back(std::make_pair("gethostbyname","Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getnameinfo' function"));
 
-        _obsoleteFunctions.push_back(std::make_pair("usleep","Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function"));
+        _obsoleteFunctions.push_back(std::make_pair("usleep","Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function\n"
+                                     "Found obsolete function 'usleep'. POSIX.1-2001 declares usleep() function obsolete and POSIX.1-2008 removes it. It is recommended that new applications use the 'nanosleep' or 'setitimer' function."));
 
         _obsoleteFunctions.push_back(std::make_pair("bcmp","Found obsolete function 'bcmp'. It is recommended that new applications use the 'memcmp' function"));
         _obsoleteFunctions.push_back(std::make_pair("bcopy","Found obsolete function 'bcopy'. It is recommended that new applications use the 'memmove' function"));
@@ -103,7 +104,8 @@ private:
 
         _obsoleteFunctions.push_back(std::make_pair("wcswcs","Found obsolete function 'wcswcs'. It is recommended to use the function 'wcsstr' instead"));
 
-        _obsoleteFunctions.push_back(std::make_pair("gets","Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead"));
+        _obsoleteFunctions.push_back(std::make_pair("gets","Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n"
+                                     "Found obsolete function 'gets'. With gets you'll get buffer overruns if the input data too big for the buffer. It is recommended to use the function 'fgets' instead."));
 
     }
 
