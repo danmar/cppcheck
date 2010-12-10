@@ -40,7 +40,8 @@ TRANSLATIONS =  cppcheck_fi.ts \
                 cppcheck_de.ts \
                 cppcheck_pl.ts \
                 cppcheck_ru.ts \
-                cppcheck_ja.ts
+                cppcheck_ja.ts \
+                cppcheck_sr.ts
 
 # Windows-specific options
 CONFIG += embed_manifest_exe
@@ -71,7 +72,7 @@ HEADERS += mainwindow.h \
            filelist.h \
            helpwindow.h \
            statsdialog.h \
-           checkstatistics.h 
+           checkstatistics.h
 
 SOURCES += main.cpp \
            mainwindow.cpp\

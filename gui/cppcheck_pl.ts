@@ -633,6 +633,11 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <source>Japanease</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="translationhandler.cpp" line="40"/>
+        <source>Serbian</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Project</name>
@@ -708,17 +713,17 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="95"/>
+        <location filename="translationhandler.cpp" line="97"/>
         <source>Incorrect language specified!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="105"/>
+        <location filename="translationhandler.cpp" line="107"/>
         <source>Language file %1 not found!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="111"/>
+        <location filename="translationhandler.cpp" line="113"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1115,3 +1120,4 @@ Statistics
     </message>
 </context>
 </TS>
+

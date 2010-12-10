@@ -36,7 +36,8 @@ TranslationHandler::TranslationHandler(QObject *parent) :
             << QT_TRANSLATE_NOOP("MainWindow", "German")
             << QT_TRANSLATE_NOOP("MainWindow", "Russian")
             << QT_TRANSLATE_NOOP("MainWindow", "Polish")
-            << QT_TRANSLATE_NOOP("MainWindow", "Japanese");
+            << QT_TRANSLATE_NOOP("MainWindow", "Japanese")
+            << QT_TRANSLATE_NOOP("MainWindow", "Serbian");
 
     mFiles  << "cppcheck_en"
             << "cppcheck_nl"
@@ -45,7 +46,8 @@ TranslationHandler::TranslationHandler(QObject *parent) :
             << "cppcheck_de"
             << "cppcheck_ru"
             << "cppcheck_pl"
-            << "cppcheck_ja";
+            << "cppcheck_ja"
+            << "cppcheck_sr";
 
     //Load english as a fallback language
     QTranslator *english = new QTranslator();
@@ -153,3 +155,4 @@ int TranslationHandler::SuggestLanguage() const
 
     return index;
 }
+
