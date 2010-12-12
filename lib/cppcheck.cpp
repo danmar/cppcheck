@@ -70,7 +70,7 @@ void CppCheck::clearFiles()
 
 const char * CppCheck::version()
 {
-    return "1.45";
+    return "1.46";
 }
 
 unsigned int CppCheck::check()
