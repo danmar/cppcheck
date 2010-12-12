@@ -6,6 +6,7 @@ DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
     ../lib
+LIBS+=-L../externals
 
 DESTDIR = .
 RCC_DIR = temp

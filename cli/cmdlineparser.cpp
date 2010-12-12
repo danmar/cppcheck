@@ -26,6 +26,8 @@
 #include "settings.h"
 #include "cmdlineparser.h"
 
+// xml is used in rules
+#include "tinyxml/tinyxml.h"
 
 static void AddFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
 {
@@ -386,6 +388,56 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             else
                 _settings->_showtime = SHOWTIME_NONE;
         }
+
+// Rules are a debug feature
+#ifndef NDEBUG
+        // Rule given at command line
+        else if (strncmp(argv[i], "--rule=", 7) == 0)
+        {
+            Settings::Rule rule;
+            rule.pattern = 7 + argv[i];
+            _settings->rules.push_back(rule);
+        }
+
+        // Rule file
+        else if (strncmp(argv[i], "--rule-file=", 12) == 0)
+        {
+            TiXmlDocument doc;
+            if (doc.LoadFile(12+argv[i]))
+            {
+                TiXmlElement *root = doc.FirstChildElement();
+                if (root && root->ValueStr() == "rule")
+                {
+                    Settings::Rule rule;
+
+                    TiXmlElement *pattern = root->FirstChildElement("pattern");
+                    if (pattern)
+                    {
+                        rule.pattern = pattern->GetText();
+                    }
+
+                    TiXmlElement *message = root->FirstChildElement("message");
+                    if (message)
+                    {
+                        TiXmlElement *severity = message->FirstChildElement("severity");
+                        if (severity)
+                            rule.severity = severity->GetText();
+
+                        TiXmlElement *id = message->FirstChildElement("id");
+                        if (id)
+                            rule.id = id->GetText();
+
+                        TiXmlElement *summary = message->FirstChildElement("summary");
+                        if (summary)
+                            rule.summary = summary->GetText();
+                    }
+
+                    if (!rule.pattern.empty())
+                        _settings->rules.push_back(rule);
+                }
+            }
+        }
+#endif
 
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)

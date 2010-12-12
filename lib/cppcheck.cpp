@@ -32,6 +32,9 @@
 #include <ctime>
 #include "timer.h"
 
+#define PCRE_STATIC
+#include <pcre.h>
+
 static TimerResults S_timerResults;
 
 CppCheck::CppCheck(ErrorLogger &errorLogger)
@@ -296,6 +299,76 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
         Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings._showtime, &S_timerResults);
         (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
+    }
+
+    // Are there extra rules?
+    if (!_settings.rules.empty())
+    {
+        std::ostringstream ostr;
+        for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        const std::string str(ostr.str());
+        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it)
+        {
+            const Settings::Rule &rule = *it;
+            if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty())
+                continue;
+
+            const char *error = 0;
+            int erroffset = 0;
+            pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,NULL);
+            if (!re && error)
+            {
+                ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+                                                 Severity::error,
+                                                 error,
+                                                 "pcre_compile");
+
+                reportErr(errmsg);
+            }
+            if (re)
+            {
+                int pos = 0;
+                int ovector[30];
+                if (0 <= pcre_exec(re, NULL, str.c_str(), str.size(), pos, 0, ovector, 30))
+                {
+                    unsigned int pos1 = (unsigned int)ovector[0];
+                    unsigned int pos2 = (unsigned int)ovector[1];
+
+                    // determine location..
+                    ErrorLogger::ErrorMessage::FileLocation loc;
+                    loc.setfile(_tokenizer.getFiles()->front());
+                    loc.line = 0;
+
+                    unsigned int len = 0;
+                    for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next())
+                    {
+                        len = len + 1 + tok->str().size();
+                        if (len > pos1)
+                        {
+                            loc.setfile(_tokenizer.getFiles()->at(tok->fileIndex()));
+                            loc.line = tok->linenr();
+                            break;
+                        }
+                    }
+
+                    const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack(1, loc);
+
+                    // Create error message
+                    std::string summary;
+                    if (rule.summary.empty())
+                        summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
+                    else
+                        summary = rule.summary;
+                    ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id);
+
+                    // Report error
+                    reportErr(errmsg);
+                }
+
+                pcre_free(re);
+            }
+        }
     }
 }
 

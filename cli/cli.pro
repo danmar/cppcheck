@@ -1,18 +1,21 @@
 TEMPLATE = app
 TARGET = cppcheck
 DEPENDPATH += .
-INCLUDEPATH += . ../lib
+INCLUDEPATH += . ../lib ../externals
 OBJECTS_DIR = temp
 CONFIG += warn_on
 CONFIG -= qt app_bundle
 
+include($$PWD/../externals/tinyxml/tinyxml.pri)
 include($$PWD/../lib/lib.pri)
 
 SOURCES += main.cpp \
            cppcheckexecutor.cpp \
+           cmdlineparser.cpp \
            threadexecutor.cpp
-HEADERS += cppcheckexecutor.cpp \
-           threadexecutor.cpp
+HEADERS += cppcheckexecutor.h \
+		   cmdlineparser.h \
+           threadexecutor.h
 
 CONFIG(release, debug|release) {
 	DEFINES += NDEBUG

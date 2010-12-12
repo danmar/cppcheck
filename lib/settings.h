@@ -185,6 +185,30 @@ public:
      * As usual, include guards are not counted.
      */
     bool ifcfg;
+
+    /** Rule */
+    class Rule
+    {
+    public:
+        Rule()
+        {
+            // default id
+            id = "rule";
+
+            // default severity
+            severity = "style";
+        }
+
+        std::string pattern;
+        std::string id;
+        std::string severity;
+        std::string summary;
+    };
+
+    /**
+     * @brief Extra rules
+     */
+    std::list<Rule> rules;
 };
 
 /// @}

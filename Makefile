@@ -86,22 +86,23 @@ TESTOBJ =     test/options.o \
               test/testuninitvar.o \
               test/testunusedfunctions.o \
               test/testunusedprivfunc.o \
-              test/testunusedvar.o \
-              test/tinyxml/tinystr.o \
-              test/tinyxml/tinyxml.o \
-              test/tinyxml/tinyxmlerror.o \
-              test/tinyxml/tinyxmlparser.o
+              test/testunusedvar.o
+
+EXTOBJ =     externals/tinyxml/tinystr.o \
+              externals/tinyxml/tinyxml.o \
+              externals/tinyxml/tinyxmlerror.o \
+              externals/tinyxml/tinyxmlparser.o
 
 
 ###### Targets
 
-cppcheck:	$(LIBOBJ)	$(CLIOBJ)
-	$(CXX) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(LDFLAGS)
+cppcheck:	$(LIBOBJ)	$(CLIOBJ)	$(EXTOBJ)
+	$(CXX) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre $(LDFLAGS)
 
 all:	cppcheck	testrunner
 
-testrunner:	$(TESTOBJ)	$(LIBOBJ)	cli/threadexecutor.o	cli/cmdlineparser.o	cli/cppcheckexecutor.o
-	$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o $(LDFLAGS)
+testrunner:	$(TESTOBJ)	$(LIBOBJ)	$(EXTOBJ)	cli/threadexecutor.o	cli/cmdlineparser.o	cli/cppcheckexecutor.o
+	$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o $(LDFLAGS)
 
 test:	all
 	./testrunner
@@ -210,125 +211,113 @@ lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/token.h lib/filelister.h lib
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/tokenize.o lib/tokenize.cpp
 
 cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/timer.h cli/cmdlineparser.h
-	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
 
 cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h cli/threadexecutor.h cli/cmdlineparser.h lib/filelister.h
-	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
 
 cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h
-	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/main.o cli/main.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/main.o cli/main.cpp
 
 cli/threadexecutor.o: cli/threadexecutor.cpp cli/threadexecutor.h lib/settings.h lib/errorlogger.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h
-	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/threadexecutor.o cli/threadexecutor.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/threadexecutor.o cli/threadexecutor.cpp
 
 test/options.o: test/options.cpp test/options.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/options.o test/options.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/options.o test/options.cpp
 
 test/testautovariables.o: test/testautovariables.cpp lib/tokenize.h lib/checkautovariables.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testautovariables.o test/testautovariables.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testautovariables.o test/testautovariables.cpp
 
 test/testbufferoverrun.o: test/testbufferoverrun.cpp lib/tokenize.h lib/checkbufferoverrun.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h lib/mathlib.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testbufferoverrun.o test/testbufferoverrun.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testbufferoverrun.o test/testbufferoverrun.cpp
 
 test/testcharvar.o: test/testcharvar.cpp lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testcharvar.o test/testcharvar.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testcharvar.o test/testcharvar.cpp
 
 test/testclass.o: test/testclass.cpp lib/tokenize.h lib/checkclass.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testclass.o test/testclass.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testclass.o test/testclass.cpp
 
 test/testcmdlineparser.o: test/testcmdlineparser.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/settings.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testcmdlineparser.o test/testcmdlineparser.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testcmdlineparser.o test/testcmdlineparser.cpp
 
 test/testconstructors.o: test/testconstructors.cpp lib/tokenize.h lib/checkclass.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testconstructors.o test/testconstructors.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testconstructors.o test/testconstructors.cpp
 
-test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h test/testsuite.h test/redirect.h lib/path.h test/tinyxml/tinyxml.h test/tinyxml/tinystr.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testcppcheck.o test/testcppcheck.cpp
+test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h test/testsuite.h test/redirect.h lib/path.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testcppcheck.o test/testcppcheck.cpp
 
 test/testdivision.o: test/testdivision.cpp lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testdivision.o test/testdivision.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testdivision.o test/testdivision.cpp
 
 test/testerrorlogger.o: test/testerrorlogger.cpp test/testsuite.h lib/errorlogger.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testerrorlogger.o test/testerrorlogger.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testerrorlogger.o test/testerrorlogger.cpp
 
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/tokenize.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
 
 test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testincompletestatement.o test/testincompletestatement.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testincompletestatement.o test/testincompletestatement.cpp
 
 test/testmathlib.o: test/testmathlib.cpp lib/mathlib.h test/testsuite.h lib/errorlogger.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testmathlib.o test/testmathlib.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testmathlib.o test/testmathlib.cpp
 
 test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/checkmemoryleak.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testmemleak.o test/testmemleak.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testmemleak.o test/testmemleak.cpp
 
 test/testnullpointer.o: test/testnullpointer.cpp lib/tokenize.h lib/checknullpointer.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testnullpointer.o test/testnullpointer.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testnullpointer.o test/testnullpointer.cpp
 
 test/testobsoletefunctions.o: test/testobsoletefunctions.cpp lib/tokenize.h lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testobsoletefunctions.o test/testobsoletefunctions.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testobsoletefunctions.o test/testobsoletefunctions.cpp
 
 test/testoptions.o: test/testoptions.cpp test/options.h test/testsuite.h lib/errorlogger.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testoptions.o test/testoptions.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testoptions.o test/testoptions.cpp
 
 test/testother.o: test/testother.cpp lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testother.o test/testother.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testother.o test/testother.cpp
 
 test/testpath.o: test/testpath.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/path.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testpath.o test/testpath.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testpath.o test/testpath.cpp
 
 test/testpostfixoperator.o: test/testpostfixoperator.cpp lib/tokenize.h lib/checkpostfixoperator.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testpostfixoperator.o test/testpostfixoperator.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testpostfixoperator.o test/testpostfixoperator.cpp
 
 test/testpreprocessor.o: test/testpreprocessor.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/preprocessor.h lib/tokenize.h lib/token.h lib/settings.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testpreprocessor.o test/testpreprocessor.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testpreprocessor.o test/testpreprocessor.cpp
 
 test/testrunner.o: test/testrunner.cpp test/testsuite.h lib/errorlogger.h test/redirect.h test/options.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testrunner.o test/testrunner.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testrunner.o test/testrunner.cpp
 
 test/testsettings.o: test/testsettings.cpp lib/settings.h test/testsuite.h lib/errorlogger.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testsettings.o test/testsettings.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testsettings.o test/testsettings.cpp
 
 test/testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/token.h lib/settings.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp
 
 test/teststl.o: test/teststl.cpp lib/tokenize.h lib/checkstl.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/teststl.o test/teststl.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/teststl.o test/teststl.cpp
 
 test/testsuite.o: test/testsuite.cpp test/testsuite.h lib/errorlogger.h test/redirect.h test/options.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testsuite.o test/testsuite.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testsuite.o test/testsuite.cpp
 
 test/testthreadexecutor.o: test/testthreadexecutor.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testthreadexecutor.o test/testthreadexecutor.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testthreadexecutor.o test/testthreadexecutor.cpp
 
 test/testtoken.o: test/testtoken.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/token.h lib/settings.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testtoken.o test/testtoken.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testtoken.o test/testtoken.cpp
 
 test/testtokenize.o: test/testtokenize.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/token.h lib/settings.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testtokenize.o test/testtokenize.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testtokenize.o test/testtokenize.cpp
 
 test/testuninitvar.o: test/testuninitvar.cpp lib/tokenize.h lib/checkuninitvar.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testuninitvar.o test/testuninitvar.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testuninitvar.o test/testuninitvar.cpp
 
 test/testunusedfunctions.o: test/testunusedfunctions.cpp lib/tokenize.h test/testsuite.h lib/errorlogger.h test/redirect.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/settings.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testunusedfunctions.o test/testunusedfunctions.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testunusedfunctions.o test/testunusedfunctions.cpp
 
 test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/tokenize.h lib/checkclass.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h test/testsuite.h test/redirect.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testunusedprivfunc.o test/testunusedprivfunc.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testunusedprivfunc.o test/testunusedprivfunc.cpp
 
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/testunusedvar.o test/testunusedvar.cpp
-
-test/tinyxml/tinystr.o: test/tinyxml/tinystr.cpp test/tinyxml/tinystr.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/tinyxml/tinystr.o test/tinyxml/tinystr.cpp
-
-test/tinyxml/tinyxml.o: test/tinyxml/tinyxml.cpp test/tinyxml/tinyxml.h test/tinyxml/tinystr.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/tinyxml/tinyxml.o test/tinyxml/tinyxml.cpp
-
-test/tinyxml/tinyxmlerror.o: test/tinyxml/tinyxmlerror.cpp test/tinyxml/tinyxml.h test/tinyxml/tinystr.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/tinyxml/tinyxmlerror.o test/tinyxml/tinyxmlerror.cpp
-
-test/tinyxml/tinyxmlparser.o: test/tinyxml/tinyxmlparser.cpp test/tinyxml/tinyxml.h test/tinyxml/tinystr.h
-	$(CXX) $(CXXFLAGS) -Ilib -Icli -c -o test/tinyxml/tinyxmlparser.o test/tinyxml/tinyxmlparser.cpp
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testunusedvar.o test/testunusedvar.cpp
 

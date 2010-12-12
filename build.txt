@@ -1,0 +1,36 @@
+
+Some temporary build instructions. This is work in progress.
+
+
+The tinyxml and pcre libraries are needed. The tinyxml is not really needed, these
+files could be integrated into the CLI instead.
+
+
+Windows
+
+Visual Studio
+
+To build pcre I downloaded the sourcecode from www.pcre.org. I downloaded cmake 2.8.
+Then I built the lib with:
+    cmake .
+    nmake
+
+To build tinyxml I just built all the files in externals/tinyxml
+
+
+MINGW (Qt 4.7 SDK)
+
+I downloaded pcre-8.0-lib.zip from here: http://software-download.name/pcre-library-windows/
+
+I build libtinyxml.a with:
+    cd externals/tinyxml
+    qmake
+    jom
+
+
+Linux
+
+The normal Makefile should work
+
+Install pcre on ubuntu might be needed:
+sudo apt-get install libpcre3 libpcre3-dev
