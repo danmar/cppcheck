@@ -30,7 +30,7 @@
       </listitem>
 
       <listitem>
-        <para>Cppcheck should work on any platform that has sufficient cpu and
+        <para>Cppcheck should work on any platform that has sufficient CPU and
         memory.</para>
       </listitem>
     </itemizedlist>
@@ -77,12 +77,12 @@
     <section>
       <title>Checking all files in a folder</title>
 
-      <para>Normally a program has many sourcefiles. And you want to check
-      them all. Cppcheck can check all sourcefiles in a directory:</para>
+      <para>Normally a program has many source files. And you want to check
+      them all. Cppcheck can check all source files in a directory:</para>
 
       <programlisting>cppcheck path</programlisting>
 
-      <para>If "path" is a folder then cppcheck will check all sourcefiles in
+      <para>If "path" is a folder then cppcheck will check all source files in
       this folder.</para>
 
       <programlisting>Checking path/file1.cpp...
@@ -264,7 +264,7 @@ Checking path/file2.cpp...
 
     <programlisting>cppcheck --xml file1.cpp</programlisting>
 
-    <para>The xml format is:</para>
+    <para>The XML format is:</para>
 
     <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;results&gt;
@@ -372,7 +372,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
 
     <para>The <literal>error id</literal> is the id that you want to suppress.
     The easiest way to get it is to use the <literal>--xml</literal> command
-    line flag. Copy and paste the <literal>id</literal> string from the xml
+    line flag. Copy and paste the <literal>id</literal> string from the XML
     output.</para>
 
     <para>Here is an example:</para>
@@ -396,7 +396,7 @@ uninitvar</programlisting>
     some tweaking you can improve the checking.</para>
 
     <section>
-      <title>Userdefined allocation/deallocation functions</title>
+      <title>User defined allocation/deallocation functions</title>
 
       <para><literal>Cppcheck</literal> understands many common allocation and
       deallocation functions. But not all.</para>
@@ -493,13 +493,13 @@ int a(int sz)
   </chapter>
 
   <chapter>
-    <title>Html report</title>
+    <title>HTML report</title>
 
-    <para>You can convert the xml output from cppcheck into a html report.
-    You'll need python and the pygments module
+    <para>You can convert the XML output from cppcheck into a HTML report.
+    You'll need Python and the pygments module
     (<uri>http://pygments.org/</uri>) for this to work. In the Cppcheck source
     tree there is a folder "htmlreport" that contains a script that transforms
-    a Cppcheck xml file into html output.</para>
+    a Cppcheck XML file into HTML output.</para>
 
     <para>This command generates the help screen:</para>
 
@@ -550,7 +550,7 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
       <para>You can show/hide certain types of messages through the
       <literal>View</literal> menu.</para>
 
-      <para>Results can be saved to an xml file that can later be opened. See
+      <para>Results can be saved to an XML file that can later be opened. See
       <literal>Save results to file</literal> and <literal>Open
       XML</literal>.</para>
     </section>
