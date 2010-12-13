@@ -37,6 +37,10 @@
 #
 # Upload manual.pdf and version.txt...
 # sftp hyd_danmar,cppcheck@web.sourceforge.net
+#
+# Make sure "cppcheck --errorlist" works
+#
+# save "cppcheck --doc" output on wiki
 
 # Tag to use
 tag=$1
