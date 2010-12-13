@@ -39,6 +39,9 @@ void CheckStatistics::AddItem(ShowTypes type)
     case SHOW_PERFORMANCE:
         mPerformance++;
         break;
+    case SHOW_PORTABILITY:
+        mPortability++;
+        break;
     case SHOW_ERRORS:
         mError++;
         break;
@@ -54,6 +57,7 @@ void CheckStatistics::Clear()
     mStyle = 0;
     mWarning = 0;
     mPerformance = 0;
+    mPortability = 0;
     mError = 0;
 }
 
@@ -70,6 +74,9 @@ unsigned CheckStatistics::GetCount(ShowTypes type) const
         break;
     case SHOW_PERFORMANCE:
         count = mPerformance;
+        break;
+    case SHOW_PORTABILITY:
+        count = mPortability;
         break;
     case SHOW_ERRORS:
         count = mError;

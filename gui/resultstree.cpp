@@ -260,6 +260,8 @@ ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
         return SHOW_WARNINGS;
     if (severity == "performance")
         return SHOW_PERFORMANCE;
+    if (severity == "portability")
+        return SHOW_PORTABILITY;
 
     return SHOW_NONE;
 }
@@ -829,6 +831,10 @@ QString ResultsTree::ShowTypeToString(ShowTypes type)
 
     case SHOW_PERFORMANCE:
         return tr("performance");
+        break;
+
+    case SHOW_PORTABILITY:
+        return tr("portability");
         break;
 
     case SHOW_NONE:
