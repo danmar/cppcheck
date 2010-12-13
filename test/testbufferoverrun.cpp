@@ -188,6 +188,8 @@ private:
         TEST_CASE(cmdLineArgs1);
 
         TEST_CASE(scope);   // handling different scopes
+        
+        TEST_CASE(getErrorMessages);
     }
 
 
@@ -2699,6 +2701,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+	void getErrorMessages()
+	{
+		// Ticket #2292: segmentation fault when using --errorlist
+		CheckBufferOverrun c;
+		c.getErrorMessages();
+	}
 };
 
 REGISTER_TEST(TestBufferOverrun)
