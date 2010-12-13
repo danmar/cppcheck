@@ -242,7 +242,7 @@ int main(int argc, char **argv)
 #ifdef _WIN32
     fout << "\tdel lib\*.o\n\tdel cli\*.o\n\tdel test\*.o\n\tdel *.exe\n";
 #else
-    fout << "\trm -f lib/*.o cli/*.o test/*.o test/tinyxml/*.o testrunner cppcheck cppcheck.1\n\n";
+    fout << "\trm -f lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner cppcheck cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
