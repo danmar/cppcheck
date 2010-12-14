@@ -66,7 +66,31 @@ void StatsDialog::setNumberOfFilesScanned(int num)
 
 void StatsDialog::setScanDuration(double seconds)
 {
-    mUI.mScanDuration->setText(tr("%1 secs").arg(seconds));
+    // Factor the duration into units (days/hours/minutes/seconds)
+    int secs = seconds;
+    int days = secs / (24 * 60 * 60);
+    secs -= days * (24 * 60 * 60);
+    int hours = secs / (60 * 60);
+    secs -= hours * (60 * 60);
+    int mins = secs / 60;
+    secs -= mins * 60;
+
+    // Concatenate the two most significant units (e.g. "1 day and 3 hours")
+    QStringList parts;
+    if (days)
+        parts << ((days == 1) ? tr("1 day") : tr("%1 days").arg(days));
+    if (hours)
+        parts << ((hours == 1) ? tr("1 hour") : tr("%1 hours").arg(hours));
+    if (mins && parts.size() < 2)
+        parts << ((mins == 1) ? tr("1 minute") : tr("%1 minutes").arg(mins));
+    if (secs && parts.size() < 2)
+        parts << ((secs == 1) ? tr("1 second") : tr("%1 seconds").arg(secs));
+
+    // For durations < 1s, show the fraction of a second (e.g. "0.7 seconds")
+    if (parts.isEmpty())
+        parts << tr("0.%1 seconds").arg(int(10.0 *(seconds - secs)));
+
+    mUI.mScanDuration->setText(parts.join(tr(" and ")));
 }
 
 void StatsDialog::copyToClipboard()
