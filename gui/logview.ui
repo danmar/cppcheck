@@ -43,6 +43,13 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="mSaveButton">
+       <property name="text">
+        <string>&amp;Save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="mClearButton">
        <property name="text">
         <string>Clear</string>
