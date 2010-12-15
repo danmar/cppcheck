@@ -16,7 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QFile>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <QSettings>
+#include <QTextStream>
 #include "common.h"
 #include "logview.h"
 
@@ -29,6 +33,7 @@ LogView::LogView(QSettings *programSettings, QWidget *parent)
 
     connect(mUI.mCloseButton, SIGNAL(clicked()), this, SLOT(CloseButtonClicked()));
     connect(mUI.mClearButton, SIGNAL(clicked()), this, SLOT(ClearButtonClicked()));
+    connect(mUI.mSaveButton, SIGNAL(clicked()), this, SLOT(SaveButtonClicked()));
 
     resize(mSettings->value(SETTINGS_LOG_VIEW_WIDTH, 400).toInt(),
            mSettings->value(SETTINGS_LOG_VIEW_HEIGHT, 300).toInt());
@@ -53,4 +58,23 @@ void LogView::CloseButtonClicked()
 void LogView::ClearButtonClicked()
 {
     mUI.mLogEdit->clear();
+}
+
+void LogView::SaveButtonClicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Log"),
+                       "", tr("Text files (*.txt *.log);;All files (*.*)"));
+    if (!fileName.isEmpty())
+    {
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            QMessageBox::warning(this, tr("Cppcheck"),
+                                 tr("Could not open file for writing: \"%1\"").arg(fileName));
+            return;
+        }
+
+        QTextStream out(&file);
+        out << mUI.mLogEdit->toPlainText();
+    }
 }

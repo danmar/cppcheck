@@ -59,6 +59,12 @@ protected slots:
     */
     void ClearButtonClicked();
 
+    /**
+    * @brief Called when save button is clicked.
+    *
+    */
+    void SaveButtonClicked();
+
 private:
     Ui::LogView mUI;
 
