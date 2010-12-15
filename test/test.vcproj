@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\lib;..\cli"
+				AdditionalIncludeDirectories="..\lib;..\cli;..\externals"
 				PreprocessorDefinitions="_DEBUG,WIN32,UNIT_TESTING;_CRT_SECURE_NO_WARNINGS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -128,7 +128,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\lib;..\cli"
+				AdditionalIncludeDirectories="..\lib;..\cli;..\externals"
 				PreprocessorDefinitions="NDEBUG,WIN32,UNIT_TESTING;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="false"
@@ -210,7 +210,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\lib;..\cli"
+				AdditionalIncludeDirectories="..\lib;..\cli;..\externals"
 				PreprocessorDefinitions="_DEBUG,WIN64,UNIT_TESTING;_CRT_SECURE_NO_WARNINGS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -295,7 +295,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\lib;..\cli"
+				AdditionalIncludeDirectories="..\lib;..\cli;..\externals"
 				PreprocessorDefinitions="NDEBUG,WIN64,UNIT_TESTING;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="false"
@@ -595,22 +595,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tinyxml\tinystr.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\tinyxml\tinyxml.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\tinyxml\tinyxmlerror.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\tinyxml\tinyxmlparser.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\lib\token.cpp"
 				>
 			</File>
@@ -745,19 +729,39 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tinyxml\tinystr.h"
-				>
-			</File>
-			<File
-				RelativePath=".\tinyxml\tinyxml.h"
-				>
-			</File>
-			<File
 				RelativePath="..\lib\token.h"
 				>
 			</File>
 			<File
 				RelativePath="..\lib\tokenize.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="TinyXml"
+			>
+			<File
+				RelativePath="..\externals\tinyxml\tinystr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\externals\tinyxml\tinystr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\externals\tinyxml\tinyxml.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\externals\tinyxml\tinyxml.h"
+				>
+			</File>
+			<File
+				RelativePath="..\externals\tinyxml\tinyxmlerror.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\externals\tinyxml\tinyxmlparser.cpp"
 				>
 			</File>
 		</Filter>
