@@ -391,7 +391,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     unsigned int line(0);
     if (!msg._callStack.empty())
     {
-        file = msg._callStack.back().getfile();
+        file = msg._callStack.back().getfile(false);
         line = msg._callStack.back().line;
     }
 
