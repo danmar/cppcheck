@@ -212,7 +212,7 @@ protected:
     bool mErrorsFound;
 
     /**
-    * @brief Should we show a "No errors found dialog" everytime no errors were found?
+    * @brief Should we show a "No errors found dialog" every time no errors were found?
     */
     bool mShowNoErrorsMessage;
 

@@ -1403,7 +1403,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             // Inside class function.. if the var is passed as a parameter then
             // just add a "::use"
-            // The "::use" means that a member function was probably called but it wasn't analyzed further
+            // The "::use" means that a member function was probably called but it wasn't analysed further
             else if (classmember)
             {
                 if (noreturn.find(tok->str()) != noreturn.end())
@@ -2225,7 +2225,7 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
         while (last->next())
             last = last->next();
 
-        // not a leak if exit is called before the end of the funcion
+        // not a leak if exit is called before the end of the function
         if (!Token::Match(last->tokAt(-2), "exit|callfunc ; }"))
             return last;
     }

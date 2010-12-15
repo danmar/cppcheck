@@ -128,7 +128,7 @@ public:
         /**
          * Format the error message in XML format
          * @param verbose use verbose message
-         * @param ver xml version
+         * @param ver XML version
          */
         std::string toXML(bool verbose, int ver) const;
 
@@ -170,7 +170,7 @@ public:
 
     private:
         /**
-         * Replace all occurances of searchFor with replaceWith in the
+         * Replace all occurrences of searchFor with replaceWith in the
          * given source.
          * @param source The string to modify
          * @param searchFor What should be searched for

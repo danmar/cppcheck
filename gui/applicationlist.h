@@ -40,7 +40,7 @@
 * (message) - Error message
 * (severity) - Error severity
 *
-* Example opening a file with Kate and make Kate scroll to the corret line:
+* Example opening a file with Kate and make Kate scroll to the correct line:
 * kate -l(line) (file)
 *
 */
@@ -91,7 +91,7 @@ public:
     int GetApplicationCount() const;
 
     /**
-    * @brief Get spesific application's name
+    * @brief Get specific application's name
     *
     * @param index Index of the application whose name to get
     * @return Name of the application

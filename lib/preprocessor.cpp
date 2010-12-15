@@ -225,7 +225,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         {
             std::ostringstream errmsg;
             errmsg << "The code contains characters that are unhandled. "
-                   << "Neither unicode nor extended ascii are supported. "
+                   << "Neither unicode nor extended ASCII are supported. "
                    << "(line=" << lineno << ", character code=" << std::hex << (int(ch) & 0xff) << ")";
             writeError(filename, lineno, _errorLogger, "syntaxError", errmsg.str());
         }
@@ -1546,7 +1546,7 @@ void Preprocessor::handleIncludes(std::string &code,
                 (headerType == SystemHeader && systemIncludes.find(tempFile) != systemIncludes.end()))
             {
                 // We have processed this file already once, skip
-                // it this time to avoid ethernal loop.
+                // it this time to avoid eternal loop.
                 fin.close();
                 continue;
             }
@@ -1645,7 +1645,7 @@ static void skipstring(const std::string &line, std::string::size_type &pos)
  * @param pos  in: Position to the '('. out: Position to the ')'
  * @param params out: The extracted parameters
  * @param numberOfNewlines out: number of newlines in the macro call
- * @param endFound out: was the end paranthesis found?
+ * @param endFound out: was the end parenthesis found?
  */
 static void getparams(const std::string &line,
                       std::string::size_type &pos,
@@ -1663,7 +1663,7 @@ static void getparams(const std::string &line,
     if (line[pos] != '(')
         return;
 
-    // parantheses level
+    // parentheses level
     int parlevel = 0;
 
     // current parameter data
@@ -1672,7 +1672,7 @@ static void getparams(const std::string &line,
     // scan for parameters..
     for (; pos < line.length(); ++pos)
     {
-        // increase paranthesis level
+        // increase parenthesis level
         if (line[pos] == '(')
         {
             ++parlevel;
@@ -1680,7 +1680,7 @@ static void getparams(const std::string &line,
                 continue;
         }
 
-        // decrease paranthesis level
+        // decrease parenthesis level
         else if (line[pos] == ')')
         {
             --parlevel;
@@ -1759,7 +1759,7 @@ private:
     /** prefix that is used by cppcheck to separate macro parameters. Always "__cppcheck__" */
     const std::string _prefix;
 
-    /** The macro has parantheses but no parameters.. "AAA()" */
+    /** The macro has parentheses but no parameters.. "AAA()" */
     bool _nopar;
 
     /** disabled assignment operator */
@@ -1892,7 +1892,7 @@ public:
         return _variadic;
     }
 
-    /** Check if this macro has parantheses but no parameters */
+    /** Check if this macro has parentheses but no parameters */
     bool nopar() const
     {
         return _nopar;
@@ -2301,10 +2301,10 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     // number of newlines within macro use
                     unsigned int numberOfNewlines = 0;
 
-                    // if the macro has parantheses, get parameters
+                    // if the macro has parentheses, get parameters
                     if (macro->variadic() || macro->nopar() || macro->params().size())
                     {
-                        // is the end paranthesis found?
+                        // is the end parenthesis found?
                         bool endFound = false;
 
                         getparams(line,pos2,params,numberOfNewlines,endFound);

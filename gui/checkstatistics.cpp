@@ -83,7 +83,7 @@ unsigned CheckStatistics::GetCount(ShowTypes type) const
         break;
     case SHOW_NONE:
     default:
-        qDebug() << "Unknown error type - returning zero statistices.";
+        qDebug() << "Unknown error type - returning zero statistics.";
         break;
     }
     return count;

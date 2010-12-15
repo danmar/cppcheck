@@ -1041,7 +1041,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                             if (scope == var1->_scope)
                                 replace = true;
 
-                            // not in same scope as decelaration
+                            // not in same scope as declaration
                             else
                             {
                                 std::set<Scope *>::iterator assignment;
@@ -1070,7 +1070,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                                 // assignment in this scope
                                 else
                                 {
-                                    // replace when only one other assingnment
+                                    // replace when only one other assignment
                                     if (var1->_assignments.size() == 1)
                                         replace = true;
 
@@ -1107,7 +1107,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
             {
                 if (var1->_type == Variables::pointer && !dereference)
                 {
-                    // check if variable decelaration is in this scope
+                    // check if variable declaration is in this scope
                     if (var1->_scope == scope)
                         variables.clearAliases(varid1);
                     else

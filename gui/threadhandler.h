@@ -86,7 +86,7 @@ public:
     * @brief Start the threads to check the files
     *
     * @param settings Settings for checking
-    * @param recheck Should we reuse the files we checked earleir
+    * @param recheck Should we reuse the files we checked earlier
     */
     void Check(const Settings &settings, bool recheck);
 

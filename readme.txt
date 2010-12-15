@@ -9,7 +9,7 @@ About
 
 Manual
 
-    A manual is available online: 
+    A manual is available online:
     http://cppcheck.sf.net/manual.pdf
 
 Compiling
@@ -26,7 +26,7 @@ Compiling
 
     qmake
     =====
-        You can use the gui/gui.pro file to build the gui.
+        You can use the gui/gui.pro file to build the GUI.
             cd gui
             qmake
             make

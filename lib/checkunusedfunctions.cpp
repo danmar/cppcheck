@@ -115,7 +115,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         else
             continue;
 
-        // funcname ( => Assert that the end paranthesis isn't followed by {
+        // funcname ( => Assert that the end parenthesis isn't followed by {
         if (Token::Match(funcname, "%var% ("))
         {
             int parlevel = 0;
