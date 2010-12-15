@@ -92,7 +92,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\lib;..\cli;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\cli;..\externals;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;UNIT_TESTING;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -164,7 +164,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\lib;..\cli;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\cli;..\externals;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;UNIT_TESTING;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
@@ -228,6 +228,10 @@
     <ClCompile Include="..\cli\cmdlineparser.cpp" />
     <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
+    <ClCompile Include="..\externals\tinyxml\tinystr.cpp" />
+    <ClCompile Include="..\externals\tinyxml\tinyxml.cpp" />
+    <ClCompile Include="..\externals\tinyxml\tinyxmlerror.cpp" />
+    <ClCompile Include="..\externals\tinyxml\tinyxmlparser.cpp" />
     <ClCompile Include="..\lib\checkautovariables.cpp" />
     <ClCompile Include="..\lib\checkbufferoverrun.cpp" />
     <ClCompile Include="..\lib\checkclass.cpp" />
@@ -286,14 +290,13 @@
     <ClCompile Include="testunusedfunctions.cpp" />
     <ClCompile Include="testunusedprivfunc.cpp" />
     <ClCompile Include="testunusedvar.cpp" />
-    <ClCompile Include="tinyxml\tinyxml.cpp" />
-    <ClCompile Include="tinyxml\tinyxmlerror.cpp" />
-    <ClCompile Include="tinyxml\tinyxmlparser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\cli\cmdlineparser.h" />
     <ClInclude Include="..\cli\cppcheckexecutor.h" />
     <ClInclude Include="..\cli\threadexecutor.h" />
+    <ClInclude Include="..\externals\tinyxml\tinystr.h" />
+    <ClInclude Include="..\externals\tinyxml\tinyxml.h" />
     <ClInclude Include="..\lib\check.h" />
     <ClInclude Include="..\lib\checkautovariables.h" />
     <ClInclude Include="..\lib\checkbufferoverrun.h" />
@@ -324,7 +327,6 @@
     <ClInclude Include="options.h" />
     <ClInclude Include="redirect.h" />
     <ClInclude Include="testsuite.h" />
-    <ClInclude Include="tinyxml\tinyxml.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

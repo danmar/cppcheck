@@ -9,6 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="TinyXml">
+      <UniqueIdentifier>{430c75d7-d27c-4015-b5a2-97819caa61f1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cppcheckexecutor.cpp">
@@ -97,6 +100,18 @@
     </ClCompile>
     <ClCompile Include="..\lib\symboldatabase.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\externals\tinyxml\tinystr.cpp">
+      <Filter>TinyXml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\externals\tinyxml\tinyxml.cpp">
+      <Filter>TinyXml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\externals\tinyxml\tinyxmlerror.cpp">
+      <Filter>TinyXml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\externals\tinyxml\tinyxmlparser.cpp">
+      <Filter>TinyXml</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -189,6 +204,12 @@
     </ClInclude>
     <ClInclude Include="..\lib\symboldatabase.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\externals\tinyxml\tinystr.h">
+      <Filter>TinyXml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\externals\tinyxml\tinyxml.h">
+      <Filter>TinyXml</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

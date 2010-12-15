@@ -95,7 +95,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\externals;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -168,7 +168,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\externals;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
@@ -231,6 +231,10 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\externals\tinyxml\tinystr.cpp" />
+    <ClCompile Include="..\externals\tinyxml\tinyxml.cpp" />
+    <ClCompile Include="..\externals\tinyxml\tinyxmlerror.cpp" />
+    <ClCompile Include="..\externals\tinyxml\tinyxmlparser.cpp" />
     <ClCompile Include="..\lib\checkautovariables.cpp" />
     <ClCompile Include="..\lib\checkbufferoverrun.cpp" />
     <ClCompile Include="..\lib\checkclass.cpp" />
@@ -262,6 +266,8 @@
     <ClCompile Include="threadexecutor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\externals\tinyxml\tinystr.h" />
+    <ClInclude Include="..\externals\tinyxml\tinyxml.h" />
     <ClInclude Include="..\lib\check.h" />
     <ClInclude Include="..\lib\checkautovariables.h" />
     <ClInclude Include="..\lib\checkbufferoverrun.h" />

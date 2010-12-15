@@ -9,6 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="TinyXml">
+      <UniqueIdentifier>{eaf5e7d4-d840-494c-8a24-8f167e2b4fb3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="testautovariables.cpp">
@@ -134,15 +137,6 @@
     <ClCompile Include="..\lib\path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tinyxml\tinyxml.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tinyxml\tinyxmlerror.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tinyxml\tinyxmlparser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\lib\timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -202,6 +196,18 @@
     </ClCompile>
     <ClCompile Include="testerrorlogger.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\externals\tinyxml\tinystr.cpp">
+      <Filter>TinyXml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\externals\tinyxml\tinyxml.cpp">
+      <Filter>TinyXml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\externals\tinyxml\tinyxmlerror.cpp">
+      <Filter>TinyXml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\externals\tinyxml\tinyxmlparser.cpp">
+      <Filter>TinyXml</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -271,9 +277,6 @@
     <ClInclude Include="..\lib\path.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tinyxml\tinyxml.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\lib\timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -306,6 +309,12 @@
     </ClInclude>
     <ClInclude Include="..\lib\symboldatabase.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\externals\tinyxml\tinystr.h">
+      <Filter>TinyXml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\externals\tinyxml\tinyxml.h">
+      <Filter>TinyXml</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
