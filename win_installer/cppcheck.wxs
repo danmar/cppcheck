@@ -21,7 +21,7 @@
           </Component>
           <Component Id='RegistryEntries' Guid='$(var.registrykeysGUID)'>
             <RegistryKey Root="HKCU" Key="SOFTWARE\$(var.ProductNameShort)" Action="createAndRemoveOnUninstall">
-              <RegistryValue Name="IntallationPath" Value="[INSTALLDIR]" Type="string" KeyPath="yes" />
+              <RegistryValue Name="InstallationPath" Value="[INSTALLDIR]" Type="string" KeyPath="yes" />
               <RegistryValue Name="Version" Value="$(var.ProductVersion)" Type="string" />
             </RegistryKey>
           </Component>
