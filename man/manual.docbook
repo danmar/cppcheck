@@ -396,7 +396,7 @@ uninitvar</programlisting>
     some tweaking you can improve the checking.</para>
 
     <section>
-      <title>User defined allocation/deallocation functions</title>
+      <title>User-defined allocation/deallocation functions</title>
 
       <para><literal>Cppcheck</literal> understands many common allocation and
       deallocation functions. But not all.</para>

@@ -84,10 +84,10 @@ public:
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool _force;
 
-    /** @brief write xml results (--xml) */
+    /** @brief write XML results (--xml) */
     bool _xml;
 
-    /** @brief xml version (--xmlver=..) */
+    /** @brief XML version (--xmlver=..) */
     int _xml_version;
 
     /** @brief How many processes/threads should do checking at the same
@@ -174,7 +174,7 @@ public:
     /** @brief defines given by the user */
     std::string userDefines;
 
-    /** @brief Experimentat 2 pass checking of files */
+    /** @brief Experimental 2 pass checking of files */
     bool test_2_pass;
 
     /** @brief --report-progress */

@@ -388,7 +388,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     if (func->type == SymbolDatabase::Func::Constructor)
                     {
                         // check for no arguments: func ( )
-                        /** @todo check for arguents with default values someday */
+                        /** @todo check for arguments with default values someday */
                         if (func->argDef->next() == func->argDef->link())
                         {
                             hasDefaultConstructor = true;
@@ -397,7 +397,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     }
                 }
 
-                // User defined types with user defined defaut constructor doesn't need initialization.
+                // User defined types with user defined default constructor doesn't need initialization.
                 // We assume the default constructor initializes everything.
                 // Another check will figure out if the constructor actually initializes everything.
                 if (hasDefaultConstructor)
@@ -960,7 +960,7 @@ void SymbolDatabase::SpaceInfo::getVarList()
         }
 
         // Borland C++: Skip all variables in the __published section.
-        // These are automaticly initialized.
+        // These are automatically initialized.
         else if (tok->str() == "__published:")
         {
             for (; tok; tok = tok->next())

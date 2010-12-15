@@ -211,7 +211,7 @@ void CheckClass::privateFunctions()
         if (!info->isClassOrStruct())
             continue;
 
-        // dont check derived classes
+        // don’t check derived classes
         if (!info->derivedFrom.empty())
             continue;
 

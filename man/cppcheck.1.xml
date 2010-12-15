@@ -294,7 +294,7 @@ files, this is not needed.</para>
       <varlistentry>
         <term><option>--xml</option></term>
         <listitem>
-          <para>Write results in xml to error stream</para>
+          <para>Write results in XML to error stream</para>
         </listitem>
       </varlistentry>
     </variablelist>

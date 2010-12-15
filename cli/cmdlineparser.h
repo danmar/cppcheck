@@ -41,7 +41,7 @@ class CmdLineParser
 public:
     /**
      * The constructor.
-     * @param settings Settings instance that will be modified accoding to
+     * @param settings Settings instance that will be modified according to
      * options user has given.
      */
     CmdLineParser(Settings *settings);

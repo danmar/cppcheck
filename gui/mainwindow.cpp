@@ -315,7 +315,7 @@ void MainWindow::CheckDirectory()
 
 bool MainWindow::GetCheckProject()
 {
-    // We have succesfully loaded project earlier and use that project
+    // We have successfully loaded project earlier and use that project
     if (mProject)
         return true;
 

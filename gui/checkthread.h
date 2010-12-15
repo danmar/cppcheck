@@ -71,7 +71,7 @@ protected:
     * Whole purpose of these states is to allow stopping of the checking. When
     * stopping we say for the thread (Stopping) that stop when current check
     * has been completed. Thread must be stopped cleanly, just terminating thread
-    * likely causes unpredictable side-effedts.
+    * likely causes unpredictable side-effects.
     */
     enum State
     {

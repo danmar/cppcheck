@@ -75,8 +75,8 @@ public:
 public slots:
 
     /**
-    * @brief Slot threads use to signal this class that a spesific file is checked
-    * @param file File taht is checked
+    * @brief Slot threads use to signal this class that a specific file is checked
+    * @param file File that is checked
     */
     void FileChecked(const QString &file);
 signals:

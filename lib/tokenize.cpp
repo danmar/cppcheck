@@ -250,12 +250,12 @@ void Tokenizer::createTokens(std::istream &code)
     std::string CurrentToken;
 
     // lineNumbers holds line numbers for files in fileIndexes
-    // every time an include file is complitely parsed, last item in the vector
+    // every time an include file is completely parsed, last item in the vector
     // is removed and lineno is set to point to that value.
     std::vector<unsigned int> lineNumbers;
 
     // fileIndexes holds index for _files vector about currently parsed files
-    // every time an include file is complitely parsed, last item in the vector
+    // every time an include file is completely parsed, last item in the vector
     // is removed and FileIndex is set to point to that value.
     std::vector<unsigned int> fileIndexes;
 
@@ -1190,13 +1190,13 @@ void Tokenizer::simplifyTypedef()
 
                 if (simplifyType)
                 {
-                    // There are 2 catagories of typedef substitutions:
+                    // There are 2 categories of typedef substitutions:
                     // 1. variable declarations that preserve the variable name like
                     //    global, local, and function parameters
                     // 2. not variable declarations that have no name like derived
                     //    classes, casts, operators, and template parameters
 
-                    // try to determine which catagory this substitution is
+                    // try to determine which category this substitution is
                     bool isDerived = false;
                     bool inCast = false;
                     bool inTemplate = false;
@@ -2172,7 +2172,7 @@ bool Tokenizer::tokenize(std::istream &code,
     // Remove __builtin_expect, likely and unlikely
     simplifyBuiltinExpect();
 
-    // colapse compound standard types into a single token
+    // collapse compound standard types into a single token
     // unsigned long long int => long _isUnsigned=true,_isLong=true
     simplifyStdType();
 
@@ -2204,7 +2204,7 @@ bool Tokenizer::tokenize(std::istream &code,
 
     simplifyVariableMultipleAssign();
 
-    // Remove redundant parantheses
+    // Remove redundant parentheses
     simplifyRedundantParanthesis();
 
     // Handle templates..
@@ -3329,7 +3329,7 @@ void Tokenizer::setVarId()
                     // Found a class function..
                     if (Token::Match(tok2, funcpattern.c_str()))
                     {
-                        // Goto the end paranthesis..
+                        // Goto the end parenthesis..
                         tok2 = tok2->tokAt(3)->link();
                         if (!tok2)
                             break;
@@ -4049,7 +4049,7 @@ bool Tokenizer::simplifyTokenList()
         modified |= simplifyCalculations();
     }
 
-    // Remove redundant parantheses in return..
+    // Remove redundant parentheses in return..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         while (Token::simpleMatch(tok, "return ("))
@@ -5470,7 +5470,7 @@ void Tokenizer::simplifyIfAssign()
         if (isNot)
             tok->next()->deleteNext();
 
-        // Delete paranthesis.. and remember how many there are with
+        // Delete parenthesis.. and remember how many there are with
         // their links.
         std::stack<Token *> braces;
         while (tok->next()->str() == "(")
@@ -6423,7 +6423,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
                tok->link()->previous() == tok->next()->link())
         {
             // We have "(( *something* ))", remove the inner
-            // paranthesis
+            // parenthesis
             tok->deleteNext();
             tok->link()->tokAt(-2)->deleteNext();
             ret = true;
@@ -6433,7 +6433,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
                tok->link()->previous() == tok->tokAt(2)->link())
         {
             // We have "( func ( *something* ))", remove the outer
-            // paranthesis
+            // parenthesis
             tok->link()->deleteThis();
             tok->deleteThis();
             ret = true;
@@ -6442,7 +6442,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
         while (Token::Match(tok->previous(), "[;{] ( delete %var% ) ;"))
         {
             // We have "( delete var )", remove the outer
-            // paranthesis
+            // parenthesis
             tok->tokAt(3)->deleteThis();
             tok->deleteThis();
             ret = true;
@@ -6451,7 +6451,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
         while (Token::Match(tok->previous(), "[;{] ( delete [ ] %var% ) ;"))
         {
             // We have "( delete [] var )", remove the outer
-            // paranthesis
+            // parenthesis
             tok->tokAt(5)->deleteThis();
             tok->deleteThis();
             ret = true;
@@ -6469,7 +6469,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
 
         if (Token::Match(tok->previous(), "[(!*;{}] ( %var% )") && tok->next()->varId() != 0)
         {
-            // We have "( var )", remove the paranthesis
+            // We have "( var )", remove the parenthesis
             tok->deleteThis();
             tok->deleteNext();
             ret = true;
@@ -6478,7 +6478,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
 
         if (Token::Match(tok->previous(), "[(!] ( %var% . %var% )"))
         {
-            // We have "( var . var )", remove the paranthesis
+            // We have "( var . var )", remove the parenthesis
             tok->deleteThis();
             tok = tok->tokAt(2);
             tok->deleteNext();
@@ -6539,11 +6539,11 @@ bool Tokenizer::simplifyCalculations()
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        // Remove parantheses around variable..
-        // keep parantheses here: dynamic_cast<Fred *>(p);
-        // keep parantheses here: A operator * (int);
-        // keep parantheses here: operator new [] (size_t);
-        // keep parantheses here: Functor()(a ... )
+        // Remove parentheses around variable..
+        // keep parentheses here: dynamic_cast<Fred *>(p);
+        // keep parentheses here: A operator * (int);
+        // keep parentheses here: operator new [] (size_t);
+        // keep parentheses here: Functor()(a ... )
         if (Token::Match(tok->next(), "( %var% ) [;),+-*/><]]") &&
             !tok->isName() &&
             tok->str() != ">" &&
@@ -6601,7 +6601,7 @@ bool Tokenizer::simplifyCalculations()
                 ret = true;
             }
 
-            // Remove parantheses around number..
+            // Remove parentheses around number..
             if (Token::Match(tok->tokAt(-2), "%any% ( %num% )") && !tok->tokAt(-2)->isName())
             {
                 tok = tok->previous();

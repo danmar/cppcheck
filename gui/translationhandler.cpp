@@ -49,7 +49,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
             << "cppcheck_ja"
             << "cppcheck_sr";
 
-    //Load english as a fallback language
+    //Load English as a fallback language
     QTranslator *english = new QTranslator();
     if (english->load("cppcheck_en"))
     {
@@ -78,7 +78,7 @@ const QStringList TranslationHandler::GetFiles() const
 
 bool TranslationHandler::SetLanguage(const int index, QString &error)
 {
-    //If english is the language
+    //If English is the language
     if (index == 0)
     {
         //Just remove all extra translators
@@ -147,7 +147,7 @@ int TranslationHandler::SuggestLanguage() const
     //And see if we can find it from our list of language files
     int index = mFiles.indexOf(file);
 
-    //If nothing found, return english
+    //If nothing found, return English
     if (index < 0)
     {
         return 0;

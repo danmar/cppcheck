@@ -753,7 +753,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             if (Token::Match(tok2->tokAt(4), "%var% =|+=|-=") && MathLib::toLongNumber(max_counter_value) <= size)
                 condition_out_of_bounds = false;
 
-            // Goto the end paranthesis of the for-statement: "for (x; y; z)" ..
+            // Goto the end parenthesis of the for-statement: "for (x; y; z)" ..
             tok2 = tok->next()->link();
             if (!tok2 || !tok2->tokAt(5))
                 break;
@@ -922,7 +922,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             if (Token::Match(tok2->tokAt(4), "%var% =|+=|-=") && MathLib::toLongNumber(max_counter_value) <= (int)arrayInfo.num[0])
                 condition_out_of_bounds = false;
 
-            // Goto the end paranthesis of the for-statement: "for (x; y; z)" ..
+            // Goto the end parenthesis of the for-statement: "for (x; y; z)" ..
             tok2 = tok->next()->link();
             if (!tok2 || !tok2->tokAt(5))
                 break;

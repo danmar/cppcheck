@@ -18,7 +18,7 @@ tools, libraries or headers so you cannot compile 64-bit binaries without
 Windows SDK.
 
 To compile 64-bit binaries you need to start VS Express to 64-bit environment.
-(by default VS Express starts to 32-bit enviroment). To do this, open Windows
+(by default VS Express starts to 32-bit environment). To do this, open Windows
 SDK Command Prompt and switch to 64-bit environment with command:
 > setenv /x64 /debug
 

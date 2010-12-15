@@ -89,7 +89,7 @@ void XmlReport::WriteError(const ErrorItem &error)
     /*
     Error example from the core program in xml
     <error file="gui/test.cpp" line="14" id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"/>
-    The callstack seems to be ignored here aswell, instead last item of the stack is used
+    The callstack seems to be ignored here as well, instead last item of the stack is used
     */
 
     mXmlWriter->writeStartElement(ErrorElementName);

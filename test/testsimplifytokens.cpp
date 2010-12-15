@@ -51,7 +51,7 @@ private:
         TEST_CASE(double_plus);
         TEST_CASE(redundant_plus);
         TEST_CASE(parantheses1);
-        TEST_CASE(paranthesesVar);      // Remove redundant parantheses around variable .. "( %var% )"
+        TEST_CASE(paranthesesVar);      // Remove redundant parentheses around variable .. "( %var% )"
         TEST_CASE(declareVar);
 
         TEST_CASE(declareArray);
@@ -607,7 +607,7 @@ private:
 
     void paranthesesVar()
     {
-        // remove parantheses..
+        // remove parentheses..
         ASSERT_EQUALS("= p ;", tok("= (p);"));
         ASSERT_EQUALS("if ( a < p ) { }", tok("if(a<(p)){}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p == -1 ) { } }", tok("void f(){int p; if((p)==-1){}}"));
@@ -622,7 +622,7 @@ private:
         ASSERT_EQUALS("void f ( ) { int * p ; * p = 1 ; }", tok("void f(){int *p; *(p) = 1;}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } p = 1 ; }", tok("void f(){int p; if ( p ) { } (p) = 1;}"));
 
-        // keep parantheses..
+        // keep parentheses..
         ASSERT_EQUALS("= a ;", tok("= (char)a;"));
         ASSERT_EQUALS("cast < char * > ( p )", tok("cast<char *>(p)"));
         ASSERT_EQUALS("return ( a + b ) * c ;", tok("return (a+b)*c;"));
@@ -2842,7 +2842,7 @@ private:
         ASSERT_EQUALS("\"\\\\x61\"", tok("\"\\\\x61\""));
 
         // These tests can fail, if other characters are handled
-        // more correctly. But fow now all non null characters should
+        // more correctly. But for now all non null characters should
         // become 'a'
         ASSERT_EQUALS("\"a\"", tok("\"\\x62\""));
         ASSERT_EQUALS("\"a\"", tok("\"\\177\""));

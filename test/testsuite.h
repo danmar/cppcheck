@@ -51,7 +51,7 @@ protected:
     void assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual, const std::string &msg = "");
 
     // the vars expected and actual need to be of type double, in order to avoid overflow of unsigned int
-    // e.g: ASSERT_EQUALS(-100.0, MathLib::toDoubleNumber("-1.0E+2")); whould not work without this.
+    // e.g: ASSERT_EQUALS(-100.0, MathLib::toDoubleNumber("-1.0E+2")); would not work without this.
     void assertEquals(const char *filename, int linenr, double expected, double actual, const std::string &msg="");
 
     void todoAssertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual);

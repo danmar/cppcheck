@@ -189,7 +189,7 @@ private:
     {
         TiXmlDocument doc;
         doc.Parse(xmlData);
-        // parsing must be successfull
+        // parsing must be successful
         ASSERT_EQUALS(false, doc.Error());
         // root element must be "results"
         TiXmlElement* root = doc.FirstChildElement();

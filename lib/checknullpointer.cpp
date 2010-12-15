@@ -216,11 +216,11 @@ void CheckNullPointer::nullPointerLinkedList()
         if (!Token::simpleMatch(tok1->next()->link(), ") {"))
             continue;
 
-        // is there any dereferencing occuring in the for statement..
+        // is there any dereferencing occurring in the for statement..
         unsigned int parlevel2 = 1;
         for (const Token *tok2 = tok1->tokAt(2); tok2; tok2 = tok2->next())
         {
-            // Parantheses..
+            // Parentheses..
             if (tok2->str() == "(")
                 ++parlevel2;
             else if (tok2->str() == ")")
@@ -230,7 +230,7 @@ void CheckNullPointer::nullPointerLinkedList()
                 --parlevel2;
             }
 
-            // Dereferencing a variable inside the "for" parantheses..
+            // Dereferencing a variable inside the "for" parentheses..
             else if (Token::Match(tok2, "%var% . %var%"))
             {
                 const unsigned int varid(tok2->varId());
@@ -532,7 +532,7 @@ void CheckNullPointer::nullPointer()
     nullPointerByCheckAndDeRef();
 }
 
-/** Derefencing null constant (simplified token list) */
+/** Dereferencing null constant (simplified token list) */
 void CheckNullPointer::nullConstantDereference()
 {
     // this is kept at 0 for all scopes that are not executing

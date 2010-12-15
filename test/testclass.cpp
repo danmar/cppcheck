@@ -580,7 +580,7 @@ private:
             "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // this test needs an assignment test but doesnt have it
+        // this test needs an assignment test but doesn’t have it
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
@@ -1816,7 +1816,7 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:11]: (warning) Member variable not initialized in the constructor 'Foo::mMember'\n", errout.str());
 
-        // constructor in seperate namespace
+        // constructor in separate namespace
         checkUninitVar("namespace Output\n"
                        "{\n"
                        "    class Foo\n"
@@ -1835,7 +1835,7 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable not initialized in the constructor 'Foo::mMember'\n", errout.str());
 
-        // constructor in different seperate namespace
+        // constructor in different separate namespace
         checkUninitVar("namespace Output\n"
                        "{\n"
                        "    class Foo\n"
@@ -1854,7 +1854,7 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // constructor in different seperate namespace (won't compile)
+        // constructor in different separate namespace (won't compile)
         checkUninitVar("namespace Output\n"
                        "{\n"
                        "    class Foo\n"
@@ -1873,7 +1873,7 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // constructor in nested seperate namespace
+        // constructor in nested separate namespace
         checkUninitVar("namespace A\n"
                        "{\n"
                        "    namespace Output\n"
@@ -1895,7 +1895,7 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:15]: (warning) Member variable not initialized in the constructor 'Foo::mMember'\n", errout.str());
 
-        // constructor in nested different seperate namespace
+        // constructor in nested different separate namespace
         checkUninitVar("namespace A\n"
                        "{\n"
                        "    namespace Output\n"
@@ -1917,7 +1917,7 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // constructor in nested different seperate namespace
+        // constructor in nested different separate namespace
         checkUninitVar("namespace A\n"
                        "{\n"
                        "    namespace Output\n"
@@ -2467,7 +2467,7 @@ private:
         ASSERT_EQUALS("[fred.h:6]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
-    // Borland C++: No FP for published pointers - they are automaticly initialized
+    // Borland C++: No FP for published pointers - they are automatically initialized
     void uninitVarPublished()
     {
         checkUninitVar("class Fred\n"
@@ -3264,7 +3264,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (style) The function 'Fred::foo' can be const\n"
                       "[test.cpp:7] -> [test.cpp:4]: (style) The function 'Fred::foo' can be const\n", errout.str());
 
-        // check functions with different or missing paramater names
+        // check functions with different or missing parameter names
         checkConst("class Fred {\n"
                    "    std::string s;\n"
                    "    void foo1(int, int);\n"

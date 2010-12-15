@@ -116,7 +116,7 @@ public:
 
     /**
      * @brief Call all "getErrorMessages" in all registered Check classes.
-     * Also print out xml header and footer.
+     * Also print out XML header and footer.
      */
     void getErrorMessages();
 

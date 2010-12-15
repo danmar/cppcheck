@@ -145,7 +145,7 @@ private:
         TEST_CASE(varid14);
         TEST_CASE(varid15);
         TEST_CASE(varid16);
-        TEST_CASE(varid17); // ticket #1810
+        TEST_CASE(varid17);   // ticket #1810
         TEST_CASE(varid18);
         TEST_CASE(varid19);
         TEST_CASE(varid20);
@@ -154,8 +154,8 @@ private:
         TEST_CASE(varid23);
         TEST_CASE(varid24);
         TEST_CASE(varid25);
-        TEST_CASE(varid26);  // ticket #1967 (list of function pointers)
-        TEST_CASE(varid27);		// Ticket #2280 (same name for namespace and variable)
+        TEST_CASE(varid26);   // ticket #1967 (list of function pointers)
+        TEST_CASE(varid27);	// Ticket #2280 (same name for namespace and variable)
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidStl);
@@ -509,7 +509,7 @@ private:
 
 
 
-    // Dont remove "(int *)"..
+    // Don’t remove "(int *)"..
     void removeCast1()
     {
         const char code[] = "int *f(int *);";

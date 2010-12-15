@@ -175,7 +175,7 @@ public:
     Token * initVar(Token * tok);
 
     /**
-     * Colapse compound standard types into a single token.
+     * Collapse compound standard types into a single token.
      * unsigned long long int => long _isUnsigned=true,_isLong=true
      */
     void simplifyStdType();
@@ -201,7 +201,7 @@ public:
     void simplifyIfAssign();
 
     /**
-     * Simplify multiple assignmetns.
+     * Simplify multiple assignments.
      * Example: "a = b = c = 0;" => "a = 0; b = 0; c = 0;"
      */
     void simplifyVariableMultipleAssign();
@@ -294,7 +294,7 @@ public:
      */
     bool simplifyConditions();
 
-    /** Remove reduntant code, e.g. if( false ) { int a; } should be
+    /** Remove redundant code, e.g. if( false ) { int a; } should be
      * removed, because it is never executed.
      * @return true if something is modified
      *         false if nothing is done.
@@ -322,7 +322,7 @@ public:
     void simplifyStructDecl();
 
     /**
-     * Remove redundant paranthesis:
+     * Remove redundant parenthesis:
      * - "((x))" => "(x)"
      * - "(function())" => "function()"
      * - "(delete x)" => "delete x"

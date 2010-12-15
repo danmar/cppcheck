@@ -74,7 +74,7 @@ public:
      * @param srcCodeStream The (file/string) stream to read from.
      * @param processedFile Give reference to empty string as a parameter,
      * function will fill processed file here. Use this also as a filedata parameter
-     * to getcode() if you recieved more than once configurations.
+     * to getcode() if you received more than once configurations.
      * @param resultConfigurations List of configurations. Pass these one by one
      * to getcode() with processedFile.
      * @param filename The name of the file to check e.g. "src/main.cpp"
@@ -147,9 +147,9 @@ protected:
     std::string removeComments(const std::string &str, const std::string &filename, Settings *settings);
 
     /**
-     * Remove redundant parantheses from preprocessor commands. This should only be called from read().
+     * Remove redundant parentheses from preprocessor commands. This should only be called from read().
      * @param str Code processed by read().
-     * @return code with reduced parantheses
+     * @return code with reduced parentheses
      */
     static std::string removeParantheses(const std::string &str);
 
