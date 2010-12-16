@@ -59,6 +59,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             new_info->classStart = tok2;
             new_info->classEnd = tok2->link();
 
+            // make sure we have valid code
+            if (!new_info->classEnd)
+            {
+                delete new_info;
+                break;
+            }
+
             info = new_info;
 
             // add namespace
@@ -221,7 +228,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         SpaceInfo *functionOf = info;
 
                         addNewFunction(&info, &tok2);
-                        info->functionOf = functionOf;
+                        if (info)
+                            info->functionOf = functionOf;
 
                         tok = tok2;
                     }
@@ -283,9 +291,19 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             function.arg = function.argDef;
                             function.type = Func::Function;
 
-                            info->functionList.push_back(function);
+                            SpaceInfo *old_info = info;
 
                             addNewFunction(&info, &tok);
+
+                            if (info)
+                                old_info->functionList.push_back(function);
+
+                            // syntax error
+                            else
+                            {
+                                info = old_info;
+                                break;
+                            }
                         }
                     }
 
@@ -294,6 +312,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                              Token::Match(argStart->link()->tokAt(2)->link(), ") const| {"))
                     {
                         const Token *tok1 = funcStart;
+                        SpaceInfo *old_info = info;
 
                         // class function
                         if (tok1->previous()->str() == "::")
@@ -302,6 +321,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // regular function
                         else
                             addNewFunction(&info, &tok1);
+
+                        // syntax error?
+                        if (!info)
+                            info = old_info;
 
                         tok = tok1;
                     }
@@ -747,8 +770,11 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                     if (func->hasBody)
                     {
                         addNewFunction(info, tok);
-                        (*info)->functionOf = info1;
-                        added = true;
+                        if (info)
+                        {
+                            (*info)->functionOf = info1;
+                            added = true;
+                        }
                         break;
                     }
                 }
@@ -774,6 +800,17 @@ void SymbolDatabase::addNewFunction(SymbolDatabase::SpaceInfo **info, const Toke
     {
         new_info->classStart = tok1;
         new_info->classEnd = tok1->link();
+
+        // syntax error?
+        if (!new_info->classEnd)
+        {
+            delete new_info;
+            while (tok1->next())
+                tok1 = tok1->next();
+            *info = NULL;
+            *tok = tok1;
+            return;
+        }
 
         *info = new_info;
 
@@ -933,13 +970,21 @@ void SymbolDatabase::SpaceInfo::getVarList()
 
     for (const Token *tok = start; tok; tok = tok->next())
     {
+        // end of space?
         if (tok->str() == "}")
+            break;
+
+        // syntax error?
+        else if (tok->next() == NULL)
             break;
 
         // Is it a function?
         else if (tok->str() == "{")
         {
             tok = tok->link();
+            // syntax error?
+            if (!tok)
+                return;
             continue;
         }
 

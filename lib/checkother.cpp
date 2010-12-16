@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checkother.h"
 #include "mathlib.h"
+#include "symboldatabase.h"
 
 #include <cctype> // std::isupper
 #include <cmath> // fabs()
@@ -1192,17 +1193,20 @@ void CheckOther::functionVariableUsage()
         return;
 
     // Parse all executing scopes..
-    for (const Token *token = Token::findmatch(_tokenizer->tokens(), ") const| {"); token;)
+    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+
+    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        // goto "{"
-        while (token->str() != "{")
-            token = token->next();
+        SymbolDatabase::SpaceInfo *info = *i;
+
+        // only check functions
+        if (info->type != SymbolDatabase::SpaceInfo::Function)
+            continue;
 
         // First token for the current scope..
-        const Token *const tok1 = token;
-
-        // Find next scope that will be checked next time..
-        token = Token::findmatch(token->link(), ") const| {");
+        const Token *const tok1 = info->classStart;
 
         // varId, usage {read, write, modified}
         Variables variables;
@@ -1820,74 +1824,83 @@ void CheckOther::checkVariableScope()
     if (!_settings->_checkCodingStyle)
         return;
 
-    // Walk through all tokens..
-    bool func = false;
-    int indentlevel = 0;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+
+    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        // Skip class and struct declarations..
-        if ((tok->str() == "class") || (tok->str() == "struct"))
+        SymbolDatabase::SpaceInfo *info = *i;
+
+        // only check functions
+        if (info->type != SymbolDatabase::SpaceInfo::Function)
+            continue;
+
+        // Walk through all tokens..
+        int indentlevel = 0;
+        for (const Token *tok = info->classStart; tok; tok = tok->next())
         {
-            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            // Skip function local class and struct declarations..
+            if ((tok->str() == "class") || (tok->str() == "struct") || (tok->str() == "union"))
             {
-                if (tok2->str() == "{")
+                for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
                 {
-                    tok = tok2->link();
+                    if (tok2->str() == "{")
+                    {
+                        tok = tok2->link();
+                        break;
+                    }
+                    if (Token::Match(tok2, "[,);]"))
+                    {
+                        break;
+                    }
+                }
+                if (! tok)
                     break;
-                }
-                if (Token::Match(tok2, "[,);]"))
-                {
-                    break;
-                }
             }
-            if (! tok)
-                break;
-        }
 
-        else if (tok->str() == "{")
-        {
-            ++indentlevel;
-        }
-        else if (tok->str() == "}")
-        {
-            --indentlevel;
-            if (indentlevel == 0)
-                func = false;
-        }
-        if (indentlevel == 0 && Token::simpleMatch(tok, ") {"))
-        {
-            func = true;
-        }
-        if (indentlevel > 0 && func && Token::Match(tok, "[{};]"))
-        {
-            // First token of statement..
-            const Token *tok1 = tok->next();
-            if (! tok1)
-                continue;
-
-            if ((tok1->str() == "return") ||
-                (tok1->str() == "throw") ||
-                (tok1->str() == "delete") ||
-                (tok1->str() == "goto") ||
-                (tok1->str() == "else"))
-                continue;
-
-            // Variable declaration?
-            if (Token::Match(tok1, "%type% %var% ; %var% = %num% ;"))
+            else if (tok->str() == "{")
             {
-                // Tokenizer modify "int i = 0;" to "int i; i = 0;",
-                // so to handle this situation we just skip
-                // initialization (see ticket #272).
-                const unsigned int firstVarId = tok1->next()->varId();
-                const unsigned int secondVarId = tok1->tokAt(3)->varId();
-                if (firstVarId > 0 && firstVarId == secondVarId)
-                {
-                    lookupVar(tok1->tokAt(6), tok1->strAt(1));
-                }
+                ++indentlevel;
             }
-            else if (tok1->isStandardType() && Token::Match(tok1, "%type% %var% [;=]"))
+            else if (tok->str() == "}")
             {
-                lookupVar(tok1, tok1->strAt(1));
+                --indentlevel;
+                if (indentlevel == 0)
+                    break;;
+            }
+
+            if (indentlevel > 0 && Token::Match(tok, "[{};]"))
+            {
+                // First token of statement..
+                const Token *tok1 = tok->next();
+                if (! tok1)
+                    continue;
+
+                if ((tok1->str() == "return") ||
+                    (tok1->str() == "throw") ||
+                    (tok1->str() == "delete") ||
+                    (tok1->str() == "goto") ||
+                    (tok1->str() == "else"))
+                    continue;
+
+                // Variable declaration?
+                if (Token::Match(tok1, "%type% %var% ; %var% = %num% ;"))
+                {
+                    // Tokenizer modify "int i = 0;" to "int i; i = 0;",
+                    // so to handle this situation we just skip
+                    // initialization (see ticket #272).
+                    const unsigned int firstVarId = tok1->next()->varId();
+                    const unsigned int secondVarId = tok1->tokAt(3)->varId();
+                    if (firstVarId > 0 && firstVarId == secondVarId)
+                    {
+                        lookupVar(tok1->tokAt(6), tok1->strAt(1));
+                    }
+                }
+                else if (tok1->isStandardType() && Token::Match(tok1, "%type% %var% [;=]"))
+                {
+                    lookupVar(tok1, tok1->strAt(1));
+                }
             }
         }
     }
