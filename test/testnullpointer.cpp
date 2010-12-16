@@ -747,6 +747,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket: #2300 - calling unknown function that may initialize the pointer
+        check("Fred *fred;\n"
+              "void a() {\n"
+              "    if (!fred) {\n"
+              "        initfred();\n"
+              "        fred->x = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
