@@ -33,14 +33,7 @@ class Tokenizer;
 class MathLib
 {
 public:
-    // To compile Cppcheck on a compiler that doesn't support "long long",
-    // use NOLONGLONG.
-#ifdef NOLONGLONG
-    typedef long bigint;
-#else
     typedef long long bigint;
-#endif
-
 
     static bigint toLongNumber(const std::string & str);
     static double toDoubleNumber(const std::string & str);
