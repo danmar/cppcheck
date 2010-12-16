@@ -2444,7 +2444,7 @@ void CheckMemoryLeakInFunction::parseFunctionScope(const Token *tok, const Token
         {
             const std::string varname(tok2->strAt(3));
             const unsigned int varid = tok2->tokAt(3)->varId();
-            const unsigned int sz = _tokenizer->sizeOfType(tok->next());
+            const unsigned int sz = _tokenizer->sizeOfType(tok2->next());
             checkScope(tok->next(), varname, varid, classmember, sz);
         }
     }

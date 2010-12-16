@@ -208,6 +208,8 @@ private:
         TEST_CASE(mismatch3);
         TEST_CASE(mismatch4);
 
+        TEST_CASE(mismatchSize);
+
         TEST_CASE(func3);
         TEST_CASE(func4);
         TEST_CASE(func5);
@@ -1359,7 +1361,17 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Mismatching allocation and deallocation: p\n", errout.str());
     }
 
-
+    void mismatchSize()
+    {
+        check("void f(char *buf)\n"
+              "{\n"
+              "    int i;\n"
+              "    buf = malloc(3);\n"
+              "    buf[i] = 0;\n"
+              "    free(buf);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
     ////////////////////////////////////////////////
