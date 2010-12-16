@@ -221,6 +221,7 @@ private:
         TEST_CASE(simplifyTypedef62); // ticket #2082
         TEST_CASE(simplifyTypedef63); // ticket #2175 'typedef float x[3];'
         TEST_CASE(simplifyTypedef64);
+        TEST_CASE(simplifyTypedef65); // ticket #2314
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4586,6 +4587,18 @@ private:
                             "__type t;\n";
         const std::string actual(sizeof_(code));
         ASSERT_EQUALS("; __typeof__ ( __type1 ( ) + __type2 ( ) ) t ;", actual);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef65() // ticket #2314
+    {
+        const char code[] = "typedef BAR<int> Foo; \n"
+                            "int main() { \n"
+                            "    Foo b(0); \n"
+                            "    return b > Foo(10); \n"
+                            "}";
+        const std::string actual(sizeof_(code));
+        ASSERT_EQUALS("; int main ( ) { BAR < int > b ( 0 ) ; return b > BAR < int > ( 10 ) ; }", actual);
         ASSERT_EQUALS("", errout.str());
     }
 

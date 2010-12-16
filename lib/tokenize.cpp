@@ -518,6 +518,9 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
                 if (!Token::Match(tok->tokAt(-2), "%type%"))
                     return false;
 
+                if (!Token::Match(tok->tokAt(-3), ",|<"))
+                    return false;
+
                 duplicateTypedefError(*tokPtr, name, "Template instantiation");
                 *tokPtr = end->link();
                 return true;
@@ -6602,7 +6605,7 @@ bool Tokenizer::simplifyCalculations()
             }
 
             // Remove parentheses around number..
-            if (Token::Match(tok->tokAt(-2), "%any% ( %num% )") && !tok->tokAt(-2)->isName())
+            if (Token::Match(tok->tokAt(-2), "%any% ( %num% )") && !tok->tokAt(-2)->isName() && tok->strAt(-2) != ">")
             {
                 tok = tok->previous();
                 tok->deleteThis();
