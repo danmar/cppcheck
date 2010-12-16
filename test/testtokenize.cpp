@@ -120,6 +120,7 @@ private:
         TEST_CASE(simplifyKnownVariables31);
         TEST_CASE(simplifyKnownVariables32);    // const
         TEST_CASE(simplifyKnownVariables33);    // struct variable
+        TEST_CASE(simplifyKnownVariables34);
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -1848,6 +1849,21 @@ private:
         const char expected[] = "static void foo ( struct Foo * foo ) {\n"
                                 "foo . a = 23 ;\n"
                                 "x [ 23 ] = 0 ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables34()
+    {
+        const char code[] = "void f() {\n"
+                            "    int x = 10;\n"
+                            "    do { cin >> x; } while (x > 5);\n"
+                            "    a[x] = 0;\n"
+                            "}\n";
+        const char expected[] = "void f ( ) {\n"
+                                "int x ; x = 10 ;\n"
+                                "do { cin >> x ; } while ( 5 < x ) ;\n"
+                                "a [ x ] = 0 ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }

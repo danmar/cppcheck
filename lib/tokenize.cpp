@@ -6092,6 +6092,10 @@ bool Tokenizer::simplifyKnownVariables()
                     if (pointeralias && Token::Match(tok3, ("!!= " + value).c_str()))
                         break;
 
+                    // Stop if do is found
+                    if (tok3->str() == "do")
+                        break;
+
                     // Stop if something like 'while (--var)' is found
                     if (tok3->str() == "for" || tok3->str() == "while" || tok3->str() == "do")
                     {
