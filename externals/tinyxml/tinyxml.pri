@@ -1,3 +1,3 @@
 
-HEADERS += $$PWD/tinystr.h $$PWD/tinyxml.h
-SOURCES += $$PWD/tinystr.cpp $$PWD/tinyxml.cpp $$PWD/tinyxmlerror.cpp $$PWD/tinyxmlparser.cpp
+HEADERS += ../externals/tinyxml/tinystr.h ../externals/tinyxml/tinyxml.h
+SOURCES += ../externals/tinyxml/tinystr.cpp ../externals/tinyxml/tinyxml.cpp ../externals/tinyxml/tinyxmlerror.cpp ../externals/tinyxml/tinyxmlparser.cpp

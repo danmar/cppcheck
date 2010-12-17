@@ -2,57 +2,57 @@
 
 LIBS += -L../externals -lpcre
 INCLUDEPATH += ../externals
-HEADERS += $$PWD/check.h \
-           $$PWD/checkautovariables.h \
-           $$PWD/checkbufferoverrun.h \
-           $$PWD/checkclass.h \
-           $$PWD/checkexceptionsafety.h \
-           $$PWD/checkmemoryleak.h \
-           $$PWD/checknullpointer.h \
-           $$PWD/checkobsoletefunctions.h \
-           $$PWD/checkother.h \
-           $$PWD/checkpostfixoperator.h \
-           $$PWD/checkstl.h \
-           $$PWD/checkuninitvar.h \
-           $$PWD/checkunusedfunctions.h \
-           $$PWD/cppcheck.h \
-           $$PWD/errorlogger.h \
-           $$PWD/executionpath.h \
-           $$PWD/filelister.h \
-           $$PWD/filelister_unix.h \
-           $$PWD/filelister_win32.h \
-           $$PWD/mathlib.h \
-           $$PWD/path.h \
-           $$PWD/preprocessor.h \
-           $$PWD/settings.h \
-           $$PWD/symboldatabase.h \
-           $$PWD/timer.h \
-           $$PWD/token.h \
-           $$PWD/tokenize.h
+HEADERS += ../lib/check.h \
+           ../lib/checkautovariables.h \
+           ../lib/checkbufferoverrun.h \
+           ../lib/checkclass.h \
+           ../lib/checkexceptionsafety.h \
+           ../lib/checkmemoryleak.h \
+           ../lib/checknullpointer.h \
+           ../lib/checkobsoletefunctions.h \
+           ../lib/checkother.h \
+           ../lib/checkpostfixoperator.h \
+           ../lib/checkstl.h \
+           ../lib/checkuninitvar.h \
+           ../lib/checkunusedfunctions.h \
+           ../lib/cppcheck.h \
+           ../lib/errorlogger.h \
+           ../lib/executionpath.h \
+           ../lib/filelister.h \
+           ../lib/filelister_unix.h \
+           ../lib/filelister_win32.h \
+           ../lib/mathlib.h \
+           ../lib/path.h \
+           ../lib/preprocessor.h \
+           ../lib/settings.h \
+           ../lib/symboldatabase.h \
+           ../lib/timer.h \
+           ../lib/token.h \
+           ../lib/tokenize.h
 
-SOURCES += $$PWD/checkautovariables.cpp \
-           $$PWD/checkbufferoverrun.cpp \
-           $$PWD/checkclass.cpp \
-           $$PWD/checkexceptionsafety.cpp \
-           $$PWD/checkmemoryleak.cpp \
-           $$PWD/checknullpointer.cpp \
-           $$PWD/checkobsoletefunctions.cpp \
-           $$PWD/checkother.cpp \
-           $$PWD/checkpostfixoperator.cpp \
-           $$PWD/checkstl.cpp \
-           $$PWD/checkuninitvar.cpp \
-           $$PWD/checkunusedfunctions.cpp \
-           $$PWD/cppcheck.cpp \
-           $$PWD/errorlogger.cpp \
-           $$PWD/executionpath.cpp \
-           $$PWD/filelister.cpp \
-           $$PWD/filelister_unix.cpp \
-           $$PWD/filelister_win32.cpp \
-           $$PWD/mathlib.cpp \
-           $$PWD/path.cpp \
-           $$PWD/preprocessor.cpp \
-           $$PWD/settings.cpp \
-           $$PWD/symboldatabase.cpp \
-           $$PWD/timer.cpp \
-           $$PWD/token.cpp \
-           $$PWD/tokenize.cpp
+SOURCES += ../lib/checkautovariables.cpp \
+           ../lib/checkbufferoverrun.cpp \
+           ../lib/checkclass.cpp \
+           ../lib/checkexceptionsafety.cpp \
+           ../lib/checkmemoryleak.cpp \
+           ../lib/checknullpointer.cpp \
+           ../lib/checkobsoletefunctions.cpp \
+           ../lib/checkother.cpp \
+           ../lib/checkpostfixoperator.cpp \
+           ../lib/checkstl.cpp \
+           ../lib/checkuninitvar.cpp \
+           ../lib/checkunusedfunctions.cpp \
+           ../lib/cppcheck.cpp \
+           ../lib/errorlogger.cpp \
+           ../lib/executionpath.cpp \
+           ../lib/filelister.cpp \
+           ../lib/filelister_unix.cpp \
+           ../lib/filelister_win32.cpp \
+           ../lib/mathlib.cpp \
+           ../lib/path.cpp \
+           ../lib/preprocessor.cpp \
+           ../lib/settings.cpp \
+           ../lib/symboldatabase.cpp \
+           ../lib/timer.cpp \
+           ../lib/token.cpp \
+           ../lib/tokenize.cpp

@@ -1,32 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res</Extensions>
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="TinyXml">
-      <UniqueIdentifier>{430c75d7-d27c-4015-b5a2-97819caa61f1}</UniqueIdentifier>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cppcheckexecutor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="threadexecutor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\lib\checkautovariables.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\lib\tokenize.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\checkbufferoverrun.cpp">
@@ -41,16 +30,34 @@
     <ClCompile Include="..\lib\checkmemoryleak.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\lib\checknullpointer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\checkobsoletefunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\checkother.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\checkpostfixoperator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\checkstl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\lib\checkuninitvar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\checkunusedfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cmdlineparser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\cppcheck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cppcheckexecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\errorlogger.cpp">
@@ -62,10 +69,19 @@
     <ClCompile Include="..\lib\filelister.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\lib\filelister_unix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\filelister_win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\mathlib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\preprocessor.cpp">
@@ -74,54 +90,36 @@
     <ClCompile Include="..\lib\settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\token.cpp">
+    <ClCompile Include="..\lib\symboldatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\path.cpp">
+    <ClCompile Include="threadexecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cmdlineparser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\lib\checkpostfixoperator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\lib\checkobsoletefunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\lib\checknullpointer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\lib\checkuninitvar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\lib\symboldatabase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\externals\tinyxml\tinystr.cpp">
-      <Filter>TinyXml</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\externals\tinyxml\tinyxml.cpp">
-      <Filter>TinyXml</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\externals\tinyxml\tinyxmlerror.cpp">
-      <Filter>TinyXml</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\externals\tinyxml\tinyxmlparser.cpp">
-      <Filter>TinyXml</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\token.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\tokenize.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\lib\check.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lib\tokenize.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\checkautovariables.h">
@@ -139,19 +137,34 @@
     <ClInclude Include="..\lib\checkmemoryleak.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\lib\checknullpointer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\checkobsoletefunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\lib\checkother.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\checkpostfixoperator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\checkstl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\lib\checkuninitvar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\lib\checkunusedfunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\classinfo.h">
+    <ClInclude Include="cmdlineparser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\cppcheck.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cppcheckexecutor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\errorlogger.h">
@@ -163,54 +176,53 @@
     <ClInclude Include="..\lib\filelister.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\lib\filelister_unix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\lib\filelister_win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\mathlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\lib\path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\lib\preprocessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\token.h">
+    <ClInclude Include="..\lib\symboldatabase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\path.h">
+    <ClInclude Include="threadexecutor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cmdlineparser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lib\checkpostfixoperator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lib\checkobsoletefunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cppcheckexecutor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lib\checknullpointer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lib\checkuninitvar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lib\symboldatabase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\externals\tinyxml\tinystr.h">
-      <Filter>TinyXml</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\externals\tinyxml\tinyxml.h">
-      <Filter>TinyXml</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\lib\token.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\tokenize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="temp\cppcheck.res">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppcheck.rc" />
