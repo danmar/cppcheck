@@ -387,6 +387,14 @@ private:
               "        ;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(x *p)\n"
+              "{\n"
+              "    p = bar(p->next);\n"
+              "    if (!p)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer5()

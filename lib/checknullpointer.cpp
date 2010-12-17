@@ -315,7 +315,21 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         else if (Token::Match(tok1->tokAt(-2), "%var% ( %var% . %var%") ||
                  Token::Match(tok1->previous(), ", %var% . %var%"))
         {
-
+            // Is the function return value taken by the pointer?
+            bool assignment = false;
+            const unsigned int varid1(tok1->varId());
+            const Token *tok2 = tok1->previous();
+            while (tok2 && !Token::Match(tok2, "[;{}]"))
+            {
+                if (Token::Match(tok2, "%varid% =", varid1))
+                {
+                    assignment = true;
+                    break;
+                }
+                tok2 = tok2->previous();
+            }
+            if (assignment)
+                continue;
         }
 
         // Goto next token
@@ -399,6 +413,11 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
             for (const Token *tok1 = tok->previous(); tok1 && tok1 != decltok; tok1 = tok1->previous())
             {
+                if (tok1->str() == ")" && Token::Match(tok1->link()->tokAt(-3), "%varid% = %var%", varid))
+                {
+                    break;
+                }
+
                 if (tok1->varId() == varid)
                 {
                     bool unknown = false;
