@@ -1122,7 +1122,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                                     tok3 = tok3->link();
                                 else if (tok3->str() == ")")
                                     break;
-                                else if (Token::Match(tok3->previous(), "(|, %varid% ,|)", varid))
+                                else if (Token::Match(tok3->previous(), "(|, &| %varid% ,|)", varid))
                                 {
                                     use = true;
                                     break;

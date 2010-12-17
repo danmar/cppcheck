@@ -418,6 +418,8 @@ private:
         ASSERT_EQUALS(";;;if{dealloc;};if{dealloc;return;}assign;returnuse;", getcode("char *buf, *tmp; tmp = realloc(buf, 40); if (!(tmp)) { free(buf); return; } buf = tmp; return buf;", "buf"));
         ASSERT_EQUALS(";;if{}", getcode("FILE *f; if (fgets(buf,100,f)){}", "f"));
         ASSERT_EQUALS(";;alloc;if(var){dealloc;}", getcode("int fd = open(a,b); if (0 < fd) { close(fd); }", "fd"));
+        ASSERT_EQUALS(";;use;if{}", getcode("char *s; if (x(s)) { }", "s"));
+        ASSERT_EQUALS(";;use;if{}", getcode("char *s; if (x(&s)) { }", "s"));
 
         // switch..
         ASSERT_EQUALS(";;switch{case;;break;};", getcode("char *s; switch(a){case 1: break;};", "s"));
