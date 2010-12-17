@@ -946,6 +946,13 @@ private:
                        "        int b = a[0];\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "        Fred a[2];\n"
+                       "        Fred b = a[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // alloc..

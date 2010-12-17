@@ -435,6 +435,7 @@ private:
 
             // Variable declaration for array..
             if (Token::Match(vartok, "%type% %var% [") &&
+                vartok->isStandardType() &&
                 Token::simpleMatch(vartok->tokAt(2)->link(), "] ;"))
             {
                 vartok = vartok->next();
