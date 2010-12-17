@@ -7900,7 +7900,7 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
             tok->deleteNext();
         }
 
-        else if (Token::Match(tok, "class %type%"))
+        else if (Token::Match(tok, "class|namespace|struct %type%"))
         {
             while (tok && !Token::Match(tok, "[;{]"))
                 tok = tok->next();

@@ -235,6 +235,7 @@ private:
 
         TEST_CASE(removeExceptionSpecification1);
         TEST_CASE(removeExceptionSpecification2);
+        TEST_CASE(removeExceptionSpecification3);
 
         TEST_CASE(gt);      // use "<" comparisons instead of ">"
 
@@ -4195,6 +4196,25 @@ private:
                                 "A :: A ( )\n"
                                 ": value ( 0 )\n"
                                 "{ }\n"
+                                "} ;";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void removeExceptionSpecification3()
+    {
+        const char code[] = "namespace A {\n"
+                            "    struct B {\n"
+                            "        B() throw ()\n"
+                            "        { }\n"
+                            "    };\n"
+                            "};\n";
+
+        const char expected[] = "namespace A {\n"
+                                "struct B {\n"
+                                "B ( )\n"
+                                "{ }\n"
+                                "} ;\n"
                                 "} ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
