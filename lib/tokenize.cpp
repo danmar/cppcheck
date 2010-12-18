@@ -6426,6 +6426,17 @@ bool Tokenizer::simplifyRedundantParanthesis()
         if (tok->str() != "(")
             continue;
 
+        // !!operator = ( x ) ;
+        if (tok->strAt(-2) != "operator" &&
+            tok->strAt(-1) == "=" &&
+            tok->strAt(1) != "{" &&
+            Token::simpleMatch(tok->link(), ") ;"))
+        {
+            tok->link()->deleteThis();
+            tok->deleteThis();
+            continue;
+        }
+
         while (Token::simpleMatch(tok, "( (") &&
                tok->link()->previous() == tok->next()->link())
         {

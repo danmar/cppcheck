@@ -196,6 +196,7 @@ private:
         TEST_CASE(removeParantheses7);
         TEST_CASE(removeParantheses8);       // Ticket #1865
         TEST_CASE(removeParantheses9);       // Ticket #1962
+        TEST_CASE(removeParantheses10);      // Ticket #2320
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -552,7 +553,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(" t = ( & p ) ;", ostr.str());
+        ASSERT_EQUALS(" t = & p ;", ostr.str());
     }
 
     void removeCast3()
@@ -1259,7 +1260,7 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS(
-                "void foo ( ) { int n ; n = 10 ; i = ( 10 >> 1 ) ; }",
+                "void foo ( ) { int n ; n = 10 ; i = 10 >> 1 ; }",
                 simplifyKnownVariables(code));
         }
         {
@@ -1270,7 +1271,7 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS(
-                "void foo ( ) { int n ; n = 10 ; i = ( 10 << 1 ) ; }",
+                "void foo ( ) { int n ; n = 10 ; i = 10 << 1 ; }",
                 simplifyKnownVariables(code));
         }
         {
@@ -1281,7 +1282,7 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS(
-                "void foo ( ) { int n ; n = 10 ; i = ( 1 << 10 ) ; }",
+                "void foo ( ) { int n ; n = 10 ; i = 1 << 10 ; }",
                 simplifyKnownVariables(code));
         }
         {
@@ -1292,7 +1293,7 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS(
-                "void foo ( ) { int n ; n = 10 ; i = ( 1 >> 10 ) ; }",
+                "void foo ( ) { int n ; n = 10 ; i = 1 >> 10 ; }",
                 simplifyKnownVariables(code));
         }
     }
@@ -2343,7 +2344,7 @@ private:
                                    "1: void foo ( )\n"
                                    "2: {\n"
                                    "3: int x@1 ; x@1 = 1 ;\n"
-                                   "4: y = ( z * x@1 ) ;\n"
+                                   "4: y = z * x@1 ;\n"
                                    "5: }\n");
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
@@ -3476,6 +3477,11 @@ private:
     void removeParantheses9()
     {
         ASSERT_EQUALS("void delete ( double num ) ;", tokenizeAndStringify("void delete(double num);", false));
+    }
+
+    void removeParantheses10()
+    {
+        ASSERT_EQUALS("p = buf + 8 ;", tokenizeAndStringify("p = (buf + 8);", false));
     }
 
     void tokenize_double()
