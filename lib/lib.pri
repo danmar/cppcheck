@@ -2,57 +2,57 @@
 
 LIBS += -L../externals -lpcre
 INCLUDEPATH += ../externals
-HEADERS += ../lib/check.h \
-           ../lib/checkautovariables.h \
-           ../lib/checkbufferoverrun.h \
-           ../lib/checkclass.h \
-           ../lib/checkexceptionsafety.h \
-           ../lib/checkmemoryleak.h \
-           ../lib/checknullpointer.h \
-           ../lib/checkobsoletefunctions.h \
-           ../lib/checkother.h \
-           ../lib/checkpostfixoperator.h \
-           ../lib/checkstl.h \
-           ../lib/checkuninitvar.h \
-           ../lib/checkunusedfunctions.h \
-           ../lib/cppcheck.h \
-           ../lib/errorlogger.h \
-           ../lib/executionpath.h \
-           ../lib/filelister.h \
-           ../lib/filelister_unix.h \
-           ../lib/filelister_win32.h \
-           ../lib/mathlib.h \
-           ../lib/path.h \
-           ../lib/preprocessor.h \
-           ../lib/settings.h \
-           ../lib/symboldatabase.h \
-           ../lib/timer.h \
-           ../lib/token.h \
-           ../lib/tokenize.h
+HEADERS += $${BASEPATH}check.h \
+           $${BASEPATH}checkautovariables.h \
+           $${BASEPATH}checkbufferoverrun.h \
+           $${BASEPATH}checkclass.h \
+           $${BASEPATH}checkexceptionsafety.h \
+           $${BASEPATH}checkmemoryleak.h \
+           $${BASEPATH}checknullpointer.h \
+           $${BASEPATH}checkobsoletefunctions.h \
+           $${BASEPATH}checkother.h \
+           $${BASEPATH}checkpostfixoperator.h \
+           $${BASEPATH}checkstl.h \
+           $${BASEPATH}checkuninitvar.h \
+           $${BASEPATH}checkunusedfunctions.h \
+           $${BASEPATH}cppcheck.h \
+           $${BASEPATH}errorlogger.h \
+           $${BASEPATH}executionpath.h \
+           $${BASEPATH}filelister.h \
+           $${BASEPATH}filelister_unix.h \
+           $${BASEPATH}filelister_win32.h \
+           $${BASEPATH}mathlib.h \
+           $${BASEPATH}path.h \
+           $${BASEPATH}preprocessor.h \
+           $${BASEPATH}settings.h \
+           $${BASEPATH}symboldatabase.h \
+           $${BASEPATH}timer.h \
+           $${BASEPATH}token.h \
+           $${BASEPATH}tokenize.h
 
-SOURCES += ../lib/checkautovariables.cpp \
-           ../lib/checkbufferoverrun.cpp \
-           ../lib/checkclass.cpp \
-           ../lib/checkexceptionsafety.cpp \
-           ../lib/checkmemoryleak.cpp \
-           ../lib/checknullpointer.cpp \
-           ../lib/checkobsoletefunctions.cpp \
-           ../lib/checkother.cpp \
-           ../lib/checkpostfixoperator.cpp \
-           ../lib/checkstl.cpp \
-           ../lib/checkuninitvar.cpp \
-           ../lib/checkunusedfunctions.cpp \
-           ../lib/cppcheck.cpp \
-           ../lib/errorlogger.cpp \
-           ../lib/executionpath.cpp \
-           ../lib/filelister.cpp \
-           ../lib/filelister_unix.cpp \
-           ../lib/filelister_win32.cpp \
-           ../lib/mathlib.cpp \
-           ../lib/path.cpp \
-           ../lib/preprocessor.cpp \
-           ../lib/settings.cpp \
-           ../lib/symboldatabase.cpp \
-           ../lib/timer.cpp \
-           ../lib/token.cpp \
-           ../lib/tokenize.cpp
+SOURCES += $${BASEPATH}checkautovariables.cpp \
+           $${BASEPATH}checkbufferoverrun.cpp \
+           $${BASEPATH}checkclass.cpp \
+           $${BASEPATH}checkexceptionsafety.cpp \
+           $${BASEPATH}checkmemoryleak.cpp \
+           $${BASEPATH}checknullpointer.cpp \
+           $${BASEPATH}checkobsoletefunctions.cpp \
+           $${BASEPATH}checkother.cpp \
+           $${BASEPATH}checkpostfixoperator.cpp \
+           $${BASEPATH}checkstl.cpp \
+           $${BASEPATH}checkuninitvar.cpp \
+           $${BASEPATH}checkunusedfunctions.cpp \
+           $${BASEPATH}cppcheck.cpp \
+           $${BASEPATH}errorlogger.cpp \
+           $${BASEPATH}executionpath.cpp \
+           $${BASEPATH}filelister.cpp \
+           $${BASEPATH}filelister_unix.cpp \
+           $${BASEPATH}filelister_win32.cpp \
+           $${BASEPATH}mathlib.cpp \
+           $${BASEPATH}path.cpp \
+           $${BASEPATH}preprocessor.cpp \
+           $${BASEPATH}settings.cpp \
+           $${BASEPATH}symboldatabase.cpp \
+           $${BASEPATH}timer.cpp \
+           $${BASEPATH}token.cpp \
+           $${BASEPATH}tokenize.cpp

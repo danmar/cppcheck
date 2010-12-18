@@ -8,6 +8,7 @@ CONFIG -= qt app_bundle
 
 BASEPATH = ../externals/tinyxml/
 include($$PWD/../externals/tinyxml/tinyxml.pri)
+BASEPATH = ../lib/
 include($$PWD/../lib/lib.pri)
 
 SOURCES += main.cpp \
