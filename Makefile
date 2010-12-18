@@ -114,7 +114,7 @@ dmake:	tools/dmake.cpp
 	$(CXX) -o dmake tools/dmake.cpp lib/filelister*.cpp
 
 clean:
-	rm -f lib/*.o cli/*.o test/*.o testrunner cppcheck cppcheck.1
+	rm -f lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner cppcheck cppcheck.1
 
 man:	man/cppcheck.1
 
@@ -153,7 +153,7 @@ lib/checknullpointer.o: lib/checknullpointer.cpp lib/checknullpointer.h lib/chec
 lib/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkobsoletefunctions.o lib/checkobsoletefunctions.cpp
 
-lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h
+lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/symboldatabase.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkother.o lib/checkother.cpp
 
 lib/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/checkpostfixoperator.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
