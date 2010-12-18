@@ -23,6 +23,7 @@ CONFIG(release, debug|release) {
 
 win32 {
     CONFIG += embed_manifest_exe console
+    DEFINES += _CRT_SECURE_NO_WARNINGS
     RC_FILE = cppcheck.rc
     HEADERS += resource.h
     LIBS += -lshlwapi
