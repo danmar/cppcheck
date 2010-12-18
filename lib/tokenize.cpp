@@ -6076,7 +6076,9 @@ bool Tokenizer::simplifyKnownVariables()
                     if (Token::Match(tok3, "; %type% : ;"))
                         break;
 
-                    // Stop if return is found ..
+                    // Stop if return or break is found ..
+                    if (tok3->str() == "break")
+                        break;
                     if (indentlevel3 == 1)
                     {
                         if (tok3->str() == "return")

@@ -127,6 +127,7 @@ private:
         TEST_CASE(simplifyKnownVariablesBailOutFor3);
         TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
         TEST_CASE(simplifyKnownVariablesBailOutConditionalIncrement);
+        TEST_CASE(simplifyKnownVariablesBailOutSwitchBreak);	// ticket #2324
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -1949,6 +1950,46 @@ private:
                             "}\n";
         tokenizeAndStringify(code,true);
         ASSERT_EQUALS("", errout.str());	// no debug warnings
+    }
+
+    void simplifyKnownVariablesBailOutSwitchBreak()
+    {
+        // Ticket #2324
+        const char code[] = "int f(char *x) {\n"
+                            "    char *p;\n"
+                            "    char *q;\n"
+                            "\n"
+                            "    switch (x & 0x3)\n"
+                            "    {\n"
+                            "        case 1:\n"
+                            "            p = x;\n"
+                            "            x = p;\n"
+                            "            break;\n"
+                            "        case 2:\n"
+                            "            q = x;\n"	// x is not equal with p
+                            "            x = q;\n"
+                            "            break;\n"
+                            "    }\n"
+                            "}\n";
+
+        const char expected[] = "int f ( char * x ) {\n"
+                                "char * p ;\n"
+                                "char * q ;\n"
+                                "\n"
+                                "switch ( x & 3 )\n"
+                                "{\n"
+                                "case 1 : ;\n"
+                                "p = x ;\n"
+                                "x = p ;\n"
+                                "break ;\n"
+                                "case 2 : ;\n"
+                                "q = x ;\n"
+                                "x = q ;\n"
+                                "break ;\n"
+                                "}\n"
+                                "}";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
     }
 
     std::string tokenizeDebugListing(const std::string &code, bool simplify = false)
