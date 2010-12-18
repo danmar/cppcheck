@@ -155,6 +155,7 @@ private:
 
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
+        TEST_CASE(strcat3);
 
         TEST_CASE(memfunc1);		// memchr/memset/memcpy
         TEST_CASE(memfunc2);
@@ -2029,6 +2030,15 @@ private:
               "  struct Foo x;\n"
               "  strcat(x.a, \"aa\");\n"
               "  strcat(x.a, \"aa\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void strcat3()
+    {
+        check("void f() {\n"
+              "  INT str[10];\n"
+              "  strcat(str, \"aa\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

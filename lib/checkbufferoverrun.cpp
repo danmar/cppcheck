@@ -1032,7 +1032,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
         // Detect few strcat() calls
-        if (Token::Match(tok, "strcat ( %varid% , %str% ) ;", arrayInfo.varid))
+        if (total_size > 0 && Token::Match(tok, "strcat ( %varid% , %str% ) ;", arrayInfo.varid))
         {
             size_t charactersAppend = 0;
             const Token *tok2 = tok;
