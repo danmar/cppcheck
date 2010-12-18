@@ -10,7 +10,9 @@ win32 {
     LIBS += -lshlwapi
 }
 
+BASEPATH = ../externals/tinyxml/
 include(../externals/tinyxml/tinyxml.pri)
+BASEPATH = ../lib/
 include(../lib/lib.pri)
 
 # cli/*
