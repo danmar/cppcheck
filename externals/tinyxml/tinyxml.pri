@@ -1,7 +1,7 @@
 
-HEADERS += ../externals/tinyxml/tinystr.h \
-           ../externals/tinyxml/tinyxml.h
-SOURCES += ../externals/tinyxml/tinystr.cpp \
-           ../externals/tinyxml/tinyxml.cpp \
-           ../externals/tinyxml/tinyxmlerror.cpp \
-           ../externals/tinyxml/tinyxmlparser.cpp
+HEADERS += $${BASEPATH}tinystr.h \
+           $${BASEPATH}tinyxml.h
+SOURCES += $${BASEPATH}tinystr.cpp \
+           $${BASEPATH}tinyxml.cpp \
+           $${BASEPATH}tinyxmlerror.cpp \
+           $${BASEPATH}tinyxmlparser.cpp

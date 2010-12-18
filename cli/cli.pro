@@ -6,6 +6,7 @@ OBJECTS_DIR = temp
 CONFIG += warn_on
 CONFIG -= qt app_bundle
 
+BASEPATH = ../externals/tinyxml/
 include($$PWD/../externals/tinyxml/tinyxml.pri)
 include($$PWD/../lib/lib.pri)
 
