@@ -468,7 +468,7 @@ private:
             if (Token::Match(tok.previous(), "[(,] %var% [+-,)]"))
             {
                 use(checks, &tok);
-                use_array(checks, &tok);
+                //use_array(checks, &tok);
                 return &tok;
             }
 
