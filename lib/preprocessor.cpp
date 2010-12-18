@@ -1613,7 +1613,11 @@ void Preprocessor::handleIncludes(std::string &code,
                 loc.setfile(Path::toNativeSeparators(filePath));
                 locationList.push_back(loc);
 
-                ErrorLogger::ErrorMessage errmsg(locationList, Severity::style, "Include file: \"" + filename + "\" not found.", "missingInclude");
+                // If the missing include is a system header then this is
+                // currently a debug-message.
+                const Severity::SeverityType severity = (headerType == UserHeader) ? Severity::style : Severity::debug;
+                const std::string id = (headerType == UserHeader) ? "missingInclude" : "debug";
+                ErrorLogger::ErrorMessage errmsg(locationList, severity, "Include file: \"" + filename + "\" not found.", id);
                 errmsg.file0 = file0;
                 _errorLogger->reportErr(errmsg);
             }
