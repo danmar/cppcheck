@@ -2484,13 +2484,21 @@ bool CheckOther::isIdentifierObjectType(const Token * const tok)
 
 void CheckOther::checkMisusedScopedObject()
 {
-    bool withinFunction = false;
-    unsigned int depth = 0;
+    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    std::list<SymbolDatabase::SpaceInfo *>::iterator i;
+
+    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        withinFunction |= Token::Match(tok, ") const| {");
-        if (withinFunction)
+        SymbolDatabase::SpaceInfo *info = *i;
+
+        // only check functions
+        if (info->type != SymbolDatabase::SpaceInfo::Function)
+            continue;
+
+        unsigned int depth = 0;
+
+        for (const Token *tok = info->classStart; tok; tok = tok->next())
         {
             if (tok->str() == "{")
             {
@@ -2499,11 +2507,11 @@ void CheckOther::checkMisusedScopedObject()
             else if (tok->str() == "}")
             {
                 --depth;
-                withinFunction &= depth > 0;
+                if (depth == 0)
+                    break;
             }
 
-            if (withinFunction
-                && Token::Match(tok, "[;{}] %var% (")
+            if (Token::Match(tok, "[;{}] %var% (")
                 && Token::Match(tok->tokAt(2)->link(), ") ;")
                 && isIdentifierObjectType(tok)
                )
