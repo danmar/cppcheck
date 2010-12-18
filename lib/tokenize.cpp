@@ -8176,10 +8176,18 @@ void Tokenizer::simplifyWhile0()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (!Token::simpleMatch(tok, "while ( 0 )"))
+        // while (0)
+        const bool while0(Token::Match(tok, "while ( 0|false )"));
+
+        // for (0)
+        const bool for0(Token::Match(tok, "for ( %var% = %num% ; %var% < %num% ;") &&
+                        tok->strAt(2) == tok->strAt(6) &&
+                        tok->strAt(4) == tok->strAt(8));
+
+        if (!while0 && !for0)
             continue;
 
-        if (Token::simpleMatch(tok->previous(), "}"))
+        if (while0 && Token::simpleMatch(tok->previous(), "}"))
         {
             // find "do"
             Token *tok2 = tok->previous()->link();
@@ -8203,9 +8211,9 @@ void Tokenizer::simplifyWhile0()
         }
 
         // remove "while (0) { .. }"
-        if (Token::simpleMatch(tok->tokAt(4), "{"))
+        if (Token::simpleMatch(tok->next()->link(), ") {"))
         {
-            const Token *end = tok->tokAt(4)->link();
+            const Token *end = tok->next()->link()->next()->link();
             if (!findmatch(tok, end, "continue|break"))
             {
                 Token::eraseTokens(tok, end ? end->next() : 0);
