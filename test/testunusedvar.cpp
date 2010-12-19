@@ -78,6 +78,7 @@ private:
         TEST_CASE(localvar28); // ticket #2205
         TEST_CASE(localvar29); // ticket #2206 (array initialization)
         TEST_CASE(localvar30);
+        TEST_CASE(localvar31); // ticket #2286
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1321,6 +1322,15 @@ private:
         functionVariableUsage("void f() {\n"
                               "    Engine *engine = e;\n"
                               "    x->engine = engine->clone();\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar31() // ticket #2286
+    {
+        functionVariableUsage("void f() {\n"
+                              "    int x = 0;\n"
+                              "    a.x = x - b;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

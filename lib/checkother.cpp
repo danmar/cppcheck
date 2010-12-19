@@ -1616,7 +1616,7 @@ void CheckOther::functionVariableUsage()
                 if (Token::Match(tok->next(), "++|--"))
                     post = true;
 
-                unsigned int varid1 = tok->varId();
+                const unsigned int varid1 = tok->varId();
                 const Token *start = tok;
 
                 tok = tok->tokAt(doAssignment(variables, tok, dereference, scope));
@@ -1649,13 +1649,20 @@ void CheckOther::functionVariableUsage()
                     }
 
                     Variables::VariableUsage *var2 = variables.find(tok->varId());
-                    if (var2 && var2->_type == Variables::reference)
+                    if (var2)
                     {
-                        variables.writeAliases(tok->varId());
-                        variables.read(tok->varId());
+                        if (var2->_type == Variables::reference)
+                        {
+                            variables.writeAliases(tok->varId());
+                            variables.read(tok->varId());
+                        }
+                        else if (tok->varId() != varid1 && Token::Match(tok, "%var% ."))
+                            variables.use(tok->varId());
+                        else if (tok->varId() != varid1 &&
+                                 var2->_type == Variables::standard &&
+                                 tok->strAt(-1) != "&")
+                            variables.use(tok->varId());
                     }
-                    else if (tok->varId() != varid1 && Token::Match(tok, "%var% . %var%"))
-                        variables.use(tok->varId());
                 }
 
                 const Token *equal = tok->next();
