@@ -318,6 +318,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             // Is the function return value taken by the pointer?
             bool assignment = false;
             const unsigned int varid1(tok1->varId());
+            if (varid1 == 0)
+                continue;
             const Token *tok2 = tok1->previous();
             while (tok2 && !Token::Match(tok2, "[;{}]"))
             {
