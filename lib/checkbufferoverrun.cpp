@@ -729,6 +729,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         {
             const Token *tok2 = tok->tokAt(2);
 
+            // Check if there is a break in the body..
+            {
+                const Token *bodyStart = tok->next()->link()->next();
+                const Token *bodyEnd = bodyStart->link();
+                if (Token::findmatch(bodyStart, "break ;", bodyEnd))
+                    continue;
+            }
+
             unsigned int counter_varid = 0;
             std::string min_counter_value;
             std::string max_counter_value;
@@ -897,6 +905,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         else if (Token::simpleMatch(tok, "for ("))
         {
             const Token *tok2 = tok->tokAt(2);
+
+            // Check if there is a break in the body..
+            {
+                const Token *bodyStart = tok->next()->link()->next();
+                const Token *bodyEnd = bodyStart->link();
+                if (Token::findmatch(bodyStart, "break ;", bodyEnd))
+                    continue;
+            }
 
             unsigned int counter_varid = 0;
             std::string min_counter_value;

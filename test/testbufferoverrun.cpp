@@ -112,6 +112,7 @@ private:
         TEST_CASE(array_index_negative);
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);   // FP: struct member. #1576
+        TEST_CASE(array_index_for_break);  // FP: for,break
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -1298,6 +1299,21 @@ private:
               "{\n"
               "    A a;\n"
               "    a.data[3] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void array_index_for_break()
+    {
+        check("void f() {\n"
+              "    int a[2];\n"
+              "    for (int i = 0; i <= 2; ++i) {\n"
+              "        a[i] = 0;\n"
+              "        if (i==1) {\n"
+              "            break;\n"
+              "        }\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
