@@ -28,7 +28,7 @@
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="4"
-				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT"
+				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS"
 				ProgramDataBaseFileName=".\"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -39,7 +39,7 @@
 				Name="VCCustomBuildTool" />
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="pcre.lib shlwapi.lib"
+				AdditionalDependencies="../externals\pcre.lib shlwapi.lib"
 				AdditionalLibraryDirectories="../externals"
 				GenerateDebugInformation="true"
 				IgnoreImportLibrary="true"
@@ -61,7 +61,7 @@
 				Name="VCPreLinkEventTool" />
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_DEBUG" />
+				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS,_DEBUG" />
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -81,7 +81,7 @@
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="2"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,NDEBUG,NDEBUG"
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,NDEBUG,_CRT_SECURE_NO_WARNINGS,NDEBUG"
 				ProgramDataBaseFileName=".\"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -92,7 +92,7 @@
 				Name="VCCustomBuildTool" />
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="pcre.lib shlwapi.lib"
+				AdditionalDependencies="../externals\pcre.lib shlwapi.lib"
 				AdditionalLibraryDirectories="../externals"
 				GenerateDebugInformation="false"
 				IgnoreImportLibrary="true"
@@ -115,7 +115,7 @@
 				Name="VCPreLinkEventTool" />
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,NDEBUG" />
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,NDEBUG,_CRT_SECURE_NO_WARNINGS" />
 		</Configuration>
 	</Configurations>
 	<Files>
