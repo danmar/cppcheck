@@ -20,10 +20,12 @@
 #include <vector>
 #include <cstring>
 #include <string>
+#include <algorithm>
 
 #ifndef _WIN32 // POSIX-style system
 #include <glob.h>
 #include <unistd.h>
+#include <stdlib.h>		// canonicalize_file_name
 #endif
 
 #ifndef _WIN32
@@ -53,8 +55,20 @@ void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, cons
         if (filename[filename.length()-1] != '/')
         {
             // File
-            if (sameFileName(path,filename) || FileLister::acceptFile(filename))
-                filenames.push_back(filename);
+            char * const fname = canonicalize_file_name(filename.c_str());
+            if (!fname)
+                continue;
+
+            if (std::find(filenames.begin(), filenames.end(), std::string(fname)) != filenames.end())
+            {
+                free(fname);
+                continue;
+            }
+
+            if (sameFileName(path,fname) || FileLister::acceptFile(filename))
+                filenames.push_back(fname);
+
+            free(fname);
         }
         else
         {
