@@ -1641,7 +1641,10 @@ void CheckOther::functionVariableUsage()
                     else if (var && var->_type == Variables::pointer &&
                              Token::Match(start, "%var% = new|malloc|calloc|g_malloc|kmalloc|vmalloc"))
                     {
-                        variables.allocateMemory(varid1);
+                        if (start->strAt(2) == "new" && !start->tokAt(3)->isStandardType())
+                            variables.write(varid1);
+                        else
+                            variables.allocateMemory(varid1);
                     }
                     else
                     {

@@ -2550,11 +2550,19 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
-                              "    string* txt = new string(\"test\");\n"
+                              "    Fred* fred = new Fred;\n"
                               "    std::cout << \"test\" << std::endl;\n"
-                              "    delete txt;\n"
+                              "    delete fred;\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'txt' is allocated memory that is never used\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    Fred* fred = malloc(sizeof(Fred));\n"
+                              "    std::cout << \"test\" << std::endl;\n"
+                              "    free(fred);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'fred' is allocated memory that is never used\n", errout.str());
 
 
         functionVariableUsage("void foo()\n"
