@@ -40,6 +40,7 @@ private:
         TEST_CASE(testgethostbyaddr);
         TEST_CASE(testusleep);
         TEST_CASE(testindex);
+        TEST_CASE(test_qt_index);	// FP when using the Qt function 'index'?
         TEST_CASE(testrindex);
 
         // no false positives for variables
@@ -165,7 +166,16 @@ private:
               "    const char i = index(var, 0);\n"
               "    return i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'index'. It is recommended to use the function 'strchr' instead\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'index'. It is recommended to use the function 'strchr' instead\n", errout.str());
+    }
+
+    void test_qt_index()
+    {
+        check("void TDataModel::forceRowRefresh(int row) {\n"
+              "    emit dataChanged(index(row, 0), index(row, columnCount() - 1));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testrindex()

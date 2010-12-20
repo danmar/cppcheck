@@ -90,7 +90,10 @@ private:
 
         _obsoleteFunctions.push_back(std::make_pair("getwd","Found obsolete function 'getwd'. It is recommended that new applications use the 'getcwd' function"));
 
+        /* Disabled to fix #2334
         _obsoleteFunctions.push_back(std::make_pair("index","Found obsolete function 'index'. It is recommended to use the function 'strchr' instead"));
+        */
+
         _obsoleteFunctions.push_back(std::make_pair("rindex","Found obsolete function 'rindex'. It is recommended to use the function 'strrchr' instead"));
 
         _obsoleteFunctions.push_back(std::make_pair("pthread_attr_getstackaddr","Found obsolete function 'pthread_attr_getstackaddr'.It is recommended that new applications use the 'pthread_attr_getstack' function"));
