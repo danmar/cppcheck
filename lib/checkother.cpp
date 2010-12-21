@@ -1641,10 +1641,31 @@ void CheckOther::functionVariableUsage()
                     else if (var && var->_type == Variables::pointer &&
                              Token::Match(start, "%var% = new|malloc|calloc|g_malloc|kmalloc|vmalloc"))
                     {
-                        if (start->strAt(2) == "new" && !start->tokAt(3)->isStandardType())
-                            variables.write(varid1);
-                        else
+                        bool allocate = true;
+
+                        if (start->strAt(2) == "new")
+                        {
+                            // is it a user defined type?
+                            if (!start->tokAt(3)->isStandardType())
+                            {
+                                // lookup the type
+                                const SymbolDatabase::SpaceInfo *type = symbolDatabase->findVarType(info, start->tokAt(3));
+
+                                // unknown type?
+                                if (!type)
+                                    allocate = false;
+
+                                // has default constructor or
+                                // has members with unknown type or default constructor
+                                else if (type->needInitialization == SymbolDatabase::SpaceInfo::False)
+                                    allocate = false;
+                            }
+                        }
+
+                        if (allocate)
                             variables.allocateMemory(varid1);
+                        else
+                            variables.write(varid1);
                     }
                     else
                     {

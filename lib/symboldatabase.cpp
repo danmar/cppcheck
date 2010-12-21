@@ -957,6 +957,23 @@ SymbolDatabase::SpaceInfo::SpaceInfo(SymbolDatabase *check_, const Token *classD
         nestedIn->nestedList.push_back(this);
 }
 
+bool
+SymbolDatabase::SpaceInfo::hasDefaultConstructor() const
+{
+    if (numConstructors)
+    {
+        std::list<Func>::const_iterator func;
+
+        for (func = functionList.begin(); func != functionList.end(); ++func)
+        {
+            if (func->type == Func::Constructor &&
+                func->argDef->link() == func->argDef->next())
+                return true;
+        }
+    }
+    return false;
+}
+
 // Get variable list..
 void SymbolDatabase::SpaceInfo::getVarList()
 {

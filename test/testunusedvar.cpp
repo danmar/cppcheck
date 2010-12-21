@@ -79,6 +79,7 @@ private:
         TEST_CASE(localvar29); // ticket #2206 (array initialization)
         TEST_CASE(localvar30);
         TEST_CASE(localvar31); // ticket #2286
+        TEST_CASE(localvar32); // ticket #2330
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1334,6 +1335,16 @@ private:
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+    
+    void localvar32() // ticket #2330
+    {
+        functionVariableUsage("void f() {\n"
+							  "    int x;\n"
+                              "    fstream &f = getfile();\n"
+                              "    f >> x;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void localvaralias1()
     {
@@ -2549,6 +2560,24 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    Fred* fred = new Fred;\n"
+                              "    std::cout << \"test\" << std::endl;\n"
+                              "    delete fred;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct Fred { int a; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* fred = new Fred;\n"
+                              "    std::cout << \"test\" << std::endl;\n"
+                              "    delete fred;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'fred' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("struct Fred { int a; Fred() : a(0) {} };\n"
+                              "void foo()\n"
                               "{\n"
                               "    Fred* fred = new Fred;\n"
                               "    std::cout << \"test\" << std::endl;\n"

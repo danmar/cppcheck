@@ -232,6 +232,8 @@ public:
         unsigned int getNestedNonFunctions() const;
 
         bool isBaseClassFunc(const Token *tok);
+
+        bool hasDefaultConstructor() const;
     };
 
     bool isMemberVar(const SpaceInfo *info, const Token *tok);
@@ -246,14 +248,20 @@ public:
     /** @brief Information about all namespaces/classes/structrues */
     std::list<SpaceInfo *> spaceInfoList;
 
+    /**
+     * @brief find a variable type if it's a user defined type
+     * @param start scope to start looking in
+     * @param type token containing variable type
+     * @return pointer to type if found or NULL if not found
+     */
+    const SpaceInfo *findVarType(const SpaceInfo *start, const Token *type) const;
+
 private:
     void addFunction(SpaceInfo **info, const Token **tok, const Token *argStart);
     void addNewFunction(SpaceInfo **info, const Token **tok);
 
     bool isFunction(const Token *tok, const Token **funcStart, const Token **argStart) const;
     bool argsMatch(const SpaceInfo *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
-
-    const SpaceInfo *findVarType(const SpaceInfo *start, const Token *type) const;
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;
