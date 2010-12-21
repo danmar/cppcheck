@@ -1335,11 +1335,11 @@ private:
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
     void localvar32() // ticket #2330
     {
         functionVariableUsage("void f() {\n"
-							  "    int x;\n"
+                              "    int x;\n"
                               "    fstream &f = getfile();\n"
                               "    f >> x;\n"
                               "}\n");

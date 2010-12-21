@@ -1732,6 +1732,8 @@ void CheckOther::functionVariableUsage()
 
             else if (Token::Match(tok, ">>|& %var%"))
                 variables.use(tok->next()->varId());    // use = read + write
+            else if (Token::Match(tok, "[;{}] %var% >>"))
+                variables.use(tok->next()->varId());    // use = read + write
 
             // function parameter
             else if (Token::Match(tok, "[(,] %var% ["))
