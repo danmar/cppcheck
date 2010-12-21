@@ -507,6 +507,9 @@ private:
                 "const int two = rand();\n"
                 "return 0;\n"
                 "}", "one");
+
+        // ticket #2336: calling member function with same name as a white_list function
+        ASSERT_EQUALS(";;use;", getcode("char *s; foo.write(s);", "s"));
     }
 
 

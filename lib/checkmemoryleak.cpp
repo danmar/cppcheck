@@ -670,7 +670,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             if (tok2->str() == "(" || tok2->str() == ")")
                 break;
             if (tok2->varId() == varid)
-                return "use_";
+                return (tok->strAt(-1)==".") ? "use" : "use_";
         }
 
         return 0;
