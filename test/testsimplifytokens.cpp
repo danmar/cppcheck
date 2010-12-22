@@ -222,6 +222,7 @@ private:
         TEST_CASE(simplifyTypedef63); // ticket #2175 'typedef float x[3];'
         TEST_CASE(simplifyTypedef64);
         TEST_CASE(simplifyTypedef65); // ticket #2314
+        TEST_CASE(simplifyTypedef66); // ticket #2341
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4599,6 +4600,14 @@ private:
                             "}";
         const std::string actual(sizeof_(code));
         ASSERT_EQUALS("; int main ( ) { BAR < int > b ( 0 ) ; return b > BAR < int > ( 10 ) ; }", actual);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef66() // ticket #2341
+    {
+        const char code[] = "typedef long* GEN;\n"
+                            "extern GEN (*foo)(long);";
+        const std::string actual(sizeof_(code));
         ASSERT_EQUALS("", errout.str());
     }
 
