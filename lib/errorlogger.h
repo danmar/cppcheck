@@ -132,7 +132,7 @@ public:
          */
         std::string toXML(bool verbose, int ver) const;
 
-        static std::string getXMLHeader(int ver);
+        static std::string getXMLHeader(int xml_version);
         static std::string getXMLFooter();
 
         /**

@@ -18,6 +18,7 @@
 
 #include "errorlogger.h"
 #include "path.h"
+#include "cppcheck.h"
 
 #include <sstream>
 #include <vector>
@@ -129,14 +130,22 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     return true;
 }
 
-std::string ErrorLogger::ErrorMessage::getXMLHeader(int version)
+std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
 {
-    std::ostringstream strver;
-    if (version > 1)
-        strver << " version=\"" << version << "\"";
+    std::ostringstream ostr;
+    ostr << "<?xml version=\"1.0\"?>\n";
 
-    return  "<?xml version=\"1.0\"?>\n"
-            "<results" + strver.str() + ">";
+    if (xml_version <= 1)
+    {
+        ostr << "<results>";
+    }
+    else
+    {
+        ostr << "<results version=\"" << xml_version << "\">\n";
+        ostr << "    <cppcheck-version>" << CppCheck::version() << "</cppcheck-version>";
+    }
+
+    return ostr.str();
 }
 
 std::string ErrorLogger::ErrorMessage::getXMLFooter()
