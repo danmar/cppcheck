@@ -4102,7 +4102,7 @@ void Tokenizer::removeRedundantAssignment()
             const Token * const end = tok->next()->link();
             for (Token *tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next())
             {
-                if (Token::Match(tok2, "[;{}] %type% * %var% ;"))
+                if (Token::Match(tok2, "[;{}] %type% * %var% ;") && tok2->strAt(1) != "return")
                 {
                     tok2 = tok2->tokAt(3);
                     localvars.insert(tok2->varId());
