@@ -420,6 +420,7 @@ private:
         ASSERT_EQUALS(";;alloc;if(var){dealloc;}", getcode("int fd = open(a,b); if (0 < fd) { close(fd); }", "fd"));
         ASSERT_EQUALS(";;use;if{}", getcode("char *s; if (x(s)) { }", "s"));
         ASSERT_EQUALS(";;use;if{}", getcode("char *s; if (x(&s)) { }", "s"));
+        ASSERT_EQUALS(";;use;if{}", getcode("char *s; if (!s || x(&s)) { }", "s"));
 
         // switch..
         ASSERT_EQUALS(";;switch{case;;break;};", getcode("char *s; switch(a){case 1: break;};", "s"));

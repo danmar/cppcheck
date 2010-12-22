@@ -1087,7 +1087,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     // Check if the condition depends on var somehow..
                     bool dep = false;
                     int innerParlevel = 0;
-                    for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+                    for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
                     {
                         if (tok2->str() == "(")
                             ++innerParlevel;
@@ -1111,7 +1111,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         if (innerParlevel > 0 && Token::Match(tok2, "! %varid%", varid))
                         {
                             dep = true;
-                            break;
                         }
                         if (innerParlevel > 0 && Token::Match(tok2, "%var% (") && !test_white_list(tok2->str()))
                         {
@@ -1132,6 +1131,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             {
                                 addtoken(&rettail, tok, "use");
                                 addtoken(&rettail, tok, ";");
+                                dep = false;
                                 break;
                             }
                         }
