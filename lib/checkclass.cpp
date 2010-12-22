@@ -1012,7 +1012,7 @@ void CheckClass::checkConst()
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
-    reportError(tok, Severity::style, "functionConst", "The function '" + classname + "::" + funcname + "' can be const");
+    reportError(tok, Severity::information, "functionConst", "The function '" + classname + "::" + funcname + "' can be const");
 }
 
 void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname)
@@ -1020,5 +1020,5 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
     std::list<const Token *> toks;
     toks.push_back(tok1);
     toks.push_back(tok2);
-    reportError(toks, Severity::style, "functionConst", "The function '" + classname + "::" + funcname + "' can be const");
+    reportError(toks, Severity::information, "functionConst", "The function '" + classname + "::" + funcname + "' can be const");
 }

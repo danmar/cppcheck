@@ -1615,7 +1615,7 @@ void Preprocessor::handleIncludes(std::string &code,
 
                 // If the missing include is a system header then this is
                 // currently a debug-message.
-                const Severity::SeverityType severity = (headerType == UserHeader) ? Severity::style : Severity::debug;
+                const Severity::SeverityType severity = (headerType == UserHeader) ? Severity::information : Severity::debug;
                 const std::string id = (headerType == UserHeader) ? "missingInclude" : "debug";
                 ErrorLogger::ErrorMessage errmsg(locationList, severity, "Include file: \"" + filename + "\" not found.", id);
                 errmsg.file0 = file0;
