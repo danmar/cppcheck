@@ -34,7 +34,11 @@ public:
     virtual bool sameFileName(const std::string &fname1, const std::string &fname2);
 //    virtual static bool acceptFile(const std::string &filename);
 private:
-
+#ifndef _WIN32
+    void recursiveAddFiles2(std::vector<std::string> &relative,
+                            std::vector<std::string> &absolute,
+                            const std::string &path);
+#endif
 };
 
 /// @}

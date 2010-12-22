@@ -37,7 +37,10 @@
 ////// This code is POSIX-style systems ///////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path)
+
+void FileListerUnix::recursiveAddFiles2(std::vector<std::string> &relative,
+                                        std::vector<std::string> &absolute,
+                                        const std::string &path)
 {
     std::ostringstream oss;
     oss << path;
@@ -59,24 +62,35 @@ void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, cons
             if (!fname)
                 continue;
 
-            if (std::find(filenames.begin(), filenames.end(), std::string(fname)) != filenames.end())
+            // Does absolute path exist? then bail out
+            if (std::find(absolute.begin(), absolute.end(), std::string(fname)) != absolute.end())
             {
                 free(fname);
                 continue;
             }
 
-            if (sameFileName(path,fname) || FileLister::acceptFile(filename))
-                filenames.push_back(fname);
+            if (sameFileName(path,filename) || FileListerUnix::acceptFile(filename))
+            {
+                relative.push_back(filename);
+                absolute.push_back(fname);
+            }
 
             free(fname);
         }
         else
         {
             // Directory
-            getFileLister()->recursiveAddFiles(filenames, filename);
+            recursiveAddFiles2(relative, absolute, filename);
         }
     }
     globfree(&glob_results);
+}
+
+
+void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path)
+{
+    std::vector<std::string> abs;
+    recursiveAddFiles2(filenames, abs, path);
 }
 
 bool FileListerUnix::sameFileName(const std::string &fname1, const std::string &fname2)
