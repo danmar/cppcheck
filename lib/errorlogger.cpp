@@ -142,7 +142,7 @@ std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
     else
     {
         ostr << "<results version=\"" << xml_version << "\">\n";
-        ostr << "    <cppcheck-version>" << CppCheck::version() << "</cppcheck-version>";
+        ostr << "  <cppcheck version=\"" << CppCheck::version() << "\"/>";
     }
 
     return ostr.str();
