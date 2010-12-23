@@ -895,6 +895,24 @@ private:
         {
             if (tok->str() == "{" || tok->str() == "}" || tok->str() == "for")
                 return;
+            if (Token::simpleMatch(tok, "if ("))
+            {
+                // bail out all variables that are used in the condition
+                unsigned int parlevel = 0;
+                for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "(")
+                        ++parlevel;
+                    else if (tok2->str() == ")")
+                    {
+                        if (parlevel == 0)
+                            break;
+                        --parlevel;
+                    }
+                    else if (tok2->varId())
+                        ExecutionPath::bailOutVar(checks, tok2->varId());
+                }
+            }
             const Token *next = parse(*tok, checks);
             tok = next->next();
         }

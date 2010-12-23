@@ -767,6 +767,25 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Ticket #2345: False positive in sub-condition in if inside a loop
+        checkUninitVar("void f(int x) {\n"
+                       "    const PoolItem* pItem;\n"
+                       "    while (x > 0) {\n"
+                       "        if (GetItem(&pItem) && (*pItem != rPool))\n"
+                       "        { }\n"
+                       "        x--;\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+        checkUninitVar("void f(int x) {\n"
+                       "    const PoolItem* pItem;\n"
+                       "    while (x > 0) {\n"
+                       "        if (*pItem != rPool)\n"
+                       "        { }\n"
+                       "        x--;\n"
+                       "    }\n"
+                       "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: pItem\n", errout.str());
     }
 
     // switch..
