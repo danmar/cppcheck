@@ -2566,6 +2566,8 @@ private:
             ASSERT_EQUALS("void * operator new [ ] ( size_t ) ;", tok(code));
         }
 
+        ASSERT_EQUALS("; a [ 0 ] ;", tok(";a[0*(*p)];"));
+
         ASSERT_EQUALS(";", tok("; x = x + 0;"));
     }
 

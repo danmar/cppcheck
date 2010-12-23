@@ -6607,6 +6607,8 @@ bool Tokenizer::simplifyCalculations()
                 else if (Token::Match(tok->previous(), "[=[(,] 0 * %any% [+-*/,]);]"))
                 {
                     tok->deleteNext();
+                    if (tok->next()->str() == "(")
+                        Token::eraseTokens(tok, tok->next()->link());
                     tok->deleteNext();
                     ret = true;
                 }
