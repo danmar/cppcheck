@@ -6775,6 +6775,11 @@ void Tokenizer::simplifyGoto()
             }
         }
 
+        else if (indentlevel > 0 && tok->str() == "(")
+        {
+            tok = tok->link();
+        }
+
         else if (indentlevel == 0 && Token::Match(tok, ") const| {"))
         {
             gotos.clear();

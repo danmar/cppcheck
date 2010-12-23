@@ -147,6 +147,7 @@ private:
 
         // Simplify goto..
         TEST_CASE(goto1);
+        TEST_CASE(goto2);
 
         // Simplify nested strcat() calls
         TEST_CASE(strcat1);
@@ -2778,6 +2779,12 @@ private:
         }
     }
 
+    void goto2()
+    {
+        // Don't simplify goto inside function call (macro)
+        const char code[] = "void f ( ) { slist_iter ( if ( a ) { goto dont_write ; } dont_write : ; x ( ) ; ) ; }";
+        ASSERT_EQUALS(code, tok(code));
+    }
 
     void strcat1()
     {
