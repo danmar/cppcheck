@@ -58,6 +58,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     oss << _id.length() << " " << _id;
     oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
     oss << _shortMessage.length() << " " << _shortMessage;
+    oss << _verboseMessage.length() << " " << _verboseMessage;
     oss << _callStack.size() << " ";
 
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok)
@@ -66,6 +67,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
         smallStream << (*tok).line << ":" << (*tok).getfile();
         oss << smallStream.str().length() << " " << smallStream.str();
     }
+
     return oss.str();
 }
 
@@ -89,13 +91,14 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         }
 
         results.push_back(temp);
-        if (results.size() == 3)
+        if (results.size() == 4)
             break;
     }
 
     _id = results[0];
     _severity = Severity::fromString(results[1]);
     _shortMessage = results[2];
+    _verboseMessage = results[3];
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
