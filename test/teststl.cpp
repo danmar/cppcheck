@@ -668,7 +668,15 @@ private:
               "        foo.erase(*it);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' becomes invalid when deleted by value from 'foo'\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' becomes invalid when deleted by value from 'foo'\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::set<int> foo;\n"
+              "    std::set<int> it = foo.begin();\n"
+              "    foo.erase(*it);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

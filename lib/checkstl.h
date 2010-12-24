@@ -152,7 +152,6 @@ private:
     void stlBoundriesError(const Token *tok, const std::string &container_name);
     void if_findError(const Token *tok, bool str);
     void sizeError(const Token *tok);
-    void eraseByValueError(const Token *tok, const std::string &containername, const std::string &itername);
     void redundantIfRemoveError(const Token *tok);
 
     void getErrorMessages()
@@ -170,7 +169,6 @@ private:
         if_findError(0, true);
         string_c_strError(0);
         sizeError(0);
-        eraseByValueError(0, "container", "iterator");
         redundantIfRemoveError(0);
     }
 
