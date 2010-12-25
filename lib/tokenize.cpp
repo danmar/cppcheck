@@ -3038,6 +3038,11 @@ void Tokenizer::setVarId()
             {
                 continue;
             }
+            if (tok->str() == "(" &&
+                tok->previous() &&
+                !tok->previous()->isName() &&
+                tok->strAt(-2) != "operator")
+                continue;
             tok = tok->next();
         }
 

@@ -161,6 +161,7 @@ private:
         TEST_CASE(varid27);	// Ticket #2280 (same name for namespace and variable)
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
+        TEST_CASE(varidFunctionCall3);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -2612,6 +2613,23 @@ private:
                                     "3: }\n");
         TODO_ASSERT_EQUALS(expected1+"@1"+expected2, tokenizeDebugListing(code));
         ASSERT_EQUALS(expected1+"@2"+expected2, tokenizeDebugListing(code));
+    }
+
+    void varidFunctionCall3()
+    {
+        // Ticket #2339
+        const std::string code("void f() {\n"
+                               "    int a = 0;\n"
+                               "    int b = c - (foo::bar * a);\n"
+                               "}");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: void f ( ) {\n"
+                                   "2: int a@1 ; a@1 = 0 ;\n"
+                                   "3: int b@2 ; b@2 = c - ( foo :: bar * a@1 ) ;\n"
+                                   "4: }\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
 
