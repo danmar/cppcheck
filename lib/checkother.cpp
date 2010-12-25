@@ -2517,6 +2517,14 @@ bool CheckOther::isIdentifierObjectType(const Token * const tok)
 
 void CheckOther::checkMisusedScopedObject()
 {
+    // Skip this check for .c files
+    {
+        const std::string fname = _tokenizer->getFiles()->at(0);
+        const std::string ext = fname.substr(fname.rfind("."));
+        if (ext == ".c" || ext == ".C")
+            return;
+    }
+
     SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<SymbolDatabase::SpaceInfo *>::iterator i;

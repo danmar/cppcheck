@@ -87,6 +87,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickFunctor);
         TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassConstructors);
         TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickPureC);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
 
@@ -94,7 +95,7 @@ private:
         TEST_CASE(incorrectLogicOperator);
     }
 
-    void check(const char code[])
+    void check(const char code[], const char *filename = NULL)
     {
         // Clear the error buffer..
         errout.str("");
@@ -105,7 +106,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename ? filename : "test.cpp");
 
         // Check..
         CheckOther checkOther(&tokenizer, &settings, this);
@@ -1300,6 +1301,25 @@ private:
               "    Foo().bar();\n"
               "}\n"
              );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectDoesNotPickPureC()
+    {
+        // Ticket #2352
+        const char code[] = "struct cb_watch_bool {\n"
+                            "    int a;\n"
+                            "};\n"
+                            "\n"
+                            "void f()\n"
+                            "{\n"
+                            "    cb_watch_bool();\n"
+                            "}\n";
+
+        check(code, "test.cpp");
+        ASSERT_EQUALS("[test.cpp:7]: (error) instance of \"cb_watch_bool\" object destroyed immediately\n", errout.str());
+
+        check(code, "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 
