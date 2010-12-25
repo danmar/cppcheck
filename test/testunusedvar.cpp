@@ -80,6 +80,7 @@ private:
         TEST_CASE(localvar30);
         TEST_CASE(localvar31); // ticket #2286
         TEST_CASE(localvar32); // ticket #2330
+        TEST_CASE(localvar33); // ticket #2346
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1342,6 +1343,17 @@ private:
                               "    int x;\n"
                               "    fstream &f = getfile();\n"
                               "    f >> x;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar33() // ticket #2345
+    {
+        functionVariableUsage("void f() {\n"
+                              "    Abc* abc = getabc();\n"
+                              "    while (0 != (abc = abc->next())) {\n"
+                              "        ++nOldNum;\n"
+                              "    }\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
