@@ -6079,17 +6079,10 @@ bool Tokenizer::simplifyKnownVariables()
                     // Stop if return or break is found ..
                     if (tok3->str() == "break")
                         break;
-                    if (indentlevel3 == 1)
-                    {
-                        if (tok3->str() == "return")
-                            ret3 = true;
-                        else if (tok3->str() == ";")
-                        {
-                            if (ret3 && !Token::simpleMatch(tok3->next(), "}"))
-                                break;
-                            ret3 = false;
-                        }
-                    }
+                    if ((indentlevel3 > 1 || !Token::simpleMatch(Token::findmatch(tok3,";"), "; }")) && tok3->str() == "return")
+                        ret3 = true;
+                    if (ret3 && tok3->str() == ";")
+                        break;
 
                     if (pointeralias && Token::Match(tok3, ("!!= " + value).c_str()))
                         break;

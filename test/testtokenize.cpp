@@ -121,6 +121,7 @@ private:
         TEST_CASE(simplifyKnownVariables32);    // const
         TEST_CASE(simplifyKnownVariables33);    // struct variable
         TEST_CASE(simplifyKnownVariables34);
+        TEST_CASE(simplifyKnownVariables35);    // ticket #2353 - False positive: Division by zero 'if (x == 0) return 0; return 10 / x;'
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -1868,6 +1869,20 @@ private:
                                 "do { cin >> x ; } while ( 5 < x ) ;\n"
                                 "a [ x ] = 0 ;\n"
                                 "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables35()
+    {
+        // Ticket #2353
+        const char code[] = "int f() {"
+                            "    int x = 0;"
+                            "    if (x == 0) {"
+                            "        return 0;"
+                            "    }"
+                            "    return 10 / x;"
+                            "}";
+        const char expected[] = "int f ( ) { int x ; x = 0 ; { return 0 ; } return 10 / x ; }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 

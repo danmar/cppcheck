@@ -5413,12 +5413,7 @@ private:
                             "    int *p = &i;\n"
                             "    return *p;\n"
                             "}\n";
-        const char expected[] = "void f ( ) "
-                                "{ "
-                                "int i ; "
-                                "return i ; "
-                                "}";
-        ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS("void f ( ) { int i ; return i ; }", tok(code));
     }
 
     void pointeralias3()
