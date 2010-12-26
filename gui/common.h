@@ -33,6 +33,7 @@ typedef enum
     SHOW_WARNINGS,
     SHOW_PERFORMANCE,
     SHOW_PORTABILITY,
+    SHOW_INFORMATION,
     SHOW_ERRORS, // Keep this as last real item
     SHOW_NONE
 }
@@ -48,6 +49,7 @@ ShowTypes;
 #define SETTINGS_SHOW_ERRORS            "Show errors"
 #define SETTINGS_SHOW_WARNINGS          "Show warnings"
 #define SETTINGS_SHOW_PERFORMANCE       "Show performance"
+#define SETTINGS_SHOW_INFORMATION       "Show information"
 #define SETTINGS_CHECK_PATH             "Check path"
 #define SETTINGS_CHECK_FORCE            "Check force"
 #define SETTINGS_CHECK_THREADS          "Check threads"

@@ -45,6 +45,9 @@ void CheckStatistics::AddItem(ShowTypes type)
     case SHOW_ERRORS:
         mError++;
         break;
+    case SHOW_INFORMATION:
+        mInformation++;
+        break;
     case SHOW_NONE:
     default:
         qDebug() << "Unknown error type - not added to statistics.";
@@ -58,6 +61,7 @@ void CheckStatistics::Clear()
     mWarning = 0;
     mPerformance = 0;
     mPortability = 0;
+    mInformation = 0;
     mError = 0;
 }
 
@@ -80,6 +84,9 @@ unsigned CheckStatistics::GetCount(ShowTypes type) const
         break;
     case SHOW_ERRORS:
         count = mError;
+        break;
+    case SHOW_INFORMATION:
+        count = mInformation;
         break;
     case SHOW_NONE:
     default:

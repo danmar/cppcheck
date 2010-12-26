@@ -59,6 +59,7 @@ private:
     unsigned mWarning;
     unsigned mPerformance;
     unsigned mPortability;
+    unsigned mInformation;
     unsigned mError;
 };
 
