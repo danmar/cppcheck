@@ -123,6 +123,7 @@ private:
         TEST_CASE(simplifyKnownVariables33);    // struct variable
         TEST_CASE(simplifyKnownVariables34);
         TEST_CASE(simplifyKnownVariables35);    // ticket #2353 - False positive: Division by zero 'if (x == 0) return 0; return 10 / x;'
+        TEST_CASE(simplifyKnownVariables36);    // ticket #2304 - known value for strcpy parameter
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -1895,6 +1896,17 @@ private:
                             "    return 10 / x;"
                             "}";
         const char expected[] = "int f ( ) { int x ; x = 0 ; { return 0 ; } return 10 / x ; }";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables36()
+    {
+        // Ticket #2304
+        const char code[] = "void f() {"
+                            "    const char *q = \"hello\";"
+                            "    strcpy(p, q);"
+                            "}";
+        const char expected[] = "void f ( ) { const char * q ; q = \"hello\" ; strcpy ( p , \"hello\" ) ; }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 

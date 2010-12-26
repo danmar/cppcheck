@@ -6262,6 +6262,31 @@ bool Tokenizer::simplifyKnownVariables()
                         }
                     }
 
+                    // Variable is used as 2nd parameter in function call..
+                    if (Token::Match(tok3, ("%var% ( %any% , " + structname + " %varid% ,|)").c_str(), varid))
+                    {
+                        const char * const functionName[] =
+                        {
+                            "memcmp","memcpy","memmove",
+                            "strcmp","strcpy","strncmp","strncpy"
+                        };
+                        for (unsigned int i = 0; i < (sizeof(functionName) / sizeof(*functionName)); ++i)
+                        {
+                            if (tok3->str() == functionName[i])
+                            {
+                                Token *par = tok3->tokAt(4);
+                                if (!structname.empty())
+                                {
+                                    par->deleteThis();
+                                    par->deleteThis();
+                                }
+                                par->str(value);
+                                par->varId(valueVarId);
+                                break;
+                            }
+                        }
+                    }
+
                     // array usage
                     if (Token::Match(tok3, ("[(,] " + structname + " %varid% [+-*/[]").c_str(), varid))
                     {
