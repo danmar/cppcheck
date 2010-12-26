@@ -131,6 +131,13 @@ private:
         TEST_CASE(buffer_overrun_15); // ticket #1787
         TEST_CASE(buffer_overrun_16);
 
+        // It is undefined behaviour to point out of bounds of an array
+        // the address beyond the last element is in bounds
+        // char a[10];
+        // char *p1 = a + 10;  // OK
+        // char *p2 = a + 11   // UB
+        TEST_CASE(pointer_out_of_bounds_1);
+
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
@@ -1798,6 +1805,15 @@ private:
               "    std::memcpy(b, a, sizeof(a));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void pointer_out_of_bounds_1()
+    {
+        check("void f() {\n"
+              "    char a[10];\n"
+              "    char *p = a + 100;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour: pointer arithmetic result does not point into or just past the end of the array\n", errout.str());
     }
 
     void sprintf1()

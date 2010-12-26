@@ -125,6 +125,12 @@ void CheckBufferOverrun::outOfBounds(const Token *tok, const std::string &what)
     reportError(tok, Severity::error, "outOfBounds", what + " is out of bounds");
 }
 
+void CheckBufferOverrun::pointerOutOfBounds(const Token *tok)
+{
+    reportError(tok, Severity::portability, "pointerOutOfBounds", "Undefined behaviour: pointer arithmetic result does not point into or just past the end of the array\n"
+                "Undefined behaviour: Using pointer arithmetic so that the result does not point into or just past the end of the same object. Further information: https://www.securecoding.cert.org/confluence/display/seccode/ARR30-C.+Do+not+form+or+use+out+of+bounds+pointers+or+array+subscripts");
+}
+
 void CheckBufferOverrun::sizeArgumentAsChar(const Token *tok)
 {
     if (_settings && !_settings->_checkCodingStyle)
@@ -1077,6 +1083,16 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4));
             if (static_cast<unsigned long>(n) > total_size)
                 outOfBounds(tok->tokAt(4), "snprintf size");
+        }
+
+        // undefined behaviour: result of pointer arithmetic is out of bounds
+        if (_settings->_checkCodingStyle && Token::Match(tok, "= %varid% + %num% ;", arrayInfo.varid))
+        {
+            const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
+            if (index < 0 || index > arrayInfo.num[0])
+            {
+                pointerOutOfBounds(tok->next());
+            }
         }
     }
 }
