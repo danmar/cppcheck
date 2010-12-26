@@ -81,7 +81,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) $(CXXFLAGS) " << args << " -c -o " << objfile(files[i]) << " " << files[i] << "\n\n";
+        fout << "\n\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) " << args << " -c -o " << objfile(files[i]) << " " << files[i] << "\n\n";
     }
 }
 
@@ -228,10 +228,10 @@ int main(int argc, char **argv)
 
     fout << "\n###### Targets\n\n";
     fout << "cppcheck:\t$(LIBOBJ)\t$(CLIOBJ)\t$(EXTOBJ)\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre $(LDFLAGS)\n\n";
     fout << "all:\tcppcheck\ttestrunner\n\n";
     fout << "testrunner:\t$(TESTOBJ)\t$(LIBOBJ)\t$(EXTOBJ)\tcli/threadexecutor.o\tcli/cmdlineparser.o\tcli/cppcheckexecutor.o\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
