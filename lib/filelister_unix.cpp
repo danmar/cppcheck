@@ -25,7 +25,7 @@
 #ifndef _WIN32 // POSIX-style system
 #include <glob.h>
 #include <unistd.h>
-#include <stdlib.h>		// canonicalize_file_name
+#include <stdlib.h>
 #endif
 
 #ifndef _WIN32
@@ -58,7 +58,7 @@ void FileListerUnix::recursiveAddFiles2(std::vector<std::string> &relative,
         if (filename[filename.length()-1] != '/')
         {
             // File
-            char * const fname = canonicalize_file_name(filename.c_str());
+            char* const fname = realpath(filename.c_str(), NULL);
             if (!fname)
                 continue;
 
