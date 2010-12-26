@@ -48,7 +48,7 @@ private:
              a = absolute.begin(), a_end = absolute.end();
              r != r_end && a != a_end;
              ++r, ++a
-             )
+            )
         {
             static const size_t start_at_relative = std::string("./").size();
             static const size_t start_at_absolute = std::string("./").size() + a->size() - r->size();
