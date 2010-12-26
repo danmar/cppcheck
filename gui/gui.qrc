@@ -23,5 +23,6 @@
     <file>images/go-home.png</file>
     <file>images/go-next.png</file>
     <file>images/go-previous.png</file>
+    <file>images/applications-development.png</file>
 </qresource>
 </RCC>

@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -287,7 +287,7 @@
    </property>
    <property name="icon">
     <iconset resource="gui.qrc">
-     <normaloff>:/images/showstylewarnings.png</normaloff>:/images/showstylewarnings.png</iconset>
+     <normaloff>:/images/applications-development.png</normaloff>:/images/applications-development.png</iconset>
    </property>
    <property name="text">
     <string>Style warnings</string>
