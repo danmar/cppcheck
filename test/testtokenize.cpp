@@ -50,6 +50,7 @@ private:
         TEST_CASE(tokenize10);
         TEST_CASE(tokenize11);
         TEST_CASE(tokenize12);
+        TEST_CASE(tokenize13);  // bailout if the code contains "@" - that is not handled well.
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -467,6 +468,16 @@ private:
                              "    }\n"
                              "});");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // bailout if there is "@" - it is not handled well
+    void tokenize13()
+    {
+        const char code[] = "@implementation\n"
+                            "-(Foo *)foo: (Bar *)bar\n"
+                            "{ }\n"
+                            "@end\n";
+        ASSERT_EQUALS("", tokenizeAndStringify(code));
     }
 
     void wrong_syntax()

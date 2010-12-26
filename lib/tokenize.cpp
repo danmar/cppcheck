@@ -2169,6 +2169,18 @@ bool Tokenizer::tokenize(std::istream &code,
     // Remove __asm..
     simplifyAsm();
 
+    // When the assembly code has been cleaned up, no @ is allowed
+    for (const Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "(")
+            tok = tok->link();
+        else if (tok->str()[0] == '@')
+        {
+            deallocateTokens();
+            return false;
+        }
+    }
+
     // Remove "volatile", "inline", "register", and "restrict"
     simplifyKeyword();
 
