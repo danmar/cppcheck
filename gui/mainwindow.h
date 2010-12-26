@@ -105,6 +105,12 @@ public slots:
     void ShowPerformance(bool checked);
 
     /**
+    * @brief Show errors with type "information"
+    * @param checked Should errors be shown (true) or hidden (false)
+    */
+    void ShowInformation(bool checked);
+
+    /**
     * @brief Slot to check all "Show errors" menu items
     */
     void CheckAll();

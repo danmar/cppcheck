@@ -100,6 +100,7 @@
     <addaction name="mActionShowWarnings"/>
     <addaction name="mActionShowStyle"/>
     <addaction name="mActionShowPerformance"/>
+    <addaction name="mActionShowInformation"/>
     <addaction name="mActionCheckAll"/>
     <addaction name="mActionUncheckAll"/>
     <addaction name="separator"/>
@@ -182,6 +183,7 @@
    <addaction name="mActionShowWarnings"/>
    <addaction name="mActionShowStyle"/>
    <addaction name="mActionShowPerformance"/>
+   <addaction name="mActionShowInformation"/>
   </widget>
   <action name="mActionLicense">
    <property name="text">
@@ -469,6 +471,21 @@
    </property>
    <property name="text">
     <string>Show &amp;hidden</string>
+   </property>
+  </action>
+  <action name="mActionShowInformation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/dialog-information.png</normaloff>:/images/dialog-information.png</iconset>
+   </property>
+   <property name="text">
+    <string>Information</string>
+   </property>
+   <property name="toolTip">
+    <string>Show information messages</string>
    </property>
   </action>
  </widget>
