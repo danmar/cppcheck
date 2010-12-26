@@ -924,7 +924,7 @@ private:
                   "        ;\n"
                   "}\n");
 
-            ASSERT_EQUALS("[test.cpp:4]: (error) " + stlCont[i]  + " range check should use != and not < since the order of the pointers isn't guaranteed\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous container iterator compare using < operator for " + stlCont[i] + "\n", errout.str());
         }
     }
 

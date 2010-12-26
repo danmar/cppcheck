@@ -662,10 +662,12 @@ void CheckStl::stlBoundries()
 // Error message for bad boundry usage..
 void CheckStl::stlBoundriesError(const Token *tok, const std::string &container_name)
 {
-    reportError(tok, Severity::error, "stlBoundries", container_name + " range check should use != and not < since the order of the pointers isn't guaranteed");
+    reportError(tok, Severity::error, "stlBoundries",
+                "Dangerous container iterator compare using < operator for " + container_name + "\n"
+                "Using < operator with container type iterators is dangerous since the order of "
+                "the items is not guaranteed. One should use != operator instead when comparing "
+                "iterators in the container.");
 }
-
-
 
 void CheckStl::if_find()
 {
