@@ -1588,7 +1588,7 @@ void Preprocessor::handleIncludes(std::string &code,
                 // Determine line number of include
                 unsigned int linenr = 1;
                 unsigned int level = 0;
-                for (std::string::size_type p = 0; p < pos; ++p)
+                for (std::string::size_type p = 1; p <= pos; ++p)
                 {
                     if (level == 0 && code[pos-p] == '\n')
                         ++linenr;
@@ -1600,7 +1600,6 @@ void Preprocessor::handleIncludes(std::string &code,
                     {
                         if (level == 0)
                         {
-                            --linenr;
                             break;
                         }
                         --level;
