@@ -26,6 +26,7 @@
 #include <glob.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <limits.h>
 #endif
 
 #ifndef _WIN32
