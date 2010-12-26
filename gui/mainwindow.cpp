@@ -395,6 +395,7 @@ Settings MainWindow::GetCppcheckSettings()
     result._force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
     result._xml = false;
     result._jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
+    result._inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
 
     if (result._jobs <= 0)
     {

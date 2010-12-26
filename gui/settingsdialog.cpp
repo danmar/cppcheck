@@ -50,6 +50,7 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
     mUI.mShowDebugWarnings->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool()));
     mUI.mSaveAllErrors->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_ALL_ERRORS, false).toBool()));
     mUI.mSaveFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
+    mUI.mInlineSuppressions->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool()));
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
@@ -123,6 +124,7 @@ void SettingsDialog::SaveSettingValues()
     SaveCheckboxValue(mUI.mShowFullPath, SETTINGS_SHOW_FULL_PATH);
     SaveCheckboxValue(mUI.mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
     SaveCheckboxValue(mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
+    SaveCheckboxValue(mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
     mSettings->setValue(SETTINGS_GLOBAL_INCLUDE_PATHS, mUI.mEditIncludePaths->text());
 }
 
