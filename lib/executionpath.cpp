@@ -265,6 +265,17 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                     if (tok3->varId())
                         ExecutionPath::bailOutVar(checks, tok3->varId());
                 }
+
+                // it is not certain that a for/while will be executed:
+                for (std::list<ExecutionPath *>::iterator it = checks.begin(); it != checks.end();)
+                {
+                    if ((*it)->numberOfIf > 0)
+                        checks.erase(it++);
+                    else
+                        ++it;
+                }
+
+                // parse loop bodies
                 check->parseLoopBody(tok2->next(), checks);
             }
 

@@ -39,7 +39,8 @@ private:
         TEST_CASE(structDerefAndCheck);    // dereferencing struct and then checking if it's null
         TEST_CASE(pointerDerefAndCheck);
         TEST_CASE(nullpointer5);    // References should not be checked
-        TEST_CASE(nullpointer6);
+        TEST_CASE(nullpointerExecutionPaths);
+        TEST_CASE(nullpointerExecutionPathsLoop);
         TEST_CASE(nullpointer7);
         TEST_CASE(nullpointer8);
         TEST_CASE(nullpointer9);
@@ -410,7 +411,7 @@ private:
     }
 
     // Execution paths..
-    void nullpointer6()
+    void nullpointerExecutionPaths()
     {
         // errors..
         check("static void foo()\n"
@@ -632,6 +633,41 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+    }
+
+    // Ticket #2350
+    void nullpointerExecutionPathsLoop()
+    {
+        // No false positive:
+        check("void foo() {\n"
+              "    int n;\n"
+              "    int *argv32;\n"
+              "    if (x) {\n"
+              "        n = 0;\n"
+              "        argv32 = 0;\n"
+              "    }\n"
+              "\n"
+              "    for (int i = 0; i < n; i++) {\n"
+              "        argv32[i] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // No false negative:
+        check("void foo() {\n"
+              "    int n;\n"
+              "    int *argv32;\n"
+              "    if (x) {\n"
+              "        n = 10;\n"
+              "        argv32 = 0;\n"
+              "    }\n"
+              "\n"
+              "    for (int i = 0; i < n; i++) {\n"
+              "        argv32[i] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("error", errout.str());
     }
 
     void nullpointer7()
