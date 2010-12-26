@@ -300,6 +300,24 @@
          </item>
         </layout>
        </item>
+       <item row="4" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Information messages:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="mLblInformation">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -367,8 +385,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>227</x>
-     <y>307</y>
+     <x>483</x>
+     <y>310</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -383,8 +401,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>295</x>
-     <y>313</y>
+     <x>483</x>
+     <y>310</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

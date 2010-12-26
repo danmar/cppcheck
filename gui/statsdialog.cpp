@@ -114,6 +114,7 @@ void StatsDialog::copyToClipboard()
                                   "\tWarnings:\t%9\n"
                                   "\tStyle warnings:\t%10\n"
                                   "\tPerformance warnings:\t%11\n"
+                                  "\tInformation messages:\t%12\n"
                               )
                               .arg(mUI.mProject->text())
                               .arg(mUI.mPaths->text())
@@ -125,7 +126,8 @@ void StatsDialog::copyToClipboard()
                               .arg(mStatistics->GetCount(SHOW_ERRORS))
                               .arg(mStatistics->GetCount(SHOW_WARNINGS))
                               .arg(mStatistics->GetCount(SHOW_STYLE))
-                              .arg(mStatistics->GetCount(SHOW_PERFORMANCE));
+                              .arg(mStatistics->GetCount(SHOW_PERFORMANCE))
+                              .arg(mStatistics->GetCount(SHOW_INFORMATION));
 
         // HTML summary
         QString htmlSummary = tr(
@@ -147,6 +149,7 @@ void StatsDialog::copyToClipboard()
                                   " <tr><th>Warnings:</th><td>%9</td></tr>\n"
                                   " <tr><th>Style warnings:</th><td>%10</td></tr>\n"
                                   " <tr><th>Performance warnings:</th><td>%11</td></tr>\n"
+                                  " <tr><th>Information messages:</th><td>%12</td></tr>\n"
                                   "</table>\n"
                               )
                               .arg(mUI.mProject->text())
@@ -159,13 +162,13 @@ void StatsDialog::copyToClipboard()
                               .arg(mStatistics->GetCount(SHOW_ERRORS))
                               .arg(mStatistics->GetCount(SHOW_WARNINGS))
                               .arg(mStatistics->GetCount(SHOW_STYLE))
-                              .arg(mStatistics->GetCount(SHOW_PERFORMANCE));
+                              .arg(mStatistics->GetCount(SHOW_PERFORMANCE))
+                              .arg(mStatistics->GetCount(SHOW_INFORMATION));
 
         QMimeData *mimeData = new QMimeData();
         mimeData->setText(textSummary);
         mimeData->setHtml(htmlSummary);
         clipboard->setMimeData(mimeData);
-
     }
 }
 
@@ -176,4 +179,5 @@ void StatsDialog::setStatistics(const CheckStatistics *stats)
     mUI.mLblWarnings->setText(QString("%1").arg(stats->GetCount(SHOW_WARNINGS)));
     mUI.mLblStyle->setText(QString("%1").arg(stats->GetCount(SHOW_STYLE)));
     mUI.mLblPerformance->setText(QString("%1").arg(stats->GetCount(SHOW_PERFORMANCE)));
+    mUI.mLblInformation->setText(QString("%1").arg(stats->GetCount(SHOW_INFORMATION)));
 }
