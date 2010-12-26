@@ -58,14 +58,15 @@ void FileListerUnix::recursiveAddFiles2(std::vector<std::string> &relative,
         if (filename[filename.length()-1] != '/')
         {
             // File
-            char* const fname = realpath(filename.c_str(), NULL);
-            if (!fname)
+            char fname[PATH_MAX];
+            if (realpath(filename.c_str(), fname) == NULL)
+            {
                 continue;
+            }
 
             // Does absolute path exist? then bail out
             if (std::find(absolute.begin(), absolute.end(), std::string(fname)) != absolute.end())
             {
-                free(fname);
                 continue;
             }
 
@@ -74,8 +75,6 @@ void FileListerUnix::recursiveAddFiles2(std::vector<std::string> &relative,
                 relative.push_back(filename);
                 absolute.push_back(fname);
             }
-
-            free(fname);
         }
         else
         {

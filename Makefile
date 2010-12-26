@@ -65,6 +65,7 @@ TESTOBJ =     test/options.o \
               test/testdivision.o \
               test/testerrorlogger.o \
               test/testexceptionsafety.o \
+              test/testfilelister_unix.o \
               test/testincompletestatement.o \
               test/testmathlib.o \
               test/testmemleak.o \
@@ -171,7 +172,7 @@ lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunction
 lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/preprocessor.h lib/filelister.h lib/path.h lib/timer.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/cppcheck.o lib/cppcheck.cpp
 
-lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/path.h
+lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/path.h lib/cppcheck.h lib/settings.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/errorlogger.o lib/errorlogger.cpp
 
 lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h
@@ -254,6 +255,9 @@ test/testerrorlogger.o: test/testerrorlogger.cpp test/testsuite.h lib/errorlogge
 
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/tokenize.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
+
+test/testfilelister_unix.o: test/testfilelister_unix.cpp test/testsuite.h lib/errorlogger.h test/redirect.h
+	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testfilelister_unix.o test/testfilelister_unix.cpp
 
 test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testincompletestatement.o test/testincompletestatement.cpp
