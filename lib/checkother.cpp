@@ -2581,7 +2581,13 @@ void CheckOther::dangerousUsageStrtolError(const Token *tok)
 
 void CheckOther::sprintfOverlappingDataError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "sprintfOverlappingData", "Undefined behaviour: " + varname + " is used wrong in call to sprintf or snprintf. Quote: If copying takes place between objects that overlap as a result of a call to sprintf() or snprintf(), the results are undefined.");
+    reportError(tok, Severity::error, "sprintfOverlappingData",
+                "Undefined behavior: variable is used as parameter and destination in s[n]printf().\n"
+                "The variable '" + varname + "' is used both as parameter and destination in "
+                "and destination buffer overlap. Quote from glibc (C-library) documentation "
+                "(http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
+                "'If copying takes place between objects that overlap as a result of a call "
+                "to sprintf() or snprintf(), the results are undefined.'");
 }
 
 void CheckOther::udivError(const Token *tok)

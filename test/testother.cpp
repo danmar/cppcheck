@@ -265,7 +265,7 @@ private:
                      "    char buf[100];\n"
                      "    sprintf(buf,\"%s\",buf);\n"
                      "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behaviour: buf is used wrong in call to sprintf or snprintf. Quote: If copying takes place between objects that overlap as a result of a call to sprintf() or snprintf(), the results are undefined.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().\n", errout.str());
     }
 
     void sprintf2()
