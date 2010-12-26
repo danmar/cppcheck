@@ -42,14 +42,30 @@ ShowTypes;
 /**
 * QSetting value names
 */
+
+// Window/dialog sizes
 #define SETTINGS_WINDOW_MAXIMIZED       "Window maximized"
 #define SETTINGS_WINDOW_WIDTH           "Window width"
 #define SETTINGS_WINDOW_HEIGHT          "Window height"
+#define SETTINGS_LOG_VIEW_WIDTH         "Log/View width"
+#define SETTINGS_LOG_VIEW_HEIGHT        "Log/View height"
+#define SETTINGS_MAINWND_SPLITTER_STATE "Mainwindow/Vertical splitter state"
+#define SETTINGS_CHECK_DIALOG_WIDTH     "Check dialog width"
+#define SETTINGS_CHECK_DIALOG_HEIGHT    "Check dialog height"
+
+// Main window settings
+#define SETTINGS_RESULT_COLUMN_WIDTH    "Result column %1 width"
+#define SETTINGS_TOOLBARS_MAIN_SHOW     "Toolbars/ShowStandard"
+#define SETTINGS_TOOLBARS_VIEW_SHOW     "Toolbars/ShowView"
+
+// Show * states
 #define SETTINGS_SHOW_STYLE             "Show style"
 #define SETTINGS_SHOW_ERRORS            "Show errors"
 #define SETTINGS_SHOW_WARNINGS          "Show warnings"
 #define SETTINGS_SHOW_PERFORMANCE       "Show performance"
 #define SETTINGS_SHOW_INFORMATION       "Show information"
+
+// Other settings
 #define SETTINGS_CHECK_PATH             "Check path"
 #define SETTINGS_CHECK_FORCE            "Check force"
 #define SETTINGS_CHECK_THREADS          "Check threads"
@@ -58,17 +74,9 @@ ShowTypes;
 #define SETTINGS_SHOW_DEBUG_WARNINGS    "Show debug warnings"
 #define SETTINGS_SAVE_ALL_ERRORS        "Save all errors"
 #define SETTINGS_SAVE_FULL_PATH         "Save full path"
-#define SETTINGS_CHECK_DIALOG_WIDTH     "Check dialog width"
-#define SETTINGS_CHECK_DIALOG_HEIGHT    "Check dialog height"
 #define SETTINGS_APPLICATION_NAMES      "Application names"
 #define SETTINGS_APPLICATION_PATHS      "Application paths"
-#define SETTINGS_RESULT_COLUMN_WIDTH    "Result column %1 width"
 #define SETTINGS_LANGUAGE               "Application language"
-#define SETTINGS_TOOLBARS_MAIN_SHOW     "Toolbars/ShowStandard"
-#define SETTINGS_TOOLBARS_VIEW_SHOW     "Toolbars/ShowView"
-#define SETTINGS_LOG_VIEW_WIDTH         "Log/View width"
-#define SETTINGS_LOG_VIEW_HEIGHT        "Log/View height"
-#define SETTINGS_MAINWND_SPLITTER_STATE "Mainwindow/Vertical splitter state"
 #define SETTINGS_GLOBAL_INCLUDE_PATHS   "Global include paths"
 #define SETTINGS_INLINE_SUPPRESSIONS    "Inline suppressions"
 
