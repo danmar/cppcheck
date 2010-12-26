@@ -45,6 +45,7 @@ private:
         TEST_CASE(nullpointer8);
         TEST_CASE(nullpointer9);
         TEST_CASE(pointerCheckAndDeRef);	// check if pointer is null and then dereference it
+        TEST_CASE(nullConstantDereference);		// Dereference NULL constant
     }
 
     void check(const char code[])
@@ -802,6 +803,18 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    // Test CheckNullPointer::nullConstantDereference
+    void nullConstantDereference()
+    {
+        // Ticket #2090
+        check("void foo() {\n"
+              "  char *p = 0;\n"
+              "  strcpy(p, \"abcd\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestNullPointer)

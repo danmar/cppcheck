@@ -79,7 +79,8 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     }
 
     // 1st parameter..
-    if (Token::Match(&tok, "%var% ( %var% ,|)") && tok.tokAt(2)->varId() > 0)
+    if ((Token::Match(&tok, "%var% ( %var% ,|)") && tok.tokAt(2)->varId() > 0) ||
+        (value == 0 && Token::Match(&tok, "%var% ( 0 ,|)")))
     {
         if (functionNames1.find(tok.str()) != functionNames1.end())
             var.push_back(tok.tokAt(2));
@@ -90,7 +91,8 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     }
 
     // 2nd parameter..
-    if (Token::Match(&tok, "%var% ( %any% , %var% ,|)") && tok.tokAt(4)->varId() > 0)
+    if ((Token::Match(&tok, "%var% ( %any% , %var% ,|)") && tok.tokAt(4)->varId() > 0) ||
+        (value == 0 && Token::Match(&tok, "%var% ( %any% , 0 ,|)")))
     {
         if (functionNames2.find(tok.str()) != functionNames2.end())
             var.push_back(tok.tokAt(4));
@@ -600,6 +602,21 @@ void CheckNullPointer::nullConstantDereference()
                     Token::Match(tok->previous(), "return|<<"))
                 {
                     nullPointerError(tok);
+                }
+            }
+
+            else if (indentlevel > 0 && Token::Match(tok, "%var% ("))
+            {
+                std::list<const Token *> var;
+                parseFunctionCall(*tok, var, 0);
+
+                // is one of the var items a NULL pointer?
+                for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
+                {
+                    if ((*it)->str() == "0")
+                    {
+                        nullPointerError(*it);
+                    }
                 }
             }
         }
