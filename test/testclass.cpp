@@ -3562,7 +3562,7 @@ private:
                    "    std::pair<int,double> m_pair;\n"
                    "}");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetVec' can be const.\n"
-                      "[test.cpp:5]: (information)Technically the member function 'A::GetPair' can be const.\n", errout.str());
+                      "[test.cpp:5]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -3735,7 +3735,7 @@ private:
                    "private:\n"
                    "    std::pair< std::vector<int>,std::vector<int> >  m_pair;\n"
                    "}");
-        ASSERT_EQUALS("[test.cpp:4]: (information) The function 'A::GetPair' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4189,7 +4189,7 @@ private:
                    "std::string m_strVal;\n"
                    "};\n"
                   );
-        ASSERT_EQUALS("[test.cpp:4]: (information) The function 'A::strGetString1' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetString1' can be const.\n", errout.str());
 
 
         checkConst("class A{\n"
@@ -4315,7 +4315,7 @@ private:
                    "        return a;\n"
                    "    }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:7]: (information) The function 'Derived::get' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (information) Technically the member function 'Derived::get' can be const.\n", errout.str());
 
         checkConst("class Base1 {\n"
                    "public:\n"
