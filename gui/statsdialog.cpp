@@ -113,8 +113,9 @@ void StatsDialog::copyToClipboard()
                                   "\tErrors:\t%8\n"
                                   "\tWarnings:\t%9\n"
                                   "\tStyle warnings:\t%10\n"
-                                  "\tPerformance warnings:\t%11\n"
-                                  "\tInformation messages:\t%12\n"
+                                  "\tPortability warnings:\t%11\n"
+                                  "\tPerformance warnings:\t%12\n"
+                                  "\tInformation messages:\t%13\n"
                               )
                               .arg(mUI.mProject->text())
                               .arg(mUI.mPaths->text())
@@ -126,6 +127,7 @@ void StatsDialog::copyToClipboard()
                               .arg(mStatistics->GetCount(SHOW_ERRORS))
                               .arg(mStatistics->GetCount(SHOW_WARNINGS))
                               .arg(mStatistics->GetCount(SHOW_STYLE))
+                              .arg(mStatistics->GetCount(SHOW_PORTABILITY))
                               .arg(mStatistics->GetCount(SHOW_PERFORMANCE))
                               .arg(mStatistics->GetCount(SHOW_INFORMATION));
 
@@ -148,8 +150,9 @@ void StatsDialog::copyToClipboard()
                                   " <tr><th>Errors:</th><td>%8</td></tr>\n"
                                   " <tr><th>Warnings:</th><td>%9</td></tr>\n"
                                   " <tr><th>Style warnings:</th><td>%10</td></tr>\n"
-                                  " <tr><th>Performance warnings:</th><td>%11</td></tr>\n"
-                                  " <tr><th>Information messages:</th><td>%12</td></tr>\n"
+                                  " <tr><th>Portability warnings:</th><td>%11</td></tr>\n"
+                                  " <tr><th>Performance warnings:</th><td>%12</td></tr>\n"
+                                  " <tr><th>Information messages:</th><td>%13</td></tr>\n"
                                   "</table>\n"
                               )
                               .arg(mUI.mProject->text())
@@ -162,6 +165,7 @@ void StatsDialog::copyToClipboard()
                               .arg(mStatistics->GetCount(SHOW_ERRORS))
                               .arg(mStatistics->GetCount(SHOW_WARNINGS))
                               .arg(mStatistics->GetCount(SHOW_STYLE))
+                              .arg(mStatistics->GetCount(SHOW_PORTABILITY))
                               .arg(mStatistics->GetCount(SHOW_PERFORMANCE))
                               .arg(mStatistics->GetCount(SHOW_INFORMATION));
 
@@ -178,6 +182,7 @@ void StatsDialog::setStatistics(const CheckStatistics *stats)
     mUI.mLblErrors->setText(QString("%1").arg(stats->GetCount(SHOW_ERRORS)));
     mUI.mLblWarnings->setText(QString("%1").arg(stats->GetCount(SHOW_WARNINGS)));
     mUI.mLblStyle->setText(QString("%1").arg(stats->GetCount(SHOW_STYLE)));
+    mUI.mLblPortability->setText(QString("%1").arg(stats->GetCount(SHOW_PORTABILITY)));
     mUI.mLblPerformance->setText(QString("%1").arg(stats->GetCount(SHOW_PERFORMANCE)));
     mUI.mLblInformation->setText(QString("%1").arg(stats->GetCount(SHOW_INFORMATION)));
 }
