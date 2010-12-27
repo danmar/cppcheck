@@ -210,6 +210,12 @@
    <property name="text">
     <string>&amp;Files...</string>
    </property>
+   <property name="iconText">
+    <string>Check files</string>
+   </property>
+   <property name="toolTip">
+    <string>Check files</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
    </property>
@@ -221,6 +227,12 @@
    </property>
    <property name="text">
     <string>&amp;Directory...</string>
+   </property>
+   <property name="iconText">
+    <string>Check directory</string>
+   </property>
+   <property name="toolTip">
+    <string>Check directory</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
@@ -245,6 +257,12 @@
    </property>
    <property name="text">
     <string>&amp;Stop</string>
+   </property>
+   <property name="iconText">
+    <string>Stop checking</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop checking</string>
    </property>
    <property name="shortcut">
     <string>Esc</string>
