@@ -104,6 +104,20 @@
           </widget>
          </item>
          <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Ideal count:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="mLblIdealThreads">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>

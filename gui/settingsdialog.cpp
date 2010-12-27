@@ -26,6 +26,7 @@
 #include <QTabWidget>
 #include <QSettings>
 #include <QFileDialog>
+#include <QThread>
 #include "settingsdialog.h"
 #include "applicationdialog.h"
 #include "applicationlist.h"
@@ -69,6 +70,12 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
 
     mUI.mListWidget->setSortingEnabled(false);
     PopulateListWidget();
+
+    const int count = QThread::idealThreadCount();
+    if (count != -1)
+        mUI.mLblIdealThreads->setText(QString::number(count));
+    else
+        mUI.mLblIdealThreads->setText(tr("N/A"));
 
     LoadSettings();
 }
