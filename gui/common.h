@@ -64,6 +64,7 @@ ShowTypes;
 #define SETTINGS_SHOW_WARNINGS          "Show warnings"
 #define SETTINGS_SHOW_PERFORMANCE       "Show performance"
 #define SETTINGS_SHOW_INFORMATION       "Show information"
+#define SETTINGS_SHOW_PORTABILITY       "Show portability"
 
 // Other settings
 #define SETTINGS_CHECK_PATH             "Check path"

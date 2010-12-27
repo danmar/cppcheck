@@ -99,6 +99,12 @@ public slots:
     void ShowWarnings(bool checked);
 
     /**
+    * @brief Show errors with type "portability"
+    * @param checked Should errors be shown (true) or hidden (false)
+    */
+    void ShowPortability(bool checked);
+
+    /**
     * @brief Show errors with type "performance"
     * @param checked Should errors be shown (true) or hidden (false)
     */

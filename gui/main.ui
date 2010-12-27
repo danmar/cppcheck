@@ -99,6 +99,7 @@
     <addaction name="mActionShowErrors"/>
     <addaction name="mActionShowWarnings"/>
     <addaction name="mActionShowStyle"/>
+    <addaction name="mActionShowPortability"/>
     <addaction name="mActionShowPerformance"/>
     <addaction name="mActionShowInformation"/>
     <addaction name="mActionCheckAll"/>
@@ -182,6 +183,7 @@
    <addaction name="mActionShowErrors"/>
    <addaction name="mActionShowWarnings"/>
    <addaction name="mActionShowStyle"/>
+   <addaction name="mActionShowPortability"/>
    <addaction name="mActionShowPerformance"/>
    <addaction name="mActionShowInformation"/>
   </widget>
@@ -486,6 +488,21 @@
    </property>
    <property name="toolTip">
     <string>Show information messages</string>
+   </property>
+  </action>
+  <action name="mActionShowPortability">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/applications-system.png</normaloff>:/images/applications-system.png</iconset>
+   </property>
+   <property name="text">
+    <string>Portability</string>
+   </property>
+   <property name="toolTip">
+    <string>Show portability warnings</string>
    </property>
   </action>
  </widget>

@@ -64,6 +64,7 @@ MainWindow::MainWindow() :
     connect(mUI.mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
     connect(mUI.mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
     connect(mUI.mActionShowWarnings, SIGNAL(toggled(bool)), this, SLOT(ShowWarnings(bool)));
+    connect(mUI.mActionShowPortability, SIGNAL(toggled(bool)), this, SLOT(ShowPortability(bool)));
     connect(mUI.mActionShowPerformance, SIGNAL(toggled(bool)), this, SLOT(ShowPerformance(bool)));
     connect(mUI.mActionShowInformation, SIGNAL(toggled(bool)), this, SLOT(ShowInformation(bool)));
     connect(mUI.mActionCheckAll, SIGNAL(triggered()), this, SLOT(CheckAll()));
@@ -175,6 +176,7 @@ void MainWindow::LoadSettings()
     mUI.mActionShowStyle->setChecked(mSettings->value(SETTINGS_SHOW_STYLE, true).toBool());
     mUI.mActionShowErrors->setChecked(mSettings->value(SETTINGS_SHOW_ERRORS, true).toBool());
     mUI.mActionShowWarnings->setChecked(mSettings->value(SETTINGS_SHOW_WARNINGS, true).toBool());
+    mUI.mActionShowPortability->setChecked(mSettings->value(SETTINGS_SHOW_PORTABILITY, true).toBool());
     mUI.mActionShowPerformance->setChecked(mSettings->value(SETTINGS_SHOW_PERFORMANCE, true).toBool());
     mUI.mActionShowInformation->setChecked(mSettings->value(SETTINGS_SHOW_INFORMATION, true).toBool());
 
@@ -202,6 +204,7 @@ void MainWindow::SaveSettings()
     mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
     mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
     mSettings->setValue(SETTINGS_SHOW_WARNINGS, mUI.mActionShowWarnings->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_PORTABILITY, mUI.mActionShowPortability->isChecked());
     mSettings->setValue(SETTINGS_SHOW_PERFORMANCE, mUI.mActionShowPerformance->isChecked());
     mSettings->setValue(SETTINGS_SHOW_INFORMATION, mUI.mActionShowInformation->isChecked());
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI.mToolBarMain->isVisible());
@@ -504,6 +507,11 @@ void MainWindow::ShowWarnings(bool checked)
     mUI.mResults->ShowResults(SHOW_WARNINGS, checked);
 }
 
+void MainWindow::ShowPortability(bool checked)
+{
+    mUI.mResults->ShowResults(SHOW_PORTABILITY, checked);
+}
+
 void MainWindow::ShowPerformance(bool checked)
 {
     mUI.mResults->ShowResults(SHOW_PERFORMANCE, checked);
@@ -568,6 +576,8 @@ void MainWindow::ToggleAllChecked(bool checked)
     ShowErrors(checked);
     mUI.mActionShowWarnings->setChecked(checked);
     ShowWarnings(checked);
+    mUI.mActionShowPortability->setChecked(checked);
+    ShowPortability(checked);
     mUI.mActionShowPerformance->setChecked(checked);
     ShowPerformance(checked);
     mUI.mActionShowInformation->setChecked(checked);

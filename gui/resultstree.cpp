@@ -739,6 +739,8 @@ QString ResultsTree::SeverityToIcon(const QString &severity) const
         return ":images/applications-development.png";
     if (severity == "warning")
         return ":images/dialog-warning.png";
+    if (severity == "portability")
+        return ":images/applications-system.png";
     if (severity == "performance")
         return ":images/utilities-system-monitor.png";
     if (severity == "information")
