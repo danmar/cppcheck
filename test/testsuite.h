@@ -46,7 +46,7 @@ protected:
 
     bool runTest(const char testname[]);
 
-    void assert(const char *filename, int linenr, bool condition);
+    void assert_(const char *filename, int linenr, bool condition);
 
     void assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual, const std::string &msg = "");
 
@@ -72,7 +72,7 @@ public:
 };
 
 #define TEST_CASE( NAME )  if ( runTest(#NAME) ) { if (quiet_tests) { REDIRECT; NAME(); } else { NAME ();} }
-#define ASSERT( CONDITION )  assert(__FILE__, __LINE__, CONDITION)
+#define ASSERT( CONDITION )  assert_(__FILE__, __LINE__, CONDITION)
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_MSG( EXPECTED , ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
 #define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (EXCEPTION &) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
