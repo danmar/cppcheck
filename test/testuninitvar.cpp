@@ -1400,6 +1400,12 @@ private:
                        "    typeof(fred->x);\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    struct SData * s;\n"
+                       "    ab(typeof(s->status));\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

@@ -649,7 +649,7 @@ private:
                     --parlevel;
                 }
 
-                else if (Token::simpleMatch(tok2, "sizeof ("))
+                else if (Token::Match(tok2, "sizeof|typeof ("))
                 {
                     tok2 = tok2->next()->link();
                     if (!tok2)
