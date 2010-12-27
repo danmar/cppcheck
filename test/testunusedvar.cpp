@@ -1361,22 +1361,14 @@ private:
 
     void localvar34() // ticket #2368
     {
-        functionVariableUsage("int f(void) {\n"
-                              "        int i = 0;\n"
-                              "        int j = 3;\n"
-                              "        if (false) {\n"
-                              "        }\n"
-                              "        else {\n"
-                              "                j -= i;\n"
-                              "        }\n"
-                              "        if (false) {\n"
-                              "        }\n"
-                              "        else {\n"
-                              "                j -= i;\n"
-                              "        }\n"
-                              "        return j;\n"
+        functionVariableUsage("void f() {\n"
+                              "    int i = 0;\n"
+                              "    if (false) {\n"
+                              "    } else {\n"
+                              "        j -= i;\n"
+                              "    }\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1()

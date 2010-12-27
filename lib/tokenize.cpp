@@ -4561,7 +4561,10 @@ void Tokenizer::simplifyCompoundAssignment()
             else if (str=="<<=" || str==">>=")
                 op = str.substr(0, 2);
             else
+            {
+                tok = tok1;
                 continue;
+            }
 
             // Remove the whole statement if it says: "+=0;", "-=0;", "*=1;" or "/=1;"
             if (Token::Match(tok, "+=|-= 0 ;") ||
