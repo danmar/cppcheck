@@ -578,7 +578,7 @@ private:
 
         if (Token::Match(&tok, "%var% (") && uvarFunctions.find(tok.str()) == uvarFunctions.end())
         {
-            if (Token::simpleMatch(&tok, "sizeof ("))
+            if (Token::Match(&tok, "sizeof|typeof ("))
                 return tok.next()->link();
 
             // deallocate pointer

@@ -46,6 +46,7 @@ private:
         TEST_CASE(uninitvar_references); // references
         TEST_CASE(uninitvar_strncpy);   // strncpy doesn't always 0-terminate
         TEST_CASE(uninitvar_func);      // analyse functions
+        TEST_CASE(uninitvar_typeof);    // typeof
     }
 
     void checkUninitVar(const char code[])
@@ -1388,6 +1389,15 @@ private:
                        "    char cmd[10];\n"
                        "    init(cmd);\n"
                        "    return cmd[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_typeof()
+    {
+        checkUninitVar("void f() {\n"
+                       "    struct Fred *fred;\n"
+                       "    typeof(fred->x);\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }
