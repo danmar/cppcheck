@@ -330,13 +330,13 @@
      <normaloff>:/images/showerrors.png</normaloff>:/images/showerrors.png</iconset>
    </property>
    <property name="text">
-    <string>Common errors</string>
+    <string>Errors</string>
    </property>
    <property name="iconText">
-    <string>Show common errors</string>
+    <string>Show errors</string>
    </property>
    <property name="toolTip">
-    <string>Show common errors</string>
+    <string>Show errors</string>
    </property>
   </action>
   <action name="mActionCheckAll">
