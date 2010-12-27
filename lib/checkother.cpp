@@ -2626,7 +2626,7 @@ void CheckOther::charBitOpError(const Token *tok)
 void CheckOther::variableScopeError(const Token *tok, const std::string &varname)
 {
     reportError(tok,
-                Severity::style,
+                Severity::information,
                 "variableScope",
                 "The scope of the variable " + varname + " can be reduced\n"
                 "The scope of the variable " + varname + " can be reduced. Warning: It can be unsafe "
