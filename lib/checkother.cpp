@@ -1667,7 +1667,7 @@ void CheckOther::functionVariableUsage()
                         else
                             variables.write(varid1);
                     }
-                    else if (Token::Match(tok, "%varid% .", varid1))
+                    else if (varid1 && Token::Match(tok, "%varid% .", varid1))
                     {
                         variables.use(varid1);
                     }
