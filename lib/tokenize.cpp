@@ -947,6 +947,15 @@ void Tokenizer::simplifyTypedef()
             // or a function typedef
             else if (Token::Match(tok->tokAt(offset), "("))
             {
+                if (typeName->str() == "void")
+                {
+                    unsupportedTypedef(typeDef);
+
+                    // unhandled typedef, skip it and continue
+                    tok = tok->tokAt(offset);
+                    continue;
+                }
+
                 function = true;
                 if (tok->tokAt(offset)->link()->next())
                 {

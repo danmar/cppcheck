@@ -225,6 +225,7 @@ private:
         TEST_CASE(simplifyTypedef65); // ticket #2314
         TEST_CASE(simplifyTypedef66); // ticket #2341
         TEST_CASE(simplifyTypedef67); // ticket #2354
+        TEST_CASE(simplifyTypedef68); // ticket #2355
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4632,6 +4633,15 @@ private:
                                      "( ( int ( * * ( * ) ( char * , char * , int , int ) ) ( ) ) global [ 6 ] ) ( \"assoc\" , \"eggdrop\" , 106 , 0 ) ; "
                                      "}";
         ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef68() // ticket #2355
+    {
+        const char code[] = "typedef FMAC1 void (* a) ();\n"
+                            "void *(*b) ();\n";
+        const std::string actual(sizeof_(code));
+        ASSERT_EQUALS("typedef FMAC1 void ( * a ) ( ) ; void * * b ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
 
