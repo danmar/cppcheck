@@ -6618,6 +6618,7 @@ bool Tokenizer::simplifyCalculations()
         // Remove parentheses around variable..
         // keep parentheses here: dynamic_cast<Fred *>(p);
         // keep parentheses here: A operator * (int);
+        // keep parentheses here: int ( * * ( * compilerHookVector ) (void) ) ( ) ;
         // keep parentheses here: operator new [] (size_t);
         // keep parentheses here: Functor()(a ... )
         if (Token::Match(tok->next(), "( %var% ) [;),+-*/><]]") &&
@@ -6626,6 +6627,7 @@ bool Tokenizer::simplifyCalculations()
             tok->str() != "]" &&
             !Token::simpleMatch(tok->previous(), "operator") &&
             !Token::simpleMatch(tok->previous(), "* )") &&
+            !Token::Match(tok->tokAt(-2), "* %var% )") &&
             !Token::Match(tok->tokAt(-2), "%type% ( ) ( %var%")
            )
         {

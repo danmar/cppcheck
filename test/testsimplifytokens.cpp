@@ -4645,6 +4645,24 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void simplifyTypedef69() // ticket #2348
+    {
+        const char code[] = "typedef int (*CompilerHook)();\n"
+                            "typedef struct VirtualMachine \n"
+                            "{\n"
+                            "    CompilerHook *(*compilerHookVector)(void);\n"
+                            "}VirtualMachine;\n";
+
+        const std::string expected = "; "
+                                     "struct VirtualMachine "
+                                     "{ "
+                                     "int ( * * ( * compilerHookVector ) ( void ) ) ( ) ; "
+                                     "} ;";
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void simplifyTypedefFunction1()
     {
         {
