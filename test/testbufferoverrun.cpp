@@ -113,6 +113,7 @@ private:
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);   // FP: struct member. #1576
         TEST_CASE(array_index_for_break);  // FP: for,break
+        TEST_CASE(array_index_for);        // FN: for,if
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -1323,6 +1324,20 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_for()
+    {
+        // Ticket #2370 - No false negative when there is no "break"
+        check("void f() {\n"
+              "    int a[10];\n"
+              "    for (int i = 0; i < 20; ++i) {\n"
+              "        if (i==1) {\n"
+              "        }\n"
+              "        a[i] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: a\n", errout.str());
     }
 
 

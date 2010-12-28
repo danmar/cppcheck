@@ -407,8 +407,33 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 
         if (Token::Match(tok2, "if|switch"))
         {
+            bool bailout = false;
+            unsigned int indentlevel3 = 0;
+            for (const Token *tok3 = tok2; tok3; tok3 = tok3->next())
+            {
+                if (tok3->str() == "{")
+                    indentlevel3++;
+                else if (tok3->str() == "}")
+                {
+                    if (indentlevel3 <= 1)
+                        break;
+                    --indentlevel3;
+                }
+                else if (tok3->str() == "break" && tok2->str() == "if")
+                {
+                    bailout = true;
+                    break;
+                }
+                else if (tok3->varId() == arrayInfo.varid)
+                {
+                    bailout = true;
+                    break;
+                }
+            }
+
             // Bailout
-            break;
+            if (bailout)
+                break;
         }
 
         if (condition_out_of_bounds && Token::Match(tok2, pattern.c_str(), arrayInfo.varid))
