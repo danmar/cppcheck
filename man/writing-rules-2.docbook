@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>Writing Cppcheck rules - Part 2</title>
+
+    <author>
+      <firstname>Daniel</firstname>
+
+      <surname>Marjamäki</surname>
+
+      <affiliation>
+        <orgname>Cppcheck</orgname>
+      </affiliation>
+    </author>
+
+    <pubdate>2010</pubdate>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>In this article I will discuss the data representation that Cppcheck
+    uses.</para>
+
+    <para>The data representation that Cppcheck uses is specifically designed
+    for static analysis. It is not intended to be generic and useful for other
+    tasks.</para>
+  </section>
+
+  <section>
+    <title>See the data</title>
+
+    <para>There are two ways to look at the data representation at
+    runtime.</para>
+
+    <para>Using --rule=.+ is one way. All tokens are written on a line:</para>
+
+    <programlisting> int a ; int b ;</programlisting>
+
+    <para>Using --debug is another way. The tokens are line separated in the
+    same way as the original code:</para>
+
+    <programlisting>1: int a@1 ;
+2: int b@2 ;</programlisting>
+
+    <para>In the --debug output there are "@1" and "@2" shown. These are the
+    variable ids (Cppcheck gives each variable a unique id). You can ignore
+    these if you only plan to write rules with regular expressions, you can't
+    use variable ids with regular expressions.</para>
+  </section>
+
+  <section>
+    <title>Simplifications</title>
+
+    <para>This is not intended to be a complete reference for all
+    simplifications. It is mostly intended to show that the data is simplified
+    in many ways.</para>
+
+    <para>The intention with the simplifications is to remove all information
+    that the rules don't use.</para>
+
+    <section>
+      <title>Preprocessing (Preprocessor)</title>
+
+      <para>The Cppcheck data is preprocessed. There are no comments, #define,
+      #include, etc.</para>
+
+      <programlisting>#define SIZE 123
+char a[SIZE];</programlisting>
+
+      <para>Debug output:</para>
+
+      <programlisting>1:
+2: char a@1 [ 123 ] ;</programlisting>
+    </section>
+
+    <section>
+      <title>typedef (Tokenizer::simplifyTypedef)</title>
+
+      <para>The typedefs are simplified.</para>
+
+      <programlisting>typedef char s8;
+s8 x;</programlisting>
+
+      <para>Debug output:</para>
+
+      <programlisting>1: ;
+2: char x@1 ;</programlisting>
+    </section>
+
+    <section>
+      <title>Calculations (Tokenizer::simplifyCalculations)</title>
+
+      <para>Calculations are simplified.</para>
+
+      <programlisting>int a[10 + 4];</programlisting>
+
+      <para>Debug output:</para>
+
+      <programlisting>1: int a@1 [ 14 ] ;</programlisting>
+    </section>
+
+    <section>
+      <title>Variables</title>
+
+      <section>
+        <title>Variable declarations (Tokenizer::simplifyVarDecl)</title>
+
+        <para>Variable declarations are simplified. Only one variable can be
+        declared at a time. The initialization is also broken out into a
+        separate statement.</para>
+
+        <programlisting>int *a=0, b=2;</programlisting>
+
+        <para>Debug output:</para>
+
+        <programlisting>1: int * a@1 ; a@1 = 0 ; int b@2 ; b@2 = 2 ;</programlisting>
+      </section>
+
+      <section>
+        <title>Known variable values
+        (Tokenizer::simplifyKnownVariables)</title>
+
+        <para>Known variable values are simplified.</para>
+
+        <programlisting>void f()
+{
+    int x = 0;
+    x++;
+    array[x + 2] = 0;
+}</programlisting>
+
+        <para>Debug output:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: ; ;
+4: ;
+5: array [ 3 ] = 0 ;
+6: }</programlisting>
+
+        <para>The variable x is removed because it is not used after the
+        simplification. It is therefore redundant.</para>
+
+        <para>The "known values" doesn't have to be numeric. Variable aliases,
+        pointer aliases, strings, etc should be handled too.</para>
+
+        <para>Example code:</para>
+
+        <programlisting>void f()
+{
+    char *a = strdup("hello");
+    char *b = a;
+    free(b);
+}</programlisting>
+
+        <para>Debug output:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: char * a@1 ; a@1 = strdup ( "hello" ) ;
+4: ; ;
+5: free ( a@1 ) ;
+6: }</programlisting>
+      </section>
+    </section>
+
+    <section>
+      <title>if/for/while</title>
+
+      <section>
+        <title>Braces in if/for/while-body
+        (Tokenizer::simplifyIfAddBraces)</title>
+
+        <para>There are always braces in if/for/while bodies.</para>
+
+        <programlisting>    if (x)
+        f1();</programlisting>
+
+        <para>Debug output:</para>
+
+        <programlisting>1: if ( x ) {
+2: f1 ( ) ; }</programlisting>
+      </section>
+
+      <section>
+        <title>No else if</title>
+
+        <para>The simplified data representation doesn't have "else
+        if".</para>
+
+        <programlisting>void f(int x)
+{
+    if (x == 1)
+        f1();
+    else if (x == 2)
+        f2();
+}</programlisting>
+
+        <para>Debug output:</para>
+
+        <programlisting>1: void f ( int x@1 )
+2: {
+3: if ( x@1 == 1 ) {
+4: f1 ( ) ; }
+5: else { if ( x@1 == 2 ) {
+6: f2 ( ) ; } }
+7: }
+</programlisting>
+      </section>
+
+      <section>
+        <title>Condition is always true / false</title>
+
+        <para>Conditions that are always true / false are simplified.</para>
+
+        <programlisting>void f()
+{
+    if (true) {
+        f1();
+    }
+}</programlisting>
+
+        <para>Debug output:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: {
+4: f1 ( ) ;
+5: }
+6: }</programlisting>
+
+        <para>Another example:</para>
+
+        <programlisting>void f()
+{
+    if (false) {
+        f1();
+    }
+}</programlisting>
+
+        <para>The debug output:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3:
+4:
+5:
+6: }</programlisting>
+      </section>
+
+      <section>
+        <title>Assignments (Tokenizer::simplifyIfAssign)</title>
+
+        <para>Assignments within conditions are broken out from the
+        condition.</para>
+
+        <programlisting>void f()
+{
+    int x;
+    if ((x = f1()) == 12) {
+        f2();
+    }
+}</programlisting>
+
+        <para>The "x = f1()" is broken out. Debug output:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: int x@1 ;
+4: x@1 = f1 ( ) ; if ( x@1 == 12 ) {
+5: f2 ( ) ;
+6: }
+7: }</programlisting>
+
+        <para>Replacing the "if" with "while" in the above example:</para>
+
+        <programlisting>void f()
+{
+    int x;
+    while ((x = f1()) == 12) {
+        f2();
+    }
+}</programlisting>
+
+        <para>The "x = f1()" is broken out twice. Debug output:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: int x@1 ;
+4: x@1 = f1 ( ) ; while ( x@1 == 12 ) {
+5: f2 ( ) ; x@1 = f1 ( ) ;
+5:
+6: }
+7: }</programlisting>
+
+        <para>An interesting thing here is that "f2 ( ) ;" is written on line
+        5. But the "x@1 = f1 ( ) ;" after it is written on line 4.</para>
+      </section>
+    </section>
+  </section>
+</article>
