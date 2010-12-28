@@ -1309,8 +1309,17 @@ void Tokenizer::simplifyTypedef()
                                         while (Token::Match(tok2, "%var% ::"))
                                             tok2 = tok2->tokAt(2);
 
+                                        if (tok2->str() == "(" &&
+                                            tok2->link()->next()->str() == "(")
+                                        {
+                                            tok2 = tok2->link();
+
+                                            if (tok2->next()->str() == "(")
+                                                tok2 = tok2->next()->link();
+                                        }
+
                                         // skip over typedef parameter
-                                        if (tok2->next()->str() == "(")
+                                        else if (tok2->next()->str() == "(")
                                         {
                                             tok2 = tok2->next()->link();
 

@@ -224,6 +224,7 @@ private:
         TEST_CASE(simplifyTypedef64);
         TEST_CASE(simplifyTypedef65); // ticket #2314
         TEST_CASE(simplifyTypedef66); // ticket #2341
+        TEST_CASE(simplifyTypedef67); // ticket #2354
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4617,6 +4618,20 @@ private:
         const char code[] = "typedef long* GEN;\n"
                             "extern GEN (*foo)(long);";
         const std::string actual(sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef67() // ticket #2354
+    {
+        const char code[] = "typedef int ( * Function ) ( ) ;\n"
+                            "void f ( ) {\n"
+                            "    ((Function * (*) (char *, char *, int, int)) global[6]) ( \"assoc\", \"eggdrop\", 106, 0);\n"
+                            "}\n";
+        const std::string expected = "; "
+                                     "void f ( ) { "
+                                     "( ( int ( * * ( * ) ( char * , char * , int , int ) ) ( ) ) global [ 6 ] ) ( \"assoc\" , \"eggdrop\" , 106 , 0 ) ; "
+                                     "}";
+        ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
     }
 
