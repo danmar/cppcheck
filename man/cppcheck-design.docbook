@@ -7,7 +7,7 @@
          xmlns:html="http://www.w3.org/1999/xhtml"
          xmlns:db="http://docbook.org/ns/docbook">
   <info>
-    <title>Cppcheck Design Overview</title>
+    <title>Cppcheck Design</title>
 
     <author>
       <personname><firstname>Daniel</firstname><surname>Marjamäki</surname></personname>
@@ -23,63 +23,49 @@
   <section>
     <title>Introduction</title>
 
-    <para>This article is an overview of the design of Cppcheck.</para>
+    <para>This article contains an overview of how Cppcheck works.</para>
 
-    <para>The design of Cppcheck are based on:</para>
+    <para>The primary goal is that Cppcheck won't write any false warnings.
+    This means that when an error is reported there must definitely be a bug
+    in the code.</para>
 
-    <itemizedlist>
-      <listitem>
-        <para>Cppcheck will never be perfectly clever</para>
-      </listitem>
-
-      <listitem>
-        <para>No false warnings are allowed</para>
-      </listitem>
-    </itemizedlist>
+    <para>The secondary goal is to detect as many bugs as possible.</para>
   </section>
 
   <section>
     <title>Limitations of static analysis</title>
 
-    <para>It is not very reasonable to think that a static analysis tool will
-    detect all bugs in your code.</para>
+    <para>There are many bugs in programs that are really hard to detect for
+    tools. Here is an example:</para>
 
-    <para>There are many bugs in programs that is really hard to detect for
-    tools.</para>
-
-    <para>Many bugs are caused by wrong calculations. Here is an
-    example:</para>
-
-    <programlisting>// calculate number of days
+    <programlisting>// calculate the number of days
 int days(int hours)
 {
     return hours / 23;
 }</programlisting>
 
-    <para>A human programmer can see the error in that code because he knows
+    <para>A human programmer knows that there are 24 hours in a day and
+    therefore he could see that "23" is wrong. A tool will probably not know
     that there are 24 hours in a day.</para>
 
-    <para>Tools will probably not know that there are 24 hours in a
-    day.</para>
-
     <para>A tool that tries to guarantee that all bugs are found could write a
-    warning message for every calculation in the program. In my humble opinion
-    it wouldn't be usable to do that.</para>
+    warning message for every "suspicious" calculation in the program. It
+    might correctly report that "hours / 23" is wrong but incorrectly warn
+    about "hours / 24".</para>
 
     <para>Cppcheck will only write a warning message if it can determine that
-    the calculation is wrong. This approach means that many bugs will not be
-    detected.</para>
+    the calculation is wrong. In this case, no error will be written.</para>
   </section>
 
   <section>
     <title>Buffer overflows</title>
 
-    <para>This is a simple description of the buffer overflows checking in
+    <para>This is a simple description of how buffer overflows are detected by
     Cppcheck.</para>
 
-    <para>For simple cases, no sophisticated control flow analysis is used. If
-    an array is accessed out of bounds somewhere in its scope then an error
-    message will be written.</para>
+    <para>For simple cases, no control flow analysis is used. If an array is
+    accessed out of bounds somewhere in its scope then an error message will
+    be written.</para>
 
     <para>An example code:</para>
 
@@ -102,8 +88,8 @@ int days(int hours)
     statement is there and it has the error.</para>
 
     <para>Cppcheck will also investigate function calls. But then control flow
-    is needed to avoid false warnings. Here is an example that logically is
-    the same as the previous example:</para>
+    analysis is needed to avoid false warnings. Here is an example that
+    logically is the same as the previous example:</para>
 
     <para><programlisting>void f1(char *s)
 {
@@ -139,7 +125,7 @@ void f2()
 void f2()
 {
     char a[10];
-    f1();
+    f1(a);
 }</programlisting></para>
   </section>
 
@@ -147,9 +133,8 @@ void f2()
     <title>Memory leaks</title>
 
     <para>Simple control-flow analysis is made. The assumtion is that all
-    conditions can always be either true or false.</para>
-
-    <para>It is assumed that all statements are reachable.</para>
+    conditions can always be either true or false. It is assumed that all
+    statements are reachable.</para>
 
     <para>Here is an example:</para>
 
@@ -171,8 +156,8 @@ void f2()
     "return;" statement. It will only see that if the execution reaches the
     "return;" then there will be a memory leak.</para>
 
-    <para>This lack of advanced control-flow analysis means that many bugs are
-    not detected:</para>
+    <para>Lack of advanced control-flow analysis means that many bugs are not
+    detected:</para>
 
     <programlisting>void f(int x)
 {
@@ -185,20 +170,21 @@ void f2()
         free(a);
 }</programlisting>
 
-    <para>Many other static analysis tools will probably detect that.</para>
+    <para>Cppcheck doesn't detect any error. The "all conditions can be either
+    true/false" means that cppcheck doesn't know that "if (x==20)" is false
+    when "if (x==10)" is true. Many other static analysis tools will probably
+    detect that there will be a leak if x is 10.</para>
+  </section>
 
-    <para>Many memory leaks are caused by:</para>
+  <section>
+    <title>Final thoughts</title>
 
-    <itemizedlist>
-      <listitem>
-        <para>Completely forgetting to deallocate</para>
-      </listitem>
+    <para>You can not trust that Cppcheck will detect all bugs.</para>
 
-      <listitem>
-        <para>Forgetting to deallocate in a bailout path</para>
-      </listitem>
-    </itemizedlist>
+    <para>Cppcheck will just find some bugs. It is likely that you won't find
+    these bugs unless you use Cppcheck. Cppcheck has found bugs in production
+    code that has been used for years.</para>
 
-    <para>These types of leaks should be detected by Cppcheck.</para>
+    <para></para>
   </section>
 </article>
