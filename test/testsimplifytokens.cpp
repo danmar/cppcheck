@@ -226,6 +226,8 @@ private:
         TEST_CASE(simplifyTypedef66); // ticket #2341
         TEST_CASE(simplifyTypedef67); // ticket #2354
         TEST_CASE(simplifyTypedef68); // ticket #2355
+        TEST_CASE(simplifyTypedef69); // ticket #2348
+        TEST_CASE(simplifyTypedef70); // ticket #2348
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4658,6 +4660,21 @@ private:
                                      "{ "
                                      "int ( * * ( * compilerHookVector ) ( void ) ) ( ) ; "
                                      "} ;";
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef70() // ticket #2348
+    {
+        const char code[] = "typedef int pread_f ( int ) ;\n"
+                            "pread_f *(*test_func)(char *filename);\n";
+
+
+
+
+        const std::string expected = "; "
+                                     "int ( * ( * test_func ) ( char * filename ) ) ( int ) ;";
 
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());

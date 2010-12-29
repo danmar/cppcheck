@@ -1438,6 +1438,8 @@ void Tokenizer::simplifyTypedef()
                             {
                                 if (Token::Match(tok2->next(), "( * %type% ) ("))
                                     tok2 = tok2->tokAt(5)->link();
+                                else if (Token::Match(tok2->next(), "* ( * %type% ) ("))
+                                    tok2 = tok2->tokAt(6)->link();
                                 else
                                 {
                                     if (tok2->next()->str() == "(")
@@ -6618,6 +6620,7 @@ bool Tokenizer::simplifyCalculations()
         // Remove parentheses around variable..
         // keep parentheses here: dynamic_cast<Fred *>(p);
         // keep parentheses here: A operator * (int);
+        // keep parentheses here: int ( * ( * f ) ( ... ) ) (int) ;
         // keep parentheses here: int ( * * ( * compilerHookVector ) (void) ) ( ) ;
         // keep parentheses here: operator new [] (size_t);
         // keep parentheses here: Functor()(a ... )
@@ -6627,6 +6630,7 @@ bool Tokenizer::simplifyCalculations()
             tok->str() != "]" &&
             !Token::simpleMatch(tok->previous(), "operator") &&
             !Token::simpleMatch(tok->previous(), "* )") &&
+            !Token::simpleMatch(tok->previous(), ") )") &&
             !Token::Match(tok->tokAt(-2), "* %var% )") &&
             !Token::Match(tok->tokAt(-2), "%type% ( ) ( %var%")
            )
