@@ -17,7 +17,7 @@ The resulting files can be downloaded here (please try if it works):
 
 MINGW (Qt 4.7 SDK)
 
-I downloaded pcre-8.0-lib.zip from here: http://software-download.name/pcre-library-windows/
+I downloaded pcre-8.0-lib.zip from here: http://software-download.name/pcre-library-windows/
 
 
 Linux
@@ -26,3 +26,15 @@ The normal Makefile should work
 
 Install pcre on ubuntu might be needed:
 sudo apt-get install libpcre3 libpcre3-dev
+
+
+Mac OSX
+
+Install pcre:
+
+    sudo port install pcre
+
+Ensure /path/to/pcre.h is in CXXFLAGS, e.g:
+
+    export CXXFLAGS=${CXXFLAGS}:/opt/local/include
+
