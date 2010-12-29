@@ -234,6 +234,7 @@ private:
         TEST_CASE(allocfunc4);
         TEST_CASE(allocfunc5);
         TEST_CASE(allocfunc6);
+        TEST_CASE(allocfunc7);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1919,6 +1920,24 @@ private:
               "    fclose(f);\n"
               "\n"
               "    free(expr);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
+    void allocfunc7()
+    {
+        // Ticket #2374 - no false positive
+        check("char *data()\n"
+              "{\n"
+              "    char *s = malloc(100);\n"
+              "    strings[0] = s;\n"
+              "    return s;\n"
+              "}\n"
+              "\n"
+              "static void foo()\n"
+              "{\n"
+              "    char* s = data();\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }

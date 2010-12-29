@@ -443,14 +443,16 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
             {
                 allocType = getReallocationType(tok->tokAt(2), varid);
             }
-            if (allocType != No)
-                return allocType;
+        }
+        if (Token::Match(tok, "= %varid% ;", varid))
+        {
+            return No;
         }
         if (tok->str() == "return")
             return allocType;
     }
 
-    return No;
+    return allocType;
 }
 
 
