@@ -23,13 +23,16 @@
   <section>
     <title>Introduction</title>
 
-    <para>This article contains an overview of how Cppcheck works.</para>
+    <para>The goal with this article is to give users an idea of how Cppcheck
+    works.</para>
 
-    <para>The primary goal is that Cppcheck won't write any false warnings.
-    This means that when an error is reported there must definitely be a bug
-    in the code.</para>
+    <para>Cppcheck is a static analysis tool that tries to completely avoid
+    false warnings. A false warning is when the tool reports that there is an
+    error even though there is no error.</para>
 
-    <para>The secondary goal is to detect as many bugs as possible.</para>
+    <para>Cppcheck is a relatively simple tool. I hope that this article will
+    highlight that it is possible to avoid false warnings with simple
+    analysis.</para>
   </section>
 
   <section>
@@ -48,13 +51,36 @@ int days(int hours)
     therefore he could see that "23" is wrong. A tool will probably not know
     that there are 24 hours in a day.</para>
 
-    <para>A tool that tries to guarantee that all bugs are found could write a
-    warning message for every "suspicious" calculation in the program. It
-    might correctly report that "hours / 23" is wrong but incorrectly warn
-    about "hours / 24".</para>
+    <para>A tool that tries to detect all bugs could write a warning message
+    for every calculation in the program. Then it will correctly report that
+    "hours / 23" is wrong but incorrectly warn about "hours / 24".</para>
 
     <para>Cppcheck will only write a warning message if it can determine that
     the calculation is wrong. In this case, no error will be written.</para>
+  </section>
+
+  <section>
+    <title>Control flow analysis</title>
+
+    <para>Control flow analysis is when the tool tries to determine if certain
+    execution paths are possible.</para>
+
+    <programlisting>void f(int x)
+{
+    if (x == 1)
+        f1();
+    if (x &amp; 2)
+        f2();
+}</programlisting>
+
+    <para>The function has 3 possible execution paths. The analysis you do in
+    your head when you determine that there are 3 possible execution paths is
+    "control flow analysis".</para>
+
+    <para>When you review code you will probably use "control flow analysis"
+    in your head to determine if there are bugs or not.</para>
+
+    <para>The control flow analysis in Cppcheck is quite simple.</para>
   </section>
 
   <section>
