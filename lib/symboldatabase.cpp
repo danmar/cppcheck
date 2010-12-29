@@ -528,32 +528,35 @@ bool SymbolDatabase::isFunction(const Token *tok, const Token **funcStart, const
     }
 
     // simple operator?
-    else if (Token::Match(tok, "operator %any% (") && Token::Match(tok->tokAt(2)->link(), ") const| ;|{|=|:"))
+    else if (Token::Match(tok, "operator %any% (") && Token::Match(tok->tokAt(2)->link(), ") const| ;|{|="))
     {
         *funcStart = tok->next();
         *argStart = tok->tokAt(2);
         return true;
     }
 
-    // complex operator?
-    else if (tok->str() == "operator")
+    // operator[] or operator()?
+    else if (Token::Match(tok, "operator %any% %any% (") && Token::Match(tok->tokAt(3)->link(), ") const| ;|{|="))
     {
-        // operator[] or operator()?
-        if ((Token::simpleMatch(tok->next(), "( ) (") || Token::simpleMatch(tok->next(), "[ ] (")) &&
-            Token::Match(tok->tokAt(3)->link(), ") const| ;|{|=|:"))
-        {
-            *funcStart = tok->next();
-            *argStart = tok->tokAt(3);
-            return true;
-        }
+        *funcStart = tok->next();
+        *argStart = tok->tokAt(3);
+        return true;
+    }
 
-        // operator new/delete []?
-        else if (Token::Match(tok->next(), "new|delete [ ] (") && Token::Match(tok->tokAt(4)->link(), ") ;|{"))
-        {
-            *funcStart = tok->next();
-            *argStart = tok->tokAt(4);
-            return true;
-        }
+    // operator new/delete []?
+    else if (Token::Match(tok, "operator %any% %any% %any% (") && Token::Match(tok->tokAt(4)->link(), ") const| ;|{|="))
+    {
+        *funcStart = tok->next();
+        *argStart = tok->tokAt(4);
+        return true;
+    }
+
+    // complex user defined operator?
+    else if (Token::Match(tok, "operator %any% %any% %any% %any% (") && Token::Match(tok->tokAt(5)->link(), ") const| ;|{|="))
+    {
+        *funcStart = tok->next();
+        *argStart = tok->tokAt(5);
+        return true;
     }
 
     return false;

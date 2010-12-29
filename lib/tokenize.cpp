@@ -1643,30 +1643,38 @@ void Tokenizer::simplifyTypedef()
                     }
                     else if (ptrMember)
                     {
-                        tok2->insertToken("(");
-                        tok2 = tok2->next();
-                        Token *tok3 = tok2;
-
-                        const Token *tok4 = namespaceStart;
-
-                        while (tok4 != namespaceEnd)
+                        if (Token::simpleMatch(tok2, "* ("))
                         {
-                            tok2->insertToken(tok4->str());
+                            tok2->insertToken("*");
                             tok2 = tok2->next();
-                            tok4 = tok4->next();
                         }
-                        tok2->insertToken(namespaceEnd->str());
-                        tok2 = tok2->next();
+                        else
+                        {
+                            tok2->insertToken("(");
+                            tok2 = tok2->next();
+                            Token *tok3 = tok2;
 
-                        tok2->insertToken("*");
-                        tok2 = tok2->next();
+                            const Token *tok4 = namespaceStart;
 
-                        // skip over name
-                        tok2 = tok2->next();
+                            while (tok4 != namespaceEnd)
+                            {
+                                tok2->insertToken(tok4->str());
+                                tok2 = tok2->next();
+                                tok4 = tok4->next();
+                            }
+                            tok2->insertToken(namespaceEnd->str());
+                            tok2 = tok2->next();
 
-                        tok2->insertToken(")");
-                        tok2 = tok2->next();
-                        Token::createMutualLinks(tok2, tok3);
+                            tok2->insertToken("*");
+                            tok2 = tok2->next();
+
+                            // skip over name
+                            tok2 = tok2->next();
+
+                            tok2->insertToken(")");
+                            tok2 = tok2->next();
+                            Token::createMutualLinks(tok2, tok3);
+                        }
                     }
                     else if (typeOf)
                     {

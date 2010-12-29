@@ -162,6 +162,7 @@ private:
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
+        TEST_CASE(constoperator4);
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
         TEST_CASE(constDelete);     // delete member variable => not const
@@ -3412,6 +3413,23 @@ private:
                    "    int const & operator [] (unsigned int index) { return array[index]; }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::operator[]' can be const.\n", errout.str());
+    }
+
+    void constoperator4()
+    {
+        checkConst("struct Fred {\n"
+                   "    int array[10];\n"
+                   "    typedef int* (Fred::*UnspecifiedBoolType);\n"
+                   "    operator UnspecifiedBoolType() { };\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'Fred::int' can be const.\n", errout.str());
+
+        checkConst("struct Fred {\n"
+                   "    int array[10];\n"
+                   "    typedef int* (Fred::*UnspecifiedBoolType);\n"
+                   "    operator UnspecifiedBoolType() { array[0] = 0; };\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
     void const5()
