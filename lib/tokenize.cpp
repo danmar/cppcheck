@@ -1440,6 +1440,9 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->tokAt(5)->link();
                                 else if (Token::Match(tok2->next(), "* ( * %type% ) ("))
                                     tok2 = tok2->tokAt(6)->link();
+                                else if (Token::Match(tok2->next(), "* ( %type% [") &&
+                                         Token::Match(tok2->tokAt(4)->link(), "] ) ;|="))
+                                    tok2 = tok2->tokAt(4)->link()->next();
                                 else
                                 {
                                     if (tok2->next()->str() == "(")
