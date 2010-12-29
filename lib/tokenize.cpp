@@ -8224,10 +8224,11 @@ void Tokenizer::simplifyConst()
     }
 }
 
-void Tokenizer::getErrorMessages()
+void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
 {
-    syntaxError(0, ' ');
-    cppcheckError(0);
+    Tokenizer t(settings, errorLogger);
+    t.syntaxError(0, ' ');
+    t.cppcheckError(0);
 }
 
 /** find pattern */

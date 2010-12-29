@@ -184,38 +184,40 @@ public:
     void incorrectLogicOperatorError(const Token *tok);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
+        CheckOther c(0, settings, errorLogger);
+
         // error
-        sprintfOverlappingDataError(0, "varname");
-        udivError(0);
-        zerodivError(0);
-        mathfunctionCallError(0);
-        fflushOnInputStreamError(0, "stdin");
-        misusedScopeObjectError(NULL, "varname");
+        c.sprintfOverlappingDataError(0, "varname");
+        c.udivError(0);
+        c.zerodivError(0);
+        c.mathfunctionCallError(0);
+        c.fflushOnInputStreamError(0, "stdin");
+        c.misusedScopeObjectError(NULL, "varname");
 
         // style/warning
-        cstyleCastError(0);
-        dangerousUsageStrtolError(0);
-        unusedStructMemberError(0, "structname", "variable");
-        passedByValueError(0, "parametername");
-        constStatementError(0, "type");
-        charArrayIndexError(0);
-        charBitOpError(0);
-        variableScopeError(0, "varname");
-        conditionAlwaysTrueFalse(0, "true/false");
-        strPlusChar(0);
-        sizeofsizeofError(0);
-        sizeofCalculationError(0);
-        redundantAssignmentInSwitchError(0, "varname");
-        selfAssignmentError(0, "varname");
-        assignmentInAssertError(0, "varname");
-        invalidScanfError(0);
-        incorrectLogicOperatorError(0);
-        unusedVariableError(0, "varname");
-        allocatedButUnusedVariableError(0, "varname");
-        unreadVariableError(0, "varname");
-        unassignedVariableError(0, "varname");
+        c.cstyleCastError(0);
+        c.dangerousUsageStrtolError(0);
+        c.unusedStructMemberError(0, "structname", "variable");
+        c.passedByValueError(0, "parametername");
+        c.constStatementError(0, "type");
+        c.charArrayIndexError(0);
+        c.charBitOpError(0);
+        c.variableScopeError(0, "varname");
+        c.conditionAlwaysTrueFalse(0, "true/false");
+        c.strPlusChar(0);
+        c.sizeofsizeofError(0);
+        c.sizeofCalculationError(0);
+        c.redundantAssignmentInSwitchError(0, "varname");
+        c.selfAssignmentError(0, "varname");
+        c.assignmentInAssertError(0, "varname");
+        c.invalidScanfError(0);
+        c.incorrectLogicOperatorError(0);
+        c.unusedVariableError(0, "varname");
+        c.allocatedButUnusedVariableError(0, "varname");
+        c.unreadVariableError(0, "varname");
+        c.unassignedVariableError(0, "varname");
     }
 
     std::string name() const

@@ -56,9 +56,10 @@ private:
     /** Report Error */
     void postfixOperatorError(const Token *tok);
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
-        postfixOperatorError(0);
+        CheckPostfixOperator c(0, settings, errorLogger);
+        c.postfixOperatorError(0);
     }
 
     std::string name() const

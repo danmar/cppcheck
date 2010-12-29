@@ -436,16 +436,14 @@ void CppCheck::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
 void CppCheck::getErrorMessages()
 {
     // call all "getErrorMessages" in all registered Check classes
-    std::cout << ErrorLogger::ErrorMessage::getXMLHeader(1);
+    std::cout << ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version);
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-    {
-        (*it)->getErrorMessages();
-    }
+        (*it)->getErrorMessages(this, &_settings);
 
     Tokenizer tokenizer(&_settings, 0);
-    tokenizer.getErrorMessages();
+    tokenizer.getErrorMessages(this, &_settings);
 
-    Preprocessor::getErrorMessages(std::cout);
+    Preprocessor::getErrorMessages(this, &_settings);
 
     std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
 }

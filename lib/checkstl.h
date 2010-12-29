@@ -154,22 +154,23 @@ private:
     void sizeError(const Token *tok);
     void redundantIfRemoveError(const Token *tok);
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
-        invalidIteratorError(0, "iterator");
-        iteratorsError(0, "container1", "container2");
-        mismatchingContainersError(0);
-        dereferenceErasedError(0, "iter");
-        stlOutOfBoundsError(0, "i", "foo");
-        eraseError(0);
-        invalidIteratorError(0, "push_back|push_front|insert", "iterator");
-        invalidPointerError(0, "pointer");
-        stlBoundriesError(0, "container");
-        if_findError(0, false);
-        if_findError(0, true);
-        string_c_strError(0);
-        sizeError(0);
-        redundantIfRemoveError(0);
+        CheckStl c(0, settings, errorLogger);
+        c.invalidIteratorError(0, "iterator");
+        c.iteratorsError(0, "container1", "container2");
+        c.mismatchingContainersError(0);
+        c.dereferenceErasedError(0, "iter");
+        c.stlOutOfBoundsError(0, "i", "foo");
+        c.eraseError(0);
+        c.invalidIteratorError(0, "push_back|push_front|insert", "iterator");
+        c.invalidPointerError(0, "pointer");
+        c.stlBoundriesError(0, "container");
+        c.if_findError(0, false);
+        c.if_findError(0, true);
+        c.string_c_strError(0);
+        c.sizeError(0);
+        c.redundantIfRemoveError(0);
     }
 
     std::string name() const

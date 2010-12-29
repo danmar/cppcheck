@@ -78,10 +78,11 @@ private:
     }
 
     /** Generate all possible errors (for --errorlist) */
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
-        destructorsError(0);
-        deallocThrowError(0, "p");
+        CheckExceptionSafety c(0, settings, errorLogger);
+        c.destructorsError(0);
+        c.deallocThrowError(0, "p");
     }
 
     /** Short description of class (for --doc) */

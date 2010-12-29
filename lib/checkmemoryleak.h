@@ -180,7 +180,10 @@ public:
         : Check(tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
     {
         // get the symbol database
-        symbolDatabase = tokenizr->getSymbolDatabase();
+        if (tokenizr)
+            symbolDatabase = tokenizr->getSymbolDatabase();
+        else
+            symbolDatabase = 0;
     }
 
     /** @brief run all simplified checks */
@@ -307,17 +310,19 @@ public:
     void checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
 
     /** Report all possible errors (for the --errorlist) */
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *e, const Settings *settings)
     {
-        memleakError(0, "varname");
-        resourceLeakError(0, "varname");
+        CheckMemoryLeakInFunction c(0, settings, e);
 
-        deallocDeallocError(0, "varname");
-        deallocuseError(0, "varname");
-        mismatchSizeError(0, "sz");
+        c.memleakError(0, "varname");
+        c.resourceLeakError(0, "varname");
+
+        c.deallocDeallocError(0, "varname");
+        c.deallocuseError(0, "varname");
+        c.mismatchSizeError(0, "sz");
         std::list<const Token *> callstack;
-        mismatchAllocDealloc(callstack, "varname");
-        memleakUponReallocFailureError(0, "varname");
+        c.mismatchAllocDealloc(callstack, "varname");
+        c.memleakUponReallocFailureError(0, "varname");
     }
 
     /**
@@ -385,7 +390,7 @@ private:
     void checkPublicFunctions(const SymbolDatabase::SpaceInfo *spaceinfo, const Token *classtok);
     void publicAllocationError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
     { }
 
     std::string name() const
@@ -423,7 +428,7 @@ public:
 
 private:
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
     { }
 
     std::string name() const
@@ -463,7 +468,7 @@ private:
 
     void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
     { }
 
     std::string name() const

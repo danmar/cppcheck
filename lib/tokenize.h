@@ -133,7 +133,7 @@ public:
     /**
      * get error messages
      */
-    virtual void getErrorMessages();
+    virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 
     /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
      */

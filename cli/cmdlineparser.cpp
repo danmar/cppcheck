@@ -347,6 +347,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         {
             //_cppcheck->getErrorMessages();
             _showErrorMessages = true;
+            _settings->_xml = true;
             return true;
         }
 

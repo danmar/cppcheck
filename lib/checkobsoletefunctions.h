@@ -112,12 +112,14 @@ private:
 
     }
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
+        CheckObsoleteFunctions c(0, settings, errorLogger);
+
         std::list< std::pair<const std::string, const std::string> >::const_iterator it(_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());
         for (; it!=itend; ++it)
         {
-            reportError(0, Severity::style, "obsoleteFunctions"+it->first, it->second);
+            c.reportError(0, Severity::style, "obsoleteFunctions"+it->first, it->second);
         }
     }
 

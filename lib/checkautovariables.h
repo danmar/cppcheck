@@ -87,14 +87,15 @@ private:
     void errorReturnAutocstr(const Token *tok);
     void errorReturnTempPointer(const Token *tok);
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
-        errorAutoVariableAssignment(0);
-        errorReturnPointerToLocalArray(0);
-        errorReturnReference(0);
-        errorReturnTempReference(0);
-        errorReturnAutocstr(0);
-        errorReturnTempPointer(0);
+        CheckAutoVariables c(0,settings,errorLogger);
+        c.errorAutoVariableAssignment(0);
+        c.errorReturnPointerToLocalArray(0);
+        c.errorReturnReference(0);
+        c.errorReturnTempReference(0);
+        c.errorReturnAutocstr(0);
+        c.errorReturnTempPointer(0);
     }
 
     std::string name() const

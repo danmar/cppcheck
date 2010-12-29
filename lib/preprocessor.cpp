@@ -1399,9 +1399,9 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
         {
             if (settings && !settings->userDefines.empty())
             {
-                std::ostringstream errmsg;
-                errmsg << line;
-                writeError(filename, lineno, errorLogger, "preprocessorErrorDirective", errmsg.str());
+                Settings settings2(*settings);
+                Preprocessor preprocessor(&settings2, errorLogger);
+                preprocessor.error(filename, lineno, line);
             }
             return "";
         }
@@ -1431,6 +1431,22 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
     }
 
     return expandMacros(ret.str(), filename, errorLogger);
+}
+
+void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg)
+{
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    if (!filename.empty())
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = linenr;
+        loc.setfile(filename);
+        locationList.push_back(loc);
+    }
+    _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
+                            Severity::error,
+                            msg,
+                            "preprocessorErrorDirective"));
 }
 
 Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
@@ -1606,22 +1622,34 @@ void Preprocessor::handleIncludes(std::string &code,
                     }
                 }
 
-                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.line = linenr;		/** @todo set correct line */
-                loc.setfile(Path::toNativeSeparators(filePath));
-                locationList.push_back(loc);
-
-                // If the missing include is a system header then this is
-                // currently a debug-message.
-                const Severity::SeverityType severity = (headerType == UserHeader) ? Severity::information : Severity::debug;
-                const std::string id = (headerType == UserHeader) ? "missingInclude" : "debug";
-                ErrorLogger::ErrorMessage errmsg(locationList, severity, "Include file: \"" + filename + "\" not found.", id);
-                errmsg.file0 = file0;
-                _errorLogger->reportErr(errmsg);
+                missingInclude(Path::toNativeSeparators(filePath),
+                               linenr,
+                               filename,
+                               headerType == UserHeader);
             }
         }
     }
+}
+
+// Report that include is missing
+void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, bool userheader)
+{
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    if (!filename.empty())
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = linenr;
+        loc.setfile(filename);
+        locationList.push_back(loc);
+    }
+
+    // If the missing include is a system header then this is
+    // currently a debug-message.
+    const Severity::SeverityType severity = userheader ? Severity::information : Severity::debug;
+    const std::string id = userheader ? "missingInclude" : "debug";
+    ErrorLogger::ErrorMessage errmsg(locationList, severity, "Include file: \"" + header + "\" not found.", id);
+    errmsg.file0 = file0;
+    _errorLogger->reportErr(errmsg);
 }
 
 /**
@@ -2405,18 +2433,11 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
     return ostr.str();
 }
 
-void Preprocessor::getErrorMessages(std::ostream &ostr)
-{
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           Severity::style,
-                                           "Include file: \"\" not found.",
-                                           "missingInclude");
-    ostr << errmsg.toXML(false, 1) << std::endl;
 
-    const ErrorLogger::ErrorMessage errmsg2(locationList,
-                                            Severity::error,
-                                            "#error ...",
-                                            "preprocessorErrorDirective");
-    ostr << errmsg2.toXML(false, 1) << std::endl;
+void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
+{
+    Settings settings2(*settings);
+    Preprocessor preprocessor(&settings2, errorLogger);
+    preprocessor.missingInclude("", 1, "", true);
+    preprocessor.error("", 1, "#error message");   // #error ..
 }

@@ -50,9 +50,10 @@ public:
 
 private:
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
-        unusedFunctionError(0, "", "funcName");
+        CheckUnusedFunctions c(0, settings, errorLogger);
+        c.unusedFunctionError(errorLogger, "", "funcName");
     }
 
     /**

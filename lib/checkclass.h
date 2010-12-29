@@ -127,20 +127,21 @@ private:
     void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
-        noConstructorError(0, "classname", false);
-        uninitVarError(0, "classname", "varname");
-        operatorEqVarError(0, "classname", "");
-        unusedPrivateFunctionError(0, "classname", "funcname");
-        memsetClassError(0, "memfunc");
-        memsetStructError(0, "memfunc", "classname");
-        operatorEqReturnError(0);
-        //virtualDestructorError(0, "Base", "Derived");
-        thisSubtractionError(0);
-        operatorEqRetRefThisError(0);
-        operatorEqToSelfError(0);
-        checkConstError(0, "class", "function");
+        CheckClass c(0, settings, errorLogger);
+        c.noConstructorError(0, "classname", false);
+        c.uninitVarError(0, "classname", "varname");
+        c.operatorEqVarError(0, "classname", "");
+        c.unusedPrivateFunctionError(0, "classname", "funcname");
+        c.memsetClassError(0, "memfunc");
+        c.memsetStructError(0, "memfunc", "classname");
+        c.operatorEqReturnError(0);
+        //c.virtualDestructorError(0, "Base", "Derived");
+        c.thisSubtractionError(0);
+        c.operatorEqRetRefThisError(0);
+        c.operatorEqToSelfError(0);
+        c.checkConstError(0, "class", "function");
     }
 
     std::string name() const

@@ -77,12 +77,14 @@ public:
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
+        CheckUninitVar c(0, settings, errorLogger);
+
         // error
-        uninitstringError(0, "varname");
-        uninitdataError(0, "varname");
-        uninitvarError(0, "varname");
+        c.uninitstringError(0, "varname");
+        c.uninitdataError(0, "varname");
+        c.uninitvarError(0, "varname");
     }
 
     std::string name() const

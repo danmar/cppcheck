@@ -188,17 +188,18 @@ public:
     void cmdLineArgsError(const Token *tok);
     void pointerOutOfBounds(const Token *tok);	// UB when result of calculation is out of bounds
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
-        arrayIndexOutOfBounds(0, 2, 2);
-        bufferOverrun(0, std::string("buffer"));
-        strncatUsage(0);
-        outOfBounds(0, "index");
-        sizeArgumentAsChar(0);
-        terminateStrncpyError(0);
-        negativeIndexError(0, -1);
-        cmdLineArgsError(0);
-        pointerOutOfBounds(0);
+        CheckBufferOverrun c(0, settings, errorLogger);
+        c.arrayIndexOutOfBounds(0, 2, 2);
+        c.bufferOverrun(0, std::string("buffer"));
+        c.strncatUsage(0);
+        c.outOfBounds(0, "index");
+        c.sizeArgumentAsChar(0);
+        c.terminateStrncpyError(0);
+        c.negativeIndexError(0, -1);
+        c.cmdLineArgsError(0);
+        c.pointerOutOfBounds(0);
     }
 
     std::string name() const

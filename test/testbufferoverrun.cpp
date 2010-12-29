@@ -2763,7 +2763,7 @@ private:
     {
         // Ticket #2292: segmentation fault when using --errorlist
         CheckBufferOverrun c;
-        c.getErrorMessages();
+        c.getErrorMessages(this, 0);
     }
 };
 

@@ -95,7 +95,7 @@ public:
     virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;
 
     /** get error messages */
-    virtual void getErrorMessages() = 0;
+    virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) = 0;
 
     /** class name, used to generate documentation */
     virtual std::string name() const = 0;

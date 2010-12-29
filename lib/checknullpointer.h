@@ -101,9 +101,10 @@ public:
     void nullPointerError(const Token *tok, const std::string &varname);
     void nullPointerError(const Token *tok, const std::string &varname, const unsigned int line);
 
-    void getErrorMessages()
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
-        nullPointerError(0, "pointer");
+        CheckNullPointer c(0, settings, errorLogger);
+        c.nullPointerError(0, "pointer");
     }
 
     std::string name() const

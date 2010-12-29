@@ -196,9 +196,13 @@ public:
      */
     static bool match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def);
 
-    static void getErrorMessages(std::ostream &ostr);
+    static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 
 private:
+    void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, bool userheader);
+
+    void error(const std::string &filename, unsigned int linenr, const std::string &msg);
+
     /**
      * Search includes from code and append code from the included
      * file

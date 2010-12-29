@@ -52,7 +52,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         if (parser.GetShowErrorMessages())
         {
             cppcheck->getErrorMessages();
-            return true;
+            std::exit(0);
         }
     }
 
