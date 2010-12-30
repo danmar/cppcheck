@@ -1110,45 +1110,14 @@ void SymbolDatabase::SpaceInfo::getVarList()
 
         bool isClass = false;
 
-        if (isVariableDeclaration(tok, vartok))
+        if (Token::Match(tok, "struct|union"))
         {
-            typetok = vartok->previous();
+            tok = tok->next();
+        }
+
+        if (isVariableDeclaration(tok, vartok, typetok))
+        {
             isClass = (!typetok->isStandardType());
-            tok = vartok->next();
-        }
-
-        // Structure?
-        else if (Token::Match(tok, "struct|union %type% %var% ;"))
-        {
-            isClass = true;
-            vartok = tok->tokAt(2);
-            typetok = vartok->previous();
-            tok = vartok->next();
-        }
-
-        // Pointer?
-        else if (Token::Match(tok, "%type% * %var% ;"))
-        {
-            vartok = tok->tokAt(2);
-            typetok = tok;
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, "%type% %type% * %var% ;"))
-        {
-            vartok = tok->tokAt(3);
-            typetok = vartok->tokAt(-2);
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, "%type% :: %type% * %var% ;"))
-        {
-            vartok = tok->tokAt(4);
-            typetok = vartok->tokAt(-2);
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, "%type% :: %type% :: %type% * %var% ;"))
-        {
-            vartok = tok->tokAt(6);
-            typetok = vartok->tokAt(-2);
             tok = vartok->next();
         }
 
@@ -1276,20 +1245,50 @@ void SymbolDatabase::SpaceInfo::getVarList()
     }
 }
 
-bool SymbolDatabase::SpaceInfo::isVariableDeclaration(const Token* tok, const Token*& vartok) const
+const Token* skipScopeIdentifiers(const Token* tok)
 {
-    if (Token::simpleMatch(tok, "::"))
+    const Token* ret = tok;
+
+    if (Token::simpleMatch(ret, "::"))
     {
-        tok = tok->next();
+        ret = ret->next();
     }
-    while (Token::Match(tok, "%type% :: "))
+    while (Token::Match(ret, "%type% :: "))
     {
-        tok = tok->tokAt(2);
+        ret = ret->tokAt(2);
     }
-    if (Token::Match(tok, "%type% %var% ;"))
+
+    return ret;
+}
+
+const Token* skipPointers(const Token* tok)
+{
+    const Token* ret = tok;
+
+    while (Token::simpleMatch(ret, "*"))
     {
-        vartok = tok->next();
+        ret = ret->next();
     }
+
+    return ret;
+}
+
+bool SymbolDatabase::SpaceInfo::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const
+{
+    tok = skipScopeIdentifiers(tok);
+    if (Token::Match(tok, "%type%"))
+    {
+        const Token* potentialTypetok = tok;
+
+        tok = skipPointers(tok->next());
+
+        if (Token::Match(tok, "%var% ;"))
+        {
+            vartok = tok;
+            typetok = potentialTypetok;
+        }
+    }
+
     return NULL != vartok;
 }
 

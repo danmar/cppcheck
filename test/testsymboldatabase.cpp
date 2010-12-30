@@ -28,11 +28,19 @@ public:
         :TestFixture("TestSymbolDatabase")
         ,si(NULL, NULL, NULL)
         ,vartok(NULL)
+        ,typetok(NULL)
     {}
 
 private:
     const SymbolDatabase::SpaceInfo si;
     const Token* vartok;
+    const Token* typetok;
+
+    void reset()
+    {
+        vartok = NULL;
+        typetok = NULL;
+    }
 
     void run()
     {
@@ -42,89 +50,132 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesStdDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedStdDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesManyScopes);
-        TEST_CASE(test_isVariableDeclarationDoesNotIdentifyPointers);
+        TEST_CASE(test_isVariableDeclarationIdentifiesPointers);
         TEST_CASE(test_isVariableDeclarationDoesNotIdentifyConstness);
         TEST_CASE(test_isVariableDeclarationIdentifiesFirstOfManyVariables);
+        TEST_CASE(test_isVariableDeclarationIdentifiesScopedPointerDeclaration);
+        TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithIndirection);
+        TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection);
+
     }
 
     void test_isVariableDeclarationCanHandleNull()
     {
-        vartok = NULL;
-        bool result = si.isVariableDeclaration(NULL, vartok);
+        reset();
+        bool result = si.isVariableDeclaration(NULL, vartok, typetok);
         ASSERT_EQUALS(false, result);
         ASSERT(NULL == vartok);
+        ASSERT(NULL == typetok);
     }
 
     void test_isVariableDeclarationIdentifiesSimpleDeclaration()
     {
-        vartok = NULL;
+        reset();
         givenACodeSampleToTokenize simpleDeclaration("int x;");
-        bool result = si.isVariableDeclaration(simpleDeclaration.tokens(), vartok);
+        bool result = si.isVariableDeclaration(simpleDeclaration.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
+        ASSERT_EQUALS("int", typetok->str());
     }
 
     void test_isVariableDeclarationIdentifiesScopedDeclaration()
     {
-        vartok = NULL;
+        reset();
         givenACodeSampleToTokenize ScopedDeclaration("::int x;");
-        bool result = si.isVariableDeclaration(ScopedDeclaration.tokens(), vartok);
+        bool result = si.isVariableDeclaration(ScopedDeclaration.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
+        ASSERT_EQUALS("int", typetok->str());
     }
 
     void test_isVariableDeclarationIdentifiesStdDeclaration()
     {
-        vartok = NULL;
+        reset();
         givenACodeSampleToTokenize StdDeclaration("std::string x;");
-        bool result = si.isVariableDeclaration(StdDeclaration.tokens(), vartok);
+        bool result = si.isVariableDeclaration(StdDeclaration.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
+        ASSERT_EQUALS("string", typetok->str());
     }
 
     void test_isVariableDeclarationIdentifiesScopedStdDeclaration()
     {
-        vartok = NULL;
+        reset();
         givenACodeSampleToTokenize StdDeclaration("::std::string x;");
-        bool result = si.isVariableDeclaration(StdDeclaration.tokens(), vartok);
+        bool result = si.isVariableDeclaration(StdDeclaration.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
+        ASSERT_EQUALS("string", typetok->str());
     }
 
     void test_isVariableDeclarationIdentifiesManyScopes()
     {
-        vartok = NULL;
+        reset();
         givenACodeSampleToTokenize manyScopes("AA::BB::CC::DD::EE x;");
-        bool result = si.isVariableDeclaration(manyScopes.tokens(), vartok);
+        bool result = si.isVariableDeclaration(manyScopes.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
+        ASSERT_EQUALS("EE", typetok->str());
     }
 
-    void test_isVariableDeclarationDoesNotIdentifyPointers()
+    void test_isVariableDeclarationIdentifiesPointers()
     {
-        vartok = NULL;
+        reset();
         givenACodeSampleToTokenize pointer("int* p;");
-        bool result = si.isVariableDeclaration(pointer.tokens(), vartok);
-        ASSERT_EQUALS(false, result);
-        ASSERT(NULL == vartok);
+        bool result = si.isVariableDeclaration(pointer.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("p", vartok->str());
+        ASSERT_EQUALS("int", typetok->str());
     }
 
     void test_isVariableDeclarationDoesNotIdentifyConstness()
     {
-        vartok = NULL;
+        reset();
         givenACodeSampleToTokenize constness("const int* cp;");
-        bool result = si.isVariableDeclaration(constness.tokens(), vartok);
+        bool result = si.isVariableDeclaration(constness.tokens(), vartok, typetok);
         ASSERT_EQUALS(false, result);
         ASSERT(NULL == vartok);
+        ASSERT(NULL == typetok);
     }
 
     void test_isVariableDeclarationIdentifiesFirstOfManyVariables()
     {
-        vartok = NULL;
+        reset();
         givenACodeSampleToTokenize multipleDeclaration("int first, second;");
-        bool result = si.isVariableDeclaration(multipleDeclaration.tokens(), vartok);
+        bool result = si.isVariableDeclaration(multipleDeclaration.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("first", vartok->str());
+        ASSERT_EQUALS("int", typetok->str());
+    }
+
+    void test_isVariableDeclarationIdentifiesScopedPointerDeclaration()
+    {
+        reset();
+        givenACodeSampleToTokenize manyScopes("AA::BB::CC::DD::EE* p;");
+        bool result = si.isVariableDeclaration(manyScopes.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("p", vartok->str());
+        ASSERT_EQUALS("EE", typetok->str());
+    }
+
+    void test_isVariableDeclarationIdentifiesDeclarationWithIndirection()
+    {
+        reset();
+        givenACodeSampleToTokenize pointerToPointer("int** pp;");
+        bool result = si.isVariableDeclaration(pointerToPointer.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("pp", vartok->str());
+        ASSERT_EQUALS("int", typetok->str());
+    }
+
+    void test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection()
+    {
+        reset();
+        givenACodeSampleToTokenize pointerToPointer("int***** p;");
+        bool result = si.isVariableDeclaration(pointerToPointer.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("p", vartok->str());
+        ASSERT_EQUALS("int", typetok->str());
     }
 };
 

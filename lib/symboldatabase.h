@@ -240,10 +240,10 @@ public:
          * @brief helper function for getVarList()
          * @param tok pointer to token to check
          * @param vartok populated with pointer to the variable token, if found
+         * @param typetok populated with pointer to the type token, if found
          * @return true if tok points to a variable declaration, false otherwise
          */
-        bool isVariableDeclaration(const Token* tok, const Token*& vartok) const;
-
+        bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
     };
 
     bool isMemberVar(const SpaceInfo *info, const Token *tok);
