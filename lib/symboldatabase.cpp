@@ -1150,6 +1150,20 @@ void SymbolDatabase::SpaceInfo::getVarList()
             typetok = vartok->previous();
             tok = vartok->next();
         }
+        else if (Token::Match(tok, "%type% :: %type% :: %type% :: %type% %var% ;"))
+        {
+            isClass = true;
+            vartok = tok->tokAt(7);
+            typetok = vartok->previous();
+            tok = vartok->next();
+        }
+        else if (Token::Match(tok, ":: %type% :: %type% :: %type% :: %type% %var% ;"))
+        {
+            isClass = true;
+            vartok = tok->tokAt(8);
+            typetok = vartok->previous();
+            tok = vartok->next();
+        }
 
         // Structure?
         else if (Token::Match(tok, "struct|union %type% %var% ;"))

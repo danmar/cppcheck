@@ -4813,7 +4813,7 @@ private:
                    "    a = b;\n"
                    "}\n");
 
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkConst("namespace AA\n"
                    "{\n"
@@ -4837,7 +4837,7 @@ private:
                    "    }\n"
                    "};\n");
 
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkConst("namespace ZZ\n"
                    "{\n"
@@ -5360,6 +5360,7 @@ private:
 
         ASSERT_EQUALS("", errout.str());
     }
+
 };
 
 REGISTER_TEST(TestClass)
