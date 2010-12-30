@@ -59,14 +59,7 @@
   <section>
     <title>Some of the simplifications</title>
 
-    <para>The data is simplified in many ways. The intention with the
-    simplifications is to remove all information that the rules don't
-    use.</para>
-
-    <para>The best way to see what simplifications there are is to look at the
-    doxygen documentation for the Tokenizer. Some developer information such
-    as doxygen output is available online at
-    http://cppcheck.sf.net/devinfo.html</para>
+    <para>The data is simplified in many ways.</para>
 
     <section>
       <title>Preprocessing</title>
@@ -85,7 +78,7 @@ char a[SIZE];</programlisting>
     </section>
 
     <section>
-      <title>typedef (Tokenizer::simplifyTypedef)</title>
+      <title>typedef</title>
 
       <para>The typedefs are simplified.</para>
 
@@ -98,32 +91,39 @@ s8 x;</programlisting>
     </section>
 
     <section>
-      <title>Calculations (Tokenizer::simplifyCalculations)</title>
+      <title>Calculations</title>
 
       <para>Calculations are simplified.</para>
 
-      <programlisting>int a[10 + 4];   =&gt;   int a [ 14 ] ;</programlisting>
+      <programlisting>int a[10 + 4];</programlisting>
+
+      <para>The Cppcheck data for that is:</para>
+
+      <programlisting> int a [ 14 ] ;</programlisting>
     </section>
 
     <section>
       <title>Variables</title>
 
       <section>
-        <title>Variable declarations (Tokenizer::simplifyVarDecl)</title>
+        <title>Variable declarations</title>
 
         <para>Variable declarations are simplified. Only one variable can be
         declared at a time. The initialization is also broken out into a
         separate statement.</para>
 
-        <programlisting>int *a=0, b=2;   =&gt;   int * a ; a = 0 ; int b ; b = 2 ;</programlisting>
+        <programlisting>int *a=0, b=2;</programlisting>
+
+        <para>The Cppcheck data for that is:</para>
+
+        <programlisting>int * a ; a = 0 ; int b ; b = 2 ;</programlisting>
 
         <para>This is even done in the global scope. Even though that is
         invalid in C/C++.</para>
       </section>
 
       <section>
-        <title>Known variable values
-        (Tokenizer::simplifyKnownVariables)</title>
+        <title>Known variable values</title>
 
         <para>Known variable values are simplified.</para>
 
@@ -173,13 +173,17 @@ s8 x;</programlisting>
       <title>if/for/while</title>
 
       <section>
-        <title>Braces in if/for/while-body
-        (Tokenizer::simplifyIfAddBraces)</title>
+        <title>Braces in if/for/while-body</title>
 
         <para>Cppcheck makes sure that there are always braces in if/for/while
         bodies.</para>
 
-        <programlisting>if (x) f1();    =&gt;    if ( x ) { f1 ( ) ; }</programlisting>
+        <programlisting>    if (x)
+        f1();</programlisting>
+
+        <para>The Cppcheck data for that is:</para>
+
+        <programlisting> if ( x ) { f1 ( ) ; }</programlisting>
       </section>
 
       <section>
@@ -239,7 +243,7 @@ s8 x;</programlisting>
       </section>
 
       <section>
-        <title>Assignments (Tokenizer::simplifyIfAssign)</title>
+        <title>Assignments</title>
 
         <para>Assignments within conditions are broken out from the
         condition.</para>
@@ -252,8 +256,8 @@ s8 x;</programlisting>
     }
 }</programlisting>
 
-        <para>The "x = f1()" is broken out. The <literal>--debug</literal>
-        output:</para>
+        <para>The <literal>x=f1()</literal> is broken out. The
+        <literal>--debug</literal> output:</para>
 
         <programlisting>1: void f ( )
 2: {
@@ -273,7 +277,7 @@ s8 x;</programlisting>
     }
 }</programlisting>
 
-        <para>The "x = f1()" is broken out twice. The
+        <para>The <literal>x=f1()</literal> is broken out twice. The
         <literal>--debug</literal> output:</para>
 
         <programlisting>1: void f ( )
@@ -284,6 +288,65 @@ s8 x;</programlisting>
 5:
 6: }
 7: }</programlisting>
+      </section>
+
+      <section>
+        <title>Comparison with &gt;</title>
+
+        <para>Comparisons are simplified. The two conditions in this example
+        are logically the same:</para>
+
+        <programlisting>void f()
+{
+    if (x &lt; 2);
+    if (2 &gt; x);
+}</programlisting>
+
+        <para>Cppcheck data doesn't use <literal>&gt;</literal> for
+        comparisons. It is converted into <literal>&lt;</literal> instead. In
+        the Cppcheck data there is no difference for <literal>2&gt;x</literal>
+        and <literal>x&lt;2</literal>.</para>
+
+        <programlisting>1:
+2: void f ( )
+3: {
+4: if ( x &lt; 2 ) { ; }
+5: if ( x &lt; 2 ) { ; }
+6: }</programlisting>
+
+        <para>A similar conversion happens when <literal>&gt;=</literal> is
+        used.</para>
+      </section>
+
+      <section>
+        <title>if (x) and if (!x)</title>
+
+        <para>If possible a condition will be reduced to x or !x. Here is an
+        example code:</para>
+
+        <programlisting>void f()
+{
+    if (!x);
+    if (NULL == x);
+    if (x == 0);
+
+    if (x);
+    if (NULL != x);
+    if (x != 0);
+}</programlisting>
+
+        <para>The <literal>--debug</literal> output is:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: if ( ! x ) { ; }
+4: if ( ! x ) { ; }
+5: if ( ! x ) { ; }
+6:
+7: if ( x ) { ; }
+8: if ( x ) { ; }
+9: if ( x ) { ; }
+10: }</programlisting>
       </section>
     </section>
   </section>
