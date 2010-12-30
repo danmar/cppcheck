@@ -330,7 +330,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             {
                 int pos = 0;
                 int ovector[30];
-                if (0 <= pcre_exec(re, NULL, str.c_str(), str.size(), pos, 0, ovector, 30))
+                if (0 <= pcre_exec(re, NULL, str.c_str(), (int)str.size(), pos, 0, ovector, 30))
                 {
                     unsigned int pos1 = (unsigned int)ovector[0];
                     unsigned int pos2 = (unsigned int)ovector[1];
