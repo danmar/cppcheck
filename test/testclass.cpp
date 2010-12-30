@@ -4814,6 +4814,49 @@ private:
                    "}\n");
 
         TODO_ASSERT_EQUALS("", errout.str());
+
+        checkConst("namespace AA\n"
+                   "{\n"
+                   "    namespace BB\n"
+                   "    {\n"
+                   "        namespace CC\n"
+                   "        {\n"
+                   "            struct DD\n"
+                   "            {};\n"
+                   "        }\n"
+                   "    }\n"
+                   "}\n"
+                   "class A\n"
+                   "{\n"
+                   "    public:\n"
+                   "    \n"
+                   "    AA::BB::CC::DD a;\n"
+                   "    void foo(AA::BB::CC::DD b)\n"
+                   "    {\n"
+                   "        a = b;\n"
+                   "    }\n"
+                   "};\n");
+
+        TODO_ASSERT_EQUALS("", errout.str());
+
+        checkConst("namespace ZZ\n"
+                   "{\n"
+                   "    namespace YY\n"
+                   "    {\n"
+                   "        struct XX\n"
+                   "        {};\n"
+                   "    }\n"
+                   "}\n"
+                   "class B\n"
+                   "{\n"
+                   "    public:\n"
+                   "    ZZ::YY::XX a;\n"
+                   "    void foo(ZZ::YY::XX b)\n"
+                   "    {\n"
+                   "        a = b;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const
