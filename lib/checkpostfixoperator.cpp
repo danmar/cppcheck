@@ -74,6 +74,9 @@ void CheckPostfixOperator::postfixOperator()
         if (result && tok->previous()->varId())
         {
             const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->previous()->varId());
+            if (!Token::Match(decltok->tokAt(-1), "%type%"))
+                continue;
+
             if (decltok && Token::Match(decltok->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
             {
                 // the variable is an iterator

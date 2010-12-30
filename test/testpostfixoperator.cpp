@@ -69,6 +69,7 @@ private:
         TEST_CASE(testvolatile);
         TEST_CASE(testiterator);
         TEST_CASE(test2168);
+        TEST_CASE(pointer);   // #2321 - postincrement of pointer is OK
     }
 
     void testsimple()
@@ -370,6 +371,14 @@ private:
     {
         check("--> declare allocator lock here\n"
               "int main(){}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void pointer()
+    {
+        check("static struct class * ab;\n"
+              "int * p;\n"
+              "p++;\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
