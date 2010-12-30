@@ -33,6 +33,17 @@ CheckUninitVar instance;
 
 //---------------------------------------------------------------------------
 
+/** Is string uppercase? */
+static bool isUpper(const std::string &str)
+{
+    for (unsigned int i = 0; i < str.length(); ++i)
+    {
+        if (str[i] >= 'a' && str[i] <= 'z')
+            return false;
+    }
+    return true;
+}
+
 
 /// @addtogroup Checks
 /// @{
@@ -578,7 +589,9 @@ private:
 
         if (Token::Match(&tok, "%var% (") && uvarFunctions.find(tok.str()) == uvarFunctions.end())
         {
-            if (Token::Match(&tok, "sizeof|typeof ("))
+            // sizeof/typeof doesn't dereference. A function name that is all uppercase
+            // might be an unexpanded macro that uses sizeof/typeof
+            if (Token::Match(&tok, "sizeof|typeof (") || isUpper(tok.str()))
                 return tok.next()->link();
 
             // deallocate pointer
@@ -650,6 +663,14 @@ private:
                 }
 
                 else if (Token::Match(tok2, "sizeof|typeof ("))
+                {
+                    tok2 = tok2->next()->link();
+                    if (!tok2)
+                        break;
+                }
+
+                // ticket #2367 : unexpanded macro that uses sizeof|typeof?
+                else if (Token::Match(tok2, "%type% (") && isUpper(tok2->str()))
                 {
                     tok2 = tok2->next()->link();
                     if (!tok2)

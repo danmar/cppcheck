@@ -1406,6 +1406,12 @@ private:
                        "    ab(typeof(s->status));\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    struct SData * s;\n"
+                       "    TYPEOF(s->status);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
