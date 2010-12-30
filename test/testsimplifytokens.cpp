@@ -269,6 +269,7 @@ private:
         TEST_CASE(enum14);
         TEST_CASE(enum15);
         TEST_CASE(enum16); // ticket #1988
+        TEST_CASE(enum17); // ticket #2381 (duplicate enums)
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -5890,6 +5891,15 @@ private:
         const char code[] = "enum D : auto * { FF = 0 };";
         checkSimplifyEnum(code);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void enum17() // ticket #2381
+    {
+        // if header is included twice its enums will be duplicated
+        const char code[] = "enum ab { a=0, b };"
+                            "enum ab { a=0, b };\n";
+        ASSERT_EQUALS(";", tok(code, false));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void removestd()

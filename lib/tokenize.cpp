@@ -7386,7 +7386,26 @@ void Tokenizer::simplifyEnum()
                         }
                         else if (tok2->str() == "{")
                         {
-                            ++level;
+                            // Is the same enum redefined?
+                            const Token *begin = end->link();
+                            if (tok2->fileIndex() == begin->fileIndex() &&
+                                tok2->linenr() == begin->linenr() &&
+                                Token::Match(begin->tokAt(-2), "enum %type% {") &&
+                                Token::Match(tok2->tokAt(-2), "enum %type% {") &&
+                                begin->strAt(-1) == tok2->strAt(-1))
+                            {
+                                // remove duplicate enum
+                                Token * startToken = tok2->tokAt(-3);
+                                tok2 = tok2->link()->next();
+                                Token::eraseTokens(startToken, tok2);
+                                if (!tok2)
+                                    break;
+                            }
+                            else
+                            {
+                                // Not a duplicate enum..
+                                ++level;
+                            }
                         }
                         else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()))
                         {
@@ -7396,7 +7415,7 @@ void Tokenizer::simplifyEnum()
                         else if (inScope && !exitThisScope && tok2->str() == enumName->str())
                         {
                             if (Token::simpleMatch(tok2->previous(), "::") ||
-                                (tok2->next() && Token::simpleMatch(tok2->next(), "::")))
+                                Token::simpleMatch(tok2->next(), "::"))
                             {
                                 // Don't replace this enum if it's preceded or followed by "::"
                             }
