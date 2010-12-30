@@ -136,7 +136,7 @@ void CheckStl::iterators()
             else if (Token::Match(tok2, "%varid% = %var% ;", iteratorId))
             {
                 // Assume that the iterator becomes valid.
-                // TODO: is it valid?
+                // TODO: add checking that checks if the iterator becomes valid or not
                 validIterator = true;
 
                 // skip ahead
@@ -191,6 +191,7 @@ void CheckStl::mismatchingContainers()
         if (tok->str() != "std")
             continue;
 
+        // TODO: If iterator variables are used instead then there are false negatives.
         if (Token::Match(tok, "std :: find|find_if|count|transform|replace|replace_if|sort ( %var% . begin|rbegin ( ) , %var% . end|rend ( ) ,"))
         {
             if (tok->tokAt(4)->str() != tok->tokAt(10)->str())
