@@ -31,7 +31,7 @@
     error even though there is no error.</para>
 
     <para>Cppcheck is a relatively simple tool. I hope that this article will
-    highlight that it is possible to avoid false warnings with simple
+    highlight that it is possible to avoid false warnings even with simple
     analysis.</para>
   </section>
 
@@ -41,11 +41,8 @@
     <para>There are many bugs in programs that are really hard to detect for
     tools. Here is an example:</para>
 
-    <programlisting>// calculate the number of days
-int days(int hours)
-{
-    return hours / 23;
-}</programlisting>
+    <programlisting>    // calculate the number of days
+    int days = hours / 23;</programlisting>
 
     <para>A human programmer knows that there are 24 hours in a day and
     therefore he could see that "23" is wrong. A tool will probably not know
@@ -62,23 +59,11 @@ int days(int hours)
   <section>
     <title>Control flow analysis</title>
 
-    <para>Control flow analysis is when the tool tries to determine if certain
-    execution paths are possible.</para>
-
-    <programlisting>void f(int x)
-{
-    if (x == 1)
-        f1();
-    if (x &amp; 2)
-        f2();
-}</programlisting>
-
-    <para>The function has 3 possible execution paths. The analysis you do in
-    your head when you determine that there are 3 possible execution paths is
-    "control flow analysis".</para>
-
     <para>When you review code you will probably use "control flow analysis"
     in your head to determine if there are bugs or not.</para>
+
+    <para>Control flow analysis is when you try to determine what the possible
+    execution paths are.</para>
 
     <para>The control flow analysis in Cppcheck is quite simple.</para>
   </section>
@@ -89,11 +74,8 @@ int days(int hours)
     <para>This is a simple description of how buffer overflows are detected by
     Cppcheck.</para>
 
-    <para>For simple cases, no control flow analysis is used. If an array is
-    accessed out of bounds somewhere in its scope then an error message will
-    be written.</para>
-
-    <para>An example code:</para>
+    <para>If an array is accessed out of bounds somewhere in its scope then an
+    error message will be written. An example code:</para>
 
     <programlisting>void f()
 {
@@ -107,14 +89,15 @@ int days(int hours)
 
     <programlisting>Array 'a[10]' index 20 out of bounds</programlisting>
 
-    <para>Cppcheck will not try to determine how execution can reach the
-    "a[20] = 0;" statement. It is assumed that all statements are reachable.
-    Cppcheck will detect the error even if it is really impossible that "x + y
-    == 2" is true. I still claim that this is a correct warning because the
-    statement is there and it has the error.</para>
+    <para>No control flow analysis is used. Cppcheck will not try to determine
+    how execution can reach the "a[20] = 0;" statement. It is assumed that all
+    statements are reachable. Cppcheck will detect the error even if it is
+    really impossible that "x + y == 2" is true. I still claim that this is a
+    correct warning because the statement is there and it has the
+    error.</para>
 
     <para>Cppcheck will also investigate function calls. But then control flow
-    analysis is needed to avoid false warnings. Here is an example that
+    analysis can be needed to avoid false warnings. Here is an example that
     logically is the same as the previous example:</para>
 
     <para><programlisting>void f1(char *s)
@@ -136,10 +119,8 @@ void f2()
     error.</para>
 
     <para>But if the condition is moved into "f1" then it will be necessary to
-    prove that "x+y==2" can be true when the function is called from
-    "f2".</para>
-
-    <para>No error message is reported for this code:</para>
+    prove that "x+y==2" can be true when the function is called from "f2". No
+    error message is reported for this code:</para>
 
     <para><programlisting>void f1(char *s)
 {
@@ -158,11 +139,10 @@ void f2()
   <section>
     <title>Memory leaks</title>
 
-    <para>Simple control-flow analysis is made. The assumtion is that all
-    conditions can always be either true or false. It is assumed that all
-    statements are reachable.</para>
-
-    <para>Here is an example:</para>
+    <para>The check uses simple control-flow analysis. The control flow
+    analysis assumes that all conditions can always be either true or false.
+    It is assumed that all statements are reachable. Here is an
+    example:</para>
 
     <programlisting>void f()
 {
@@ -197,9 +177,10 @@ void f2()
 }</programlisting>
 
     <para>Cppcheck doesn't detect any error. The "all conditions can be either
-    true/false" means that cppcheck doesn't know that "if (x==20)" is false
-    when "if (x==10)" is true. Many other static analysis tools will probably
-    detect that there will be a leak if x is 10.</para>
+    true/false" means that cppcheck doesn't know that "if (x==20)" is always
+    false when "if (x==10)" is true. So Cppcheck can't establish that there is
+    a leak. Many other static analysis tools will probably detect that there
+    will be a leak if x is 10.</para>
   </section>
 
   <section>
@@ -208,9 +189,6 @@ void f2()
     <para>You can not trust that Cppcheck will detect all bugs.</para>
 
     <para>Cppcheck will just find some bugs. It is likely that you won't find
-    these bugs unless you use Cppcheck. Cppcheck has found bugs in production
-    code that has been used for years.</para>
-
-    <para></para>
+    these bugs unless you use Cppcheck.</para>
   </section>
 </article>
