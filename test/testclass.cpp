@@ -4867,6 +4867,48 @@ private:
                    "    void nextA() { return ++a; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    void nextA() { return --a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    void nextA() { return a++; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    void nextA() { return a--; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    void nextA() { return a-=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    void nextA() { return a+=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    void nextA() { return a*=-1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    void nextA() { return a/=-2; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // return pointer/reference => not const
