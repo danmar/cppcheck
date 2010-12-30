@@ -181,7 +181,7 @@ public:
     bool reportProgress;
 
     /**
-     * @brief Is there any #if configurations in the source code?
+     * @brief Is there any preprocessor configurations in the source code?
      * As usual, include guards are not counted.
      */
     bool ifcfg;
