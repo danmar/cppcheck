@@ -31,14 +31,24 @@ ErrorLogger::ErrorMessage::ErrorMessage()
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id)
 {
+    // locations for this error message
     _callStack = callStack;
+
+    // severity for this error message
     _severity = severity;
+
+    // set the summary and verbose messages
     setmsg(msg);
+
+    // set the message id
     _id = id;
 }
 
 void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
 {
+    // The summary and verbose message are separated by a newline
+    // If there is no newline then both the summary and verbose messages
+    // are the given message
     const std::string::size_type pos = msg.find("\n");
     if (pos == std::string::npos)
     {
@@ -54,6 +64,7 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
 
 std::string ErrorLogger::ErrorMessage::serialize() const
 {
+    // Serialize this message into a simple string
     std::ostringstream oss;
     oss << _id.length() << " " << _id;
     oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
@@ -135,13 +146,19 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
 
 std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
 {
+    // xml_version 1 is the default xml format
+
+    // standard xml header
     std::ostringstream ostr;
     ostr << "<?xml version=\"1.0\"?>\n";
 
+    // version 1 header
     if (xml_version <= 1)
     {
         ostr << "<results>";
     }
+
+    // version 2 header
     else
     {
         ostr << "<results version=\"" << xml_version << "\">\n";
@@ -158,6 +175,7 @@ std::string ErrorLogger::ErrorMessage::getXMLFooter()
 
 static std::string stringToXml(std::string s)
 {
+    // convert a string so it can be save as xml attribute data
     std::string::size_type pos = 0;
     while ((pos = s.find_first_of("<>&\"\n", pos)) != std::string::npos)
     {
@@ -179,8 +197,10 @@ static std::string stringToXml(std::string s)
 
 std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
 {
+    // Save this ErrorMessage as an XML element
     std::ostringstream xml;
 
+    // The default xml format
     if (version == 1)
     {
         xml << "<error";
@@ -194,6 +214,8 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
         xml << " msg=\"" << stringToXml(verbose ? _verboseMessage : _shortMessage) << "\"";
         xml << "/>";
     }
+
+    // The xml format you get when you use --xml-version=2
     else if (version == 2)
     {
         xml << "  <error";
@@ -229,6 +251,9 @@ void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::s
 
 std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string &outputFormat) const
 {
+    // Save this ErrorMessage in plain text.
+
+    // No template is given
     if (outputFormat.length() == 0)
     {
         std::ostringstream text;
@@ -239,6 +264,8 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         text << (verbose ? _verboseMessage : _shortMessage);
         return text.str();
     }
+
+    // template is given. Reformat the output according to it
     else
     {
         std::string result = outputFormat;
