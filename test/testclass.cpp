@@ -159,6 +159,7 @@ private:
         TEST_CASE(const40); // ticket #2228
         TEST_CASE(const41); // ticket #2255
         TEST_CASE(const42); // ticket #2282
+        TEST_CASE(const43); // ticket #2377
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -4797,6 +4798,22 @@ private:
                    "}\n");
 
         ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:8]: (information) Technically the member function 'Foo::Fred::f' can be const.\n", errout.str());
+    }
+
+    void const43() // ticket 2377
+    {
+        checkConst("class A\n"
+                   "{\n"
+                   "public:\n"
+                   "    void foo( AA::BB::CC::DD b );\n"
+                   "    AA::BB::CC::DD a;\n"
+                   "};\n"
+                   "void A::foo( AA::BB::CC::DD b )\n"
+                   "{\n"
+                   "    a = b;\n"
+                   "}\n");
+
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const
