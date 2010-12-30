@@ -3,7 +3,9 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <article>
   <articleinfo>
-    <title>Writing Cppcheck rules - Part 2</title>
+    <title>Writing Cppcheck rules</title>
+
+    <subtitle>Part 2 - The Cppcheck data representation</subtitle>
 
     <author>
       <firstname>Daniel</firstname>
@@ -49,31 +51,37 @@
     variable ids (Cppcheck gives each variable a unique id). You can ignore
     these if you only plan to write rules with regular expressions, you can't
     use variable ids with regular expressions.</para>
+
+    <para>In general, I will use the <literal>--rule=.+</literal> output in
+    this article because it is more compact.</para>
   </section>
 
   <section>
-    <title>Simplifications</title>
+    <title>Some of the simplifications</title>
 
-    <para>This is not intended to be a complete reference for all
-    simplifications. It is mostly intended to show that the data is simplified
-    in many ways.</para>
+    <para>The data is simplified in many ways. The intention with the
+    simplifications is to remove all information that the rules don't
+    use.</para>
 
-    <para>The intention with the simplifications is to remove all information
-    that the rules don't use.</para>
+    <para>The best way to see what simplifications there are is to look at the
+    doxygen documentation for the Tokenizer. Some developer information such
+    as doxygen output is available online at
+    http://cppcheck.sf.net/devinfo.html</para>
 
     <section>
-      <title>Preprocessing (Preprocessor)</title>
+      <title>Preprocessing</title>
 
       <para>The Cppcheck data is preprocessed. There are no comments, #define,
       #include, etc.</para>
 
+      <para>Original source code:</para>
+
       <programlisting>#define SIZE 123
 char a[SIZE];</programlisting>
 
-      <para>Debug output:</para>
+      <para>The Cppcheck data for that is:</para>
 
-      <programlisting>1:
-2: char a@1 [ 123 ] ;</programlisting>
+      <programlisting> char a [ 123 ] ;</programlisting>
     </section>
 
     <section>
@@ -84,10 +92,9 @@ char a[SIZE];</programlisting>
       <programlisting>typedef char s8;
 s8 x;</programlisting>
 
-      <para>Debug output:</para>
+      <para>The Cppcheck data for that is:</para>
 
-      <programlisting>1: ;
-2: char x@1 ;</programlisting>
+      <programlisting> ; char x ;</programlisting>
     </section>
 
     <section>
@@ -95,11 +102,7 @@ s8 x;</programlisting>
 
       <para>Calculations are simplified.</para>
 
-      <programlisting>int a[10 + 4];</programlisting>
-
-      <para>Debug output:</para>
-
-      <programlisting>1: int a@1 [ 14 ] ;</programlisting>
+      <programlisting>int a[10 + 4];   =&gt;   int a [ 14 ] ;</programlisting>
     </section>
 
     <section>
@@ -112,11 +115,10 @@ s8 x;</programlisting>
         declared at a time. The initialization is also broken out into a
         separate statement.</para>
 
-        <programlisting>int *a=0, b=2;</programlisting>
+        <programlisting>int *a=0, b=2;   =&gt;   int * a ; a = 0 ; int b ; b = 2 ;</programlisting>
 
-        <para>Debug output:</para>
-
-        <programlisting>1: int * a@1 ; a@1 = 0 ; int b@2 ; b@2 = 2 ;</programlisting>
+        <para>This is even done in the global scope. Even though that is
+        invalid in C/C++.</para>
       </section>
 
       <section>
@@ -132,7 +134,7 @@ s8 x;</programlisting>
     array[x + 2] = 0;
 }</programlisting>
 
-        <para>Debug output:</para>
+        <para>The <literal>--debug</literal> output for that is:</para>
 
         <programlisting>1: void f ( )
 2: {
@@ -156,7 +158,7 @@ s8 x;</programlisting>
     free(b);
 }</programlisting>
 
-        <para>Debug output:</para>
+        <para>The <literal>--debug</literal> output for that is:</para>
 
         <programlisting>1: void f ( )
 2: {
@@ -174,15 +176,10 @@ s8 x;</programlisting>
         <title>Braces in if/for/while-body
         (Tokenizer::simplifyIfAddBraces)</title>
 
-        <para>There are always braces in if/for/while bodies.</para>
+        <para>Cppcheck makes sure that there are always braces in if/for/while
+        bodies.</para>
 
-        <programlisting>    if (x)
-        f1();</programlisting>
-
-        <para>Debug output:</para>
-
-        <programlisting>1: if ( x ) {
-2: f1 ( ) ; }</programlisting>
+        <programlisting>if (x) f1();    =&gt;    if ( x ) { f1 ( ) ; }</programlisting>
       </section>
 
       <section>
@@ -199,7 +196,7 @@ s8 x;</programlisting>
         f2();
 }</programlisting>
 
-        <para>Debug output:</para>
+        <para>The <literal>--debug</literal> output:</para>
 
         <programlisting>1: void f ( int x@1 )
 2: {
@@ -223,14 +220,9 @@ s8 x;</programlisting>
     }
 }</programlisting>
 
-        <para>Debug output:</para>
+        <para>The Cppcheck data is:</para>
 
-        <programlisting>1: void f ( )
-2: {
-3: {
-4: f1 ( ) ;
-5: }
-6: }</programlisting>
+        <programlisting> void f ( ) { { f1 ( ) ; } }</programlisting>
 
         <para>Another example:</para>
 
@@ -243,12 +235,7 @@ s8 x;</programlisting>
 
         <para>The debug output:</para>
 
-        <programlisting>1: void f ( )
-2: {
-3:
-4:
-5:
-6: }</programlisting>
+        <programlisting> void f ( ) { }</programlisting>
       </section>
 
       <section>
@@ -265,7 +252,8 @@ s8 x;</programlisting>
     }
 }</programlisting>
 
-        <para>The "x = f1()" is broken out. Debug output:</para>
+        <para>The "x = f1()" is broken out. The <literal>--debug</literal>
+        output:</para>
 
         <programlisting>1: void f ( )
 2: {
@@ -285,7 +273,8 @@ s8 x;</programlisting>
     }
 }</programlisting>
 
-        <para>The "x = f1()" is broken out twice. Debug output:</para>
+        <para>The "x = f1()" is broken out twice. The
+        <literal>--debug</literal> output:</para>
 
         <programlisting>1: void f ( )
 2: {
@@ -295,9 +284,6 @@ s8 x;</programlisting>
 5:
 6: }
 7: }</programlisting>
-
-        <para>An interesting thing here is that "f2 ( ) ;" is written on line
-        5. But the "x@1 = f1 ( ) ;" after it is written on line 4.</para>
       </section>
     </section>
   </section>

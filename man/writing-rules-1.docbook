@@ -3,7 +3,9 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <article>
   <articleinfo>
-    <title>Writing Cppcheck rules - Part 1</title>
+    <title>Writing Cppcheck rules</title>
+
+    <subtitle>Part 1 - Getting started</subtitle>
 
     <author>
       <firstname>Daniel</firstname>
