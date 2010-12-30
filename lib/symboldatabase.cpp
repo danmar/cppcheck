@@ -1110,58 +1110,10 @@ void SymbolDatabase::SpaceInfo::getVarList()
 
         bool isClass = false;
 
-        // Is it a variable declaration?
-        if (Token::Match(tok, "%type% %var% ;|:"))
+        if (isVariableDeclaration(tok, vartok))
         {
-            if (!tok->isStandardType())
-            {
-                isClass = true;
-                typetok = tok;
-            }
-
-            vartok = tok->next();
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, "%type% :: %type% %var% ;"))
-        {
-            isClass = true;
-            vartok = tok->tokAt(3);
             typetok = vartok->previous();
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, ":: %type% :: %type% %var% ;"))
-        {
-            isClass = true;
-            vartok = tok->tokAt(4);
-            typetok = vartok->previous();
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, "%type% :: %type% :: %type% %var% ;"))
-        {
-            isClass = true;
-            vartok = tok->tokAt(5);
-            typetok = vartok->previous();
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, ":: %type% :: %type% :: %type% %var% ;"))
-        {
-            isClass = true;
-            vartok = tok->tokAt(6);
-            typetok = vartok->previous();
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, "%type% :: %type% :: %type% :: %type% %var% ;"))
-        {
-            isClass = true;
-            vartok = tok->tokAt(7);
-            typetok = vartok->previous();
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, ":: %type% :: %type% :: %type% :: %type% %var% ;"))
-        {
-            isClass = true;
-            vartok = tok->tokAt(8);
-            typetok = vartok->previous();
+            isClass = (!typetok->isStandardType());
             tok = vartok->next();
         }
 
@@ -1322,6 +1274,23 @@ void SymbolDatabase::SpaceInfo::getVarList()
             addVar(vartok, varaccess, isMutable, isStatic, isConst, isClass, spaceInfo);
         }
     }
+}
+
+bool SymbolDatabase::SpaceInfo::isVariableDeclaration(const Token* tok, const Token*& vartok) const
+{
+    if (Token::simpleMatch(tok, "::"))
+    {
+        tok = tok->next();
+    }
+    while (Token::Match(tok, "%type% :: "))
+    {
+        tok = tok->tokAt(2);
+    }
+    if (Token::Match(tok, "%type% %var% ;"))
+    {
+        vartok = tok->next();
+    }
+    return NULL != vartok;
 }
 
 //---------------------------------------------------------------------------

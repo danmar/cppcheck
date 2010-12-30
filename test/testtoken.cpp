@@ -17,7 +17,7 @@
  */
 
 #include "testsuite.h"
-#include "tokenize.h"
+#include "testutils.h"
 #include "token.h"
 #include "settings.h"
 
@@ -222,31 +222,6 @@ private:
         ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "%or%"));
         ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%oror%"));
     }
-
-    class givenACodeSampleToTokenize
-    {
-    private:
-        std::istringstream _sample;
-        const Token* _tokens;
-        Settings _settings;
-        Tokenizer _tokenizer;
-
-    public:
-        givenACodeSampleToTokenize(const std::string& sample)
-            :_sample(sample)
-            ,_tokens(NULL)
-        {
-            _tokenizer.setSettings(&_settings);
-            _tokenizer.tokenize(_sample, "test.cpp");
-            _tokens = _tokenizer.tokens();
-        }
-
-        const Token* tokens() const
-        {
-            return _tokens;
-        }
-    };
-
 };
 
 REGISTER_TEST(TestToken)
