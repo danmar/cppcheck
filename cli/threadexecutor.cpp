@@ -28,6 +28,7 @@
 #include <cstring>
 #include <cstdio>
 #include <errno.h>
+#include <time.h>
 #endif
 
 ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &errorLogger)
@@ -190,7 +191,12 @@ unsigned int ThreadExecutor::check()
                 if (readRes == -1)
                     break;
                 else if (readRes == 0)
-                    usleep(5000); // 5 ms
+                {
+                    struct timespec duration;
+                    duration.tv_sec = 0;
+                    duration.tv_nsec = 5 * 1000 * 1000;        // 5 ms
+                    nanosleep(&duration, NULL);
+                }
             }
 
             int stat = 0;
