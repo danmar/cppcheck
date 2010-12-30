@@ -158,7 +158,16 @@ void TestFixture::assertEquals(const char *filename, int linenr, const std::stri
     }
 }
 
-void TestFixture::assertEquals(const char *filename, int linenr, double expected, double actual, const std::string &msg)
+void TestFixture::assertEquals(const char *filename, int linenr, long long expected, long long actual, const std::string &msg)
+{
+    std::ostringstream ostr1;
+    ostr1 << expected;
+    std::ostringstream ostr2;
+    ostr2 << actual;
+    assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
+}
+
+void TestFixture::assertEqualsDouble(const char *filename, int linenr, double expected, double actual, const std::string &msg)
 {
     std::ostringstream ostr1;
     ostr1 << expected;

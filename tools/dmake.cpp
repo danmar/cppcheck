@@ -183,7 +183,6 @@ int main(int argc, char **argv)
     else
     {
         // TODO: add more compiler warnings.
-        // -Wconversion      : generates too many compiler warnings currently
         // -Wlogical-op      : doesn't work on older GCC
 
         // The _GLIBCXX_DEBUG doesn't work in cygwin
@@ -196,7 +195,7 @@ int main(int argc, char **argv)
                                 "-Wfloat-equal "
                                 "-Wcast-qual "
                                 "-Wsign-conversion "
-                                // "-Wconversion "
+                                "-Wconversion "
                                 "-g");
     }
     makeConditionalVariable(fout, "CXX", "g++");
