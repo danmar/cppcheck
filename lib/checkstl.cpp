@@ -47,35 +47,54 @@ void CheckStl::dereferenceErasedError(const Token *tok, const std::string &itern
 
 void CheckStl::iterators()
 {
+    // Using same iterator against different containers.
+    // for (it = foo.begin(); it != bar.end(); ++it)
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+        // Locate an iterator..
         if (!Token::Match(tok, "%var% = %var% . begin ( ) ;|+"))
             continue;
 
+        // Get variable ids for both the iterator and container
         const unsigned int iteratorId(tok->varId());
         const unsigned int containerId(tok->tokAt(2)->varId());
         if (iteratorId == 0 || containerId == 0)
             continue;
 
+        // the validIterator flag says if the iterator has a valid value or not
         bool validIterator = true;
+
+        // counter for { and }
         unsigned int indent = 0;
+
+        // Scan through the rest of the code and see if the iterator is
+        // used against other containers.
         for (const Token *tok2 = tok->tokAt(7); tok2; tok2 = tok2->next())
         {
+            // If a { is found then count it and continue
             if (tok2->str() == "{" && ++indent)
                 continue;
+
+            // If a } is found then count it. break if indentlevel becomes 0.
             if (tok2->str() == "}" && --indent == 0)
                 break;
 
+            // Is iterator compared against different container?
             if (Token::Match(tok2, "%varid% != %var% . end ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId)
             {
                 iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
                 tok2 = tok2->tokAt(6);
             }
+
+            // Is the iterator used in a insert/erase operation?
             else if (Token::Match(tok2, "%var% . insert|erase ( %varid% )|,", iteratorId))
             {
+                // It is bad to insert/erase an invalid iterator
                 if (!validIterator)
                     invalidIteratorError(tok2, tok2->strAt(4));
 
+                // If insert/erase is used on different container then
+                // report an error
                 if (tok2->varId() != containerId && tok2->tokAt(5)->str() != ".")
                 {
                     // skip error message if container is a set..
@@ -91,23 +110,40 @@ void CheckStl::iterators()
                     // Show error message, mismatching iterator is used.
                     iteratorsError(tok2, tok->strAt(2), tok2->str());
                 }
+
+                // invalidate the iterator if it is erased
                 else if (tok2->strAt(2) == std::string("erase"))
                     validIterator = false;
 
+                // skip the operation
                 tok2 = tok2->tokAt(4);
             }
+
+            // it = foo.erase(..
+            // taking the result of an erase is ok
             else if (Token::Match(tok2, "%varid% = %var% . erase (", iteratorId))
             {
+                // the returned iterator is valid
                 validIterator = true;
+
+                // skip the operation
                 tok2 = tok2->tokAt(5)->link();
                 if (!tok2)
                     break;
             }
+
+            // Reassign the iterator
             else if (Token::Match(tok2, "%varid% = %var% ;", iteratorId))
             {
+                // Assume that the iterator becomes valid.
+                // TODO: is it valid?
                 validIterator = true;
+
+                // skip ahead
                 tok2 = tok2->tokAt(2);
             }
+
+            // Dereferencing invalid iterator?
             else if (!validIterator && Token::Match(tok2, "* %varid%", iteratorId))
             {
                 dereferenceErasedError(tok2, tok2->strAt(1));
@@ -122,10 +158,16 @@ void CheckStl::iterators()
             {
 //                eraseByValueError(tok2, tok2->strAt(0), tok2->strAt(5));
             }
+
+            // bailout handling. Assume that the iterator becomes valid if we see return/break.
+            // TODO: better handling
             else if (Token::Match(tok2, "return|break ;"))
             {
                 validIterator = true;
             }
+
+            // bailout handling. Assume that the iterator becomes valid if we see else.
+            // TODO: better handling
             else if (tok2->str() == "else")
             {
                 validIterator = true;
@@ -143,6 +185,7 @@ void CheckStl::mismatchingContainersError(const Token *tok)
 
 void CheckStl::mismatchingContainers()
 {
+    // Check if different containers are used in various calls of standard functions
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() != "std")
