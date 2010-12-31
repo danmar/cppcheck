@@ -101,17 +101,20 @@ public:
     void nullPointerError(const Token *tok, const std::string &varname);
     void nullPointerError(const Token *tok, const std::string &varname, const unsigned int line);
 
+    /** Get error messages. Used by --errorlist */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckNullPointer c(0, settings, errorLogger);
         c.nullPointerError(0, "pointer");
     }
 
+    /** Name of check */
     std::string name() const
     {
         return "Null pointer";
     }
 
+    /** class info in WIKI format. Used by --doc */
     std::string classInfo() const
     {
         return "Null pointers\n"
