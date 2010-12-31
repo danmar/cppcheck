@@ -213,9 +213,6 @@ void CheckNullPointer::nullPointerLinkedList()
         if (!Token::simpleMatch(tok1, "for ("))
             continue;
 
-        if (!Token::simpleMatch(tok1->next()->link(), ") {"))
-            continue;
-
         // is there any dereferencing occurring in the for statement..
         unsigned int parlevel2 = 1;
         for (const Token *tok2 = tok1->tokAt(2); tok2; tok2 = tok2->next())
