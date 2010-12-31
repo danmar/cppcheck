@@ -186,6 +186,52 @@ private:
     const std::string value;
 };
 
+
+/**
+ * bailout if variable is used inside if/else/switch block or if there is "break"
+ * @param tok token for "if" or "switch"
+ * @param varid variable id
+ * @return is bailout recommended?
+ */
+static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
+{
+    const std::string str1(tok->str());
+
+    unsigned int indentlevel = 0;
+    for (; tok; tok = tok->next())
+    {
+        if (tok->str() == "{")
+            indentlevel++;
+        else if (tok->str() == "}")
+        {
+            // scan the else-block
+            if (indentlevel == 1 && Token::simpleMatch(tok, "} else {"))
+            {
+                --indentlevel;
+                continue;
+            }
+            else if (indentlevel <= 1)
+            {
+                break;
+            }
+
+            --indentlevel;
+        }
+
+        // If scanning a "if" block then bailout for "break"
+        else if (str1 == "if" && tok->str() == "break")
+            return true;
+
+
+        // bailout if varid is found
+        else if (tok->varId() == varid)
+            return true;
+    }
+
+    // No bailout stuff found => return false
+    return false;
+}
+
 /**
  * Parse for loop initialization statement. Look for a counter variable
  * \param tok [in] first token inside the parentheses
@@ -407,32 +453,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 
         if (Token::Match(tok2, "if|switch"))
         {
-            bool bailout = false;
-            unsigned int indentlevel3 = 0;
-            for (const Token *tok3 = tok2; tok3; tok3 = tok3->next())
-            {
-                if (tok3->str() == "{")
-                    indentlevel3++;
-                else if (tok3->str() == "}")
-                {
-                    if (indentlevel3 <= 1)
-                        break;
-                    --indentlevel3;
-                }
-                else if (tok3->str() == "break" && tok2->str() == "if")
-                {
-                    bailout = true;
-                    break;
-                }
-                else if (tok3->varId() == arrayInfo.varid)
-                {
-                    bailout = true;
-                    break;
-                }
-            }
-
-            // Bailout
-            if (bailout)
+            if (bailoutIfSwitch(tok2, arrayInfo.varid))
                 break;
         }
 

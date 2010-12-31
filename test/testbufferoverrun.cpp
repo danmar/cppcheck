@@ -1338,6 +1338,18 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: a\n", errout.str());
+
+        // Ticket #2385 - No false positive
+        check("void f() {\n"
+              "    int a[10];\n"
+              "    for (int i = 0; i < 20; ++i) {\n"
+              "        if (i<10) {\n"
+              "        } else {\n"
+              "            a[i-10] = 0;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
