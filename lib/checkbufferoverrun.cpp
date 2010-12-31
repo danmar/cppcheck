@@ -222,6 +222,9 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
         else if (str1 == "if" && tok->str() == "break")
             return true;
 
+        // bailout for "return"
+        else if (tok->str() == "return")
+            return true;
 
         // bailout if varid is found
         else if (tok->varId() == varid)
@@ -636,8 +639,24 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
             // Check the parameter usage in the function scope..
             for (; ftok; ftok = ftok->next())
             {
-                if (ftok->str() == "if")
-                    break;
+                if (Token::Match(ftok, "if|for|while ("))
+                {
+                    // bailout if there is buffer usage..
+                    if (bailoutIfSwitch(ftok, parameterVarId))
+                    {
+                        break;
+                    }
+
+                    // no bailout is needed. skip the if-block
+                    else
+                    {
+                        // goto end of if block..
+                        ftok = ftok->next()->link()->next()->link();
+                        if (Token::simpleMatch(ftok, "} else {"))
+                            ftok = ftok->tokAt(2)->link();
+                        continue;
+                    }
+                }
 
                 if (ftok->str() == "}")
                     break;

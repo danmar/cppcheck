@@ -131,6 +131,7 @@ private:
         TEST_CASE(buffer_overrun_14);
         TEST_CASE(buffer_overrun_15); // ticket #1787
         TEST_CASE(buffer_overrun_16);
+        TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
 
         // It is undefined behaviour to point out of bounds of an array
         // the address beyond the last element is in bounds
@@ -1546,7 +1547,7 @@ private:
               "  char s[3];\n"
               "  f1(s,3);\n"
               "}\n");
-        //ASSERT_EQUALS("[test.cpp:3]: (possible error) Buffer access out-of-bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
         ASSERT_EQUALS("", errout.str());
 
         check("void f1(char *s,int size)\n"
@@ -1832,6 +1833,44 @@ private:
               "    std::memcpy(b, a, sizeof(a));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void buffer_overrun_bailoutIfSwitch()
+    {
+        // No false positive
+        check("void f1(char *s) {\n"
+              "    if (x) s[100] = 0;\n"
+              "}\n"
+              "\n"
+              "void f2() {\n"
+              "    char a[10];\n"
+              "    f1(a);"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // No false positive
+        check("void f1(char *s) {\n"
+              "    if (x) return;\n"
+              "    s[100] = 0;\n"
+              "}\n"
+              "\n"
+              "void f2() {\n"
+              "    char a[10];\n"
+              "    f1(a);"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // No false negative
+        check("void f1(char *s) {\n"
+              "    if (x) { }\n"
+              "    s[100] = 0;\n"
+              "}\n"
+              "\n"
+              "void f2() {\n"
+              "    char a[10];\n"
+              "    f1(a);"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Array 'a[10]' index 100 out of bounds\n", errout.str());
     }
 
     void pointer_out_of_bounds_1()
