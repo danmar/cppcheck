@@ -319,8 +319,7 @@ void CheckOther::checkCatchExceptionByValue()
         // Find a pass-by-value declaration in the catch(), excluding basic types
         // e.g. catch (std::exception err)
         const Token *tokType = Token::findmatch(tok, "%type% %var% )", endTok);
-        if (tokType &&
-            !Token::Match(tokType, "bool|char|double|enum|float|int|long|short|size_t|wchar_t"))
+        if (tokType && !tokType->isStandardType())
         {
             catchExceptionByValueError(tokType);
         }
@@ -2800,7 +2799,7 @@ void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& va
 void CheckOther::catchExceptionByValueError(const Token *tok)
 {
     reportError(tok, Severity::style,
-                "catchExceptionByStyle", "Exception should be caught by reference.\n"
+                "catchExceptionByValue", "Exception should be caught by reference.\n"
                 "The exception is caught as a value. It could be caught "
                 "as a (const) reference which is usually recommended in C++.");
 }
