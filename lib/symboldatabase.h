@@ -267,6 +267,10 @@ public:
     const SpaceInfo *findVarType(const SpaceInfo *start, const Token *type) const;
 
 private:
+
+    // Needed by Borland C++:
+    friend class SpaceInfo;
+
     void addFunction(SpaceInfo **info, const Token **tok, const Token *argStart);
     void addNewFunction(SpaceInfo **info, const Token **tok);
 

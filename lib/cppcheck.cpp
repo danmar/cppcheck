@@ -32,8 +32,10 @@
 #include <ctime>
 #include "timer.h"
 
+#ifndef __BORLANDC__
 #define PCRE_STATIC
 #include <pcre.h>
+#endif
 
 static TimerResults S_timerResults;
 
@@ -301,6 +303,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
     }
 
+#ifndef __BORLANDC__
     // Are there extra rules?
     if (!_settings.rules.empty())
     {
@@ -370,6 +373,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             }
         }
     }
+#endif
 }
 
 Settings CppCheck::settings() const

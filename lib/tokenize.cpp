@@ -6023,9 +6023,9 @@ bool Tokenizer::simplifyKnownVariables()
                 }
 
                 // struct name..
-                const std::string structname(Token::Match(tok2->tokAt(-3), "[;{}] %var% .") ?
-                                             (tok2->strAt(-2) + " .") :
-                                             std::string(""));
+                const std::string structname = Token::Match(tok2->tokAt(-3), "[;{}] %var% .") ?
+                                               std::string(tok2->strAt(-2) + " .") :
+                                               std::string("");
 
                 if (tok2->str() == tok2->strAt(2))
                     continue;
