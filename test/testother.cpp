@@ -93,6 +93,7 @@ private:
 
         TEST_CASE(assignmentInAssert);
         TEST_CASE(incorrectLogicOperator);
+        TEST_CASE(catchExceptionByValue);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -125,6 +126,7 @@ private:
         checkOther.invalidScanf();
         checkOther.checkMisusedScopedObject();
         checkOther.checkIncorrectLogicOperator();
+        checkOther.checkCatchExceptionByValue();
     }
 
 
@@ -1514,6 +1516,100 @@ private:
               "        return true;\n"
               "    }\n"
               "    return false;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void catchExceptionByValue()
+    {
+        check("void f() {\n"
+              "    try\n"
+              "    {\n"
+              "        foo();\n"
+              "    }\n"
+              "    catch( ::std::exception err)\n"
+              "    {\n"
+              "        throw err;\n"
+              "    }\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:6]: (style) Exception should be caught by reference.\n", errout.str());
+
+        check("void f() {\n"
+              "    try\n"
+              "    {\n"
+              "        foo();\n"
+              "    }\n"
+              "    catch(const exception err)\n"
+              "    {\n"
+              "        throw err;\n"
+              "    }\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:6]: (style) Exception should be caught by reference.\n", errout.str());
+
+        check("void f() {\n"
+              "    try\n"
+              "    {\n"
+              "        foo();\n"
+              "    }\n"
+              "    catch( ::std::exception& err)\n"
+              "    {\n"
+              "        throw err;\n"
+              "    }\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    try\n"
+              "    {\n"
+              "        foo();\n"
+              "    }\n"
+              "    catch(exception* err)\n"
+              "    {\n"
+              "        throw err;\n"
+              "    }\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    try\n"
+              "    {\n"
+              "        foo();\n"
+              "    }\n"
+              "    catch(const exception& err)\n"
+              "    {\n"
+              "        throw err;\n"
+              "    }\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    try\n"
+              "    {\n"
+              "        foo();\n"
+              "    }\n"
+              "    catch(int err)\n"
+              "    {\n"
+              "        throw err;\n"
+              "    }\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    try\n"
+              "    {\n"
+              "        foo();\n"
+              "    }\n"
+              "    catch(exception* const err)\n"
+              "    {\n"
+              "        throw err;\n"
+              "    }\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());

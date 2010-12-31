@@ -303,6 +303,34 @@ void CheckOther::checkIncorrectLogicOperator()
 }
 
 //---------------------------------------------------------------------------
+//    try {} catch (std::exception err) {} <- Should be "std::exception& err"
+//---------------------------------------------------------------------------
+void CheckOther::checkCatchExceptionByValue()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const char catchPattern[] = "} catch (";
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), catchPattern);
+    const Token *endTok = tok ? tok->tokAt(2)->link() : NULL;
+
+    while (tok && endTok)
+    {
+        // Find a pass-by-value declaration in the catch(), excluding basic types
+        // e.g. catch (std::exception err)
+        const Token *tokType = Token::findmatch(tok, "%type% %var% )", endTok);
+        if (tokType &&
+            !Token::Match(tokType, "bool|char|double|enum|float|int|long|short|size_t|wchar_t"))
+        {
+            catchExceptionByValueError(tokType);
+        }
+
+        tok = Token::findmatch(endTok->next(), catchPattern);
+        endTok = tok ? tok->tokAt(2)->link() : NULL;
+    }
+}
+
+//---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
 
@@ -2767,4 +2795,12 @@ void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& va
 {
     reportError(tok, Severity::error,
                 "unusedScopedObject", "instance of \"" + varname + "\" object destroyed immediately");
+}
+
+void CheckOther::catchExceptionByValueError(const Token *tok)
+{
+    reportError(tok, Severity::style,
+                "catchExceptionByStyle", "Exception should be caught by reference.\n"
+                "The exception is caught as a value. It could be caught "
+                "as a (const) reference which is usually recommended in C++.");
 }

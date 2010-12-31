@@ -82,6 +82,7 @@ public:
         checkOther.checkSelfAssignment();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
+        checkOther.checkCatchExceptionByValue();
     }
 
     /** @brief Are there C-style pointer casts in a c++ file? */
@@ -162,6 +163,9 @@ public:
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
 
+    /** @brief %Check for exceptions that are caught by value instead of by reference */
+    void checkCatchExceptionByValue();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -183,6 +187,7 @@ public:
     void assignmentInAssertError(const Token *tok, const std::string &varname);
     void incorrectLogicOperatorError(const Token *tok);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
+    void catchExceptionByValueError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -218,6 +223,7 @@ public:
         c.allocatedButUnusedVariableError(0, "varname");
         c.unreadVariableError(0, "varname");
         c.unassignedVariableError(0, "varname");
+        c.catchExceptionByValueError(0);
     }
 
     std::string name() const
@@ -254,6 +260,7 @@ public:
                "* look for calculations inside sizeof()\n"
                "* assignment of a variable to itself\n"
                "* mutual exclusion over || always evaluating to true\n"
+               "* exception caught by value instead of by reference\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
