@@ -152,41 +152,41 @@ void CheckNullPointer::nullPointerAfterLoop()
     // Locate insufficient null-pointer handling after loop
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+        // only interested in while ( %var% )
+        // TODO: Aren't there false negatives. Shouldn't other loops be handled such as:
+        //       - while ( ! %var% )
+        //       - while ( %var% && .. )
         if (! Token::Match(tok, "while ( %var% )"))
             continue;
 
+        // Get variable id for the loop variable
         const unsigned int varid(tok->tokAt(2)->varId());
         if (varid == 0)
             continue;
 
+        // Get variable name for the loop variable
         const std::string varname(tok->strAt(2));
 
-        // Locate the end of the while loop..
-        const Token *tok2 = tok->tokAt(4);
-        if (tok2->str() == "{")
-            tok2 = tok2->link();
-        else
-        {
-            while (tok2 && tok2->str() != ";")
-                tok2 = tok2->next();
-        }
+        // Locate the end of the while loop body..
+        const Token *tok2 = tok->tokAt(4)->link();
 
-        // Goto next token
-        if (tok2)
-            tok2 = tok2->next();
-
-        // Check if the variable is dereferenced..
-        while (tok2)
+        // Check if the variable is dereferenced after the while loop
+        while (tok2 = tok2 ? tok2->next() : 0)
         {
+            // Don't check into inner scopes or outer scopes. Stop checking if "break" is found
             if (tok2->str() == "{" || tok2->str() == "}" || tok2->str() == "break")
                 break;
 
+            // loop variable is found..
             if (tok2->varId() == varid)
             {
+                // dummy variable.. is it unknown if pointer is dereferenced or not?
                 bool unknown = false;
+
+                // Is the loop variable dereferenced?
                 if (CheckNullPointer::isPointerDeRef(tok2, unknown))
                 {
-                    // Is this variable a pointer?
+                    // Is loop variable a pointer?
                     const Token *tok3 = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid);
                     if (!tok3)
                         break;
@@ -200,8 +200,6 @@ void CheckNullPointer::nullPointerAfterLoop()
                 }
                 break;
             }
-
-            tok2 = tok2->next();
         }
     }
 }
