@@ -301,13 +301,17 @@ void CheckNullPointer::nullPointerLinkedList()
 
 void CheckNullPointer::nullPointerStructByDeRefAndChec()
 {
-    // don't check vars that has been tested against null already
+    // Dereferencing a struct pointer and then checking if it's NULL..
+    
+    // skipvar: don't check vars that has been tested against null already
     std::set<unsigned int> skipvar;
     skipvar.insert(0);
 
-    // Dereferencing a struct pointer and then checking if it's NULL..
+    // Scan through all tokens
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
     {
+        // Checking if some pointer is null.
+        // then add the pointer to skipvar => is it known that it isn't NULL
         if (Token::Match(tok1, "if|while ( !| %var% )"))
         {
             tok1 = tok1->tokAt(2);
@@ -360,8 +364,10 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         if (skipvar.find(varid1) != skipvar.end())
             continue;
 
+        // name of struct pointer
         const std::string varname(tok1->str());
 
+        // count { and } using tok2
         unsigned int indentlevel2 = 0;
         for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())
         {
@@ -375,7 +381,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
                 --indentlevel2;
             }
 
-            // goto destination..
+            // label. goto destination..
             else if (tok2->isName() && Token::simpleMatch(tok2->next(), ":"))
                 break;
 
@@ -397,6 +403,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             else if (indentlevel2 == 0 && tok2->str() == "return")
                 break;
 
+            // Check if pointer is null.
+            // TODO: false negatives for something like: "if (p &&.."?
             else if (Token::Match(tok2, "if ( !| %varid% )", varid1))
             {
                 // Is this variable a pointer?
