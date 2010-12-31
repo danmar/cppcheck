@@ -302,7 +302,7 @@ void CheckNullPointer::nullPointerLinkedList()
 void CheckNullPointer::nullPointerStructByDeRefAndChec()
 {
     // Dereferencing a struct pointer and then checking if it's NULL..
-    
+
     // skipvar: don't check vars that has been tested against null already
     std::set<unsigned int> skipvar;
     skipvar.insert(0);
