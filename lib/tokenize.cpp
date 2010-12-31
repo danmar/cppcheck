@@ -1116,7 +1116,7 @@ void Tokenizer::simplifyTypedef()
             bool exitThisScope = false;
             int exitScope = 0;
             bool simplifyType = false;
-            unsigned int classLevel = spaceInfo.size();
+            std::size_t classLevel = spaceInfo.size();
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
@@ -1127,7 +1127,7 @@ void Tokenizer::simplifyTypedef()
                         --classLevel;
                         pattern.clear();
 
-                        for (unsigned int i = classLevel; i < spaceInfo.size(); i++)
+                        for (std::size_t i = classLevel; i < spaceInfo.size(); i++)
                             pattern += (spaceInfo[i].className + " :: ");
 
                         pattern += typeName->str();
@@ -1153,7 +1153,7 @@ void Tokenizer::simplifyTypedef()
                 {
                     if (pattern != typeName->str()) // has a "something ::"
                     {
-                        for (unsigned int i = classLevel; i < spaceInfo.size(); i++)
+                        for (std::size_t i = classLevel; i < spaceInfo.size(); i++)
                         {
                             tok2->deleteNext();
                             tok2->deleteNext();
@@ -2323,7 +2323,7 @@ void Tokenizer::arraySize()
 
         else if (Token::Match(tok, "%var% [ ] = %str% ;"))
         {
-            unsigned int sz = tok->strAt(4).length() - 1;
+            std::size_t sz = tok->strAt(4).length() - 1;
             tok->next()->insertToken(MathLib::toString<unsigned int>(sz));
         }
     }
@@ -2604,7 +2604,7 @@ void Tokenizer::simplifyTemplates()
     for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
     {
         std::list<Token *> eq;
-        unsigned int templatepar = 1;
+        std::size_t templatepar = 1;
         std::string classname;
         for (Token *tok = *iter1; tok; tok = tok->next())
         {
@@ -2648,7 +2648,7 @@ void Tokenizer::simplifyTemplates()
             {
                 tok = tok->previous();
                 std::list<Token *>::const_iterator it = eq.begin();
-                for (unsigned int i = (templatepar - eq.size()); it != eq.end() && i < usedpar; ++i)
+                for (std::size_t i = (templatepar - eq.size()); it != eq.end() && i < usedpar; ++i)
                     ++it;
                 while (it != eq.end())
                 {
