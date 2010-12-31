@@ -47,7 +47,7 @@ public:
     class Var
     {
     public:
-        Var(const Token *token_, unsigned int index_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const SpaceInfo *type_)
+        Var(const Token *token_, std::size_t index_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const SpaceInfo *type_)
             : token(token_),
               index(index_),
               assign(false),
@@ -65,7 +65,7 @@ public:
         const Token *token;
 
         /** @brief order declared */
-        unsigned int index;
+        std::size_t index;
 
         /** @brief has this variable been assigned? */
         bool        assign;
