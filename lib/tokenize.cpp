@@ -2324,7 +2324,7 @@ void Tokenizer::arraySize()
         else if (Token::Match(tok, "%var% [ ] = %str% ;"))
         {
             std::size_t sz = tok->strAt(4).length() - 1;
-            tok->next()->insertToken(MathLib::toString<unsigned int>(sz));
+            tok->next()->insertToken(MathLib::toString<unsigned int>((unsigned int)sz));
         }
     }
 }
@@ -8125,7 +8125,7 @@ std::string Tokenizer::simplifyString(const std::string &source)
                 // We will replace all other character as 'a'
                 // If that causes problems in the future, this can
                 // be improved. But for now, this should be OK.
-                unsigned char n = 1;
+                unsigned int n = 1;
                 while (n < 2 && std::isxdigit(str[i+1+n]))
                     ++n;
                 --i;

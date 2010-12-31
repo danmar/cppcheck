@@ -813,7 +813,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             (varid == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str())))
         {
             const std::size_t len = Token::getStrLength(tok->tokAt(varc + 4));
-            if (total_size > 0 && len >= total_size)
+            if (total_size > 0 && len >= (unsigned int)total_size)
             {
                 bufferOverrun(tok, varid > 0 ? "" : varnames.c_str());
                 continue;
@@ -1071,7 +1071,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", arrayInfo.varid))
         {
             const std::size_t len = Token::getStrLength(tok->tokAt(4));
-            if (total_size > 0 && len >= total_size)
+            if (total_size > 0 && len >= (unsigned int)total_size)
             {
                 bufferOverrun(tok, arrayInfo.varname);
                 continue;
@@ -1087,7 +1087,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             while (tok2 && Token::Match(tok2, "strcat ( %varid% , %str% ) ;", arrayInfo.varid))
             {
                 charactersAppend += Token::getStrLength(tok2->tokAt(4));
-                if (charactersAppend >= total_size)
+                if (charactersAppend >= (unsigned int)total_size)
                 {
                     bufferOverrun(tok2, arrayInfo.varname);
                     break;
@@ -1542,7 +1542,7 @@ MathLib::bigint CheckBufferOverrun::countSprintfLength(const std::string &input_
         }
     }
 
-    return input_string_size;
+    return (MathLib::bigint)input_string_size;
 }
 
 void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigint size)

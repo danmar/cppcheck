@@ -110,7 +110,7 @@ int ThreadExecutor::handleRead(unsigned int &result)
         unsigned int fileResult = 0;
         iss >> fileResult;
         result += fileResult;
-        _errorLogger.reportStatus(_fileCount, _filenames.size());
+        _errorLogger.reportStatus(_fileCount, (unsigned int)_filenames.size());
         delete [] buf;
         return -1;
     }
@@ -216,7 +216,7 @@ unsigned int ThreadExecutor::check()
 
 void ThreadExecutor::writeToPipe(char type, const std::string &data)
 {
-    unsigned int len = data.length() + 1;
+    std::size_t len = data.length() + 1;
     char *out = new char[ len + 1 + sizeof(len)];
     out[0] = type;
     std::memcpy(&(out[1]), &len, sizeof(len));
