@@ -145,7 +145,27 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     return false;
 }
 
+bool CheckNullPointer::isPointer(const unsigned int varid)
+{
+    // Check if given variable is a pointer
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
+    tok = tok->tokAt(-2);
 
+    // maybe not a pointer
+    if (!Token::Match(tok, "%type% * %varid% [;)=]", varid))
+        return false;
+
+    // it is a pointer
+    if (!tok->previous() ||
+        Token::Match(tok->previous(), "[({};]") ||
+        tok->previous()->isName())
+    {
+        return true;
+    }
+
+    // it is not a pointer
+    return false;
+}
 
 void CheckNullPointer::nullPointerAfterLoop()
 {
@@ -187,16 +207,8 @@ void CheckNullPointer::nullPointerAfterLoop()
                 if (CheckNullPointer::isPointerDeRef(tok2, unknown))
                 {
                     // Is loop variable a pointer?
-                    const Token *tok3 = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid);
-                    if (!tok3)
-                        break;
-
-                    if (!tok3->previous() ||
-                        Token::Match(tok3->previous(), "[({};]") ||
-                        tok3->previous()->isName())
-                    {
+                    if (isPointer(varid))
                         nullPointerError(tok2, varname);
-                    }
                 }
                 break;
             }
@@ -277,8 +289,7 @@ void CheckNullPointer::nullPointerLinkedList()
                                 if (indentlevel4 <= 1)
                                 {
                                     // Is this variable a pointer?
-                                    const Token *tempTok = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid);
-                                    if (tempTok)
+                                    if (isPointer(varid))
                                         nullPointerError(tok1, varname, tok3->linenr());
 
                                     break;
@@ -408,8 +419,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             else if (Token::Match(tok2, "if ( !| %varid% )", varid1))
             {
                 // Is this variable a pointer?
-                const Token *tempTok = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid1);
-                if (tempTok)
+                if (isPointer(varid1))
                     nullPointerError(tok1, varname, tok2->linenr());
                 break;
             }
@@ -431,9 +441,10 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             const std::string varname(tok->strAt(3));
 
             // Check that variable is a pointer..
-            const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
-            if (!Token::Match(decltok->tokAt(-3), "[{};,(] %type% *"))
+            if (!isPointer(varid))
                 continue;
+
+            const Token * const decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
 
             for (const Token *tok1 = tok->previous(); tok1 && tok1 != decltok; tok1 = tok1->previous())
             {

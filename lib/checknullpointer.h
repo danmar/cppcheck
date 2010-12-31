@@ -124,6 +124,12 @@ public:
 private:
 
     /**
+     * Check if a variable is a pointer
+     * @param varid variable id for variable
+     */
+    bool isPointer(const unsigned int varid);
+
+    /**
      * @brief Does one part of the check for nullPointer().
      * Locate insufficient null-pointer handling after loop
      */
