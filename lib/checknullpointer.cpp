@@ -171,7 +171,7 @@ void CheckNullPointer::nullPointerAfterLoop()
         const Token *tok2 = tok->tokAt(4)->link();
 
         // Check if the variable is dereferenced after the while loop
-        while (tok2 = tok2 ? tok2->next() : 0)
+        while (0 != (tok2 = tok2 ? tok2->next() : 0))
         {
             // Don't check into inner scopes or outer scopes. Stop checking if "break" is found
             if (tok2->str() == "{" || tok2->str() == "}" || tok2->str() == "break")
