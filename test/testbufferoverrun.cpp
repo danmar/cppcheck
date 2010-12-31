@@ -195,6 +195,7 @@ private:
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
         TEST_CASE(executionPaths3);   // no FP for function parameter
+        TEST_CASE(executionPaths4);   // Ticket #2386 - Segmentation fault in the ExecutionPath handling
 
         TEST_CASE(cmdLineArgs1);
 
@@ -2680,6 +2681,17 @@ private:
                 "    } else {\n"
                 "        int wordlen = ab();\n"
                 "        VLtext[wordlen] = 0;\n"
+                "    }\n"
+                "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void executionPaths4()
+    {
+        // Ticket #2386 - Segmentation fault upon strange syntax
+        epcheck("void f() {\n"
+                "    switch ( x ) {\n"
+                "        case struct Tree : break;\n"
                 "    }\n"
                 "}\n");
         ASSERT_EQUALS("", errout.str());

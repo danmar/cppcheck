@@ -8415,8 +8415,10 @@ void Tokenizer::simplifyStructDecl()
             Token *type = tok->next();
             Token *next = tok->tokAt(2);
 
-            while (next->str() != "{")
+            while (next && next->str() != "{")
                 next = next->next();
+            if (!next)
+                continue;
 
             tok = next->link();
             restart = next;

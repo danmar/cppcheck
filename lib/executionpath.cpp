@@ -341,6 +341,11 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
             while (tok && tok->str() != "{" && tok->str() != ";")
                 tok = tok->next();
             tok = tok ? tok->link() : 0;
+            if (!tok)
+            {
+                ExecutionPath::bailOut(checks);
+                return;
+            }
         }
 
         if (Token::Match(tok, "= {"))
