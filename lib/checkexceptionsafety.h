@@ -51,6 +51,7 @@ public:
         : Check(tokenizer, settings, errorLogger)
     { }
 
+    /** Checks that uses the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckExceptionSafety checkExceptionSafety(tokenizer, settings, errorLogger);
@@ -58,11 +59,10 @@ public:
         checkExceptionSafety.deallocThrow();
     }
 
-
     /** Don't throw exceptions in destructors */
     void destructors();
 
-    /** deallocating memory and then throw */
+    /** deallocating memory and then throw (dead pointer) */
     void deallocThrow();
 
 private:

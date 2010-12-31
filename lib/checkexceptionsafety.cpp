@@ -41,9 +41,11 @@ void CheckExceptionSafety::destructors()
     // Perform check..
     for (const Token * tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+        // Skip executable scopes
         if (Token::simpleMatch(tok, ") {"))
             tok = tok->next()->link();
 
+        // only looking for destructors
         if (!Token::Match(tok, "~ %var% ( ) {"))
             continue;
 
@@ -63,6 +65,7 @@ void CheckExceptionSafety::destructors()
                 --indentlevel;
             }
 
+            // throw found within a destructor
             else if (tok2->str() == "throw")
             {
                 destructorsError(tok2);
@@ -77,8 +80,11 @@ void CheckExceptionSafety::destructors()
 
 void CheckExceptionSafety::deallocThrow()
 {
+    // Deallocate a global/member pointer and then throw exception
+    // the pointer will be a dead pointer
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+        // only looking for delete now
         if (tok->str() != "delete")
             continue;
 
@@ -96,6 +102,7 @@ void CheckExceptionSafety::deallocThrow()
 
         // is this variable a global variable?
         {
+            // TODO: Isn't it better to use symbol database instead?
             bool globalVar = false;
             for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next())
             {
@@ -121,13 +128,19 @@ void CheckExceptionSafety::deallocThrow()
                         break;
                 }
             }
+
+            // Not a global variable.. skip checking this var.
             if (!globalVar)
                 continue;
         }
 
-        // is there a throw after the deallocation?
+        // indentlevel..
         unsigned int indentlevel = 0;
+
+        // Token where throw occurs
         const Token *ThrowToken = 0;
+
+        // is there a throw after the deallocation?
         for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "{")
@@ -142,6 +155,8 @@ void CheckExceptionSafety::deallocThrow()
             if (tok2->str() == "throw")
                 ThrowToken = tok2;
 
+            // if the variable is not assigned after the throw then it
+            // is assumed that it is not the intention that it is a dead pointer.
             else if (Token::Match(tok2, "%varid% =", varid))
             {
                 if (ThrowToken)
