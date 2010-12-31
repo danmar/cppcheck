@@ -206,14 +206,20 @@ void CheckNullPointer::nullPointerAfterLoop()
 
 void CheckNullPointer::nullPointerLinkedList()
 {
-    // looping through items in a linked list in a inner loop..
+    // looping through items in a linked list in a inner loop.
+    // Here is an example:
+    //    for (const Token *tok = tokens; tok; tok = tok->next) {
+    //        if (tok->str() == "hello")
+    //            tok = tok->next;   // <- tok might become a null pointer!
+    //    }
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
     {
         // search for a "for" token..
         if (!Token::simpleMatch(tok1, "for ("))
             continue;
 
-        // is there any dereferencing occurring in the for statement..
+        // is there any dereferencing occurring in the for statement
+        // parlevel2 counts the parantheses when using tok2.
         unsigned int parlevel2 = 1;
         for (const Token *tok2 = tok1->tokAt(2); tok2; tok2 = tok2->next())
         {
@@ -230,6 +236,7 @@ void CheckNullPointer::nullPointerLinkedList()
             // Dereferencing a variable inside the "for" parentheses..
             else if (Token::Match(tok2, "%var% . %var%"))
             {
+                // Variable id for dereferenced variable
                 const unsigned int varid(tok2->varId());
                 if (varid == 0)
                     continue;
@@ -237,6 +244,7 @@ void CheckNullPointer::nullPointerLinkedList()
                 if (Token::Match(tok2->tokAt(-2), "%varid% ?", varid))
                     continue;
 
+                // Variable name of dereferenced variable
                 const std::string varname(tok2->str());
 
                 // Check usage of dereferenced variable in the loop..
@@ -251,9 +259,14 @@ void CheckNullPointer::nullPointerLinkedList()
                             break;
                         --indentlevel3;
                     }
+
+                    // TODO: are there false negatives for "while ( %varid% ||"
                     else if (Token::Match(tok3, "while ( %varid% &&|)", varid))
                     {
-                        // Make sure there is a "break" to prevent segmentation faults..
+                        // Make sure there is a "break" or "return" inside the loop.
+                        // Without the "break" a null pointer could be dereferenced in the
+                        // for statement.
+                        // indentlevel4 is a counter for { and }. When scanning the code with tok4
                         unsigned int indentlevel4 = indentlevel3;
                         for (const Token *tok4 = tok3->next()->link(); tok4; tok4 = tok4->next())
                         {
@@ -272,6 +285,10 @@ void CheckNullPointer::nullPointerLinkedList()
                                 }
                                 --indentlevel4;
                             }
+
+                            // There is a "break" or "return" inside the loop.
+                            // TODO: there can be false negatives. There could still be
+                            //       execution paths that are not properly terminated
                             else if (tok4->str() == "break" || tok4->str() == "return")
                                 break;
                         }
