@@ -61,7 +61,7 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, MathLib::bigint
     }
 }
 
-void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<unsigned int> &index)
+void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
 {
     std::ostringstream oss;
     oss << "Array '" << arrayInfo.varname;
@@ -80,7 +80,7 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, const ArrayInfo
     reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str().c_str());
 }
 
-void CheckBufferOverrun::arrayIndexOutOfBounds(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<unsigned int> &index)
+void CheckBufferOverrun::arrayIndexOutOfBounds(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
 {
     std::ostringstream oss;
     oss << "Array '" << arrayInfo.varname;
@@ -541,7 +541,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
                     if (Token::Match(tok2, ", %num% ,|)"))
                     {
                         const MathLib::bigint sz = MathLib::toLongNumber(tok2->strAt(1));
-                        unsigned int elements = 1;
+                        MathLib::bigint elements = 1;
                         for (unsigned int i = 0; i < arrayInfo.num.size(); ++i)
                             elements *= arrayInfo.num[i];
                         if (sz < 0 || sz > int(elements * arrayInfo.element_size))
@@ -563,7 +563,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
                     if (Token::Match(tok2, ", %num% , %num% ,|)"))
                     {
                         const MathLib::bigint sz = MathLib::toLongNumber(MathLib::multiply(tok2->strAt(1), tok2->strAt(3)));
-                        unsigned int elements = 1;
+                        MathLib::bigint elements = 1;
                         for (unsigned int i = 0; i < arrayInfo.num.size(); ++i)
                             elements *= arrayInfo.num[i];
                         if (sz < 0 || sz > int(elements * arrayInfo.element_size))
@@ -630,14 +630,14 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
                     if (Token::Match(ftok->previous(), "[=+-*/;{}] %var% [ %num% ]"))
                     {
                         const MathLib::bigint index = MathLib::toLongNumber(ftok->strAt(2));
-                        if (index >= 0 && arrayInfo.num[0] > 0 && static_cast<unsigned long>(index) >= arrayInfo.num[0])
+                        if (index >= 0 && arrayInfo.num[0] > 0 && index >= arrayInfo.num[0])
                         {
                             std::list<const Token *> callstack;
                             callstack.push_back(&tok);
                             callstack.push_back(ftok);
 
-                            std::vector<unsigned int> indexes;
-                            indexes.push_back(static_cast<unsigned long>(index));
+                            std::vector<MathLib::bigint> indexes;
+                            indexes.push_back(index);
 
                             arrayIndexOutOfBounds(callstack, arrayInfo, indexes);
                         }
@@ -812,8 +812,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         if ((varid > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", varid)) ||
             (varid == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str())))
         {
-            const size_t len = Token::getStrLength(tok->tokAt(varc + 4));
-            if (total_size > 0 && len >= static_cast<unsigned int>(total_size))
+            const std::size_t len = Token::getStrLength(tok->tokAt(varc + 4));
+            if (total_size > 0 && len >= total_size)
             {
                 bufferOverrun(tok, varid > 0 ? "" : varnames.c_str());
                 continue;
@@ -868,7 +868,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
 void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo)
 {
-    const unsigned int total_size = arrayInfo.num[0] * arrayInfo.element_size;
+    const MathLib::bigint total_size = arrayInfo.num[0] * arrayInfo.element_size;
 
     unsigned int indentlevel = 0;
     for (; tok; tok = tok->next())
@@ -887,7 +887,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
         else if (Token::Match(tok, "%varid% [ %num% ]", arrayInfo.varid))
         {
-            std::vector<unsigned int> indexes;
+            std::vector<MathLib::bigint> indexes;
             for (const Token *tok2 = tok->next(); Token::Match(tok2, "[ %num% ]"); tok2 = tok2->tokAt(3))
             {
                 const MathLib::bigint index = MathLib::toLongNumber(tok2->strAt(1));
@@ -896,7 +896,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     indexes.clear();
                     break;
                 }
-                indexes.push_back(static_cast<unsigned int>(index));
+                indexes.push_back(index);
             }
             if (indexes.size() == arrayInfo.num.size())
             {
@@ -906,15 +906,15 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 // a[9][20]  <-- error.
 
                 // total number of elements of array..
-                unsigned int totalElements = 1;
+                MathLib::bigint totalElements = 1;
 
                 // total index..
-                unsigned int totalIndex = 0;
+                MathLib::bigint totalIndex = 0;
 
                 // calculate the totalElements and totalIndex..
                 for (unsigned int i = 0; i < indexes.size(); ++i)
                 {
-                    unsigned int ri = indexes.size() - 1 - i;
+                    std::size_t ri = indexes.size() - 1 - i;
                     totalIndex += indexes[ri] * totalElements;
                     totalElements *= arrayInfo.num[ri];
                 }
@@ -1054,7 +1054,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             if (tok->str() == "strncat")
             {
                 const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6));
-                if (static_cast<unsigned long>(n) >= total_size)
+                if (n >= total_size)
                     strncatUsage(tok);
             }
 
@@ -1062,7 +1062,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             if (Token::Match(tok->tokAt(8), "; strncat ( %varid% , %any% , %num% )", arrayInfo.varid))
             {
                 const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6)) + MathLib::toLongNumber(tok->strAt(15));
-                if (static_cast<unsigned long>(n) > total_size)
+                if (n > total_size)
                     strncatUsage(tok->tokAt(9));
             }
         }
@@ -1070,7 +1070,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         // Writing data into array..
         if (Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", arrayInfo.varid))
         {
-            const unsigned long len = Token::getStrLength(tok->tokAt(4));
+            const std::size_t len = Token::getStrLength(tok->tokAt(4));
             if (total_size > 0 && len >= total_size)
             {
                 bufferOverrun(tok, arrayInfo.varname);
@@ -1081,13 +1081,13 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         // Detect few strcat() calls
         if (total_size > 0 && Token::Match(tok, "strcat ( %varid% , %str% ) ;", arrayInfo.varid))
         {
-            size_t charactersAppend = 0;
+            std::size_t charactersAppend = 0;
             const Token *tok2 = tok;
 
             while (tok2 && Token::Match(tok2, "strcat ( %varid% , %str% ) ;", arrayInfo.varid))
             {
                 charactersAppend += Token::getStrLength(tok2->tokAt(4));
-                if (charactersAppend >= static_cast<size_t>(total_size))
+                if (charactersAppend >= total_size)
                 {
                     bufferOverrun(tok2, arrayInfo.varname);
                     break;
@@ -1106,7 +1106,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (total_size > 0 && Token::Match(tok, "snprintf ( %varid% , %num% ,", arrayInfo.varid))
         {
             const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4));
-            if (static_cast<unsigned long>(n) > total_size)
+            if (n > total_size)
                 outOfBounds(tok->tokAt(4), "snprintf size");
         }
 
@@ -1434,15 +1434,15 @@ void CheckBufferOverrun::bufferOverrun()
 //---------------------------------------------------------------------------
 
 
-unsigned int CheckBufferOverrun::countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters)
+MathLib::bigint CheckBufferOverrun::countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters)
 {
     bool percentCharFound = false;
-    unsigned int input_string_size = 1;
+    std::size_t input_string_size = 1;
     bool handleNextParameter = false;
     std::string digits_string = "";
     bool i_d_x_f_found = false;
     std::list<const Token*>::const_iterator paramIter = parameters.begin();
-    unsigned int parameterLength = 0;
+    std::size_t parameterLength = 0;
     for (std::string::size_type i = 0; i < input_string.length(); ++i)
     {
         if (input_string[i] == '\\')
@@ -1545,7 +1545,7 @@ unsigned int CheckBufferOverrun::countSprintfLength(const std::string &input_str
     return input_string_size;
 }
 
-void CheckBufferOverrun::checkSprintfCall(const Token *tok, const unsigned int size)
+void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigint size)
 {
     if (size == 0)
         return;
@@ -1608,7 +1608,7 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, const unsigned int s
         }
     }
 
-    unsigned int len = countSprintfLength(tok->tokAt(4 + varc)->strValue(), parameters);
+    MathLib::bigint len = countSprintfLength(tok->tokAt(4 + varc)->strValue(), parameters);
     if (len > size)
     {
         bufferOverrun(tok);
@@ -1845,7 +1845,7 @@ CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(const C
  * checking should be based on ArrayInfo from the start and then
  * this will not be needed as the declare can be used instead.
  */
-CheckBufferOverrun::ArrayInfo::ArrayInfo(unsigned int id, const std::string &name, unsigned int size1, unsigned int n)
+CheckBufferOverrun::ArrayInfo::ArrayInfo(unsigned int id, const std::string &name, MathLib::bigint size1, MathLib::bigint n)
     :	num(_num), element_size(_element_size), varid(_varid), varname(_varname)
 {
     _element_size = size1;
@@ -1856,8 +1856,8 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(unsigned int id, const std::string &nam
 
 CheckBufferOverrun::ArrayInfo CheckBufferOverrun::ArrayInfo::limit(MathLib::bigint value) const
 {
-    unsigned long uvalue = (unsigned long)std::max(MathLib::bigint(0), value);
-    unsigned int n = 1;
+    MathLib::bigint uvalue = std::max(MathLib::bigint(0), value);
+    MathLib::bigint n = 1;
     for (unsigned int i = 0; i < num.size(); ++i)
         n *= num[i];
     if (uvalue > n)
@@ -1918,7 +1918,7 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
 
     while (Token::Match(atok, "%num% ] ;|=|["))
     {
-        _num.push_back((unsigned long)MathLib::toLongNumber(atok->str()));
+        _num.push_back(MathLib::toLongNumber(atok->str()));
         atok = atok->next();
         if (Token::simpleMatch(atok, "] ["))
             atok = atok->tokAt(2);
@@ -1973,7 +1973,7 @@ private:
     }
 
     /** @brief Variable value. */
-    unsigned int value;
+    MathLib::bigint value;
 
     /**
      * @brief Assign value to a variable
@@ -1991,7 +1991,7 @@ private:
         {
             ExecutionPathBufferOverrun *c = dynamic_cast<ExecutionPathBufferOverrun *>(*it);
             if (c && c->varId == varid)
-                c->value = (unsigned long)MathLib::toLongNumber(value);
+                c->value = MathLib::toLongNumber(value);
         }
     }
 
@@ -2029,7 +2029,7 @@ private:
                 CheckBufferOverrun *checkBufferOverrun = dynamic_cast<CheckBufferOverrun *>(c->owner);
                 if (checkBufferOverrun)
                 {
-                    std::vector<unsigned int> index;
+                    std::vector<MathLib::bigint> index;
                     index.push_back(c->value);
                     checkBufferOverrun->arrayIndexOutOfBounds(tok, ai, index);
                     break;

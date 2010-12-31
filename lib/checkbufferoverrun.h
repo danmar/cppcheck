@@ -80,7 +80,7 @@ public:
      * @param parameters given parameters to sprintf
      * @return minimum length of resulting string
      */
-    static unsigned int countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters);
+    static MathLib::bigint countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters);
 
     /**
      * @brief %Check code that matches: "sprintf ( %varid% , %str% [,)]" when varid is not 0,
@@ -88,7 +88,7 @@ public:
      * @param tok The "sprintf" token.
      * @param size The size of the buffer where sprintf is writing.
      */
-    void checkSprintfCall(const Token *tok, const unsigned int size);
+    void checkSprintfCall(const Token *tok, const MathLib::bigint size);
 
     /** Check for buffer overruns - locate struct variables and check them with the .._CheckScope function */
     void checkStructVariable();
@@ -113,10 +113,10 @@ public:
     {
     private:
         /** number of elements of array */
-        std::vector<unsigned int> _num;
+        std::vector<MathLib::bigint> _num;
 
         /** size of each element in array */
-        unsigned int _element_size;
+        MathLib::bigint _element_size;
 
         /** variable id */
         unsigned int _varid;
@@ -135,7 +135,7 @@ public:
          * checking should be based on ArrayInfo from the start and then
          * this will not be needed as the declare can be used instead.
          */
-        ArrayInfo(unsigned int id, const std::string &name, unsigned int size1, unsigned int n);
+        ArrayInfo(unsigned int id, const std::string &name, MathLib::bigint size1, MathLib::bigint n);
 
         /** Create a copy ArrayInfo where the number of elements have been limited by a value */
         ArrayInfo limit(MathLib::bigint value) const;
@@ -149,10 +149,10 @@ public:
         bool declare(const Token *tok, const Tokenizer &tokenizer);
 
         /** array size */
-        const std::vector<unsigned int> &num;
+        const std::vector<MathLib::bigint> &num;
 
         /** size of each element */
-        const unsigned int &element_size;
+        const MathLib::bigint &element_size;
 
         /** Variable name */
         const unsigned int &varid;
@@ -177,8 +177,8 @@ public:
     void checkFunctionCall(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo);
 
     void arrayIndexOutOfBounds(const Token *tok, MathLib::bigint size, MathLib::bigint index);
-    void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<unsigned int> &index);
-    void arrayIndexOutOfBounds(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<unsigned int> &index);
+    void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
+    void arrayIndexOutOfBounds(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void bufferOverrun(const Token *tok, const std::string &varnames = "");
     void strncatUsage(const Token *tok);
     void outOfBounds(const Token *tok, const std::string &what);
