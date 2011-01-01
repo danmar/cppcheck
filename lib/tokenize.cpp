@@ -1184,6 +1184,10 @@ void Tokenizer::simplifyTypedef()
                                 simplifyType = true;
                             }
                         }
+                        else if (Token::Match(tok2->previous(), "case %type% :"))
+                        {
+                            tok2 = tok2->next();
+                        }
                         else if (duplicateTypedef(&tok2, typeName))
                         {
                             exitScope = scope;
