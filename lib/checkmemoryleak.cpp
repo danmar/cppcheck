@@ -1574,6 +1574,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 {
                     if (indent <= 1)
                     {
+                        // If the start/end braces are redundant, delete them
                         if (indent == 1 && Token::Match(end->previous(), "[;{}] } %any%"))
                         {
                             start->deleteNext();
@@ -1588,6 +1589,8 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
     }
 
     // reduce the code..
+    // it will be reduced in N passes. When a pass completes without any
+    // simplifications the loop is done.
     bool done = false;
     while (! done)
     {
@@ -1604,6 +1607,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             }
         }
 
+        // If the code starts with "if return ;" then remove it
         if (Token::Match(tok, ";| if return ;"))
         {
             tok->deleteThis();
@@ -1647,6 +1651,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             }
         }
 
+        // Main inner simplification loop
         for (Token *tok2 = tok; tok2; tok2 = tok2 ? tok2->next() : NULL)
         {
             // Delete extra ";"
