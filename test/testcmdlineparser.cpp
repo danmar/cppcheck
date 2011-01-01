@@ -122,7 +122,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(2, argv));
-        ASSERT_EQUALS(1, parser.GetPathNames().size());
+        ASSERT_EQUALS(1, (int)parser.GetPathNames().size());
         ASSERT_EQUALS("file.cpp", parser.GetPathNames().at(0));
     }
 
@@ -133,7 +133,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(2, argv));
-        ASSERT_EQUALS(1, parser.GetPathNames().size());
+        ASSERT_EQUALS(1, (int)parser.GetPathNames().size());
         ASSERT_EQUALS("src", parser.GetPathNames().at(0));
     }
 
@@ -144,7 +144,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT_EQUALS(false, parser.ParseFromArgs(2, argv));
-        ASSERT_EQUALS(0, parser.GetPathNames().size());
+        ASSERT_EQUALS(0, (int)parser.GetPathNames().size());
     }
 
     void verboseshort()

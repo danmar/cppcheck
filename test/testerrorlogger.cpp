@@ -63,7 +63,7 @@ private:
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
         ErrorMessage msg(locs, Severity::error, "Programming error.", "errorId");
-        ASSERT_EQUALS(1, msg._callStack.size());
+        ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Programming error.", msg.verboseMessage());
         ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(false));
@@ -78,7 +78,7 @@ private:
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
-        ASSERT_EQUALS(1, msg._callStack.size());
+        ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(false));
@@ -93,7 +93,7 @@ private:
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
-        ASSERT_EQUALS(1, msg._callStack.size());
+        ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS("foo.cpp:5,error,errorId,Programming error.", msg.toString(false, "{file}:{line},{severity},{id},{message}"));
@@ -108,7 +108,7 @@ private:
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
-        ASSERT_EQUALS(1, msg._callStack.size());
+        ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS("Programming error. - foo.cpp(5):(error,errorId)", msg.toString(false, "{message} - {file}({line}):({severity},{id})"));

@@ -1070,7 +1070,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, (int)actual.size());
         ASSERT_EQUALS("\n\na1;\n\n", actual[""]);
     }
 
@@ -1088,7 +1088,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, (int)actual.size());
         ASSERT_EQUALS("\n\n", actual[""]);
     }
 
@@ -1107,7 +1107,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, (int)actual.size());
         ASSERT_EQUALS("\nabc\n\n", actual[""]);
     }
 
@@ -1163,7 +1163,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, (int)actual.size());
         ASSERT_EQUALS("\n\n\n", actual[""]);
 
         // the "defined(DEF_10) || defined(DEF_11)" are not handled correctly..
@@ -2229,7 +2229,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS("\n\n\n\nB\n\n", actual[""]);
-            ASSERT_EQUALS(1, actual.size());
+            ASSERT_EQUALS(1, (int)actual.size());
         }
 
         {
@@ -2247,7 +2247,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS("\n\n1\n\n", actual[""]);
-            ASSERT_EQUALS(1, actual.size());
+            ASSERT_EQUALS(1, (int)actual.size());
         }
 
         {
@@ -2265,7 +2265,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS("\n\n1\n\n", actual[""]);
-            ASSERT_EQUALS(1, actual.size());
+            ASSERT_EQUALS(1, (int)actual.size());
         }
 
         {
@@ -2283,7 +2283,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS("\n\n1\n\n", actual[""]);
-            ASSERT_EQUALS(1, actual.size());
+            ASSERT_EQUALS(1, (int)actual.size());
         }
     }
 
@@ -2304,7 +2304,7 @@ private:
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n", actual[""]);
         TODO_ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2, (int)actual.size());
     }
 
     void define_ifndef2()
@@ -2347,7 +2347,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(4U, actual.size());
+        ASSERT_EQUALS(4, (int)actual.size());
         ASSERT(actual.find("") != actual.end());
         ASSERT(actual.find("BAR") != actual.end());
         ASSERT(actual.find("FOO") != actual.end());
@@ -2370,7 +2370,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("char a[] = \"#endfile\";\nchar b[] = \"#endfile\";\n\n", actual[""]);
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, (int)actual.size());
     }
 };
 

@@ -96,16 +96,16 @@ private:
         Token tok(0);
 
         tok.str("\"\"");
-        ASSERT_EQUALS(0, Token::getStrLength(&tok));
+        ASSERT_EQUALS(0, (int)Token::getStrLength(&tok));
 
         tok.str("\"test\"");
-        ASSERT_EQUALS(4, Token::getStrLength(&tok));
+        ASSERT_EQUALS(4, (int)Token::getStrLength(&tok));
 
         tok.str("\"test \\\\test\"");
-        ASSERT_EQUALS(10, Token::getStrLength(&tok));
+        ASSERT_EQUALS(10, (int)Token::getStrLength(&tok));
 
         tok.str("\"a\\0\"");
-        ASSERT_EQUALS(1, Token::getStrLength(&tok));
+        ASSERT_EQUALS(1, (int)Token::getStrLength(&tok));
     }
 
     void strValue()

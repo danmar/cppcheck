@@ -42,7 +42,7 @@ private:
         ful.recursiveAddFiles2(relative, absolute, ".");
 
         ASSERT(relative.size() != 0);
-        ASSERT_EQUALS(relative.size(), absolute.size());
+        ASSERT_EQUALS((int)relative.size(), (int)absolute.size());
 
         for (std::vector<std::string>::const_iterator r = relative.begin(), r_end = relative.end(),
              a = absolute.begin(), a_end = absolute.end();
