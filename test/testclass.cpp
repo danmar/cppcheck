@@ -163,6 +163,7 @@ private:
         TEST_CASE(const42); // ticket #2282
         TEST_CASE(const43); // ticket #2377
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
+        TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -4931,6 +4932,20 @@ private:
                    "    void f()\n"
                    "    {\n"
                    "        v = 0;\n"
+                   "    }\n"
+                   "};\n"
+                  );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void assigningArrayElementIsNotAConstOperation()
+    {
+        checkConst("struct s\n"
+                   "{\n"
+                   "    ::std::string v[3];\n"
+                   "    void f()\n"
+                   "    {\n"
+                   "        v[0] = \"Happy new year!\";\n"
                    "    }\n"
                    "};\n"
                   );

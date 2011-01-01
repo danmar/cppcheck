@@ -56,7 +56,8 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedPointerDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithIndirection);
         TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection);
-
+        TEST_CASE(test_isVariableDeclarationIdentifiesArray);
+        TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers);
     }
 
     void test_isVariableDeclarationCanHandleNull()
@@ -176,6 +177,26 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
+    }
+
+    void test_isVariableDeclarationIdentifiesArray()
+    {
+        reset();
+        givenACodeSampleToTokenize array("::std::string v[3];");
+        bool result = si.isVariableDeclaration(array.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("v", vartok->str());
+        ASSERT_EQUALS("string", typetok->str());
+    }
+
+    void test_isVariableDeclarationIdentifiesOfArrayPointers()
+    {
+        reset();
+        givenACodeSampleToTokenize array("A *a[5];");
+        bool result = si.isVariableDeclaration(array.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("a", vartok->str());
+        ASSERT_EQUALS("A", typetok->str());
     }
 };
 

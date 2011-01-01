@@ -209,6 +209,8 @@ public:
          * @return true if tok points to a variable declaration, false otherwise
          */
         bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
+        bool isSimpleVariable(const Token* tok) const;
+        bool isArrayVariable(const Token* tok) const;
     };
 
     /** @brief Information about all namespaces/classes/structrues */

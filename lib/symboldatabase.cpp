@@ -1167,40 +1167,9 @@ void SymbolDatabase::SpaceInfo::getVarList()
 
         if (isVariableDeclaration(tok, vartok, typetok))
         {
-            isClass = (!typetok->isStandardType());
+            isClass = (!typetok->isStandardType() && typetok->next()->str() != "*");
             tok = vartok->next();
         }
-
-        // Array?
-        else if (Token::Match(tok, "%type% %var% [") && tok->next()->str() != "operator")
-        {
-            if (!tok->isStandardType())
-            {
-                isClass = true;
-                typetok = tok;
-            }
-
-            vartok = tok->next();
-            tok = vartok->next()->link()->next();
-        }
-
-        // Pointer array?
-        else if (Token::Match(tok, "%type% * %var% ["))
-        {
-            vartok = tok->tokAt(2);
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, "%type% :: %type% * %var% ["))
-        {
-            vartok = tok->tokAt(4);
-            tok = vartok->next();
-        }
-        else if (Token::Match(tok, "%type% :: %type% :: %type% * %var% ["))
-        {
-            vartok = tok->tokAt(6);
-            tok = vartok->next();
-        }
-
         // Container..
         else if (Token::Match(tok, ":: %type% :: %type% :: %type% <") ||
                  Token::Match(tok, "%type% :: %type% :: %type% <") ||
@@ -1263,6 +1232,7 @@ void SymbolDatabase::SpaceInfo::getVarList()
                 tok = vartok->next();
             }
         }
+
 
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         if (vartok && vartok->str() != "operator")
@@ -1332,7 +1302,7 @@ bool SymbolDatabase::SpaceInfo::isVariableDeclaration(const Token* tok, const To
 
         tok = skipPointers(tok->next());
 
-        if (Token::Match(tok, "%var% ;"))
+        if (isSimpleVariable(tok) || isArrayVariable(tok))
         {
             vartok = tok;
             typetok = potentialTypetok;
@@ -1340,6 +1310,16 @@ bool SymbolDatabase::SpaceInfo::isVariableDeclaration(const Token* tok, const To
     }
 
     return NULL != vartok;
+}
+
+bool SymbolDatabase::SpaceInfo::isSimpleVariable(const Token* tok) const
+{
+    return Token::Match(tok, "%var% ;");
+}
+
+bool SymbolDatabase::SpaceInfo::isArrayVariable(const Token* tok) const
+{
+    return Token::Match(tok, "%var% [") && tok->next()->str() != "operator";
 }
 
 //---------------------------------------------------------------------------
