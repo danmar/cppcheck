@@ -125,9 +125,9 @@ void CheckBufferOverrun::outOfBounds(const Token *tok, const std::string &what)
     reportError(tok, Severity::error, "outOfBounds", what + " is out of bounds");
 }
 
-void CheckBufferOverrun::pointerOutOfBounds(const Token *tok)
+void CheckBufferOverrun::pointerOutOfBounds(const Token *tok, const std::string &object)
 {
-    reportError(tok, Severity::portability, "pointerOutOfBounds", "Undefined behaviour: pointer arithmetic result does not point into or just past the end of the array\n"
+    reportError(tok, Severity::portability, "pointerOutOfBounds", "Undefined behaviour: pointer arithmetic result does not point into or just past the end of the " + object + "\n"
                 "Undefined behaviour: Using pointer arithmetic so that the result does not point into or just past the end of the same object. Further information: https://www.securecoding.cert.org/confluence/display/seccode/ARR30-C.+Do+not+form+or+use+out+of+bounds+pointers+or+array+subscripts");
 }
 
@@ -726,6 +726,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         }
     }
 
+    // If the result of pointer arithmetic means that the pointer is
+    // out of bounds then this flag will be set.
+    bool pointerIsOutOfBounds = false;
+
     int indentlevel = 0;
     for (; tok; tok = tok->next())
     {
@@ -901,6 +905,21 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         if (Token::Match(tok, "%var% ("))
         {
             continue;
+        }
+
+        // undefined behaviour: result of pointer arithmetic is out of bounds
+        if (Token::Match(tok, "= %varid% + %num% ;", varid))
+        {
+            const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
+            if (index > size && _settings->_checkCodingStyle)
+                pointerOutOfBounds(tok->next(), "buffer");
+            if (index >= size && Token::Match(tok->tokAt(-2), "[;{}] %varid% =", varid))
+                pointerIsOutOfBounds = true;
+        }
+
+        if (pointerIsOutOfBounds && Token::Match(tok, "[;{}=] * %varid% [;=]", varid))
+        {
+            outOfBounds(tok->tokAt(2), tok->strAt(2));
         }
     }
 }
@@ -1156,7 +1175,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
             if (index < 0 || index > arrayInfo.num[0])
             {
-                pointerOutOfBounds(tok->next());
+                pointerOutOfBounds(tok->next(), "array");
             }
         }
     }

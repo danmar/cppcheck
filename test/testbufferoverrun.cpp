@@ -139,6 +139,7 @@ private:
         // char *p1 = a + 10;  // OK
         // char *p2 = a + 11   // UB
         TEST_CASE(pointer_out_of_bounds_1);
+        TEST_CASE(pointer_out_of_bounds_2);
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
@@ -1881,6 +1882,33 @@ private:
               "    char *p = a + 100;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour: pointer arithmetic result does not point into or just past the end of the array\n", errout.str());
+    }
+
+    void pointer_out_of_bounds_2()
+    {
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    p += 100;\n"
+              "    free(p);"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour: pointer arithmetic result does not point into or just past the end of the buffer\n", errout.str());
+
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    p += 10;\n"
+              "    *p = 0;\n"
+              "    free(p);"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) p is out of bounds\n", errout.str());
+
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    p += 10;\n"
+              "    p = p - 1\n"
+              "    *p = 0;\n"
+              "    free(p);"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sprintf1()

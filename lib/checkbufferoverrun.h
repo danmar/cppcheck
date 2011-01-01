@@ -186,7 +186,7 @@ public:
     void terminateStrncpyError(const Token *tok);
     void negativeIndexError(const Token *tok, MathLib::bigint index);
     void cmdLineArgsError(const Token *tok);
-    void pointerOutOfBounds(const Token *tok);	// UB when result of calculation is out of bounds
+    void pointerOutOfBounds(const Token *tok, const std::string &object);	// UB when result of calculation is out of bounds
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -199,7 +199,7 @@ public:
         c.terminateStrncpyError(0);
         c.negativeIndexError(0, -1);
         c.cmdLineArgsError(0);
-        c.pointerOutOfBounds(0);
+        c.pointerOutOfBounds(0, "array");
     }
 
     std::string name() const
