@@ -101,6 +101,8 @@ private:
     /** allocating pointer. For example : p = malloc(10); */
     static void alloc_pointer(std::list<ExecutionPath *> &checks, unsigned int varid)
     {
+        // loop through the checks and perform a allocation if the
+        // variable id matches
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
         {
@@ -117,6 +119,8 @@ private:
         if (!varid)
             return;
 
+        // loop through the checks and perform a initialization if the
+        // variable id matches
         std::list<ExecutionPath *>::iterator it = checks.begin();
         while (it != checks.end())
         {
@@ -146,12 +150,15 @@ private:
         if (!varid)
             return;
 
+        // loop through the checks and perform a deallocation if the
+        // variable id matches
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
         {
             UninitVar *c = dynamic_cast<UninitVar *>(*it);
             if (c && c->varId == varid)
             {
+                // unallocated pointer variable => error
                 if (c->pointer && !c->alloc)
                 {
                     CheckUninitVar *checkUninitVar = dynamic_cast<CheckUninitVar *>(c->owner);
@@ -175,10 +182,12 @@ private:
      */
     static void pointer_assignment(std::list<ExecutionPath *> &checks, const Token *tok1, const Token *tok2)
     {
+        // Variable id for "left hand side" variable
         const unsigned int varid1(tok1->varId());
         if (varid1 == 0)
             return;
 
+        // Variable id for "right hand side" variable
         const unsigned int varid2(tok2->varId());
         if (varid2 == 0)
             return;
