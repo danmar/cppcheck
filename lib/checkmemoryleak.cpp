@@ -1526,23 +1526,25 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
 void CheckMemoryLeakInFunction::simplifycode(Token *tok)
 {
-    // Replace "throw" that is not in a try block with "return"
-    int indentlevel = 0;
-    int trylevel = -1;
-    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
     {
-        if (tok2->str() == "{")
-            ++indentlevel;
-        else if (tok2->str() == "}")
+        // Replace "throw" that is not in a try block with "return"
+        int indentlevel = 0;
+        int trylevel = -1;
+        for (Token *tok2 = tok; tok2; tok2 = tok2->next())
         {
-            --indentlevel;
-            if (indentlevel <= trylevel)
-                trylevel = -1;
+            if (tok2->str() == "{")
+                ++indentlevel;
+            else if (tok2->str() == "}")
+            {
+                --indentlevel;
+                if (indentlevel <= trylevel)
+                    trylevel = -1;
+            }
+            else if (trylevel == -1 && tok2->str() == "try")
+                trylevel = indentlevel;
+            else if (trylevel == -1 && tok2->str() == "throw")
+                tok2->str("return");
         }
-        else if (trylevel == -1 && tok2->str() == "try")
-            trylevel = indentlevel;
-        else if (trylevel == -1 && tok2->str() == "throw")
-            tok2->str("return");
     }
 
     // Insert extra ";"
