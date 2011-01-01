@@ -106,7 +106,20 @@ public:
      */
     bool simplifyTokenList();
 
+    /**
+     * Delete all tokens in given token list
+     * @param tok token list to delete
+     */
     static void deleteTokens(Token *tok);
+
+    /**
+     * Get parameter name of function
+     * @param ftok The token for the function name in a function
+     *             implementation/declaration
+     * @param par   parameter number (1,2,3,..)
+     * @return if the parameter was found then the parameter name is
+     *         returned. Otherwise NULL is returned.
+     */
     static const char *getParameterName(const Token *ftok, unsigned int par);
 
     /**
@@ -123,6 +136,11 @@ public:
      */
     unsigned int sizeOfType(const Token *type) const;
 
+    /**
+     * Get filenames (the sourcefile + the files it include).
+     * The first filename is the filename for the sourcefile
+     * @return vector with filenames
+     */
     const std::vector<std::string> *getFiles() const;
 
     /** recreate symbol database */
@@ -139,7 +157,11 @@ public:
     /** get tokens */
     const Token *tokens() const;
 
-    /** return filename for given token */
+    /**
+     * get filename for given token
+     * @param tok The given token
+     * @return filename for the given token
+     */
     std::string file(const Token *tok) const;
 
     /**
@@ -559,10 +581,19 @@ private:
     /** Disable assignment operator, no implementation */
     Tokenizer &operator=(const Tokenizer &);
 
+    /** Token list */
     Token *_tokens, *_tokensBack;
+
+    /** sizeof information for known types */
     std::map<std::string, unsigned int> _typeSize;
+
+    /** filenames for the tokenized source code (source + included) */
     std::vector<std::string> _files;
+
+    /** settings */
     const Settings * _settings;
+
+    /** errorlogger */
     ErrorLogger * const _errorLogger;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
@@ -575,6 +606,7 @@ private:
      */
     bool _codeWithTemplates;
 
+    /** Symbol database that all checks etc can use */
     mutable SymbolDatabase *_symbolDatabase;
 };
 
