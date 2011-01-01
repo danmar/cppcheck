@@ -972,7 +972,7 @@ void CheckClass::checkConst()
                     }
                 }
 
-                const Token *paramEnd = func->token->next()->link();
+                const Token *paramEnd = func->arg->link();
 
                 // check if base class function is virtual
                 if (!info->derivedFrom.empty())

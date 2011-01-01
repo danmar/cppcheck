@@ -3431,7 +3431,7 @@ private:
                    "    typedef int* (Fred::*UnspecifiedBoolType);\n"
                    "    operator UnspecifiedBoolType() { array[0] = 0; };\n"
                    "};\n");
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const5()
