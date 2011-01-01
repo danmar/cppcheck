@@ -50,9 +50,14 @@
 Tokenizer::Tokenizer()
     : _settings(0), _errorLogger(0)
 {
+    // No tokens to start with
     _tokens = 0;
     _tokensBack = 0;
+
+    // is there any templates?
     _codeWithTemplates = false;
+
+    // symbol database
     _symbolDatabase = NULL;
 }
 
@@ -62,9 +67,14 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
     // make sure settings are specified
     assert(_settings);
 
+    // No tokens to start with
     _tokens = 0;
     _tokensBack = 0;
+
+    // is there any templates?
     _codeWithTemplates = false;
+
+    // symbol database
     _symbolDatabase = NULL;
 }
 
@@ -2536,6 +2546,8 @@ void Tokenizer::simplifyTemplates()
     {
         if (Token::simpleMatch(tok, "template <"))
         {
+            // set member variable, the code has templates.
+            // this info is used by checks
             _codeWithTemplates = true;
 
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
@@ -2566,16 +2578,25 @@ void Tokenizer::simplifyTemplates()
         // template definition.. skip it
         if (Token::simpleMatch(tok, "template <"))
         {
+            // Goto the end of the template definition
             for (; tok; tok = tok->next())
             {
+                // skip inner '(' .. ')' and '{' .. '}'
                 if (tok->str() == "{" || tok->str() == "(")
                 {
+                    // skip inner tokens. goto ')' or '}'
                     tok = tok->link();
+
+                    // this should be impossible. but break out anyway
                     if (!tok)
                         break;
+
+                    // the end '}' for the template definition => break
                     if (tok->str() == "}")
                         break;
                 }
+
+                // the end ';' for the template definition
                 else if (tok->str() == ";")
                 {
                     break;
@@ -2591,6 +2612,8 @@ void Tokenizer::simplifyTemplates()
                 used.push_back(tok);
         }
     }
+
+    // No template instantiations? Then remove all templates.
     if (used.empty())
     {
         removeTemplates(_tokens);
@@ -2603,11 +2626,21 @@ void Tokenizer::simplifyTemplates()
     // Template arguments with default values
     for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
     {
+        // template parameters with default value has syntax such as:
+        //     x = y
+        // this list will contain all the '=' tokens for such arguments
         std::list<Token *> eq;
+
+        // parameter number. 1,2,3,..
         std::size_t templatepar = 1;
+
+        // the template classname. This will be empty for template functions
         std::string classname;
+
+        // Scan template declaration..
         for (Token *tok = *iter1; tok; tok = tok->next())
         {
+            // end of template parameters?
             if (tok->str() == ">")
             {
                 if (Token::Match(tok, "> class|struct %var%"))
@@ -2615,15 +2648,18 @@ void Tokenizer::simplifyTemplates()
                 break;
             }
 
+            // next template parameter
             if (tok->str() == ",")
                 ++templatepar;
 
+            // default parameter value
             else if (tok->str() == "=")
                 eq.push_back(tok);
         }
         if (eq.empty() || classname.empty())
             continue;
 
+        // iterate through all template instantiations
         for (std::list<Token *>::iterator iter2 = used.begin(); iter2 != used.end(); ++iter2)
         {
             Token *tok = *iter2;
