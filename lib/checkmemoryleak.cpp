@@ -678,7 +678,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
         return 0;
     }
 
-    if (noreturn.find(tok->str()) != noreturn.end())
+    if (noreturn.find(tok->str()) != noreturn.end() && tok->strAt(-1) != "=")
         return "exit";
 
     if (varid > 0 && (getAllocationType(tok, varid) != No || getReallocationType(tok, varid) != No || getDeallocationType(tok, varid) != No))
@@ -733,12 +733,13 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     // how many parameters is there in the function call?
     int numpar = countParameters(tok);
     if (numpar <= 0)
-        return "callfunc";
+        return (tok->previous()->str() != "=") ? "callfunc" : NULL;
 
     unsigned int par = 1;
     unsigned int parlevel = 0;
 
     const bool dot(tok->previous()->str() == ".");
+    const bool eq(tok->previous()->str() == "=");
 
     for (; tok; tok = tok->next())
     {
@@ -749,7 +750,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             --parlevel;
             if (parlevel < 1)
             {
-                return (_settings->inconclusive) ? 0 : "callfunc";
+                return (eq || _settings->inconclusive) ? 0 : "callfunc";
             }
         }
 

@@ -292,6 +292,8 @@ private:
         TEST_CASE(exit2);
         TEST_CASE(exit4);
         TEST_CASE(exit5);
+        TEST_CASE(exit6);
+        TEST_CASE(exit7);
         TEST_CASE(noreturn);
         TEST_CASE(stdstring);
 
@@ -475,9 +477,10 @@ private:
         ASSERT_EQUALS(";;;", getcode("char *s; s = strcpy(s, p);", "s"));
 
         // callfunc..
-        ASSERT_EQUALS(";;assigncallfunc;", getcode("char *s; s = a();", "s"));
+        ASSERT_EQUALS(";;assign;", getcode("char *s; s = a();", "s"));
         ASSERT_EQUALS(";;callfunc;", getcode("char *s; a();", "s"));
         ASSERT_EQUALS(";;callfunc;", getcode("char *s; abc.a();", "s"));
+        ASSERT_EQUALS(";;;", getcode("char *s; x = a();", "s"));   // the function call is irrelevant
 
         // exit..
         ASSERT_EQUALS(";;exit;", getcode("char *s; exit(0);", "s"));
@@ -2583,6 +2586,22 @@ private:
               "    exit(0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void exit7()
+    {
+        check("int a(int x) {\n"
+              "    if (x == 0) {\n"
+              "        exit(0);\n"
+              "    }\n"
+              "    return x + 2;\n"
+              "}\n"
+              "\n"
+              "void b() {\n"
+              "    char *p = malloc(100);\n"
+              "    int i = a(123);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: p\n", errout.str());
     }
 
     void noreturn()
