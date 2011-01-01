@@ -1167,72 +1167,9 @@ void SymbolDatabase::SpaceInfo::getVarList()
 
         if (isVariableDeclaration(tok, vartok, typetok))
         {
-            isClass = (!typetok->isStandardType() && typetok->next()->str() != "*");
+            isClass = (!typetok->isStandardType() && vartok->previous()->str() != "*");
             tok = vartok->next();
         }
-        // Container..
-        else if (Token::Match(tok, ":: %type% :: %type% :: %type% <") ||
-                 Token::Match(tok, "%type% :: %type% :: %type% <") ||
-                 Token::Match(tok, ":: %type% :: %type% <") ||
-                 Token::Match(tok, "%type% :: %type% <") ||
-                 Token::Match(tok, ":: %type% <") ||
-                 Token::Match(tok, "%type% <"))
-        {
-            // got an unhandled template?
-            if (tok->str() == "template")
-                continue;
-
-            // find matching ">"
-            int level = 0;
-            const Token *tok1 = NULL;
-            for (; tok; tok = tok->next())
-            {
-                if (tok->str() == "<")
-                {
-                    if (level == 0)
-                        tok1 = tok->previous();
-                    level++;
-                }
-                else if (tok->str() == ">")
-                {
-                    level--;
-                    if (level == 0)
-                        break;
-                }
-                else if (tok->str() == ">>")
-                {
-                    level-=2;
-                    if (level <= 0)
-                        break;
-                }
-                else if (tok->str() == "(")
-                    tok = tok->link();
-
-                // don't crash on unhandled templates
-                if (tok->next() == NULL)
-                    break;
-            }
-            if (tok && (Token::Match(tok, "> %var% ;") || Token::Match(tok, ">> %var% ;")))
-            {
-                isClass = true;
-                vartok = tok->next();
-                typetok = tok1;
-                tok = vartok->next();
-            }
-            else if (tok && (Token::Match(tok, "> :: %type% %var% ;") || Token::Match(tok, ">> :: %type% %var% ;")))
-            {
-                isClass = true;
-                vartok = tok->tokAt(3);
-                typetok = vartok->previous();
-                tok = vartok->next();
-            }
-            else if (tok && (Token::Match(tok, "> * %var% ;") || Token::Match(tok, ">> * %var% ;")))
-            {
-                vartok = tok->tokAt(2);
-                tok = vartok->next();
-            }
-        }
-
 
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         if (vartok && vartok->str() != "operator")
@@ -1295,17 +1232,39 @@ const Token* skipPointers(const Token* tok)
 
 bool SymbolDatabase::SpaceInfo::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const
 {
-    tok = skipScopeIdentifiers(tok);
-    if (Token::Match(tok, "%type%"))
+    const Token* localTypeTok = skipScopeIdentifiers(tok);
+
+    if (Token::Match(localTypeTok, "%type% < "))
     {
-        const Token* potentialTypetok = tok;
-
-        tok = skipPointers(tok->next());
-
-        if (isSimpleVariable(tok) || isArrayVariable(tok))
+        const Token* closetok = NULL;
+        bool found = findClosingBracket(localTypeTok->next(), closetok);
+        if (found)
         {
-            vartok = tok;
-            typetok = potentialTypetok;
+            if (Token::Match(closetok, "> %var% ;"))
+            {
+                vartok = closetok->next();
+                typetok = localTypeTok;
+            }
+            else if (Token::Match(closetok, "> * %var% ;"))
+            {
+                vartok = closetok->tokAt(2);
+                typetok = localTypeTok;
+            }
+            else if (Token::Match(closetok, "> :: %type% %var% ;"))
+            {
+                vartok = closetok->tokAt(3);
+                typetok = closetok->tokAt(2);
+            }
+        }
+    }
+    else if (Token::Match(localTypeTok, "%type%"))
+    {
+        const Token* localVarTok = skipPointers(localTypeTok->next());
+
+        if (isSimpleVariable(localVarTok) || isArrayVariable(localVarTok))
+        {
+            vartok = localVarTok;
+            typetok = localTypeTok;
         }
     }
 
@@ -1321,6 +1280,33 @@ bool SymbolDatabase::SpaceInfo::isArrayVariable(const Token* tok) const
 {
     return Token::Match(tok, "%var% [") && tok->next()->str() != "operator";
 }
+
+bool SymbolDatabase::SpaceInfo::findClosingBracket(const Token* tok, const Token*& close) const
+{
+    bool found = false;
+    if (NULL != tok && tok->str() == "<")
+    {
+        unsigned int depth = 0;
+        for (close = tok; (close != NULL) && (close->str() != ";"); close = close->next())
+        {
+            if (close->str() == "<")
+            {
+                ++depth;
+            }
+            else if (close->str() == ">")
+            {
+                if (--depth == 0)
+                {
+                    found = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    return found;
+}
+
 
 //---------------------------------------------------------------------------
 

@@ -35,11 +35,15 @@ private:
     const SymbolDatabase::SpaceInfo si;
     const Token* vartok;
     const Token* typetok;
+    const Token* t;
+    bool found;
 
     void reset()
     {
         vartok = NULL;
         typetok = NULL;
+        t = NULL;
+        found = false;
     }
 
     void run()
@@ -58,6 +62,16 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection);
         TEST_CASE(test_isVariableDeclarationIdentifiesArray);
         TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers);
+        TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerVariable);
+        TEST_CASE(isVariableDeclarationIdentifiesTemplatedVariable);
+        TEST_CASE(isVariableDeclarationIdentifiesTemplatedVariableIterator);
+        TEST_CASE(isVariableDeclarationIdentifiesNestedTemplateVariable);
+        TEST_CASE(isVariableDeclarationDoesNotIdentifyTemplateClass);
+        TEST_CASE(canFindMatchingBracketsNeedsOpen);
+        TEST_CASE(canFindMatchingBracketsInnerPair);
+        TEST_CASE(canFindMatchingBracketsOuterPair);
+        TEST_CASE(canFindMatchingBracketsWithTooManyClosing);
+        TEST_CASE(canFindMatchingBracketsWithTooManyOpening);
     }
 
     void test_isVariableDeclarationCanHandleNull()
@@ -197,6 +211,107 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesTemplatedPointerVariable()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::set<char>* chars;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("chars", vartok->str());
+        ASSERT_EQUALS("set", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesTemplatedVariable()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::vector<int> ints;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("ints", vartok->str());
+        ASSERT_EQUALS("vector", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesTemplatedVariableIterator()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::list<int>::const_iterator floats;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("floats", vartok->str());
+        ASSERT_EQUALS("const_iterator", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesNestedTemplateVariable()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("intsets", vartok->str());
+        ASSERT_EQUALS("deque", typetok->str());
+    }
+
+    void isVariableDeclarationDoesNotIdentifyTemplateClass()
+    {
+        reset();
+        givenACodeSampleToTokenize var("template <class T> class SomeClass{};");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(false, result);
+    }
+
+    void canFindMatchingBracketsNeedsOpen()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
+
+        found = si.findClosingBracket(var.tokens(), t);
+        ASSERT(! found);
+        ASSERT(! t);
+    }
+
+    void canFindMatchingBracketsInnerPair()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
+
+        found = si.findClosingBracket(var.tokens()->tokAt(7), t);
+        ASSERT(found);
+        ASSERT_EQUALS(">", t->str());
+        ASSERT_EQUALS(var.tokens()->strAt(9), t->str());
+    }
+
+    void canFindMatchingBracketsOuterPair()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
+
+        found = si.findClosingBracket(var.tokens()->tokAt(3), t);
+        ASSERT(found);
+        ASSERT_EQUALS(">", t->str());
+        ASSERT_EQUALS(var.tokens()->strAt(10), t->str());
+
+    }
+
+    void canFindMatchingBracketsWithTooManyClosing()
+    {
+        reset();
+        givenACodeSampleToTokenize var("X< 1>2 > x1;\n");
+
+        found = si.findClosingBracket(var.tokens()->tokAt(1), t);
+        ASSERT(found);
+        ASSERT_EQUALS(">", t->str());
+        ASSERT_EQUALS(var.tokens()->strAt(3), t->str());
+    }
+
+    void canFindMatchingBracketsWithTooManyOpening()
+    {
+        reset();
+        givenACodeSampleToTokenize var("X < (2 < 1) > x1;\n");
+
+        found = si.findClosingBracket(var.tokens()->tokAt(1), t);
+        ASSERT(!found);
     }
 };
 

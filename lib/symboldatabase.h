@@ -211,6 +211,7 @@ public:
         bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
         bool isSimpleVariable(const Token* tok) const;
         bool isArrayVariable(const Token* tok) const;
+        bool findClosingBracket(const Token* tok, const Token*& close) const;
     };
 
     /** @brief Information about all namespaces/classes/structrues */
