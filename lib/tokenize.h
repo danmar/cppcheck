@@ -125,14 +125,25 @@ public:
 
     const std::vector<std::string> *getFiles() const;
 
+    /** recreate symbol database */
     void fillFunctionList();
+
+    /**
+     * Get function token by function name
+     * @todo better handling of overloaded functions
+     * @todo only scan parent scopes
+     * @param funcname function name
+     */
     const Token *getFunctionTokenByName(const char funcname[]) const;
+
+    /** get tokens */
     const Token *tokens() const;
 
+    /** return filename for given token */
     std::string file(const Token *tok) const;
 
     /**
-     * get error messages
+     * get error messages that the tokenizer generate
      */
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 
