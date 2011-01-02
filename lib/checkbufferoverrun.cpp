@@ -468,13 +468,25 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 
         else if (arrayInfo.varid && counter_varid > 0 && !min_counter_value.empty() && !max_counter_value.empty())
         {
+            // Is the loop variable used to calculate the array index?
+            // In this scope it is determined if such calculated
+            // array indexes are out of bounds.
+            // Only the minimum and maximum results of the calculation is
+            // determined
+
+            // Minimum calculated array index
             int min_index = 0;
+
+            // Maximum calculated array index
             int max_index = 0;
 
             if (Token::Match(tok2, "%varid% [ %var% +|-|*|/ %num% ]", arrayInfo.varid) &&
                 tok2->tokAt(2)->varId() == counter_varid)
             {
+                // operator: +-*/
                 const char action = tok2->strAt(3)[0];
+
+                // second operator
                 const std::string &second(tok2->tokAt(4)->str());
 
                 //printf("min_index: %s %c %s\n", min_counter_value.c_str(), action, second.c_str());
@@ -486,7 +498,10 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
             else if (Token::Match(tok2, "%varid% [ %num% +|-|*|/ %var% ]", arrayInfo.varid) &&
                      tok2->tokAt(4)->varId() == counter_varid)
             {
+                // operator: +-*/
                 const char action = tok2->strAt(3)[0];
+
+                // first operand
                 const std::string &first(tok2->tokAt(2)->str());
 
                 //printf("min_index: %s %c %s\n", first.c_str(), action, min_counter_value.c_str());
@@ -513,7 +528,9 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 
 void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo)
 {
+    // total_size : which parameter in function call takes the total size?
     std::map<std::string, unsigned int> total_size;
+
     total_size["fgets"] = 2;	// The second argument for fgets can't exceed the total size of the array
     total_size["memcmp"] = 3;
     total_size["memcpy"] = 3;
