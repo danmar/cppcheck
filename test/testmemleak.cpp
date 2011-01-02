@@ -4413,6 +4413,11 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
 
+        check("void x() {\n"
+              "    free(malloc(10));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // user function..
         check("void set_error(const char *msg) {\n"
               "}\n"

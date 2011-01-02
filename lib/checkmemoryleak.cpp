@@ -3075,6 +3075,11 @@ void CheckMemoryLeakNoVar::check()
                             if (Token::Match(tok3->tokAt(-2), "[(,;{}] %var% ("))
                             {
                                 const std::string functionName = tok3->strAt(-1);
+                                if (functionName == "delete" ||
+                                    functionName == "free" ||
+                                    functionName == "fclose" ||
+                                    functionName == "realloc")
+                                    break;
                                 if (CheckMemoryLeakInFunction::test_white_list(functionName))
                                 {
                                     functionCallLeak(tok2, tok2->strAt(1), functionName);
