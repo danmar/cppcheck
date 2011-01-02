@@ -229,6 +229,7 @@ private:
         TEST_CASE(simplifyTypedef69); // ticket #2348
         TEST_CASE(simplifyTypedef70); // ticket #2348
         TEST_CASE(simplifyTypedef71); // ticket #2348
+        TEST_CASE(simplifyTypedef72); // ticket #2375
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4691,6 +4692,66 @@ private:
             const std::string expected = "; "
                                          "int ( * ( efuncs [ ] ) ) ( ) = { 0 , 0 } ;";
             ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void simplifyTypedef72() // ticket #2374
+    {
+        // inline operator
+        {
+            const char code[] = "class Fred {\n"
+                                "    typedef int* (Fred::*F);\n"
+                                "    operator F() const { }\n"
+                                "};\n";
+            const std::string expected = "class Fred { "
+                                         "; "
+                                         "operator int * * ( ) const { } "
+                                         "} ;";
+            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS("", errout.str());
+        }
+        // inline local variable
+        {
+            const char code[] = "class Fred {\n"
+                                "    typedef int INT;\n"
+                                "    void f1() const { INT i; }\n"
+                                "};\n";
+            const std::string expected = "class Fred { "
+                                         "; "
+                                         "void f1 ( ) const { int i ; } "
+                                         "} ;";
+            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS("", errout.str());
+        }
+        // out of line member variable
+        {
+            const char code[] = "class Fred {\n"
+                                "    typedef int INT;\n"
+                                "    void f1() const;\n"
+                                "};\n"
+                                "void Fred::f1() const { INT i; }\n";
+            const std::string expected = "class Fred { "
+                                         "; "
+                                         "void f1 ( ) const ; "
+                                         "} ; "
+                                         "void Fred :: f1 ( ) const { int i ; }";
+            TODO_ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS("", errout.str());
+        }
+        // out of line operator
+        {
+            const char code[] = "class Fred {\n"
+                                "    typedef int* (Fred::*F);\n"
+                                "    operator F() const;\n"
+                                "};\n"
+                                "Fred::operator F() const { }\n";
+            const std::string expected = "class Fred { "
+                                         "; "
+                                         "operator int * * ( ) const ; "
+                                         "} ; "
+                                         "Fred :: operator int * * ( ) const { } ";
+            TODO_ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
         }
     }
