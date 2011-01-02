@@ -1750,9 +1750,9 @@ private:
 
     void va_args_4()
     {
-        const char filedata[] = "#define FRED(name, ...) name (__VA_ARGS__);\n"
-                                "FRED(abc, 123);\n";
-        TODO_ASSERT_EQUALS("\nabc(123)\n", OurPreprocessor::expandMacros(filedata));
+        const char filedata[] = "#define FRED(name, ...) name (__VA_ARGS__)\n"
+                                "FRED(abc, 123)\n";
+        ASSERT_EQUALS("\nabc(123)\n", OurPreprocessor::expandMacros(filedata));
     }
 
 

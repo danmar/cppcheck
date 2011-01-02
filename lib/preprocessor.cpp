@@ -1889,6 +1889,8 @@ public:
                         break;
                     if (Token::simpleMatch(tok, ". . . )"))
                     {
+                        if (tok->previous()->str() == ",")
+                            _params.push_back("__VA_ARGS__");
                         _variadic = true;
                         break;
                     }
