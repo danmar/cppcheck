@@ -4730,13 +4730,13 @@ private:
                                 "    typedef int INT;\n"
                                 "    void f1() const;\n"
                                 "};\n"
-                                "void Fred::f1() const { INT i; }\n";
+                                "void Fred::f1() const { INT i; f(i); }\n";
             const std::string expected = "class Fred { "
                                          "; "
                                          "void f1 ( ) const ; "
                                          "} ; "
-                                         "void Fred :: f1 ( ) const { int i ; }";
-            TODO_ASSERT_EQUALS(expected, sizeof_(code));
+                                         "void Fred :: f1 ( ) const { int i ; f ( i ) ; }";
+            ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
         }
         // out of line operator
@@ -4750,7 +4750,7 @@ private:
                                          "; "
                                          "operator int * * ( ) const ; "
                                          "} ; "
-                                         "Fred :: operator int * * ( ) const { } ";
+                                         "Fred :: operator int * * ( ) const { }";
             TODO_ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
         }

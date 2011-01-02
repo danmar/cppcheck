@@ -1126,12 +1126,23 @@ void Tokenizer::simplifyTypedef()
             bool exitThisScope = false;
             int exitScope = 0;
             bool simplifyType = false;
+            bool inMemberFunc = false;
+            int memberScope = 0;
             std::size_t classLevel = spaceInfo.size();
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
+                // check for end of scope
                 if (tok2->str() == "}")
                 {
+                    // check for end of member function
+                    if (inMemberFunc)
+                    {
+                        memberScope--;
+                        if (memberScope == 0)
+                            inMemberFunc = false;
+                    }
+
                     if (classLevel > 0 && tok2 == spaceInfo[classLevel - 1].classEnd)
                     {
                         --classLevel;
@@ -1155,13 +1166,52 @@ void Tokenizer::simplifyTypedef()
                         }
                     }
                 }
+
+                // check for member functions
+                else if (Token::Match(tok2, ") const| {"))
+                {
+                    const Token *func = tok2->link()->previous();
+
+                    /** @todo add support for multi-token operators */
+                    if (func->previous()->str() == "operator")
+                        func = func->previous();
+
+                    // check for qualifier
+                    if (func->previous()->str() == "::")
+                    {
+                        // check for available and matching class name
+                        if (!spaceInfo.empty() &&
+                            func->strAt(-2) == spaceInfo[classLevel].className)
+                        {
+                            memberScope = 0;
+                            inMemberFunc = true;
+                        }
+                    }
+                }
+
+                // check for entering a new scope
                 else if (tok2->str() == "{")
                 {
+                    // keep track of scopes within member function
+                    if (inMemberFunc)
+                        memberScope++;
+
                     scope++;
                 }
-                else if (Token::Match(tok2, pattern.c_str()))
+
+                // check for typedef that can be substituted
+                else if (Token::Match(tok2, pattern.c_str()) ||
+                         (inMemberFunc && tok2->str() == typeName->str()))
                 {
-                    if (pattern != typeName->str()) // has a "something ::"
+                    std::string pattern1;
+
+                    // member function class variables don't need qualification
+                    if (inMemberFunc && tok2->str() == typeName->str())
+                        pattern1 = tok2->str();
+                    else
+                        pattern1 = pattern;
+
+                    if (pattern1.find("::") != std::string::npos) // has a "something ::"
                     {
                         for (std::size_t i = classLevel; i < spaceInfo.size(); i++)
                         {
@@ -1170,7 +1220,7 @@ void Tokenizer::simplifyTypedef()
                         }
                         simplifyType = true;
                     }
-                    else if (inScope && !exitThisScope)
+                    else if ((inScope && !exitThisScope) || inMemberFunc)
                     {
                         if (Token::simpleMatch(tok2->previous(), "::"))
                         {
