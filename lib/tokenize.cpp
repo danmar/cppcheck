@@ -4116,6 +4116,7 @@ bool Tokenizer::simplifyTokenList()
     }
 
     // simplify "x=realloc(y,0);" => "free(y); x=0;"..
+    // and "x = realloc (0, n);" => "x = malloc(n);"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "; %var% = realloc ( %var% , 0 ) ;"))
@@ -4142,6 +4143,18 @@ bool Tokenizer::simplifyTokenList()
             tok->insertToken("=");
             tok->insertToken(varname);
             tok->next()->varId(varid);
+        }
+        else if (Token::Match(tok, "; %var% = realloc ( 0 , %num% ) ;"))
+        {
+            const std::string varname(tok->next()->str());
+
+            tok = tok->tokAt(3);
+            // Change function name "realloc" to "malloc"
+            tok->str("malloc");
+
+            // delete "0 ,"
+            tok->next()->deleteNext();
+            tok->next()->deleteNext();
         }
     }
 
