@@ -155,9 +155,10 @@ private:
         TEST_CASE(defdef);  // Defined multiple times
         TEST_CASE(preprocessor_doublesharp);
         TEST_CASE(preprocessor_include_in_str);
-        TEST_CASE(fmt1);
-        TEST_CASE(fmt2);
-        TEST_CASE(fmt3);
+        TEST_CASE(va_args_1);
+        TEST_CASE(va_args_2);
+        TEST_CASE(va_args_3);
+        TEST_CASE(va_args_4);
         TEST_CASE(multi_character_character);
 
         TEST_CASE(stringify);
@@ -1718,7 +1719,7 @@ private:
 
 
 
-    void fmt1()
+    void va_args_1()
     {
         const char filedata[] = "#define DBG(fmt...) printf(fmt)\n"
                                 "DBG(\"[0x%lx-0x%lx)\", pstart, pend);\n";
@@ -1729,7 +1730,7 @@ private:
         ASSERT_EQUALS("\nprintf(\"[0x%lx-0x%lx)\",pstart,pend);\n", actual);
     }
 
-    void fmt2()
+    void va_args_2()
     {
         const char filedata[] = "#define DBG(fmt, args...) printf(fmt, ## args)\n"
                                 "DBG(\"hello\");\n";
@@ -1740,11 +1741,18 @@ private:
         ASSERT_EQUALS("\nprintf(\"hello\");\n", actual);
     }
 
-    void fmt3()
+    void va_args_3()
     {
         const char filedata[] = "#define FRED(...) { fred(__VA_ARGS__); }\n"
                                 "FRED(123)\n";
         ASSERT_EQUALS("\n{ fred(123); }\n", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void va_args_4()
+    {
+        const char filedata[] = "#define FRED(name, ...) name (__VA_ARGS__);\n"
+                                "FRED(abc, 123);\n";
+        TODO_ASSERT_EQUALS("\nabc(123)\n", OurPreprocessor::expandMacros(filedata));
     }
 
 
