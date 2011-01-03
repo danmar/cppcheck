@@ -2112,7 +2112,7 @@ private:
               "    strncpy(str, a, 10);\n"
               "    strncat(str, b, 10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n", errout.str());
     }
 
     void strncat2()
@@ -2122,7 +2122,7 @@ private:
               "    char str[5];\n"
               "    strncat(str, a, 5);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n", errout.str());
     }
 
     void strncat3()
