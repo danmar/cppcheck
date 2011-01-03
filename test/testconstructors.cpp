@@ -138,7 +138,7 @@ private:
               "    Fred() { }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::i' is not initialised in the constructor.\n", errout.str());
 
         check("struct Fred\n"
               "{\n"
@@ -159,7 +159,7 @@ private:
               "    Fred() { }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Fred::i' is not initialised in the constructor.\n", errout.str());
     }
 
 
@@ -193,7 +193,7 @@ private:
               "};\n"
               "Fred::Fred()\n"
               "{ }\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::i' is not initialised in the constructor.\n", errout.str());
 
         check("struct Fred\n"
               "{\n"
@@ -220,7 +220,7 @@ private:
               "};\n"
               "Fred::Fred()\n"
               "{ }\n");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not initialised in the constructor.\n", errout.str());
     }
 
 
@@ -239,7 +239,7 @@ private:
               "{\n"
               "    i = _i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable 'Fred::i' is not initialised in the constructor.\n", errout.str());
 
         check("struct Fred\n"
               "{\n"
@@ -253,7 +253,7 @@ private:
               "{\n"
               "    i = _i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::i' is not initialised in the constructor.\n", errout.str());
     }
 
 
@@ -598,8 +598,8 @@ private:
               "    }\n"
               "};\n");
 
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable not initialized in the constructor 'Fred::a'\n"
-                      "[test.cpp:16]: (warning) Member variable not initialized in the constructor 'Fred::b'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::a' is not initialised in the constructor.\n"
+                      "[test.cpp:16]: (warning) Member variable 'Fred::b' is not initialised in the constructor.\n", errout.str());
     }
 
     void initvar_chained_assign()
@@ -732,7 +732,7 @@ private:
               "};\n"
               "Fred::Fred()\n"
               "{ }");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable not initialized in the constructor 'Fred::s'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::s' is not initialised in the constructor.\n", errout.str());
 
         check("struct Fred\n"
               "{\n"
@@ -759,7 +759,7 @@ private:
               "};\n"
               "Fred::Fred()\n"
               "{ }");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable not initialized in the constructor 'Fred::s'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::s' is not initialised in the constructor.\n", errout.str());
     }
 
 
@@ -799,7 +799,7 @@ private:
               "    Fred() { };\n"
               "    Fred(const Fred &) { };\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable not initialized in the constructor 'Fred::var'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::var' is not initialised in the constructor.\n", errout.str());
 
         check("class Fred\n"
               "{\n"
@@ -811,7 +811,7 @@ private:
               "};\n"
               "Fred::Fred() { };\n"
               "Fred::Fred(const Fred &) { };\n");
-        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable not initialized in the constructor 'Fred::var'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'Fred::var' is not initialised in the constructor.\n", errout.str());
     }
 
     void initvar_nested_constructor() // ticket #1375
@@ -839,11 +839,11 @@ private:
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
               "A::B::C::D::D(int z){}\n");
-        ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable not initialized in the constructor 'A::a'\n"
-                      "[test.cpp:20]: (warning) Member variable not initialized in the constructor 'A::b'\n"
-                      "[test.cpp:21]: (warning) Member variable not initialized in the constructor 'B::b'\n"
-                      "[test.cpp:22]: (warning) Member variable not initialized in the constructor 'C::c'\n"
-                      "[test.cpp:23]: (warning) Member variable not initialized in the constructor 'D::d'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable 'A::a' is not initialised in the constructor.\n"
+                      "[test.cpp:20]: (warning) Member variable 'A::b' is not initialised in the constructor.\n"
+                      "[test.cpp:21]: (warning) Member variable 'B::b' is not initialised in the constructor.\n"
+                      "[test.cpp:22]: (warning) Member variable 'C::c' is not initialised in the constructor.\n"
+                      "[test.cpp:23]: (warning) Member variable 'D::d' is not initialised in the constructor.\n", errout.str());
 
         check("class A {\n"
               "public:\n"
@@ -868,11 +868,11 @@ private:
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
               "A::B::C::D::D(const A::B::C::D & d){}\n");
-        ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable not initialized in the constructor 'A::a'\n"
-                      "[test.cpp:20]: (warning) Member variable not initialized in the constructor 'A::b'\n"
-                      "[test.cpp:21]: (warning) Member variable not initialized in the constructor 'B::b'\n"
-                      "[test.cpp:22]: (warning) Member variable not initialized in the constructor 'C::c'\n"
-                      "[test.cpp:23]: (warning) Member variable not initialized in the constructor 'D::d'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable 'A::a' is not initialised in the constructor.\n"
+                      "[test.cpp:20]: (warning) Member variable 'A::b' is not initialised in the constructor.\n"
+                      "[test.cpp:21]: (warning) Member variable 'B::b' is not initialised in the constructor.\n"
+                      "[test.cpp:22]: (warning) Member variable 'C::c' is not initialised in the constructor.\n"
+                      "[test.cpp:23]: (warning) Member variable 'D::d' is not initialised in the constructor.\n", errout.str());
 
         check("class A {\n"
               "public:\n"
@@ -898,11 +898,11 @@ private:
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
               "A::B::C::D::D(const A::B::C::D::E & e){}\n");
-        ASSERT_EQUALS("[test.cpp:21]: (warning) Member variable not initialized in the constructor 'A::a'\n"
-                      "[test.cpp:21]: (warning) Member variable not initialized in the constructor 'A::b'\n"
-                      "[test.cpp:22]: (warning) Member variable not initialized in the constructor 'B::b'\n"
-                      "[test.cpp:23]: (warning) Member variable not initialized in the constructor 'C::c'\n"
-                      "[test.cpp:24]: (warning) Member variable not initialized in the constructor 'D::d'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:21]: (warning) Member variable 'A::a' is not initialised in the constructor.\n"
+                      "[test.cpp:21]: (warning) Member variable 'A::b' is not initialised in the constructor.\n"
+                      "[test.cpp:22]: (warning) Member variable 'B::b' is not initialised in the constructor.\n"
+                      "[test.cpp:23]: (warning) Member variable 'C::c' is not initialised in the constructor.\n"
+                      "[test.cpp:24]: (warning) Member variable 'D::d' is not initialised in the constructor.\n", errout.str());
     }
 
     void initvar_destructor()
