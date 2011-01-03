@@ -465,7 +465,7 @@ private:
                  "        for ( ; i < 10; ++i) ;\n"
                  "    }\n"
                  "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (information) The scope of the variable i can be reduced\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (information) The scope of the variable 'i' can be reduced\n", errout.str());
 
         varScope("void f(int x)\n"
                  "{\n"
@@ -475,7 +475,7 @@ private:
                  "        for ( ; i < 10; ++i) ;\n"
                  "    }\n"
                  "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (information) The scope of the variable i can be reduced\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (information) The scope of the variable 'i' can be reduced\n", errout.str());
     }
 
     void varScope6()
@@ -541,7 +541,7 @@ private:
                  "        edgeResistance = (edge+1) / 2.0;\n"
                  "    }\n"
                  "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (information) The scope of the variable edgeResistance can be reduced\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (information) The scope of the variable 'edgeResistance' can be reduced\n", errout.str());
     }
 
     void varScope9()
