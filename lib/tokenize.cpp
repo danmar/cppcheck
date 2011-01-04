@@ -1180,7 +1180,7 @@ void Tokenizer::simplifyTypedef()
                     if (func->previous()->str() == "::")
                     {
                         // check for available and matching class name
-                        if (!spaceInfo.empty() &&
+                        if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
                             func->strAt(-2) == spaceInfo[classLevel].className)
                         {
                             memberScope = 0;
