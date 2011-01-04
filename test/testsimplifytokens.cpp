@@ -4646,7 +4646,7 @@ private:
         const char code[] = "typedef FMAC1 void (* a) ();\n"
                             "void *(*b) ();\n";
         const std::string actual(sizeof_(code));
-        ASSERT_EQUALS("typedef FMAC1 void ( * a ) ( ) ; void * * b ;", actual);
+        ASSERT_EQUALS("; void * * b ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
 

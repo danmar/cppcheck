@@ -574,6 +574,8 @@ public:
 
     SymbolDatabase * getSymbolDatabase() const;
 
+    Token * deleteInvalidTypedef(Token *typeDef);
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);

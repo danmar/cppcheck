@@ -691,6 +691,28 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
         Check::reportError(errmsg);
 }
 
+Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
+{
+    Token *tok = NULL;
+
+    // remove typedef but leave ;
+    while (typeDef->next() && typeDef->next()->str() != ";")
+        typeDef->deleteNext();
+
+    if (typeDef != _tokens)
+    {
+        tok = typeDef->previous();
+        tok->deleteNext();
+    }
+    else
+    {
+        _tokens->deleteThis();
+        tok = _tokens;
+    }
+
+    return tok;
+}
+
 struct SpaceInfo
 {
     bool isNamespace;
@@ -957,12 +979,11 @@ void Tokenizer::simplifyTypedef()
             // or a function typedef
             else if (Token::Match(tok->tokAt(offset), "("))
             {
+                // unhandled typedef, skip it and continue
                 if (typeName->str() == "void")
                 {
                     unsupportedTypedef(typeDef);
-
-                    // unhandled typedef, skip it and continue
-                    tok = tok->tokAt(offset);
+                    tok = deleteInvalidTypedef(typeDef);
                     continue;
                 }
 
@@ -979,12 +1000,12 @@ void Tokenizer::simplifyTypedef()
                     continue;
                 }
             }
+
+            // unhandled typedef, skip it and continue
             else
             {
                 unsupportedTypedef(typeDef);
-
-                // unhandled typedef, skip it and continue
-                tok = tok->tokAt(offset);
+                tok = deleteInvalidTypedef(typeDef);
                 continue;
             }
         }
@@ -1111,7 +1132,7 @@ void Tokenizer::simplifyTypedef()
         else
         {
             unsupportedTypedef(typeDef);
-
+            tok = deleteInvalidTypedef(typeDef);
             continue;
         }
 
