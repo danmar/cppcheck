@@ -4850,6 +4850,20 @@ bool Tokenizer::simplifyConditions()
             ret = true;
         }
 
+        else if (Token::simpleMatch(tok, "( true ||") ||
+                 Token::simpleMatch(tok, "( false &&"))
+        {
+            Token::eraseTokens(tok->next(), tok->link());
+            ret = true;
+        }
+
+        else if (Token::simpleMatch(tok, "|| true )") ||
+                 Token::simpleMatch(tok, "&& false )"))
+        {
+            Token::eraseTokens(tok->tokAt(2)->link(), tok->next());
+            ret = true;
+        }
+
         // Change numeric constant in condition to "true" or "false"
         if (Token::Match(tok, "if|while ( %num%") &&
             (tok->tokAt(3)->str() == ")" || tok->tokAt(3)->str() == "||" || tok->tokAt(3)->str() == "&&"))
@@ -6341,6 +6355,16 @@ bool Tokenizer::simplifyKnownVariables()
                         tok3->tokAt(4)->varId() == varid)
                     {
                         tok3->tokAt(4)->str(value);
+                        ret = true;
+                    }
+
+                    // condition "(|&&|%OROR% %varid% )|&&|%OROR%
+                    if (!Token::Match(tok3->previous(), "( %var% )") &&
+                        (Token::Match(tok3->previous(), "&&|(") || tok3->strAt(-1) == "||") &&
+                        tok3->varId() == varid &&
+                        (Token::Match(tok3->next(), "&&|)") || tok3->strAt(1) == "||"))
+                    {
+                        tok3->str(value);
                         ret = true;
                     }
 

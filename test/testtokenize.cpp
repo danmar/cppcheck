@@ -126,6 +126,7 @@ private:
         TEST_CASE(simplifyKnownVariables35);    // ticket #2353 - False positive: Division by zero 'if (x == 0) return 0; return 10 / x;'
         TEST_CASE(simplifyKnownVariables36);    // ticket #2304 - known value for strcpy parameter
         TEST_CASE(simplifyKnownVariables37);    // ticket #2398 - false positive caused by no simplification in for loop
+        TEST_CASE(simplifyKnownVariables38);    // ticket #2399 - simplify conditions
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -1937,6 +1938,22 @@ private:
                                 "{\n"
                                 "Eval ( x ) ; }\n"
                                 "}\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables38()
+    {
+        // Ticket #2399 - simplify conditions
+        const char code[] = "void f() {\n"
+                            "    int x = 0;\n"
+                            "    int y = 1;\n"
+                            "    if (x || y);\n"
+                            "}";
+        const char expected[] = "void f ( ) {\n"
+                                ";\n"
+                                "\n"
+                                "{ ; }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }

@@ -241,6 +241,7 @@ private:
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
+        TEST_CASE(simplify_condition);
 
         TEST_CASE(pointeralias1);
         TEST_CASE(pointeralias2);
@@ -5451,6 +5452,45 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void f ( ) { { ; } }", tok(code));
+        }
+    }
+
+    void simplify_condition()
+    {
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if (a && false) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if (false && a) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if (true || a) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { { g ( ) ; } }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if (a || true) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { { g ( ) ; } }", tok(code));
         }
     }
 
