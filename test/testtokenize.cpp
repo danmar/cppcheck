@@ -125,6 +125,7 @@ private:
         TEST_CASE(simplifyKnownVariables34);
         TEST_CASE(simplifyKnownVariables35);    // ticket #2353 - False positive: Division by zero 'if (x == 0) return 0; return 10 / x;'
         TEST_CASE(simplifyKnownVariables36);    // ticket #2304 - known value for strcpy parameter
+        TEST_CASE(simplifyKnownVariables37);    // ticket #2398 - false positive caused by no simplification in for loop
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -1915,6 +1916,28 @@ private:
                             "    strcpy(p, q);"
                             "}";
         const char expected[] = "void f ( ) { const char * q ; q = \"hello\" ; strcpy ( p , \"hello\" ) ; }";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables37()
+    {
+        // Ticket #2398 - no simplication in for loop
+        const char code[] = "void f() {\n"
+                            "    double x = 0;\n"
+                            "    for (int iter=0; iter<42; iter++) {\n"
+                            "        int EvaldF = 1;\n"
+                            "        if (EvaldF)\n"
+                            "            Eval (x);\n"
+                            "    }\n"
+                            "}";
+        const char expected[] = "void f ( ) {\n"
+                                "double x ; x = 0 ;\n"
+                                "for ( int iter = 0 ; iter < 42 ; iter ++ ) {\n"
+                                ";\n"
+                                "{\n"
+                                "Eval ( x ) ; }\n"
+                                "}\n"
+                                "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 

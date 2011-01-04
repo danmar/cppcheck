@@ -6314,7 +6314,7 @@ bool Tokenizer::simplifyKnownVariables()
                         if (tok3->varId() == varid)
                         {
                             // Continue
-                            tok2 = bailOutFromLoop;
+                            //tok2 = bailOutFromLoop;
                             break;
                         }
                         else if (tok3 == bailOutFromLoop)
