@@ -925,7 +925,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
-        if (Token::Match(tok, "= %varid% + %num% ;", varid))
+        if (varid && Token::Match(tok, "= %varid% + %num% ;", varid))
         {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
             if (index > size && _settings->_checkCodingStyle)
