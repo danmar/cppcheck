@@ -4117,36 +4117,6 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyCasts();
 
-    // simplify "x=realloc(y,0);" => "free(y); x=0;"..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "; %var% = realloc ( %var% , 0 ) ;"))
-        {
-            const std::string varname(tok->next()->str());
-            const unsigned int varid(tok->next()->varId());
-
-            // Delete the "%var% ="
-            tok->deleteNext();
-            tok->deleteNext();
-
-            // Change function name "realloc" to "free"
-            tok->next()->str("free");
-
-            // delete the ", 0"
-            Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
-
-            // goto the ";"
-            tok = tok->tokAt(5);
-
-            // insert "var=0;"
-            tok->insertToken(";");
-            tok->insertToken("0");
-            tok->insertToken("=");
-            tok->insertToken(varname);
-            tok->next()->varId(varid);
-        }
-    }
-
     // Simplify simple calculations..
     simplifyCalculations();
 
@@ -4183,6 +4153,49 @@ bool Tokenizer::simplifyTokenList()
             tok->deleteNext();
 
             Token::createMutualLinks(next->tokAt(1), next->tokAt(3));
+        }
+    }
+
+    // simplify "x=realloc(y,0);" => "free(y); x=0;"..
+    // and "x = realloc (0, n);" => "x = malloc(n);"
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "; %var% = realloc ( %var% , 0 ) ;"))
+        {
+            const std::string varname(tok->next()->str());
+            const unsigned int varid(tok->next()->varId());
+
+            // Delete the "%var% ="
+            tok->deleteNext();
+            tok->deleteNext();
+
+            // Change function name "realloc" to "free"
+            tok->next()->str("free");
+
+            // delete the ", 0"
+            Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
+
+            // goto the ";"
+            tok = tok->tokAt(5);
+
+            // insert "var=0;"
+            tok->insertToken(";");
+            tok->insertToken("0");
+            tok->insertToken("=");
+            tok->insertToken(varname);
+            tok->next()->varId(varid);
+        }
+        else if (Token::Match(tok, "; %var% = realloc ( 0 , %num% ) ;"))
+        {
+            const std::string varname(tok->next()->str());
+
+            tok = tok->tokAt(3);
+            // Change function name "realloc" to "malloc"
+            tok->str("malloc");
+
+            // delete "0 ,"
+            tok->next()->deleteNext();
+            tok->next()->deleteNext();
         }
     }
 

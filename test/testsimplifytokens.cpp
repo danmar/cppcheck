@@ -6004,6 +6004,10 @@ private:
     {
         ASSERT_EQUALS("; free ( p ) ; p = 0 ;",
                       tok("; p = realloc(p,0);"));
+        ASSERT_EQUALS("; p = malloc ( 100 ) ;",
+                      tok("; p = realloc(0, 100);"));
+        ASSERT_EQUALS("; p = malloc ( 0 ) ;",
+                      tok("; p = realloc(0, sizeof(char)*0);"));
     }
 
     void simplifyErrNoInWhile()
