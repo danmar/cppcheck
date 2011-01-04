@@ -82,7 +82,7 @@ private:
         _obsoleteFunctions.push_back(std::make_pair("fcvt","Found obsolete function 'fcvt'. It is recommended that new applications use the 'sprintf' function"));
         _obsoleteFunctions.push_back(std::make_pair("gcvt","Found obsolete function 'gcvt'. It is recommended that new applications use the 'sprintf' function"));
 
-        _obsoleteFunctions.push_back(std::make_pair("ftime","Found obsolete function 'ftime'. It is recommended that new applications use the 'ftime' function. Realtime applications should use ''clock_gettime'' to determine the current time"));
+        _obsoleteFunctions.push_back(std::make_pair("ftime","Found obsolete function 'ftime'. It is recommended that new applications use the 'time' function. Realtime applications should use ''clock_gettime'' to determine the current time"));
 
         _obsoleteFunctions.push_back(std::make_pair("getcontext","Found obsolete function 'getcontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads"));
         _obsoleteFunctions.push_back(std::make_pair("makecontext","Found obsolete function 'makecontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads"));
