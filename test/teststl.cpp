@@ -369,7 +369,7 @@ private:
               "        foo.erase(it);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
 
         check("for (it = foo.begin(); it != foo.end(); ++it)\n"
               "{\n"
@@ -379,8 +379,8 @@ private:
               "{\n"
               "    foo.erase(it);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n"
-                      "[test.cpp:7]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous iterator usage after erase()-method.\n"
+                      "[test.cpp:7]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
 
         check("void f(std::list<int> &ints)\n"
               "{\n"
@@ -437,7 +437,7 @@ private:
               "        foo.erase(it);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -447,7 +447,7 @@ private:
               "        foo.erase(it);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -457,7 +457,7 @@ private:
               "        foo.erase(it);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -467,7 +467,7 @@ private:
               "        foo.erase(++it);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
     }
 
     void erase5()
@@ -482,7 +482,7 @@ private:
               "            foo.erase(it);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
     }
 
     void eraseBreak()
@@ -496,7 +496,7 @@ private:
               "            break;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -597,7 +597,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
     }
 
     void eraseGoto()

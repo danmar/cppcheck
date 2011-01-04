@@ -454,14 +454,14 @@ void CheckStl::erase()
     }
 }
 
-
 // Error message for bad iterator usage..
 void CheckStl::eraseError(const Token *tok)
 {
-    reportError(tok, Severity::error, "erase", "Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.");
+    reportError(tok, Severity::error, "erase",
+                "Dangerous iterator usage after erase()-method.\n"
+                "The iterator is invalid after it has been used in erase() function. "
+                "Dereferencing or comparing it with another iterator is invalid operation.");
 }
-
-
 
 void CheckStl::pushback()
 {
