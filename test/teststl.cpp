@@ -1005,7 +1005,7 @@ private:
               "{\n"
               "    if (s.find(\"abc\")) { }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious checking of string::find() return value.\n", errout.str());
     }
 
 

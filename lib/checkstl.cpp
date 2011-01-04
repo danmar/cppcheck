@@ -764,7 +764,11 @@ void CheckStl::if_find()
 void CheckStl::if_findError(const Token *tok, bool str)
 {
     if (str)
-        reportError(tok, Severity::warning, "stlIfStrFind", "Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.");
+        reportError(tok, Severity::warning, "stlIfStrFind",
+                    "Suspicious checking of string::find() return value.\n"
+                    "string::find will return 0 if the string is found at position 0. "
+                    "If that is wanted to check then string::compare is a faster alternative "
+                    "because it doesn't scan through the string.");
     else
         reportError(tok, Severity::warning, "stlIfFind", "Suspicious condition. The result of find is an iterator, but it is not properly checked.");
 }
