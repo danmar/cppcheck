@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article version="5.0" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <info>
+    <title>Writing Cppcheck rules</title>
+
+    <subtitle>Part 3 - Introduction to writing rules with C++</subtitle>
+
+    <author>
+      <personname><firstname>Daniel</firstname><surname>Marjamäki</surname></personname>
+
+      <affiliation>
+        <orgname>Cppcheck</orgname>
+      </affiliation>
+    </author>
+
+    <pubdate>2011</pubdate>
+  </info>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>The goal for this article is to introduce how
+    <literal>Cppcheck</literal> rules are written with C++. With C++ it is
+    possible to write more complex rules than is possible with regular
+    expressions.</para>
+  </section>
+
+  <section>
+    <title>Basics</title>
+
+    <para>A C++ rule is written in a C++ function.</para>
+
+    <para>Rules are organized into Check classes. For instance there is a
+    class with the name <literal>CheckStl</literal> that contains various stl
+    rules. The <literal>CheckOther</literal> can always be used if no other
+    class suits you.</para>
+
+    <para>When you have added your rule you must recompile Cppcheck before you
+    can test it.</para>
+  </section>
+
+  <section>
+    <title>Division by zero</title>
+
+    <para>This simple regular expression will check for division by
+    zero:</para>
+
+    <programlisting>cppcheck --rule="/ 0"</programlisting>
+
+    <para>Here is the corresponding C++ check:</para>
+
+    <programlisting>// Detect division by zero
+void CheckOther::divisionByZero()
+{
+    // Loop through all tokens
+    for (const Token *tok = _tokenizer-&gt;tokens(); tok; tok = tok-&gt;next())
+    {
+        // check if there is a division by zero
+        if (Token::Match(tok, "/ 0"))
+        {
+            // report error
+            divisionByZeroError(tok);
+        }
+    }
+}
+
+// Report error
+void CheckOther::divisionByZeroError()
+{
+    reportError(tok, Severity::error, "divisionByZero", "Division by zero");
+}</programlisting>
+
+    <para>The <literal>Token::Match</literal> matches tokens against
+    expressions. A few rules about Token::Match expressions are:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>tokens are either completely matched or not matched at all. The
+        token "abc" is not matched by "ab".</para>
+      </listitem>
+
+      <listitem>
+        <para>Spaces are used as separators.</para>
+      </listitem>
+
+      <listitem>
+        <para>With normal regular expressions there are special meanings for +
+        * ? ( ). These are just normal characters in
+        <literal>Token::Match</literal> patterns.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Condition before deallocation</title>
+
+    <para>In the first <literal>Writing rules</literal> article I described a
+    rule that looks for redundant conditions. Here is the regular expression
+    that was shown:</para>
+
+    <programlisting>if \( p \) { free \( p \) ; }</programlisting>
+
+    <para>The corresponding <literal>Token::Match</literal> expression
+    is:</para>
+
+    <programlisting>if ( %var% ) { free ( %var% ) ; }</programlisting>
+
+    <para>Any variable name is matched by <literal>%var%</literal>.</para>
+
+    <para>Here is a C++ function:</para>
+
+    <programlisting>// Find redundant condition before deallocation
+void CheckOther::dealloc()
+{
+    // Loop through all tokens
+    for (const Token *tok = _tokenizer-&gt;tokens(); tok; tok = tok-&gt;next())
+    {
+        // Is there a condition and a deallocation?
+        if (Token::Match(tok, "if ( %var% ) { free ( %var% ) ; }"))
+        {
+            // Get variable name used in condition:
+            const std::string varname1 = tok-&gt;strAt(2);
+
+            // Get variable name used in deallocation:
+            const std::string varname2 = tok-&gt;strAt(7);
+
+            // Is the same variable used?
+            if (varname1 == varname2)
+            {
+                // report warning
+                deallocWarning(tok);
+            }
+        }
+    }
+}
+
+// Report warning
+void CheckOther::deallocWarning()
+{
+    reportError(tok, Severity::warning, "dealloc", "Redundant condition before deallocation");
+}</programlisting>
+
+    <para>The strAt function is used to fetch strings from the token list. The
+    parameter specifies the token offset.</para>
+  </section>
+</article>
