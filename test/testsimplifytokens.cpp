@@ -4751,7 +4751,7 @@ private:
                                          "operator int * * ( ) const ; "
                                          "} ; "
                                          "Fred :: operator int * * ( ) const { }";
-            TODO_ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
         }
     }

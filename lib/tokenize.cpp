@@ -1167,6 +1167,26 @@ void Tokenizer::simplifyTypedef()
                     }
                 }
 
+                // check for operator typedef
+                /** @todo add support for multi-token operators */
+                else if (tok2->str() == "operator" &&
+                         tok2->next()->str() == typeName->str() &&
+                         tok2->strAt(2) == "(" &&
+                         Token::Match(tok2->tokAt(2)->link(), ") const| {"))
+                {
+                    // check for qualifier
+                    if (tok2->previous()->str() == "::")
+                    {
+                        // check for available and matching class name
+                        if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
+                            tok2->strAt(-2) == spaceInfo[classLevel].className)
+                        {
+                            tok2 = tok2->next();
+                            simplifyType = true;
+                        }
+                    }
+                }
+
                 // check for member functions
                 else if (Token::Match(tok2, ") const| {"))
                 {
