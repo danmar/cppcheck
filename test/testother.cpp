@@ -378,7 +378,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("information");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

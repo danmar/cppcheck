@@ -2929,7 +2929,7 @@ private:
         if (s)
             settings = *s;
         else
-            settings._checkCodingStyle = true;
+            settings.addEnabled("information");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -5218,7 +5218,7 @@ private:
                             "};";
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("information");
 
         settings.ifcfg = false;
         checkConst(code, &settings);

@@ -195,6 +195,7 @@ std::string Settings::addEnabled(const std::string &str)
     std::set<std::string> id;
     id.insert("missingInclude");
     id.insert("unusedFunction");
+    id.insert("information");
 
     if (str == "all")
     {

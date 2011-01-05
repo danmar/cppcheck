@@ -1887,7 +1887,7 @@ void CheckOther::unassignedVariableError(const Token *tok, const std::string &va
 
 void CheckOther::checkVariableScope()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("information"))
         return;
 
     SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
