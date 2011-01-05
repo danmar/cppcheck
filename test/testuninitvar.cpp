@@ -1366,6 +1366,14 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
         ASSERT_EQUALS("", errout.str());
 
+        // #2401 - unknown function/macro might init the variable
+        checkUninitVar("int f() {\n"
+                       "    int x;\n"
+                       "    INIT(x);\n"
+                       "    return x;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // using uninitialized function pointer..
         checkUninitVar("void foo()\n"
                        "{\n"
