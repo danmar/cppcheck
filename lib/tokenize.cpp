@@ -720,6 +720,78 @@ struct SpaceInfo
     const Token * classEnd;
 };
 
+static Token *splitDefinitionFromTypedef(Token *tok)
+{
+    Token *tok1;
+    std::string name;
+    bool isConst = false;
+
+    if (tok->next()->str() == "const")
+    {
+        tok->next()->deleteThis();
+        isConst = true;
+    }
+
+    if (tok->tokAt(2)->str() == "{") // unnamed
+    {
+        tok1 = tok->tokAt(2)->link();
+
+        if (tok1 && tok1->next())
+        {
+            // use typedef name if available
+            if (Token::Match(tok1->next(), "%type%"))
+                name = tok1->next()->str();
+            else // create a unique name
+            {
+                static long count = 0;
+                name = "Unnamed" + MathLib::toString<long>(count++);
+            }
+            tok->tokAt(1)->insertToken(name.c_str());
+        }
+        else
+            return NULL;
+    }
+    else if (tok->strAt(3) == ":")
+    {
+        tok1 = tok->tokAt(4);
+        while (tok1 && tok1->str() != "{")
+            tok1 = tok1->next();
+        if (!tok1)
+            return NULL;
+
+        tok1 = tok1->link();
+
+        name = tok->tokAt(2)->str();
+    }
+    else // has a name
+    {
+        tok1 = tok->tokAt(3)->link();
+
+        if (!tok1)
+            return NULL;
+
+        name = tok->tokAt(2)->str();
+    }
+
+    tok1->insertToken(";");
+    tok1 = tok1->next();
+    tok1->insertToken("typedef");
+    tok1 = tok1->next();
+    Token * tok3 = tok1;
+    if (isConst)
+    {
+        tok1->insertToken("const");
+        tok1 = tok1->next();
+    }
+    tok1->insertToken(tok->next()->strAt(0)); // struct, union or enum
+    tok1 = tok1->next();
+    tok1->insertToken(name.c_str());
+    tok->deleteThis();
+    tok = tok3;
+
+    return tok;
+}
+
 void Tokenizer::simplifyTypedef()
 {
     std::vector<SpaceInfo> spaceInfo;
@@ -767,60 +839,23 @@ void Tokenizer::simplifyTypedef()
         if (Token::Match(tok->next(), "const| struct|enum|union|class %type% {") ||
             Token::Match(tok->next(), "const| struct|enum|union|class {"))
         {
-            Token *tok1;
-            std::string name;
-            bool isConst = false;
-
-            if (tok->next()->str() == "const")
+            Token *tok1 = splitDefinitionFromTypedef(tok);
+            if (!tok1)
+                continue;
+            tok = tok1;
+        }
+        else if (Token::Match(tok->next(), "const| struct|class %type% :"))
+        {
+            Token *tok1 = tok;
+            while (tok1 && tok1->str() != ";" && tok1->str() != "{")
+                tok1 = tok1->next();
+            if (tok1 && tok1->str() == "{")
             {
-                tok->next()->deleteThis();
-                isConst = true;
-            }
-
-            if (tok->tokAt(2)->str() == "{") // unnamed
-            {
-                tok1 = tok->tokAt(2)->link();
-
-                if (tok1 && tok1->next())
-                {
-                    // use typedef name if available
-                    if (Token::Match(tok1->next(), "%type%"))
-                        name = tok1->next()->str();
-                    else // create a unique name
-                    {
-                        static long count = 0;
-                        name = "Unnamed" + MathLib::toString<long>(count++);
-                    }
-                    tok->tokAt(1)->insertToken(name.c_str());
-                }
-                else
-                    continue;
-            }
-            else // has a name
-            {
-                tok1 = tok->tokAt(3)->link();
-
+                tok1 = splitDefinitionFromTypedef(tok);
                 if (!tok1)
                     continue;
-
-                name = tok->tokAt(2)->str();
+                tok = tok1;
             }
-
-            tok1->insertToken(";");
-            tok1 = tok1->next();
-            tok1->insertToken("typedef");
-            tok1 = tok1->next();
-            Token * tok3 = tok1;
-            if (isConst)
-            {
-                tok1->insertToken("const");
-                tok1 = tok1->next();
-            }
-            tok1->insertToken(tok->next()->strAt(0)); // struct, union or enum
-            tok1 = tok1->next();
-            tok1->insertToken(name.c_str());
-            tok->deleteThis();
-            tok = tok3;
         }
 
         /** @todo add support for struct and union */
@@ -1645,9 +1680,12 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
                         }
 
-                        // skip over variable name
+                        // skip over variable name if there
                         if (!inCast)
-                            tok2 = tok2->next();
+                        {
+                            if (tok2->next()->str() != ")")
+                                tok2 = tok2->next();
+                        }
 
                         if (tok4 && functionPtrRetFuncPtr)
                         {
@@ -4860,7 +4898,8 @@ bool Tokenizer::simplifyConditions()
         else if (Token::simpleMatch(tok, "|| true )") ||
                  Token::simpleMatch(tok, "&& false )"))
         {
-            Token::eraseTokens(tok->tokAt(2)->link(), tok->next());
+            tok = tok->next();
+            Token::eraseTokens(tok->next()->link(), tok);
             ret = true;
         }
 

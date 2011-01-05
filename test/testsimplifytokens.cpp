@@ -230,6 +230,7 @@ private:
         TEST_CASE(simplifyTypedef70); // ticket #2348
         TEST_CASE(simplifyTypedef71); // ticket #2348
         TEST_CASE(simplifyTypedef72); // ticket #2375
+        TEST_CASE(simplifyTypedef73); // ticket #2412
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4755,6 +4756,20 @@ private:
             ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void simplifyTypedef73() // ticket #2412
+    {
+        const char code[] = "struct B {};\n"
+                            "typedef struct A : public B {\n"
+                            "    void f();\n"
+                            "} a, *aPtr;\n";
+        const std::string expected = "struct B { } ; "
+                                     "struct A : public B { "
+                                     "void f ( ) ; "
+                                     "} ;";
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1()
