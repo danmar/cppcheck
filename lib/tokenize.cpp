@@ -4898,7 +4898,8 @@ bool Tokenizer::simplifyConditions()
         else if (Token::simpleMatch(tok, "|| true )") ||
                  Token::simpleMatch(tok, "&& false )"))
         {
-            Token::eraseTokens(tok->tokAt(2)->link(), tok->next());
+            tok = tok->next();
+            Token::eraseTokens(tok->next()->link(), tok);
             ret = true;
         }
 
