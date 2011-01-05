@@ -637,6 +637,18 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int test(int cond1, int cond2) {\n"
+                       "  int foo;\n"
+                       "  if (cond1 || cond2) {\n"
+                       "     if (cond2)\n"
+                       "        foo = 0;\n"
+                       "  }\n"
+                       "  if (cond2) {\n"
+                       "    int t = foo*foo;\n"
+                       "  }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // ? :
         checkUninitVar("static void foo(int v)\n"
                        "{\n"

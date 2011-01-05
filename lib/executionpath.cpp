@@ -122,7 +122,7 @@ static void parseIfSwitchBody(const Token * const tok,
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
         {
-            if (*(*it) == *c.back())
+            if (*(*it) == *c.back() && (*it)->numberOfIf == c.back()->numberOfIf)
             {
                 duplicate = true;
                 countif2.erase((*it)->varId);
