@@ -1645,9 +1645,12 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
                         }
 
-                        // skip over variable name
+                        // skip over variable name if there
                         if (!inCast)
-                            tok2 = tok2->next();
+                        {
+                            if (tok2->next()->str() != ")")
+                                tok2 = tok2->next();
+                        }
 
                         if (tok4 && functionPtrRetFuncPtr)
                         {
