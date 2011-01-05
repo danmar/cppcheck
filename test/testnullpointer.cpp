@@ -756,6 +756,14 @@ private:
 
         check("void foo(char *p) {\n"
               "    if (!p) {\n"
+              "        (*bail)();\n"
+              "    }\n"
+              "    *p = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char *p) {\n"
+              "    if (!p) {\n"
               "        throw x;\n"
               "    }\n"
               "    *p = 0;\n"

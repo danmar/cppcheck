@@ -553,7 +553,8 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
                 // calling unknown function (abort/init)..
                 if (Token::simpleMatch(tok2, ") ;") &&
-                    Token::Match(tok2->link()->tokAt(-2), "[;{}] %var% ("))
+                    (Token::Match(tok2->link()->tokAt(-2), "[;{}] %var% (") ||
+                     Token::Match(tok2->link()->tokAt(-5), "[;{}] ( * %var% ) (")))
                 {
                     break;
                 }
