@@ -83,6 +83,7 @@ public:
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
         checkOther.checkCatchExceptionByValue();
+        checkOther.checkMemsetZeroBytes();
     }
 
     /** @brief Are there C-style pointer casts in a c++ file? */
@@ -166,6 +167,9 @@ public:
     /** @brief %Check for exceptions that are caught by value instead of by reference */
     void checkCatchExceptionByValue();
 
+    /** @brief %Check for filling zero bytes with memset() */
+    void checkMemsetZeroBytes();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -188,6 +192,7 @@ public:
     void incorrectLogicOperatorError(const Token *tok);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void catchExceptionByValueError(const Token *tok);
+    void memsetZeroBytesError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -224,6 +229,7 @@ public:
         c.unreadVariableError(0, "varname");
         c.unassignedVariableError(0, "varname");
         c.catchExceptionByValueError(0);
+        c.memsetZeroBytesError(0, "varname");
     }
 
     std::string name() const
