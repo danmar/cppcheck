@@ -198,8 +198,10 @@ private:
  */
 static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 {
+    // Used later to check if the body belongs to a "if"
     const std::string str1(tok->str());
 
+    // Count { and }
     unsigned int indentlevel = 0;
     for (; tok; tok = tok->next())
     {
@@ -441,6 +443,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 {
     const std::string pattern((arrayInfo.varid ? std::string("%varid%") : arrayInfo.varname) + " [ " + strindex + " ]");
 
+    // count { and } for tok2
     int indentlevel2 = 0;
     for (; tok2; tok2 = tok2->next())
     {
@@ -567,7 +570,12 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
         if (arrayInfo.element_size == 0)
             return;
 
+        // arg : the index of the "wanted" argument in the function call.
         unsigned int arg = it->second;
+
+        // Parse function call. When a ',' is seen, arg is decremented.
+        // if arg becomes 1 then the current function parameter is the wanted parameter.
+        // if arg becomes 1000 then multiply current and next argument.
         for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "(")
@@ -750,6 +758,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     // out of bounds then this flag will be set.
     bool pointerIsOutOfBounds = false;
 
+    // Count { and } for tok
     int indentlevel = 0;
     for (; tok; tok = tok->next())
     {
@@ -949,6 +958,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 {
     const MathLib::bigint total_size = arrayInfo.num[0] * arrayInfo.element_size;
 
+    // Count { and } for tok
     unsigned int indentlevel = 0;
     for (; tok; tok = tok->next())
     {
@@ -1208,6 +1218,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
 void CheckBufferOverrun::checkGlobalAndLocalVariable()
 {
+    // Count { and } when parsing all tokens
     int indentlevel = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -1217,9 +1228,16 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         else if (tok->str() == "}")
             --indentlevel;
 
+        // size : Max array index
         MathLib::bigint size = 0;
+
+        // type : The type of a array element
         std::string type;
+
+        // varid : The variable id for the array
         unsigned int varid = 0;
+
+        // nextTok : number of tokens used in variable declaration - used to skip to next statement.
         int nextTok = 0;
 
         // if the previous token exists, it must be either a variable name or "[;{}]"
@@ -1243,6 +1261,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
         if (Token::Match(tok, "%type% *| %var% [ %var% ] [;=]"))
         {
+            // varpos : position for variable token
             unsigned char varpos = 1;
             if (tok->next()->str() == "*")
                 ++varpos;
@@ -1661,6 +1680,8 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigin
                 // Parameter is more complex, than just a value or variable. Ignore it for now
                 // and skip to next token.
                 parameters.push_back(0);
+
+                // count parantheses for tok3
                 int ind = 0;
                 for (const Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())
                 {
@@ -1734,6 +1755,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
         else
             continue;
 
+        // count { and } for tok
         int indentlevel = 0;
         for (; tok && tok->next(); tok = tok->next())
         {
@@ -1958,6 +1980,7 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
                    tok->str() == "extern"))
         tok = tok->next();
 
+    // ivar : number of type tokens
     int ivar = 0;
     if (Token::Match(tok, "%type% *| %var% ["))
         ivar = 1;

@@ -512,6 +512,7 @@ void CmdLineParser::PrintHelp()
               "    --enable=id          Enable additional checks. The available ids are:\n"
               "                          * all - enable all checks\n"
               "                          * style - Check coding style\n"
+              "                          * information - Enable information messages\n"
               "                          * unusedFunction - check for unused functions\n"
               "                          * missingInclude - check for missing includes\n"
               "                         Several ids can be given if you separate them with commas\n"

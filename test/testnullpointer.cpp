@@ -756,6 +756,14 @@ private:
 
         check("void foo(char *p) {\n"
               "    if (!p) {\n"
+              "        (*bail)();\n"
+              "    }\n"
+              "    *p = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char *p) {\n"
+              "    if (!p) {\n"
               "        throw x;\n"
               "    }\n"
               "    *p = 0;\n"
@@ -813,6 +821,13 @@ private:
               "  strcpy(p, \"abcd\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
+
+        // Ticket #2413 - it's ok to pass NULL to fflush
+        check("void foo() {\n"
+              "  fflush(NULL);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
 };

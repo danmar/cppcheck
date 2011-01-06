@@ -19,7 +19,7 @@ sub checkfile
         $linenr = $linenr + 1;
 
         # is there a magic number?
-        if (($line =~ /[^a-zA-Z_][0-9]{3,}/) && 
+        if (($line =~ /[^a-zA-Z0-9_][0-9]{3,}/) && 
             (!($line =~ /define|const|(\/\/)/)))
         {
                 print "[$filename:$linenr] Magic number\n";

@@ -229,18 +229,24 @@ void CheckStl::stlOutOfBounds()
 
             if (Token::Match(tok2, "; %var% <= %var% . size ( ) ;"))
             {
-                unsigned int indent2 = 0;
+                // Count { and } for tok3
+                unsigned int indent3 = 0;
+
+                // variable id for loop variable.
                 unsigned int numId = tok2->tokAt(1)->varId();
+
+                // variable id for the container variable
                 unsigned int varId = tok2->tokAt(3)->varId();
+
                 for (const Token *tok3 = tok2->tokAt(8); tok3; tok3 = tok3->next())
                 {
                     if (tok3->str() == "{")
-                        ++indent2;
+                        ++indent3;
                     else if (tok3->str() == "}")
                     {
-                        if (indent2 <= 1)
+                        if (indent3 <= 1)
                             break;
-                        --indent2;
+                        --indent3;
                     }
                     else if (tok3->varId() == varId)
                     {
@@ -470,11 +476,16 @@ void CheckStl::pushback()
     {
         if (Token::Match(tok, "%var% = & %var% ["))
         {
+            // Variable id for pointer
             const unsigned int pointerId(tok->varId());
+
+            // Variable id for the container variable
             const unsigned int containerId(tok->tokAt(3)->varId());
+
             if (pointerId == 0 || containerId == 0)
                 continue;
 
+            // Count { , } and parantheses for tok2
             int indent = 0;
             bool invalidPointer = false;
             for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next())
@@ -537,8 +548,12 @@ void CheckStl::pushback()
             tok = tok->tokAt(3);
         }
 
+        // the variable id for the vector
         unsigned int vectorid = 0;
+
+        // count { , } and parantheses for tok2
         int indent = 0;
+
         std::string invalidIterator;
         for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next())
         {
@@ -560,11 +575,14 @@ void CheckStl::pushback()
 
             if (Token::Match(tok2, "%varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++| %varid% ++| ) {", iteratorid))
             {
+                // variable id for the loop iterator
                 const unsigned int varId(tok2->tokAt(2)->varId());
                 if (varId == 0)
                     continue;
 
                 const Token *pushbackTok = 0;
+
+                // Count { and } for tok3
                 unsigned int indent3 = 0;
                 for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next())
                 {
@@ -929,7 +947,10 @@ void CheckStl::missingComparison()
                     continue;
 
                 const Token *incrementToken = 0;
+
+                // Count { and } for tok3
                 unsigned int indentlevel = 0;
+
                 // Parse loop..
                 for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next())
                 {

@@ -600,7 +600,7 @@ private:
         {
             // sizeof/typeof doesn't dereference. A function name that is all uppercase
             // might be an unexpanded macro that uses sizeof/typeof
-            if (Token::Match(&tok, "sizeof|typeof (") || isUpper(tok.str()))
+            if (Token::Match(&tok, "sizeof|typeof ("))
                 return tok.next()->link();
 
             // deallocate pointer
@@ -690,8 +690,22 @@ private:
                 {
                     if (Token::Match(tok2->tokAt(-2), "[(,] *") || Token::Match(tok2->next(), ". %var%"))
                     {
-                        if (use_dead_pointer(checks, tok2))
-                            ExecutionPath::bailOutVar(checks, tok2->varId());
+                        // find function call..
+                        const Token *functionCall = tok2;
+                        while (0 != (functionCall = functionCall ? functionCall->previous() : 0))
+                        {
+                            if (functionCall->str() == "(")
+                                break;
+                            if (functionCall->str() == ")")
+                                functionCall = functionCall->link();
+                        }
+
+                        functionCall = functionCall ? functionCall->previous() : 0;
+                        if (functionCall)
+                        {
+                            if (functionCall->isName() && !isUpper(functionCall->str()) && use_dead_pointer(checks, tok2))
+                                ExecutionPath::bailOutVar(checks, tok2->varId());
+                        }
                     }
 
                     // it is possible that the variable is initialized here

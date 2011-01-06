@@ -94,6 +94,8 @@ private:
         TEST_CASE(assignmentInAssert);
         TEST_CASE(incorrectLogicOperator);
         TEST_CASE(catchExceptionByValue);
+
+        TEST_CASE(memsetZeroBytes);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -127,6 +129,7 @@ private:
         checkOther.checkMisusedScopedObject();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkCatchExceptionByValue();
+        checkOther.checkMemsetZeroBytes();
     }
 
 
@@ -378,7 +381,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("information");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -1613,6 +1616,23 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void memsetZeroBytes()
+    {
+        check("void f() {\n"
+              "    memset(p, 10, 0)\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
+                      " bytes of \"p\". Second and third arguments might be inverted.\n", errout.str());
+
+        check("void f() {\n"
+              "    memset(p, sizeof(p), 0)\n"
+              "}\n"
+             );
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
+                           " bytes of \"p\". Second and third arguments might be inverted.\n", errout.str());
     }
 };
 

@@ -520,6 +520,19 @@ void CheckOther::checkUnsignedDivision()
         }
     }
 }
+
+//---------------------------------------------------------------------------
+// memset(p, y, 0 /* bytes to fill */) <- 2nd and 3rd arguments inverted
+//---------------------------------------------------------------------------
+void CheckOther::checkMemsetZeroBytes()
+{
+    const Token *tok = _tokenizer->tokens();
+    while (tok && ((tok = Token::findmatch(tok, "memset ( %var% , %num% , 0 )")) != NULL))
+    {
+        memsetZeroBytesError(tok, tok->strAt(2));
+        tok = tok->tokAt(8);
+    }
+}
 //---------------------------------------------------------------------------
 
 
@@ -1887,7 +1900,7 @@ void CheckOther::unassignedVariableError(const Token *tok, const std::string &va
 
 void CheckOther::checkVariableScope()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("information"))
         return;
 
     SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -2802,4 +2815,11 @@ void CheckOther::catchExceptionByValueError(const Token *tok)
                 "catchExceptionByValue", "Exception should be caught by reference.\n"
                 "The exception is caught as a value. It could be caught "
                 "as a (const) reference which is usually recommended in C++.");
+}
+
+void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning,
+                "memsetZeroBytes", "memset() called to fill 0 bytes of \"" + varname + "\""
+                ". Second and third arguments might be inverted.");
 }

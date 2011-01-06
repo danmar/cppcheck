@@ -637,6 +637,18 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int test(int cond1, int cond2) {\n"
+                       "  int foo;\n"
+                       "  if (cond1 || cond2) {\n"
+                       "     if (cond2)\n"
+                       "        foo = 0;\n"
+                       "  }\n"
+                       "  if (cond2) {\n"
+                       "    int t = foo*foo;\n"
+                       "  }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // ? :
         checkUninitVar("static void foo(int v)\n"
                        "{\n"
@@ -1352,6 +1364,14 @@ private:
                        "    calc(x,10);\n"
                        "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        // #2401 - unknown function/macro might init the variable
+        checkUninitVar("int f() {\n"
+                       "    int x;\n"
+                       "    INIT(x);\n"
+                       "    return x;\n"
+                       "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // using uninitialized function pointer..
