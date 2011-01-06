@@ -4374,6 +4374,7 @@ void Tokenizer::removeRedundantAssignment()
 
 bool Tokenizer::removeReduntantConditions()
 {
+    // Return value for function. Set to true if there are any simplifications
     bool ret = false;
 
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -6132,6 +6133,7 @@ Token * Tokenizer::initVar(Token * tok)
 
 bool Tokenizer::simplifyKnownVariables()
 {
+    // return value for function. Set to true if any simplifications are made
     bool ret = false;
 
     // constants..
@@ -7709,6 +7711,8 @@ void Tokenizer::simplifyEnum()
             if (enumType)
             {
                 const std::string pattern(className.empty() ? "" : (className + " :: " + enumType->str()).c_str());
+
+                // count { and } for tok2
                 int level = 0;
                 bool inScope = true;
 
@@ -8311,6 +8315,8 @@ bool Tokenizer::validate() const
 std::string Tokenizer::simplifyString(const std::string &source)
 {
     std::string str = source;
+
+    // true when previous char is a \ .
     bool escaped = false;
     for (std::string::size_type i = 0; i + 2 < str.size(); i++)
     {
@@ -8599,6 +8605,7 @@ void Tokenizer::simplifyFuncInWhile()
 
 void Tokenizer::simplifyStructDecl()
 {
+    // A counter that is used when giving unique names for anonymous structs.
     unsigned int count = 0;
 
     // Skip simplification of unions in class definition
@@ -8901,10 +8908,10 @@ void Tokenizer::simplifyBitfields()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         Token *last = 0;
-        int offset = 0;
 
         if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% %var% : %num% ;|,"))
         {
+            int offset = 0;
             if (tok->next()->str() == "const")
                 offset = 1;
 
@@ -8913,6 +8920,7 @@ void Tokenizer::simplifyBitfields()
         }
         else if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% : %num% ;"))
         {
+            int offset = 0;
             if (tok->next()->str() == "const")
                 offset = 1;
 
@@ -8943,6 +8951,7 @@ void Tokenizer::simplifyBuiltinExpect()
     {
         if (Token::simpleMatch(tok->next(), "__builtin_expect ("))
         {
+            // Count parantheses for tok2
             unsigned int parlevel = 0;
             for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
             {
@@ -9024,6 +9033,7 @@ void Tokenizer::simplifyBorland()
 
         if (Token::Match(tok, "class %var% :|{"))
         {
+            // count { and } for tok2
             unsigned int indentlevel = 0;
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
@@ -9066,6 +9076,7 @@ void Tokenizer::simplifyQtSignalsSlots()
     Token *tok = _tokens;
     while ((tok = const_cast<Token *>(Token::findmatch(tok, "class %var% :"))))
     {
+        // count { and } for tok2
         unsigned int indentlevel = 0;
         for (Token *tok2 = tok; tok2; tok2 = tok2->next())
         {
