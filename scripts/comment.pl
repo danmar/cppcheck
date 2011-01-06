@@ -27,7 +27,7 @@ sub checkfile
         }
 
         # set comment variable
-        if ($line =~ /\/\//)
+        if (($line =~ /\/\//) || ($line =~ /\/\*/))
         {
             $comment = 1;
         }
