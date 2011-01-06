@@ -719,7 +719,7 @@ void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
 
         //Replace (file) with filename
         QString file = data["file"].toString();
-        pathStr = file;
+        pathStr = QDir::toNativeSeparators(file);
         if (!fullPath)
         {
             QFileInfo fi(pathStr);
