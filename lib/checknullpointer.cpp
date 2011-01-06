@@ -430,20 +430,28 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
     // Dereferencing a pointer and then checking if it's NULL..
+    // This check will first scan for the check. And then scan backwards
+    // from the check, searching for dereferencing.
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+        // TODO: false negatives.
+        // - logical operators
+        // - while
         if (tok->str() == "if" && Token::Match(tok->previous(), "; if ( ! %var% )"))
         {
+            // Variable id for pointer
             const unsigned int varid(tok->tokAt(3)->varId());
             if (varid == 0)
                 continue;
 
+            // Name of pointer
             const std::string varname(tok->strAt(3));
 
             // Check that variable is a pointer..
             if (!isPointer(varid))
                 continue;
 
+            // Token where pointer is declared
             const Token * const decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
 
             for (const Token *tok1 = tok->previous(); tok1 && tok1 != decltok; tok1 = tok1->previous())
@@ -455,7 +463,10 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
                 if (tok1->varId() == varid)
                 {
+                    // unknown : this is set by isPointerDeRef if it is
+                    //           uncertain
                     bool unknown = false;
+
                     if (Token::Match(tok1->tokAt(-2), "%varid% = %varid% .", varid))
                     {
                         break;
@@ -490,7 +501,11 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 void CheckNullPointer::nullPointerByCheckAndDeRef()
 {
     // Check if pointer is NULL and then dereference it..
+
+    // used to check if a variable is a pointer.
+    // TODO: Use isPointer?
     std::set<unsigned int> pointerVariables;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "* %var% [;,)=]"))
@@ -498,6 +513,12 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
         else if (Token::Match(tok, "if ("))
         {
+            // TODO: investigate false negatives:
+            // - handle "while"?
+            // - if there are logical operators
+            // - if (x) { } else { ... }
+
+            // vartok : token for the variable
             const Token *vartok = 0;
             if (Token::Match(tok, "if ( ! %var% ) {"))
                 vartok = tok->tokAt(3);
@@ -508,16 +529,22 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             else
                 continue;
 
-            bool null = true;
+            // variable id for pointer
             const unsigned int varid(vartok->varId());
             if (varid == 0)
                 continue;
+
+            // Check if variable is a pointer. TODO: Use isPointer?
             if (pointerVariables.find(varid) == pointerVariables.end())
                 continue;
+
+            // if this is true then it is known that the pointer is null
+            bool null = true;
 
             // Name of the pointer
             const std::string &pointerName = vartok->str();
 
+            // Count { and } for tok2
             unsigned int indentlevel = 1;
             for (const Token *tok2 = tok->next()->link()->tokAt(2); tok2; tok2 = tok2->next())
             {
@@ -561,6 +588,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
                 if (tok2->varId() == varid)
                 {
+                    // unknown: this is set to true by isPointerDeRef if
+                    //          the function fails to determine if there
+                    //          is a dereference or not
                     bool unknown = false;
 
                     if (Token::Match(tok2->previous(), "[;{}=] %var% = 0 ;"))
@@ -817,7 +847,11 @@ private:
 
         if (tok.varId() != 0)
         {
+            // unknown : not really used. it is passed to isPointerDeRef.
+            //           if isPointerDeRef fails to determine if there
+            //           is a dereference the this will be set to true.
             bool unknown = false;
+
             if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
                 setnull(checks, tok.varId());
             else if (CheckNullPointer::isPointerDeRef(&tok, unknown))
