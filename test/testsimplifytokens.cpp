@@ -231,6 +231,7 @@ private:
         TEST_CASE(simplifyTypedef71); // ticket #2348
         TEST_CASE(simplifyTypedef72); // ticket #2375
         TEST_CASE(simplifyTypedef73); // ticket #2412
+        TEST_CASE(simplifyTypedef74); // ticket #2414
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4768,6 +4769,19 @@ private:
                                      "struct A : public B { "
                                      "void f ( ) ; "
                                      "} ;";
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef74() // ticket #2414
+    {
+        const char code[] = "typedef long (*state_func_t)(void);\n"
+                            "typedef state_func_t (*state_t)(void);\n"
+                            "state_t current_state = death;\n"
+                            "static char get_runlevel(const state_t);\n";
+        const std::string expected = "; "
+                                     "long ( * ( * current_state ) ( void ) ) ( void ) = death ; "
+                                     "static char get_runlevel ( const long ( * ( * ) ( void ) ) ( void ) ) ;";
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
     }
