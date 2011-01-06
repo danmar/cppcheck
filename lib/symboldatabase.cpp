@@ -1574,6 +1574,41 @@ void SymbolDatabase::SpaceInfo::initializeVarList(const Func &func, std::list<st
         }
 
         // Calling member function?
+        else if (Token::simpleMatch(ftok, "operator = ("))
+        {
+            // check if member function exists
+            std::list<Func>::const_iterator it;
+            for (it = functionList.begin(); it != functionList.end(); ++it)
+            {
+                if (ftok->next()->str() == it->tokenDef->str() && it->type != Func::Constructor)
+                    break;
+            }
+
+            // member function found
+            if (it != functionList.end())
+            {
+                // member function has implementation
+                if (it->hasBody)
+                {
+                    // initialize variable use list using member function
+                    callstack.push_back(ftok->str());
+                    initializeVarList(*it, callstack);
+                    callstack.pop_back();
+                }
+
+                // there is a called member function, but it has no implementation, so we assume it initializes everything
+                else
+                {
+                    assignAllVar();
+                }
+            }
+
+            // using default operator =, assume everything initialized
+            else
+            {
+                assignAllVar();
+            }
+        }
         else if (Token::Match(ftok, "%var% (") && ftok->str() != "if")
         {
             // Passing "this" => assume that everything is initialized

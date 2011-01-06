@@ -89,6 +89,7 @@ private:
         TEST_CASE(uninitSameClassName);		// No FP when two classes have the same name
         TEST_CASE(uninitFunctionOverload); 	// No FP when there are overloaded functions
         TEST_CASE(uninitJava);              // Java: no FP when variable is initialized in declaration
+        TEST_CASE(uninitVarOperatorEqual);  // ticket #2415
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -2706,6 +2707,37 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void uninitVarOperatorEqual()  // ticket #2415
+    {
+        checkUninitVar("struct A {\n"
+                       "    int a;\n"
+                       "    A() { a=0; }\n"
+                       "    A(A const &a) { operator=(a); }\n"
+                       "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct A {\n"
+                       "    int a;\n"
+                       "    A() { a=0; }\n"
+                       "    A(A const &a) { operator=(a); }\n"
+                       "    A & operator = (const A & rhs) {\n"
+                       "        a = rhs.a;\n"
+                       "        return *this;\n"
+                       "    }\n"
+                       "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct A {\n"
+                       "    int a;\n"
+                       "    A() { a=0; }\n"
+                       "    A(A const &a) { operator=(a); }\n"
+                       "    A & operator = (const A & rhs) {\n"
+                       "        return *this;\n"
+                       "    }\n"
+                       "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::a' is not initialised in the constructor.\n"
+                      "[test.cpp:5]: (warning) Member variable 'A::a' is not assigned a value in 'A::operator='\n", errout.str());
+    }
 
     void checkNoConstructor(const char code[])
     {
