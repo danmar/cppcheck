@@ -70,6 +70,7 @@ a:active { color:#369; text-decoration:none; }
   padding: .5em;
 }
   </style>
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
 </head>
 <body>
 <div id="header">
