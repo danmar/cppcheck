@@ -699,8 +699,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    std::set<std::string> systemIncludes;
-    handleIncludes(processedFile, filename, includePaths, systemIncludes);
+    handleIncludes(processedFile, filename, includePaths);
 
     processedFile = replaceIfDefined(processedFile);
 
@@ -1490,13 +1489,17 @@ static int tolowerWrapper(int c)
 }
 
 
-void Preprocessor::handleIncludes(std::string &code,
-                                  const std::string &filePath,
-                                  const std::list<std::string> &includePaths,
-                                  std::set<std::string> &systemIncludes,
-                                  std::set<std::string> handledFiles)
+void Preprocessor::handleIncludes(std::string &code, const std::string &filePath, const std::list<std::string> &includePaths)
 {
+    std::list<std::string> paths;
+    std::string path;
+    path = filePath;
+    path.erase(1 + path.find_last_of("\\/"));
+    paths.push_back(path);
     std::string::size_type pos = 0;
+    std::string::size_type endfilePos = 0;
+    std::set<std::string> handledFiles;
+    endfilePos = pos;
     while ((pos = code.find("#include", pos)) != std::string::npos)
     {
         // Accept only includes that are at the start of a line
@@ -1506,6 +1509,15 @@ void Preprocessor::handleIncludes(std::string &code,
             continue;
         }
 
+        // If endfile is encountered, we have moved to a next file in our stack,
+        // so remove last path in our list.
+        while ((endfilePos = code.find("\n#endfile", endfilePos)) != std::string::npos && endfilePos < pos)
+        {
+            paths.pop_back();
+            endfilePos += 9; // size of #endfile
+        }
+
+        endfilePos = pos;
         std::string::size_type end = code.find("\n", pos);
         std::string filename = code.substr(pos, end - pos);
 
@@ -1539,17 +1551,11 @@ void Preprocessor::handleIncludes(std::string &code,
 
         if (headerType == UserHeader && !fileOpened)
         {
-            if (filePath.find_first_of("\\/") != std::string::npos)
+            fin.open((paths.back() + filename).c_str());
+            if (fin.is_open())
             {
-                std::string path(filePath);
-                path.erase(1 + path.find_last_of("\\/"));
-
-                fin.open((path + filename).c_str());
-                if (fin.is_open())
-                {
-                    filename = path + filename;
-                    fileOpened = true;
-                }
+                filename = paths.back() + filename;
+                fileOpened = true;
             }
         }
 
@@ -1558,8 +1564,7 @@ void Preprocessor::handleIncludes(std::string &code,
             filename = Path::simplifyPath(filename.c_str());
             std::string tempFile = filename;
             std::transform(tempFile.begin(), tempFile.end(), tempFile.begin(), tolowerWrapper);
-            if (handledFiles.find(tempFile) != handledFiles.end() ||
-                (headerType == SystemHeader && systemIncludes.find(tempFile) != systemIncludes.end()))
+            if (handledFiles.find(tempFile) != handledFiles.end())
             {
                 // We have processed this file already once, skip
                 // it this time to avoid eternal loop.
@@ -1567,10 +1572,7 @@ void Preprocessor::handleIncludes(std::string &code,
                 continue;
             }
 
-            if (headerType == SystemHeader)
-                systemIncludes.insert(tempFile);
-            else
-                handledFiles.insert(tempFile);
+            handledFiles.insert(tempFile);
             processedFile = Preprocessor::read(fin, filename, _settings);
             fin.close();
         }
@@ -1586,10 +1588,12 @@ void Preprocessor::handleIncludes(std::string &code,
 
             // Remove space characters that are after or before new line character
             processedFile = removeSpaceNearNL(processedFile);
-            handleIncludes(processedFile, filename, includePaths, systemIncludes, handledFiles);
             processedFile = "#file \"" + filename + "\"\n" + processedFile + "\n#endfile";
             code.insert(pos, processedFile);
-            pos += processedFile.size();
+
+            path = filename;
+            path.erase(1 + path.find_last_of("\\/"));
+            paths.push_back(path);
         }
         else if (!fileOpened)
         {
