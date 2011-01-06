@@ -30,6 +30,11 @@ class ErrorLine;
 
 /**
 * @brief A class containing error data for one error.
+* 
+* The paths are stored with internal ("/") separators. Only when we show the
+* path or copy if for user (to clipboard) we convert to native separators.
+* Full path is stored instead of relative path for flexibility. It is easy
+* to get the relative path from full path when needed.
 */
 class ErrorItem
 {
