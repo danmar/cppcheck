@@ -21,7 +21,7 @@ sub checkfile
         # missing comment before variable declaration?
         if (($comment == 0) && 
             ($line =~ /^\s+([a-z]+)? [a-z]+(\s)+[a-z][a-z0-9]*\s*[;=]/) && 
-            (!($line =~ /return|delete/)))
+            (!($line =~ /return|delete|operator/)))
         {
                 print "[$filename:$linenr] No comment before variable declaration\n";
         }
