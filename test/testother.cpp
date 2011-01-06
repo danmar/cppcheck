@@ -1625,14 +1625,14 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
-		" bytes of \"p\". Second and third arguments might be inverted.\n", errout.str());
+                      " bytes of \"p\". Second and third arguments might be inverted.\n", errout.str());
 
         check("void f() {\n"
               "    memset(p, sizeof(p), 0)\n"
               "}\n"
              );
         TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
-		" bytes of \"p\". Second and third arguments might be inverted.\n", errout.str());
+                           " bytes of \"p\". Second and third arguments might be inverted.\n", errout.str());
     }
 };
 
