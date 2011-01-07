@@ -1606,7 +1606,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 #endif
             {
                 std::string f = filePath;
-            
+
                 // Determine line number of include
                 unsigned int linenr = 0;
                 unsigned int level = 0;
