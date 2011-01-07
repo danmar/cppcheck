@@ -1605,8 +1605,10 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
             if (_errorLogger && _settings && _settings->isEnabled("missingInclude"))
 #endif
             {
+                std::string f = filePath;
+            
                 // Determine line number of include
-                unsigned int linenr = 1;
+                unsigned int linenr = 0;
                 unsigned int level = 0;
                 for (std::string::size_type p = 1; p <= pos; ++p)
                 {
@@ -1620,13 +1622,16 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
                     {
                         if (level == 0)
                         {
+                            const std::string::size_type pos1 = pos - p + 7;
+                            const std::string::size_type pos2 = code.find_first_of("\"\n", pos1);
+                            f = code.substr(pos1, (pos2 == std::string::npos) ? pos2 : (pos2 - pos1));
                             break;
                         }
                         --level;
                     }
                 }
 
-                missingInclude(Path::toNativeSeparators(filePath),
+                missingInclude(Path::toNativeSeparators(f),
                                linenr,
                                filename,
                                headerType == UserHeader);
