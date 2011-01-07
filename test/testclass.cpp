@@ -184,6 +184,7 @@ private:
         TEST_CASE(symboldatabase6); // ticket #2221
         TEST_CASE(symboldatabase7); // ticket #2230
         TEST_CASE(symboldatabase8); // ticket #2252
+        TEST_CASE(symboldatabase9); // ticket #2525
     }
 
     // Check the operator Equal
@@ -5402,6 +5403,21 @@ private:
                    "    uno::Reference<rendering::XColorSpace> operator()()\n"
                    "    {\n"
                    "        return vcl::unotools::createStandardColorSpace();\n"
+                   "    }\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase9()
+    {
+        // ticket #2425 - segmentation fault
+        checkConst("class CHyperlink : public CString\n"
+                   "{\n"
+                   "public:\n"
+                   "    const CHyperlink& operator=(LPCTSTR lpsz) {\n"
+                   "        CString::operator=(lpsz);\n"
+                   "        return *this;\n"
                    "    }\n"
                    "};\n");
 
