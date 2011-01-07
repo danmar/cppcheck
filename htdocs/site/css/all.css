@@ -43,8 +43,14 @@ a:active { color:#369; text-decoration:none; }
 #tabs ul li {
   display: inline;
   margin: 0;
-  padding: 0;
-  padding-right: .5em;
+  padding: 0 .5em;
+  border-right: 1px solid black;
+}
+#tabs ul li:first-child {
+  padding-left: 0;
+}
+#tabs ul li:last-child {
+  border: none;
 }
 #tabs a:link { color:#eee; text-decoration:none; }
 #tabs a:visited { color:#eee; text-decoration:none; }
