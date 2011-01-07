@@ -35,7 +35,8 @@ private:
     void run()
     {
         TEST_CASE(destructors);
-        TEST_CASE(deallocThrow);
+        TEST_CASE(deallocThrow1);
+        TEST_CASE(deallocThrow2);
     }
 
     void check(const std::string &code)
@@ -66,7 +67,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Throwing exception in destructor\n", errout.str());
     }
 
-    void deallocThrow()
+    void deallocThrow1()
     {
         check("int * p;\n"
               "void f(int x)\n"
@@ -77,6 +78,17 @@ private:
               "    p = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Throwing exception in invalid state, p points at deallocated memory\n", errout.str());
+    }
+
+    void deallocThrow2()
+    {
+        check("void f() {\n"
+              "    int* p = 0;\n"
+              "    delete p;\n"
+              "    throw 1;\n"
+              "    p = new int;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

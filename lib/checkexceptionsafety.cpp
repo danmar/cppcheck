@@ -106,7 +106,7 @@ void CheckExceptionSafety::deallocThrow()
             bool globalVar = false;
             for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next())
             {
-                if (tok->varId() == varid)
+                if (tok2->varId() == varid)
                 {
                     globalVar = true;
                     break;
