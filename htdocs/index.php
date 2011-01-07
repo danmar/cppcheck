@@ -20,6 +20,7 @@
       <li><a href="http://sourceforge.net/apps/mediawiki/cppcheck/">Wiki</a></li>
       <li><a href="http://sourceforge.net/apps/phpbb/cppcheck/">Forum</a></li>
       <li><a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a></li>
+      <li><a href="/devinfo/" title="Developer Information">Developer Info</a></li>
       <li><a href="http://sourceforge.net/projects/cppcheck/">Project page</a></li>
     </ul>
   </div> <!-- .wrap -->
