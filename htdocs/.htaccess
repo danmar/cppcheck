@@ -1,2 +1,2 @@
 #Redirect "devinfo.html" to the new place...
-Redirect permanent /devinfo.html /devinfo/
+Redirect permanent /devinfo.html http://cppcheck.sourceforge.net/devinfo/
