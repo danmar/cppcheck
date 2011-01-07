@@ -665,8 +665,16 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
 
     std::ostringstream str;
     const Token *tok1 = tok;
-    while (tok && tok->str() != ";")
+    int level = 0;
+    while (tok)
     {
+        if (level == 0 && tok->str() == ";")
+            break;
+        else if (tok->str() == "{")
+            level++;
+        else if (tok->str() == "}")
+            level--;
+
         if (tok != tok1)
             str << " ";
         str << tok->str();
@@ -694,10 +702,19 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
 Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 {
     Token *tok = NULL;
+    int level = 0;
 
     // remove typedef but leave ;
-    while (typeDef->next() && typeDef->next()->str() != ";")
+    while (typeDef->next())
+    {
+        if (level == 0 && typeDef->next()->str() == ";")
+            break;
+        else if (typeDef->next()->str() == "{")
+            level++;
+        else if (typeDef->next()->str() == "}")
+            level--;
         typeDef->deleteNext();
+    }
 
     if (typeDef != _tokens)
     {

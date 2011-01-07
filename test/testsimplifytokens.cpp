@@ -232,6 +232,7 @@ private:
         TEST_CASE(simplifyTypedef72); // ticket #2375
         TEST_CASE(simplifyTypedef73); // ticket #2412
         TEST_CASE(simplifyTypedef74); // ticket #2414
+        TEST_CASE(simplifyTypedef75); // ticket #2426
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4782,6 +4783,14 @@ private:
         const std::string expected = "; "
                                      "long ( * ( * current_state ) ( void ) ) ( void ) = death ; "
                                      "static char get_runlevel ( const long ( * ( * ) ( void ) ) ( void ) ) ;";
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef75() // ticket #2426
+    {
+        const char code[] = "typedef _Packed struct S { long l; }; \n";
+        const std::string expected = ";";
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
     }
