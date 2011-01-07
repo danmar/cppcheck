@@ -262,6 +262,7 @@ private:
         ASSERT_EQUALS(false , MathLib::isFloat("+1E+10000"));
         ASSERT_EQUALS(false , MathLib::isFloat("-1E+1"));
         ASSERT_EQUALS(false , MathLib::isFloat("-1E+10000"));
+        ASSERT_EQUALS(true  , MathLib::isFloat(".1250E+04"));
         ASSERT_EQUALS(true  , MathLib::isFloat("-1E-1"));
         ASSERT_EQUALS(true  , MathLib::isFloat("-1E-10000"));
 

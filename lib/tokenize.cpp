@@ -665,8 +665,16 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
 
     std::ostringstream str;
     const Token *tok1 = tok;
-    while (tok && tok->str() != ";")
+    int level = 0;
+    while (tok)
     {
+        if (level == 0 && tok->str() == ";")
+            break;
+        else if (tok->str() == "{")
+            level++;
+        else if (tok->str() == "}")
+            level--;
+
         if (tok != tok1)
             str << " ";
         str << tok->str();
@@ -694,10 +702,19 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
 Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 {
     Token *tok = NULL;
+    int level = 0;
 
     // remove typedef but leave ;
-    while (typeDef->next() && typeDef->next()->str() != ";")
+    while (typeDef->next())
+    {
+        if (level == 0 && typeDef->next()->str() == ";")
+            break;
+        else if (typeDef->next()->str() == "{")
+            level++;
+        else if (typeDef->next()->str() == "}")
+            level--;
         typeDef->deleteNext();
+    }
 
     if (typeDef != _tokens)
     {
@@ -2029,6 +2046,22 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // Replace NULL with 0..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "NULL" || tok->str() == "'\\0'" || tok->str() == "'\\x0'")
+        {
+            tok->str("0");
+        }
+        else if (tok->isNumber() &&
+                 MathLib::isInt(tok->str()) &&
+                 MathLib::toLongNumber(tok->str()) == 0)
+        {
+            tok->str("0");
+        }
+    }
+
+
     // remove inline SQL (Oracle PRO*C). Ticket: #1959
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -2421,6 +2454,8 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // Change initialisation of variable to assignment
     simplifyInitVar();
+
+
 
     if (!preprocessorCondition)
     {
@@ -3985,22 +4020,6 @@ bool Tokenizer::simplifyTokenList()
     {
         if (Token::simpleMatch(tok, "* const"))
             tok->deleteNext();
-    }
-
-
-    // Replace NULL with 0..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (tok->str() == "NULL" || tok->str() == "'\\0'" || tok->str() == "'\\x0'")
-        {
-            tok->str("0");
-        }
-        else if (tok->isNumber() &&
-                 MathLib::isInt(tok->str()) &&
-                 MathLib::toLongNumber(tok->str()) == 0)
-        {
-            tok->str("0");
-        }
     }
 
     // simplify references

@@ -1574,7 +1574,8 @@ void SymbolDatabase::SpaceInfo::initializeVarList(const Func &func, std::list<st
         }
 
         // Calling member function?
-        else if (Token::simpleMatch(ftok, "operator = ("))
+        else if (Token::simpleMatch(ftok, "operator = (") &&
+                 ftok->previous()->str() != "::")
         {
             // check if member function exists
             std::list<Func>::const_iterator it;
