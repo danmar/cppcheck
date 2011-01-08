@@ -397,6 +397,14 @@ private:
               "        ;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(struct ABC *abc)\n"
+              "{\n"
+              "    abc = abc ? abc->next : 0;\n"
+              "    if (!abc)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer5()

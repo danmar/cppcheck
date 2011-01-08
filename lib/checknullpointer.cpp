@@ -461,7 +461,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     break;
                 }
 
-                if (tok1->varId() == varid)
+                if (tok1->varId() == varid && !Token::Match(tok1->previous(), "[?:]"))
                 {
                     // unknown : this is set by isPointerDeRef if it is
                     //           uncertain
