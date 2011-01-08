@@ -8820,7 +8820,7 @@ void Tokenizer::simplifyAttribute()
 // Remove "volatile", "inline", "register", and "restrict"
 void Tokenizer::simplifyKeyword()
 {
-    const char pattern[] = "volatile|inline|__inline|__forceinline|register|restrict|__restrict__";
+    const char pattern[] = "volatile|inline|__inline|__forceinline|register|restrict|__restrict|__restrict__";
     while (Token::Match(_tokens, pattern))
     {
         _tokens->deleteThis();
