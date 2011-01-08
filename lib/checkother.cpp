@@ -338,19 +338,18 @@ void CheckOther::invalidFunctionUsage()
     // strtol and strtoul..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if ((tok->str() != "strtol") && (tok->str() != "strtoul"))
+        if (!Token::Match(tok, "strtol|strtoul ("))
             continue;
 
         // Locate the third parameter of the function call..
-        int parlevel = 0;
         int param = 1;
-        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "(")
-                ++parlevel;
+                tok2 = tok2->link();
             else if (tok2->str() == ")")
-                --parlevel;
-            else if (parlevel == 1 && tok2->str() == ",")
+                break;
+            else if (tok2->str() == ",")
             {
                 ++param;
                 if (param == 3)
