@@ -114,10 +114,8 @@ void CheckOther::divisionByZeroError()
 
     <programlisting>if ( %var% ) { free ( %var% ) ; }</programlisting>
 
-    <para>The <literal>%var%</literal> pattern is used to match any variable
-    name.</para>
-
-    <para>Here is a C++ function:</para>
+    <para>The <literal>%var%</literal> pattern match any variable name. Here
+    is a C++ function:</para>
 
     <programlisting>// Find redundant condition before deallocation
 void CheckOther::dealloc()
