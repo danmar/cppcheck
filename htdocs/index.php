@@ -11,6 +11,8 @@ uninitialized variables, unused functions" />
   <title>Cppcheck - A tool for static C/C++ code analysis</title>
   <link rel="stylesheet" type="text/css" href="/site/css/all.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="alternate" type="application/rss+xml" title="Project News"
+        href="http://sourceforge.net/export/rss2_projnews.php?group_id=195752" />
 </head>
 <body>
 <div id="header">
