@@ -2,6 +2,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: Calibri,Verdana,sans-serif;
+  color: #000;
   background: #eee;
 }
 
@@ -31,8 +32,8 @@ a:active { color:#369; text-decoration:none; }
 #tabs {
   color: #eee;
   background: #369;
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
 }
 #tabs ul {
   margin: 0;
@@ -44,7 +45,7 @@ a:active { color:#369; text-decoration:none; }
   display: inline;
   margin: 0;
   padding: 0 .5em;
-  border-right: 1px solid black;
+  border-right: 1px solid #000;
 }
 #tabs ul li:first-child {
   padding-left: 0;
@@ -58,14 +59,15 @@ a:active { color:#369; text-decoration:none; }
 #tabs a:hover { color:#fff; text-decoration:underline; }
 #tabs a:active { color:#fff; text-decoration:underline; }
 
-/* Content */
-#content h2 {
-  margin-top: 0;
-}
-
 /* Wrap */
 .wrap {
   width: 50em;
   margin: 0 auto;
   padding: .5em;
+}
+
+/* Printing */
+@media print {
+  #header { color: black; border-bottom: 1px solid black; }
+  #tabs { display: none; }
 }
