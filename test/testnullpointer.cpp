@@ -818,6 +818,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #1219
+        check("void foo(char *p) {\n"
+              "    if (p) {\n"
+              "        return;\n"
+              "    }\n"
+              "    *p = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
