@@ -233,7 +233,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Include paths
-        else if (strcmp(argv[i], "-I") == 0 || strncmp(argv[i], "-I", 2) == 0)
+        else if (strncmp(argv[i], "-I", 2) == 0)
         {
             std::string path;
 
@@ -252,8 +252,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // "-Ipath/"
             else
             {
-                path = argv[i];
-                path = path.substr(2);
+                path = 2 + argv[i];
             }
 
             // If path doesn't end with / or \, add it

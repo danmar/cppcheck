@@ -56,6 +56,21 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         }
     }
 
+    // Check that all include paths exist
+    {
+        std::list<std::string>::const_iterator iter;
+        for (iter = _settings._includePaths.begin();
+             iter != _settings._includePaths.end();
+             ++iter)
+        {
+            if (!getFileLister()->isDirectory(iter->c_str()))
+            {
+                std::cout << "cppcheck: error: Couldn't find path given by -I '" + *iter + "'" << std::endl;
+                return false;
+            }
+        }
+    }
+
     std::vector<std::string> pathnames = parser.GetPathNames();
     std::vector<std::string> filenames;
 

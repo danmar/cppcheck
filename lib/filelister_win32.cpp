@@ -205,4 +205,9 @@ bool FileListerWin32::sameFileName(const std::string &fname1, const std::string 
 #endif
 }
 
+bool FileListerWin32::isDirectory(const std::string &path)
+{
+    return (MyIsDirectory(path) != FALSE);
+}
+
 #endif // _WIN32

@@ -66,6 +66,11 @@ public:
      */
     virtual bool acceptFile(const std::string &filename);
 
+    /**
+     * @brief Is given path a directory?
+     * @return returns true if the path is a directory
+     */
+    virtual bool isDirectory(const std::string &path) = 0;
 };
 
 /** @brief get filelister (platform dependent implementation) */

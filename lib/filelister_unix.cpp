@@ -103,4 +103,23 @@ bool FileListerUnix::sameFileName(const std::string &fname1, const std::string &
 #endif
 }
 
+bool FileListerUnix::isDirectory(const std::string &path)
+{
+    bool ret = false;
+
+    glob_t glob_results;
+    glob(path.c_str(), GLOB_MARK, 0, &glob_results);
+    if (glob_results.gl_pathc == 1)
+    {
+        const std::string glob_path = glob_results.gl_pathv[0];
+        if (!glob_path.empty() && glob_path[glob_path.size() - 1] == '/')
+        {
+            ret = true;
+        }
+    }
+    globfree(&glob_results);
+
+    return ret;
+}
+
 #endif // _WIN32
