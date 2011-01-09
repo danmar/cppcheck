@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <title>Cppcheck - A tool for static C/C++ code analysis</title>
+  <title>Developer Information - Cppcheck</title>
   <link rel="stylesheet" type="text/css" href="/site/css/all.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
 </head>
