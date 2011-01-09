@@ -491,7 +491,7 @@ private:
         ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0x10;"));
         ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0X10;"));
     }
-    
+
     // Ticket #2429: 0.125
     void tokenize15()
     {
