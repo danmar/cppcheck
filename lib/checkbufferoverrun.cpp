@@ -289,7 +289,9 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
 /** Parse for condition */
 static bool for_condition(const Token * const tok2, unsigned int varid, std::string &min_value, std::string &max_value, std::string &strindex, bool &maxMinFlipped)
 {
-    if (Token::Match(tok2, "%varid% < %num% ;", varid))
+    if (Token::Match(tok2, "%varid% < %num% ;", varid) ||
+        Token::Match(tok2, "%varid% != %num% ; ++ %varid%", varid) ||
+        Token::Match(tok2, "%varid% != %num% ; %varid% ++", varid))
     {
         maxMinFlipped = false;
         const MathLib::bigint value = MathLib::toLongNumber(tok2->strAt(2));
@@ -300,7 +302,9 @@ static bool for_condition(const Token * const tok2, unsigned int varid, std::str
         maxMinFlipped = false;
         max_value = tok2->strAt(2);
     }
-    else if (Token::Match(tok2, " %num% < %varid% ;", varid))
+    else if (Token::Match(tok2, " %num% < %varid% ;", varid) ||
+             Token::Match(tok2, "%num% != %varid% ; ++ %varid%", varid) ||
+             Token::Match(tok2, "%num% != %varid% ; %varid% ++", varid))
     {
         maxMinFlipped = true;
         const MathLib::bigint value = MathLib::toLongNumber(tok2->str());

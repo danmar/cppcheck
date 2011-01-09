@@ -114,6 +114,7 @@ private:
         TEST_CASE(array_index_varnames);   // FP: struct member. #1576
         TEST_CASE(array_index_for_break);  // FP: for,break
         TEST_CASE(array_index_for);        // FN: for,if
+        TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -1355,6 +1356,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void array_index_for_neq()
+    {
+        // Ticket #2211 - for loop using != in the condition
+        check("void f() {\n"
+              "    int a[5];\n"
+              "    for (int i = 0; i != 10; ++i) {\n"
+              "        a[i] = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: a\n", errout.str());
+    }
 
     void buffer_overrun_1()
     {
