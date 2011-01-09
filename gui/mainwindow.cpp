@@ -436,7 +436,7 @@ void MainWindow::CheckDone()
 
 void MainWindow::ProgramSettings()
 {
-    SettingsDialog dialog(mSettings, mApplications, this);
+    SettingsDialog dialog(mSettings, mApplications, mTranslation, this);
     if (dialog.exec() == QDialog::Accepted)
     {
         dialog.SaveSettingValues();
@@ -444,6 +444,10 @@ void MainWindow::ProgramSettings()
                                      dialog.SaveFullPath(),
                                      dialog.SaveAllErrors(),
                                      dialog.ShowNoErrorsMessage());
+        const int currentLang = mTranslation->GetCurrentLanguage();
+        const int newLang = mSettings->value(SETTINGS_LANGUAGE, 0).toInt();
+        if (currentLang != newLang)
+            SetLanguage(newLang);
     }
 }
 

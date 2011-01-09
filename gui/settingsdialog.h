@@ -27,6 +27,7 @@
 class QSettings;
 class QWidget;
 class ApplicationList;
+class TranslationHandler;
 
 /// @addtogroup GUI
 /// @{
@@ -41,6 +42,7 @@ class SettingsDialog : public QDialog
 public:
     SettingsDialog(QSettings *programSettings,
                    ApplicationList *list,
+                   TranslationHandler *translator,
                    QWidget *parent = 0);
     virtual ~SettingsDialog();
 
@@ -163,6 +165,10 @@ protected:
     */
     bool CheckStateToBool(Qt::CheckState state) const;
 
+    /**
+    * @brief Populate the translations list.
+    */
+    void InitTranslationsList();
 
     /**
     * @brief Settings
@@ -182,6 +188,12 @@ protected:
     * when user clicks ok.
     */
     ApplicationList *mTempApplications;
+
+    /**
+    * @brief List of translations.
+    *
+    */
+    TranslationHandler *mTranslator;
 
     /**
     * @brief Dialog from UI designer

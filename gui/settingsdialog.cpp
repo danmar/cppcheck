@@ -30,14 +30,17 @@
 #include "settingsdialog.h"
 #include "applicationdialog.h"
 #include "applicationlist.h"
+#include "translationhandler.h"
 #include "common.h"
 
 SettingsDialog::SettingsDialog(QSettings *programSettings,
                                ApplicationList *list,
+                               TranslationHandler *translator,
                                QWidget *parent) :
     QDialog(parent),
     mSettings(programSettings),
     mApplications(list),
+    mTranslator(translator),
     mTempApplications(new ApplicationList(this))
 {
     mUI.setupUi(this);
@@ -78,11 +81,23 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
         mUI.mLblIdealThreads->setText(tr("N/A"));
 
     LoadSettings();
+    InitTranslationsList();
 }
 
 SettingsDialog::~SettingsDialog()
 {
     SaveSettings();
+}
+
+void SettingsDialog::InitTranslationsList()
+{
+    QStringList languages = mTranslator->GetNames();
+    foreach(const QString lang, languages)
+    {
+        mUI.mListLanguages->addItem(lang);
+    }
+    const int current = mTranslator->GetCurrentLanguage();
+    mUI.mListLanguages->setCurrentRow(current);
 }
 
 Qt::CheckState SettingsDialog::BoolToCheckState(bool yes) const
@@ -133,6 +148,7 @@ void SettingsDialog::SaveSettingValues()
     SaveCheckboxValue(mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
     SaveCheckboxValue(mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
     mSettings->setValue(SETTINGS_GLOBAL_INCLUDE_PATHS, mUI.mEditIncludePaths->text());
+    mSettings->setValue(SETTINGS_LANGUAGE, mUI.mListLanguages->currentRow());
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
