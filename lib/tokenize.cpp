@@ -361,6 +361,11 @@ void Tokenizer::createTokens(std::istream &code)
             {
                 // Don't separate doubles "4.2e+10"
             }
+            else if (CurrentToken.empty() && ch == '.' && std::isdigit(code.peek()))
+            {
+                // tokenize .125 into 0.125
+                CurrentToken = "0";
+            }
             else if (ch=='&' && CurrentToken.empty() && code.peek() == '&')
             {
                 // &&

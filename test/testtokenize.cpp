@@ -52,6 +52,7 @@ private:
         TEST_CASE(tokenize12);
         TEST_CASE(tokenize13);  // bailout if the code contains "@" - that is not handled well.
         TEST_CASE(tokenize14);  // tokenize "0X10" => 16
+        TEST_CASE(tokenize15);  // tokenize ".123"
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -489,6 +490,12 @@ private:
     {
         ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0x10;"));
         ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0X10;"));
+    }
+    
+    // Ticket #2429: 0.125
+    void tokenize15()
+    {
+        ASSERT_EQUALS("0.125", tokenizeAndStringify(".125"));
     }
 
     void wrong_syntax()
