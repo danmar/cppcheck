@@ -213,12 +213,6 @@ protected slots:
     void ResultsAdded();
 
     /**
-    * @brief Slot for changing the program's language
-    *
-    */
-    void MapLanguage(QAction *);
-
-    /**
     * @brief Slot for showing/hiding standard toolbar
     */
     void ToggleMainToolBar();
@@ -258,12 +252,6 @@ protected slots:
     void DebugError(const ErrorItem &item);
 
 protected:
-
-    /**
-    * @brief Create menu items to change language
-    *
-    */
-    void CreateLanguageMenuItems();
 
     /**
     * @brief Set current language

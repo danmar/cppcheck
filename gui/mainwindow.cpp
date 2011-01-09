@@ -98,7 +98,6 @@ MainWindow::MainWindow() :
 
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
 
-    CreateLanguageMenuItems();
     LoadSettings();
 
     mThread->Initialize(mUI.mResults);
@@ -126,39 +125,6 @@ MainWindow::~MainWindow()
     delete mLogView;
     delete mHelpWindow;
     delete mProject;
-}
-
-void MainWindow::CreateLanguageMenuItems()
-{
-    QStringList languages = mTranslation->GetNames();
-
-    for (int i = 0; i < languages.size(); i++)
-    {
-        //Create an action for each language
-        //Language name is pre translated
-        QAction *temp = new QAction(languages[i], this);
-
-        temp->setCheckable(true);
-
-        //Add the action to menu
-        mUI.mMenuLanguage->addAction(temp);
-
-        //Add action to the group
-        mLanguages->addAction(temp);
-
-        //Check it if it's the value stored to settings
-        if (i == mSettings->value(SETTINGS_LANGUAGE, 0).toInt())
-        {
-            temp->setChecked(true);
-        }
-        else
-        {
-            temp->setChecked(false);
-        }
-    }
-
-    connect(mLanguages, SIGNAL(triggered(QAction *)),
-            this, SLOT(MapLanguage(QAction *)));
 }
 
 void MainWindow::LoadSettings()
@@ -711,19 +677,6 @@ void MainWindow::SetLanguage(int index)
             {
                 actions[i]->setText(tr(languages[i].toLatin1()));
             }
-        }
-    }
-}
-
-void MainWindow::MapLanguage(QAction *action)
-{
-    //Find the action that has the language that user clicked
-    QList<QAction *> actions = mLanguages->actions();
-    for (int i = 0; i < actions.size(); i++)
-    {
-        if (actions[i] == action)
-        {
-            SetLanguage(i);
         }
     }
 }
