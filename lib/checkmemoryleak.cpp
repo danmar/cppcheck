@@ -838,6 +838,10 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 {
     Token *rethead = 0, *rettail = 0;
 
+    // variables whose value depends on if(!var). If one of these variables
+    // is used in a if-condition then generate "ifv" instead of "if".
+    std::set<unsigned int> extravar;
+
     // The first token should be ";"
     rethead = new Token(0);
     rethead->str(";");
@@ -1084,10 +1088,22 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 else if (Token::simpleMatch(tok, "if (") && notvar(tok->tokAt(2), varid, true))
                 {
                     addtoken(&rettail, tok, "if(!var)");
+
+                    // parse the if-body.
+                    // if a variable is assigned then add variable to "extravar".
+                    for (const Token *tok2 = tok->next()->link()->tokAt(2); tok2; tok2 = tok2->next())
+                    {
+                        if (tok2->str() == "{")
+                            tok2 = tok2->link();
+                        else if (tok2->str() == "}")
+                            break;
+                        else if (Token::Match(tok2, "%var% ="))
+                            extravar.insert(tok2->varId());
+                    }
                 }
                 else
                 {
-                    // Check if the condition depends on var somehow..
+                    // Check if the condition depends on var or extravar somehow..
                     bool dep = false;
                     int innerParlevel = 0;
                     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
@@ -1137,6 +1153,10 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                                 dep = false;
                                 break;
                             }
+                        }
+                        if (tok2->varId() && extravar.find(tok2->varId()) != extravar.end())
+                        {
+                            dep = true;
                         }
                     }
 

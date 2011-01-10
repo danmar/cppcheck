@@ -425,6 +425,10 @@ private:
         ASSERT_EQUALS(";;use;if{}", getcode("char *s; if (x(&s)) { }", "s"));
         ASSERT_EQUALS(";;use;if{}", getcode("char *s; if (!s || x(&s)) { }", "s"));
 
+        // if (ticket #2442)
+        ASSERT_EQUALS(";;;;if(!var){;}ifv{}", getcode("char *s; int x = 0; if (!s) { x = 2; } if (x) { }", "s"));
+        ASSERT_EQUALS(";;;;if(!var){;}if{}", getcode("char *s; int x = 0; if (!s) { x = 2; } if (y) { }", "s"));
+
         // switch..
         ASSERT_EQUALS(";;switch{case;;break;};", getcode("char *s; switch(a){case 1: break;};", "s"));
 
