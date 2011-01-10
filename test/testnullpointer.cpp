@@ -405,6 +405,18 @@ private:
               "        ;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("BOOL GotoFlyAnchor()\n"  // #2243
+              "{\n"
+              "    const SwFrm* pFrm = GetCurrFrm();\n"
+              "    do {\n"
+              "        pFrm = pFrm->GetUpper();\n"
+              "    } while( pFrm && !pFrm->IsFlyFrm() );\n"
+              "\n"
+              "    if( !pFrm )\n"
+              "        return FALSE;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer5()
