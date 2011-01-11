@@ -2619,6 +2619,16 @@ private:
               "    fatal_error();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void fatal_error()\n"     // #2440
+              "{ }\n"
+              "\n"
+              "void f()\n"
+              "{\n"
+              "    char *p = malloc(100);\n"
+              "    fatal_error();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n", errout.str());
     }
 
 

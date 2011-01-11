@@ -587,11 +587,17 @@ void CheckMemoryLeakInFunction::parse_noreturn()
                 if (indentlevel == 0)
                     break;
             }
-            if (Token::Match(tok2, "[;{}] exit ("))
+            if (Token::Match(tok2->previous(), "[;{}] exit ("))
             {
                 noreturn.insert(info->className);
                 break;
             }
+        }
+
+        // This function is not a noreturn function
+        if (indentlevel == 0)
+        {
+            notnoreturn.insert(info->className);
         }
     }
 }
@@ -733,7 +739,17 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     // how many parameters is there in the function call?
     int numpar = countParameters(tok);
     if (numpar <= 0)
+    {
+        // Taking return value => it is not a noreturn function
+        if (tok->strAt(-1) == "=")
+            return NULL;
+
+        // Function is not noreturn
+        if (notnoreturn.find(funcname) != notnoreturn.end())
+            return NULL;
+
         return (tok->previous()->str() != "=") ? "callfunc" : NULL;
+    }
 
     unsigned int par = 1;
     unsigned int parlevel = 0;

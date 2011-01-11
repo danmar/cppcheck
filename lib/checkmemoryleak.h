@@ -349,6 +349,9 @@ public:
     /** Function names for functions that are "noreturn" */
     std::set<std::string> noreturn;
 
+    /** Function names for functions that are not "noreturn" */
+    std::set<std::string> notnoreturn;
+
     SymbolDatabase *symbolDatabase;
 };
 
