@@ -25,6 +25,7 @@
 #include "timer.h"
 #include "settings.h"
 #include "cmdlineparser.h"
+#include "path.h"
 
 // xml is used in rules
 #include "tinyxml/tinyxml.h"
@@ -254,9 +255,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             {
                 path = 2 + argv[i];
             }
+            path = Path::fromNativeSeparators(path);
 
             // If path doesn't end with / or \, add it
-            if (path[path.length()-1] != '/' && path[path.length()-1] != '\\')
+            if (path[path.length()-1] != '/')
                 path += '/';
 
             _settings->_includePaths.push_back(path);

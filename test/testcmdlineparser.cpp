@@ -51,6 +51,9 @@ private:
         TEST_CASE(defines3);
         TEST_CASE(includesnopath);
         TEST_CASE(includes);
+        TEST_CASE(includesslash);
+        TEST_CASE(includesbackslash);
+        TEST_CASE(includesnospace);
         TEST_CASE(includes2);
         TEST_CASE(enabledAll);
         TEST_CASE(enabledStyle);
@@ -274,6 +277,36 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT_EQUALS(" include/", settings._includePaths.front());
+    }
+
+    void includesslash()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-I include/", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(" include/", settings._includePaths.front());
+    }
+
+    void includesbackslash()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-I include\\", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(" include/", settings._includePaths.front());
+    }
+
+    void includesnospace()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-Iinclude", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS("include/", settings._includePaths.front());
     }
 
     void includes2()

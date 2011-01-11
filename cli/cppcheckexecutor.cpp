@@ -24,6 +24,7 @@
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include "cmdlineparser.h"
 #include "filelister.h"
+#include "path.h"
 
 CppCheckExecutor::CppCheckExecutor()
 {
@@ -63,9 +64,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
              iter != _settings._includePaths.end();
              ++iter)
         {
-            if (!getFileLister()->isDirectory(iter->c_str()))
+            const std::string path(Path::toNativeSeparators(*iter));
+            if (!getFileLister()->isDirectory(path.c_str()))
             {
-                std::cout << "cppcheck: error: Couldn't find path given by -I '" + *iter + "'" << std::endl;
+                std::cout << "cppcheck: error: Couldn't find path given by -I '" + path + "'" << std::endl;
                 return false;
             }
         }
