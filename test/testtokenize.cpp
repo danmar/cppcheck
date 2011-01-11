@@ -128,6 +128,7 @@ private:
         TEST_CASE(simplifyKnownVariables36);    // ticket #2304 - known value for strcpy parameter
         TEST_CASE(simplifyKnownVariables37);    // ticket #2398 - false positive caused by no simplification in for loop
         TEST_CASE(simplifyKnownVariables38);    // ticket #2399 - simplify conditions
+        TEST_CASE(simplifyKnownVariables39);
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -1963,6 +1964,27 @@ private:
                                 "{ ; }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables39()
+    {
+        // Ticket #2296 - simplify pointer alias 'delete p;'
+        {
+            const char code[] = "void f() {\n"
+                                "    int *x;\n"
+                                "    int *y = x;\n"
+                                "    delete y;\n"
+                                "}";
+            ASSERT_EQUALS("void f ( ) {\nint * x ;\n\ndelete x ;\n}", tokenizeAndStringify(code, true));
+        }
+        {
+            const char code[] = "void f() {\n"
+                                "    int *x;\n"
+                                "    int *y = x;\n"
+                                "    delete [] y;\n"
+                                "}";
+            ASSERT_EQUALS("void f ( ) {\nint * x ;\n\ndelete [ ] x ;\n}", tokenizeAndStringify(code, true));
+        }
     }
 
     void simplifyKnownVariablesBailOutAssign()

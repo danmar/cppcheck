@@ -6504,6 +6504,17 @@ bool Tokenizer::simplifyKnownVariables()
                         ret = true;
                     }
 
+                    // Delete pointer alias
+                    if (pointeralias && tok3->str() == "delete" &&
+                        (Token::Match(tok3, "delete %varid% ;", varid) ||
+                         Token::Match(tok3, "delete [ ] %varid%", varid)))
+                    {
+                        tok3 = (tok3->strAt(1) == "[") ? tok3->tokAt(3) : tok3->next();
+                        tok3->str(value);
+                        tok3->varId(valueVarId);
+                        ret = true;
+                    }
+
                     // Variable is used in function call..
                     if (Token::Match(tok3, ("%var% ( " + structname + " %varid% ,").c_str(), varid))
                     {
