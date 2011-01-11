@@ -5,6 +5,8 @@
   <title>Developer Information - Cppcheck</title>
   <link rel="stylesheet" type="text/css" href="/site/css/all.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="alternate" type="application/atom+xml" title="Recent Commits to cppcheck:master"
+        href="https://github.com/danmar/cppcheck/commits/master.atom" />
 </head>
 <body>
 <div id="header">
