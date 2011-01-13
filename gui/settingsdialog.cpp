@@ -40,8 +40,8 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
     QDialog(parent),
     mSettings(programSettings),
     mApplications(list),
-    mTranslator(translator),
-    mTempApplications(new ApplicationList(this))
+    mTempApplications(new ApplicationList(this)),
+    mTranslator(translator)
 {
     mUI.setupUi(this);
     mTempApplications->Copy(list);
