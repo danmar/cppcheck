@@ -968,7 +968,7 @@ void CheckStl::missingComparison()
                         incrementToken = tok3;
                     else if (tok3->varId() == iteratorId && Token::Match(tok3->next(), "!=|=="))
                         incrementToken = 0;
-                    else if (tok3->str() == "break")
+                    else if (tok3->str() == "break" || tok3->str() == "return")
                         incrementToken = 0;
                 }
                 if (incrementToken)
