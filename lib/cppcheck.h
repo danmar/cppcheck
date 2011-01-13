@@ -74,7 +74,7 @@ public:
     /**
      * @brief Add new file to be checked.
      *
-     * @param path Relative or absolute path to the file to be checked,
+     * @param filepath Relative or absolute path to the file to be checked,
      * e.g. "cppcheck.cpp". Note that only source files (.c, .cc or .cpp)
      * should be added to the list. Include files are gathered automatically.
      */
