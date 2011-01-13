@@ -2342,52 +2342,29 @@ void CheckOther::checkIncompleteStatement()
     if (!_settings->_checkCodingStyle)
         return;
 
-    int parlevel = 0;
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "(")
-            ++parlevel;
-        else if (tok->str() == ")")
-            --parlevel;
+            tok = tok->link();
 
-        if (parlevel != 0)
-            continue;
+        else if (Token::simpleMatch(tok, "= {"))
+            tok = tok->next()->link();
 
-        if (Token::simpleMatch(tok, "= {"))
+        else if (Token::Match(tok, "[;{}] %str%") || Token::Match(tok, "[;{}] %num%"))
         {
-            /* We are in an assignment, so it's not a statement.
-             * Skip until ";" */
-
-            while (tok->str() != ";")
+            // bailout if there is a "? :" in this statement
+            bool bailout = false;
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
             {
-                int level = 0;
-                do
-                {
-                    if (tok->str() == "(" || tok->str() == "{")
-                        ++level;
-                    else if (tok->str() == ")" || tok->str() == "}")
-                        --level;
-
-                    tok = tok->next();
-
-                    if (tok == NULL)
-                        return;
-                }
-                while (level > 0);
+                if (tok2->str() == "?")
+                    bailout = true;
+                else if (tok2->str() == ";")
+                    break;
             }
+            if (bailout)
+                continue;
 
-            continue;
-        }
-
-        if (Token::Match(tok, "[;{}] %str%") && !Token::Match(tok->tokAt(2), "[,}]"))
-        {
-            constStatementError(tok->next(), "string");
-        }
-
-        if (Token::Match(tok, "[;{}] %num%") && !Token::Match(tok->tokAt(2), "[,}]"))
-        {
-            constStatementError(tok->next(), "numeric");
+            constStatementError(tok->next(), tok->next()->isNumber() ? "numeric" : "string");
         }
     }
 }

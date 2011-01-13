@@ -66,6 +66,7 @@ private:
         TEST_CASE(intarray);
         TEST_CASE(structarraynull);
         TEST_CASE(structarray);
+        TEST_CASE(conditionalcall);     // ; 0==x ? X() : Y();
     }
 
     void test1()
@@ -170,6 +171,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void conditionalcall()
+    {
+        check("void f() {\n"
+              "    0==x ? X() : Y();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestIncompleteStatement)
