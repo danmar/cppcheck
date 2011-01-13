@@ -77,10 +77,8 @@ public:
      * @param path Relative or absolute path to the file to be checked,
      * e.g. "cppcheck.cpp". Note that only source files (.c, .cc or .cpp)
      * should be added to the list. Include files are gathered automatically.
-     * You can also give path, e.g. "src/" which will be scanned for source
-     * files recursively.
      */
-    void addFile(const std::string &path);
+    void addFile(const std::string &filepath);
 
     /**
      * @brief Add new unreal file to be checked.

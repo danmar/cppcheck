@@ -56,14 +56,14 @@ void CppCheck::settings(const Settings &currentSettings)
     _settings = currentSettings;
 }
 
-void CppCheck::addFile(const std::string &path)
+void CppCheck::addFile(const std::string &filepath)
 {
-    getFileLister()->recursiveAddFiles(_filenames, path.c_str());
+    _filenames.push_back(Path::fromNativeSeparators(filepath));
 }
 
 void CppCheck::addFile(const std::string &path, const std::string &content)
 {
-    _filenames.push_back(path);
+    _filenames.push_back(Path::fromNativeSeparators(path));
     _fileContents[ path ] = content;
 }
 
