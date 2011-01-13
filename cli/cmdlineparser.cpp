@@ -459,7 +459,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         else
-            _pathnames.push_back(argv[i]);
+            _pathnames.push_back(Path::fromNativeSeparators(argv[i]));
     }
 
     if (_settings->isEnabled("unusedFunctions") && _settings->_jobs > 1)
