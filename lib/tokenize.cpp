@@ -856,6 +856,13 @@ void Tokenizer::simplifyTypedef()
         else if (tok->str() != "typedef")
             continue;
 
+        // check for syntax errors
+        if (tok->previous() && tok->previous()->str() == "(")
+        {
+            syntaxError(tok);
+            continue;
+        }
+
         // pull struct, union, enum or class definition out of typedef
         // use typedef name for unnamed struct, union, enum or class
         if (Token::Match(tok->next(), "const| struct|enum|union|class %type% {") ||

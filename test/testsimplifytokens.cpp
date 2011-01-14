@@ -233,6 +233,7 @@ private:
         TEST_CASE(simplifyTypedef73); // ticket #2412
         TEST_CASE(simplifyTypedef74); // ticket #2414
         TEST_CASE(simplifyTypedef75); // ticket #2426
+        TEST_CASE(simplifyTypedef76); // ticket #2453
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4793,6 +4794,14 @@ private:
         const std::string expected = ";";
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef76() // ticket #2453 segmentation fault
+    {
+        const char code[] = "void f1(typedef int x) {}\n";
+        const std::string expected = "void f1 ( typedef int x ) { }";
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void simplifyTypedefFunction1()
