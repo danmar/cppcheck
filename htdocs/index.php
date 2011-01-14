@@ -64,6 +64,22 @@ Cppcheck as an external tool.</p>
   <li>Check for uninitialized variables and unused functions</li>
 </ul>
 
+<h2>News</h2>
+<?php
+  require './site/simplepie/simplepie.inc';
+
+  $feed = new SimplePie();
+  $feed->set_feed_url('http://sourceforge.net/export/rss2_projnews.php?group_id=195752');
+  $feed->set_cache_location('./site/simplepie/cache');
+  $feed->init();
+  print("<ul class=\"rssfeeditems\">\n");
+  foreach ($feed->get_items(0, 3) as $item) { //for the last 3 news items...
+    print("  <li><a href=\"".$item->get_link()."\">".$item->get_title()."</a> <em>".$item->get_date('Y-m-d')."</em></li>\n");
+  }
+  print("</ul>\n");
+?>
+<p><a href="http://sourceforge.net/news/?group_id=195752">View all news&hellip;</a></p>
+
 <h2>Support</h2>
 <ul>
   <li>Use <a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a> to report

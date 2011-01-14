@@ -66,6 +66,13 @@ a:active { color:#369; text-decoration:none; }
   padding: .5em;
 }
 
+/* RSS feed items */
+.rssfeeditems em {
+  margin-left: .5em;
+  color: #888;
+  font-size: smaller;
+}
+
 /* Printing */
 @media print {
   #header { color: black; border-bottom: 1px solid black; }
