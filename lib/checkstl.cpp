@@ -962,11 +962,11 @@ void CheckStl::missingComparison()
                             break;
                         --indentlevel;
                     }
-                    else if (tok3->varId() == iteratorId && Token::simpleMatch(tok3->next(), "++"))
+                    else if (Token::Match(tok3, "%varid% ++", iteratorId))
                         incrementToken = tok3;
-                    else if (tok3->str() == "++" && tok3->next() && tok3->next()->varId() == iteratorId)
+                    else if (Token::Match(tok3->previous(), "++ %varid% !!.", iteratorId))
                         incrementToken = tok3;
-                    else if (tok3->varId() == iteratorId && Token::Match(tok3->next(), "!=|=="))
+                    else if (Token::Match(tok3, "%varid% !=|==", iteratorId))
                         incrementToken = 0;
                     else if (tok3->str() == "break" || tok3->str() == "return")
                         incrementToken = 0;

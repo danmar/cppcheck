@@ -1080,6 +1080,13 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Missing bounds check for extra iterator increment in loop.\n", errout.str());
+
+        check("void f(std::map<int,int> &ints) {\n"
+              "    for (std::map<int,int>::iterator it = ints.begin(); it != ints.end(); ++it) {\n"
+              "        ++it->second;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingInnerComparison2()
