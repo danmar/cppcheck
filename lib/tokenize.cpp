@@ -6206,6 +6206,9 @@ bool Tokenizer::simplifyKnownVariables()
         }
     }
 
+    // variable id for float/double variables
+    std::set<unsigned int> floatvars;
+
     // auto variables..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -6218,6 +6221,11 @@ bool Tokenizer::simplifyKnownVariables()
         Token *tok2 = tok;
         for (; tok2; tok2 = tok2->next())
         {
+            if (Token::Match(tok2, "[;{}] float|double %var% ;"))
+            {
+                floatvars.insert(tok2->tokAt(2)->varId());
+            }
+
             if (tok2->str() == "{")
                 ++indentlevel;
 
@@ -6325,8 +6333,18 @@ bool Tokenizer::simplifyKnownVariables()
                         if (tok2->strAt(4) == ";")
                             valueIsPointer = true;
                     }
+
+                    // float value should contain a "."
+                    else if (tok2->tokAt(2)->isNumber() &&
+                             floatvars.find(tok2->varId()) != floatvars.end() &&
+                             value.find(".") == std::string::npos)
+                    {
+                        value += ".0";
+                    }
+
                     if (Token::simpleMatch(tok2->next(), "= &"))
                         tok2 = tok2->tokAt(3);
+
                     tok3 = tok2->next();
                 }
                 Token* bailOutFromLoop = 0;

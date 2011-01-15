@@ -132,6 +132,7 @@ private:
         TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
         TEST_CASE(simplifyKnownVariablesBailOutConditionalIncrement);
         TEST_CASE(simplifyKnownVariablesBailOutSwitchBreak);	// ticket #2324
+        TEST_CASE(simplifyKnownVariablesFloat);    // #2454 - float variable
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -2103,6 +2104,21 @@ private:
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
     }
+
+    void simplifyKnownVariablesFloat()
+    {
+        // Ticket #2454
+        const char code[] = "void f() {\n"
+                            "    float a = 40;\n"
+                            "    x(10 / a);\n"
+                            "}\n";
+
+        const char expected[] = "void f ( ) {\n;\nx ( 0.25 ) ;\n}";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+    }
+
+
 
     std::string tokenizeDebugListing(const std::string &code, bool simplify = false)
     {
