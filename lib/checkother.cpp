@@ -2537,7 +2537,7 @@ void CheckOther::checkMisusedScopedObject()
     std::set<std::string> identifiers;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class|struct %var% [:{]"))
+        if (Token::Match(tok, "class|struct %var% [:{;]"))
             identifiers.insert(tok->next()->str());
     }
 
