@@ -417,6 +417,26 @@ private:
               "        return FALSE;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #2463
+        check("struct A \n"
+              "{\n"
+              "    B* W;\n"
+              "\n"
+              "    void f() {\n"
+              "        switch (InData) {\n"
+              "            case 2:\n"
+              "                if (!W) return;\n"
+              "                W->foo();\n"
+              "                break;\n"
+              "            case 3:\n"
+              "                f();\n"
+              "                if (!W) return;\n"
+              "                break;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer5()
