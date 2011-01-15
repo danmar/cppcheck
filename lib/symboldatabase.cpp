@@ -411,8 +411,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     if (func->type == SymbolDatabase::Func::Constructor)
                     {
                         // check for no arguments: func ( )
-                        /** @todo check for arguments with default values someday */
                         if (func->argDef->next() == func->argDef->link())
+                        {
+                            hasDefaultConstructor = true;
+                            break;
+                        }
+
+                        /** check for arguments with default values */
+                        else if (func->argCount() == func->initializedArgCount())
                         {
                             hasDefaultConstructor = true;
                             break;
@@ -908,6 +914,43 @@ const Token *SymbolDatabase::initBaseInfo(SpaceInfo *info, const Token *tok)
 
     return tok2;
 }
+
+//---------------------------------------------------------------------------
+
+unsigned int SymbolDatabase::Func::argCount() const
+{
+    unsigned int count = 0;
+
+    if (argDef->link() != argDef->next())
+    {
+        count++;
+
+        for (const Token *tok = argDef->next(); tok && tok->next() && tok->next() != argDef->link(); tok = tok->next())
+        {
+            if (tok->str() == ",")
+                count++;
+        }
+    }
+
+    return count;
+}
+
+unsigned int SymbolDatabase::Func::initializedArgCount() const
+{
+    unsigned int count = 0;
+
+    if (argDef->link() != argDef->next())
+    {
+        for (const Token *tok = argDef->next(); tok && tok->next() && tok->next() != argDef->link(); tok = tok->next())
+        {
+            if (tok->str() == "=")
+                count++;
+        }
+    }
+
+    return count;
+}
+
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SpaceInfo::SpaceInfo(SymbolDatabase *check_, const Token *classDef_, SymbolDatabase::SpaceInfo *nestedIn_) :

@@ -61,6 +61,7 @@ private:
         TEST_CASE(uninitVar15);
         TEST_CASE(uninitVar16);
         TEST_CASE(uninitVar17);
+        TEST_CASE(uninitVar18); // ticket #2465
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -2024,6 +2025,37 @@ private:
                        "    }\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Bar::foo' is not initialised in the constructor.\n", errout.str());
+    }
+
+    void uninitVar18() // ticket #2465
+    {
+        checkUninitVar("struct Altren\n"
+                       "{\n"
+                       "    Altren(int _a = 0) : value(0) { }\n"
+                       "    int value;\n"
+                       "};\n"
+                       "class A\n"
+                       "{\n"
+                       "public:\n"
+                       "    A() { }\n"
+                       "private:\n"
+                       "    Altren value;\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct Altren\n"
+                       "{\n"
+                       "    Altren(int _a) : value(0) { }\n"
+                       "    int value;\n"
+                       "};\n"
+                       "class A\n"
+                       "{\n"
+                       "public:\n"
+                       "    A() { }\n"
+                       "private:\n"
+                       "    Altren value;\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'A::value' is not initialised in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1()

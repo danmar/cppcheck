@@ -117,6 +117,9 @@ public:
         {
         }
 
+        unsigned int argCount() const;
+        unsigned int initializedArgCount() const;
+
         const Token *tokenDef; // function name token in class definition
         const Token *argDef;   // function argument start '(' in class definition
         const Token *token;    // function name token in implementation
