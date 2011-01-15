@@ -276,6 +276,7 @@ private:
         TEST_CASE(enum15);
         TEST_CASE(enum16); // ticket #1988
         TEST_CASE(enum17); // ticket #2381 (duplicate enums)
+        TEST_CASE(enum18); // #2466 (array with same name as enum constant)
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6048,6 +6049,13 @@ private:
                             "enum ab { a=0, b };\n";
         ASSERT_EQUALS(";", tok(code, false));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum18() // ticket #2466 - array with same name as enum constant
+    {
+        const char code[] = "enum ab { a=0, b };\n"
+                            "void f() { a[0]; }\n";
+        ASSERT_EQUALS("; void f ( ) { a [ 0 ] ; }", tok(code, false));
     }
 
     void removestd()

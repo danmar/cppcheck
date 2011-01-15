@@ -7613,7 +7613,9 @@ void Tokenizer::simplifyEnum()
                 // find all uses of this enumerator and substitute it's value for it's name
                 if (enumName && (enumValue || (enumValueStart && enumValueEnd)))
                 {
-                    const std::string pattern(className.empty() ? "" : (className + " :: " + enumName->str()).c_str());
+                    const std::string pattern(className.empty() ?
+                                              std::string("") :
+                                              (className + " :: " + enumName->str()));
                     int level = 1;
                     bool inScope = true;
 
@@ -7666,9 +7668,11 @@ void Tokenizer::simplifyEnum()
                         else if (inScope && !exitThisScope && tok2->str() == enumName->str())
                         {
                             if (Token::simpleMatch(tok2->previous(), "::") ||
-                                Token::simpleMatch(tok2->next(), "::"))
+                                Token::Match(tok2->next(), "::|["))
                             {
-                                // Don't replace this enum if it's preceded or followed by "::"
+                                // Don't replace this enum if:
+                                // * it's preceded or followed by "::"
+                                // * it's followed by "["
                             }
                             else if (!duplicateDefinition(&tok2, enumName))
                             {
