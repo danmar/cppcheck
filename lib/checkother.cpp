@@ -2519,24 +2519,6 @@ void CheckOther::checkMathFunctions()
     }
 }
 
-
-bool CheckOther::isIdentifierObjectType(const Token * const tok)
-{
-    const std::string identifier = tok->tokAt(1)->str();
-
-    const std::map<std::string, bool>::const_iterator found = isClassResults.find(identifier);
-    if (found != isClassResults.end())
-    {
-        return found->second;
-    }
-
-    const std::string classDefnOrDecl = std::string("class|struct ") + identifier + " [{:;]";
-    const bool result = Token::findmatch(_tokenizer->tokens(), classDefnOrDecl.c_str()) != NULL;
-    isClassResults.insert(std::make_pair(identifier, result));
-    return result;
-}
-
-
 void CheckOther::checkMisusedScopedObject()
 {
     // Skip this check for .c files
@@ -2550,6 +2532,14 @@ void CheckOther::checkMisusedScopedObject()
     SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<SymbolDatabase::SpaceInfo *>::iterator i;
+
+    // list of classes / structs
+    std::set<std::string> identifiers;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "class|struct %var% [:{]"))
+            identifiers.insert(tok->next()->str());
+    }
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
@@ -2576,7 +2566,7 @@ void CheckOther::checkMisusedScopedObject()
 
             if (Token::Match(tok, "[;{}] %var% (")
                 && Token::Match(tok->tokAt(2)->link(), ") ;")
-                && isIdentifierObjectType(tok)
+                && identifiers.find(tok->next()->str()) != identifiers.end()
                )
             {
                 tok = tok->next();

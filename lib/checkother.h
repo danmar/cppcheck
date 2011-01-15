@@ -293,16 +293,6 @@ private:
 
         return varname;
     }
-
-    /**
-     * @brief query type of identifier
-     * @param tok Token of the identifier
-     * @return true if the identifier is of type 'class' or 'struct',
-     *         false otherwise.
-     */
-    bool isIdentifierObjectType(const Token* const tok);
-
-    std::map<std::string, bool> isClassResults;
 };
 /// @}
 //---------------------------------------------------------------------------
