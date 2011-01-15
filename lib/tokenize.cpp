@@ -8668,6 +8668,7 @@ void Tokenizer::simplifyStructDecl()
         // check for named struct/union
         if (Token::Match(tok, "struct|union %type% :|{"))
         {
+            Token *isStatic = tok->previous() && tok->previous()->str() == "static" ? tok->previous() : NULL;
             Token *type = tok->next();
             Token *next = tok->tokAt(2);
 
@@ -8684,6 +8685,12 @@ void Tokenizer::simplifyStructDecl()
             {
                 tok->insertToken(";");
                 tok = tok->next();
+                if (isStatic)
+                {
+                    isStatic->deleteThis();
+                    tok->insertToken("static");
+                    tok = tok->next();
+                }
                 tok->insertToken(type->str().c_str());
             }
 

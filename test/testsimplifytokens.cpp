@@ -6271,6 +6271,13 @@ private:
             const char expected[] = ";";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+
+        // ticket 2464
+        {
+            const char code[] = "static struct ABC { } abc ;";
+            const char expected[] = "struct ABC { } ; static ABC abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void removeUnwantedKeywords()
