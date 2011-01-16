@@ -77,6 +77,18 @@ private:
         ASSERT(!errorLogger.id.empty());
 
         // TODO: check if there are duplicate error ids in errorLogger.id
+        std::string duplicate;
+        for (std::list<std::string>::iterator it = errorLogger.id.begin();
+             it != errorLogger.id.end();
+             ++it)
+        {
+            if (std::find(errorLogger.id.begin(), it, *it) != it)
+            {
+                duplicate = "Duplicate ID: " + *it;
+                break;
+            }
+        }
+        ASSERT_EQUALS("", duplicate);
     }
 };
 

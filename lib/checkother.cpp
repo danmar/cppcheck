@@ -1875,7 +1875,7 @@ void CheckOther::unusedVariableError(const Token *tok, const std::string &varnam
 
 void CheckOther::allocatedButUnusedVariableError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style, "unusedVariable", "Variable '" + varname + "' is allocated memory that is never used");
+    reportError(tok, Severity::style, "unusedAllocatedMemory", "Variable '" + varname + "' is allocated memory that is never used");
 }
 
 void CheckOther::unreadVariableError(const Token *tok, const std::string &varname)
