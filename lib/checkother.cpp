@@ -254,7 +254,11 @@ void CheckOther::checkIncorrectLogicOperator()
             {
                 const unsigned int varId = term1Tok->varId();
                 if (!varId)
+                {
+                    tok = Token::findmatch(endTok->next(), conditionPattern);
+                    endTok = tok ? tok->next()->link() : NULL;
                     continue;
+                }
                 firstConstant = term1Tok->tokAt(2)->str();
 
                 if (Token::Match(term2Tok, "%varid% != %num%", varId))
