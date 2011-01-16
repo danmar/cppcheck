@@ -1537,11 +1537,11 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
             includePaths2.push_front("");
             for (std::list<std::string>::const_iterator iter = includePaths2.begin(); iter != includePaths2.end(); ++iter)
             {
-                const std::string path(Path::toNativeSeparators(*iter));
-                fin.open((path + filename).c_str());
+                const std::string nativePath(Path::toNativeSeparators(*iter));
+                fin.open((nativePath + filename).c_str());
                 if (fin.is_open())
                 {
-                    filename = path + filename;
+                    filename = nativePath + filename;
                     fileOpened = true;
                     break;
                 }
