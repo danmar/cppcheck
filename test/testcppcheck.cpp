@@ -45,78 +45,38 @@ public:
 
 private:
 
+    class ErrorLogger2 : public ErrorLogger
+    {
+    public:
+        std::list<std::string> id;
+
+        void reportOut(const std::string & /*outmsg*/)
+        {
+        }
+
+        void reportErr(const ErrorLogger::ErrorMessage &msg)
+        {
+            id.push_back(msg._id);
+        }
+
+        void reportStatus(unsigned int /*index*/, unsigned int /*max*/)
+        {
+        }
+    };
+
     void run()
     {
-        //TEST_CASE(getErrorMessages);
-    }
-
-#if 0
-    bool argCheckWithCoutCerrRedirect(int argc, const char * argv[])
-    {
-        // redirect cout and cerr
-        std::stringstream out, err;
-        std::streambuf* oldCout, *oldCerr;
-
-        // flush all old output
-        std::cout.flush();
-        std::cerr.flush();
-
-        oldCout = std::cout.rdbuf(); // back up cout's streambuf
-        oldCerr = std::cerr.rdbuf(); // back up cerr's streambuf
-
-        std::cout.rdbuf(out.rdbuf()); // assign streambuf to cout
-        std::cerr.rdbuf(err.rdbuf()); // assign streambuf to cerr
-
-        bool result = argCheck(argc, argv);
-
-        std::cout.rdbuf(oldCout); // restore cout's original streambuf
-        std::cerr.rdbuf(oldCerr); // restore cerrs's original streambuf
-
-        errout << err.str();
-        output << out.str();
-
-        return result;
-    }
-#endif
-
-    void parseErrorList(const char* xmlData)
-    {
-        TiXmlDocument doc;
-        doc.Parse(xmlData);
-        // parsing must be successful
-        ASSERT_EQUALS(false, doc.Error());
-        // root element must be "results"
-        TiXmlElement* root = doc.FirstChildElement();
-        ASSERT_EQUALS("results", root->Value());
-
-        TiXmlElement* error = root->FirstChildElement();
-        std::list<std::string> idList;
-
-        while (error)
-        {
-            // only childs of type "error"
-            ASSERT_EQUALS("error", error->Value());
-            // attributes id, msg, severity
-            ASSERT_EQUALS(error->Attribute("msg") == NULL, false);
-            ASSERT_EQUALS(error->Attribute("severity") == NULL, false);
-            const char* id = error->Attribute("id");
-            ASSERT_EQUALS(id == NULL, false);
-            // no duplicate ids
-            std::stringstream msg;
-            msg << "Duplicate id " << id;
-            ASSERT_EQUALS_MSG(idList.end() == std::find(idList.begin(), idList.end(), id), true, msg.str());
-            idList.push_back(id);
-            error = error->NextSiblingElement();
-        }
+        TEST_CASE(getErrorMessages);
     }
 
     void getErrorMessages()
     {
-        errout.str("");
-        CppCheck cppCheck(*this);
+        ErrorLogger2 errorLogger;
+        CppCheck cppCheck(errorLogger);
         cppCheck.getErrorMessages();
-    }
 
+        // TODO: check if there are duplicate error ids in errorLogger.id
+    }
 };
 
 REGISTER_TEST(TestCppcheck)
