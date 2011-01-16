@@ -57,8 +57,6 @@ private:
     void run()
     {
         TEST_CASE(nonexistingpath);
-        TEST_CASE(linenumbers);
-        // TEST_CASE(linenumbers2);
 
         TEST_CASE(xml);
 
@@ -311,37 +309,6 @@ private:
 
         ASSERT_EQUALS(retval, EXIT_FAILURE);
     }
-
-    void linenumbers()
-    {
-        const char filedata[] = "void f()\n"
-                                "{\n"
-                                "  char *foo = new char[10];\n"
-                                "  delete [] foo;\n"
-                                "  foo[3] = 0;\n"
-                                "}\n";
-        check(filedata);
-
-        // Compare results..
-        ASSERT_EQUALS("Checking file.cpp...\n", output.str());
-        ASSERT_EQUALS("[file.cpp:5]: (error) Dereferencing 'foo' after it is deallocated / released\n", errout.str());
-    }
-
-    void linenumbers2()
-    {
-        const char filedata[] = "void f()\n"
-                                "{\n"
-                                "  char *string;\n"
-                                "  string = new char[20];\n"
-                                "  string = new char[30];\n"
-                                "  delete [] string;\n"
-                                "}\n";
-        check(filedata);
-
-        // Compare results..
-        ASSERT_EQUALS("[file.cpp:5]: (error) Memory leak: string\n", errout.str());
-    }
-
 
     void xml()
     {
