@@ -175,6 +175,58 @@ private:
     bool checkConstFunc(const SymbolDatabase::SpaceInfo *info, const Token *tok);
     /** @brief check if this function is virtual in the base classes */
     bool isVirtualFunc(const SymbolDatabase::SpaceInfo *info, const Token *functionToken) const;
+
+    // constructors helper function
+    /** @brief Information about a member variable. Used when checking for uninitialized variables */
+    struct Usage
+    {
+        Usage() : assign(false), init(false) { }
+
+        /** @brief has this variable been assigned? */
+        bool        assign;
+
+        /** @brief has this variable been initialized? */
+        bool        init;
+    };
+
+    bool isBaseClassFunc(const Token *tok, const SymbolDatabase::SpaceInfo *info);
+
+    /**
+     * @brief assign a variable in the varlist
+     * @param varname name of variable to mark assigned
+     * @param info pointer to variable SpaceInfo
+     * @param usage reference to usage vector
+     */
+    void assignVar(const std::string &varname, const SymbolDatabase::SpaceInfo *info, std::vector<Usage> &usage);
+
+    /**
+     * @brief initialize a variable in the varlist
+     * @param varname name of variable to mark initialized
+     * @param info pointer to variable SpaceInfo
+     * @param usage reference to usage vector
+     */
+    void initVar(const std::string &varname, const SymbolDatabase::SpaceInfo *info, std::vector<Usage> &usage);
+
+    /**
+     * @brief set all variables in list assigned
+     * @param usage reference to usage vector
+     */
+    void assignAllVar(std::vector<Usage> &usage);
+
+    /**
+     * @brief set all variables in list not assigned and not initialized
+     * @param usage reference to usage vector
+     */
+    void clearAllVar(std::vector<Usage> &usage);
+
+    /**
+     * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
+     * @param func reference to the function that should be checked
+     * @param callstack the function doesn't look into recursive function calls.
+     * @param info pointer to variable SpaceInfo
+     * @param usage reference to usage vector
+     */
+    void initializeVarList(const SymbolDatabase::Func &func, std::list<std::string> &callstack, const SymbolDatabase::SpaceInfo *info, std::vector<Usage> &usage);
 };
 /// @}
 //---------------------------------------------------------------------------

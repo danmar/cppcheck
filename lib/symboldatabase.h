@@ -43,15 +43,13 @@ public:
 
     class SpaceInfo;
 
-    /** @brief Information about a member variable. Used when checking for uninitialized variables */
+    /** @brief Information about a member variable. */
     class Var
     {
     public:
         Var(const Token *token_, std::size_t index_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const SpaceInfo *type_)
             : token(token_),
               index(index_),
-              assign(false),
-              init(false),
               access(access_),
               isMutable(mutable_),
               isStatic(static_),
@@ -66,12 +64,6 @@ public:
 
         /** @brief order declared */
         std::size_t index;
-
-        /** @brief has this variable been assigned? */
-        bool        assign;
-
-        /** @brief has this variable been initialized? */
-        bool        init;
 
         /** @brief what section is this variable declared in? */
         AccessControl access;  // public/protected/private
@@ -187,42 +179,13 @@ public:
          */
         SpaceInfo * findInNestedList(const std::string & name);
 
-        /**
-         * @brief assign a variable in the varlist
-         * @param varname name of variable to mark assigned
-         */
-        void assignVar(const std::string &varname);
-
-        /**
-         * @brief initialize a variable in the varlist
-         * @param varname name of variable to mark initialized
-         */
-        void initVar(const std::string &varname);
-
         void addVar(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const SpaceInfo *type_)
         {
             varlist.push_back(Var(token_, varlist.size(), access_, mutable_, static_, const_, class_, type_));
         }
 
-        /**
-         * @brief set all variables in list assigned
-         */
-        void assignAllVar();
-
-        /**
-         * @brief set all variables in list not assigned and not initialized
-         */
-        void clearAllVar();
-
         /** @brief initialize varlist */
         void getVarList();
-
-        /**
-         * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
-         * @param func reference to the function that should be checked
-         * @param callstack the function doesn't look into recursive function calls.
-         */
-        void initializeVarList(const Func &func, std::list<std::string> &callstack);
 
         const Func *getDestructor() const;
 
@@ -233,8 +196,6 @@ public:
          * that are defined in this user defined type or namespace.
          */
         unsigned int getNestedNonFunctions() const;
-
-        bool isBaseClassFunc(const Token *tok);
 
         bool hasDefaultConstructor() const;
 

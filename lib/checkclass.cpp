@@ -94,6 +94,7 @@ void CheckClass::constructors()
         }
 
         std::list<SymbolDatabase::Func>::const_iterator func;
+        std::vector<Usage> usage(info->varlist.size());
 
         for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
         {
@@ -103,16 +104,17 @@ void CheckClass::constructors()
                 continue;
 
             // Mark all variables not used
-            info->clearAllVar();
+            clearAllVar(usage);
 
             std::list<std::string> callstack;
-            info->initializeVarList(*func, callstack);
+            initializeVarList(*func, callstack, info, usage);
 
             // Check if any variables are uninitialized
             std::list<SymbolDatabase::Var>::const_iterator var;
-            for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
+            unsigned int count = 0;
+            for (var = info->varlist.begin(); var != info->varlist.end(); ++var, ++count)
             {
-                if (var->assign || var->init || var->isStatic)
+                if (usage[count].assign || usage[count].init || var->isStatic)
                     continue;
 
                 if (var->isConst && var->token->previous()->str() != "*")
@@ -156,6 +158,367 @@ void CheckClass::constructors()
                 else if (func->access != SymbolDatabase::Private)
                     uninitVarError(func->token, info->className, var->token->str());
             }
+        }
+    }
+}
+
+void CheckClass::assignVar(const std::string &varname, const SymbolDatabase::SpaceInfo *info, std::vector<Usage> &usage)
+{
+    std::list<SymbolDatabase::Var>::const_iterator var;
+    unsigned int count = 0;
+
+    for (var = info->varlist.begin(); var != info->varlist.end(); ++var, ++count)
+    {
+        if (var->token->str() == varname)
+        {
+            usage[count].assign = true;
+            return;
+        }
+    }
+}
+
+void CheckClass::initVar(const std::string &varname, const SymbolDatabase::SpaceInfo *info, std::vector<Usage> &usage)
+{
+    std::list<SymbolDatabase::Var>::const_iterator var;
+    unsigned int count = 0;
+
+    for (var = info->varlist.begin(); var != info->varlist.end(); ++var, ++count)
+    {
+        if (var->token->str() == varname)
+        {
+            usage[count].init = true;
+            return;
+        }
+    }
+}
+
+void CheckClass::assignAllVar(std::vector<Usage> &usage)
+{
+    for (size_t i = 0; i < usage.size(); ++i)
+        usage[i].assign = true;
+}
+
+void CheckClass::clearAllVar(std::vector<Usage> &usage)
+{
+    for (size_t i = 0; i < usage.size(); ++i)
+    {
+        usage[i].assign = false;
+        usage[i].init = false;
+    }
+}
+
+bool CheckClass::isBaseClassFunc(const Token *tok, const SymbolDatabase::SpaceInfo *info)
+{
+    // Iterate through each base class...
+    for (size_t i = 0; i < info->derivedFrom.size(); ++i)
+    {
+        const SymbolDatabase::SpaceInfo *derivedFrom = info->derivedFrom[i].spaceInfo;
+
+        // Check if base class exists in database
+        if (derivedFrom)
+        {
+            std::list<SymbolDatabase::Func>::const_iterator func;
+
+            for (func = derivedFrom->functionList.begin(); func != derivedFrom->functionList.end(); ++func)
+            {
+                if (func->tokenDef->str() == tok->str())
+                    return true;
+            }
+        }
+
+        // Base class not found so assume it is in it.
+        else
+            return true;
+    }
+
+    return false;
+}
+
+void CheckClass::initializeVarList(const SymbolDatabase::Func &func, std::list<std::string> &callstack, const SymbolDatabase::SpaceInfo *info, std::vector<Usage> &usage)
+{
+    bool Assign = false;
+    unsigned int indentlevel = 0;
+    const Token *ftok = func.token;
+
+    for (; ftok; ftok = ftok->next())
+    {
+        if (!ftok->next())
+            break;
+
+        // Class constructor.. initializing variables like this
+        // clKalle::clKalle() : var(value) { }
+        if (indentlevel == 0)
+        {
+            if (Assign && Token::Match(ftok, "%var% ("))
+            {
+                initVar(ftok->str(), info, usage);
+
+                // assignment in the initializer..
+                // : var(value = x)
+                if (Token::Match(ftok->tokAt(2), "%var% ="))
+                    assignVar(ftok->strAt(2), info, usage);
+            }
+
+            Assign |= (ftok->str() == ":");
+        }
+
+
+        if (ftok->str() == "{")
+        {
+            ++indentlevel;
+            Assign = false;
+        }
+
+        else if (ftok->str() == "}")
+        {
+            if (indentlevel <= 1)
+                break;
+            --indentlevel;
+        }
+
+        if (indentlevel < 1)
+            continue;
+
+        // Variable getting value from stream?
+        if (Token::Match(ftok, ">> %var%"))
+        {
+            assignVar(ftok->strAt(1), info, usage);
+        }
+
+        // Before a new statement there is "[{};)=]"
+        if (! Token::Match(ftok, "[{};()=]"))
+            continue;
+
+        if (Token::simpleMatch(ftok, "( !"))
+            ftok = ftok->next();
+
+        // Using the operator= function to initialize all variables..
+        if (Token::simpleMatch(ftok->next(), "* this = "))
+        {
+            assignAllVar(usage);
+            break;
+        }
+
+        // Calling member variable function?
+        if (Token::Match(ftok->next(), "%var% . %var% ("))
+        {
+            std::list<SymbolDatabase::Var>::const_iterator var;
+            for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
+            {
+                if (var->token->varId() == ftok->next()->varId())
+                {
+                    /** @todo false negative: we assume function changes variable state */
+                    assignVar(ftok->next()->str(), info, usage);
+                    continue;
+                }
+            }
+
+            ftok = ftok->tokAt(2);
+        }
+
+        if (!Token::Match(ftok->next(), "%var%") &&
+            !Token::Match(ftok->next(), "this . %var%") &&
+            !Token::Match(ftok->next(), "* %var% =") &&
+            !Token::Match(ftok->next(), "( * this ) . %var%"))
+            continue;
+
+        // Goto the first token in this statement..
+        ftok = ftok->next();
+
+        // Skip "( * this )"
+        if (Token::simpleMatch(ftok, "( * this ) ."))
+        {
+            ftok = ftok->tokAt(5);
+        }
+
+        // Skip "this->"
+        if (Token::simpleMatch(ftok, "this ."))
+            ftok = ftok->tokAt(2);
+
+        // Skip "classname :: "
+        if (Token::Match(ftok, "%var% ::"))
+            ftok = ftok->tokAt(2);
+
+        // Clearing all variables..
+        if (Token::simpleMatch(ftok, "memset ( this ,"))
+        {
+            assignAllVar(usage);
+            return;
+        }
+
+        // Clearing array..
+        else if (Token::Match(ftok, "memset ( %var% ,"))
+        {
+            assignVar(ftok->strAt(2), info, usage);
+            ftok = ftok->next()->link();
+            continue;
+        }
+
+        // Calling member function?
+        else if (Token::simpleMatch(ftok, "operator = (") &&
+                 ftok->previous()->str() != "::")
+        {
+            // check if member function exists
+            std::list<SymbolDatabase::Func>::const_iterator it;
+            for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
+            {
+                if (ftok->next()->str() == it->tokenDef->str() && it->type != SymbolDatabase::Func::Constructor)
+                    break;
+            }
+
+            // member function found
+            if (it != info->functionList.end())
+            {
+                // member function has implementation
+                if (it->hasBody)
+                {
+                    // initialize variable use list using member function
+                    callstack.push_back(ftok->str());
+                    initializeVarList(*it, callstack, info, usage);
+                    callstack.pop_back();
+                }
+
+                // there is a called member function, but it has no implementation, so we assume it initializes everything
+                else
+                {
+                    assignAllVar(usage);
+                }
+            }
+
+            // using default operator =, assume everything initialized
+            else
+            {
+                assignAllVar(usage);
+            }
+        }
+        else if (Token::Match(ftok, "%var% (") && ftok->str() != "if")
+        {
+            // Passing "this" => assume that everything is initialized
+            for (const Token *tok2 = ftok->next()->link(); tok2 && tok2 != ftok; tok2 = tok2->previous())
+            {
+                if (tok2->str() == "this")
+                {
+                    assignAllVar(usage);
+                    return;
+                }
+            }
+
+            // recursive call / calling overloaded function
+            // assume that all variables are initialized
+            if (std::find(callstack.begin(), callstack.end(), ftok->str()) != callstack.end())
+            {
+                assignAllVar(usage);
+                return;
+            }
+
+            // check if member function
+            std::list<SymbolDatabase::Func>::const_iterator it;
+            for (it = info->functionList.begin(); it != info->functionList.end(); ++it)
+            {
+                if (ftok->str() == it->tokenDef->str() && it->type != SymbolDatabase::Func::Constructor)
+                    break;
+            }
+
+            // member function found
+            if (it != info->functionList.end())
+            {
+                // member function has implementation
+                if (it->hasBody)
+                {
+                    // initialize variable use list using member function
+                    callstack.push_back(ftok->str());
+                    initializeVarList(*it, callstack, info, usage);
+                    callstack.pop_back();
+                }
+
+                // there is a called member function, but it has no implementation, so we assume it initializes everything
+                else
+                {
+                    assignAllVar(usage);
+                }
+            }
+
+            // not member function
+            else
+            {
+                // could be a base class virtual function, so we assume it initializes everything
+                if (func.type != SymbolDatabase::Func::Constructor && isBaseClassFunc(ftok, info))
+                {
+                    /** @todo False Negative: we should look at the base class functions to see if they
+                     *  call any derived class virtual functions that change the derived class state
+                     */
+                    assignAllVar(usage);
+                }
+
+                // has friends, so we assume it initializes everything
+                if (!info->friendList.empty())
+                    assignAllVar(usage);
+
+                // the function is external and it's neither friend nor inherited virtual function.
+                // assume all variables that are passed to it are initialized..
+                else
+                {
+                    unsigned int indentlevel2 = 0;
+                    for (const Token *tok = ftok->tokAt(2); tok; tok = tok->next())
+                    {
+                        if (tok->str() == "(")
+                            ++indentlevel2;
+                        else if (tok->str() == ")")
+                        {
+                            if (indentlevel2 == 0)
+                                break;
+                            --indentlevel2;
+                        }
+                        if (tok->isName())
+                        {
+                            assignVar(tok->str(), info, usage);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Assignment of member variable?
+        else if (Token::Match(ftok, "%var% ="))
+        {
+            assignVar(ftok->str(), info, usage);
+        }
+
+        // Assignment of array item of member variable?
+        else if (Token::Match(ftok, "%var% [ %any% ] ="))
+        {
+            assignVar(ftok->str(), info, usage);
+        }
+
+        // Assignment of member of array item of member variable?
+        else if (Token::Match(ftok, "%var% [ %any% ] . %var%  =") ||
+                 Token::Match(ftok, "%var% [ %any% ] . %var% . %var%  ="))
+        {
+            assignVar(ftok->str(), info, usage);
+        }
+
+        // Assignment of array item of member variable?
+        else if (Token::Match(ftok, "%var% [ %any% ] [ %any% ] ="))
+        {
+            assignVar(ftok->str(), info, usage);
+        }
+
+        // Assignment of array item of member variable?
+        else if (Token::Match(ftok, "* %var% ="))
+        {
+            assignVar(ftok->next()->str(), info, usage);
+        }
+
+        // Assignment of struct member of member variable?
+        else if (Token::Match(ftok, "%var% . %any% ="))
+        {
+            assignVar(ftok->str(), info, usage);
+        }
+
+        // The functions 'clear' and 'Clear' are supposed to initialize variable.
+        if (Token::Match(ftok, "%var% . clear|Clear ("))
+        {
+            assignVar(ftok->str(), info, usage);
         }
     }
 }
