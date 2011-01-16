@@ -57,8 +57,6 @@ private:
     void run()
     {
         //TEST_CASE(getErrorMessages);
-        //TEST_CASE(parseOutputtingArgs);
-        //TEST_CASE(parseArgsAndCheck);
     }
 
 #if 0
@@ -122,17 +120,6 @@ private:
 
         return result;
     }
-
-    void parseArgsAndCheck()
-    {
-        {
-            const char *argv[] = {"cppcheck", "--showtime=top5"};
-            const char *data = "void foo(){}";
-            ASSERT_EQUALS(true, argCheckWithCheck(2, argv, data));
-            ASSERT_EQUALS("", errout.str());
-//            ASSERT_EQUALS(true, output.str().find("Overall time:") != std::string::npos);
-        }
-    }
 #endif
 
     void parseErrorList(const char* xmlData)
@@ -165,54 +152,6 @@ private:
             error = error->NextSiblingElement();
         }
     }
-
-#if 0
-    void parseOutputtingArgs()
-    {
-        {
-            const char *argv[] = { "cppcheck", "--errorlist" };
-            ASSERT_EQUALS(true, argCheckWithCoutCerrRedirect(2, argv));
-            ASSERT_EQUALS("", errout.str());
-            parseErrorList(output.str().c_str());
-        }
-
-        {
-            const char *argv[] = {"cppcheck", "--help"};
-            ASSERT_EQUALS(true, argCheck(2, argv));
-            ASSERT_EQUALS("", errout.str());
-            ASSERT_EQUALS(true, output.str().find("Example usage") != std::string::npos);
-        }
-
-        {
-            const char *argv[] = {"cppcheck", "-h"};
-            ASSERT_EQUALS(true, argCheck(2, argv));
-            ASSERT_EQUALS("", errout.str());
-            ASSERT_EQUALS(true, output.str().find("Example usage") != std::string::npos);
-        }
-
-        {
-            const char *argv[] = {"cppcheck"};
-            ASSERT_EQUALS(true, argCheck(1, argv));
-            ASSERT_EQUALS("", errout.str());
-            ASSERT_EQUALS(true, output.str().find("Example usage") != std::string::npos);
-        }
-
-        {
-            const char *argv[] = {"cppcheck", "--version"};
-            ASSERT_EQUALS(true, argCheck(2, argv));
-            ASSERT_EQUALS("", errout.str());
-            ASSERT_EQUALS(std::string("Cppcheck ") + CppCheck::version() + "\n", output.str());
-        }
-
-        {
-            const char *argv[] = {"cppcheck", "--doc"};
-            ASSERT_EQUALS(true, argCheck(2, argv));
-            ASSERT_EQUALS("", errout.str());
-            ASSERT_EQUALS(true, output.str().find("===Bounds checking===") != std::string::npos);
-            ASSERT_EQUALS(true, output.str().find("===Unused functions===") != std::string::npos);
-        }
-    }
-#endif
 
     void getErrorMessages()
     {
