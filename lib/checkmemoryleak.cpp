@@ -865,8 +865,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
     rethead->fileIndex(tok->fileIndex());
     rettail = rethead;
 
-    bool isloop = false;
-
     int indentlevel = 0;
     int parlevel = 0;
     for (; tok; tok = tok->next())
@@ -884,14 +882,58 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             --indentlevel;
         }
 
-        if (tok->str() == "(")
+        else if (tok->str() == "(")
             ++parlevel;
         else if (tok->str() == ")")
             --parlevel;
-        isloop &= (parlevel > 0);
 
         if (parlevel == 0 && tok->str() == ";")
             addtoken(&rettail, tok, ";");
+
+        // Start of new statement.. check if the statement has anything interesting
+        if (Token::Match(tok, "[;{}]") && varid > 0 && parlevel == 0)
+        {
+            if (Token::Match(tok->next(), "[{};]"))
+                continue;
+
+            // function calls are interesting..
+            const Token *tok2 = tok;
+            while (Token::Match(tok2->next(), "%var% ."))
+                tok2 = tok2->tokAt(2);
+            if (Token::Match(tok2->next(), "%var% ("))
+                ;
+
+            else if (Token::Match(tok->next(), "continue|break|return|throw|goto|do|else"))
+                ;
+
+            else
+            {
+                const Token *skipToToken = 0;
+
+                // scan statement for interesting keywords / varid
+                for (tok2 = tok->next(); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == ";")
+                    {
+                        // nothing interesting found => skip this statement
+                        skipToToken = tok2->previous();
+                        break;
+                    }
+
+                    if (tok2->varId() == varid || 
+                        tok2->str() == ":")
+                    {
+                        break;
+                    }
+                }
+                
+                if (skipToToken)
+                {
+                    tok = skipToToken;
+                    continue;
+                }
+            }
+        }
 
         if (varid == 0)
         {
@@ -967,6 +1009,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         addtoken(&rettail, tok, ";");
                         realloc = true;
                         tok = tok->tokAt(2);
+                        if (Token::Match(tok, "%var% ("))
+                            tok = tok->next()->link();
                         continue;
                     }
                 }
@@ -1047,8 +1091,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
             }
 
-            if (Token::Match(tok->previous(), "[;{})=] %var%") ||
-                Token::Match(tok->previous(), "| %var%"))
+            if (Token::Match(tok->previous(), "[;{})=|] %var%"))
             {
                 AllocType dealloc = getDeallocationType(tok, varid);
 
@@ -1069,6 +1112,9 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         callstack.pop_back();
                     }
                     dealloctype = dealloc;
+                    
+                    if (tok->strAt(2) == "(")
+                        tok = tok->tokAt(2)->link();                    
                     continue;
                 }
             }
@@ -1100,6 +1146,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
                     // Make sure the "use" will not be added
                     tok = tok->next()->link();
+                    continue;
                 }
                 else if (Token::simpleMatch(tok, "if (") && notvar(tok->tokAt(2), varid, true))
                 {
@@ -1116,6 +1163,9 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         else if (Token::Match(tok2, "%var% ="))
                             extravar.insert(tok2->varId());
                     }
+
+                    tok = tok->next()->link();
+                    continue;
                 }
                 else
                 {
@@ -1191,9 +1241,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         addtoken(&rettail, tok, (dep ? "ifv" : "if"));
                     }
 
-                    tok = tok->next();
-                    if (tok->link())
-                        tok = tok->link();
+                    tok = tok->next()->link();
+                    continue;
                 }
             }
         }
@@ -1201,25 +1250,30 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         if ((tok->str() == "else") || (tok->str() == "switch"))
         {
             addtoken(&rettail, tok, tok->str());
+            if (tok->str() == "switch")
+                tok = tok->next()->link();
+            continue;
         }
 
-        else if ((tok->str() == "case"))
+        if ((tok->str() == "case"))
         {
             addtoken(&rettail, tok, "case");
             addtoken(&rettail, tok, ";");
+            if (Token::Match(tok, "case %any% :"))
+                tok = tok->tokAt(2);
+            continue;
         }
 
-        else if ((tok->str() == "default"))
+        if ((tok->str() == "default"))
         {
             addtoken(&rettail, tok, "default");
             addtoken(&rettail, tok, ";");
+            continue;
         }
 
         // Loops..
         else if ((tok->str() == "for") || (tok->str() == "while"))
         {
-            isloop = true;
-
             if (Token::simpleMatch(tok, "while ( true )") ||
                 Token::simpleMatch(tok, "for ( ; ; )"))
             {
@@ -1266,14 +1320,35 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             }
 
             addtoken(&rettail, tok, "loop");
+            
+            if (varid > 0)
+            {
+                unsigned int parlevel2 = 0;
+                for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "(")
+                        ++parlevel2;
+                    else if (tok2->str() == ")")
+                    {
+                        if (parlevel2 > 0)
+                            --parlevel2;
+                        else
+                            break;
+                    }
+                    if (notvar(tok2, varid))
+                    {
+                        addtoken(&rettail, tok2, "!var");
+                        break;
+                    }
+                }
+            }
+            
+            continue;
         }
-        else if ((tok->str() == "do"))
+        if ((tok->str() == "do"))
         {
             addtoken(&rettail, tok, "do");
-        }
-        if (varid > 0 && isloop && notvar(tok, varid))
-        {
-            addtoken(&rettail, tok, "!var");
+            continue;
         }
 
         // continue / break..
