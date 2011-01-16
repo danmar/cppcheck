@@ -45,29 +45,12 @@ public:
 
 private:
 
-    void check(const std::string &data)
-    {
-        errout.str("");
-        output.str("");
-        CppCheck cppCheck(*this);
-        cppCheck.addFile("file.cpp", data);
-        cppCheck.check();
-    }
-
     void run()
     {
         //TEST_CASE(getErrorMessages);
     }
 
 #if 0
-    bool argCheck(int argc, const char *argv[])
-    {
-        errout.str("");
-        output.str("");
-        CppCheck cppCheck(*this);
-        return cppCheck.parseFromArgs(argc, argv);
-    }
-
     bool argCheckWithCoutCerrRedirect(int argc, const char * argv[])
     {
         // redirect cout and cerr
@@ -91,32 +74,6 @@ private:
 
         errout << err.str();
         output << out.str();
-
-        return result;
-    }
-
-    bool argCheckWithCheck(int argc, const char *argv[], const std::string &data)
-    {
-        errout.str("");
-        output.str("");
-        CppCheck cppCheck(*this);
-        cppCheck.addFile("file.cpp", data);
-        bool result = cppCheck.parseFromArgs(argc, argv);
-        if (result)
-            cppCheck.check();
-
-        return result;
-    }
-
-    bool argCheckReturnSettings(int argc, const char *argv[], Settings &settings)
-    {
-        errout.str("");
-        output.str("");
-        CppCheck cppCheck(*this);
-        cppCheck.addFile("file.cpp", "void foo(){}");
-        bool result = cppCheck.parseFromArgs(argc, argv);
-        if (result)
-            settings = cppCheck.settings();
 
         return result;
     }
