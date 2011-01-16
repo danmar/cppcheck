@@ -569,7 +569,7 @@ void CheckMemoryLeakInFunction::parse_noreturn()
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const SymbolDatabase::SpaceInfo *info = *i;
 
         // only check functions
         if (info->type != SymbolDatabase::SpaceInfo::Function)
@@ -2495,7 +2495,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const SymbolDatabase::SpaceInfo *info = *i;
 
         // only check functions
         if (info->type != SymbolDatabase::SpaceInfo::Function)
@@ -2648,7 +2648,7 @@ void CheckMemoryLeakInFunction::check()
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const SymbolDatabase::SpaceInfo *info = *i;
 
         // only check functions
         if (info->type != SymbolDatabase::SpaceInfo::Function)
@@ -2699,9 +2699,9 @@ void CheckMemoryLeakInFunction::check()
 
 void CheckMemoryLeakInClass::check()
 {
-    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::iterator i;
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
@@ -3164,7 +3164,7 @@ void CheckMemoryLeakNoVar::check()
         c.analyse(_tokenizer->tokens(), uvarFunctions);
     }
 
-    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
 

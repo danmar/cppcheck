@@ -572,9 +572,9 @@ public:
         _settings = settings;
     }
 
-    SymbolDatabase * getSymbolDatabase() const;
+    const SymbolDatabase *getSymbolDatabase() const;
 
-    Token * deleteInvalidTypedef(Token *typeDef);
+    Token *deleteInvalidTypedef(Token *typeDef);
 
 private:
     /** Disable copy constructor, no implementation */

@@ -1234,13 +1234,13 @@ void CheckOther::functionVariableUsage()
         return;
 
     // Parse all executing scopes..
-    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const SymbolDatabase::SpaceInfo *info = *i;
 
         // only check functions
         if (info->type != SymbolDatabase::SpaceInfo::Function)
@@ -1902,13 +1902,13 @@ void CheckOther::checkVariableScope()
     if (!_settings->isEnabled("information"))
         return;
 
-    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const SymbolDatabase::SpaceInfo *info = *i;
 
         // only check functions
         if (info->type != SymbolDatabase::SpaceInfo::Function)
@@ -2529,9 +2529,9 @@ void CheckOther::checkMisusedScopedObject()
             return;
     }
 
-    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::iterator i;
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
 
     // list of classes / structs
     std::set<std::string> identifiers;
@@ -2543,7 +2543,7 @@ void CheckOther::checkMisusedScopedObject()
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const SymbolDatabase::SpaceInfo *info = *i;
 
         // only check functions
         if (info->type != SymbolDatabase::SpaceInfo::Function)

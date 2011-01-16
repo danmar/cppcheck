@@ -68,11 +68,11 @@ void CheckClass::constructors()
 
     createSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::iterator i;
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const SymbolDatabase::SpaceInfo *info = *i;
 
         // only check classes and structures
         if (!info->isClassOrStruct())
@@ -569,11 +569,11 @@ void CheckClass::privateFunctions()
 
     createSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::iterator i;
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const SymbolDatabase::SpaceInfo *info = *i;
 
         // only check classes and structures
         if (!info->isClassOrStruct())
@@ -1270,11 +1270,11 @@ void CheckClass::checkConst()
 
     createSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::iterator it;
+    std::list<SymbolDatabase::SpaceInfo *>::const_iterator it;
 
     for (it = symbolDatabase->spaceInfoList.begin(); it != symbolDatabase->spaceInfoList.end(); ++it)
     {
-        SymbolDatabase::SpaceInfo *info = *it;
+        const SymbolDatabase::SpaceInfo *info = *it;
 
         // only check classes and structures
         if (!info->isClassOrStruct())
@@ -1353,7 +1353,7 @@ void CheckClass::checkConst()
                 if (checkConstFunc(info, paramEnd))
                 {
                     std::string classname = info->className;
-                    SymbolDatabase::SpaceInfo *nest = info->nestedIn;
+                    const SymbolDatabase::SpaceInfo *nest = info->nestedIn;
                     while (nest && nest->type != SymbolDatabase::SpaceInfo::Global)
                     {
                         classname = std::string(nest->className + "::" + classname);

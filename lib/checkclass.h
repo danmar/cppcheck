@@ -110,7 +110,7 @@ private:
      */
     void createSymbolDatabase();
 
-    SymbolDatabase *symbolDatabase;
+    const SymbolDatabase *symbolDatabase;
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
