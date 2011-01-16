@@ -511,6 +511,13 @@ private:
             ASSERT_EQUALS("", tokenizeAndStringify(code.c_str(), true));
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
         }
+
+        {
+            errout.str("");
+            const std::string code("enum ABC { A,B, typedef enum { C } };");
+            tokenizeAndStringify(code.c_str(), true);
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        }
     }
 
     void minus()

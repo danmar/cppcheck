@@ -2385,6 +2385,27 @@ bool Tokenizer::tokenize(std::istream &code,
     // Remove __builtin_expect, likely and unlikely
     simplifyBuiltinExpect();
 
+    // #2449: syntax error: enum with typedef in it
+    for (const Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "enum %var% {"))
+        {
+            for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "typedef")
+                {
+                    syntaxError(tok2);
+                    deallocateTokens();
+                    return false;
+                }
+                else if (tok2->str() == "}")
+                {
+                    break;
+                }
+            }
+        }
+    }
+
     // typedef..
     simplifyTypedef();
 
