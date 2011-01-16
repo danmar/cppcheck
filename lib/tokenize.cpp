@@ -2379,6 +2379,12 @@ bool Tokenizer::tokenize(std::istream &code,
     // remove Borland stuff..
     simplifyBorland();
 
+    // Remove "volatile", "inline", "register", and "restrict"
+    simplifyKeyword();
+
+    // Remove __builtin_expect, likely and unlikely
+    simplifyBuiltinExpect();
+
     // typedef..
     simplifyTypedef();
 
@@ -2399,12 +2405,6 @@ bool Tokenizer::tokenize(std::istream &code,
             return false;
         }
     }
-
-    // Remove "volatile", "inline", "register", and "restrict"
-    simplifyKeyword();
-
-    // Remove __builtin_expect, likely and unlikely
-    simplifyBuiltinExpect();
 
     // collapse compound standard types into a single token
     // unsigned long long int => long _isUnsigned=true,_isLong=true
@@ -8899,7 +8899,7 @@ void Tokenizer::simplifyAttribute()
 // Remove "volatile", "inline", "register", and "restrict"
 void Tokenizer::simplifyKeyword()
 {
-    const char pattern[] = "volatile|inline|__inline|__forceinline|register|restrict|__restrict__";
+    const char pattern[] = "volatile|inline|__inline|__forceinline|register|restrict|__restrict|__restrict__";
     while (Token::Match(_tokens, pattern))
     {
         _tokens->deleteThis();
