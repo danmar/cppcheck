@@ -58,10 +58,7 @@ private:
     {
         TEST_CASE(nonexistingpath);
 
-        TEST_CASE(xml);
-
         TEST_CASE(include);
-        TEST_CASE(templateFormat);
         //TEST_CASE(getErrorMessages);
         //TEST_CASE(parseOutputtingArgs);
         //TEST_CASE(parseArgsAndCheck);
@@ -229,15 +226,6 @@ private:
         ASSERT_EQUALS(retval, EXIT_FAILURE);
     }
 
-    void xml()
-    {
-        // Test the errorlogger..
-        ErrorLogger::ErrorMessage errorMessage;
-        errorMessage.setmsg("ab<cd>ef");
-        ASSERT_EQUALS("<error id=\"\" severity=\"style\" msg=\"ab&lt;cd&gt;ef\"/>", errorMessage.toXML(false,1));
-    }
-
-
     void include()
     {
         ErrorLogger::ErrorMessage errorMessage;
@@ -247,22 +235,6 @@ private:
         const std::string fname(Path::toNativeSeparators("ab/ef.h"));
         ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"0\" id=\"\" severity=\"style\" msg=\"\"/>", errorMessage.toXML(false,1));
         ASSERT_EQUALS("[" + fname + ":0]: ", errorMessage.toString(false));
-    }
-
-    void templateFormat()
-    {
-        ErrorLogger::ErrorMessage errorMessage;
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("some/{file}file.cpp");
-        loc.line = 10;
-        errorMessage._callStack.push_back(loc);
-        errorMessage._id = "testId";
-        errorMessage._severity = Severity::fromString("error");
-        errorMessage.setmsg("long testMessage");
-        const std::string fname(Path::toNativeSeparators("some/{file}file.cpp"));
-        ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"10\" id=\"testId\" severity=\"error\" msg=\"long testMessage\"/>", errorMessage.toXML(false,1));
-        ASSERT_EQUALS("[" + fname + ":10]: (error) long testMessage", errorMessage.toString(false));
-        ASSERT_EQUALS("testId-" + fname + ",error.10?{long testMessage}", errorMessage.toString(false, "{id}-{file},{severity}.{line}?{{message}}"));
     }
 
     void getErrorMessages()
