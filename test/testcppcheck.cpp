@@ -74,6 +74,7 @@ private:
         ErrorLogger2 errorLogger;
         CppCheck cppCheck(errorLogger);
         cppCheck.getErrorMessages();
+        ASSERT(!errorLogger.id.empty());
 
         // TODO: check if there are duplicate error ids in errorLogger.id
     }
