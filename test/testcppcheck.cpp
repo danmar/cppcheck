@@ -56,9 +56,6 @@ private:
 
     void run()
     {
-        TEST_CASE(nonexistingpath);
-
-        TEST_CASE(include);
         //TEST_CASE(getErrorMessages);
         //TEST_CASE(parseOutputtingArgs);
         //TEST_CASE(parseArgsAndCheck);
@@ -216,26 +213,6 @@ private:
         }
     }
 #endif
-
-    void nonexistingpath()
-    {
-        CppCheckExecutor exec;
-        const char *argv[] = { "", "idontexist" };
-        int retval = exec.check(2, argv);
-
-        ASSERT_EQUALS(retval, EXIT_FAILURE);
-    }
-
-    void include()
-    {
-        ErrorLogger::ErrorMessage errorMessage;
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("ab/cd/../ef.h");
-        errorMessage._callStack.push_back(loc);
-        const std::string fname(Path::toNativeSeparators("ab/ef.h"));
-        ASSERT_EQUALS("<error file=\"" + fname + "\" line=\"0\" id=\"\" severity=\"style\" msg=\"\"/>", errorMessage.toXML(false,1));
-        ASSERT_EQUALS("[" + fname + ":0]: ", errorMessage.toString(false));
-    }
 
     void getErrorMessages()
     {
