@@ -811,7 +811,7 @@ void CheckClass::virtualDestructor()
         for (unsigned int j = 0; j < info->derivedFrom.size(); ++j)
         {
             // Check if base class is public and exists in database
-            if (info->derivedFrom[j].access == SymbolDatabase::Public && info->derivedFrom[j].spaceInfo)
+            if (info->derivedFrom[j].access != SymbolDatabase::Private && info->derivedFrom[j].spaceInfo)
             {
                 const SymbolDatabase::SpaceInfo *spaceInfo = info->derivedFrom[j].spaceInfo;
 
@@ -977,12 +977,12 @@ void CheckClass::checkConst()
                 // check if base class function is virtual
                 if (!info->derivedFrom.empty())
                 {
-                    if (symbolDatabase->isVirtualFunc(info, func->tokenDef))
+                    if (isVirtualFunc(info, func->tokenDef))
                         continue;
                 }
 
                 // if nothing non-const was found. write error..
-                if (symbolDatabase->checkConstFunc(info, paramEnd))
+                if (checkConstFunc(info, paramEnd))
                 {
                     std::string classname = info->className;
                     SymbolDatabase::SpaceInfo *nest = info->nestedIn;
@@ -1008,6 +1008,249 @@ void CheckClass::checkConst()
             }
         }
     }
+}
+
+bool CheckClass::isMemberVar(const SymbolDatabase::SpaceInfo *info, const Token *tok)
+{
+    const Token *tok1 = tok;
+
+    while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:|return|:|?"))
+    {
+        if (Token::Match(tok->previous(),  "* this"))
+            return true;
+
+        tok = tok->previous();
+    }
+
+    if (tok->str() == "this")
+        return true;
+
+    if (Token::Match(tok, "( * %var% ) [") || (Token::Match(tok, "( * %var% ) <<") && tok1->next()->str() == "<<"))
+        tok = tok->tokAt(2);
+
+    // ignore class namespace
+    if (tok->str() == info->className && tok->next()->str() == "::")
+        tok = tok->tokAt(2);
+
+    std::list<SymbolDatabase::Var>::const_iterator var;
+    for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
+    {
+        if (var->token->str() == tok->str())
+        {
+            return !var->isMutable;
+        }
+    }
+
+    // not found in this class
+    if (!info->derivedFrom.empty())
+    {
+        // check each base class
+        for (unsigned int i = 0; i < info->derivedFrom.size(); ++i)
+        {
+            // find the base class
+            const SymbolDatabase::SpaceInfo *spaceInfo = info->derivedFrom[i].spaceInfo;
+
+            // find the function in the base class
+            if (spaceInfo)
+            {
+                if (isMemberVar(spaceInfo, tok))
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool CheckClass::isConstMemberFunc(const SymbolDatabase::SpaceInfo *info, const Token *tok)
+{
+    std::list<SymbolDatabase::Func>::const_iterator    func;
+
+    for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
+    {
+        if (func->tokenDef->str() == tok->str() && func->isConst)
+            return true;
+    }
+
+    // not found in this class
+    if (!info->derivedFrom.empty())
+    {
+        // check each base class
+        for (unsigned int i = 0; i < info->derivedFrom.size(); ++i)
+        {
+            // find the base class
+            const SymbolDatabase::SpaceInfo *spaceInfo = info->derivedFrom[i].spaceInfo;
+
+            // find the function in the base class
+            if (spaceInfo)
+            {
+                if (isConstMemberFunc(spaceInfo, tok))
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool CheckClass::checkConstFunc(const SymbolDatabase::SpaceInfo *info, const Token *tok)
+{
+    // if the function doesn't have any assignment nor function call,
+    // it can be a const function..
+    unsigned int indentlevel = 0;
+    bool isconst = true;
+    for (const Token *tok1 = tok; tok1; tok1 = tok1->next())
+    {
+        if (tok1->str() == "{")
+            ++indentlevel;
+        else if (tok1->str() == "}")
+        {
+            if (indentlevel <= 1)
+                break;
+            --indentlevel;
+        }
+
+        // assignment.. = += |= ..
+        else if (tok1->str() == "=" ||
+                 (tok1->str().find("=") == 1 &&
+                  tok1->str().find_first_of("<!>") == std::string::npos))
+        {
+            if (tok1->previous()->varId() == 0 && !info->derivedFrom.empty())
+            {
+                isconst = false;
+                break;
+            }
+            else if (isMemberVar(info, tok1->previous()))
+            {
+                isconst = false;
+                break;
+            }
+            else if (tok1->previous()->str() == "]")
+            {
+                // TODO: I assume that the assigned variable is a member variable
+                //       don't assume it
+                isconst = false;
+                break;
+            }
+            else if (tok1->next()->str() == "this")
+            {
+                isconst = false;
+                break;
+            }
+
+            // FIXME: I assume that a member union/struct variable is assigned.
+            else if (Token::Match(tok1->tokAt(-2), ". %var%"))
+            {
+                isconst = false;
+                break;
+            }
+        }
+
+        // streaming: <<
+        else if (tok1->str() == "<<" && isMemberVar(info, tok1->previous()))
+        {
+            isconst = false;
+            break;
+        }
+
+        // increment/decrement (member variable?)..
+        else if (Token::Match(tok1, "++|--"))
+        {
+            isconst = false;
+            break;
+        }
+
+        // function call..
+        else if (Token::Match(tok1, "%var% (") &&
+                 !(Token::Match(tok1, "return|c_str|if|string") || tok1->isStandardType()))
+        {
+            if (!isConstMemberFunc(info, tok1))
+            {
+                isconst = false;
+                break;
+            }
+        }
+        else if (Token::Match(tok1, "%var% < %any% > ("))
+        {
+            isconst = false;
+            break;
+        }
+
+        // delete..
+        else if (tok1->str() == "delete")
+        {
+            isconst = false;
+            break;
+        }
+    }
+
+    return isconst;
+}
+
+//---------------------------------------------------------------------------
+
+// check if this function is defined virtual in the base classes
+bool CheckClass::isVirtualFunc(const SymbolDatabase::SpaceInfo *info, const Token *functionToken) const
+{
+    // check each base class
+    for (unsigned int i = 0; i < info->derivedFrom.size(); ++i)
+    {
+        // check if base class exists in database
+        if (info->derivedFrom[i].spaceInfo)
+        {
+            const SymbolDatabase::SpaceInfo *derivedFrom = info->derivedFrom[i].spaceInfo;
+
+            std::list<SymbolDatabase::Func>::const_iterator func;
+
+            // check if function defined in base class
+            for (func = derivedFrom->functionList.begin(); func != derivedFrom->functionList.end(); ++func)
+            {
+                if (func->isVirtual)
+                {
+                    const Token *tok = func->tokenDef;
+
+                    if (tok->str() == functionToken->str())
+                    {
+                        const Token *temp1 = tok->previous();
+                        const Token *temp2 = functionToken->previous();
+                        bool returnMatch = true;
+
+                        // check for matching return parameters
+                        while (temp1->str() != "virtual")
+                        {
+                            if (temp1->str() != temp2->str())
+                            {
+                                returnMatch = false;
+                                break;
+                            }
+
+                            temp1 = temp1->previous();
+                            temp2 = temp2->previous();
+                        }
+
+                        // check for matching function parameters
+                        if (returnMatch && symbolDatabase->argsMatch(info, tok->tokAt(2), functionToken->tokAt(2), std::string(""), 0))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            if (!derivedFrom->derivedFrom.empty())
+            {
+                if (isVirtualFunc(derivedFrom, functionToken))
+                    return true;
+            }
+        }
+        else
+        {
+            // unable to find base class so assume it has a virtual function
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)

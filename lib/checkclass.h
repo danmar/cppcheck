@@ -169,7 +169,12 @@ private:
     bool hasDeallocation(const Token *first, const Token *last);
     bool hasAssignSelf(const Token *first, const Token *last, const Token *rhs);
 
-
+    // checkConst helper functions
+    bool isMemberVar(const SymbolDatabase::SpaceInfo *info, const Token *tok);
+    bool isConstMemberFunc(const SymbolDatabase::SpaceInfo *info, const Token *tok);
+    bool checkConstFunc(const SymbolDatabase::SpaceInfo *info, const Token *tok);
+    /** @brief check if this function is virtual in the base classes */
+    bool isVirtualFunc(const SymbolDatabase::SpaceInfo *info, const Token *functionToken) const;
 };
 /// @}
 //---------------------------------------------------------------------------

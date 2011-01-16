@@ -249,15 +249,6 @@ public:
         bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
     };
 
-    bool isMemberVar(const SpaceInfo *info, const Token *tok);
-    bool isConstMemberFunc(const SpaceInfo *info, const Token *tok);
-    bool checkConstFunc(const SpaceInfo *info, const Token *tok);
-
-    const Token *initBaseInfo(SpaceInfo *info, const Token *tok);
-
-    /** @brief check if this function is virtual in the base classes */
-    bool isVirtualFunc(const SymbolDatabase::SpaceInfo *info, const Token *functionToken) const;
-
     /** @brief Information about all namespaces/classes/structrues */
     std::list<SpaceInfo *> spaceInfoList;
 
@@ -269,6 +260,8 @@ public:
      */
     const SpaceInfo *findVarType(const SpaceInfo *start, const Token *type) const;
 
+    bool argsMatch(const SpaceInfo *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
+
 private:
 
     // Needed by Borland C++:
@@ -276,9 +269,8 @@ private:
 
     void addFunction(SpaceInfo **info, const Token **tok, const Token *argStart);
     void addNewFunction(SpaceInfo **info, const Token **tok);
-
+    const Token *initBaseInfo(SpaceInfo *info, const Token *tok);
     bool isFunction(const Token *tok, const Token **funcStart, const Token **argStart) const;
-    bool argsMatch(const SpaceInfo *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;
