@@ -102,6 +102,11 @@ private:
      * Report progress time
      */
     std::time_t time1;
+
+    /**
+     * Has --errorlist been given?
+     */
+    bool errorlist;
 };
 
 #endif // CPPCHECKEXECUTOR_H

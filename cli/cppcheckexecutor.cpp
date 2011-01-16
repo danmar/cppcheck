@@ -29,6 +29,7 @@
 CppCheckExecutor::CppCheckExecutor()
 {
     time1 = 0;
+    errorlist = false;
 }
 
 CppCheckExecutor::~CppCheckExecutor()
@@ -52,7 +53,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         if (parser.GetShowErrorMessages())
         {
+            errorlist = true;
+            std::cout << ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version);
             cppcheck->getErrorMessages();
+            std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
             std::exit(0);
         }
     }
@@ -199,7 +203,11 @@ void CppCheckExecutor::reportStatus(unsigned int index, unsigned int max)
 
 void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    if (_settings._xml)
+    if (errorlist)
+    {
+        reportOut(msg.toXML(false, _settings._xml_version));
+    }
+    else if (_settings._xml)
     {
         reportErr(msg.toXML(_settings._verbose, _settings._xml_version));
     }
