@@ -38,6 +38,13 @@
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
 {
+    // fill the classAndStructTypes set..
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "class|struct %var% [:{;]"))
+            classAndStructTypes.insert(tok->next()->str());
+    }
+
     // find all namespaces (class,struct and namespace)
     SpaceInfo *info = new SpaceInfo(this, NULL, NULL);
     spaceInfoList.push_back(info);

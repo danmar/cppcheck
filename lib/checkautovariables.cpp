@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 
 #include "checkautovariables.h"
+#include "symboldatabase.h"
 
 #include <sstream>
 #include <iostream>
@@ -140,6 +141,8 @@ void CheckAutoVariables::autoVariables()
     // Which variables have an unknown type?
     std::set<unsigned int> unknown_type;
 
+    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
 
@@ -192,7 +195,7 @@ void CheckAutoVariables::autoVariables()
         {
             addVD(tok->next()->varId());
             if (!tok->isStandardType() &&
-                NULL == Token::findmatch(_tokenizer->tokens(), ("struct|class " + tok->str()).c_str()))
+                !symbolDatabase->isClassOrStruct(tok->str()))
             {
                 unknown_type.insert(tok->next()->varId());
             }

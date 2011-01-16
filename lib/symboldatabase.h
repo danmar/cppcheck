@@ -24,6 +24,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <set>
 
 class Token;
 class Tokenizer;
@@ -223,6 +224,11 @@ public:
 
     bool argsMatch(const SpaceInfo *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
 
+    bool isClassOrStruct(const std::string &type) const
+    {
+        return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
+    }
+
 private:
 
     // Needed by Borland C++:
@@ -232,6 +238,9 @@ private:
     void addNewFunction(SpaceInfo **info, const Token **tok);
     const Token *initBaseInfo(SpaceInfo *info, const Token *tok);
     bool isFunction(const Token *tok, const Token **funcStart, const Token **argStart) const;
+
+    /** class/struct types */
+    std::set<std::string> classAndStructTypes;
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;

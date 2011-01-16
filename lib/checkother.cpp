@@ -2100,6 +2100,8 @@ void CheckOther::checkConstantFunctionParameter()
     if (!_settings->_checkCodingStyle)
         return;
 
+    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "[,(] const std :: %type% %var% [,)]"))
@@ -2140,8 +2142,7 @@ void CheckOther::checkConstantFunctionParameter()
         else if (Token::Match(tok, "[,(] const %type% %var% [,)]"))
         {
             // Check if type is a struct or class.
-            const std::string pattern(std::string("class|struct ") + tok->strAt(2));
-            if (Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
+            if (symbolDatabase->isClassOrStruct(tok->strAt(2)))
             {
                 passedByValueError(tok, tok->strAt(3));
             }
@@ -2529,17 +2530,9 @@ void CheckOther::checkMisusedScopedObject()
             return;
     }
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
-
-    // list of classes / structs
-    std::set<std::string> identifiers;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "class|struct %var% [:{;]"))
-            identifiers.insert(tok->next()->str());
-    }
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
@@ -2566,7 +2559,7 @@ void CheckOther::checkMisusedScopedObject()
 
             if (Token::Match(tok, "[;{}] %var% (")
                 && Token::Match(tok->tokAt(2)->link(), ") ;")
-                && identifiers.find(tok->next()->str()) != identifiers.end()
+                && symbolDatabase->isClassOrStruct(tok->next()->str())
                )
             {
                 tok = tok->next();
