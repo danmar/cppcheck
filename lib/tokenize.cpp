@@ -2430,6 +2430,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // struct initialization (must be used before simplifyVarDecl)
     simplifyStructInit();
 
+    // Change initialisation of variable to assignment
+    simplifyInitVar();
+
     // Split up variable declarations.
     simplifyVarDecl();
 
@@ -2467,7 +2470,8 @@ bool Tokenizer::tokenize(std::istream &code,
     // Change initialisation of variable to assignment
     simplifyInitVar();
 
-
+    // Split up variable declarations.
+    simplifyVarDecl();
 
     if (!preprocessorCondition)
     {
@@ -6083,6 +6087,7 @@ bool Tokenizer::simplifyLogicalOperators()
 }
 
 // int i(0); => int i; i = 0;
+// int i(0), j; => int i; i = 0; int j;
 void Tokenizer::simplifyInitVar()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -6093,6 +6098,28 @@ void Tokenizer::simplifyInitVar()
         if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ;") ||
             Token::Match(tok, "%type% *| %var% ( %type% ("))
         {
+            tok = initVar(tok);
+        }
+        else if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ,"))
+        {
+            Token *tok1 = tok;
+            while (tok1->str() != ",")
+                tok1 = tok1->next();
+            tok1->str(";");
+            Token *tok2 = tok;
+            if (Token::Match(tok2, "class|struct|union"))
+            {
+                tok1->insertToken(tok2->str());
+                tok1 = tok1->next();
+                tok2 = tok2->next();
+            }
+            tok1->insertToken(tok2->str());
+            tok1 = tok1->next();
+            tok2 = tok2->next();
+            if (tok2->str() == "*")
+            {
+                tok1->insertToken("*");
+            }
             tok = initVar(tok);
         }
     }

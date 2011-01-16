@@ -6286,6 +6286,13 @@ private:
             const char expected[] = "struct ABC { } ; static ABC abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+
+        // ticket #980
+        {
+            const char code[] = "void f() { int A(1),B(2),C=3,D,E(5),F=6; }";
+            const char expected[] = "void f ( ) { int A ; A = 1 ; int B ; B = 2 ; int C ; C = 3 ; int D ; int E ; E = 5 ; int F ; F = 6 ; }";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void removeUnwantedKeywords()
