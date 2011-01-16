@@ -68,8 +68,6 @@ private:
         //TEST_CASE(parseOutputtingArgs);
         //TEST_CASE(parseOutputtingInvalidArgs);
         //TEST_CASE(parseArgsAndCheck);
-
-        //TEST_CASE(userdefines);
     }
 
 #if 0
@@ -388,19 +386,6 @@ private:
         cppCheck.getErrorMessages();
     }
 
-#if 0
-    void userdefines()
-    {
-        {
-            const char *argv[] = {"cppcheck", "-DA", "-DB"};
-            Settings settings;
-            ASSERT_EQUALS(true, argCheckReturnSettings(3, argv, settings));
-            ASSERT_EQUALS("A;B", settings.userDefines);
-            ASSERT_EQUALS("", errout.str());
-            ASSERT_EQUALS("", output.str());
-        }
-    }
-#endif
 };
 
 REGISTER_TEST(TestCppcheck)
