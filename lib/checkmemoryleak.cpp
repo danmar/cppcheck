@@ -920,13 +920,13 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         break;
                     }
 
-                    if (tok2->varId() == varid || 
+                    if (tok2->varId() == varid ||
                         tok2->str() == ":")
                     {
                         break;
                     }
                 }
-                
+
                 if (skipToToken)
                 {
                     tok = skipToToken;
@@ -1112,9 +1112,9 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         callstack.pop_back();
                     }
                     dealloctype = dealloc;
-                    
+
                     if (tok->strAt(2) == "(")
-                        tok = tok->tokAt(2)->link();                    
+                        tok = tok->tokAt(2)->link();
                     continue;
                 }
             }
@@ -1320,7 +1320,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             }
 
             addtoken(&rettail, tok, "loop");
-            
+
             if (varid > 0)
             {
                 unsigned int parlevel2 = 0;
@@ -1342,7 +1342,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     }
                 }
             }
-            
+
             continue;
         }
         if ((tok->str() == "do"))
