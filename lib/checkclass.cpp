@@ -199,6 +199,11 @@ void CheckClass::privateFunctions()
     if (Token::findmatch(_tokenizer->tokens(), "; __property ;"))
         return;
 
+    // #2407 calls from operator() is not detected
+    // TODO: Don't bailout. Detect the call.
+    if (Token::findmatch(_tokenizer->tokens(), "operator ( )"))
+        return;
+
     createSymbolDatabase();
 
     std::list<SymbolDatabase::SpaceInfo *>::iterator i;

@@ -57,6 +57,9 @@ private:
 
         // No false positives when there are "unused" templates that are removed in the simplified token list
         TEST_CASE(template1);
+
+        // #2407 - FP when called from operator()
+        TEST_CASE(fp_operator);
     }
 
 
@@ -412,6 +415,36 @@ private:
               "T A::getVal() const {\n"
               "    return internalGetVal();\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void fp_operator()
+    {
+        // #2407 - FP when function is called from operator()
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    void operator()(int x) {\n"
+              "        startListening();\n"
+              "    }\n"
+              "\n"
+              "private:\n"
+              "    void startListening() {\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    void operator()(int x) {\n"
+              "    }\n"
+              "\n"
+              "private:\n"
+              "    void startListening() {\n"
+              "    }\n"
+              "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (style) Unused private function 'Fred::startListening'\n", errout.str());
         ASSERT_EQUALS("", errout.str());
     }
 };
