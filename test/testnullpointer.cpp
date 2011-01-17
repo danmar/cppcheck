@@ -859,6 +859,15 @@ private:
               "    *p = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        // #2467 - unknown macro may terminate the application
+        check("void f(Fred *fred) {\n"
+              "    if (fred == NULL) {\n"
+              "        MACRO;\n"
+              "    }\n"
+              "    fred->a();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference

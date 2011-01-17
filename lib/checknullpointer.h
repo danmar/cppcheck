@@ -60,6 +60,9 @@ public:
         checkNullPointer.executionPaths();
     }
 
+    /** Is string uppercase? */
+    static bool isUpper(const std::string &str);
+
     /**
      * @brief parse a function call and extract information about variable usage
      * @param tok first token

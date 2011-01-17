@@ -32,6 +32,16 @@ CheckNullPointer instance;
 //---------------------------------------------------------------------------
 
 
+/** Is string uppercase? */
+bool CheckNullPointer::isUpper(const std::string &str)
+{
+    for (unsigned int i = 0; i < str.length(); ++i)
+    {
+        if (str[i] >= 'a' && str[i] <= 'z')
+            return false;
+    }
+    return true;
+}
 
 /**
  * @brief parse a function call and extract information about variable usage
@@ -525,6 +535,17 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             // - handle "while"?
             // - if there are logical operators
             // - if (x) { } else { ... }
+
+            // If the if-body ends with a unknown macro then bailout
+            {
+                // goto the end paranthesis
+                const Token *endpar = tok->next()->link();
+                const Token *endbody = endpar ? endpar->next()->link() : 0;
+                if (endbody &&
+                    Token::Match(endbody->tokAt(-3), "[;{}] %var% ;") &&
+                    isUpper(endbody->tokAt(-2)->str()))
+                    continue;
+            }
 
             // vartok : token for the variable
             const Token *vartok = 0;
