@@ -163,18 +163,18 @@ private:
     }
 
     // operatorEqRetRefThis helper function
-    void checkReturnPtrThis(const SymbolDatabase::SpaceInfo *info, const SymbolDatabase::Func *func, const Token *tok, const Token *last);
+    void checkReturnPtrThis(const SpaceInfo *info, const Func *func, const Token *tok, const Token *last);
 
     // operatorEqToSelf helper functions
     bool hasDeallocation(const Token *first, const Token *last);
     bool hasAssignSelf(const Token *first, const Token *last, const Token *rhs);
 
     // checkConst helper functions
-    bool isMemberVar(const SymbolDatabase::SpaceInfo *info, const Token *tok);
-    bool isConstMemberFunc(const SymbolDatabase::SpaceInfo *info, const Token *tok);
-    bool checkConstFunc(const SymbolDatabase::SpaceInfo *info, const Token *tok);
+    bool isMemberVar(const SpaceInfo *info, const Token *tok);
+    bool isConstMemberFunc(const SpaceInfo *info, const Token *tok);
+    bool checkConstFunc(const SpaceInfo *info, const Token *tok);
     /** @brief check if this function is virtual in the base classes */
-    bool isVirtualFunc(const SymbolDatabase::SpaceInfo *info, const Token *functionToken) const;
+    bool isVirtualFunc(const SpaceInfo *info, const Token *functionToken) const;
 
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
@@ -189,7 +189,7 @@ private:
         bool        init;
     };
 
-    bool isBaseClassFunc(const Token *tok, const SymbolDatabase::SpaceInfo *info);
+    bool isBaseClassFunc(const Token *tok, const SpaceInfo *info);
 
     /**
      * @brief assign a variable in the varlist
@@ -197,7 +197,7 @@ private:
      * @param info pointer to variable SpaceInfo
      * @param usage reference to usage vector
      */
-    void assignVar(const std::string &varname, const SymbolDatabase::SpaceInfo *info, std::vector<Usage> &usage);
+    void assignVar(const std::string &varname, const SpaceInfo *info, std::vector<Usage> &usage);
 
     /**
      * @brief initialize a variable in the varlist
@@ -205,7 +205,7 @@ private:
      * @param info pointer to variable SpaceInfo
      * @param usage reference to usage vector
      */
-    void initVar(const std::string &varname, const SymbolDatabase::SpaceInfo *info, std::vector<Usage> &usage);
+    void initVar(const std::string &varname, const SpaceInfo *info, std::vector<Usage> &usage);
 
     /**
      * @brief set all variables in list assigned
@@ -226,7 +226,7 @@ private:
      * @param info pointer to variable SpaceInfo
      * @param usage reference to usage vector
      */
-    void initializeVarList(const SymbolDatabase::Func &func, std::list<std::string> &callstack, const SymbolDatabase::SpaceInfo *info, std::vector<Usage> &usage);
+    void initializeVarList(const Func &func, std::list<std::string> &callstack, const SpaceInfo *info, std::vector<Usage> &usage);
 };
 /// @}
 //---------------------------------------------------------------------------

@@ -1240,14 +1240,14 @@ void CheckOther::functionVariableUsage()
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SymbolDatabase::SpaceInfo *info = *i;
+        const SpaceInfo *info = *i;
 
         // only check functions
-        if (info->type != SymbolDatabase::SpaceInfo::Function)
+        if (info->type != SpaceInfo::Function)
             continue;
 
         // First token for the current scope..
@@ -1694,7 +1694,7 @@ void CheckOther::functionVariableUsage()
                             if (!start->tokAt(3)->isStandardType())
                             {
                                 // lookup the type
-                                const SymbolDatabase::SpaceInfo *type = symbolDatabase->findVarType(info, start->tokAt(3));
+                                const SpaceInfo *type = symbolDatabase->findVarType(info, start->tokAt(3));
 
                                 // unknown type?
                                 if (!type)
@@ -1702,7 +1702,7 @@ void CheckOther::functionVariableUsage()
 
                                 // has default constructor or
                                 // has members with unknown type or default constructor
-                                else if (type->needInitialization == SymbolDatabase::SpaceInfo::False)
+                                else if (type->needInitialization == SpaceInfo::False)
                                     allocate = false;
                             }
                         }
@@ -1908,14 +1908,14 @@ void CheckOther::checkVariableScope()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SymbolDatabase::SpaceInfo *info = *i;
+        const SpaceInfo *info = *i;
 
         // only check functions
-        if (info->type != SymbolDatabase::SpaceInfo::Function)
+        if (info->type != SpaceInfo::Function)
             continue;
 
         // Walk through all tokens..
@@ -2536,14 +2536,14 @@ void CheckOther::checkMisusedScopedObject()
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SymbolDatabase::SpaceInfo *info = *i;
+        const SpaceInfo *info = *i;
 
         // only check functions
-        if (info->type != SymbolDatabase::SpaceInfo::Function)
+        if (info->type != SpaceInfo::Function)
             continue;
 
         unsigned int depth = 0;

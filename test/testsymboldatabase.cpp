@@ -32,7 +32,7 @@ public:
     {}
 
 private:
-    const SymbolDatabase::SpaceInfo si;
+    const SpaceInfo si;
     const Token* vartok;
     const Token* typetok;
     const Token* t;

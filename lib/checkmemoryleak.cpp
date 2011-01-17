@@ -565,14 +565,14 @@ void CheckMemoryLeakInFunction::parse_noreturn()
     noreturn.insert("errx");
     noreturn.insert("verrx");
 
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SymbolDatabase::SpaceInfo *info = *i;
+        const SpaceInfo *info = *i;
 
         // only check functions
-        if (info->type != SymbolDatabase::SpaceInfo::Function)
+        if (info->type != SpaceInfo::Function)
             continue;
 
         // parse this function to check if it contains an "exit" call..
@@ -2491,14 +2491,14 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 //---------------------------------------------------------------------------
 void CheckMemoryLeakInFunction::checkReallocUsage()
 {
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SymbolDatabase::SpaceInfo *info = *i;
+        const SpaceInfo *info = *i;
 
         // only check functions
-        if (info->type != SymbolDatabase::SpaceInfo::Function)
+        if (info->type != SpaceInfo::Function)
             continue;
 
         // Record the varid's of the function parameters
@@ -2644,14 +2644,14 @@ void CheckMemoryLeakInFunction::check()
     // fill the "noreturn"
     parse_noreturn();
 
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SymbolDatabase::SpaceInfo *info = *i;
+        const SpaceInfo *info = *i;
 
         // only check functions
-        if (info->type != SymbolDatabase::SpaceInfo::Function)
+        if (info->type != SpaceInfo::Function)
             continue;
 
         const Token *tok = info->classStart;
@@ -2701,16 +2701,16 @@ void CheckMemoryLeakInClass::check()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SymbolDatabase::SpaceInfo *info = *i;
+        const SpaceInfo *info = *i;
 
         // only check classes and structures
-        if (info->type == SymbolDatabase::SpaceInfo::Class)
+        if (info->type == SpaceInfo::Class)
         {
-            std::list<SymbolDatabase::Var>::const_iterator var;
+            std::list<Var>::const_iterator var;
             for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
             {
                 if (!var->isStatic && var->token->previous()->str() == "*")
@@ -2718,7 +2718,7 @@ void CheckMemoryLeakInClass::check()
                     // allocation but no deallocation of private variables in public function..
                     if (var->token->tokAt(-2)->isStandardType())
                     {
-                        if (var->access == SymbolDatabase::Private)
+                        if (var->access == Private)
                             checkPublicFunctions(info, var->token);
 
                         variable(info, var->token);
@@ -2730,7 +2730,7 @@ void CheckMemoryLeakInClass::check()
                         // not derived and no constructor?
                         if (var->type->derivedFrom.empty() && var->type->numConstructors == 0)
                         {
-                            if (var->access == SymbolDatabase::Private)
+                            if (var->access == Private)
                                 checkPublicFunctions(info, var->token);
 
                             variable(info, var->token);
@@ -2743,7 +2743,7 @@ void CheckMemoryLeakInClass::check()
 }
 
 
-void CheckMemoryLeakInClass::variable(const SymbolDatabase::SpaceInfo *classinfo, const Token *tokVarname)
+void CheckMemoryLeakInClass::variable(const SpaceInfo *classinfo, const Token *tokVarname)
 {
     const std::string varname = tokVarname->strAt(0);
     const std::string classname = classinfo->className;
@@ -2756,12 +2756,12 @@ void CheckMemoryLeakInClass::variable(const SymbolDatabase::SpaceInfo *classinfo
     bool deallocInDestructor = false;
 
     // Inspect member functions
-    std::list<SymbolDatabase::Func>::const_iterator func;
+    std::list<Func>::const_iterator func;
     for (func = classinfo->functionList.begin(); func != classinfo->functionList.end(); ++func)
     {
         const Token *functionToken = func->token;
-        const bool constructor = func->type == SymbolDatabase::Func::Constructor;
-        const bool destructor = func->type == SymbolDatabase::Func::Destructor;
+        const bool constructor = func->type == Func::Constructor;
+        const bool destructor = func->type == Func::Destructor;
         unsigned int indent = 0;
         bool initlist = false;
         for (const Token *tok = functionToken; tok; tok = tok->next())
@@ -2879,7 +2879,7 @@ void CheckMemoryLeakInClass::variable(const SymbolDatabase::SpaceInfo *classinfo
 }
 
 
-void CheckMemoryLeakInClass::checkPublicFunctions(const SymbolDatabase::SpaceInfo *spaceinfo, const Token *classtok)
+void CheckMemoryLeakInClass::checkPublicFunctions(const SpaceInfo *spaceinfo, const Token *classtok)
 {
     // Check that public functions deallocate the pointers that they allocate.
     // There is no checking how these functions are used and therefore it
@@ -2891,12 +2891,12 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const SymbolDatabase::SpaceInf
 
     // Parse public functions..
     // If they allocate member variables, they should also deallocate
-    std::list<SymbolDatabase::Func>::const_iterator func;
+    std::list<Func>::const_iterator func;
 
     for (func = spaceinfo->functionList.begin(); func != spaceinfo->functionList.end(); ++func)
     {
-        if (func->type != SymbolDatabase::Func::Constructor &&
-            func->access == SymbolDatabase::Public && func->hasBody)
+        if (func->type != Func::Constructor &&
+            func->access == Public && func->hasBody)
         {
             const Token *tok2 = func->token;
             while (tok2->str() != "{")
@@ -3166,14 +3166,14 @@ void CheckMemoryLeakNoVar::check()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<SpaceInfo *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        SpaceInfo *info = *i;
 
         // only check functions
-        if (info->type != SymbolDatabase::SpaceInfo::Function)
+        if (info->type != SpaceInfo::Function)
             continue;
 
         // goto the "}" that ends the executable scope..

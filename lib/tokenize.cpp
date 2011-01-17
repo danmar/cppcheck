@@ -735,7 +735,7 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
     return tok;
 }
 
-struct SpaceInfo
+struct Space
 {
     bool isNamespace;
     std::string className;
@@ -816,7 +816,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
 
 void Tokenizer::simplifyTypedef()
 {
-    std::vector<SpaceInfo> spaceInfo;
+    std::vector<Space> spaceInfo;
     bool isNamespace = false;
     std::string className;
     bool hasClass = false;
@@ -839,7 +839,7 @@ void Tokenizer::simplifyTypedef()
         }
         else if (hasClass && tok->str() == "{")
         {
-            SpaceInfo info;
+            Space info;
             info.isNamespace = isNamespace;
             info.className = className;
             info.classEnd = tok->link();
@@ -7954,13 +7954,13 @@ const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
     if (_symbolDatabase == NULL)
         getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<SpaceInfo *>::const_iterator i;
 
     for (i = _symbolDatabase->spaceInfoList.begin(); i != _symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SymbolDatabase::SpaceInfo *info = *i;
+        const SpaceInfo *info = *i;
 
-        if (info->type == SymbolDatabase::SpaceInfo::Function)
+        if (info->type == SpaceInfo::Function)
         {
             if (info->classDef->str() == funcname)
                 return info->classDef;

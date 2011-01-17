@@ -387,10 +387,10 @@ public:
     void check();
 
 private:
-    void variable(const SymbolDatabase::SpaceInfo *spaceinfo, const Token *tokVarname);
+    void variable(const SpaceInfo *spaceinfo, const Token *tokVarname);
 
     /** Public functions: possible double-allocation */
-    void checkPublicFunctions(const SymbolDatabase::SpaceInfo *spaceinfo, const Token *classtok);
+    void checkPublicFunctions(const SpaceInfo *spaceinfo, const Token *classtok);
     void publicAllocationError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
