@@ -31,7 +31,7 @@ class Tokenizer;
 class Settings;
 class ErrorLogger;
 
-class SpaceInfo;
+class Scope;
 class SymbolDatabase;
 
 /**
@@ -40,10 +40,10 @@ class SymbolDatabase;
 enum AccessControl { Public, Protected, Private };
 
 /** @brief Information about a member variable. */
-class Var
+class Variable
 {
 public:
-    Var(const Token *token_, std::size_t index_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const SpaceInfo *type_)
+    Variable(const Token *token_, std::size_t index_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const Scope *type_)
         : token(token_),
           index(index_),
           access(access_),
@@ -77,15 +77,15 @@ public:
     bool        isClass;
 
     /** @brief pointer to user defined type info (for known types) */
-    const SpaceInfo   *type;
+    const Scope   *type;
 };
 
-class Func
+class Function
 {
 public:
-    enum Type { Constructor, CopyConstructor, OperatorEqual, Destructor, Function };
+    enum Type { eConstructor, eCopyConstructor, eOperatorEqual, eDestructor, eFunction };
 
-    Func()
+    Function()
         : tokenDef(NULL),
           argDef(NULL),
           token(NULL),
@@ -101,7 +101,7 @@ public:
           isExplicit(false),
           isOperator(false),
           retFuncPtr(false),
-          type(Function)
+          type(eFunction)
     {
     }
 
@@ -126,26 +126,29 @@ public:
     Type type;             // constructor, destructor, ...
 };
 
-class SpaceInfo
+class Scope
 {
+    // let tests access private function for testing
+    friend class TestSymbolDatabase;
+
 public:
     struct BaseInfo
     {
         AccessControl access;  // public/protected/private
         std::string name;
-        SpaceInfo *spaceInfo;
+        Scope *spaceInfo;
     };
 
     struct FriendInfo
     {
         std::string name;
-        SpaceInfo *spaceInfo;
+        Scope *spaceInfo;
     };
 
-    enum SpaceType { Global, Class, Struct, Union, Namespace, Function };
+    enum SpaceType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction };
     enum NeedInitialization { Unknown, True, False };
 
-    SpaceInfo(SymbolDatabase *check_, const Token *classDef_, SpaceInfo *nestedIn_);
+    Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_);
 
     SymbolDatabase *check;
     SpaceType type;
@@ -153,37 +156,37 @@ public:
     const Token *classDef;   // class/struct/union/namespace token
     const Token *classStart; // '{' token
     const Token *classEnd;   // '}' token
-    std::list<Func> functionList;
-    std::list<Var> varlist;
+    std::list<Function> functionList;
+    std::list<Variable> varlist;
     std::vector<BaseInfo> derivedFrom;
     std::list<FriendInfo> friendList;
-    SpaceInfo *nestedIn;
-    std::list<SpaceInfo *> nestedList;
+    Scope *nestedIn;
+    std::list<Scope *> nestedList;
     AccessControl access;
     unsigned int numConstructors;
     NeedInitialization needInitialization;
-    SpaceInfo * functionOf; // class/struct this function belongs to
+    Scope * functionOf; // class/struct this function belongs to
 
     bool isClassOrStruct() const
     {
-        return (type == Class || type == Struct);
+        return (type == eClass || type == eStruct);
     }
 
     /**
      * @brief find if name is in nested list
      * @param name name of nested space
      */
-    SpaceInfo * findInNestedList(const std::string & name);
+    Scope * findInNestedList(const std::string & name);
 
-    void addVar(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const SpaceInfo *type_)
+    void addVariable(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const Scope *type_)
     {
-        varlist.push_back(Var(token_, varlist.size(), access_, mutable_, static_, const_, class_, type_));
+        varlist.push_back(Variable(token_, varlist.size(), access_, mutable_, static_, const_, class_, type_));
     }
 
     /** @brief initialize varlist */
-    void getVarList();
+    void getVariableList();
 
-    const Func *getDestructor() const;
+    const Function *getDestructor() const;
 
     /**
      * @brief get the number of nested spaces that are not functions
@@ -197,7 +200,7 @@ public:
 
 private:
     /**
-     * @brief helper function for getVarList()
+     * @brief helper function for getVariableList()
      * @param tok pointer to token to check
      * @param vartok populated with pointer to the variable token, if found
      * @param typetok populated with pointer to the type token, if found
@@ -216,7 +219,7 @@ public:
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structrues */
-    std::list<SpaceInfo *> spaceInfoList;
+    std::list<Scope *> spaceInfoList;
 
     /**
      * @brief find a variable type if it's a user defined type
@@ -224,9 +227,9 @@ public:
      * @param type token containing variable type
      * @return pointer to type if found or NULL if not found
      */
-    const SpaceInfo *findVarType(const SpaceInfo *start, const Token *type) const;
+    const Scope *findVariableType(const Scope *start, const Token *type) const;
 
-    bool argsMatch(const SpaceInfo *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
+    bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
 
     bool isClassOrStruct(const std::string &type) const
     {
@@ -236,11 +239,11 @@ public:
 private:
 
     // Needed by Borland C++:
-    friend class SpaceInfo;
+    friend class Scope;
 
-    void addFunction(SpaceInfo **info, const Token **tok, const Token *argStart);
-    void addNewFunction(SpaceInfo **info, const Token **tok);
-    const Token *initBaseInfo(SpaceInfo *info, const Token *tok);
+    void addFunction(Scope **info, const Token **tok, const Token *argStart);
+    void addNewFunction(Scope **info, const Token **tok);
+    const Token *initBaseInfo(Scope *info, const Token *tok);
     bool isFunction(const Token *tok, const Token **funcStart, const Token **argStart) const;
 
     /** class/struct types */

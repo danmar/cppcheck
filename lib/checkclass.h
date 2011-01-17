@@ -163,18 +163,18 @@ private:
     }
 
     // operatorEqRetRefThis helper function
-    void checkReturnPtrThis(const SpaceInfo *info, const Func *func, const Token *tok, const Token *last);
+    void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last);
 
     // operatorEqToSelf helper functions
     bool hasDeallocation(const Token *first, const Token *last);
     bool hasAssignSelf(const Token *first, const Token *last, const Token *rhs);
 
     // checkConst helper functions
-    bool isMemberVar(const SpaceInfo *info, const Token *tok);
-    bool isConstMemberFunc(const SpaceInfo *info, const Token *tok);
-    bool checkConstFunc(const SpaceInfo *info, const Token *tok);
+    bool isMemberVar(const Scope *scope, const Token *tok);
+    bool isConstMemberFunc(const Scope *scope, const Token *tok);
+    bool checkConstFunc(const Scope *scope, const Token *tok);
     /** @brief check if this function is virtual in the base classes */
-    bool isVirtualFunc(const SpaceInfo *info, const Token *functionToken) const;
+    bool isVirtualFunc(const Scope *scope, const Token *functionToken) const;
 
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
@@ -189,23 +189,23 @@ private:
         bool        init;
     };
 
-    bool isBaseClassFunc(const Token *tok, const SpaceInfo *info);
+    bool isBaseClassFunc(const Token *tok, const Scope *scope);
 
     /**
      * @brief assign a variable in the varlist
      * @param varname name of variable to mark assigned
-     * @param info pointer to variable SpaceInfo
+     * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    void assignVar(const std::string &varname, const SpaceInfo *info, std::vector<Usage> &usage);
+    void assignVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage);
 
     /**
      * @brief initialize a variable in the varlist
      * @param varname name of variable to mark initialized
-     * @param info pointer to variable SpaceInfo
+     * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    void initVar(const std::string &varname, const SpaceInfo *info, std::vector<Usage> &usage);
+    void initVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage);
 
     /**
      * @brief set all variables in list assigned
@@ -223,10 +223,10 @@ private:
      * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
      * @param func reference to the function that should be checked
      * @param callstack the function doesn't look into recursive function calls.
-     * @param info pointer to variable SpaceInfo
+     * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    void initializeVarList(const Func &func, std::list<std::string> &callstack, const SpaceInfo *info, std::vector<Usage> &usage);
+    void initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage);
 };
 /// @}
 //---------------------------------------------------------------------------

@@ -46,14 +46,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     }
 
     // find all namespaces (class,struct and namespace)
-    SpaceInfo *info = new SpaceInfo(this, NULL, NULL);
+    Scope *info = new Scope(this, NULL, NULL);
     spaceInfoList.push_back(info);
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Locate next class
         if (Token::Match(tok, "class|struct|namespace %var% [{:]"))
         {
-            SpaceInfo *new_info = new SpaceInfo(this, tok, info);
+            Scope *new_info = new Scope(this, tok, info);
             const Token *tok2 = tok->tokAt(2);
 
             // only create base list for classes and structures
@@ -91,7 +91,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
 
             // check if in class or structure
-            else if (info->type == SpaceInfo::Class || info->type == SpaceInfo::Struct)
+            else if (info->type == Scope::eClass || info->type == Scope::eStruct)
             {
                 const Token *funcStart = 0;
                 const Token *argStart = 0;
@@ -118,7 +118,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 // class function?
                 else if (tok->previous()->str() != "::" && isFunction(tok, &funcStart, &argStart))
                 {
-                    Func function;
+                    Function function;
 
                     // save the function definition argument start '('
                     function.argDef = argStart;
@@ -136,20 +136,20 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                         // 'operator =' is special
                         if (function.tokenDef->str() == "=")
-                            function.type = Func::OperatorEqual;
+                            function.type = Function::eOperatorEqual;
                     }
 
                     // class constructor/destructor
                     else if (function.tokenDef->str() == info->className)
                     {
                         if (function.tokenDef->previous()->str() == "~")
-                            function.type = Func::Destructor;
+                            function.type = Function::eDestructor;
                         else if ((Token::Match(function.tokenDef, "%var% ( const %var% & )") ||
                                   Token::Match(function.tokenDef, "%var% ( const %var% & %var% )")) &&
                                  function.tokenDef->strAt(3) == info->className)
-                            function.type = Func::CopyConstructor;
+                            function.type = Function::eCopyConstructor;
                         else
-                            function.type = Func::Constructor;
+                            function.type = Function::eConstructor;
 
                         if (function.tokenDef->previous()->str() == "explicit")
                             function.isExplicit = true;
@@ -206,7 +206,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         function.isPure = true;
 
                     // count the number of constructors
-                    if (function.type == Func::Constructor || function.type == Func::CopyConstructor)
+                    if (function.type == Function::eConstructor || function.type == Function::eCopyConstructor)
                         info->numConstructors++;
 
                     // assume implementation is inline (definition and implementation same)
@@ -232,7 +232,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         info->functionList.push_back(function);
 
                         const Token *tok2 = funcStart;
-                        SpaceInfo *functionOf = info;
+                        Scope *functionOf = info;
 
                         addNewFunction(&info, &tok2);
                         if (info)
@@ -249,7 +249,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 // friend class declaration?
                 else if (Token::Match(tok, "friend class| %any% ;"))
                 {
-                    SpaceInfo::FriendInfo friendInfo;
+                    Scope::FriendInfo friendInfo;
 
                     friendInfo.name = tok->strAt(1) == "class" ? tok->strAt(2) : tok->strAt(1);
                     /** @todo fill this in later after parsing is complete */
@@ -258,7 +258,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     info->friendList.push_back(friendInfo);
                 }
             }
-            else if (info->type == SpaceInfo::Namespace || info->type == SpaceInfo::Global)
+            else if (info->type == Scope::eNamespace || info->type == Scope::eGlobal)
             {
                 const Token *funcStart = 0;
                 const Token *argStart = 0;
@@ -281,7 +281,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // regular function
                         else
                         {
-                            Func function;
+                            Function function;
 
                             // save the function definition argument start '('
                             function.argDef = argStart;
@@ -296,9 +296,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             function.isInline = false;
                             function.hasBody = true;
                             function.arg = function.argDef;
-                            function.type = Func::Function;
+                            function.type = Function::eFunction;
 
-                            SpaceInfo *old_info = info;
+                            Scope *old_info = info;
 
                             addNewFunction(&info, &tok);
 
@@ -319,7 +319,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                              Token::Match(argStart->link()->tokAt(2)->link(), ") const| {"))
                     {
                         const Token *tok1 = funcStart;
-                        SpaceInfo *old_info = info;
+                        Scope *old_info = info;
 
                         // class function
                         if (tok1->previous()->str() == "::")
@@ -340,7 +340,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
-    std::list<SpaceInfo *>::iterator it;
+    std::list<Scope *>::iterator it;
 
     // fill in base class info
     for (it = spaceInfoList.begin(); it != spaceInfoList.end(); ++it)
@@ -354,22 +354,22 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         // finish filling in base class info
         for (unsigned int i = 0; i < info->derivedFrom.size(); ++i)
         {
-            std::list<SpaceInfo *>::iterator it1;
+            std::list<Scope *>::iterator it1;
 
             for (it1 = spaceInfoList.begin(); it1 != spaceInfoList.end(); ++it1)
             {
-                SpaceInfo *spaceInfo = *it1;
+                Scope *spaceInfo = *it1;
 
                 /** @todo handle derived base classes and namespaces */
-                if (spaceInfo->type == SpaceInfo::Class || spaceInfo->type == SpaceInfo::Struct)
+                if (spaceInfo->type == Scope::eClass || spaceInfo->type == Scope::eStruct)
                 {
                     // do class names match?
                     if (spaceInfo->className == info->derivedFrom[i].name)
                     {
                         // are they in the same namespace or different namespaces with same name?
                         if ((spaceInfo->nestedIn == info->nestedIn) ||
-                            ((spaceInfo->nestedIn && spaceInfo->nestedIn->type == SpaceInfo::Namespace) &&
-                             (info->nestedIn && info->nestedIn->type == SpaceInfo::Namespace) &&
+                            ((spaceInfo->nestedIn && spaceInfo->nestedIn->type == Scope::eNamespace) &&
+                             (info->nestedIn && info->nestedIn->type == Scope::eNamespace) &&
                              (spaceInfo->nestedIn->className == info->nestedIn->className)))
                         {
                             info->derivedFrom[i].spaceInfo = spaceInfo;
@@ -387,10 +387,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         info = *it;
 
         // skip functions
-        if (info->type != SpaceInfo::Function)
+        if (info->type != Scope::eFunction)
         {
             // find variables
-            info->getVarList();
+            info->getVariableList();
         }
     }
 
@@ -406,16 +406,16 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         {
             info = *it;
 
-            if (info->isClassOrStruct() && info->needInitialization == SpaceInfo::Unknown)
+            if (info->isClassOrStruct() && info->needInitialization == Scope::Unknown)
             {
                 // check for default constructor
                 bool hasDefaultConstructor = false;
 
-                std::list<Func>::const_iterator func;
+                std::list<Function>::const_iterator func;
 
                 for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
                 {
-                    if (func->type == Func::Constructor)
+                    if (func->type == Function::eConstructor)
                     {
                         // check for no arguments: func ( )
                         if (func->argDef->next() == func->argDef->link())
@@ -437,7 +437,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 // We assume the default constructor initializes everything.
                 // Another check will figure out if the constructor actually initializes everything.
                 if (hasDefaultConstructor)
-                    info->needInitialization = SpaceInfo::False;
+                    info->needInitialization = Scope::False;
 
                 // check each member variable to see if it needs initialization
                 else
@@ -445,7 +445,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     bool needInitialization = false;
                     bool unknown = false;
 
-                    std::list<Var>::const_iterator var;
+                    std::list<Variable>::const_iterator var;
                     for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
                     {
                         if (var->isClass)
@@ -453,9 +453,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             if (var->type)
                             {
                                 // does this type need initialization?
-                                if (var->type->needInitialization == SpaceInfo::True)
+                                if (var->type->needInitialization == Scope::True)
                                     needInitialization = true;
-                                else if (var->type->needInitialization == SpaceInfo::Unknown)
+                                else if (var->type->needInitialization == Scope::Unknown)
                                     unknown = true;
                             }
                         }
@@ -466,12 +466,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     if (!unknown)
                     {
                         if (needInitialization)
-                            info->needInitialization = SpaceInfo::True;
+                            info->needInitialization = Scope::True;
                         else
-                            info->needInitialization = SpaceInfo::False;
+                            info->needInitialization = Scope::False;
                     }
 
-                    if (info->needInitialization == SpaceInfo::Unknown)
+                    if (info->needInitialization == Scope::Unknown)
                         unknowns++;
                 }
             }
@@ -488,7 +488,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         {
             info = *it;
 
-            if (info->isClassOrStruct() && info->needInitialization == SpaceInfo::Unknown)
+            if (info->isClassOrStruct() && info->needInitialization == Scope::Unknown)
             {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
@@ -511,7 +511,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
 SymbolDatabase::~SymbolDatabase()
 {
-    std::list<SpaceInfo *>::iterator it;
+    std::list<Scope *>::iterator it;
 
     for (it = spaceInfoList.begin(); it != spaceInfoList.end(); ++it)
         delete *it;
@@ -575,7 +575,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Token **funcStart, const
     return false;
 }
 
-bool SymbolDatabase::argsMatch(const SpaceInfo *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const
+bool SymbolDatabase::argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const
 {
     bool match = false;
     while (first->str() == second->str())
@@ -664,7 +664,7 @@ bool SymbolDatabase::argsMatch(const SpaceInfo *info, const Token *first, const 
     return match;
 }
 
-void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Token *argStart)
+void SymbolDatabase::addFunction(Scope **info, const Token **tok, const Token *argStart)
 {
     int count = 0;
     bool added = false;
@@ -693,15 +693,15 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
         path_length++;
     }
 
-    std::list<SpaceInfo *>::iterator it1;
+    std::list<Scope *>::iterator it1;
 
     // search for match
     for (it1 = spaceInfoList.begin(); it1 != spaceInfoList.end(); ++it1)
     {
-        SpaceInfo *info1 = *it1;
+        Scope *info1 = *it1;
 
         bool match = false;
-        if (info1->className == tok1->str() && (info1->type != SpaceInfo::Function))
+        if (info1->className == tok1->str() && (info1->type != Scope::eFunction))
         {
             // do the spaces match (same space) or do their names match (multiple namespaces)
             if ((*info == info1->nestedIn) || (*info && info1 &&
@@ -709,7 +709,7 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                                                !(*info)->className.empty() &&
                                                (*info)->type == info1->nestedIn->type))
             {
-                SpaceInfo *info2 = info1;
+                Scope *info2 = info1;
 
                 while (info2 && count > 0)
                 {
@@ -728,7 +728,7 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
 
         if (match)
         {
-            std::list<Func>::iterator func;
+            std::list<Function>::iterator func;
 
             for (func = info1->functionList.begin(); func != info1->functionList.end(); ++func)
             {
@@ -745,7 +745,7 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
                             func->arg = argStart;
                         }
                     }
-                    else if (func->type == Func::Destructor &&
+                    else if (func->type == Function::eDestructor &&
                              (*tok)->previous()->str() == "~" &&
                              func->tokenDef->str() == (*tok)->str())
                     {
@@ -803,10 +803,10 @@ void SymbolDatabase::addFunction(SpaceInfo **info, const Token **tok, const Toke
         addNewFunction(info, tok);
 }
 
-void SymbolDatabase::addNewFunction(SpaceInfo **info, const Token **tok)
+void SymbolDatabase::addNewFunction(Scope **info, const Token **tok)
 {
     const Token *tok1 = *tok;
-    SpaceInfo *new_info = new SpaceInfo(this, tok1, *info);
+    Scope *new_info = new Scope(this, tok1, *info);
 
     // skip to start of function
     while (tok1 && tok1->str() != "{")
@@ -837,7 +837,7 @@ void SymbolDatabase::addNewFunction(SpaceInfo **info, const Token **tok)
     }
 }
 
-const Token *SymbolDatabase::initBaseInfo(SpaceInfo *info, const Token *tok)
+const Token *SymbolDatabase::initBaseInfo(Scope *info, const Token *tok)
 {
     // goto initial '{'
     const Token *tok2 = tok->tokAt(2);
@@ -853,7 +853,7 @@ const Token *SymbolDatabase::initBaseInfo(SpaceInfo *info, const Token *tok)
         // check for base classes
         else if (level == 0 && Token::Match(tok2, ":|,"))
         {
-            SpaceInfo::BaseInfo base;
+            Scope::BaseInfo base;
 
             tok2 = tok2->next();
 
@@ -924,7 +924,7 @@ const Token *SymbolDatabase::initBaseInfo(SpaceInfo *info, const Token *tok)
 
 //---------------------------------------------------------------------------
 
-unsigned int Func::argCount() const
+unsigned int Function::argCount() const
 {
     unsigned int count = 0;
 
@@ -942,7 +942,7 @@ unsigned int Func::argCount() const
     return count;
 }
 
-unsigned int Func::initializedArgCount() const
+unsigned int Function::initializedArgCount() const
 {
     unsigned int count = 0;
 
@@ -960,48 +960,48 @@ unsigned int Func::initializedArgCount() const
 
 //---------------------------------------------------------------------------
 
-SpaceInfo::SpaceInfo(SymbolDatabase *check_, const Token *classDef_, SpaceInfo *nestedIn_) :
+Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
     check(check_),
     classDef(classDef_),
     classStart(NULL),
     classEnd(NULL),
     nestedIn(nestedIn_),
     numConstructors(0),
-    needInitialization(SpaceInfo::Unknown),
+    needInitialization(Scope::Unknown),
     functionOf(NULL)
 {
     if (!classDef)
     {
-        type = SpaceInfo::Global;
+        type = Scope::eGlobal;
         access = Public;
     }
     else if (classDef->str() == "class")
     {
-        type = SpaceInfo::Class;
+        type = Scope::eClass;
         className = classDef->next()->str();
         access = Private;
     }
     else if (classDef->str() == "struct")
     {
-        type = SpaceInfo::Struct;
+        type = Scope::eStruct;
         className = classDef->next()->str();
         access = Public;
     }
     else if (classDef->str() == "union")
     {
-        type = SpaceInfo::Union;
+        type = Scope::eUnion;
         className = classDef->next()->str();
         access = Public;
     }
     else if (classDef->str() == "namespace")
     {
-        type = SpaceInfo::Namespace;
+        type = Scope::eNamespace;
         className = classDef->next()->str();
         access = Public;
     }
     else
     {
-        type = SpaceInfo::Function;
+        type = Scope::eFunction;
         className = classDef->str();
         access = Public;
     }
@@ -1011,15 +1011,15 @@ SpaceInfo::SpaceInfo(SymbolDatabase *check_, const Token *classDef_, SpaceInfo *
 }
 
 bool
-SpaceInfo::hasDefaultConstructor() const
+Scope::hasDefaultConstructor() const
 {
     if (numConstructors)
     {
-        std::list<Func>::const_iterator func;
+        std::list<Function>::const_iterator func;
 
         for (func = functionList.begin(); func != functionList.end(); ++func)
         {
-            if (func->type == Func::Constructor &&
+            if (func->type == Function::eConstructor &&
                 func->argDef->link() == func->argDef->next())
                 return true;
         }
@@ -1028,9 +1028,9 @@ SpaceInfo::hasDefaultConstructor() const
 }
 
 // Get variable list..
-void SpaceInfo::getVarList()
+void Scope::getVariableList()
 {
-    AccessControl varaccess = type == Class ? Private : Public;
+    AccessControl varaccess = type == eClass ? Private : Public;
     const Token *start;
 
     if (classStart)
@@ -1184,7 +1184,7 @@ void SpaceInfo::getVarList()
 
                 const ErrorLogger::ErrorMessage errmsg(locationList,
                                                        Severity::debug,
-                                                       "SymbolDatabase::SpaceInfo::getVarList found variable \'" + vartok->str() + "\' with varid 0.",
+                                                       "Scope::getVariableList found variable \'" + vartok->str() + "\' with varid 0.",
                                                        "debug");
                 if (check->_errorLogger)
                     check->_errorLogger->reportErr(errmsg);
@@ -1192,12 +1192,12 @@ void SpaceInfo::getVarList()
                     Check::reportError(errmsg);
             }
 
-            const SpaceInfo *spaceInfo = NULL;
+            const Scope *spaceInfo = NULL;
 
             if (typetok)
-                spaceInfo = check->findVarType(this, typetok);
+                spaceInfo = check->findVariableType(this, typetok);
 
-            addVar(vartok, varaccess, isMutable, isStatic, isConst, isClass, spaceInfo);
+            addVariable(vartok, varaccess, isMutable, isStatic, isConst, isClass, spaceInfo);
         }
     }
 }
@@ -1230,7 +1230,7 @@ const Token* skipPointers(const Token* tok)
     return ret;
 }
 
-bool SpaceInfo::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const
+bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const
 {
     const Token* localTypeTok = skipScopeIdentifiers(tok);
 
@@ -1271,17 +1271,17 @@ bool SpaceInfo::isVariableDeclaration(const Token* tok, const Token*& vartok, co
     return NULL != vartok;
 }
 
-bool SpaceInfo::isSimpleVariable(const Token* tok) const
+bool Scope::isSimpleVariable(const Token* tok) const
 {
     return Token::Match(tok, "%var% ;");
 }
 
-bool SpaceInfo::isArrayVariable(const Token* tok) const
+bool Scope::isArrayVariable(const Token* tok) const
 {
     return Token::Match(tok, "%var% [") && tok->next()->str() != "operator";
 }
 
-bool SpaceInfo::findClosingBracket(const Token* tok, const Token*& close) const
+bool Scope::findClosingBracket(const Token* tok, const Token*& close) const
 {
     bool found = false;
     if (NULL != tok && tok->str() == "<")
@@ -1310,16 +1310,16 @@ bool SpaceInfo::findClosingBracket(const Token* tok, const Token*& close) const
 
 //---------------------------------------------------------------------------
 
-const SpaceInfo *SymbolDatabase::findVarType(const SpaceInfo *start, const Token *type) const
+const Scope *SymbolDatabase::findVariableType(const Scope *start, const Token *type) const
 {
-    std::list<SpaceInfo *>::const_iterator it;
+    std::list<Scope *>::const_iterator it;
 
     for (it = spaceInfoList.begin(); it != spaceInfoList.end(); ++it)
     {
-        const SpaceInfo *info = *it;
+        const Scope *info = *it;
 
         // skip namespaces and functions
-        if (info->type == SpaceInfo::Namespace || info->type == SpaceInfo::Function || info->type == SpaceInfo::Global)
+        if (info->type == Scope::eNamespace || info->type == Scope::eFunction || info->type == Scope::eGlobal)
             continue;
 
         // do the names match?
@@ -1328,7 +1328,7 @@ const SpaceInfo *SymbolDatabase::findVarType(const SpaceInfo *start, const Token
             // check if type does not have a namespace
             if (type->previous()->str() != "::")
             {
-                const SpaceInfo *parent = start;
+                const Scope *parent = start;
 
                 // check if in same namespace
                 while (parent && parent != info->nestedIn)
@@ -1352,9 +1352,9 @@ const SpaceInfo *SymbolDatabase::findVarType(const SpaceInfo *start, const Token
 
 //---------------------------------------------------------------------------
 
-SpaceInfo * SpaceInfo::findInNestedList(const std::string & name)
+Scope * Scope::findInNestedList(const std::string & name)
 {
-    std::list<SpaceInfo *>::iterator it;
+    std::list<Scope *>::iterator it;
 
     for (it = nestedList.begin(); it != nestedList.end(); ++it)
     {
@@ -1366,12 +1366,12 @@ SpaceInfo * SpaceInfo::findInNestedList(const std::string & name)
 
 //---------------------------------------------------------------------------
 
-const Func *SpaceInfo::getDestructor() const
+const Function *Scope::getDestructor() const
 {
-    std::list<Func>::const_iterator it;
+    std::list<Function>::const_iterator it;
     for (it = functionList.begin(); it != functionList.end(); ++it)
     {
-        if (it->type == Func::Destructor)
+        if (it->type == Function::eDestructor)
             return &*it;
     }
     return 0;
@@ -1379,13 +1379,13 @@ const Func *SpaceInfo::getDestructor() const
 
 //---------------------------------------------------------------------------
 
-unsigned int SpaceInfo::getNestedNonFunctions() const
+unsigned int Scope::getNestedNonFunctions() const
 {
     unsigned int nested = 0;
-    std::list<SpaceInfo *>::const_iterator ni;
+    std::list<Scope *>::const_iterator ni;
     for (ni = nestedList.begin(); ni != nestedList.end(); ++ni)
     {
-        if ((*ni)->type != SpaceInfo::Function)
+        if ((*ni)->type != Scope::eFunction)
             nested++;
     }
     return nested;

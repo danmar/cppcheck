@@ -18,7 +18,6 @@
 
 #include "testsuite.h"
 #include "testutils.h"
-#define private public
 #include "symboldatabase.h"
 
 class TestSymbolDatabase: public TestFixture
@@ -32,7 +31,7 @@ public:
     {}
 
 private:
-    const SpaceInfo si;
+    const Scope si;
     const Token* vartok;
     const Token* typetok;
     const Token* t;

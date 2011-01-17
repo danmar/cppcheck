@@ -565,19 +565,19 @@ void CheckMemoryLeakInFunction::parse_noreturn()
     noreturn.insert("errx");
     noreturn.insert("verrx");
 
-    std::list<SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SpaceInfo *info = *i;
+        const Scope *scope = *i;
 
         // only check functions
-        if (info->type != SpaceInfo::Function)
+        if (scope->type != Scope::eFunction)
             continue;
 
         // parse this function to check if it contains an "exit" call..
         unsigned int indentlevel = 1;
-        for (const Token *tok2 = info->classStart->next(); tok2; tok2 = tok2->next())
+        for (const Token *tok2 = scope->classStart->next(); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "{")
                 ++indentlevel;
@@ -589,7 +589,7 @@ void CheckMemoryLeakInFunction::parse_noreturn()
             }
             if (Token::Match(tok2->previous(), "[;{}] exit ("))
             {
-                noreturn.insert(info->className);
+                noreturn.insert(scope->className);
                 break;
             }
         }
@@ -597,7 +597,7 @@ void CheckMemoryLeakInFunction::parse_noreturn()
         // This function is not a noreturn function
         if (indentlevel == 0)
         {
-            notnoreturn.insert(info->className);
+            notnoreturn.insert(scope->className);
         }
     }
 }
@@ -2491,25 +2491,25 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 //---------------------------------------------------------------------------
 void CheckMemoryLeakInFunction::checkReallocUsage()
 {
-    std::list<SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SpaceInfo *info = *i;
+        const Scope *scope = *i;
 
         // only check functions
-        if (info->type != SpaceInfo::Function)
+        if (scope->type != Scope::eFunction)
             continue;
 
         // Record the varid's of the function parameters
         std::set<unsigned int> parameterVarIds;
-        for (const Token *tok2 = info->classDef->next(); tok2 && tok2->str() != ")"; tok2 = tok2->next())
+        for (const Token *tok2 = scope->classDef->next(); tok2 && tok2->str() != ")"; tok2 = tok2->next())
         {
             if (tok2->varId() != 0)
                 parameterVarIds.insert(tok2->varId());
         }
 
-        const Token *tok = info->classStart;
+        const Token *tok = scope->classStart;
         const Token *startOfFunction = tok;
 
         // Search for the "var = realloc(var, 100);" pattern within this function
@@ -2644,19 +2644,19 @@ void CheckMemoryLeakInFunction::check()
     // fill the "noreturn"
     parse_noreturn();
 
-    std::list<SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SpaceInfo *info = *i;
+        const Scope *scope = *i;
 
         // only check functions
-        if (info->type != SpaceInfo::Function)
+        if (scope->type != Scope::eFunction)
             continue;
 
-        const Token *tok = info->classStart;
-        const Token *tok1 = info->classDef->next();
-        bool classmember = info->functionOf != NULL;
+        const Token *tok = scope->classStart;
+        const Token *tok1 = scope->classDef->next();
+        bool classmember = scope->functionOf != NULL;
 
         parseFunctionScope(tok, tok1, classmember);
     }
@@ -2701,17 +2701,17 @@ void CheckMemoryLeakInClass::check()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SpaceInfo *info = *i;
+        const Scope *scope = *i;
 
         // only check classes and structures
-        if (info->type == SpaceInfo::Class)
+        if (scope->type == Scope::eClass)
         {
-            std::list<Var>::const_iterator var;
-            for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
+            std::list<Variable>::const_iterator var;
+            for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
             {
                 if (!var->isStatic && var->token->previous()->str() == "*")
                 {
@@ -2719,9 +2719,9 @@ void CheckMemoryLeakInClass::check()
                     if (var->token->tokAt(-2)->isStandardType())
                     {
                         if (var->access == Private)
-                            checkPublicFunctions(info, var->token);
+                            checkPublicFunctions(scope, var->token);
 
-                        variable(info, var->token);
+                        variable(scope, var->token);
                     }
 
                     // known class?
@@ -2731,9 +2731,9 @@ void CheckMemoryLeakInClass::check()
                         if (var->type->derivedFrom.empty() && var->type->numConstructors == 0)
                         {
                             if (var->access == Private)
-                                checkPublicFunctions(info, var->token);
+                                checkPublicFunctions(scope, var->token);
 
-                            variable(info, var->token);
+                            variable(scope, var->token);
                         }
                     }
                 }
@@ -2743,10 +2743,10 @@ void CheckMemoryLeakInClass::check()
 }
 
 
-void CheckMemoryLeakInClass::variable(const SpaceInfo *classinfo, const Token *tokVarname)
+void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarname)
 {
     const std::string varname = tokVarname->strAt(0);
-    const std::string classname = classinfo->className;
+    const std::string classname = scope->className;
 
     // Check if member variable has been allocated and deallocated..
     CheckMemoryLeak::AllocType Alloc = CheckMemoryLeak::No;
@@ -2756,12 +2756,12 @@ void CheckMemoryLeakInClass::variable(const SpaceInfo *classinfo, const Token *t
     bool deallocInDestructor = false;
 
     // Inspect member functions
-    std::list<Func>::const_iterator func;
-    for (func = classinfo->functionList.begin(); func != classinfo->functionList.end(); ++func)
+    std::list<Function>::const_iterator func;
+    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
     {
         const Token *functionToken = func->token;
-        const bool constructor = func->type == Func::Constructor;
-        const bool destructor = func->type == Func::Destructor;
+        const bool constructor = func->type == Function::eConstructor;
+        const bool destructor = func->type == Function::eDestructor;
         unsigned int indent = 0;
         bool initlist = false;
         for (const Token *tok = functionToken; tok; tok = tok->next())
@@ -2795,7 +2795,7 @@ void CheckMemoryLeakInClass::variable(const SpaceInfo *classinfo, const Token *t
                     // Foo::var1 = ..
                     // bail out when not same class
                     if (Token::simpleMatch(tok->previous(), "::") &&
-                        tok->strAt(-2) != classinfo->className)
+                        tok->strAt(-2) != scope->className)
                         return;
 
                     AllocType alloc = getAllocationType(tok->tokAt((indent > 0) ? 2 : 3), 0);
@@ -2826,7 +2826,7 @@ void CheckMemoryLeakInClass::variable(const SpaceInfo *classinfo, const Token *t
                 AllocType dealloc = getDeallocationType(tok, varname);
                 if (dealloc == No)
                 {
-                    std::string temp = classinfo->className + " :: " + varname;
+                    std::string temp = scope->className + " :: " + varname;
                     dealloc = getDeallocationType(tok, temp);
                 }
                 if (dealloc == No)
@@ -2879,7 +2879,7 @@ void CheckMemoryLeakInClass::variable(const SpaceInfo *classinfo, const Token *t
 }
 
 
-void CheckMemoryLeakInClass::checkPublicFunctions(const SpaceInfo *spaceinfo, const Token *classtok)
+void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Token *classtok)
 {
     // Check that public functions deallocate the pointers that they allocate.
     // There is no checking how these functions are used and therefore it
@@ -2891,11 +2891,11 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const SpaceInfo *spaceinfo, co
 
     // Parse public functions..
     // If they allocate member variables, they should also deallocate
-    std::list<Func>::const_iterator func;
+    std::list<Function>::const_iterator func;
 
-    for (func = spaceinfo->functionList.begin(); func != spaceinfo->functionList.end(); ++func)
+    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
     {
-        if (func->type != Func::Constructor &&
+        if (func->type != Function::eConstructor &&
             func->access == Public && func->hasBody)
         {
             const Token *tok2 = func->token;
@@ -2908,7 +2908,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const SpaceInfo *spaceinfo, co
                     publicAllocationError(tok2, tok2->strAt(1));
             }
             else if (Token::Match(tok2, "{|}|; %type% :: %varid% =", varid) &&
-                     tok2->next()->str() == spaceinfo->className)
+                     tok2->next()->str() == scope->className)
             {
                 const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(5), varid);
                 if (alloc != CheckMemoryLeak::No)
@@ -3166,18 +3166,18 @@ void CheckMemoryLeakNoVar::check()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        SpaceInfo *info = *i;
+        Scope *scope = *i;
 
         // only check functions
-        if (info->type != SpaceInfo::Function)
+        if (scope->type != Scope::eFunction)
             continue;
 
         // goto the "}" that ends the executable scope..
-        const Token *tok = info->classEnd;
+        const Token *tok = scope->classEnd;
 
         // parse the executable scope until tok is reached...
         for (const Token *tok2 = tok->link(); tok2 && tok2 != tok; tok2 = tok2->next())

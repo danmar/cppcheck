@@ -562,27 +562,27 @@ static bool isOp(const Token *tok)
 /**
  * @brief This class is used to capture the control flow within a function.
  */
-class Scope
+class ScopeInfo
 {
 public:
-    Scope() : _token(NULL), _parent(NULL) { }
-    Scope(const Token *token, Scope *parent_) : _token(token), _parent(parent_) { }
-    ~Scope();
+    ScopeInfo() : _token(NULL), _parent(NULL) { }
+    ScopeInfo(const Token *token, ScopeInfo *parent_) : _token(token), _parent(parent_) { }
+    ~ScopeInfo();
 
-    Scope *parent()
+    ScopeInfo *parent()
     {
         return _parent;
     }
-    Scope *addChild(const Token *token);
-    void remove(Scope *scope);
+    ScopeInfo *addChild(const Token *token);
+    void remove(ScopeInfo *scope);
 
 private:
     const Token *_token;
-    Scope *_parent;
-    std::list<Scope *> _children;
+    ScopeInfo *_parent;
+    std::list<ScopeInfo *> _children;
 };
 
-Scope::~Scope()
+ScopeInfo::~ScopeInfo()
 {
     while (!_children.empty())
     {
@@ -591,18 +591,18 @@ Scope::~Scope()
     }
 }
 
-Scope *Scope::addChild(const Token *token)
+ScopeInfo *ScopeInfo::addChild(const Token *token)
 {
-    Scope *temp = new Scope(token, this);
+    ScopeInfo *temp = new ScopeInfo(token, this);
 
     _children.push_back(temp);
 
     return temp;
 }
 
-void Scope::remove(Scope *scope)
+void ScopeInfo::remove(ScopeInfo *scope)
 {
-    std::list<Scope *>::iterator it;
+    std::list<ScopeInfo *>::iterator it;
 
     for (it = _children.begin(); it != _children.end(); ++it)
     {
@@ -629,7 +629,7 @@ public:
     public:
         VariableUsage(const Token *name = 0,
                       VariableType type = standard,
-                      Scope *scope = NULL,
+                      ScopeInfo *scope = NULL,
                       bool read = false,
                       bool write = false,
                       bool modified = false,
@@ -659,13 +659,13 @@ public:
 
         const Token *_name;
         VariableType _type;
-        Scope *_scope;
+        ScopeInfo *_scope;
         bool _read;
         bool _write;
         bool _modified; // read/modify/write
         bool _allocateMemory;
         std::set<unsigned int> _aliases;
-        std::set<Scope *> _assignments;
+        std::set<ScopeInfo *> _assignments;
     };
 
     typedef std::map<unsigned int, VariableUsage> VariableMap;
@@ -678,7 +678,7 @@ public:
     {
         return _varUsage;
     }
-    void addVar(const Token *name, VariableType type, Scope *scope, bool write_);
+    void addVar(const Token *name, VariableType type, ScopeInfo *scope, bool write_);
     void allocateMemory(unsigned int varid);
     void read(unsigned int varid);
     void readAliases(unsigned int varid);
@@ -797,7 +797,7 @@ void Variables::eraseAll(unsigned int varid)
 
 void Variables::addVar(const Token *name,
                        VariableType type,
-                       Scope *scope,
+                       ScopeInfo *scope,
                        bool write_)
 {
     if (name->varId() > 0)
@@ -955,7 +955,7 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
     return 0;
 }
 
-static int doAssignment(Variables &variables, const Token *tok, bool dereference, Scope *scope)
+static int doAssignment(Variables &variables, const Token *tok, bool dereference, ScopeInfo *scope)
 {
     int next = 0;
 
@@ -1090,7 +1090,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                             // not in same scope as declaration
                             else
                             {
-                                std::set<Scope *>::iterator assignment;
+                                std::set<ScopeInfo *>::iterator assignment;
 
                                 // check for an assignment in this scope
                                 assignment = var1->_assignments.find(scope);
@@ -1158,7 +1158,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                         variables.clearAliases(varid1);
                     else
                     {
-                        std::set<Scope *>::iterator assignment;
+                        std::set<ScopeInfo *>::iterator assignment;
 
                         // check for an assignment in this scope
                         assignment = var1->_assignments.find(scope);
@@ -1240,14 +1240,14 @@ void CheckOther::functionVariableUsage()
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SpaceInfo *info = *i;
+        const Scope *info = *i;
 
         // only check functions
-        if (info->type != SpaceInfo::Function)
+        if (info->type != Scope::eFunction)
             continue;
 
         // First token for the current scope..
@@ -1257,8 +1257,8 @@ void CheckOther::functionVariableUsage()
         Variables variables;
 
         // scopes
-        Scope scopes;
-        Scope *scope = &scopes;
+        ScopeInfo scopes;
+        ScopeInfo *scope = &scopes;
 
         unsigned int indentlevel = 0;
         for (const Token *tok = tok1; tok; tok = tok->next())
@@ -1267,7 +1267,7 @@ void CheckOther::functionVariableUsage()
             {
                 // replace the head node when found
                 if (indentlevel == 0)
-                    scopes = Scope(tok, NULL);
+                    scopes = ScopeInfo(tok, NULL);
                 // add the new scope
                 else
                     scope = scope->addChild(tok);
@@ -1694,7 +1694,7 @@ void CheckOther::functionVariableUsage()
                             if (!start->tokAt(3)->isStandardType())
                             {
                                 // lookup the type
-                                const SpaceInfo *type = symbolDatabase->findVarType(info, start->tokAt(3));
+                                const Scope *type = symbolDatabase->findVariableType(info, start->tokAt(3));
 
                                 // unknown type?
                                 if (!type)
@@ -1702,7 +1702,7 @@ void CheckOther::functionVariableUsage()
 
                                 // has default constructor or
                                 // has members with unknown type or default constructor
-                                else if (type->needInitialization == SpaceInfo::False)
+                                else if (type->needInitialization == Scope::False)
                                     allocate = false;
                             }
                         }
@@ -1908,19 +1908,19 @@ void CheckOther::checkVariableScope()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SpaceInfo *info = *i;
+        const Scope *scope = *i;
 
         // only check functions
-        if (info->type != SpaceInfo::Function)
+        if (scope->type != Scope::eFunction)
             continue;
 
         // Walk through all tokens..
         int indentlevel = 0;
-        for (const Token *tok = info->classStart; tok; tok = tok->next())
+        for (const Token *tok = scope->classStart; tok; tok = tok->next())
         {
             // Skip function local class and struct declarations..
             if ((tok->str() == "class") || (tok->str() == "struct") || (tok->str() == "union"))
@@ -2536,19 +2536,19 @@ void CheckOther::checkMisusedScopedObject()
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
     for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SpaceInfo *info = *i;
+        const Scope *scope = *i;
 
         // only check functions
-        if (info->type != SpaceInfo::Function)
+        if (scope->type != Scope::eFunction)
             continue;
 
         unsigned int depth = 0;
 
-        for (const Token *tok = info->classStart; tok; tok = tok->next())
+        for (const Token *tok = scope->classStart; tok; tok = tok->next())
         {
             if (tok->str() == "{")
             {

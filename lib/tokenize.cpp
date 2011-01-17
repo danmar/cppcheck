@@ -7954,16 +7954,16 @@ const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
     if (_symbolDatabase == NULL)
         getSymbolDatabase();
 
-    std::list<SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
     for (i = _symbolDatabase->spaceInfoList.begin(); i != _symbolDatabase->spaceInfoList.end(); ++i)
     {
-        const SpaceInfo *info = *i;
+        const Scope *scope = *i;
 
-        if (info->type == SpaceInfo::Function)
+        if (scope->type == Scope::eFunction)
         {
-            if (info->classDef->str() == funcname)
-                return info->classDef;
+            if (scope->classDef->str() == funcname)
+                return scope->classDef;
         }
     }
     return NULL;
