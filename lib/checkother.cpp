@@ -2008,7 +2008,17 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
     {
         if (tok->str() == "{")
         {
-            ++indentlevel;
+            if (tok->strAt(-1) == "=")
+            {
+                if (Token::findmatch(tok, varname.c_str(), tok->link()))
+                {
+                    return;
+                }
+
+                tok = tok->link();
+            }
+            else
+                ++indentlevel;
         }
 
         else if (tok->str() == "}")
