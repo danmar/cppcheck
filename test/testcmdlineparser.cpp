@@ -47,6 +47,8 @@ private:
         TEST_CASE(quietshort);
         TEST_CASE(quietlong);
         TEST_CASE(defines_noarg);
+        TEST_CASE(defines_noarg2);
+        TEST_CASE(defines_noarg3);
         TEST_CASE(defines);
         TEST_CASE(defines2);
         TEST_CASE(defines3);
@@ -238,6 +240,24 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT_EQUALS(false, parser.ParseFromArgs(2, argv));
+    }
+
+    void defines_noarg2()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-D", "-v", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
+    }
+
+    void defines_noarg3()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-D", "--quiet", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
     }
 
     void defines()

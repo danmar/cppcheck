@@ -231,11 +231,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             if (strcmp(argv[i], "-D") == 0)
             {
                 ++i;
-                if (i >= argc)
+                if (i >= argc || strncmp(argv[i], "-", 1) == 0 ||
+                    strncmp(argv[i], "--", 2) == 0)
                 {
                     PrintMessage("cppcheck: argument to '-D' is missing");
                     return false;
                 }
+
                 define = argv[i];
             }
             // "-Ddefine"
