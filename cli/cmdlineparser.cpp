@@ -225,12 +225,28 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // User define
         else if (strncmp(argv[i], "-D", 2) == 0)
         {
+            std::string define;
+
+            // "-D define"
+            if (strcmp(argv[i], "-D") == 0)
+            {
+                ++i;
+                if (i >= argc)
+                {
+                    PrintMessage("cppcheck: argument to '-D' is missing");
+                    return false;
+                }
+                define = argv[i];
+            }
+            // "-Ddefine"
+            else
+            {
+                define = 2 + argv[i];
+            }
+
             if (!_settings->userDefines.empty())
                 _settings->userDefines += ";";
-            if (strcmp(argv[i], "-D") == 0)
-                _settings->userDefines += argv[++i];
-            else
-                _settings->userDefines += 2 + argv[i];
+            _settings->userDefines += define;
         }
 
         // Include paths
