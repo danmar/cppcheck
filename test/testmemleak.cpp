@@ -520,6 +520,12 @@ private:
 
         // ticket #2336: calling member function with same name as a white_list function
         ASSERT_EQUALS(";;use;", getcode("char *s; foo.write(s);", "s"));
+
+        // #2473 - inner struct
+        ASSERT_EQUALS(";;alloc;{;;};dealloc;",
+                      getcode("char *s = new char[10];\n"
+                              "struct ab { int a, b; };\n"
+                              "delete [] s;\n", "s"));
     }
 
 

@@ -921,7 +921,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     }
 
                     if (tok2->varId() == varid ||
-                        tok2->str() == ":")
+                        tok2->str() == ":" || tok2->str() == "{")
                     {
                         break;
                     }
