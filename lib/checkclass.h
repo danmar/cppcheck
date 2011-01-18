@@ -227,6 +227,8 @@ private:
      * @param usage reference to usage vector
      */
     void initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage);
+
+    bool canNotCopy(const Scope *scope) const;
 };
 /// @}
 //---------------------------------------------------------------------------

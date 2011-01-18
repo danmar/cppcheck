@@ -133,6 +133,10 @@ void CheckClass::constructors()
                         continue;
                 }
 
+                // Check if type can't be copied
+                if (var->type && canNotCopy(var->type))
+                    continue;
+
                 // It's non-static and it's not initialized => error
                 if (func->type == Function::eOperatorEqual)
                 {
@@ -160,6 +164,23 @@ void CheckClass::constructors()
             }
         }
     }
+}
+
+bool CheckClass::canNotCopy(const Scope *scope) const
+{
+    std::list<Function>::const_iterator func;
+    bool privateAssign = false;
+    bool privateCopy = false;
+
+    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
+    {
+        if (func->type == Function::eCopyConstructor && func->access == Private)
+            privateCopy = true;
+        else if (func->type == Function::eOperatorEqual && func->access == Private)
+            privateAssign = true;
+    }
+
+    return privateAssign && privateCopy;
 }
 
 void CheckClass::assignVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage)
