@@ -31,6 +31,7 @@
 
 #ifndef _WIN32
 
+#include "path.h"
 #include "filelister.h"
 #include "filelister_unix.h"
 
@@ -71,7 +72,7 @@ void FileListerUnix::recursiveAddFiles2(std::vector<std::string> &relative,
                 continue;
             }
 
-            if (sameFileName(path,filename) || FileListerUnix::acceptFile(filename))
+            if (Path::sameFileName(path,filename) || FileListerUnix::acceptFile(filename))
             {
                 relative.push_back(filename);
                 absolute.push_back(fname);
@@ -91,16 +92,6 @@ void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, cons
 {
     std::vector<std::string> abs;
     recursiveAddFiles2(filenames, abs, path);
-}
-
-bool FileListerUnix::sameFileName(const std::string &fname1, const std::string &fname2)
-{
-#if defined(__linux__) || defined(__sun)
-    return bool(fname1 == fname2);
-#endif
-#ifdef __GNUC__
-    return bool(strcasecmp(fname1.c_str(), fname2.c_str()) == 0);
-#endif
 }
 
 bool FileListerUnix::isDirectory(const std::string &path)

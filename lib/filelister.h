@@ -50,15 +50,6 @@ public:
                                    const std::string &path) = 0;
 
     /**
-     * @brief Compare filenames to see if they are the same.
-     * On Linux the comparison is case-sensitive. On Windows it is case-insensitive.
-     * @param fname1 one filename
-     * @param fname2 other filename
-     * @return true if the filenames match on the current platform
-     */
-    virtual bool sameFileName(const std::string &fname1, const std::string &fname2) = 0;
-
-    /**
      * @brief Check if the file extension indicates that it's a source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param filename filename to check

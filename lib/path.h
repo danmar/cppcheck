@@ -54,6 +54,15 @@ public:
      * @return simplified path
      */
     static std::string simplifyPath(const char *originalPath);
+
+    /**
+     * @brief Compare filenames to see if they are the same.
+     * On Linux the comparison is case-sensitive. On Windows it is case-insensitive.
+     * @param fname1 one filename
+     * @param fname2 other filename
+     * @return true if the filenames match on the current platform
+     */
+    static bool sameFileName(const std::string &fname1, const std::string &fname2);
 };
 
 /// @}

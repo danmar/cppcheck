@@ -313,7 +313,7 @@ void Tokenizer::createTokens(std::istream &code)
                 fileIndexes.push_back(FileIndex);
                 for (unsigned int i = 0; i < _files.size(); i++)
                 {
-                    if (getFileLister()->sameFileName(_files[i].c_str(), line.c_str()))
+                    if (Path::sameFileName(_files[i].c_str(), line.c_str()))
                     {
                         // Use this index
                         foundOurfile = true;

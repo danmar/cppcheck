@@ -168,7 +168,7 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
             // File
 
             // If recursive is not used, accept all files given by user
-            if (sameFileName(path,ansiFfd) || FileLister::acceptFile(ansiFfd))
+            if (Path::sameFileName(path,ansiFfd) || FileLister::acceptFile(ansiFfd))
             {
                 const std::string nativename = Path::fromNativeSeparators(fname.str());
                 filenames.push_back(nativename);
@@ -190,19 +190,6 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
         FindClose(hFind);
         hFind = INVALID_HANDLE_VALUE;
     }
-}
-
-bool FileListerWin32::sameFileName(const std::string &fname1, const std::string &fname2)
-{
-#ifdef __GNUC__
-    return bool(strcasecmp(fname1.c_str(), fname2.c_str()) == 0);
-#endif
-#ifdef __BORLANDC__
-    return bool(stricmp(fname1.c_str(), fname2.c_str()) == 0);
-#endif
-#ifdef _MSC_VER
-    return bool(_stricmp(fname1.c_str(), fname2.c_str()) == 0);
-#endif
 }
 
 bool FileListerWin32::isDirectory(const std::string &path)
