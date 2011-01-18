@@ -1233,6 +1233,7 @@ const Token* skipPointers(const Token* tok)
 bool SymbolDatabase::SpaceInfo::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const
 {
     const Token* localTypeTok = skipScopeIdentifiers(tok);
+    const Token* localVarTok = NULL;
 
     if (Token::Match(localTypeTok, "%type% < "))
     {
@@ -1240,29 +1241,24 @@ bool SymbolDatabase::SpaceInfo::isVariableDeclaration(const Token* tok, const To
         bool found = findClosingBracket(localTypeTok->next(), closeTok);
         if (found)
         {
-            const Token* localVarTok = skipPointers(closeTok->next());
+            localVarTok = skipPointers(closeTok->next());
 
-            if (isSimpleVariable(localVarTok) || isArrayVariable(localVarTok))
+            if (Token::Match(localVarTok, ":: %type% %var% ;"))
             {
-                vartok = localVarTok;
-                typetok = localTypeTok;
-            }
-            else if (Token::Match(closeTok, "> :: %type% %var% ;"))
-            {
-                vartok = closeTok->tokAt(3);
-                typetok = closeTok->tokAt(2);
+                localTypeTok = localVarTok->next();
+                localVarTok = localVarTok->tokAt(2);
             }
         }
     }
     else if (Token::Match(localTypeTok, "%type%"))
     {
-        const Token* localVarTok = skipPointers(localTypeTok->next());
+        localVarTok = skipPointers(localTypeTok->next());
+    }
 
-        if (isSimpleVariable(localVarTok) || isArrayVariable(localVarTok))
-        {
-            vartok = localVarTok;
-            typetok = localTypeTok;
-        }
+    if (isSimpleVariable(localVarTok) || isArrayVariable(localVarTok))
+    {
+        vartok = localVarTok;
+        typetok = localTypeTok;
     }
 
     return NULL != vartok;
