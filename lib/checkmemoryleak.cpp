@@ -2713,27 +2713,27 @@ void CheckMemoryLeakInClass::check()
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
             {
-                if (!var->isStatic && var->token->previous()->str() == "*")
+                if (!var->isStatic() && var->nameToken()->previous()->str() == "*")
                 {
                     // allocation but no deallocation of private variables in public function..
-                    if (var->token->tokAt(-2)->isStandardType())
+                    if (var->nameToken()->tokAt(-2)->isStandardType())
                     {
-                        if (var->access == Private)
-                            checkPublicFunctions(scope, var->token);
+                        if (var->isPrivate())
+                            checkPublicFunctions(scope, var->nameToken());
 
-                        variable(scope, var->token);
+                        variable(scope, var->nameToken());
                     }
 
                     // known class?
-                    else if (var->type)
+                    else if (var->type())
                     {
                         // not derived and no constructor?
-                        if (var->type->derivedFrom.empty() && var->type->numConstructors == 0)
+                        if (var->type()->derivedFrom.empty() && var->type()->numConstructors == 0)
                         {
-                            if (var->access == Private)
-                                checkPublicFunctions(scope, var->token);
+                            if (var->isPrivate())
+                                checkPublicFunctions(scope, var->nameToken());
 
-                            variable(scope, var->token);
+                            variable(scope, var->nameToken());
                         }
                     }
                 }

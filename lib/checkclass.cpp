@@ -85,7 +85,7 @@ void CheckClass::constructors()
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
             {
-                if (var->access == Private && !var->isClass && !var->isStatic)
+                if (var->isPrivate() && !var->isClass() && !var->isStatic())
                 {
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                     break;
@@ -114,22 +114,22 @@ void CheckClass::constructors()
             unsigned int count = 0;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count)
             {
-                if (usage[count].assign || usage[count].init || var->isStatic)
+                if (usage[count].assign || usage[count].init || var->isStatic())
                     continue;
 
-                if (var->isConst && var->token->previous()->str() != "*")
+                if (var->isConst() && var->nameToken()->previous()->str() != "*")
                     continue;
 
                 // Check if this is a class constructor
-                if (var->isClass && func->type == Function::eConstructor)
+                if (var->isClass() && func->type == Function::eConstructor)
                 {
                     // Unknown type so assume it is initialized
-                    if (!var->type)
+                    if (!var->type())
                         continue;
 
                     // Known type that doesn't need initialization or
                     // known type that has member variables of an unknown type
-                    else if (var->type->needInitialization != Scope::True)
+                    else if (var->type()->needInitialization != Scope::True)
                         continue;
                 }
 
@@ -153,10 +153,10 @@ void CheckClass::constructors()
                     }
 
                     if (classNameUsed)
-                        operatorEqVarError(func->token, scope->className, var->token->str());
+                        operatorEqVarError(func->token, scope->className, var->name());
                 }
                 else if (func->access != Private)
-                    uninitVarError(func->token, scope->className, var->token->str());
+                    uninitVarError(func->token, scope->className, var->name());
             }
         }
     }
@@ -169,7 +169,7 @@ void CheckClass::assignVar(const std::string &varname, const Scope *scope, std::
 
     for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count)
     {
-        if (var->token->str() == varname)
+        if (var->name() == varname)
         {
             usage[count].assign = true;
             return;
@@ -184,7 +184,7 @@ void CheckClass::initVar(const std::string &varname, const Scope *scope, std::ve
 
     for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count)
     {
-        if (var->token->str() == varname)
+        if (var->name() == varname)
         {
             usage[count].init = true;
             return;
@@ -305,7 +305,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
             {
-                if (var->token->varId() == ftok->next()->varId())
+                if (var->varId() == ftok->next()->varId())
                 {
                     /** @todo false negative: we assume function changes variable state */
                     assignVar(ftok->next()->str(), scope, usage);
@@ -1403,9 +1403,9 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
     std::list<Variable>::const_iterator var;
     for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
     {
-        if (var->token->str() == tok->str())
+        if (var->name() == tok->str())
         {
-            return !var->isMutable;
+            return !var->isMutable();
         }
     }
 

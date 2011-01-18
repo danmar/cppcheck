@@ -448,14 +448,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     std::list<Variable>::const_iterator var;
                     for (var = info->varlist.begin(); var != info->varlist.end(); ++var)
                     {
-                        if (var->isClass)
+                        if (var->isClass())
                         {
-                            if (var->type)
+                            if (var->type())
                             {
                                 // does this type need initialization?
-                                if (var->type->needInitialization == Scope::True)
+                                if (var->type()->needInitialization == Scope::True)
                                     needInitialization = true;
-                                else if (var->type->needInitialization == Scope::Unknown)
+                                else if (var->type()->needInitialization == Scope::Unknown)
                                     unknown = true;
                             }
                         }
