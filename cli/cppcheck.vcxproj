@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E3A516D8-D69D-32D7-A444-A3674D4B1FE8}</ProjectGuid>
+    <ProjectGuid>{42BC0E8E-9175-3B2D-B8B3-9EC5C36EF49A}</ProjectGuid>
     <RootNamespace>cppcheck</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
@@ -134,9 +134,9 @@
     <ClCompile Include="cppcheckexecutor.cpp" />
     <ClCompile Include="..\lib\errorlogger.cpp" />
     <ClCompile Include="..\lib\executionpath.cpp" />
-    <ClCompile Include="..\lib\filelister.cpp" />
-    <ClCompile Include="..\lib\filelister_unix.cpp" />
-    <ClCompile Include="..\lib\filelister_win32.cpp" />
+    <ClCompile Include="filelister.cpp" />
+    <ClCompile Include="filelister_unix.cpp" />
+    <ClCompile Include="filelister_win32.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="..\lib\mathlib.cpp" />
     <ClCompile Include="..\lib\path.cpp" />
@@ -171,9 +171,9 @@
     <ClInclude Include="cppcheckexecutor.h" />
     <ClInclude Include="..\lib\errorlogger.h" />
     <ClInclude Include="..\lib\executionpath.h" />
-    <ClInclude Include="..\lib\filelister.h" />
-    <ClInclude Include="..\lib\filelister_unix.h" />
-    <ClInclude Include="..\lib\filelister_win32.h" />
+    <ClInclude Include="filelister.h" />
+    <ClInclude Include="filelister_unix.h" />
+    <ClInclude Include="filelister_win32.h" />
     <ClInclude Include="..\lib\mathlib.h" />
     <ClInclude Include="..\lib\path.h" />
     <ClInclude Include="..\lib\preprocessor.h" />
