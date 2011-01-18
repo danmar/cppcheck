@@ -60,6 +60,7 @@ private:
 
         // #2407 - FP when called from operator()
         TEST_CASE(fp_operator);
+        TEST_CASE(testDoesNotIdentifyCallback); // #2480
     }
 
 
@@ -446,6 +447,35 @@ private:
               "};\n");
         TODO_ASSERT_EQUALS("[test.cpp:8]: (style) Unused private function 'Fred::startListening'\n", errout.str());
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testDoesNotIdentifyCallback()
+    {
+        check("#include <iostream>"
+              "void callback(void (*func)(int), int arg)"
+              "{"
+              "    (*func)(arg);"
+              "}"
+              "class MountOperation"
+              "{"
+              "    static void Completed(int i);"
+              "public:"
+              "    MountOperation(int i);"
+              "};"
+              "void MountOperation::Completed(int i)"
+              "{"
+              "    std::cerr << i << std::endl;"
+              "}"
+              "MountOperation::MountOperation(int i)"
+              "{"
+              "    callback(MountOperation::Completed, i);"
+              "}"
+              "int main(void)"
+              "{"
+              "    MountOperation aExample(10);"
+              "}"
+              );
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 };
 
