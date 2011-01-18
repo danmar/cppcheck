@@ -134,7 +134,7 @@ void CheckClass::constructors()
                 }
 
                 // Check if type can't be copied
-                if (var->type && canNotCopy(var->type))
+                if (var->type() && canNotCopy(var->type()))
                     continue;
 
                 // It's non-static and it's not initialized => error
