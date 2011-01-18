@@ -64,6 +64,7 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerVariable);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable);
+        TEST_CASE(isVariableDeclarationIdentifiesTemplatedArrayVariable);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedVariable);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedVariableIterator);
         TEST_CASE(isVariableDeclarationIdentifiesNestedTemplateVariable);
@@ -229,15 +230,19 @@ private:
         reset();
         givenACodeSampleToTokenize var("std::deque<int>*** ints;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
-        TODO_ASSERT_EQUALS(true, result);
-        if (NULL != vartok) 
-        {
-            TODO_ASSERT_EQUALS("ints", vartok->str());
-        }
-        if (NULL != typetok)
-        {
-            TODO_ASSERT_EQUALS("deque", typetok->str());
-        }
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("ints", vartok->str());
+        ASSERT_EQUALS("deque", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesTemplatedArrayVariable()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<int> ints[3];");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("ints", vartok->str());
+        ASSERT_EQUALS("deque", typetok->str());
     }
 
     void isVariableDeclarationIdentifiesTemplatedVariable()

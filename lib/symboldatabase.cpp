@@ -1236,24 +1236,21 @@ bool SymbolDatabase::SpaceInfo::isVariableDeclaration(const Token* tok, const To
 
     if (Token::Match(localTypeTok, "%type% < "))
     {
-        const Token* closetok = NULL;
-        bool found = findClosingBracket(localTypeTok->next(), closetok);
+        const Token* closeTok = NULL;
+        bool found = findClosingBracket(localTypeTok->next(), closeTok);
         if (found)
         {
-            if (Token::Match(closetok, "> %var% ;"))
+            const Token* localVarTok = skipPointers(closeTok->next());
+
+            if (isSimpleVariable(localVarTok) || isArrayVariable(localVarTok))
             {
-                vartok = closetok->next();
+                vartok = localVarTok;
                 typetok = localTypeTok;
             }
-            else if (Token::Match(closetok, "> * %var% ;"))
+            else if (Token::Match(closeTok, "> :: %type% %var% ;"))
             {
-                vartok = closetok->tokAt(2);
-                typetok = localTypeTok;
-            }
-            else if (Token::Match(closetok, "> :: %type% %var% ;"))
-            {
-                vartok = closetok->tokAt(3);
-                typetok = closetok->tokAt(2);
+                vartok = closeTok->tokAt(3);
+                typetok = closeTok->tokAt(2);
             }
         }
     }
