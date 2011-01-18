@@ -25,9 +25,9 @@
 #include <vector>
 
 #if defined(_WIN32)
-#include "../lib/fileLister_win32.h"
+#include "../cli/fileLister_win32.h"
 #else // POSIX-style system
-#include "../lib/filelister_unix.h"
+#include "../cli/filelister_unix.h"
 #endif
 
 std::string objfile(std::string cppfile)
@@ -230,8 +230,8 @@ int main(int argc, char **argv)
     fout << "cppcheck:\t$(LIBOBJ)\t$(CLIOBJ)\t$(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre $(LDFLAGS)\n\n";
     fout << "all:\tcppcheck\ttestrunner\n\n";
-    fout << "testrunner:\t$(TESTOBJ)\t$(LIBOBJ)\t$(EXTOBJ)\tcli/threadexecutor.o\tcli/cmdlineparser.o\tcli/cppcheckexecutor.o\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o $(LDFLAGS)\n\n";
+    fout << "testrunner:\t$(TESTOBJ)\t$(LIBOBJ)\t$(EXTOBJ)\tcli/threadexecutor.o\tcli/cmdlineparser.o\tcli/cppcheckexecutor.o\tcli/filelister.o\tcli/filelister_unix.o\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o\tcli/filelister.o\tcli/filelister_unix.o $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";

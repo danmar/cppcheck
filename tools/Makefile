@@ -5,6 +5,6 @@ errmsg:	errmsg.cpp
 	g++ -Wall -pedantic -o errmsg errmsg.cpp
 
 dmake:	dmake.cpp
-	g++ -Wall -pedantic -o dmake dmake.cpp ../lib/filelister.cpp ../lib/filelister_unix.cpp
+	g++ -Wall -pedantic -o dmake -I../lib dmake.cpp ../cli/filelister.cpp ../cli/filelister_unix.cpp ../lib/path.cpp
 
 

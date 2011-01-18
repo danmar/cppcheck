@@ -24,7 +24,6 @@
 
 #include "tokenize.h"
 #include "token.h"
-#include "filelister.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "errorlogger.h"

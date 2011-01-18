@@ -20,8 +20,6 @@
 #include "preprocessor.h" // preprocessor.
 #include "tokenize.h"   // <- Tokenizer
 
-#include "filelister.h"
-
 #include "check.h"
 #include "path.h"
 
