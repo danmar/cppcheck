@@ -59,7 +59,7 @@ class Variable
      */
     bool getFlag(int flag_) const
     {
-        return bool(_flags & flag_);
+        return bool((_flags & flag_) != 0);
     }
 
     /**
