@@ -60,7 +60,9 @@ private:
 
         // #2407 - FP when called from operator()
         TEST_CASE(fp_operator);
-        TEST_CASE(testDoesNotIdentifyCallback); // #2480
+        TEST_CASE(testDoesNotIdentifyMethodAsFirstFunctionArgument); // #2480
+        TEST_CASE(testDoesNotIdentifyMethodAsMiddleFunctionArgument);
+        TEST_CASE(testDoesNotIdentifyMethodAsLastFunctionArgument);
     }
 
 
@@ -449,7 +451,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testDoesNotIdentifyCallback()
+    void testDoesNotIdentifyMethodAsFirstFunctionArgument()
     {
         check("#include <iostream>"
               "void callback(void (*func)(int), int arg)"
@@ -474,8 +476,66 @@ private:
               "{"
               "    MountOperation aExample(10);"
               "}"
-              );
-        TODO_ASSERT_EQUALS("", errout.str());
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testDoesNotIdentifyMethodAsMiddleFunctionArgument()
+    {
+        check("#include <iostream>"
+              "void callback(char, void (*func)(int), int arg)"
+              "{"
+              "    (*func)(arg);"
+              "}"
+              "class MountOperation"
+              "{"
+              "    static void Completed(int i);"
+              "public:"
+              "    MountOperation(int i);"
+              "};"
+              "void MountOperation::Completed(int i)"
+              "{"
+              "    std::cerr << i << std::endl;"
+              "}"
+              "MountOperation::MountOperation(int i)"
+              "{"
+              "    callback('a', MountOperation::Completed, i);"
+              "}"
+              "int main(void)"
+              "{"
+              "    MountOperation aExample(10);"
+              "}"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testDoesNotIdentifyMethodAsLastFunctionArgument()
+    {
+        check("#include <iostream>"
+              "void callback(int arg, void (*func)(int))"
+              "{"
+              "    (*func)(arg);"
+              "}"
+              "class MountOperation"
+              "{"
+              "    static void Completed(int i);"
+              "public:"
+              "    MountOperation(int i);"
+              "};"
+              "void MountOperation::Completed(int i)"
+              "{"
+              "    std::cerr << i << std::endl;"
+              "}"
+              "MountOperation::MountOperation(int i)"
+              "{"
+              "    callback(i, MountOperation::Completed);"
+              "}"
+              "int main(void)"
+              "{"
+              "    MountOperation aExample(10);"
+              "}"
+             );
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
