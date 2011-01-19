@@ -222,6 +222,22 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Ticket #2481
+        check("void foo(std::vector<int> &r)\n"
+              "{\n"
+              "    std::vector<int>::iterator aI = r.begin();\n"
+              "    while(aI != r.end())\n"
+              "    {\n"
+              "        if (*aI == 0)\n"
+              "        {\n"
+              "            r.insert(aI, 42);\n"
+              "            break;\n"
+              "        }\n"
+              "        ++aI;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // Execution path checking..
         check("void foo(std::vector<int> &r, int c)\n"
               "{\n"

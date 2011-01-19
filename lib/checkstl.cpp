@@ -642,7 +642,7 @@ void CheckStl::pushback()
                 }
             }
 
-            else if (tok2->str() == "return")
+            else if (tok2->str() == "return" || tok2->str() == "break")
             {
                 invalidIterator.clear();
             }
