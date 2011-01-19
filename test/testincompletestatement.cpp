@@ -67,6 +67,7 @@ private:
         TEST_CASE(structarraynull);
         TEST_CASE(structarray);
         TEST_CASE(conditionalcall);     // ; 0==x ? X() : Y();
+        TEST_CASE(structinit);          // #2462 : ABC abc{1,2,3};
     }
 
     void test1()
@@ -175,6 +176,14 @@ private:
     {
         check("void f() {\n"
               "    0==x ? X() : Y();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structinit()
+    {
+        check("void f() {\n"
+              "    ABC abc{1,2,3};\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
