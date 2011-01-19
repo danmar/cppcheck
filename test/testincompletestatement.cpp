@@ -182,9 +182,14 @@ private:
 
     void structinit()
     {
+        // #2462 - C++0x struct initialization
         check("void f() {\n"
               "    ABC abc{1,2,3};\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #2482 - false positive for empty struct
+        check("struct A {};");
         ASSERT_EQUALS("", errout.str());
     }
 };
