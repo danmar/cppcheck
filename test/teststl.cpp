@@ -53,6 +53,7 @@ private:
         TEST_CASE(erase3);
         TEST_CASE(erase4);
         TEST_CASE(erase5);
+        TEST_CASE(erase6);
         TEST_CASE(eraseBreak);
         TEST_CASE(eraseContinue);
         TEST_CASE(eraseReturn1);
@@ -500,6 +501,20 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
+    }
+
+    void erase6()
+    {
+        check("void f() {\n"
+              "    std::vector<int> vec(3);\n"
+              "    std::vector<int>::iterator it;\n"
+              "    std::vector<int>::iterator itEnd = vec.end();\n"
+              "    for (it = vec.begin(); it != itEnd; it = vec.begin(), itEnd = vec.end())\n"
+              "    {\n"
+              "        vec.erase(it);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void eraseBreak()

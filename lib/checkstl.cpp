@@ -284,9 +284,13 @@ public:
         while (indentlevel > 0 && 0 != (tok = tok->next()))
         {
             if (tok->str() == "(")
-                ++indentlevel;
+                tok = tok->link();
             else if (tok->str() == ")")
-                --indentlevel;
+                break;
+
+            // reassigning iterator in loop head
+            else if (Token::Match(tok, "%var% =") && tok->str() == it->str())
+                break;
         }
 
         if (! Token::simpleMatch(tok, ") {"))
