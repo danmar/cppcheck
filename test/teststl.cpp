@@ -76,6 +76,7 @@ private:
         TEST_CASE(pushback10);
 
         TEST_CASE(insert1);
+        TEST_CASE(insert2);
 
         TEST_CASE(invalidcode);
 
@@ -904,7 +905,29 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) After insert, the iterator 'iter' may be invalid\n", errout.str());
     }
 
+    void insert2()
+    {
+        // Ticket: #2169
+        check("void f(std::vector<int> &vec) {\n"
+              "    for(std::vector<int>::iterator iter = vec.begin(); iter != vec.end(); ++iter)\n"
+              "    {\n"
+              "        vec.insert(iter, 0);\n"
+              "        break;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::vector<int> &vec) {\n"
+              "    for(std::vector<int>::iterator iter = vec.begin(); iter != vec.end(); ++iter)\n"
+              "    {\n"
+              "        if (*it == 0) {\n"
+              "            vec.insert(iter, 0);\n"
+              "            return;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void invalidcode()
     {

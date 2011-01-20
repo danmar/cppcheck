@@ -594,7 +594,7 @@ void CheckStl::pushback()
                             break;
                         --indent3;
                     }
-                    else if (tok3->str() == "break")
+                    else if (tok3->str() == "break" || tok3->str() == "return")
                     {
                         pushbackTok = 0;
                         break;
@@ -634,12 +634,7 @@ void CheckStl::pushback()
                 }
 
                 invalidIterator = tok2->strAt(2);
-                if (!iteratorDeclaredInsideLoop)
-                {
-                    tok2 = tok2->tokAt(3)->link();
-                    if (!tok2)
-                        break;
-                }
+                tok2 = tok2->tokAt(3)->link();
             }
 
             else if (tok2->str() == "return" || tok2->str() == "break")
