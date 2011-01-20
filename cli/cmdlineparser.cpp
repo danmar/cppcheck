@@ -551,7 +551,7 @@ void CmdLineParser::PrintHelp()
               "                         several paths. First given path is checked first. If\n"
               "                         paths are relative to source files, this is not needed\n"
               "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
-              "                         more comments in the form: // cppcheck-suppress memleak\n"
+              "                         more comments, like: // cppcheck-suppress warningId\n"
               "                         on the lines before the warning to suppress.\n"
               "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
               "    -q, --quiet          Only print error messages\n"
