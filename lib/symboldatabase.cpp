@@ -38,13 +38,6 @@
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
 {
-    // fill the classAndStructTypes set..
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "class|struct %var% [:{;]"))
-            classAndStructTypes.insert(tok->next()->str());
-    }
-
     // find all namespaces (class,struct and namespace)
     Scope *info = new Scope(this, NULL, NULL);
     spaceInfoList.push_back(info);
@@ -59,6 +52,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             // only create base list for classes and structures
             if (new_info->isClassOrStruct())
             {
+                // fill the classAndStructTypes set..
+                classAndStructTypes.insert(new_info->className);
+
                 // goto initial '{'
                 tok2 = initBaseInfo(new_info, tok);
             }
@@ -79,6 +75,17 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             spaceInfoList.push_back(info);
 
             tok = tok2;
+        }
+
+        // forward declaration
+        else if (Token::Match(tok, "class|struct %var% ;"))
+        {
+            // fill the classAndStructTypes set..
+            classAndStructTypes.insert(tok->next()->str());
+
+            /** @todo save forward declarations in database someday */
+            tok = tok->tokAt(2);
+            continue;
         }
 
         else
