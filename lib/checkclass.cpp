@@ -70,7 +70,7 @@ void CheckClass::constructors()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
@@ -233,7 +233,7 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
     // Iterate through each base class...
     for (size_t i = 0; i < scope->derivedFrom.size(); ++i)
     {
-        const Scope *derivedFrom = scope->derivedFrom[i].spaceInfo;
+        const Scope *derivedFrom = scope->derivedFrom[i].scope;
 
         // Check if base class exists in database
         if (derivedFrom)
@@ -592,7 +592,7 @@ void CheckClass::privateFunctions()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
@@ -860,7 +860,7 @@ void CheckClass::operatorEq()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         std::list<Function>::const_iterator it;
 
@@ -944,7 +944,7 @@ void CheckClass::operatorEqRetRefThis()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
@@ -1000,7 +1000,7 @@ void CheckClass::operatorEqToSelf()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
         std::list<Function>::const_iterator it;
@@ -1177,7 +1177,7 @@ void CheckClass::virtualDestructor()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
@@ -1203,15 +1203,15 @@ void CheckClass::virtualDestructor()
         for (unsigned int j = 0; j < scope->derivedFrom.size(); ++j)
         {
             // Check if base class is public and exists in database
-            if (scope->derivedFrom[j].access != Private && scope->derivedFrom[j].spaceInfo)
+            if (scope->derivedFrom[j].access != Private && scope->derivedFrom[j].scope)
             {
-                const Scope *spaceInfo = scope->derivedFrom[j].spaceInfo;
+                const Scope *derivedFrom = scope->derivedFrom[j].scope;
 
                 // Name of base class..
-                const std::string baseName = spaceInfo->className;
+                const std::string baseName = derivedFrom->className;
 
                 // Find the destructor declaration for the base class.
-                const Function *base_destructor = spaceInfo->getDestructor();
+                const Function *base_destructor = derivedFrom->getDestructor();
                 const Token *base = 0;
                 if (base_destructor)
                     base = base_destructor->token;
@@ -1219,8 +1219,8 @@ void CheckClass::virtualDestructor()
                 // Check that there is a destructor..
                 if (!base_destructor)
                 {
-                    if (spaceInfo->derivedFrom.empty())
-                        virtualDestructorError(spaceInfo->classDef, baseName, derivedClass->str());
+                    if (derivedFrom->derivedFrom.empty())
+                        virtualDestructorError(derivedFrom->classDef, baseName, derivedClass->str());
                 }
                 else if (!base_destructor->isVirtual)
                 {
@@ -1230,7 +1230,7 @@ void CheckClass::virtualDestructor()
                     // Proper solution is to check all of the base classes. If base class is not
                     // found or if one of the base classes has virtual destructor, error should not
                     // be printed. See TODO test case "virtualDestructorInherited"
-                    if (spaceInfo->derivedFrom.empty())
+                    if (derivedFrom->derivedFrom.empty())
                     {
                         // Make sure that the destructor is public (protected or private
                         // would not compile if inheritance is used in a way that would
@@ -1296,7 +1296,7 @@ void CheckClass::checkConst()
 
     std::list<Scope *>::const_iterator it;
 
-    for (it = symbolDatabase->spaceInfoList.begin(); it != symbolDatabase->spaceInfoList.end(); ++it)
+    for (it = symbolDatabase->scopeList.begin(); it != symbolDatabase->scopeList.end(); ++it)
     {
         const Scope *scope = *it;
 
@@ -1440,12 +1440,12 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
         for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i)
         {
             // find the base class
-            const Scope *spaceInfo = scope->derivedFrom[i].spaceInfo;
+            const Scope *derivedFrom = scope->derivedFrom[i].scope;
 
             // find the function in the base class
-            if (spaceInfo)
+            if (derivedFrom)
             {
-                if (isMemberVar(spaceInfo, tok))
+                if (isMemberVar(derivedFrom, tok))
                     return true;
             }
         }
@@ -1471,12 +1471,12 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
         for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i)
         {
             // find the base class
-            const Scope *spaceInfo = scope->derivedFrom[i].spaceInfo;
+            const Scope *derivedFrom = scope->derivedFrom[i].scope;
 
             // find the function in the base class
-            if (spaceInfo)
+            if (derivedFrom)
             {
-                if (isConstMemberFunc(spaceInfo, tok))
+                if (isConstMemberFunc(derivedFrom, tok))
                     return true;
             }
         }
@@ -1588,9 +1588,9 @@ bool CheckClass::isVirtualFunc(const Scope *scope, const Token *functionToken) c
     for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i)
     {
         // check if base class exists in database
-        if (scope->derivedFrom[i].spaceInfo)
+        if (scope->derivedFrom[i].scope)
         {
-            const Scope *derivedFrom = scope->derivedFrom[i].spaceInfo;
+            const Scope *derivedFrom = scope->derivedFrom[i].scope;
 
             std::list<Function>::const_iterator func;
 

@@ -1242,7 +1242,7 @@ void CheckOther::functionVariableUsage()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *info = *i;
 
@@ -1910,7 +1910,7 @@ void CheckOther::checkVariableScope()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
@@ -2551,7 +2551,7 @@ void CheckOther::checkMisusedScopedObject()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
