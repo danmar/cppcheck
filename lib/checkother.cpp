@@ -90,11 +90,24 @@ void CheckOther::checkSizeofWithSilentArrayPointer()
                 const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid% [", tok->tokAt(2)->varId());
                 if (declTok)
                 {
-                    unsigned int idx = 2;
-                    while(!Token::simpleMatch(declTok->tokAt(idx), "]")) {
+                    int idx = 2;
+                    bool bracket = false;
+                    while (!Token::simpleMatch(declTok->tokAt(idx), "]") || bracket)
+                    {
+                        if (Token::simpleMatch(declTok->tokAt(idx), "["))
+                        {
+                            bracket = true;
+                        }
+                        else
+                        {
+                            if (Token::simpleMatch(declTok->tokAt(idx), "]"))
+                            {
+                                bracket = false;
+                            }
+                        }
                         ++idx;
                     }
-                    if (!(Token::simpleMatch(decltok->tokAt(idx), "] = {")) && !(Token::simpleMatch(decltok->tokAt(idx), "] ;")))
+                    if (!(Token::simpleMatch(declTok->tokAt(idx), "] = {")) && !(Token::simpleMatch(declTok->tokAt(idx), "] ;")))
                     {
                         sizeofWithSilentArrayPointerError(tok);
                     }
@@ -484,7 +497,7 @@ void CheckOther::invalidScanf()
 
 void CheckOther::sizeofWithSilentArrayPointerError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "sizeofwithsilentarraypointer", "silent pointer of array is passed as parameter to the function sizeof.");
+    reportError(tok, Severity::error, "sizeofwithsilentarraypointer", "silent pointer of array is passed as parameter to the function sizeof.");
 
 }
 void CheckOther::invalidScanfError(const Token *tok)
