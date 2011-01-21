@@ -567,7 +567,7 @@ void CheckMemoryLeakInFunction::parse_noreturn()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
@@ -2493,7 +2493,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 {
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
@@ -2646,7 +2646,7 @@ void CheckMemoryLeakInFunction::check()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
@@ -2703,7 +2703,7 @@ void CheckMemoryLeakInClass::check()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
@@ -3168,7 +3168,7 @@ void CheckMemoryLeakNoVar::check()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         Scope *scope = *i;
 

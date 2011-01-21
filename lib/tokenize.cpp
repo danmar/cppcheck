@@ -7955,7 +7955,7 @@ const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = _symbolDatabase->spaceInfoList.begin(); i != _symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = _symbolDatabase->scopeList.begin(); i != _symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 

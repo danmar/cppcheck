@@ -269,22 +269,22 @@ public:
     {
         AccessControl access;  // public/protected/private
         std::string name;
-        Scope *spaceInfo;
+        Scope *scope;
     };
 
     struct FriendInfo
     {
         std::string name;
-        Scope *spaceInfo;
+        Scope *scope;
     };
 
-    enum SpaceType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction };
+    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction };
     enum NeedInitialization { Unknown, True, False };
 
     Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_);
 
     SymbolDatabase *check;
-    SpaceType type;
+    ScopeType type;
     std::string className;
     const Token *classDef;   // class/struct/union/namespace token
     const Token *classStart; // '{' token
@@ -307,7 +307,7 @@ public:
 
     /**
      * @brief find if name is in nested list
-     * @param name name of nested space
+     * @param name name of nested scope
      */
     Scope * findInNestedList(const std::string & name);
 
@@ -322,7 +322,7 @@ public:
     const Function *getDestructor() const;
 
     /**
-     * @brief get the number of nested spaces that are not functions
+     * @brief get the number of nested scopes that are not functions
      *
      * This returns the number of user defined types (class, struct, union)
      * that are defined in this user defined type or namespace.
@@ -352,7 +352,7 @@ public:
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structrues */
-    std::list<Scope *> spaceInfoList;
+    std::list<Scope *> scopeList;
 
     /**
      * @brief find a variable type if it's a user defined type
