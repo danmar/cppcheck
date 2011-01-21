@@ -78,6 +78,34 @@ void CheckOther::checkFflushOnInputStream()
     }
 }
 
+
+void CheckOther::checkSizeofWithSilentArrayPointer()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "sizeof ( %var% )"))
+        {
+            if (tok->tokAt(2)->varId() > 0)
+            {
+                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid% [", tok->tokAt(2)->varId());
+                if (declTok)
+                {
+                    unsigned int idx = 2;
+                    while(!Token::simpleMatch(declTok->tokAt(idx), "]")) {
+                        ++idx;
+                    }
+                    if (!(Token::simpleMatch(decltok->tokAt(idx), "] = {")) && !(Token::simpleMatch(decltok->tokAt(idx), "] ;")))
+                    {
+                        sizeofWithSilentArrayPointerError(tok);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
 //---------------------------------------------------------------------------
 //    switch (x)
 //    {
@@ -454,6 +482,11 @@ void CheckOther::invalidScanf()
     }
 }
 
+void CheckOther::sizeofWithSilentArrayPointerError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "sizeofwithsilentarraypointer", "silent pointer of array is passed as parameter to the function sizeof.");
+
+}
 void CheckOther::invalidScanfError(const Token *tok)
 {
     reportError(tok, Severity::warning,
@@ -1242,7 +1275,7 @@ void CheckOther::functionVariableUsage()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *info = *i;
 
@@ -1910,7 +1943,7 @@ void CheckOther::checkVariableScope()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
@@ -2551,7 +2584,7 @@ void CheckOther::checkMisusedScopedObject()
 
     std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
         const Scope *scope = *i;
 
