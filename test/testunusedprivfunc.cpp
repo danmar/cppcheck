@@ -53,6 +53,8 @@ private:
 
         TEST_CASE(derivedClass);   // skip warning for derived classes. It might be a virtual function.
 
+        TEST_CASE(friendClass);
+
         TEST_CASE(borland);     // skip FP when using __property
 
         // No false positives when there are "unused" templates that are removed in the simplified token list
@@ -384,6 +386,17 @@ private:
               "private:\n"
               "    void f();\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void friendClass()
+    {
+        // ticket #2459 - friend class
+        check("class Foo {\n"
+              "private:\n"
+              "    friend Bar;\n"
+              "    void f() { }\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
