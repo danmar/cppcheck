@@ -28,6 +28,8 @@ public:
         ,si(NULL, NULL, NULL)
         ,vartok(NULL)
         ,typetok(NULL)
+        ,t(NULL)
+        ,found(false)
     {}
 
 private:

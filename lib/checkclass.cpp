@@ -908,7 +908,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                 // check if it is a member function
                 for (it = scope->functionList.begin(); it != scope->functionList.end(); ++it)
                 {
-                    // check for a regular function with the same name and a bofy
+                    // check for a regular function with the same name and a body
                     if (it->type == Function::eFunction && it->hasBody &&
                         it->token->str() == tok->next()->str())
                     {
@@ -918,7 +918,16 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                         {
                             // make sure it's not a const function
                             if (it->arg->link()->next()->str() != "const")
-                                checkReturnPtrThis(scope, &*it, it->arg->link()->next(), it->arg->link()->next()->link());
+                            {
+                                /** @todo make sure argument types match */
+                                // make sure it's not the same function
+                                if (&*it != func)
+                                    checkReturnPtrThis(scope, &*it, it->arg->link()->next(), it->arg->link()->next()->link());
+
+                                // just bail for now
+                                else
+                                    return;
+                            }
                         }
                     }
                 }

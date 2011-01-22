@@ -104,6 +104,7 @@ private:
         TEST_CASE(operatorEqRetRefThis3); // ticket #1405
         TEST_CASE(operatorEqRetRefThis4); // ticket #1451
         TEST_CASE(operatorEqRetRefThis5); // ticket #1550
+        TEST_CASE(operatorEqRetRefThis6); // ticket #2479
         TEST_CASE(operatorEqToSelf1);   // single class
         TEST_CASE(operatorEqToSelf2);   // nested class
         TEST_CASE(operatorEqToSelf3);   // multiple inheritance
@@ -473,6 +474,23 @@ private:
             "};\n"
             "A & A :: operator=(const A &a) { }");
         ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to self\n", errout.str());
+    }
+
+    void operatorEqRetRefThis6() // ticket #2478 (segmentation fault)
+    {
+        checkOpertorEqRetRefThis(
+            "class UString {\n"
+            "public:\n"
+            "    UString& assign( const char* c_str );\n"
+            "    UString& operator=( const UString& s );\n"
+            "};\n"
+            "UString& UString::assign( const char* c_str ) {\n"
+            "	std::string tmp( c_str );\n"
+            "	return assign( tmp );\n"
+            "}\n"
+            "UString& UString::operator=( const UString& s ) {\n"
+            "	return assign( s );\n"
+            "}\n");
     }
 
     // Check that operator Equal checks for assignment to self
