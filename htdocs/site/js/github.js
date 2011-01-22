@@ -10,9 +10,24 @@ jQuery.fn.listCommits = function(username, repository, branch) {
     var list = $('<ul/>');
     target.empty().append(list);
     $(repos).each(function(i) {
-      list.append('<li><a href="' + this.url + '">' + this.message + '</a> by <strong>' + this.author.login + '</strong></li>');
+      var githubUrl = 'https://github.com' + this.url;
+      var shortMessage = cutLines(this.message);
+      var author = this.author.login;
+      if (author == '') {
+        author = this.author.name;
+      }
+
+      list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a> by <strong>' + author + '</strong></li>');
 
       if (i == 9) return false;
     });
   });
+
+  function cutLines(message) {
+    var lineFeed = message.indexOf("\n");
+    if (lineFeed > -1) {
+      return message.slice(0, lineFeed);
+    }
+    return message;
+  }
 };
