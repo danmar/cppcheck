@@ -97,6 +97,8 @@ private:
         TEST_CASE(catchExceptionByValue);
 
         TEST_CASE(memsetZeroBytes);
+
+        TEST_CASE(sizeofWithSilentArrayPointer);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -118,6 +120,7 @@ private:
         checkOther.sizeofCalculation();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
+        checkOther.checkSizeofForArrayParameter();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -1659,6 +1662,88 @@ private:
                            " bytes of \"p\". Second and third arguments might be inverted.\n", errout.str());
         ASSERT_EQUALS("", errout.str());
     }
+
+    void sizeofWithSilentArrayPointer()
+    {
+        check("void f() {\n"
+              "    int a[10];\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    unsigned int a = 2;\n"
+              "    unsigned int b = 2;\n"
+              "    int c[(a+b)];\n"
+              "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    unsigned int a = { 2 };\n"
+              "    unsigned int b[] = { 0 };\n"
+              "    int c[a[b[0]]];\n"
+              "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("void f() {\n"
+              "    unsigned int a[] = { 1 };\n"
+              "    unsigned int b = 2;\n"
+              "    int c[(a[0]+b)];\n"
+              "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a[] = { 1, 2, 3 };\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a[3] = { 1, 2, 3 };\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f( int a[]) {\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        check("void f( int a[]) {\n"
+              "    std::cout << sizeof a / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        check("void f( int a[3] ) {\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        check("void f(int *p) {\n"
+              "    p[0] = 0;\n"
+              "    sizeof(p);\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+    }
+
 };
 
 REGISTER_TEST(TestOther)

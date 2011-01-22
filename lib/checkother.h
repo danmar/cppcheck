@@ -62,6 +62,7 @@ public:
         checkOther.sizeofCalculation();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
+        checkOther.checkSizeofForArrayParameter();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -170,6 +171,9 @@ public:
     /** @brief %Check for filling zero bytes with memset() */
     void checkMemsetZeroBytes();
 
+    /** @brief %Check for using sizeof with array given as function argument */
+    void checkSizeofForArrayParameter();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -193,6 +197,7 @@ public:
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void catchExceptionByValueError(const Token *tok);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
+    void sizeofForArrayParameterError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -205,6 +210,7 @@ public:
         c.mathfunctionCallError(0);
         c.fflushOnInputStreamError(0, "stdin");
         c.misusedScopeObjectError(NULL, "varname");
+        c.sizeofForArrayParameterError(0);
 
         // style/warning
         c.cstyleCastError(0);
@@ -247,6 +253,7 @@ public:
                "* using fflush() on an input stream\n"
                "* scoped object destroyed immediately after construction\n"
                "* assignment in an assert statement\n"
+               "* sizeof for array given as function argument\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
