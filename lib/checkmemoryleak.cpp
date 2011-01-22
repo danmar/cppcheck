@@ -3101,7 +3101,8 @@ void CheckMemoryLeakStructMember::check()
                         else if (tok3->str() == "return")
                         {
                             // Returning from function without deallocating struct member?
-                            if (!Token::Match(tok3, "return %varid% ;", structid))
+                            if (!Token::Match(tok3, "return %varid% ;", structid) &&
+                                !Token::Match(tok3, "return & %varid% .", structid))
                             {
                                 memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
                             }
