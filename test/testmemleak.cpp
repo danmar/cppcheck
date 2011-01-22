@@ -4206,7 +4206,8 @@ private:
         TEST_CASE(goto_);
 
         // Don't report errors if the struct is returned
-        TEST_CASE(ret);
+        TEST_CASE(ret1);
+        TEST_CASE(ret2);
 
         // assignments
         TEST_CASE(assign);
@@ -4284,7 +4285,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void ret()
+    void ret1()
     {
         check("static ABC * foo()\n"
               "{\n"
@@ -4297,6 +4298,17 @@ private:
         check("static void foo(struct ABC *abc)\n"
               "{\n"
               "    abc->a = malloc(10);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ret2()
+    {
+        check("static ABC * foo()\n"
+              "{\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "    return &abc->self;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

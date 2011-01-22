@@ -583,6 +583,11 @@ void CheckClass::privateFunctions()
     if (Token::findmatch(_tokenizer->tokens(), "; __property ;"))
         return;
 
+    // skip checking if there are friends
+    // Todo: check if each class has friends
+    if (Token::findmatch(_tokenizer->tokens(), "friend"))
+        return;
+
     // #2407 calls from operator() is not detected
     // TODO: Don't bailout. Detect the call.
     if (Token::findmatch(_tokenizer->tokens(), "operator ( )"))
