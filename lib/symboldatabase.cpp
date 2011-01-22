@@ -155,6 +155,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                   Token::Match(function.tokenDef, "%var% ( const %var% & %var% )")) &&
                                  function.tokenDef->strAt(3) == scope->className)
                             function.type = Function::eCopyConstructor;
+                        else if ((Token::Match(function.tokenDef, "%var% ( %var% & )") ||
+                                  Token::Match(function.tokenDef, "%var% ( %var% & %var% )")) &&
+                                 function.tokenDef->strAt(2) == scope->className)
+                            function.type = Function::eCopyConstructor;
                         else
                             function.type = Function::eConstructor;
 

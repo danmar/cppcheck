@@ -76,7 +76,8 @@ private:
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
         TEST_CASE(initvar_copy_constructor); // ticket #1611
         TEST_CASE(initvar_nested_constructor); // ticket #1375
-        TEST_CASE(initvar_nocopy);             // ticket #2474
+        TEST_CASE(initvar_nocopy1);            // ticket #2474
+        TEST_CASE(initvar_nocopy2);            // ticket #2484
 
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
 
@@ -906,7 +907,7 @@ private:
                       "[test.cpp:24]: (warning) Member variable 'D::d' is not initialised in the constructor.\n", errout.str());
     }
 
-    void initvar_nocopy() // ticket #2474
+    void initvar_nocopy1() // ticket #2474
     {
         check("class B\n"
               "{\n"
@@ -950,6 +951,41 @@ private:
               "};\n");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'A::m_SemVar' is not initialised in the constructor.\n"
                       "[test.cpp:7]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='\n", errout.str());
+    }
+
+    void initvar_nocopy2() // ticket #2484
+    {
+        check("class B\n"
+              "{\n"
+              "    B (B & Var);\n"
+              "    B & operator= (const B & Var);\n"
+              "};\n"
+              "class A\n"
+              "{\n"
+              "    B m_SemVar;\n"
+              "public:\n"
+              "    A(){}\n"
+              "    A(const A&){}\n"
+              "    const A& operator=(const A&){return *this;}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class B\n"
+              "{\n"
+              "public:\n"
+              "    B (B & Var);\n"
+              "    B & operator= (const B & Var);\n"
+              "};\n"
+              "class A\n"
+              "{\n"
+              "    B m_SemVar;\n"
+              "public:\n"
+              "    A(){}\n"
+              "    A(const A&){}\n"
+              "    const A& operator=(const A&){return *this;}\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:12]: (warning) Member variable 'A::m_SemVar' is not initialised in the constructor.\n"
+                      "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='\n", errout.str());
     }
 
     void initvar_destructor()
