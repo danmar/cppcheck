@@ -2722,6 +2722,7 @@ private:
 
     void varidFunctionCall2()
     {
+        // #2491
         const std::string code("void f(int b) {\n"
                                "    x(a*b,10);\n"
                                "}");
@@ -2730,8 +2731,7 @@ private:
                                     "2: x ( a * b");
         const std::string expected2(" , 10 ) ;\n"
                                     "3: }\n");
-        TODO_ASSERT_EQUALS(expected1+"@1"+expected2, tokenizeDebugListing(code));
-        ASSERT_EQUALS(expected1+"@2"+expected2, tokenizeDebugListing(code));
+        ASSERT_EQUALS(expected1+"@1"+expected2, tokenizeDebugListing(code));
     }
 
     void varidFunctionCall3()
@@ -2750,7 +2750,6 @@ private:
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
-
 
     void varidStl()
     {
