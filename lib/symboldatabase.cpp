@@ -842,6 +842,12 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
 
         *tok = tok1;
     }
+    else
+    {
+        delete new_scope;
+        *scope = NULL;
+        *tok = NULL;
+    }
 }
 
 const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
