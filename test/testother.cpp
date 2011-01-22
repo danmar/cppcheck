@@ -1682,6 +1682,16 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
+              "    unsigned int a = { 2 };\n"
+              "    unsigned int b[] = { 0 };\n"
+              "    int c[a[b[0]]];\n"
+              "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("void f() {\n"
               "    unsigned int a[] = { 1 };\n"
               "    unsigned int b = 2;\n"
               "    int c[(a[0]+b)];\n"
@@ -1706,6 +1716,12 @@ private:
 
         check("void f( int a[]) {\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) silent pointer of array is passed as parameter to the function sizeof.\n", errout.str());
+
+        check("void f( int a[]) {\n"
+              "    std::cout << sizeof a / sizeof(int) << std::endl;\n"
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (error) silent pointer of array is passed as parameter to the function sizeof.\n", errout.str());

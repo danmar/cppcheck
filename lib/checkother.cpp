@@ -83,31 +83,18 @@ void CheckOther::checkSizeofWithSilentArrayPointer()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "sizeof ( %var% )"))
+        if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var% "))
         {
-            if (tok->tokAt(2)->varId() > 0)
+            int tokIdx = 1;
+            if (tok->tokAt(tokIdx)->str() == "(") {
+                ++tokIdx;
+            }
+            if (tok->tokAt(tokIdx)->varId() > 0)
             {
-                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid% [", tok->tokAt(2)->varId());
+                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid% [", tok->tokAt(tokIdx)->varId());
                 if (declTok)
                 {
-                    int idx = 2;
-                    bool bracket = false;
-                    while (!Token::simpleMatch(declTok->tokAt(idx), "]") || bracket)
-                    {
-                        if (Token::simpleMatch(declTok->tokAt(idx), "["))
-                        {
-                            bracket = true;
-                        }
-                        else
-                        {
-                            if (Token::simpleMatch(declTok->tokAt(idx), "]"))
-                            {
-                                bracket = false;
-                            }
-                        }
-                        ++idx;
-                    }
-                    if (!(Token::simpleMatch(declTok->tokAt(idx), "] = {")) && !(Token::simpleMatch(declTok->tokAt(idx), "] ;")))
+                    if (!(Token::simpleMatch(declTok->next()->link(), "] = {")) && !(Token::simpleMatch(declTok->next()->link(), "] ;")))
                     {
                         sizeofWithSilentArrayPointerError(tok);
                     }
