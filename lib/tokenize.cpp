@@ -7950,8 +7950,7 @@ void Tokenizer::simplifyStd()
 
 const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 {
-    if (_symbolDatabase == NULL)
-        getSymbolDatabase();
+    getSymbolDatabase();
 
     std::list<Scope *>::const_iterator i;
 
@@ -7971,7 +7970,7 @@ const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 
 void Tokenizer::fillFunctionList()
 {
-    _symbolDatabase = new SymbolDatabase(this, _settings, _errorLogger);
+    getSymbolDatabase();
 }
 
 //---------------------------------------------------------------------------
