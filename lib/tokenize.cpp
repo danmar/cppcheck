@@ -3303,7 +3303,7 @@ void Tokenizer::setVarId()
 
         // If pattern is "( %type% *|& %var% )" then check if it's a
         // variable declaration or a multiplication / mask
-        if (Token::Match(tok, "( %type% *|& %var% )") && !tok->next()->isStandardType())
+        if (Token::Match(tok, "( %type% *|& %var% [),]") && !tok->next()->isStandardType())
         {
             if (!Token::Match(tok->previous(), "%type%"))
                 continue;
