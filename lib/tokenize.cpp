@@ -2412,7 +2412,12 @@ bool Tokenizer::tokenize(std::istream &code,
     // TODO: Remove this "createLinks". Make sure that the testcase
     //       TestSimplifyTokens::simplifyTypedefFunction8
     //       doesn't fail.
-    createLinks();
+    if (!createLinks())
+    {
+        // Source has syntax errors, can't proceed
+        cppcheckError(0);
+        return false;
+    }
 
     // enum..
     simplifyEnum();
