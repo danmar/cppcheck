@@ -799,6 +799,7 @@ private:
                        "    }\n"
                        "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: pItem\n", errout.str());
+        ASSERT_EQUALS("", errout.str());    // current result
     }
 
     // switch..
