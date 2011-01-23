@@ -868,6 +868,19 @@ private:
               "    fred->a();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #2493 - switch
+        check("void f(Fred *fred) {\n"
+              "    if (fred == NULL) {\n"
+              "        x = 0;\n"
+              "    }\n"
+              "    switch (x) {\n"
+              "        case 1:\n"
+              "            fred->a();\n"
+              "            break;\n"
+              "    };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
