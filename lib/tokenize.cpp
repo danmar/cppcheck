@@ -5717,10 +5717,6 @@ void Tokenizer::simplifyStdType()
             tok->isUnsigned(isUnsigned);
             tok->isSigned(!isUnsigned);
         }
-        if (Token::Match(tok, "bool"))
-        {
-            tok->isBoolean(true);
-        }
 
         if (Token::Match(tok, "__int8"))
             tok->str("char");
