@@ -79,24 +79,25 @@ void CheckOther::checkFflushOnInputStream()
 }
 
 
-void CheckOther::checkSizeofWithSilentArrayPointer()
+void CheckOther::checkSizeofForArrayParameter()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var% "))
         {
             int tokIdx = 1;
-            if (tok->tokAt(tokIdx)->str() == "(") {
+            if (tok->tokAt(tokIdx)->str() == "(")
+            {
                 ++tokIdx;
             }
             if (tok->tokAt(tokIdx)->varId() > 0)
             {
-                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid% [", tok->tokAt(tokIdx)->varId());
+                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->tokAt(tokIdx)->varId());
                 if (declTok)
                 {
-                    if (!(Token::simpleMatch(declTok->next()->link(), "] = {")) && !(Token::simpleMatch(declTok->next()->link(), "] ;")))
+                    if ((Token::simpleMatch(declTok->next(), "[")) && !(Token::simpleMatch(declTok->next()->link(), "] = {")) && !(Token::simpleMatch(declTok->next()->link(), "] ;")))
                     {
-                        sizeofWithSilentArrayPointerError(tok);
+                        sizeofForArrayParameterError(tok);
                     }
                 }
             }
@@ -482,10 +483,21 @@ void CheckOther::invalidScanf()
     }
 }
 
-void CheckOther::sizeofWithSilentArrayPointerError(const Token *tok)
+void CheckOther::sizeofForArrayParameterError(const Token *tok)
 {
-    reportError(tok, Severity::error, "sizeofwithsilentarraypointer", "silent pointer of array is passed as parameter to the function sizeof.");
-
+    reportError(tok, Severity::error,
+                "sizeofwithsilentarraypointer", "Using sizeof for array given as function argument "
+                "returns the size of pointer.\n"
+                "Giving array as function parameter and then using sizeof-operator for the array "
+                "argument. In this case the sizeof-operator returns the size of pointer (in the "
+                "  system). It does not return the size of the whole array in bytes as might be "
+                "expected. For example, this code:\n"
+                "     int f(char a[100]) {\n"
+                "         return sizeof(a);\n"
+                "     }\n"
+                " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 100 (the "
+                "size of the array in bytes)."
+               );
 }
 void CheckOther::invalidScanfError(const Token *tok)
 {

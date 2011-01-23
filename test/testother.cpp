@@ -120,7 +120,7 @@ private:
         checkOther.sizeofCalculation();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
-        checkOther.checkSizeofWithSilentArrayPointer();
+        checkOther.checkSizeofForArrayParameter();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -1718,19 +1718,29 @@ private:
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (error) silent pointer of array is passed as parameter to the function sizeof.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
 
         check("void f( int a[]) {\n"
               "    std::cout << sizeof a / sizeof(int) << std::endl;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (error) silent pointer of array is passed as parameter to the function sizeof.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
 
         check("void f( int a[3] ) {\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (error) silent pointer of array is passed as parameter to the function sizeof.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        check("void f(int *p) {\n"
+              "    p[0] = 0;\n"
+              "    sizeof(p);\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
 
     }
 
