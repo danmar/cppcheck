@@ -281,6 +281,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     // has body?
                     if (Token::Match(argStart->link(), ") const| {|:"))
                     {
+                        Scope *old_scope = scope;
+
                         // class function
                         if (tok->previous() && tok->previous()->str() == "::")
                             addFunction(&scope, &tok, argStart);
@@ -310,19 +312,17 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             function.arg = function.argDef;
                             function.type = Function::eFunction;
 
-                            Scope *old_scope = scope;
-
                             addNewFunction(&scope, &tok);
 
                             if (scope)
                                 old_scope->functionList.push_back(function);
+                        }
 
-                            // syntax error
-                            else
-                            {
-                                scope = old_scope;
-                                break;
-                            }
+                        // syntax error
+                        if (!scope)
+                        {
+                            scope = old_scope;
+                            break;
                         }
                     }
 
@@ -339,11 +339,37 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                         // regular function
                         else
+                        {
+                            Function function;
+
+                            // save the function definition argument start '('
+                            function.argDef = argStart;
+
+                            // save the access type
+                            function.access = Public;
+
+                            // save the function name location
+                            function.tokenDef = funcStart;
+                            function.token = funcStart;
+
+                            function.isInline = false;
+                            function.hasBody = true;
+                            function.arg = function.argDef;
+                            function.type = Function::eFunction;
+                            function.retFuncPtr = true;
+
                             addNewFunction(&scope, &tok1);
+
+                            if (scope)
+                                old_scope->functionList.push_back(function);
+                        }
 
                         // syntax error?
                         if (!scope)
+                        {
                             scope = old_scope;
+                            break;
+                        }
 
                         tok = tok1;
                     }
