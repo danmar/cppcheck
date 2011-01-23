@@ -217,11 +217,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         function.isPure = true;
 
                     // count the number of constructors
-                    if (function.type == Function::eConstructor || function.type == Function::eCopyConstructor)
+                    if (function.type == Function::eConstructor ||
+                        function.type == Function::eCopyConstructor)
                         scope->numConstructors++;
 
                     // assume implementation is inline (definition and implementation same)
                     function.token = function.tokenDef;
+                    function.arg = function.argDef;
 
                     // out of line function
                     if (Token::Match(end, ") const| ;") ||
@@ -238,7 +240,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     {
                         function.isInline = true;
                         function.hasBody = true;
-                        function.arg = function.argDef;
 
                         scope->functionList.push_back(function);
 
@@ -831,6 +832,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
         // syntax error?
         if (!new_scope->classEnd)
         {
+            (*scope)->nestedList.pop_back();
             delete new_scope;
             while (tok1->next())
                 tok1 = tok1->next();
@@ -848,6 +850,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     }
     else
     {
+        (*scope)->nestedList.pop_back();
         delete new_scope;
         *scope = NULL;
         *tok = NULL;
