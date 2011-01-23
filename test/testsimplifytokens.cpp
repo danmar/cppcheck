@@ -242,6 +242,7 @@ private:
         TEST_CASE(simplifyTypedefFunction5);
         TEST_CASE(simplifyTypedefFunction6);
         TEST_CASE(simplifyTypedefFunction7);
+        TEST_CASE(simplifyTypedefFunction8);
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -5405,6 +5406,15 @@ private:
 
         checkSimplifyTypedef(code);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedefFunction8()
+    {
+        // #2376 - internal error
+        const char code[] = "typedef int f_expand(const nrv_byte *);\n"
+                            "void f(f_expand   *(*get_fexp(int))){}\n";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());  // make sure that there is no internal error
     }
 
     void reverseArraySyntax()
