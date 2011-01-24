@@ -70,6 +70,8 @@ public:
     {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
+        checkOther.clarifyCalculation();
+
         // Coding style checks
         checkOther.checkConstantFunctionParameter();
         checkOther.checkIncompleteStatement();
@@ -86,6 +88,10 @@ public:
         checkOther.checkCatchExceptionByValue();
         checkOther.checkMemsetZeroBytes();
     }
+
+    /** @brief Clarify calculation for ".. a * b ? .." */
+    void clarifyCalculation();
+    void clarifyCalculationError(const Token *tok);
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
@@ -236,6 +242,7 @@ public:
         c.unassignedVariableError(0, "varname");
         c.catchExceptionByValueError(0);
         c.memsetZeroBytesError(0, "varname");
+        c.clarifyCalculationError(0);
     }
 
     std::string name() const
@@ -274,6 +281,7 @@ public:
                "* assignment of a variable to itself\n"
                "* mutual exclusion over || always evaluating to true\n"
                "* exception caught by value instead of by reference\n"
+               "* Clarify calculation with parantheses\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
