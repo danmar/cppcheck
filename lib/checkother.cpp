@@ -95,7 +95,7 @@ void CheckOther::checkSizeofForArrayParameter()
                 const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->tokAt(tokIdx)->varId());
                 if (declTok)
                 {
-                    if ((Token::simpleMatch(declTok->next(), "[")) && !(Token::simpleMatch(declTok->next()->link(), "] = {")) && !(Token::simpleMatch(declTok->next()->link(), "] ;")))
+                    if ((Token::simpleMatch(declTok->next(), "[")) && !(Token::Match(declTok->next()->link(), "] = %str%")) && !(Token::simpleMatch(declTok->next()->link(), "] = {")) && !(Token::simpleMatch(declTok->next()->link(), "] ;")))
                     {
                         sizeofForArrayParameterError(tok);
                     }

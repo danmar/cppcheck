@@ -98,7 +98,7 @@ private:
 
         TEST_CASE(memsetZeroBytes);
 
-        TEST_CASE(sizeofWithSilentArrayPointer);
+        TEST_CASE(sizeofForArrayParameter);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -1663,7 +1663,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void sizeofWithSilentArrayPointer()
+    void sizeofForArrayParameter()
     {
         check("void f() {\n"
               "    int a[10];\n"
@@ -1741,6 +1741,14 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char p[] = \"test\";\n"
+              "    sizeof(p);\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
 
     }
 
