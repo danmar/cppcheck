@@ -99,6 +99,8 @@ private:
         TEST_CASE(memsetZeroBytes);
 
         TEST_CASE(sizeofForArrayParameter);
+
+        TEST_CASE(clarifyCalculation);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -134,6 +136,7 @@ private:
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkCatchExceptionByValue();
         checkOther.checkMemsetZeroBytes();
+        checkOther.clarifyCalculation();
     }
 
 
@@ -1748,8 +1751,19 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
+    }
 
+    void clarifyCalculation()
+    {
+        check("int f(char c) {\n"
+              "    return 10 * (c == 0) ? 1 : 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (information) Please clarify precedence: 'a*b?..'\n", errout.str());
 
+        check("void f(char c) {\n"
+              "    printf(\"%i\", 10 * (c == 0) ? 1 : 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (information) Please clarify precedence: 'a*b?..'\n", errout.str());
     }
 
 };
