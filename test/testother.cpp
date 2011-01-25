@@ -1749,6 +1749,22 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
 
+        // ticket 2495
+        check("void f() {\n"
+              "    static float col[][3]={\n"
+              "      {1,0,0},\n"
+              "      {0,0,1},\n"
+              "      {0,1,0},\n"
+              "      {1,0,1},\n"
+              "      {1,0,1},\n"
+              "      {1,0,1},\n"
+              "    };\n"
+              "    const int COL_MAX=sizeof(col)/sizeof(col[0]);\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+
 
     }
 
