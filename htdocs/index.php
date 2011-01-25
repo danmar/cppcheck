@@ -41,6 +41,7 @@ only detects the types of bugs that the compilers normally fail to detect. The
 goal is no false positives.</p>
 
 <h2>Download</h2>
+<p><a class="downloadnow" href="http://downloads.sourceforge.net/cppcheck/cppcheck-1.46.1-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.46.1 for Windows</em></a></p>
 <p>You can download the standalone tool from our
 <a href="http://sourceforge.net/projects/cppcheck/">project page</a> or try it 
 as plugin for your favorite IDE:</p>

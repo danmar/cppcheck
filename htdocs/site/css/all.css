@@ -73,6 +73,49 @@ a:active { color:#369; text-decoration:none; }
   font-size: smaller;
 }
 
+/* "Download Now!" link */
+a.downloadnow {
+  display: block;
+  width: 12em;
+  margin: 0;
+  padding: 5px;
+ text-align: center;
+  text-decoration: none;
+  color: white;
+  background: #060;
+  border: 1px solid #060;
+  /* border-radius */
+  border-radius: .5em;
+  -moz-border-radius: .5em;
+  -khtml-border-radius: .5em;
+  -webkit-border-radius: .5em;
+}
+
+a.downloadnow:link,
+a.downloadnow:visited {
+  text-decoration: none;
+  color: white;
+}
+
+a.downloadnow:focus,
+a.downloadnow:hover {
+  text-decoration: none;
+  color: white;
+  background: #090;
+}
+
+a.downloadnow strong {
+  display: block;
+  font-size: larger;
+  font-weight: bold;
+}
+
+a.downloadnow em {
+  display: block;
+  font-size: smaller;
+  font-style: normal;
+}
+
 /* Printing */
 @media print {
   #header { color: black; border-bottom: 1px solid black; }
