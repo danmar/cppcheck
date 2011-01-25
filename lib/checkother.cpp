@@ -35,6 +35,60 @@ CheckOther instance;
 //---------------------------------------------------------------------------
 
 
+void CheckOther::clarifyCalculation()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() == "?")
+        {
+            // condition
+            const Token *cond = tok->previous();
+            if (cond->isName() || cond->isNumber())
+                cond = cond->previous();
+            else if (cond->str() == ")")
+                cond = cond->link()->previous();
+            else
+                continue;
+
+            // multiplication
+            if (cond->str() == "*")
+                cond = cond->previous();
+            else
+                continue;
+
+            // skip previous multiplications..
+            while (cond && cond->strAt(-1) == "*" && (cond->isName() || cond->isNumber()))
+                cond = cond->tokAt(-2);
+
+            if (!cond)
+                continue;
+
+            // first multiplication operand
+            if (cond->str() == ")")
+            {
+                clarifyCalculationError(cond);
+            }
+            else if (cond->isName() || cond->isNumber())
+            {
+                if (Token::Match(cond->previous(),"return|+|-|,|("))
+                    clarifyCalculationError(cond);
+            }
+        }
+    }
+}
+
+void CheckOther::clarifyCalculationError(const Token *tok)
+{
+    reportError(tok,
+                Severity::information,
+                "clarifyCalculation",
+                "Please clarify precedence: 'a*b?..'\n"
+                "Found a suspicious multiplication of condition. Please use parantheses to clarify the code. "
+                "The code 'a*b?1:2' should be written as either '(a*b)?1:2' or 'a*(b?1:2)'.");
+}
+
 
 void CheckOther::warningOldStylePointerCast()
 {
