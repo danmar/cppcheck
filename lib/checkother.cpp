@@ -553,7 +553,7 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
                 "returns the size of pointer.\n"
                 "Giving array as function parameter and then using sizeof-operator for the array "
                 "argument. In this case the sizeof-operator returns the size of pointer (in the "
-                "  system). It does not return the size of the whole array in bytes as might be "
+                "system). It does not return the size of the whole array in bytes as might be "
                 "expected. For example, this code:\n"
                 "     int f(char a[100]) {\n"
                 "         return sizeof(a);\n"
