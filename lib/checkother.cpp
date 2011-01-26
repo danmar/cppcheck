@@ -157,12 +157,12 @@ void CheckOther::checkSizeofForArrayParameter()
                         {
                             declTok = declTok->next()->link();
                         }
-                        if (!(Token::Match(declTok->next(), "= %str%")) && !(Token::simpleMatch(declTok->next(), "= {")) && !(Token::simpleMatch(declTok->next(), ";"))) 
+                        if (!(Token::Match(declTok->next(), "= %str%")) && !(Token::simpleMatch(declTok->next(), "= {")) && !(Token::simpleMatch(declTok->next(), ";")))
                         {
                             if (Token::simpleMatch(declTok->next(), ","))
                             {
                                 declTok = declTok->next();
-                                while(!Token::simpleMatch(declTok, ";"))
+                                while (!Token::simpleMatch(declTok, ";"))
                                 {
                                     if (Token::simpleMatch(declTok, ")"))
                                     {
