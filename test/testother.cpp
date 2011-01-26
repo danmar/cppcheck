@@ -1774,6 +1774,31 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
 
+        // ticket 2510
+        check("void f( int a[], int b) {\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        // ticket 2510
+        check("void f( int a[3] , int b[2] ) {\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        // ticket 2510
+        check("void f() {\n"
+              "    char buff1[1024*64],buff2[sizeof(buff1)*(2+1)];\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+
+
     }
 
     void clarifyCalculation()
