@@ -358,6 +358,7 @@ Settings MainWindow::GetCppcheckSettings()
 
     result.addEnabled("style");
     result.addEnabled("information");
+    result.addEnabled("missingInclude");
     result.debug = false;
     result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
     result._errorsOnly = false;
