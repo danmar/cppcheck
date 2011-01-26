@@ -149,9 +149,38 @@ void CheckOther::checkSizeofForArrayParameter()
                 const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->tokAt(tokIdx)->varId());
                 if (declTok)
                 {
-                    if ((Token::simpleMatch(declTok->next(), "[")) && !(Token::Match(declTok->next()->link(), "] = %str%")) && !(Token::simpleMatch(declTok->next()->link(), "] = {")) && !(Token::simpleMatch(declTok->next()->link(), "] ;")))
+                    if (Token::simpleMatch(declTok->next(), "["))
                     {
-                        sizeofForArrayParameterError(tok);
+                        declTok = declTok->next()->link();
+                        // multidimensional array
+                        while (Token::simpleMatch(declTok->next(), "["))
+                        {
+                            declTok = declTok->next()->link();
+                        }
+                        if (!(Token::Match(declTok->next(), "= %str%")) && !(Token::simpleMatch(declTok->next(), "= {")) && !(Token::simpleMatch(declTok->next(), ";")))
+                        {
+                            if (Token::simpleMatch(declTok->next(), ","))
+                            {
+                                declTok = declTok->next();
+                                while (!Token::simpleMatch(declTok, ";"))
+                                {
+                                    if (Token::simpleMatch(declTok, ")"))
+                                    {
+                                        sizeofForArrayParameterError(tok);
+                                        break;
+                                    }
+                                    if (Token::Match(declTok, "(|[|{"))
+                                    {
+                                        declTok = declTok->link();
+                                    }
+                                    declTok = declTok->next();
+                                }
+                            }
+                        }
+                        if (Token::simpleMatch(declTok->next(), ")"))
+                        {
+                            sizeofForArrayParameterError(tok);
+                        }
                     }
                 }
             }
@@ -544,7 +573,7 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
                 "returns the size of pointer.\n"
                 "Giving array as function parameter and then using sizeof-operator for the array "
                 "argument. In this case the sizeof-operator returns the size of pointer (in the "
-                "  system). It does not return the size of the whole array in bytes as might be "
+                "system). It does not return the size of the whole array in bytes as might be "
                 "expected. For example, this code:\n"
                 "     int f(char a[100]) {\n"
                 "         return sizeof(a);\n"
