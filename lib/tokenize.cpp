@@ -2041,6 +2041,16 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // if MACRO
+    for (const Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "if|for|while %var% ("))
+        {
+            syntaxError(tok);
+            return false;
+        }
+    }
+
     // Simplify JAVA/C# code
     if (isJavaOrCSharp() && _files[0].find(".java") != std::string::npos)
     {

@@ -52,6 +52,7 @@ private:
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
+        TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
 
         TEST_CASE(minus);
 
@@ -520,6 +521,15 @@ private:
             tokenizeAndStringify(code.c_str(), true);
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
         }
+    }
+
+    void wrong_syntax_if_macro()
+    {
+        // #2518
+        errout.str("");
+        const std::string code("void f() { if MACRO(); }");
+        tokenizeAndStringify(code.c_str(), false);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void minus()
