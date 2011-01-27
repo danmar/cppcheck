@@ -460,8 +460,7 @@ private:
               "    void startListening() {\n"
               "    }\n"
               "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:8]: (style) Unused private function 'Fred::startListening'\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Unused private function 'Fred::startListening'\n", errout.str());
     }
 
     void testDoesNotIdentifyMethodAsFirstFunctionArgument()

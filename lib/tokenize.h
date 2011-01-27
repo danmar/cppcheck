@@ -532,6 +532,12 @@ public:
     void simplifyQtSignalsSlots();
 
     /**
+     * Collapse operator name tokens into single token
+     * operator = => operator=
+     */
+    void simplifyOperatorName();
+
+    /**
      * This will return a short name describing function parameters
      * e.g. parameters: (int a, char b) should get name "int,char,".
      * This should help to identify functions with the same name,

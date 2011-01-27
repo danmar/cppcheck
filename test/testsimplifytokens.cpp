@@ -382,8 +382,8 @@ private:
         ASSERT_EQUALS("if ( * a )", tok("if ((char)*a)"));
         ASSERT_EQUALS("if ( & a )", tok("if ((int)&a)"));
         ASSERT_EQUALS("if ( * a )", tok("if ((unsigned int)(unsigned char)*a)"));
-        ASSERT_EQUALS("class A { A operator * ( int ) ; } ;", tok("class A { A operator *(int); };"));
-        ASSERT_EQUALS("class A { A operator * ( int ) const ; } ;", tok("class A { A operator *(int) const; };"));
+        ASSERT_EQUALS("class A { A operator* ( int ) ; } ;", tok("class A { A operator *(int); };"));
+        ASSERT_EQUALS("class A { A operator* ( int ) const ; } ;", tok("class A { A operator *(int) const; };"));
         ASSERT_EQUALS("if ( ! p )", tok("if (p == (char *)(char *)0)"));
     }
 
@@ -2578,7 +2578,7 @@ private:
         {
             // Ticket #1997
             const char code[] = "void * operator new[](size_t);";
-            ASSERT_EQUALS("void * operator new [ ] ( size_t ) ;", tok(code));
+            ASSERT_EQUALS("void * operatornew[] ( size_t ) ;", tok(code));
         }
 
         ASSERT_EQUALS("; a [ 0 ] ;", tok(";a[0*(*p)];"));
@@ -4429,7 +4429,7 @@ private:
         const std::string expected("struct C { "
                                    "; "
                                    "const void * pr ; " // this gets simplified to a regular pointer
-                                   "operator const void ( * ) ( ) & ( ) { return pr ; } "
+                                   "operatorconstvoid(*)()& ( ) { return pr ; } "
                                    "} ;");
         ASSERT_EQUALS(expected, sizeof_(code));
 
@@ -4713,7 +4713,7 @@ private:
                                 "};\n";
             const std::string expected = "class Fred { "
                                          "; "
-                                         "operator int * * ( ) const { } "
+                                         "operatorint** ( ) const { } "
                                          "} ;";
             ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
@@ -4755,9 +4755,9 @@ private:
                                 "Fred::operator F() const { }\n";
             const std::string expected = "class Fred { "
                                          "; "
-                                         "operator int * * ( ) const ; "
+                                         "operatorint** ( ) const ; "
                                          "} ; "
-                                         "Fred :: operator int * * ( ) const { }";
+                                         "Fred :: operatorint** ( ) const { }";
             ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
         }
