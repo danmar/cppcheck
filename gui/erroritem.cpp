@@ -43,9 +43,11 @@ ErrorItem::ErrorItem(const ErrorLine &line)
 QString ErrorItem::ToString() const
 {
     QString str = file + " - " + id + " - " + severity +"\n";
-    str += "  " + summary;
-    str += "\n" + message;
+    str += summary + "\n";
+    str += message + "\n";
     for (int i = 0; i < files.size(); i++)
-        str += "  " + files[i] + ": " + lines[i] + "\n";
+    {
+        str += "  " + files[i] + ": " + QString::number(lines[i]) + "\n";
+    }
     return str;
 }

@@ -45,10 +45,9 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     if (success)
     {
-        if (parser.GetShowVersion())
+        if (parser.GetShowVersion() && !parser.GetShowErrorMessages())
         {
             std::cout << "Cppcheck " << cppcheck->version() << std::endl;
-            return true;
         }
 
         if (parser.GetShowErrorMessages())
@@ -57,8 +56,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             std::cout << ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version);
             cppcheck->getErrorMessages();
             std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
-            std::exit(0);
         }
+
+        if (parser.ExitAfterPrinting())
+            std::exit(0);
     }
 
     // Check that all include paths exist

@@ -140,11 +140,7 @@ void CheckClass::constructors()
                 // It's non-static and it's not initialized => error
                 if (func->type == Function::eOperatorEqual)
                 {
-                    const Token *operStart = 0;
-                    if (func->token->str() == "=")
-                        operStart = func->token->tokAt(1);
-                    else
-                        operStart = func->token->tokAt(3);
+                    const Token *operStart = func->token->tokAt(1);
 
                     bool classNameUsed = false;
                     for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next())
@@ -376,14 +372,14 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         }
 
         // Calling member function?
-        else if (Token::simpleMatch(ftok, "operator = (") &&
+        else if (Token::simpleMatch(ftok, "operator= (") &&
                  ftok->previous()->str() != "::")
         {
             // check if member function exists
             std::list<Function>::const_iterator it;
             for (it = scope->functionList.begin(); it != scope->functionList.end(); ++it)
             {
-                if (ftok->next()->str() == it->tokenDef->str() && it->type != Function::eConstructor)
+                if (ftok->str() == it->tokenDef->str() && it->type != Function::eConstructor)
                     break;
             }
 
@@ -581,11 +577,6 @@ void CheckClass::privateFunctions()
 
     // dont check borland classes with properties..
     if (Token::findmatch(_tokenizer->tokens(), "; __property ;"))
-        return;
-
-    // #2407 calls from operator() is not detected
-    // TODO: Don't bailout. Detect the call.
-    if (Token::findmatch(_tokenizer->tokens(), "operator ( )"))
         return;
 
     createSymbolDatabase();
@@ -872,8 +863,8 @@ void CheckClass::operatorEq()
         {
             if (it->type == Function::eOperatorEqual && it->access != Private)
             {
-                if (it->token->strAt(-2) == "void")
-                    operatorEqReturnError(it->token->tokAt(-2));
+                if (it->token->strAt(-1) == "void")
+                    operatorEqReturnError(it->token->tokAt(-1));
             }
         }
     }
@@ -940,7 +931,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             // check of *this is returned
             else if (!(Token::Match(tok->tokAt(1), "(| * this ;|=") ||
                        Token::Match(tok->tokAt(1), "(| * this +=") ||
-                       Token::Match(tok->tokAt(1), "operator = (")))
+                       Token::Match(tok->tokAt(1), "operator= (")))
                 operatorEqRetRefThisError(func->token);
         }
     }
@@ -971,8 +962,8 @@ void CheckClass::operatorEqRetRefThis()
                 if (func->type == Function::eOperatorEqual && func->hasBody)
                 {
                     // make sure return signature is correct
-                    if (Token::Match(func->tokenDef->tokAt(-4), ";|}|{|public:|protected:|private: %type% &") &&
-                        func->tokenDef->strAt(-3) == scope->className)
+                    if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
+                        func->tokenDef->strAt(-2) == scope->className)
                     {
                         // find the ')'
                         const Token *tok = func->token->next()->link();
@@ -1027,8 +1018,8 @@ void CheckClass::operatorEqToSelf()
             if (it->type == Function::eOperatorEqual && it->hasBody)
             {
                 // make sure return signature is correct
-                if (Token::Match(it->tokenDef->tokAt(-4), ";|}|{|public:|protected:|private: %type% &") &&
-                    it->tokenDef->strAt(-3) == scope->className)
+                if (Token::Match(it->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
+                    it->tokenDef->strAt(-2) == scope->className)
                 {
                     // check for proper function parameter signature
                     if ((Token::Match(it->tokenDef->next(), "( const %var% & )") ||

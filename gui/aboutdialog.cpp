@@ -27,7 +27,7 @@ AboutDialog::AboutDialog(const QString &version, QWidget *parent)
     mUI.setupUi(this);
 
     mUI.mVersion->setText(mUI.mVersion->text().arg(version));
-    QString url = "<a href=\"http://cppcheck.wiki.sourceforge.net/\">http://cppcheck.wiki.sourceforge.net/</a>";
+    QString url = "<a href=\"http://cppcheck.sourceforge.net/\">http://cppcheck.sourceforge.net/</a>";
     mUI.mHomepage->setText(mUI.mHomepage->text().arg(url));
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
 }

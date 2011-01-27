@@ -513,7 +513,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
         }
         else if (end->str() == "(")
         {
-            if (tok->previous()->str() == "operator")
+            if (tok->previous()->str().find("operator")  == 0)
             {
                 // conversion operator
                 return false;
@@ -2489,6 +2489,10 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // remove exception specifications..
     removeExceptionSpecifications(_tokens);
+
+    // Collapse operator name tokens into single token
+    // operator = => operator=
+    simplifyOperatorName();
 
     // simplify function pointers
     simplifyFunctionPointers();
@@ -9237,4 +9241,31 @@ const SymbolDatabase *Tokenizer::getSymbolDatabase() const
         _symbolDatabase = new SymbolDatabase(this, _settings, _errorLogger);
 
     return _symbolDatabase;
+}
+
+void Tokenizer::simplifyOperatorName()
+{
+    for (const Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, ") const| {|;|="))
+        {
+            Token *tok1 = tok->link();
+            Token *tok2 = tok1;
+
+            tok1 = tok1->previous();
+            while (tok1 && !Token::Match(tok1, "operator|{|}|;|public:|private|protected:"))
+            {
+                tok1 = tok1->previous();
+            }
+
+            if (tok1 && tok1->str() == "operator")
+            {
+                while (tok1->next() != tok2)
+                {
+                    tok1->str(tok1->str() + tok1->next()->str());
+                    tok1->deleteNext();
+                }
+            }
+        }
+    }
 }

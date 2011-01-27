@@ -137,12 +137,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     function.tokenDef = funcStart;
 
                     // operator function
-                    if (function.tokenDef->previous()->str() ==  "operator")
+                    if (function.tokenDef->str().find("operator") == 0)
                     {
                         function.isOperator = true;
 
                         // 'operator =' is special
-                        if (function.tokenDef->str() == "=")
+                        if (function.tokenDef->str() == "operator=")
                             function.type = Function::eOperatorEqual;
                     }
 
@@ -578,38 +578,6 @@ bool SymbolDatabase::isFunction(const Token *tok, const Token **funcStart, const
         return true;
     }
 
-    // simple operator?
-    else if (Token::Match(tok, "operator %any% (") && Token::Match(tok->tokAt(2)->link(), ") const| ;|{|="))
-    {
-        *funcStart = tok->next();
-        *argStart = tok->tokAt(2);
-        return true;
-    }
-
-    // operator[] or operator()?
-    else if (Token::Match(tok, "operator %any% %any% (") && Token::Match(tok->tokAt(3)->link(), ") const| ;|{|="))
-    {
-        *funcStart = tok->next();
-        *argStart = tok->tokAt(3);
-        return true;
-    }
-
-    // operator new/delete []?
-    else if (Token::Match(tok, "operator %any% %any% %any% (") && Token::Match(tok->tokAt(4)->link(), ") const| ;|{|="))
-    {
-        *funcStart = tok->next();
-        *argStart = tok->tokAt(4);
-        return true;
-    }
-
-    // complex user defined operator?
-    else if (Token::Match(tok, "operator %any% %any% %any% %any% (") && Token::Match(tok->tokAt(5)->link(), ") const| ;|{|="))
-    {
-        *funcStart = tok->next();
-        *argStart = tok->tokAt(5);
-        return true;
-    }
-
     return false;
 }
 
@@ -772,20 +740,9 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
             {
                 if (!func->hasBody)
                 {
-                    if (func->isOperator &&
-                        (*tok)->str() == "operator" &&
-                        func->tokenDef->str() == (*tok)->strAt(1))
-                    {
-                        if (argsMatch(scope1, func->tokenDef->tokAt(2), (*tok)->tokAt(3), path, path_length))
-                        {
-                            func->hasBody = true;
-                            func->token = (*tok)->next();
-                            func->arg = argStart;
-                        }
-                    }
-                    else if (func->type == Function::eDestructor &&
-                             (*tok)->previous()->str() == "~" &&
-                             func->tokenDef->str() == (*tok)->str())
+                    if (func->type == Function::eDestructor &&
+                        (*tok)->previous()->str() == "~" &&
+                        func->tokenDef->str() == (*tok)->str())
                     {
                         if (argsMatch(scope1, func->tokenDef->next(), (*tok)->next(), path, path_length))
                         {

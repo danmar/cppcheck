@@ -3506,7 +3506,7 @@ private:
                    "    typedef int* (Fred::*UnspecifiedBoolType);\n"
                    "    operator UnspecifiedBoolType() { };\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'Fred::int' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'Fred::operatorint**' can be const.\n", errout.str());
 
         checkConst("struct Fred {\n"
                    "    int array[10];\n"

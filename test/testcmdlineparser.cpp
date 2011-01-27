@@ -77,6 +77,12 @@ private:
         TEST_CASE(templatesGcc);
         TEST_CASE(templatesVs);
         TEST_CASE(xml);
+        TEST_CASE(xmlver2);
+        TEST_CASE(xmlver2both);
+        TEST_CASE(xmlver2both2);
+        TEST_CASE(errorlist1);
+        TEST_CASE(errorlistverbose1)
+        TEST_CASE(errorlistverbose2)
         TEST_CASE(unknownParam);
     }
 
@@ -533,6 +539,69 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings._xml);
+        ASSERT_EQUALS(1, settings._xml_version);
+    }
+
+    void xmlver2()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--xml-version=2", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings._xml);
+        ASSERT_EQUALS(2, settings._xml_version);
+    }
+
+    void xmlver2both()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--xml", "--xml-version=2", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT(settings._xml);
+        ASSERT_EQUALS(2, settings._xml_version);
+    }
+
+    void xmlver2both2()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--xml-version=2", "--xml", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT(settings._xml);
+        ASSERT_EQUALS(2, settings._xml_version);
+    }
+
+    void errorlist1()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--errorlist"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(2, argv));
+    }
+
+    void errorlistverbose1()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--verbose", "--errorlist"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings._verbose);
+    }
+
+    void errorlistverbose2()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--errorlist", "--verbose"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings._verbose);
     }
 
     void unknownParam()

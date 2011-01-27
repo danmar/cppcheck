@@ -293,6 +293,8 @@ private:
 
         // Tokenize JAVA
         TEST_CASE(java);
+
+        TEST_CASE(simplifyOperatorName);
     }
 
 
@@ -2990,7 +2992,7 @@ private:
                                        "1: class Foo\n"
                                        "2: {\n"
                                        "3: public:\n"
-                                       "4: void operator = ( const Foo & ) ;\n"
+                                       "4: void operator= ( const Foo & ) ;\n"
                                        "5: } ;\n");
 
             ASSERT_EQUALS(expected, actual);
@@ -3002,7 +3004,7 @@ private:
                                            "};\n");
             const std::string expected("\n\n##file 0\n"
                                        "1: struct Foo {\n"
-                                       "2: void * operator new [ ] ( int ) ;\n"
+                                       "2: void * operatornew[] ( int ) ;\n"
                                        "3: } ;\n");
 
             ASSERT_EQUALS(expected, actual);
@@ -3660,7 +3662,7 @@ private:
         const std::string actual(tokenizeAndStringify(code));
 
         const char expected[] = "struct foo {\n"
-                                "void operator delete ( void * obj , size_t sz ) ;\n"
+                                "void operatordelete ( void * obj , size_t sz ) ;\n"
                                 "}";
 
         ASSERT_EQUALS(expected, actual);
@@ -5181,6 +5183,38 @@ private:
     void java()
     {
         ASSERT_EQUALS("void f ( ) { }", javatest("void f() throws Exception { }"));
+    }
+
+    void simplifyOperatorName()
+    {
+        // make sure C code doesn't get changed
+        const char code1[] = "void operator () {}"
+                             "int main()"
+                             "{"
+                             "    operator();"
+                             "}";
+
+        const char result1 [] = "void operator ( ) { } "
+                                "int main ( ) "
+                                "{ "
+                                "operator ( ) ; "
+                                "}";
+
+        ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
+
+        const char code2[] = "class Fred"
+                             "{"
+                             "    Fred(const Fred & f) { operator = (f); }"
+                             "    operator = ();"
+                             "}";
+
+        const char result2 [] = "class Fred "
+                                "{ "
+                                "Fred ( const Fred & f ) { operator= ( f ) ; } "
+                                "operator= ( ) ; "
+                                "}";
+
+        ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
     }
 };
 

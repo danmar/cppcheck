@@ -60,6 +60,7 @@ CmdLineParser::CmdLineParser(Settings *settings)
     , _showHelp(false)
     , _showVersion(false)
     , _showErrorMessages(false)
+    , _exitAfterPrint(false)
 {
 }
 
@@ -75,6 +76,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         if (strcmp(argv[i], "--version") == 0)
         {
             _showVersion = true;
+            _exitAfterPrint = true;
             return true;
         }
         // Flag used for various purposes during debugging
@@ -362,10 +364,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // print all possible error messages..
         else if (strcmp(argv[i], "--errorlist") == 0)
         {
-            //_cppcheck->getErrorMessages();
             _showErrorMessages = true;
             _settings->_xml = true;
-            return true;
+            _exitAfterPrint = true;
         }
 
         // documentation..
@@ -383,6 +384,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             while (doc2.find("\n\n\n") != std::string::npos)
                 doc2.erase(doc2.find("\n\n\n"), 1);
             std::cout << doc2;
+            _exitAfterPrint = true;
             return true;
         }
 
@@ -459,6 +461,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         {
             _pathnames.clear();
             _showHelp = true;
+            _exitAfterPrint = true;
             break;
         }
 
@@ -486,15 +489,17 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         PrintMessage("--test-2-pass doesn't work with -j option yet.");
     }
 
-
     if (argc <= 1)
         _showHelp = true;
 
     if (_showHelp)
     {
         PrintHelp();
+        return true;
     }
-    else if (_pathnames.empty())
+
+    // Print error only if we have "real" command and expect files
+    if (!_exitAfterPrint && _pathnames.empty())
     {
         PrintMessage("cppcheck: No C or C++ source files found.");
         return false;
