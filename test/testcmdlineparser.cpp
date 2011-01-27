@@ -77,6 +77,9 @@ private:
         TEST_CASE(templatesGcc);
         TEST_CASE(templatesVs);
         TEST_CASE(xml);
+        TEST_CASE(errorlist1);
+        TEST_CASE(errorlistverbose1)
+        TEST_CASE(errorlistverbose2)
         TEST_CASE(unknownParam);
     }
 
@@ -533,6 +536,35 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings._xml);
+    }
+
+    void errorlist1()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--errorlist"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(2, argv));
+    }
+
+    void errorlistverbose1()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--verbose", "--errorlist"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings._verbose);
+    }
+
+    void errorlistverbose2()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--errorlist", "--verbose"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings._verbose);
     }
 
     void unknownParam()

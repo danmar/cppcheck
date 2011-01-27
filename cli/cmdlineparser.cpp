@@ -364,11 +364,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // print all possible error messages..
         else if (strcmp(argv[i], "--errorlist") == 0)
         {
-            //_cppcheck->getErrorMessages();
             _showErrorMessages = true;
             _settings->_xml = true;
             _exitAfterPrint = true;
-            return true;
         }
 
         // documentation..
@@ -491,15 +489,17 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         PrintMessage("--test-2-pass doesn't work with -j option yet.");
     }
 
-
     if (argc <= 1)
         _showHelp = true;
 
     if (_showHelp)
     {
         PrintHelp();
+        return true;
     }
-    else if (_pathnames.empty())
+
+    // Print error only if we have "real" command and expect files
+    if (!_exitAfterPrint && _pathnames.empty())
     {
         PrintMessage("cppcheck: No C or C++ source files found.");
         return false;
