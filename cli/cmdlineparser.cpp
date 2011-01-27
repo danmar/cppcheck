@@ -60,6 +60,7 @@ CmdLineParser::CmdLineParser(Settings *settings)
     , _showHelp(false)
     , _showVersion(false)
     , _showErrorMessages(false)
+    , _exitAfterPrint(false)
 {
 }
 
@@ -75,6 +76,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         if (strcmp(argv[i], "--version") == 0)
         {
             _showVersion = true;
+            _exitAfterPrint = true;
             return true;
         }
         // Flag used for various purposes during debugging
@@ -365,6 +367,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             //_cppcheck->getErrorMessages();
             _showErrorMessages = true;
             _settings->_xml = true;
+            _exitAfterPrint = true;
             return true;
         }
 
@@ -383,6 +386,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             while (doc2.find("\n\n\n") != std::string::npos)
                 doc2.erase(doc2.find("\n\n\n"), 1);
             std::cout << doc2;
+            _exitAfterPrint = true;
             return true;
         }
 
@@ -459,6 +463,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         {
             _pathnames.clear();
             _showHelp = true;
+            _exitAfterPrint = true;
             break;
         }
 
