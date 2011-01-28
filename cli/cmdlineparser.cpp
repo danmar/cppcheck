@@ -129,7 +129,31 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Filter errors
-        else if (strcmp(argv[i], "--suppressions") == 0)
+        else if (strncmp(argv[i], "--suppressions-list=", 20) == 0)
+        {
+            std::string filename = argv[i];
+            filename = filename.substr(20);
+            std::ifstream f(filename.c_str());
+            if (!f.is_open())
+            {
+                std::string message("cppcheck: Couldn't open the file \"");
+                message += std::string(filename);
+                message += "\"";
+                PrintMessage(message);
+                return false;
+            }
+            const std::string errmsg(_settings->nomsg.parseFile(f));
+            if (!errmsg.empty())
+            {
+                PrintMessage(errmsg);
+                return false;
+            }
+        }
+
+        // Filter errors
+        // This is deprecated, see --supressions-list above
+        else if (strcmp(argv[i], "--suppressions") == 0 &&
+                 strlen(argv[i]) == 14)
         {
             ++i;
 
@@ -516,7 +540,7 @@ void CmdLineParser::PrintHelp()
               "    cppcheck [--append=file] [-D<ID>] [--enable=<id>] [--error-exitcode=[n]]\n"
               "             [--exitcode-suppressions file] [--file-list=file.txt] [--force]\n"
               "             [--help] [-Idir] [--inline-suppr] [-j [jobs]] [--quiet]\n"
-              "             [--report-progress] [--style] [--suppressions file.txt]\n"
+              "             [--report-progress] [--style] [--suppressions-list=file.txt]\n"
               "             [--verbose] [--version] [--xml] [file or path1] [file or path]\n"
               "\n"
               "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
@@ -558,8 +582,10 @@ void CmdLineParser::PrintHelp()
               "    -q, --quiet          Only print error messages\n"
               "    --report-progress    Report progress messages while checking a file.\n"
               "    -s, --style          deprecated, use --enable=style\n"
-              "    --suppressions file  Suppress warnings listed in the file. Filename and line\n"
-              "                         are optional. The format of the single line in file is:\n"
+              "    --suppressions-list=file\n"
+              "                         Suppress warnings listed in the file. Filename and line\n"
+              "                         are optional in the suppression file. The format of the\n"
+              "                         single line in the suppression file is:\n"
               "                         [error id]:[filename]:[line]\n"
               "    --template '[text]'  Format the error messages. E.g.\n"
               "                         '{file}:{line},{severity},{id},{message}' or\n"

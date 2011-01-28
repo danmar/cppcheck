@@ -72,7 +72,9 @@ private:
         TEST_CASE(jobsMissingCount);
         TEST_CASE(jobsInvalid);
         TEST_CASE(reportProgress);
-        TEST_CASE(suppressions); // TODO: Create and test real suppression file
+        TEST_CASE(suppressionsOld); // TODO: Create and test real suppression file
+        TEST_CASE(suppressions)
+        TEST_CASE(suppressionsNoFile)
         TEST_CASE(templates);
         TEST_CASE(templatesGcc);
         TEST_CASE(templatesVs);
@@ -492,10 +494,30 @@ private:
         ASSERT(settings.reportProgress);
     }
 
-    void suppressions()
+    void suppressionsOld()
     {
+        // TODO: Fails because there is no suppr.txt file!
         REDIRECT;
         const char *argv[] = {"cppcheck", "--suppressions suppr.txt", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void suppressions()
+    {
+        // TODO: Fails because there is no suppr.txt file!
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--suppressions-list=suppr.txt", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void suppressionsNoFile()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--suppressions-list=", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(!parser.ParseFromArgs(3, argv));
