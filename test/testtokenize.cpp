@@ -52,6 +52,7 @@ private:
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
+        TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
 
         TEST_CASE(minus);
 
@@ -204,6 +205,7 @@ private:
         TEST_CASE(removeParantheses8);       // Ticket #1865
         TEST_CASE(removeParantheses9);       // Ticket #1962
         TEST_CASE(removeParantheses10);      // Ticket #2320
+        TEST_CASE(removeParantheses11);      // Ticket #2505
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -520,6 +522,15 @@ private:
             tokenizeAndStringify(code.c_str(), true);
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
         }
+    }
+
+    void wrong_syntax_if_macro()
+    {
+        // #2518
+        errout.str("");
+        const std::string code("void f() { if MACRO(); }");
+        tokenizeAndStringify(code.c_str(), false);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void minus()
@@ -3676,6 +3687,12 @@ private:
     void removeParantheses10()
     {
         ASSERT_EQUALS("p = buf + 8 ;", tokenizeAndStringify("p = (buf + 8);", false));
+    }
+
+    void removeParantheses11()
+    {
+        // #2502
+        ASSERT_EQUALS("{ } x ( ) ;", tokenizeAndStringify("{}(x());", false));
     }
 
     void tokenize_double()
