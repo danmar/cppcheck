@@ -20,6 +20,14 @@
 #include "testutils.h"
 #include "symboldatabase.h"
 
+#define GET_SYMBOL_DB(code) \
+    errout.str(""); \
+    Settings settings; \
+    Tokenizer tokenizer(&settings, this); \
+    std::istringstream istr(code); \
+    tokenizer.tokenize(istr, "test.cpp"); \
+    const SymbolDatabase *db = tokenizer.getSymbolDatabase();
+
 class TestSymbolDatabase: public TestFixture
 {
 public:
@@ -75,6 +83,16 @@ private:
         TEST_CASE(canFindMatchingBracketsOuterPair);
         TEST_CASE(canFindMatchingBracketsWithTooManyClosing);
         TEST_CASE(canFindMatchingBracketsWithTooManyOpening);
+
+        TEST_CASE(hasRegularFunction);
+        TEST_CASE(hasInlineClassFunction);
+        TEST_CASE(hasMissingInlineClassFunction);
+        TEST_CASE(hasClassFunction);
+
+        TEST_CASE(hasRegularFunctionReturningFunctionPointer);
+        TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
+        TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
+        TEST_CASE(hasClassFunctionReturningFunctionPointer);
     }
 
     void test_isVariableDeclarationCanHandleNull()
@@ -335,6 +353,174 @@ private:
 
         found = si.findClosingBracket(var.tokens()->tokAt(1), t);
         ASSERT(!found);
+    }
+
+    void hasRegularFunction()
+    {
+        GET_SYMBOL_DB("void func() { }\n")
+
+        // 2 scopes: Global and Function
+        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(1));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(1));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(1));
+            ASSERT(function && function->hasBody);
+        }
+    }
+
+    void hasInlineClassFunction()
+    {
+        GET_SYMBOL_DB("class Fred { void func() { } };\n")
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(4));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(4));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
+            ASSERT(function && function->hasBody && function->isInline);
+        }
+    }
+
+    void hasMissingInlineClassFunction()
+    {
+        GET_SYMBOL_DB("class Fred { void func(); };\n")
+
+        // 2 scopes: Global and Class (no Function scope because there is no function implementation)
+        ASSERT(db && db->scopeList.size() == 2 && !tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(4));
+
+            ASSERT(scope == NULL);
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(4));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
+            ASSERT(function && !function->hasBody);
+        }
+    }
+
+    void hasClassFunction()
+    {
+        GET_SYMBOL_DB("class Fred { void func(); }; Fred::func() { }\n")
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(12));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(12));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(12));
+            ASSERT(function && function->hasBody && !function->isInline);
+        }
+    }
+
+    void hasRegularFunctionReturningFunctionPointer()
+    {
+        GET_SYMBOL_DB("void (*func(int f))(char) { }\n")
+
+        // 2 scopes: Global and Function
+        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(3));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(3));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(3));
+            ASSERT(function && function->hasBody && function->retFuncPtr);
+        }
+    }
+
+    void hasInlineClassFunctionReturningFunctionPointer()
+    {
+        GET_SYMBOL_DB("class Fred { void (*func(int f))(char) { } };\n")
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(6));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(6));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
+            ASSERT(function && function->hasBody && function->isInline && function->retFuncPtr);
+        }
+    }
+
+    void hasMissingInlineClassFunctionReturningFunctionPointer()
+    {
+        GET_SYMBOL_DB("class Fred { void (*func(int f))(char); };\n")
+
+        // 2 scopes: Global and Class (no Function scope because there is no function implementation)
+        ASSERT(db && db->scopeList.size() == 2 && !tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(6));
+
+            ASSERT(scope == NULL);
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(6));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
+            ASSERT(function && !function->hasBody && function->retFuncPtr);
+        }
+    }
+
+    void hasClassFunctionReturningFunctionPointer()
+    {
+        GET_SYMBOL_DB("class Fred { void (*func(int f))(char); }; void (*Fred::func(int f))(char) { }\n")
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(23));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(23));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
+            ASSERT(function && function->hasBody && !function->isInline && function->retFuncPtr);
+        }
     }
 };
 

@@ -1348,6 +1348,42 @@ const Scope *SymbolDatabase::findVariableType(const Scope *start, const Token *t
 
 //---------------------------------------------------------------------------
 
+const Scope *SymbolDatabase::findFunctionScopeByToken(const Token *tok) const
+{
+    std::list<Scope *>::const_iterator scope;
+
+    for (scope = scopeList.begin(); scope != scopeList.end(); ++scope)
+    {
+        if ((*scope)->type == Scope::eFunction)
+        {
+            if ((*scope)->classDef == tok)
+                return (*scope);
+        }
+    }
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
+const Function *SymbolDatabase::findFunctionByToken(const Token *tok) const
+{
+    std::list<Scope *>::const_iterator scope;
+
+    for (scope = scopeList.begin(); scope != scopeList.end(); ++scope)
+    {
+        std::list<Function>::const_iterator func;
+
+        for (func = (*scope)->functionList.begin(); func != (*scope)->functionList.end(); ++func)
+        {
+            if (func->token == tok)
+                return &*func;
+        }
+    }
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
 Scope * Scope::findInNestedList(const std::string & name)
 {
     std::list<Scope *>::iterator it;

@@ -362,6 +362,10 @@ public:
      */
     const Scope *findVariableType(const Scope *start, const Token *type) const;
 
+    const Scope *findFunctionScopeByToken(const Token *tok) const;
+
+    const Function *findFunctionByToken(const Token *tok) const;
+
     bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
 
     bool isClassOrStruct(const std::string &type) const
