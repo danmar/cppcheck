@@ -205,6 +205,7 @@ private:
         TEST_CASE(removeParantheses8);       // Ticket #1865
         TEST_CASE(removeParantheses9);       // Ticket #1962
         TEST_CASE(removeParantheses10);      // Ticket #2320
+        TEST_CASE(removeParantheses11);      // Ticket #2505
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -3686,6 +3687,12 @@ private:
     void removeParantheses10()
     {
         ASSERT_EQUALS("p = buf + 8 ;", tokenizeAndStringify("p = (buf + 8);", false));
+    }
+
+    void removeParantheses11()
+    {
+        // #2502
+        ASSERT_EQUALS("{ } x ( ) ;", tokenizeAndStringify("{}(x());", false));
     }
 
     void tokenize_double()
