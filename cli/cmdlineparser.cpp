@@ -540,6 +540,7 @@ void CmdLineParser::PrintHelp()
               "                         if arguments are not valid or if no input files are\n"
               "                         provided. Note that your operating system can\n"
               "                         modify this value, e.g. 256 can become 0.\n"
+              "    --errorlist          Print a list of all error messages in XML format.\n"
               "    --exitcode-suppressions file\n"
               "                         Used when certain messages should be displayed but\n"
               "                         should not cause a non-zero exitcode.\n"
