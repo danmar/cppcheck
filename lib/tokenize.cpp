@@ -6231,22 +6231,22 @@ bool Tokenizer::simplifyKnownVariables()
         std::map<unsigned int, std::string> constantValues;
         for (Token *tok = _tokens; tok; tok = tok->next())
         {
-            if (Token::Match(tok, "static| const %type% %var% = %any% ;"))
+            if (Token::Match(tok, "static| const static| %type% %var% = %any% ;"))
             {
                 Token *tok1 = tok;
 
                 // start of statement
                 if (tok != _tokens && !Token::Match(tok->previous(),"[;{}]"))
                     continue;
-                // skip "static"
-                if (tok->str() == "static")
+                // skip "const" and "static"
+                while (tok->str() == "const" || tok->str() == "static")
                     tok = tok->next();
                 // pod type
-                if (!tok->next()->isStandardType())
+                if (!tok->isStandardType())
                     continue;
 
-                const Token * const vartok = tok->tokAt(2);
-                const Token * const valuetok = tok->tokAt(4);
+                const Token * const vartok = tok->next();
+                const Token * const valuetok = tok->tokAt(3);
                 if (valuetok->isNumber() || Token::Match(valuetok, "%str% ;"))
                 {
                     constantValues[vartok->varId()] = valuetok->str();
