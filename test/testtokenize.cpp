@@ -211,6 +211,7 @@ private:
         TEST_CASE(tokenize_strings);
         TEST_CASE(simplify_constants);
         TEST_CASE(simplify_constants2);
+        TEST_CASE(simplify_constants3);
 
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
@@ -3810,6 +3811,19 @@ private:
         std::ostringstream oss;
         oss << " void f ( Foo & foo , Foo * foo2 ) { ; foo . a = 90 ; foo2 . a = 45 ; }";
         ASSERT_EQUALS(oss.str(), ostr.str());
+    }
+
+    void simplify_constants3()
+    {
+        const char code[] =
+            "static const char str[] = \"abcd\";\n"
+            "static const unsigned int SZ = sizeof(str);\n"
+            "void f() {\n"
+            "a = SZ;\n"
+            "}\n";
+        const char expected[] =
+            "static const char str [ 5 ] = \"abcd\" ;\n\nvoid f ( ) {\na = 5 ;\n}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
     }
 
     void vardecl1()
