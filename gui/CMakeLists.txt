@@ -106,10 +106,7 @@ set(CHECK_LIBS
 endif (WIN32 AND NOT CYGWIN)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS
-    ${CMAKE_CXX_FLAGS}
-    "-Wall"
-  )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 # Generate rules for building source files from the resources
