@@ -104,20 +104,34 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Filter errors
-        else if (strcmp(argv[i], "--exitcode-suppressions") == 0)
+        else if (strncmp(argv[i], "--exitcode-suppressions", 23) == 0)
         {
-            ++i;
+            std::string filename;
 
-            if (i >= argc)
+            // exitcode-suppressions filename.txt
+            // Deprecated
+            if (strcmp(argv[i], "--exitcode-suppressions") == 0)
             {
-                PrintMessage("cppcheck: No file specified for the --exitcode-suppressions option");
-                return false;
+                ++i;
+
+                if (i >= argc || strncmp(argv[i], "-", 1) == 0 ||
+                    strncmp(argv[i], "--", 2) == 0)
+                {
+                    PrintMessage("cppcheck: No filename specified for the --exitcode-suppressions option");
+                    return false;
+                }
+                filename = argv[i];
+            }
+            // exitcode-suppressions=filename.txt
+            else
+            {
+                filename = 24 + argv[i];
             }
 
-            std::ifstream f(argv[i]);
+            std::ifstream f(filename.c_str());
             if (!f.is_open())
             {
-                PrintMessage("cppcheck: Couldn't open the file \"" + std::string(argv[i]) + "\"");
+                PrintMessage("cppcheck: Couldn't open the file \"" + std::string(filename) + "\"");
                 return false;
             }
             const std::string errmsg(_settings->nofail.parseFile(f));
@@ -565,7 +579,7 @@ void CmdLineParser::PrintHelp()
               "                         provided. Note that your operating system can\n"
               "                         modify this value, e.g. 256 can become 0.\n"
               "    --errorlist          Print a list of all error messages in XML format.\n"
-              "    --exitcode-suppressions file\n"
+              "    --exitcode-suppressions=file\n"
               "                         Used when certain messages should be displayed but\n"
               "                         should not cause a non-zero exitcode.\n"
               "    --file-list=file     Specify the files to check in a text file. One Filename per line.\n"

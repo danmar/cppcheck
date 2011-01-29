@@ -65,7 +65,9 @@ private:
         TEST_CASE(errorExitcode);
         TEST_CASE(errorExitcodeMissing);
         TEST_CASE(errorExitcodeStr);
-        TEST_CASE(exitcodeSuppressions); // TODO: Create and test real suppression file
+        TEST_CASE(exitcodeSuppressionsOld); // TODO: Create and test real suppression file
+        TEST_CASE(exitcodeSuppressions);
+        TEST_CASE(exitcodeSuppressionsNoFile);
         TEST_CASE(fileList); // TODO: Create and test real file listing file
         TEST_CASE(inlineSuppr);
         TEST_CASE(jobs);
@@ -429,10 +431,29 @@ private:
         ASSERT(!parser.ParseFromArgs(3, argv));
     }
 
+    void exitcodeSuppressionsOld()
+    {
+        // TODO: Fails since cannot open the file
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--exitcode-suppressions", "suppr.txt", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(4, argv));
+    }
+
     void exitcodeSuppressions()
     {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--error-exitcode-suppressions suppr.txt", "file.cpp"};
+        const char *argv[] = {"cppcheck", "--exitcode-suppressions=suppr.txt", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void exitcodeSuppressionsNoFile()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--exitcode-suppressions", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(!parser.ParseFromArgs(3, argv));
