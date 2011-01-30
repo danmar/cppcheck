@@ -298,6 +298,9 @@ private:
         TEST_CASE(java);
 
         TEST_CASE(simplifyOperatorName);
+
+        // Some simple cleanups of unhandled macros in the global scope
+        TEST_CASE(removeMacrosInGlobalScope);
     }
 
 
@@ -5246,6 +5249,12 @@ private:
                                 "}";
 
         ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
+    }
+
+    void removeMacrosInGlobalScope()
+    {
+        // remove some unhandled macros in the global scope.
+        ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() NOTHROW { }"));
     }
 };
 

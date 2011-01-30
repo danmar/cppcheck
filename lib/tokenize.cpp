@@ -2083,7 +2083,7 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
 
-    // remove inline SQL (Oracle PRO*C). Ticket: #1959
+    // replace inline SQL with "asm()" (Oracle PRO*C). Ticket: #1959
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "EXEC SQL"))
@@ -2122,6 +2122,9 @@ bool Tokenizer::tokenize(std::istream &code,
             return false;
         }
     }
+
+    // remove some unhandled macros in global scope
+    removeMacrosInGlobalScope();
 
     // specify array size..
     arraySize();
@@ -4380,6 +4383,23 @@ bool Tokenizer::simplifyTokenList()
     removeRedundantSemicolons();
 
     return validate();
+}
+//---------------------------------------------------------------------------
+
+void Tokenizer::removeMacrosInGlobalScope()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "(")
+        {
+            tok = tok->link();
+            if (Token::Match(tok, ") %type% {") && tok->strAt(1) != "const")
+                tok->deleteNext();
+        }
+
+        if (tok->str() == "{")
+            tok = tok->link();
+    }
 }
 //---------------------------------------------------------------------------
 
