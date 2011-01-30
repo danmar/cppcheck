@@ -166,8 +166,8 @@ private:
               "    const char i = index(var, 0);\n"
               "    return i;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'index'. It is recommended to use the function 'strchr' instead\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'index'. It is recommended to use the function 'strchr' instead\n",
+                           "", errout.str());
     }
 
     void test_qt_index()

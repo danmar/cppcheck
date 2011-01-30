@@ -52,8 +52,10 @@ protected:
     void assertEquals(const char *filename, int linenr, long long expected, long long actual, const std::string &msg="");
     void assertEqualsDouble(const char *filename, int linenr, double expected, double actual, const std::string &msg="");
 
-    void todoAssertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual);
-    void todoAssertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual);
+    void todoAssertEquals(const char *filename, int linenr, const std::string &wanted,
+                          const std::string &current, const std::string &actual);
+    void todoAssertEquals(const char *filename, int linenr, unsigned int wanted,
+                          unsigned int current, unsigned int actual);
     void assertThrowFail(const char *filename, int linenr);
     void processOptions(const options& args);
 public:
@@ -75,7 +77,7 @@ public:
 #define ASSERT_EQUALS_DOUBLE( EXPECTED , ACTUAL )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_MSG( EXPECTED , ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
 #define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (EXCEPTION &) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
-#define TODO_ASSERT_EQUALS( EXPECTED , ACTUAL ) todoAssertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
+#define TODO_ASSERT_EQUALS( WANTED , CURRENT , ACTUAL ) todoAssertEquals(__FILE__, __LINE__, WANTED, CURRENT, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
 
 #endif

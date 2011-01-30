@@ -1662,8 +1662,9 @@ private:
               "}\n"
              );
         TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
-                           " bytes of \"p\". Second and third arguments might be inverted.\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+                           " bytes of \"p\". Second and third arguments might be inverted.\n",
+
+                           "", errout.str());
     }
 
     void sizeofForArrayParameter()

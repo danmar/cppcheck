@@ -186,6 +186,9 @@ public:
     /** Simplify labels */
     void labels();
 
+    /** Remove macros in global scope */
+    void removeMacrosInGlobalScope();
+
     /** Remove redundant assignment */
     void removeRedundantAssignment();
 

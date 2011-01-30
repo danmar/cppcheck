@@ -921,7 +921,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     }
 
                     if (tok2->varId() == varid ||
-                        tok2->str() == ":" || tok2->str() == "{")
+                        tok2->str() == ":" || tok2->str() == "{" || tok2->str() == "}")
                     {
                         break;
                     }
@@ -2727,8 +2727,8 @@ void CheckMemoryLeakInClass::check()
                     // known class?
                     else if (var->type())
                     {
-                        // not derived and no constructor?
-                        if (var->type()->derivedFrom.empty() && var->type()->numConstructors == 0)
+                        // not derived?
+                        if (var->type()->derivedFrom.empty())
                         {
                             if (var->isPrivate())
                                 checkPublicFunctions(scope, var->nameToken());
