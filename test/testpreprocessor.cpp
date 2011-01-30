@@ -173,6 +173,7 @@ private:
         TEST_CASE(endifsemicolon);
         TEST_CASE(missing_doublequote);
         TEST_CASE(handle_error);
+        TEST_CASE(dup_defines);
 
         TEST_CASE(unicodeInCode);
         TEST_CASE(unicodeInComment);
@@ -2379,6 +2380,42 @@ private:
         // Compare results..
         ASSERT_EQUALS("char a[] = \"#endfile\";\nchar b[] = \"#endfile\";\n\n", actual[""]);
         ASSERT_EQUALS(1, (int)actual.size());
+    }
+
+    void dup_defines()
+    {
+        const char filedata[] = "#ifdef A\n"
+                                "#define B\n"
+                                "#if defined(B) && defined(A)\n"
+                                "a\n"
+                                "#else\n"
+                                "b\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // B will always be defined if A is defined; the following test
+	// cases should be fixed whenever this other bug is fixed
+        TODO_ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+
+	if (actual.find("A") == actual.end()) {
+	    ASSERT_EQUALS("A is checked", "failed");
+	} else {
+	    ASSERT_EQUALS("A is checked", "A is checked");
+	}
+
+	if (actual.find("A;A;B") != actual.end()) {
+	    ASSERT_EQUALS("A;A;B is NOT checked", "failed");
+	} else {
+	    ASSERT_EQUALS("A;A;B is NOT checked", "A;A;B is NOT checked");
+	}
     }
 };
 

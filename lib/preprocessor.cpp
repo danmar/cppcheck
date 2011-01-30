@@ -1040,6 +1040,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         // Re-constitute the configuration after sorting the defines
         defs.sort();
+        defs.unique();
         *it = join(defs, ';');
     }
 
