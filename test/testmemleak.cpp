@@ -3165,6 +3165,7 @@ private:
         TEST_CASE(class18);
         TEST_CASE(class19); // ticket #2219
         TEST_CASE(class20);
+        TEST_CASE(class21); // ticket #2517
 
         TEST_CASE(staticvar);
 
@@ -4016,6 +4017,45 @@ private:
               "    delete [] str2;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: Fred::str1\n", errout.str());
+    }
+
+    void class21() // ticket #2517
+    {
+        check("struct B { };\n"
+              "struct C\n"
+              "{\n"
+              "    B * b;\n"
+              "    C(B * x) : b(x) { }\n"
+              "};\n"
+              "class A\n"
+              "{\n"
+              "    B *b;\n"
+              "    C *c;\n"
+              "public:\n"
+              "    A() : b(new B()), c(new C(b)) { }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: A::b\n"
+                      "[test.cpp:10]: (error) Memory leak: A::c\n", errout.str());
+
+        check("struct B { };\n"
+              "struct C\n"
+              "{\n"
+              "    B * b;\n"
+              "    C(B * x) : b(x) { }\n"
+              "};\n"
+              "class A\n"
+              "{\n"
+              "    B *b;\n"
+              "    C *c;\n"
+              "public:\n"
+              "    A()\n"
+              "    {\n"
+              "       b = new B();\n"
+              "       c = new C(b);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: A::b\n"
+                      "[test.cpp:10]: (error) Memory leak: A::c\n", errout.str());
     }
 
     void staticvar()
