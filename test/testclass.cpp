@@ -1498,7 +1498,8 @@ private:
                                "public:\n"
                                "    ~B() { int a; }\n"
                                "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class A which is inherited by class B does not have a virtual destructor\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class A which is inherited by class B does not have a virtual destructor\n",
+                           "", errout.str());
     }
 
     void virtualDestructorTemplate()
@@ -4303,7 +4304,8 @@ private:
                    "std::vector<std::string> m_strVec;\n"
                    "};\n"
                   );
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetSize' can be const.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetSize' can be const.\n",
+                           "", errout.str());
     }
 
     void const26() // ticket #1847
@@ -4625,8 +4627,8 @@ private:
                    "}\n"
                    "using namespace N;\n"
                    "int Base::getResourceName() { return var; }\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (information) Technically the member function 'N::Base::getResourceName' can be const.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (information) Technically the member function 'N::Base::getResourceName' can be const.\n",
+                           "", errout.str());
     }
 
     void const36() // ticket #2003
@@ -5076,7 +5078,8 @@ private:
                    "   A(){}\n"
                    "   unsigned int GetVecSize()  {return m_v.size();}\n"
                    "}");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (information) Technically the member function 'A::GetVecSize' can be const.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (information) Technically the member function 'A::GetVecSize' can be const.\n",
+                           "", errout.str());
     }
 
     void constVirtualFunc()

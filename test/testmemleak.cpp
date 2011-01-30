@@ -403,8 +403,8 @@ private:
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; free(reinterpret_cast<void *>(s));", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete s;", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete (s);", "s"));
-        ASSERT_EQUALS(";;;", getcode("char *s; delete (void *)(s);", "s")); // current result..
-        TODO_ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete (void *)(s);", "s")); // ..wanted result
+        TODO_ASSERT_EQUALS(";;dealloc;",
+                           ";;;", getcode("char *s; delete (void *)(s);", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete [] s;", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete [] (s);", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("void *p; foo(fclose(p));", "p"));
@@ -453,7 +453,8 @@ private:
 
         // Since we don't check how the return value is used we must bail out
         ASSERT_EQUALS("", getcode("char *s; int ret = asprintf(&s, \"xyz\");", "s"));
-        TODO_ASSERT_EQUALS(";;alloc;", getcode("char *s; int ret; ret=asprintf(&s, \"xyz\"); if (ret==-1) return;", "s"));
+        TODO_ASSERT_EQUALS(";;alloc;",
+                           "", getcode("char *s; int ret; ret=asprintf(&s, \"xyz\"); if (ret==-1) return;", "s"));
 
         // use..
         ASSERT_EQUALS(";;use;", getcode("char *s; a(s);", "s"));
@@ -695,10 +696,8 @@ private:
         ASSERT_EQUALS("; use ;", simplifycode("; while1 { if { dealloc ; return ; } if { if { continue ; } } }"));
 
         // scope..
-        // current result - ok
-        ASSERT_EQUALS("; assign ; dealloc ; if alloc ; }", simplifycode("; assign ; { dealloc ; if alloc ; } }"));
-        // wanted result - better
-        TODO_ASSERT_EQUALS("; assign ; if alloc ; }", simplifycode("; assign ; { dealloc ; if alloc ; } }"));
+        TODO_ASSERT_EQUALS("; assign ; if alloc ; }",
+                           "; assign ; dealloc ; if alloc ; }", simplifycode("; assign ; { dealloc ; if alloc ; } }"));
 
         // callfunc..
         ASSERT_EQUALS("; callfunc ; }", simplifycode(";callfunc;}"));
@@ -713,8 +712,10 @@ private:
         ASSERT_EQUALS(";", simplifycode("; if { alloc; exit; }"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if { use; exit; }"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if(!var) { exit; }"));
-        TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; if(var) { exit; }"));
-        TODO_ASSERT_EQUALS(";\n; alloc ;", simplifycode("; alloc ; ifv { exit; }"));
+        TODO_ASSERT_EQUALS(";",
+                           "; if(var) exit ;", simplifycode("; alloc ; if(var) { exit; }"));
+        TODO_ASSERT_EQUALS(";\n; alloc ;",
+                           "; alloc ; ifv exit ;", simplifycode("; alloc ; ifv { exit; }"));
 
         // try-catch
         ASSERT_EQUALS("; }", simplifycode("; try ; catch exit ; }"));
@@ -808,8 +809,8 @@ private:
         ASSERT_EQUALS(2,  dofindleak(";alloc;\n if assign;\n dealloc;"));
 
         // loop..
-        TODO_ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if break; dealloc ; }"));
-        TODO_ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if continue; dealloc ; }"));
+        TODO_ASSERT_EQUALS(1, notfound, dofindleak("; loop { alloc ; if break; dealloc ; }"));
+        TODO_ASSERT_EQUALS(1, notfound, dofindleak("; loop { alloc ; if continue; dealloc ; }"));
         ASSERT_EQUALS(notfound, dofindleak("; loop { alloc ; if break; } dealloc ;"));
         ASSERT_EQUALS(1, dofindleak("; loop alloc ;"));
         ASSERT_EQUALS(1, dofindleak("; loop alloc ; dealloc ;"));
@@ -1132,11 +1133,9 @@ private:
               "    }\n"
               "    delete [] x;\n"
               "}\n", true);
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: x\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: x\n",
+                           "", errout.str());
     }
-
-
 
 
     void forwhile5()
@@ -1187,8 +1186,10 @@ private:
               "\n"
               "    return a;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: a\n", errout.str());
-        ASSERT_EQUALS("[test.cpp:8]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: a\n",
+
+                           "[test.cpp:8]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n",
+                           errout.str());
     }
 
 
@@ -1478,8 +1479,8 @@ private:
               "    char *p = new char[100];\n"
               "    foo(p);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: p\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: p\n",
+                           "", errout.str());
     }
 
 
@@ -1880,8 +1881,8 @@ private:
               "   char *p;\n"
               "   foo(&p);\n"
               "}\n");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"), errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"),
+                           "", errout.str());
 
         check("void foo(char **str)\n"
               "{\n"
@@ -2083,8 +2084,10 @@ private:
               "    free(a);\n"
               "}\n");
 
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n", errout.str());
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n",
+
+                           "[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n",
+                           errout.str());
     }
 
     void realloc5()
@@ -2296,8 +2299,8 @@ private:
               "    free(str);\n"
               "    char c = *str;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'str' after it is deallocated / released\n",
+                           "", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -4184,8 +4187,8 @@ private:
               "private:\n"
               "    char *s;\n"
               "};\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("publicAllocation", errout.str());
+        TODO_ASSERT_EQUALS("publicAllocation",
+                           "", errout.str());
     }
 
     void func2()

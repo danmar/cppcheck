@@ -798,8 +798,8 @@ private:
                        "        x--;\n"
                        "    }\n"
                        "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: pItem\n", errout.str());
-        ASSERT_EQUALS("", errout.str());    // current result
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: pItem\n",
+                           "", errout.str());
     }
 
     // switch..
@@ -1364,8 +1364,8 @@ private:
                        "    int x[10];\n"
                        "    calc(x,10);\n"
                        "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n",
+                           "", errout.str());
 
         // #2401 - unknown function/macro might init the variable
         checkUninitVar("int f() {\n"

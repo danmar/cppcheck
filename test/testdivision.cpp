@@ -74,8 +74,8 @@ private:
               "    unsigned int uvar = 2;\n"
               "    return ivar / uvar;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Division with signed and unsigned operators\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Division with signed and unsigned operators\n",
+                           "", errout.str());
     }
 
     void division2()
@@ -86,8 +86,8 @@ private:
               "    unsigned int uvar = 2;\n"
               "    return uvar / ivar;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Division with signed and unsigned operators\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Division with signed and unsigned operators\n",
+                           "", errout.str());
     }
 
     void division4()
@@ -166,8 +166,8 @@ private:
               "         unsigned int c = a / b;\n"
               "    }\n"
               "}\n", true);
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("unsigned division", errout.str());
+        TODO_ASSERT_EQUALS("unsigned division",
+                           "",  errout.str());
 
         check("void a(int i) { }\n"
               "int foo( unsigned int sz )\n"
@@ -186,8 +186,8 @@ private:
               "    unsigned long uvar = 2;\n"
               "    return ivar / uvar;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("unsigned division", errout.str());
+        TODO_ASSERT_EQUALS("unsigned division",
+                           "", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -195,8 +195,8 @@ private:
               "    unsigned long long uvar = 2;\n"
               "    return ivar / uvar;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("unsigned division", errout.str());
+        TODO_ASSERT_EQUALS("unsigned division",
+                           "", errout.str());
     }
 };
 

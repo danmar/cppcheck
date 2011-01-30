@@ -257,8 +257,7 @@ private:
               "        ++aI;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:14] (error) After insert, the iterator 'aI' may be invalid", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:14] (error) After insert, the iterator 'aI' may be invalid", "", errout.str());
     }
 
     void iterator8()
@@ -629,8 +628,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Dangerous iterator usage after erase()-method.\n", "", errout.str());
     }
 
     void eraseGoto()
@@ -701,7 +699,7 @@ private:
               "        foo.erase(*it);\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' becomes invalid when deleted by value from 'foo'\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' becomes invalid when deleted by value from 'foo'\n", "", errout.str());
 
         check("void f()\n"
               "{\n"

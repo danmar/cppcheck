@@ -429,8 +429,8 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Make sure an error message is written..
-        ASSERT_EQUALS("", errout.str());    // no change?
-        TODO_ASSERT_EQUALS("[test.cpp:3]: this preprocessor condition is always true", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: this preprocessor condition is always true",
+                           "", errout.str());
 
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
@@ -755,7 +755,7 @@ private:
             ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A<2"));
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A==2"));
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A<1"));
-            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A>=1&&B<=A"));
+            TODO_ASSERT_EQUALS(true, false, Preprocessor::match_cfg_def(cfg, "A>=1&&B<=A"));
         }
     }
 
@@ -778,7 +778,8 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\n\n\nB\n\n", actual[""]);
-        TODO_ASSERT_EQUALS("\nA\n\n\n\n", actual["LIBVER=101"]);
+        TODO_ASSERT_EQUALS("\nA\n\n\n\n",
+                           "", actual["LIBVER=101"]);
     }
 
     void if_cond2()
@@ -1009,8 +1010,7 @@ private:
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
-            ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-            TODO_ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+            TODO_ASSERT_EQUALS(2, 1, static_cast<unsigned int>(actual.size()));
             ASSERT_EQUALS("\nfoo();\n\n", actual[""]);
         }
     }
@@ -1170,8 +1170,9 @@ private:
 
         // the "defined(DEF_10) || defined(DEF_11)" are not handled correctly..
         ASSERT_EQUALS("(debug) unhandled configuration: defined(DEF_10)||defined(DEF_11)\n", errout.str());
-        TODO_ASSERT_EQUALS(2, actual.size());
-        TODO_ASSERT_EQUALS("\na1;\n\n", actual["DEF_10"]);
+        TODO_ASSERT_EQUALS(2, 1, actual.size());
+        TODO_ASSERT_EQUALS("\na1;\n\n",
+                           "", actual["DEF_10"]);
 
     }
 
@@ -2312,8 +2313,8 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n", actual[""]);
-        TODO_ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS(2, (int)actual.size());
+        TODO_ASSERT_EQUALS(1,
+                           2, actual.size());
     }
 
     void define_ifndef2()
@@ -2401,21 +2402,27 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // B will always be defined if A is defined; the following test
-	// cases should be fixed whenever this other bug is fixed
-        TODO_ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+        // cases should be fixed whenever this other bug is fixed
+        TODO_ASSERT_EQUALS(2,
+                           3, static_cast<unsigned int>(actual.size()));
 
-	if (actual.find("A") == actual.end()) {
-	    ASSERT_EQUALS("A is checked", "failed");
-	} else {
-	    ASSERT_EQUALS("A is checked", "A is checked");
-	}
+        if (actual.find("A") == actual.end())
+        {
+            ASSERT_EQUALS("A is checked", "failed");
+        }
+        else
+        {
+            ASSERT_EQUALS("A is checked", "A is checked");
+        }
 
-	if (actual.find("A;A;B") != actual.end()) {
-	    ASSERT_EQUALS("A;A;B is NOT checked", "failed");
-	} else {
-	    ASSERT_EQUALS("A;A;B is NOT checked", "A;A;B is NOT checked");
-	}
+        if (actual.find("A;A;B") != actual.end())
+        {
+            ASSERT_EQUALS("A;A;B is NOT checked", "failed");
+        }
+        else
+        {
+            ASSERT_EQUALS("A;A;B is NOT checked", "A;A;B is NOT checked");
+        }
     }
 };
 
