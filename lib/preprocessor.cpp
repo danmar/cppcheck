@@ -714,13 +714,14 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 std::string Preprocessor::getdef(std::string line, bool def)
 {
     // If def is true, the line must start with "#ifdef"
-    if (def && line.find("#ifdef ") != 0 && line.find("#if ") != 0 && line.find("#elif ") != 0 && line.find("#if defined ") != 0)
+    if (def && line.find("#ifdef ") != 0 && line.find("#if ") != 0
+        && (line.find("#elif ") != 0 || line.find("#elif !") == 0))
     {
         return "";
     }
 
     // If def is false, the line must start with "#ifndef"
-    if (!def && line.find("#ifndef ") != 0)
+    if (!def && line.find("#ifndef ") != 0 && line.find("#elif !") != 0)
     {
         return "";
     }
@@ -728,6 +729,17 @@ std::string Preprocessor::getdef(std::string line, bool def)
     // Remove the "#ifdef" or "#ifndef"
     if (line.find("#if defined ") == 0)
         line.erase(0, 11);
+    else if (line.find("#elif !defined(") == 0)
+    {
+        std::string::size_type pos = 0;
+
+        line.erase(0, 15);
+        pos = line.find(")");
+        // if pos == ::npos then another part of the code will complain
+        // about the mismatch
+        if (pos != std::string::npos)
+            line.erase(pos, 1);
+    }
     else
         line.erase(0, line.find(" "));
 
@@ -1357,6 +1369,22 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
                     cfgmap[line.substr(8, pos - 8)] = line.substr(pos + 1);
                 else
                     cfgmap[line.substr(8, pos - 8)] = "";
+            }
+        }
+
+        else if (line.find("#elif !") == 0)
+        {
+            if (matched_ifdef.back())
+            {
+                matching_ifdef.back() = false;
+            }
+            else
+            {
+                if (!match_cfg_def(cfgmap, ndef))
+                {
+                    matching_ifdef.back() = true;
+                    matched_ifdef.back() = true;
+                }
             }
         }
 
