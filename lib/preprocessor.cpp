@@ -888,6 +888,21 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                         def += ";";
                     def += *it;
                 }
+                else
+                {
+                    std::ostringstream lineStream;
+                    lineStream << __LINE__;
+
+                    ErrorLogger::ErrorMessage errmsg;
+                    ErrorLogger::ErrorMessage::FileLocation loc;
+                    loc.setfile(filename);
+                    loc.line = linenr;
+                    errmsg._callStack.push_back(loc);
+                    errmsg._severity = Severity::fromString("error");
+                    errmsg.setmsg(*it+" is already guaranteed to be defined");
+                    errmsg._id  = "preprocessor" + lineStream.str();
+                    _errorLogger->reportErr(errmsg);
+                }
             }
             if (from_negation)
             {

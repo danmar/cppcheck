@@ -429,12 +429,117 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Make sure an error message is written..
-        TODO_ASSERT_EQUALS("[test.cpp:3]: this preprocessor condition is always true",
-                           "", errout.str());
+        ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
+                           errout.str());
 
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\nA\n\nB\n\n\n", actual["ABC"]);
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+
+        test7a();
+        test7b();
+        test7c();
+        test7d();
+    }
+
+    void test7a()
+    {
+        const char filedata[] = "#ifndef ABC\n"
+                                "A\n"
+                                "#ifndef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Make sure an error message is written..
+        TODO_ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed NOT to be defined\n",
+                           "", errout.str());
+
+        // Compare results..
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+    }
+
+    void test7b()
+    {
+        const char filedata[] = "#ifndef ABC\n"
+                                "A\n"
+                                "#ifdef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Make sure an error message is written..
+        TODO_ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed NOT to be defined\n",
+                           "", errout.str());
+
+        // Compare results..
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+    }
+
+    void test7c()
+    {
+        const char filedata[] = "#ifdef ABC\n"
+                                "A\n"
+                                "#ifndef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Make sure an error message is written..
+        ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
+                           errout.str());
+
+        // Compare results..
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+    }
+
+    void test7d()
+    {
+        const char filedata[] = "#if defined(ABC)\n"
+                                "A\n"
+                                "#if defined(ABC)\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Make sure an error message is written..
+        ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
+                           errout.str());
+
+        // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
