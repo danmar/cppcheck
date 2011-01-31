@@ -437,6 +437,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #2525 - sizeof
+        check("void f() {\n"
+              "    int *test = NULL;\n"
+              "    int c = sizeof(test[0]);\n"
+              "    if (!test)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer5()
