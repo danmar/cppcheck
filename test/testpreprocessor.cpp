@@ -430,7 +430,7 @@ private:
 
         // Make sure an error message is written..
         ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
-                           errout.str());
+                      errout.str());
 
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
@@ -512,7 +512,7 @@ private:
 
         // Make sure an error message is written..
         ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
-                           errout.str());
+                      errout.str());
 
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
@@ -537,7 +537,7 @@ private:
 
         // Make sure an error message is written..
         ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
-                           errout.str());
+                      errout.str());
 
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));

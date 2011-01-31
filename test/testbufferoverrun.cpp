@@ -1073,7 +1073,7 @@ private:
         check("class X\n"
               "{\n"
               "    public:\n"
-              "    X()\n"          
+              "    X()\n"
               "    {\n"
               "       m_x[0] = 0;\n"
               "       m_x[1] = 0;\n"
