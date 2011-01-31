@@ -84,7 +84,6 @@ private:
         TEST_CASE(sizeof19);    // #1891 - sizeof 'x'
         TEST_CASE(sizeof20);    // #2024 - sizeof a)
         TEST_CASE(sizeof21);    // #2232 - sizeof...(Args)
-        TEST_CASE(sizeof22);    // #155
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
@@ -851,7 +850,6 @@ private:
                             "    sizeof(*i);\n"
                             "}\n";
         ASSERT_EQUALS("void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }", sizeof_(code));
-        TODO_ASSERT_EQUALS("void foo ( ) { int i [ 4 ] ; 4 ; 4 ; }", sizeof_(code));
     }
 
     void sizeof3()
@@ -863,7 +861,6 @@ private:
                             "    sizeof(i);\n"
                             "}\n";
         ASSERT_EQUALS("static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }", sizeof_(code));
-        TODO_ASSERT_EQUALS("static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 10 ; }", sizeof_(code));
     }
 
     void sizeof4()
@@ -1410,36 +1407,6 @@ private:
 
         // don't segfault
         tok(code);
-    }
-
-    void sizeof22()
-    {
-        {
-            const char code[] = "void foo(int i[10])\n"
-                                "{\n"
-                                "    sizeof(i);\n"
-                                "    sizeof(*i);\n"
-                                "}\n";
-            TODO_ASSERT_EQUALS("void foo ( ) { sizeof ( i ) ; 4 ; }", sizeof_(code));
-        }
-
-        {
-            const char code[] = "void foo(int i[])\n"
-                                "{\n"
-                                "    sizeof(i);\n"
-                                "    sizeof(*i);\n"
-                                "}\n";
-            TODO_ASSERT_EQUALS("void foo ( ) { sizeof ( i ) ; 4 ; }", sizeof_(code));
-        }
-
-        {
-            const char code[] = "void foo(int i[])\n"
-                                "{\n"
-                                "    sizeof i;\n"
-                                "    sizeof(*i);\n"
-                                "}\n";
-            TODO_ASSERT_EQUALS("void foo ( ) { sizeof ( i ) ; 4 ; }", sizeof_(code));
-        }
     }
 
 
