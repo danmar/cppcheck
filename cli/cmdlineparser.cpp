@@ -327,6 +327,41 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             AddFilesToList(12 + argv[i], _pathnames);
         }
 
+        // Ignored paths
+        else if (strncmp(argv[i], "-i", 2) == 0)
+        {
+            std::string path;
+
+            // "-i path/"
+            if (strcmp(argv[i], "-i") == 0)
+            {
+                ++i;
+                if (i >= argc)
+                {
+                    PrintMessage("cppcheck: argument to '-i' is missing");
+                    return false;
+                }
+                path = argv[i];
+            }
+
+            // "-Ipath/"
+            else
+            {
+                path = 2 + argv[i];
+            }
+
+            if (!path.empty())
+            {
+                path = Path::fromNativeSeparators(path);
+
+                // If path doesn't end with / or \, add it
+                if (path[path.length()-1] != '/')
+                    path += '/';
+
+                _ignoredPaths.push_back(path);
+            }
+        }
+
         // Report progress
         else if (strcmp(argv[i], "--report-progress") == 0)
         {
@@ -589,6 +624,9 @@ void CmdLineParser::PrintHelp()
               "    -I [dir]             Give include path. Give several -I parameters to give\n"
               "                         several paths. First given path is checked first. If\n"
               "                         paths are relative to source files, this is not needed\n"
+              "    -i [dir]             Give path to ignore. Give several -i parameters to ignore\n"
+              "                         several paths. If any part of the checked path matches the\n"
+              "                         given dir the path is ignored and not checked.\n"
               "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
               "                         more comments, like: // cppcheck-suppress warningId\n"
               "                         on the lines before the warning to suppress.\n"

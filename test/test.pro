@@ -21,12 +21,15 @@ SOURCES += ../cli/cmdlineparser.cpp \
            ../cli/filelister.cpp \
            ../cli/filelister_unix.cpp \
            ../cli/filelister_win32.cpp \
-           ../cli/threadexecutor.cpp
+           ../cli/pathmatch.cpp \
+           ../cli/threadexecutor.cpp \
+    testpathmatch.cpp
 HEADERS += ../cli/cmdlineparser.h \
            ../cli/cppcheckexecutor.h \
            ../cli/filelister.h \
            ../cli/filelister_unix.h \
            ../cli/filelister_win32.h \
+           ../cli/pathmatch.h \
            ../cli/threadexecutor.h
 
 # test/*
@@ -50,6 +53,7 @@ SOURCES += options.cpp \
            testoptions.cpp \
            testother.cpp \
            testpath.cpp \
+           testpathmatch.cpp \
            testpostfixoperator.cpp \
            testpreprocessor.cpp \
            testrunner.cpp \
