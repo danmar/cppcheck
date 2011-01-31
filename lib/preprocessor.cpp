@@ -714,7 +714,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 std::string Preprocessor::getdef(std::string line, bool def)
 {
     if (line.empty() || line[0] != '#')
-	return "";
+        return "";
 
     // If def is true, the line must start with "#ifdef"
     if (def && line.compare(0, 7, "#ifdef ") != 0 && line.compare(0, 4, "#if ") != 0
@@ -791,7 +791,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             _errorLogger->reportProgress(filename, "Preprocessing (get configurations 1)", 0);
 
         if (line.empty())
-	    continue;
+            continue;
 
         if (line.compare(0, 6, "#file ") == 0)
         {
@@ -823,8 +823,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         if (!line.empty() && line.compare(0, 3, "#if") != 0)
             includeguard = false;
 
-	if (line[0] != '#')
-	    continue;
+        if (line[0] != '#')
+            continue;
 
         if (includeguard)
             continue;
