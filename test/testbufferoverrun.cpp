@@ -106,6 +106,7 @@ private:
         TEST_CASE(array_index_29); // ticket #1734
         TEST_CASE(array_index_30); // ticket #2086 - out of bounds when type is unknown
         TEST_CASE(array_index_31); // ticket #2120 - out of bounds in subfunction when type is unknown
+        TEST_CASE(array_index_32);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
@@ -1065,6 +1066,21 @@ private:
               "    struct s1 *obj;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_32()
+    {
+        check("class X\n"
+              "{\n"
+              "    public:\n"
+              "    X()\n"          
+              "    {\n"
+              "       m_x[0] = 0;\n"
+              "       m_x[1] = 0;\n"
+              "    }\n"
+              "    int m_x[1];\n"
+              "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_x[1]' index 1 out of bounds\n","", errout.str());
     }
 
     void array_index_multidim()
