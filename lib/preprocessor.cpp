@@ -714,22 +714,22 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 std::string Preprocessor::getdef(std::string line, bool def)
 {
     // If def is true, the line must start with "#ifdef"
-    if (def && line.find("#ifdef ") != 0 && line.find("#if ") != 0
-        && (line.find("#elif ") != 0 || line.find("#elif !") == 0))
+    if (def && line.compare(0, 7, "#ifdef ") != 0 && line.compare(0, 4, "#if ") != 0
+        && (line.compare(0, 6, "#elif ") != 0 || line.compare(0, 7, "#elif !") == 0))
     {
         return "";
     }
 
     // If def is false, the line must start with "#ifndef"
-    if (!def && line.find("#ifndef ") != 0 && line.find("#elif !") != 0)
+    if (!def && line.compare(0, 8, "#ifndef ") != 0 && line.compare(0, 7, "#elif !") != 0)
     {
         return "";
     }
 
     // Remove the "#ifdef" or "#ifndef"
-    if (line.find("#if defined ") == 0)
+    if (line.compare(0, 12, "#if defined ") == 0)
         line.erase(0, 11);
-    else if (line.find("#elif !defined(") == 0)
+    else if (line.compare(0, 15, "#elif !defined(") == 0)
     {
         std::string::size_type pos = 0;
 
@@ -880,7 +880,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 simplifyCondition(varmap, def, false);
             }
 
-            if (! deflist.empty() && line.find("#elif ") == 0)
+            if (! deflist.empty() && line.compare(0, 6, "#elif ") == 0)
                 deflist.pop_back();
             deflist.push_back(def);
             def = "";
@@ -930,7 +930,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
         }
 
-        else if (line.find("#else") == 0 && ! deflist.empty())
+        else if (line.compare(0, 5, "#else") == 0 && ! deflist.empty())
         {
             if (deflist.back() == "!")
             {
@@ -946,7 +946,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
         }
 
-        else if (line.find("#endif") == 0 && ! deflist.empty())
+        else if (line.compare(0, 6, "#endif") == 0 && ! deflist.empty())
         {
             if (deflist.back() == "!")
                 ndeflist.pop_back();
@@ -1372,7 +1372,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
             }
         }
 
-        else if (line.find("#elif !") == 0)
+        else if (line.compare(0, 7, "#elif !") == 0)
         {
             if (matched_ifdef.back())
             {
@@ -1388,7 +1388,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
             }
         }
 
-        else if (line.find("#elif ") == 0)
+        else if (line.compare(0, 6, "#elif ") == 0)
         {
             if (matched_ifdef.back())
             {
