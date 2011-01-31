@@ -89,6 +89,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassConstructors);
         TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
         TEST_CASE(testMisusedScopeObjectDoesNotPickPureC);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
 
@@ -1355,6 +1356,27 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) instance of \"cb_watch_bool\" object destroyed immediately\n", errout.str());
 
         check(code, "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectDoesNotPickNestedClass()
+    {
+        const char code[] = "class ios_base {\n"
+                            "public:\n"
+                            "  class Init {\n"
+                            "  public:\n"
+                            "  };\n"
+                            "};\n"
+                            "class foo {\n"
+                            "public:\n"
+                            "  foo();\n"
+                            "  void Init(int);\n"
+                            "};\n"
+                            "foo::foo() {\n"
+                            "  Init(0);\n"
+                            "}\n";
+
+        check(code, "test.cpp");
         ASSERT_EQUALS("", errout.str());
     }
 
