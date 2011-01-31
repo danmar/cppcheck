@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>589</width>
-    <height>281</height>
+    <height>313</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -135,7 +135,7 @@
        <item>
         <widget class="QCheckBox" name="mForce">
          <property name="text">
-          <string>Check all #ifdef configurations</string>
+          <string>Force checking all #ifdef configurations</string>
          </property>
         </widget>
        </item>

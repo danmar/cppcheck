@@ -226,10 +226,10 @@ kate -l(line) (file)
         <location filename="main.ui" line="26"/>
         <location filename="mainwindow.cpp" line="203"/>
         <location filename="mainwindow.cpp" line="233"/>
-        <location filename="mainwindow.cpp" line="523"/>
-        <location filename="mainwindow.cpp" line="641"/>
-        <location filename="mainwindow.cpp" line="659"/>
-        <location filename="mainwindow.cpp" line="810"/>
+        <location filename="mainwindow.cpp" line="524"/>
+        <location filename="mainwindow.cpp" line="642"/>
+        <location filename="mainwindow.cpp" line="660"/>
+        <location filename="mainwindow.cpp" line="811"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -556,28 +556,28 @@ kate -l(line) (file)
         <translation>Tarkistettavaksi sopivia tiedostoja ei löytynyt!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="566"/>
+        <location filename="mainwindow.cpp" line="567"/>
         <source>License</source>
         <translation>Lisenssi</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="573"/>
+        <location filename="mainwindow.cpp" line="574"/>
         <source>Authors</source>
         <translation>Tekijät</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="581"/>
+        <location filename="mainwindow.cpp" line="582"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML-tiedostot (*.xml);;Tekstitiedostot (*.txt);;CSV-tiedostot (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="583"/>
+        <location filename="mainwindow.cpp" line="584"/>
         <source>Save the report file</source>
         <translation>Tallenna raportti</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="442"/>
-        <location filename="mainwindow.cpp" line="591"/>
+        <location filename="mainwindow.cpp" line="443"/>
+        <location filename="mainwindow.cpp" line="592"/>
         <source>XML files (*.xml)</source>
         <translation>XML-tiedostot (*xml)</translation>
     </message>
@@ -588,40 +588,40 @@ kate -l(line) (file)
     </message>
     <message>
         <location filename="mainwindow.cpp" line="306"/>
-        <location filename="mainwindow.cpp" line="741"/>
-        <location filename="mainwindow.cpp" line="787"/>
+        <location filename="mainwindow.cpp" line="742"/>
+        <location filename="mainwindow.cpp" line="788"/>
         <source>Project: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="444"/>
+        <location filename="mainwindow.cpp" line="445"/>
         <source>Open the report file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="519"/>
+        <location filename="mainwindow.cpp" line="520"/>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="597"/>
+        <location filename="mainwindow.cpp" line="598"/>
         <source>Text files (*.txt)</source>
         <translation>Tekstitiedostot (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="603"/>
+        <location filename="mainwindow.cpp" line="604"/>
         <source>CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="643"/>
+        <location filename="mainwindow.cpp" line="644"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="660"/>
+        <location filename="mainwindow.cpp" line="661"/>
         <source>Failed to change the language:
 
 %1
@@ -637,39 +637,39 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="708"/>
-        <location filename="mainwindow.cpp" line="717"/>
+        <location filename="mainwindow.cpp" line="709"/>
+        <location filename="mainwindow.cpp" line="718"/>
         <source>Cppcheck Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="708"/>
+        <location filename="mainwindow.cpp" line="709"/>
         <source>Failed to load help file (not found)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="717"/>
+        <location filename="mainwindow.cpp" line="718"/>
         <source>Failed to load help file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="731"/>
-        <location filename="mainwindow.cpp" line="776"/>
+        <location filename="mainwindow.cpp" line="732"/>
+        <location filename="mainwindow.cpp" line="777"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="733"/>
+        <location filename="mainwindow.cpp" line="734"/>
         <source>Select Project File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="778"/>
+        <location filename="mainwindow.cpp" line="779"/>
         <source>Select Project Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="811"/>
+        <location filename="mainwindow.cpp" line="812"/>
         <source>No project file loaded</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1022,8 +1022,9 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     </message>
     <message>
         <location filename="settings.ui" line="138"/>
-        <source>Check all #ifdef configurations</source>
-        <translation>Tarkista kaikki #ifdef kombinaatiot</translation>
+        <source>Force checking all #ifdef configurations</source>
+        <oldsource>Check all #ifdef configurations</oldsource>
+        <translation type="unfinished">Tarkista kaikki #ifdef kombinaatiot</translation>
     </message>
     <message>
         <location filename="settings.ui" line="145"/>
