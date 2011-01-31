@@ -3,10 +3,14 @@
     <root name="."/>
     <includedir>
         <dir name="lib/"/>
+        <dir name="cli/"/>
+        <dir name="externals/"/>
+        <dir name="gui/temp/"/>
     </includedir>
     <paths>
         <dir name="lib/"/>
         <dir name="cli/"/>
         <dir name="gui/"/>
+        <dir name="test/"/>
     </paths>
 </project>

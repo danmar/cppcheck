@@ -485,6 +485,12 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     break;
                 }
 
+                if (tok1->str() == ")" && Token::simpleMatch(tok1->link()->previous(), "sizeof ("))
+                {
+                    tok1 = tok1->link()->previous();
+                    continue;
+                }
+
                 if (tok1->str() == "break")
                     break;
 
