@@ -22,7 +22,7 @@ MAN_SOURCE=man/cppcheck.1.xml
 
 ###### Object Files
 
-LIBOBJ =     lib/checkautovariables.o \
+LIBOBJ =      lib/checkautovariables.o \
               lib/checkbufferoverrun.o \
               lib/checkclass.o \
               lib/checkexceptionsafety.o \
@@ -46,7 +46,7 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/token.o \
               lib/tokenize.o
 
-CLIOBJ =     cli/cmdlineparser.o \
+CLIOBJ =      cli/cmdlineparser.o \
               cli/cppcheckexecutor.o \
               cli/filelister.o \
               cli/filelister_unix.o \
@@ -90,7 +90,7 @@ TESTOBJ =     test/options.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o
 
-EXTOBJ =     externals/tinyxml/tinystr.o \
+EXTOBJ =      externals/tinyxml/tinystr.o \
               externals/tinyxml/tinyxml.o \
               externals/tinyxml/tinyxmlerror.o \
               externals/tinyxml/tinyxmlparser.o
@@ -98,13 +98,13 @@ EXTOBJ =     externals/tinyxml/tinystr.o \
 
 ###### Targets
 
-cppcheck:	$(LIBOBJ)	$(CLIOBJ)	$(EXTOBJ)
+cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre $(LDFLAGS)
 
-all:	cppcheck	testrunner
+all:	cppcheck testrunner
 
-testrunner:	$(TESTOBJ)	$(LIBOBJ)	$(EXTOBJ)	cli/threadexecutor.o	cli/cmdlineparser.o	cli/cppcheckexecutor.o	cli/filelister.o	cli/filelister_unix.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o	cli/filelister.o	cli/filelister_unix.o $(LDFLAGS)
+testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/filelister_unix.o
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/filelister.o cli/filelister_unix.o $(LDFLAGS)
 
 test:	all
 	./testrunner
@@ -127,7 +127,7 @@ man/cppcheck.1:	$(MAN_SOURCE)
 tags:
 	ctags -R --exclude=doxyoutput .
 
-install:	cppcheck
+install: cppcheck
 	install -d ${BIN}
 	install cppcheck ${BIN}
 
