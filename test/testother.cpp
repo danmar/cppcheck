@@ -89,6 +89,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassConstructors);
         TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
         TEST_CASE(testMisusedScopeObjectDoesNotPickPureC);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
 
@@ -1356,6 +1357,27 @@ private:
 
         check(code, "test.c");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectDoesNotPickNestedClass()
+    {
+        const char code[] = "class ios_base {\n"
+                            "public:\n"
+                            "  class Init {\n"
+                            "  public:\n"
+                            "  };\n"
+                            "};\n"
+                            "class foo {\n"
+                            "public:\n"
+                            "  foo();\n"
+                            "  void Init(int);\n"
+                            "};\n"
+                            "foo::foo() {\n"
+                            "  Init(0);\n"
+                            "}\n";
+
+        check(code, "test.cpp");
+        TODO_ASSERT_EQUALS("", "[test.cpp:13]: (error) instance of \"Init\" object destroyed immediately\n", errout.str());
     }
 
     void trac2084()

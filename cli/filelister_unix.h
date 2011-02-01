@@ -23,7 +23,7 @@
 #include <string>
 #include "filelister.h"
 
-/// @addtogroup Core
+/// @addtogroup CLI
 /// @{
 
 

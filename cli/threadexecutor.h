@@ -25,6 +25,9 @@
 #include "settings.h"
 #include "errorlogger.h"
 
+/// @addtogroup CLI
+/// @{
+
 /**
  * This class will take a list of filenames and settings and check then
  * all files using threads.
@@ -94,5 +97,7 @@ private:
     /** disabled assignment operator */
     void operator=(const ThreadExecutor &);
 };
+
+/// @}
 
 #endif // THREADEXECUTOR_H

@@ -22,7 +22,7 @@
 #include <vector>
 #include <string>
 
-/// @addtogroup Core
+/// @addtogroup CLI
 /// @{
 
 /**
