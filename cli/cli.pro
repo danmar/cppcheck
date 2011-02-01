@@ -14,9 +14,15 @@ include($$PWD/../lib/lib.pri)
 SOURCES += main.cpp \
            cppcheckexecutor.cpp \
            cmdlineparser.cpp \
+           filelister.cpp \
+           filelister_unix.cpp \
+           filelister_win32.cpp \
            threadexecutor.cpp
 HEADERS += cppcheckexecutor.h \
-		   cmdlineparser.h \
+           cmdlineparser.h \
+           filelister.h \
+           filelister_unix.h \
+           filelister_win32.h \
            threadexecutor.h
 
 CONFIG(release, debug|release) {

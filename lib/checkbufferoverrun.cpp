@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -289,7 +289,9 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
 /** Parse for condition */
 static bool for_condition(const Token * const tok2, unsigned int varid, std::string &min_value, std::string &max_value, std::string &strindex, bool &maxMinFlipped)
 {
-    if (Token::Match(tok2, "%varid% < %num% ;", varid))
+    if (Token::Match(tok2, "%varid% < %num% ;", varid) ||
+        Token::Match(tok2, "%varid% != %num% ; ++ %varid%", varid) ||
+        Token::Match(tok2, "%varid% != %num% ; %varid% ++", varid))
     {
         maxMinFlipped = false;
         const MathLib::bigint value = MathLib::toLongNumber(tok2->strAt(2));
@@ -300,7 +302,9 @@ static bool for_condition(const Token * const tok2, unsigned int varid, std::str
         maxMinFlipped = false;
         max_value = tok2->strAt(2);
     }
-    else if (Token::Match(tok2, " %num% < %varid% ;", varid))
+    else if (Token::Match(tok2, " %num% < %varid% ;", varid) ||
+             Token::Match(tok2, "%num% != %varid% ; ++ %varid%", varid) ||
+             Token::Match(tok2, "%num% != %varid% ; %varid% ++", varid))
     {
         maxMinFlipped = true;
         const MathLib::bigint value = MathLib::toLongNumber(tok2->str());
@@ -532,7 +536,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 
 
 
-void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo)
+void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo)
 {
     // total_size : which parameter in function call takes the total size?
     std::map<std::string, unsigned int> total_size;
@@ -717,6 +721,42 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
 }
 
 
+void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo)
+{
+
+    // 1st parameter..
+    if (Token::Match(tok->tokAt(2), "%varid% ,|)", arrayInfo.varid))
+        checkFunctionParameter(*tok, 1, arrayInfo);
+    else if (Token::Match(tok->tokAt(2), "%varid% + %num% ,|)", arrayInfo.varid))
+    {
+        const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok->strAt(4))));
+        checkFunctionParameter(*tok, 1, ai);
+    }
+
+    // goto 2nd parameter and check it..
+    for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+    {
+        if (tok2->str() == "(")
+        {
+            tok2 = tok2->link();
+            continue;
+        }
+        if (tok2->str() == ";" || tok2->str() == ")")
+            break;
+        if (tok2->str() == ",")
+        {
+            if (Token::Match(tok2, ", %varid% ,|)", arrayInfo.varid))
+                checkFunctionParameter(*tok, 2, arrayInfo);
+            else if (Token::Match(tok2, ", %varid% + %num% ,|)", arrayInfo.varid))
+            {
+                const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(3))));
+                checkFunctionParameter(*tok, 2, ai);
+            }
+            break;
+        }
+    }
+}
+
 
 void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const MathLib::bigint size, const MathLib::bigint total_size, unsigned int varid)
 {
@@ -823,9 +863,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                                 (unsigned int)(total_size / size),
                                 (unsigned int)size);
             if (Token::Match(tok, ("%var% ( " + varnames + " ,").c_str()))
-                checkFunctionCall(*tok, 1, arrayInfo);
+                checkFunctionParameter(*tok, 1, arrayInfo);
             if (Token::Match(tok, ("%var% ( %var% , " + varnames + " ,").c_str()))
-                checkFunctionCall(*tok, 2, arrayInfo);
+                checkFunctionParameter(*tok, 2, arrayInfo);
         }
 
         // Loop..
@@ -930,10 +970,15 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 outOfBounds(tok->tokAt(4 + varc), "snprintf size");
         }
 
-        // Function calls not handled
+        // Check function call..
         if (Token::Match(tok, "%var% ("))
         {
-            continue;
+            // No varid => function calls are not handled
+            if (varid == 0)
+                continue;
+
+            const ArrayInfo arrayInfo(varid, varnames, size, total_size / size);
+            checkFunctionCall(tok, arrayInfo);
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
@@ -1077,37 +1122,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         // Check function call..
         if (Token::Match(tok, "%var% ("))
         {
-            // 1st parameter..
-            if (Token::Match(tok->tokAt(2), "%varid% ,|)", arrayInfo.varid))
-                checkFunctionCall(*tok, 1, arrayInfo);
-            else if (Token::Match(tok->tokAt(2), "%varid% + %num% ,|)", arrayInfo.varid))
-            {
-                const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok->strAt(4))));
-                checkFunctionCall(*tok, 1, ai);
-            }
-
-            // goto 2nd parameter and check it..
-            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "(")
-                {
-                    tok2 = tok2->link();
-                    continue;
-                }
-                if (tok2->str() == ";" || tok2->str() == ")")
-                    break;
-                if (tok2->str() == ",")
-                {
-                    if (Token::Match(tok2, ", %varid% ,|)", arrayInfo.varid))
-                        checkFunctionCall(*tok, 2, arrayInfo);
-                    else if (Token::Match(tok2, ", %varid% + %num% ,|)", arrayInfo.varid))
-                    {
-                        const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(3))));
-                        checkFunctionCall(*tok, 2, ai);
-                    }
-                    break;
-                }
-            }
+            checkFunctionCall(tok, arrayInfo);
         }
 
         if (_settings->_checkCodingStyle)

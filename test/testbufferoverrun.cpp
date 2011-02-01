@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -106,6 +106,7 @@ private:
         TEST_CASE(array_index_29); // ticket #1734
         TEST_CASE(array_index_30); // ticket #2086 - out of bounds when type is unknown
         TEST_CASE(array_index_31); // ticket #2120 - out of bounds in subfunction when type is unknown
+        TEST_CASE(array_index_32);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
@@ -114,6 +115,7 @@ private:
         TEST_CASE(array_index_varnames);   // FP: struct member. #1576
         TEST_CASE(array_index_for_break);  // FP: for,break
         TEST_CASE(array_index_for);        // FN: for,if
+        TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -179,6 +181,7 @@ private:
         TEST_CASE(alloc1);    // Buffer allocated with new
         TEST_CASE(alloc2);    // Buffer allocated with malloc
         TEST_CASE(alloc3);    // statically allocated buffer
+        TEST_CASE(malloc_memset);	// using memset on buffer allocated with malloc
 
         TEST_CASE(memset1);
         TEST_CASE(memset2);
@@ -559,8 +562,8 @@ private:
               "    char str[5];\n"
               "    memclr( 10, str );   // ERROR\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds\n", errout.str());
-        ASSERT_EQUALS("", errout.str());	// current result
+        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds\n",
+                           "", errout.str());
 
         // This is not an error
         check("static void memclr( char *data, int size )\n"
@@ -608,8 +611,8 @@ private:
               "{\n"
               "    memclr(abc->str);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (possible error) Array index out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (possible error) Array index out of bounds\n",
+                           "", errout.str());
     }
 
 
@@ -793,8 +796,7 @@ private:
               "        i+=1;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());	// Catch changes
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Buffer overrun\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Buffer overrun\n", "", errout.str());
     }
 
     void array_index_19()
@@ -999,8 +1001,7 @@ private:
               "    int *ip = &i[1];\n"
               "    ip[-10] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array ip[-10] out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array ip[-10] out of bounds\n", "", errout.str());
     }
 
     void array_index_29()
@@ -1013,8 +1014,7 @@ private:
               "    int *ii = &i[-5];"
               "    ii[10] = 0;"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Array ii[10] out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Array ii[10] out of bounds\n", "", errout.str());
     }
 
     void array_index_30()
@@ -1066,6 +1066,21 @@ private:
               "    struct s1 *obj;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_32()
+    {
+        check("class X\n"
+              "{\n"
+              "    public:\n"
+              "    X()\n"
+              "    {\n"
+              "       m_x[0] = 0;\n"
+              "       m_x[1] = 0;\n"
+              "    }\n"
+              "    int m_x[1];\n"
+              "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_x[1]' index 1 out of bounds\n","", errout.str());
     }
 
     void array_index_multidim()
@@ -1131,7 +1146,7 @@ private:
               "  char a[10][10][10];\n"
               "  a[2*3][4*3][2] = 'a';\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][12][2] out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][12][2] out of bounds\n", "", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1199,8 +1214,7 @@ private:
               "  };\n"
               " }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:12]: (error) Array index out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:12]: (error) Array index out of bounds\n", "", errout.str());
     }
 
     void array_index_calculation()
@@ -1293,8 +1307,7 @@ private:
               "        val[i+1] = val[i];\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());	// catch changes
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array 'val[5]' index -1 out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array 'val[5]' index -1 out of bounds\n", "", errout.str());
     }
 
 
@@ -1355,6 +1368,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void array_index_for_neq()
+    {
+        // Ticket #2211 - for loop using != in the condition
+        check("void f() {\n"
+              "    int a[5];\n"
+              "    for (int i = 0; i != 10; ++i) {\n"
+              "        a[i] = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: a\n", errout.str());
+    }
 
     void buffer_overrun_1()
     {
@@ -1549,8 +1573,7 @@ private:
               "  char s[3];\n"
               "  f1(s,3);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Buffer access out-of-bounds\n", "", errout.str());
 
         check("void f1(char *s,int size)\n"
               "{\n"
@@ -1986,8 +2009,7 @@ private:
               "    char buf[3];\n"
               "    sprintf(buf, \"%s\", condition ? \"11\" : \"222\");\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());	// catch changes
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", "", errout.str());
     }
 
     void sprintf7()
@@ -2211,8 +2233,7 @@ private:
               "    char a[5], b[50];\n"
               "    memchr(a, b, 10);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", "", errout.str());
     }
 
     // ticket #2121 - buffer access out of bounds when using uint32_t
@@ -2369,6 +2390,15 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[1]' index 10 out of bounds\n", errout.str());
     }
 
+    void malloc_memset()
+    {
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    memset(p,0,100);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+    }
+
     void memset1()
     {
         check("void foo()\n"
@@ -2444,7 +2474,7 @@ private:
         ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("%08ld", intAsParameter));
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%.2d", intAsParameter));
         ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("%08.2d", intAsParameter));
-        TODO_ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%x", intAsParameter));
+        TODO_ASSERT_EQUALS(5, 2, CheckBufferOverrun::countSprintfLength("%x", intAsParameter));
         ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%4x", intAsParameter));
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%5x", intAsParameter));
         ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%.4x", intAsParameter));
@@ -2456,17 +2486,17 @@ private:
         Token floatTok(0);
         floatTok.str("1.12345f");
         floatAsParameter.push_back(&floatTok);
-        TODO_ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%.2f", floatAsParameter));
+        TODO_ASSERT_EQUALS(5, 3, CheckBufferOverrun::countSprintfLength("%.2f", floatAsParameter));
         ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("%8.2f", floatAsParameter));
-        TODO_ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter));
+        TODO_ASSERT_EQUALS(5, 3, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter));
 
         std::list<const Token*> floatAsParameter2;
         Token floatTok2(0);
         floatTok2.str("100.12345f");
         floatAsParameter2.push_back(&floatTok2);
-        TODO_ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter2));
-        TODO_ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%.2f", floatAsParameter));
-        TODO_ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%4.2f", floatAsParameter));
+        TODO_ASSERT_EQUALS(7, 3, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter2));
+        TODO_ASSERT_EQUALS(7, 3, CheckBufferOverrun::countSprintfLength("%.2f", floatAsParameter));
+        TODO_ASSERT_EQUALS(7, 5, CheckBufferOverrun::countSprintfLength("%4.2f", floatAsParameter));
 
         std::list<const Token*> multipleParams;
         multipleParams.push_back(&strTok);

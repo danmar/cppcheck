@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,15 @@
 
 #include "testsuite.h"
 #include "testutils.h"
-#define private public
 #include "symboldatabase.h"
+
+#define GET_SYMBOL_DB(code) \
+    errout.str(""); \
+    Settings settings; \
+    Tokenizer tokenizer(&settings, this); \
+    std::istringstream istr(code); \
+    tokenizer.tokenize(istr, "test.cpp"); \
+    const SymbolDatabase *db = tokenizer.getSymbolDatabase();
 
 class TestSymbolDatabase: public TestFixture
 {
@@ -29,17 +36,23 @@ public:
         ,si(NULL, NULL, NULL)
         ,vartok(NULL)
         ,typetok(NULL)
+        ,t(NULL)
+        ,found(false)
     {}
 
 private:
-    const SymbolDatabase::SpaceInfo si;
+    const Scope si;
     const Token* vartok;
     const Token* typetok;
+    const Token* t;
+    bool found;
 
     void reset()
     {
         vartok = NULL;
         typetok = NULL;
+        t = NULL;
+        found = false;
     }
 
     void run()
@@ -56,7 +69,30 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedPointerDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithIndirection);
         TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection);
+        TEST_CASE(test_isVariableDeclarationIdentifiesArray);
+        TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers);
+        TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerVariable);
+        TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable);
+        TEST_CASE(isVariableDeclarationIdentifiesTemplatedArrayVariable);
+        TEST_CASE(isVariableDeclarationIdentifiesTemplatedVariable);
+        TEST_CASE(isVariableDeclarationIdentifiesTemplatedVariableIterator);
+        TEST_CASE(isVariableDeclarationIdentifiesNestedTemplateVariable);
+        TEST_CASE(isVariableDeclarationDoesNotIdentifyTemplateClass);
+        TEST_CASE(canFindMatchingBracketsNeedsOpen);
+        TEST_CASE(canFindMatchingBracketsInnerPair);
+        TEST_CASE(canFindMatchingBracketsOuterPair);
+        TEST_CASE(canFindMatchingBracketsWithTooManyClosing);
+        TEST_CASE(canFindMatchingBracketsWithTooManyOpening);
 
+        TEST_CASE(hasRegularFunction);
+        TEST_CASE(hasInlineClassFunction);
+        TEST_CASE(hasMissingInlineClassFunction);
+        TEST_CASE(hasClassFunction);
+
+        TEST_CASE(hasRegularFunctionReturningFunctionPointer);
+        TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
+        TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
+        TEST_CASE(hasClassFunctionReturningFunctionPointer);
     }
 
     void test_isVariableDeclarationCanHandleNull()
@@ -176,6 +212,315 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
+    }
+
+    void test_isVariableDeclarationIdentifiesArray()
+    {
+        reset();
+        givenACodeSampleToTokenize array("::std::string v[3];");
+        bool result = si.isVariableDeclaration(array.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("v", vartok->str());
+        ASSERT_EQUALS("string", typetok->str());
+    }
+
+    void test_isVariableDeclarationIdentifiesOfArrayPointers()
+    {
+        reset();
+        givenACodeSampleToTokenize array("A *a[5];");
+        bool result = si.isVariableDeclaration(array.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("a", vartok->str());
+        ASSERT_EQUALS("A", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesTemplatedPointerVariable()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::set<char>* chars;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("chars", vartok->str());
+        ASSERT_EQUALS("set", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<int>*** ints;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("ints", vartok->str());
+        ASSERT_EQUALS("deque", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesTemplatedArrayVariable()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<int> ints[3];");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("ints", vartok->str());
+        ASSERT_EQUALS("deque", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesTemplatedVariable()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::vector<int> ints;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("ints", vartok->str());
+        ASSERT_EQUALS("vector", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesTemplatedVariableIterator()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::list<int>::const_iterator floats;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("floats", vartok->str());
+        ASSERT_EQUALS("const_iterator", typetok->str());
+    }
+
+    void isVariableDeclarationIdentifiesNestedTemplateVariable()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("intsets", vartok->str());
+        ASSERT_EQUALS("deque", typetok->str());
+    }
+
+    void isVariableDeclarationDoesNotIdentifyTemplateClass()
+    {
+        reset();
+        givenACodeSampleToTokenize var("template <class T> class SomeClass{};");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(false, result);
+    }
+
+    void canFindMatchingBracketsNeedsOpen()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
+
+        found = si.findClosingBracket(var.tokens(), t);
+        ASSERT(! found);
+        ASSERT(! t);
+    }
+
+    void canFindMatchingBracketsInnerPair()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
+
+        found = si.findClosingBracket(var.tokens()->tokAt(7), t);
+        ASSERT(found);
+        ASSERT_EQUALS(">", t->str());
+        ASSERT_EQUALS(var.tokens()->strAt(9), t->str());
+    }
+
+    void canFindMatchingBracketsOuterPair()
+    {
+        reset();
+        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
+
+        found = si.findClosingBracket(var.tokens()->tokAt(3), t);
+        ASSERT(found);
+        ASSERT_EQUALS(">", t->str());
+        ASSERT_EQUALS(var.tokens()->strAt(10), t->str());
+
+    }
+
+    void canFindMatchingBracketsWithTooManyClosing()
+    {
+        reset();
+        givenACodeSampleToTokenize var("X< 1>2 > x1;\n");
+
+        found = si.findClosingBracket(var.tokens()->tokAt(1), t);
+        ASSERT(found);
+        ASSERT_EQUALS(">", t->str());
+        ASSERT_EQUALS(var.tokens()->strAt(3), t->str());
+    }
+
+    void canFindMatchingBracketsWithTooManyOpening()
+    {
+        reset();
+        givenACodeSampleToTokenize var("X < (2 < 1) > x1;\n");
+
+        found = si.findClosingBracket(var.tokens()->tokAt(1), t);
+        ASSERT(!found);
+    }
+
+    void hasRegularFunction()
+    {
+        GET_SYMBOL_DB("void func() { }\n")
+
+        // 2 scopes: Global and Function
+        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(1));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(1));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(1));
+            ASSERT(function && function->hasBody);
+        }
+    }
+
+    void hasInlineClassFunction()
+    {
+        GET_SYMBOL_DB("class Fred { void func() { } };\n")
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(4));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(4));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
+            ASSERT(function && function->hasBody && function->isInline);
+        }
+    }
+
+    void hasMissingInlineClassFunction()
+    {
+        GET_SYMBOL_DB("class Fred { void func(); };\n")
+
+        // 2 scopes: Global and Class (no Function scope because there is no function implementation)
+        ASSERT(db && db->scopeList.size() == 2 && !tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(4));
+
+            ASSERT(scope == NULL);
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(4));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
+            ASSERT(function && !function->hasBody);
+        }
+    }
+
+    void hasClassFunction()
+    {
+        GET_SYMBOL_DB("class Fred { void func(); }; Fred::func() { }\n")
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(12));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(12));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(12));
+            ASSERT(function && function->hasBody && !function->isInline);
+        }
+    }
+
+    void hasRegularFunctionReturningFunctionPointer()
+    {
+        GET_SYMBOL_DB("void (*func(int f))(char) { }\n")
+
+        // 2 scopes: Global and Function
+        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(3));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(3));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(3));
+            ASSERT(function && function->hasBody && function->retFuncPtr);
+        }
+    }
+
+    void hasInlineClassFunctionReturningFunctionPointer()
+    {
+        GET_SYMBOL_DB("class Fred { void (*func(int f))(char) { } };\n")
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(6));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(6));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
+            ASSERT(function && function->hasBody && function->isInline && function->retFuncPtr);
+        }
+    }
+
+    void hasMissingInlineClassFunctionReturningFunctionPointer()
+    {
+        GET_SYMBOL_DB("class Fred { void (*func(int f))(char); };\n")
+
+        // 2 scopes: Global and Class (no Function scope because there is no function implementation)
+        ASSERT(db && db->scopeList.size() == 2 && !tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(6));
+
+            ASSERT(scope == NULL);
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(6));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
+            ASSERT(function && !function->hasBody && function->retFuncPtr);
+        }
+    }
+
+    void hasClassFunctionReturningFunctionPointer()
+    {
+        GET_SYMBOL_DB("class Fred { void (*func(int f))(char); }; void (*Fred::func(int f))(char) { }\n")
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+
+        if (db)
+        {
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(23));
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(23));
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
+            ASSERT(function && function->hasBody && !function->isInline && function->retFuncPtr);
+        }
     }
 };
 

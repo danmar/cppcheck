@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -185,6 +185,9 @@ public:
 
     /** Simplify labels */
     void labels();
+
+    /** Remove macros in global scope */
+    void removeMacrosInGlobalScope();
 
     /** Remove redundant assignment */
     void removeRedundantAssignment();
@@ -532,6 +535,12 @@ public:
     void simplifyQtSignalsSlots();
 
     /**
+     * Collapse operator name tokens into single token
+     * operator = => operator=
+     */
+    void simplifyOperatorName();
+
+    /**
      * This will return a short name describing function parameters
      * e.g. parameters: (int a, char b) should get name "int,char,".
      * This should help to identify functions with the same name,
@@ -572,9 +581,9 @@ public:
         _settings = settings;
     }
 
-    SymbolDatabase * getSymbolDatabase() const;
+    const SymbolDatabase *getSymbolDatabase() const;
 
-    Token * deleteInvalidTypedef(Token *typeDef);
+    Token *deleteInvalidTypedef(Token *typeDef);
 
 private:
     /** Disable copy constructor, no implementation */

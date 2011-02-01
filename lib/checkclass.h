@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ private:
      */
     void createSymbolDatabase();
 
-    SymbolDatabase *symbolDatabase;
+    const SymbolDatabase *symbolDatabase;
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
@@ -163,13 +163,72 @@ private:
     }
 
     // operatorEqRetRefThis helper function
-    void checkReturnPtrThis(const SymbolDatabase::SpaceInfo *info, const SymbolDatabase::Func *func, const Token *tok, const Token *last);
+    void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last);
 
     // operatorEqToSelf helper functions
     bool hasDeallocation(const Token *first, const Token *last);
     bool hasAssignSelf(const Token *first, const Token *last, const Token *rhs);
 
+    // checkConst helper functions
+    bool isMemberVar(const Scope *scope, const Token *tok);
+    bool isConstMemberFunc(const Scope *scope, const Token *tok);
+    bool checkConstFunc(const Scope *scope, const Token *tok);
+    /** @brief check if this function is virtual in the base classes */
+    bool isVirtualFunc(const Scope *scope, const Token *functionToken) const;
 
+    // constructors helper function
+    /** @brief Information about a member variable. Used when checking for uninitialized variables */
+    struct Usage
+    {
+        Usage() : assign(false), init(false) { }
+
+        /** @brief has this variable been assigned? */
+        bool        assign;
+
+        /** @brief has this variable been initialized? */
+        bool        init;
+    };
+
+    bool isBaseClassFunc(const Token *tok, const Scope *scope);
+
+    /**
+     * @brief assign a variable in the varlist
+     * @param varname name of variable to mark assigned
+     * @param scope pointer to variable Scope
+     * @param usage reference to usage vector
+     */
+    void assignVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage);
+
+    /**
+     * @brief initialize a variable in the varlist
+     * @param varname name of variable to mark initialized
+     * @param scope pointer to variable Scope
+     * @param usage reference to usage vector
+     */
+    void initVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage);
+
+    /**
+     * @brief set all variables in list assigned
+     * @param usage reference to usage vector
+     */
+    void assignAllVar(std::vector<Usage> &usage);
+
+    /**
+     * @brief set all variables in list not assigned and not initialized
+     * @param usage reference to usage vector
+     */
+    void clearAllVar(std::vector<Usage> &usage);
+
+    /**
+     * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
+     * @param func reference to the function that should be checked
+     * @param callstack the function doesn't look into recursive function calls.
+     * @param scope pointer to variable Scope
+     * @param usage reference to usage vector
+     */
+    void initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage);
+
+    bool canNotCopy(const Scope *scope) const;
 };
 /// @}
 //---------------------------------------------------------------------------

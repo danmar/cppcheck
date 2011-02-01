@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,239 +24,335 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <set>
 
-class Token;
+#include "token.h"
+
 class Tokenizer;
 class Settings;
 class ErrorLogger;
 
-class SymbolDatabase
+class Scope;
+class SymbolDatabase;
+
+/**
+ * @brief Access control enumerations.
+ */
+enum AccessControl { Public, Protected, Private };
+
+/** @brief Information about a member variable. */
+class Variable
+{
+    /** @brief flags mask used to access specific bit. */
+    enum
+    {
+        fIsMutable = (1 << 0), /** @brief mutable variable */
+        fIsStatic  = (1 << 1), /** @brief static variable */
+        fIsConst   = (1 << 2), /** @brief const variable */
+        fIsClass   = (1 << 3)  /** @brief user defined type */
+    };
+
+    /**
+     * Get specified flag state.
+     * @param flag_ flag to get state of
+     * @return true if flag set or false in flag not set
+     */
+    bool getFlag(int flag_) const
+    {
+        return bool((_flags & flag_) != 0);
+    }
+
+    /**
+     * Set specified flag state.
+     * @param flag_ flag to set state
+     * @param state_ new state of flag
+     */
+    void setFlag(int flag_, bool state_)
+    {
+        _flags = state_ ? _flags | flag_ : _flags & ~flag_;
+    }
+
+public:
+    Variable(const Token *name_, std::size_t index_, AccessControl access_,
+             bool mutable_, bool static_, bool const_, bool class_,
+             const Scope *type_)
+        : _name(name_),
+          _index(index_),
+          _access(access_),
+          _flags(0),
+          _type(type_)
+    {
+        setFlag(fIsMutable, mutable_);
+        setFlag(fIsStatic, static_);
+        setFlag(fIsConst, const_);
+        setFlag(fIsClass, class_);
+    }
+
+    /**
+     * Get name token.
+     * @return name token
+     */
+    const Token *nameToken() const
+    {
+        return _name;
+    }
+
+    /**
+     * Get name string.
+     * @return name string
+     */
+    const std::string &name() const
+    {
+        return _name->str();
+    }
+
+    /**
+     * Get variable ID.
+     * @return variable ID
+     */
+    unsigned int varId() const
+    {
+        return _name->varId();
+    }
+
+    /**
+     * Get index of variable in declared order.
+     * @return varaible index
+     */
+    std::size_t index() const
+    {
+        return _index;
+    }
+
+    /**
+     * Is variable public.
+     * @return true if public, false if not
+     */
+    bool isPublic() const
+    {
+        return _access == Public;
+    }
+
+    /**
+     * Is variable protected.
+     * @return true if protected, false if not
+     */
+    bool isProtected() const
+    {
+        return _access == Protected;
+    }
+
+    /**
+     * Is variable private.
+     * @return true if private, false if not
+     */
+    bool isPrivate() const
+    {
+        return _access == Private;
+    }
+
+    /**
+     * Is variable mutable.
+     * @return true if mutable, false if not
+     */
+    bool isMutable() const
+    {
+        return getFlag(fIsMutable);
+    }
+
+    /**
+     * Is variable static.
+     * @return true if static, false if not
+     */
+    bool isStatic() const
+    {
+        return getFlag(fIsStatic);
+    }
+
+    /**
+     * Is variable const.
+     * @return true if const, false if not
+     */
+    bool isConst() const
+    {
+        return getFlag(fIsConst);
+    }
+
+    /**
+     * Is variable a user defined (or unknown) type.
+     * @return true if user defined type, false if not
+     */
+    bool isClass() const
+    {
+        return getFlag(fIsClass);
+    }
+
+    /**
+     * Get Scope pointer of known type.
+     * @return pointer to type if known, NULL if not known
+     */
+    const Scope *type() const
+    {
+        return _type;
+    }
+
+private:
+    /** @brief variable name token */
+    const Token *_name;
+
+    /** @brief order declared */
+    std::size_t _index;
+
+    /** @brief what section is this variable declared in? */
+    AccessControl _access;  // public/protected/private
+
+    /** @brief flags */
+    int _flags;
+
+    /** @brief pointer to user defined type info (for known types) */
+    const Scope *_type;
+};
+
+class Function
 {
 public:
-    /**
-     * @brief Access control.
-     */
-    enum AccessControl { Public, Protected, Private };
+    enum Type { eConstructor, eCopyConstructor, eOperatorEqual, eDestructor, eFunction };
 
-    SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
-    ~SymbolDatabase();
-
-    class SpaceInfo;
-
-    /** @brief Information about a member variable. Used when checking for uninitialized variables */
-    class Var
+    Function()
+        : tokenDef(NULL),
+          argDef(NULL),
+          token(NULL),
+          arg(NULL),
+          access(Public),
+          hasBody(false),
+          isInline(false),
+          isConst(false),
+          isVirtual(false),
+          isPure(false),
+          isStatic(false),
+          isFriend(false),
+          isExplicit(false),
+          isOperator(false),
+          retFuncPtr(false),
+          type(eFunction)
     {
-    public:
-        Var(const Token *token_, std::size_t index_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const SpaceInfo *type_)
-            : token(token_),
-              index(index_),
-              assign(false),
-              init(false),
-              access(access_),
-              isMutable(mutable_),
-              isStatic(static_),
-              isConst(const_),
-              isClass(class_),
-              type(type_)
-        {
-        }
+    }
 
-        /** @brief variable token */
-        const Token *token;
+    unsigned int argCount() const;
+    unsigned int initializedArgCount() const;
 
-        /** @brief order declared */
-        std::size_t index;
+    const Token *tokenDef; // function name token in class definition
+    const Token *argDef;   // function argument start '(' in class definition
+    const Token *token;    // function name token in implementation
+    const Token *arg;      // function argument start '('
+    AccessControl access;  // public/protected/private
+    bool hasBody;          // has implementation
+    bool isInline;         // implementation in class definition
+    bool isConst;          // is const
+    bool isVirtual;        // is virtual
+    bool isPure;           // is pure virtual
+    bool isStatic;         // is static
+    bool isFriend;         // is friend
+    bool isExplicit;       // is explicit
+    bool isOperator;       // is operator
+    bool retFuncPtr;       // returns function pointer
+    Type type;             // constructor, destructor, ...
+};
 
-        /** @brief has this variable been assigned? */
-        bool        assign;
+class Scope
+{
+    // let tests access private function for testing
+    friend class TestSymbolDatabase;
 
-        /** @brief has this variable been initialized? */
-        bool        init;
-
-        /** @brief what section is this variable declared in? */
-        AccessControl access;  // public/protected/private
-
-        /** @brief is this variable mutable? */
-        bool        isMutable;
-
-        /** @brief is this variable static? */
-        bool        isStatic;
-
-        /** @brief is this variable const? */
-        bool        isConst;
-
-        /** @brief is this variable a class (or unknown type)? */
-        bool        isClass;
-
-        /** @brief pointer to user defined type info (for known types) */
-        const SpaceInfo   *type;
-    };
-
-    class Func
-    {
-    public:
-        enum Type { Constructor, CopyConstructor, OperatorEqual, Destructor, Function };
-
-        Func()
-            : tokenDef(NULL),
-              argDef(NULL),
-              token(NULL),
-              arg(NULL),
-              access(Public),
-              hasBody(false),
-              isInline(false),
-              isConst(false),
-              isVirtual(false),
-              isPure(false),
-              isStatic(false),
-              isFriend(false),
-              isExplicit(false),
-              isOperator(false),
-              retFuncPtr(false),
-              type(Function)
-        {
-        }
-
-        const Token *tokenDef; // function name token in class definition
-        const Token *argDef;   // function argument start '(' in class definition
-        const Token *token;    // function name token in implementation
-        const Token *arg;      // function argument start '('
-        AccessControl access;  // public/protected/private
-        bool hasBody;          // has implementation
-        bool isInline;         // implementation in class definition
-        bool isConst;          // is const
-        bool isVirtual;        // is virtual
-        bool isPure;           // is pure virtual
-        bool isStatic;         // is static
-        bool isFriend;         // is friend
-        bool isExplicit;       // is explicit
-        bool isOperator;       // is operator
-        bool retFuncPtr;       // returns function pointer
-        Type type;             // constructor, destructor, ...
-    };
-
+public:
     struct BaseInfo
     {
         AccessControl access;  // public/protected/private
         std::string name;
-        SpaceInfo *spaceInfo;
+        Scope *scope;
     };
 
     struct FriendInfo
     {
         std::string name;
-        SpaceInfo *spaceInfo;
+        Scope *scope;
     };
 
-    class SpaceInfo
+    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction };
+    enum NeedInitialization { Unknown, True, False };
+
+    Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_);
+
+    SymbolDatabase *check;
+    ScopeType type;
+    std::string className;
+    const Token *classDef;   // class/struct/union/namespace token
+    const Token *classStart; // '{' token
+    const Token *classEnd;   // '}' token
+    std::list<Function> functionList;
+    std::list<Variable> varlist;
+    std::vector<BaseInfo> derivedFrom;
+    std::list<FriendInfo> friendList;
+    Scope *nestedIn;
+    std::list<Scope *> nestedList;
+    AccessControl access;
+    unsigned int numConstructors;
+    NeedInitialization needInitialization;
+    Scope * functionOf; // class/struct this function belongs to
+
+    bool isClassOrStruct() const
     {
-    public:
-        enum SpaceType { Global, Class, Struct, Union, Namespace, Function };
-        enum NeedInitialization { Unknown, True, False };
+        return (type == eClass || type == eStruct);
+    }
 
-        SpaceInfo(SymbolDatabase *check_, const Token *classDef_, SpaceInfo *nestedIn_);
+    /**
+     * @brief find if name is in nested list
+     * @param name name of nested scope
+     */
+    Scope * findInNestedList(const std::string & name);
 
-        SymbolDatabase *check;
-        SpaceType type;
-        std::string className;
-        const Token *classDef;   // class/struct/union/namespace token
-        const Token *classStart; // '{' token
-        const Token *classEnd;   // '}' token
-        std::list<Func> functionList;
-        std::list<Var> varlist;
-        std::vector<BaseInfo> derivedFrom;
-        std::list<FriendInfo> friendList;
-        SpaceInfo *nestedIn;
-        std::list<SpaceInfo *> nestedList;
-        AccessControl access;
-        unsigned int numConstructors;
-        NeedInitialization needInitialization;
-        SpaceInfo * functionOf; // class/struct this function belongs to
+    void addVariable(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const Scope *type_)
+    {
+        varlist.push_back(Variable(token_, varlist.size(), access_, mutable_, static_, const_, class_, type_));
+    }
 
-        bool isClassOrStruct() const
-        {
-            return (type == Class || type == Struct);
-        }
+    /** @brief initialize varlist */
+    void getVariableList();
 
-        /**
-         * @brief find if name is in nested list
-         * @param name name of nested space
-         */
-        SpaceInfo * findInNestedList(const std::string & name);
+    const Function *getDestructor() const;
 
-        /**
-         * @brief assign a variable in the varlist
-         * @param varname name of variable to mark assigned
-         */
-        void assignVar(const std::string &varname);
+    /**
+     * @brief get the number of nested scopes that are not functions
+     *
+     * This returns the number of user defined types (class, struct, union)
+     * that are defined in this user defined type or namespace.
+     */
+    unsigned int getNestedNonFunctions() const;
 
-        /**
-         * @brief initialize a variable in the varlist
-         * @param varname name of variable to mark initialized
-         */
-        void initVar(const std::string &varname);
+    bool hasDefaultConstructor() const;
 
-        void addVar(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const SpaceInfo *type_)
-        {
-            varlist.push_back(Var(token_, varlist.size(), access_, mutable_, static_, const_, class_, type_));
-        }
+private:
+    /**
+     * @brief helper function for getVariableList()
+     * @param tok pointer to token to check
+     * @param vartok populated with pointer to the variable token, if found
+     * @param typetok populated with pointer to the type token, if found
+     * @return true if tok points to a variable declaration, false otherwise
+     */
+    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
+    bool isSimpleVariable(const Token* tok) const;
+    bool isArrayVariable(const Token* tok) const;
+    bool findClosingBracket(const Token* tok, const Token*& close) const;
+};
 
-        /**
-         * @brief set all variables in list assigned
-         */
-        void assignAllVar();
-
-        /**
-         * @brief set all variables in list not assigned and not initialized
-         */
-        void clearAllVar();
-
-        /** @brief initialize varlist */
-        void getVarList();
-
-        /**
-         * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
-         * @param func reference to the function that should be checked
-         * @param callstack the function doesn't look into recursive function calls.
-         */
-        void initializeVarList(const Func &func, std::list<std::string> &callstack);
-
-        const Func *getDestructor() const;
-
-        /**
-         * @brief get the number of nested spaces that are not functions
-         *
-         * This returns the number of user defined types (class, struct, union)
-         * that are defined in this user defined type or namespace.
-         */
-        unsigned int getNestedNonFunctions() const;
-
-        bool isBaseClassFunc(const Token *tok);
-
-        bool hasDefaultConstructor() const;
-
-    private:
-        /**
-         * @brief helper function for getVarList()
-         * @param tok pointer to token to check
-         * @param vartok populated with pointer to the variable token, if found
-         * @param typetok populated with pointer to the type token, if found
-         * @return true if tok points to a variable declaration, false otherwise
-         */
-        bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
-    };
-
-    bool isMemberVar(const SpaceInfo *info, const Token *tok);
-    bool isConstMemberFunc(const SpaceInfo *info, const Token *tok);
-    bool checkConstFunc(const SpaceInfo *info, const Token *tok);
-
-    const Token *initBaseInfo(SpaceInfo *info, const Token *tok);
-
-    /** @brief check if this function is virtual in the base classes */
-    bool isVirtualFunc(const SymbolDatabase::SpaceInfo *info, const Token *functionToken) const;
+class SymbolDatabase
+{
+public:
+    SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+    ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structrues */
-    std::list<SpaceInfo *> spaceInfoList;
+    std::list<Scope *> scopeList;
 
     /**
      * @brief find a variable type if it's a user defined type
@@ -264,18 +360,31 @@ public:
      * @param type token containing variable type
      * @return pointer to type if found or NULL if not found
      */
-    const SpaceInfo *findVarType(const SpaceInfo *start, const Token *type) const;
+    const Scope *findVariableType(const Scope *start, const Token *type) const;
+
+    const Scope *findFunctionScopeByToken(const Token *tok) const;
+
+    const Function *findFunctionByToken(const Token *tok) const;
+
+    bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
+
+    bool isClassOrStruct(const std::string &type) const
+    {
+        return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
+    }
 
 private:
 
     // Needed by Borland C++:
-    friend class SpaceInfo;
+    friend class Scope;
 
-    void addFunction(SpaceInfo **info, const Token **tok, const Token *argStart);
-    void addNewFunction(SpaceInfo **info, const Token **tok);
-
+    void addFunction(Scope **info, const Token **tok, const Token *argStart);
+    void addNewFunction(Scope **info, const Token **tok);
+    const Token *initBaseInfo(Scope *info, const Token *tok);
     bool isFunction(const Token *tok, const Token **funcStart, const Token **argStart) const;
-    bool argsMatch(const SpaceInfo *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
+
+    /** class/struct types */
+    std::set<std::string> classAndStructTypes;
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;

@@ -18,9 +18,6 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}cppcheck.h \
            $${BASEPATH}errorlogger.h \
            $${BASEPATH}executionpath.h \
-           $${BASEPATH}filelister.h \
-           $${BASEPATH}filelister_unix.h \
-           $${BASEPATH}filelister_win32.h \
            $${BASEPATH}mathlib.h \
            $${BASEPATH}path.h \
            $${BASEPATH}preprocessor.h \
@@ -45,9 +42,6 @@ SOURCES += $${BASEPATH}checkautovariables.cpp \
            $${BASEPATH}cppcheck.cpp \
            $${BASEPATH}errorlogger.cpp \
            $${BASEPATH}executionpath.cpp \
-           $${BASEPATH}filelister.cpp \
-           $${BASEPATH}filelister_unix.cpp \
-           $${BASEPATH}filelister_win32.cpp \
            $${BASEPATH}mathlib.cpp \
            $${BASEPATH}path.cpp \
            $${BASEPATH}preprocessor.cpp \

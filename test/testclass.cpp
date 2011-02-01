@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@ private:
         TEST_CASE(uninitVar15);
         TEST_CASE(uninitVar16);
         TEST_CASE(uninitVar17);
+        TEST_CASE(uninitVar18); // ticket #2465
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -103,6 +104,7 @@ private:
         TEST_CASE(operatorEqRetRefThis3); // ticket #1405
         TEST_CASE(operatorEqRetRefThis4); // ticket #1451
         TEST_CASE(operatorEqRetRefThis5); // ticket #1550
+        TEST_CASE(operatorEqRetRefThis6); // ticket #2479
         TEST_CASE(operatorEqToSelf1);   // single class
         TEST_CASE(operatorEqToSelf2);   // nested class
         TEST_CASE(operatorEqToSelf3);   // multiple inheritance
@@ -162,6 +164,7 @@ private:
         TEST_CASE(const42); // ticket #2282
         TEST_CASE(const43); // ticket #2377
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
+        TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constoperator3);
@@ -184,6 +187,7 @@ private:
         TEST_CASE(symboldatabase6); // ticket #2221
         TEST_CASE(symboldatabase7); // ticket #2230
         TEST_CASE(symboldatabase8); // ticket #2252
+        TEST_CASE(symboldatabase9); // ticket #2525
     }
 
     // Check the operator Equal
@@ -470,6 +474,23 @@ private:
             "};\n"
             "A & A :: operator=(const A &a) { }");
         ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to self\n", errout.str());
+    }
+
+    void operatorEqRetRefThis6() // ticket #2478 (segmentation fault)
+    {
+        checkOpertorEqRetRefThis(
+            "class UString {\n"
+            "public:\n"
+            "    UString& assign( const char* c_str );\n"
+            "    UString& operator=( const UString& s );\n"
+            "};\n"
+            "UString& UString::assign( const char* c_str ) {\n"
+            "	std::string tmp( c_str );\n"
+            "	return assign( tmp );\n"
+            "}\n"
+            "UString& UString::operator=( const UString& s ) {\n"
+            "	return assign( s );\n"
+            "}\n");
     }
 
     // Check that operator Equal checks for assignment to self
@@ -1314,8 +1335,7 @@ private:
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : protected Base { public: ~Derived() { (void)11; } };");
-        TODO_ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : private Base { public: ~Derived() { (void)11; } };");
@@ -1336,8 +1356,7 @@ private:
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : protected Base { public: ~Derived() { (void)11; } };");
-        TODO_ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { public: ~Derived() { (void)11; } };");
@@ -1479,7 +1498,8 @@ private:
                                "public:\n"
                                "    ~B() { int a; }\n"
                                "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class A which is inherited by class B does not have a virtual destructor\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class A which is inherited by class B does not have a virtual destructor\n",
+                           "", errout.str());
     }
 
     void virtualDestructorTemplate()
@@ -2023,6 +2043,37 @@ private:
                        "    }\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Bar::foo' is not initialised in the constructor.\n", errout.str());
+    }
+
+    void uninitVar18() // ticket #2465
+    {
+        checkUninitVar("struct Altren\n"
+                       "{\n"
+                       "    Altren(int _a = 0) : value(0) { }\n"
+                       "    int value;\n"
+                       "};\n"
+                       "class A\n"
+                       "{\n"
+                       "public:\n"
+                       "    A() { }\n"
+                       "private:\n"
+                       "    Altren value;\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct Altren\n"
+                       "{\n"
+                       "    Altren(int _a) : value(0) { }\n"
+                       "    int value;\n"
+                       "};\n"
+                       "class A\n"
+                       "{\n"
+                       "public:\n"
+                       "    A() { }\n"
+                       "private:\n"
+                       "    Altren value;\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'A::value' is not initialised in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1()
@@ -3456,7 +3507,7 @@ private:
                    "    typedef int* (Fred::*UnspecifiedBoolType);\n"
                    "    operator UnspecifiedBoolType() { };\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'Fred::int' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'Fred::operatorint**' can be const.\n", errout.str());
 
         checkConst("struct Fred {\n"
                    "    int array[10];\n"
@@ -4253,7 +4304,8 @@ private:
                    "std::vector<std::string> m_strVec;\n"
                    "};\n"
                   );
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetSize' can be const.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetSize' can be const.\n",
+                           "", errout.str());
     }
 
     void const26() // ticket #1847
@@ -4575,8 +4627,8 @@ private:
                    "}\n"
                    "using namespace N;\n"
                    "int Base::getResourceName() { return var; }\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (information) Technically the member function 'N::Base::getResourceName' can be const.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (information) Technically the member function 'N::Base::getResourceName' can be const.\n",
+                           "", errout.str());
     }
 
     void const36() // ticket #2003
@@ -4906,6 +4958,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void assigningArrayElementIsNotAConstOperation()
+    {
+        checkConst("struct s\n"
+                   "{\n"
+                   "    ::std::string v[3];\n"
+                   "    void f()\n"
+                   "    {\n"
+                   "        v[0] = \"Happy new year!\";\n"
+                   "    }\n"
+                   "};\n"
+                  );
+        ASSERT_EQUALS("", errout.str());
+    }
+
     // increment/decrement => not const
     void constincdec()
     {
@@ -5012,7 +5078,8 @@ private:
                    "   A(){}\n"
                    "   unsigned int GetVecSize()  {return m_v.size();}\n"
                    "}");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (information) Technically the member function 'A::GetVecSize' can be const.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (information) Technically the member function 'A::GetVecSize' can be const.\n",
+                           "", errout.str());
     }
 
     void constVirtualFunc()
@@ -5402,6 +5469,21 @@ private:
                    "    uno::Reference<rendering::XColorSpace> operator()()\n"
                    "    {\n"
                    "        return vcl::unotools::createStandardColorSpace();\n"
+                   "    }\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase9()
+    {
+        // ticket #2425 - segmentation fault
+        checkConst("class CHyperlink : public CString\n"
+                   "{\n"
+                   "public:\n"
+                   "    const CHyperlink& operator=(LPCTSTR lpsz) {\n"
+                   "        CString::operator=(lpsz);\n"
+                   "        return *this;\n"
                    "    }\n"
                    "};\n");
 

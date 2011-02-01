@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,10 +53,18 @@ private:
 
         TEST_CASE(derivedClass);   // skip warning for derived classes. It might be a virtual function.
 
+        TEST_CASE(friendClass);
+
         TEST_CASE(borland);     // skip FP when using __property
 
         // No false positives when there are "unused" templates that are removed in the simplified token list
         TEST_CASE(template1);
+
+        // #2407 - FP when called from operator()
+        TEST_CASE(fp_operator);
+        TEST_CASE(testDoesNotIdentifyMethodAsFirstFunctionArgument); // #2480
+        TEST_CASE(testDoesNotIdentifyMethodAsMiddleFunctionArgument);
+        TEST_CASE(testDoesNotIdentifyMethodAsLastFunctionArgument);
     }
 
 
@@ -381,6 +389,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void friendClass()
+    {
+        // ticket #2459 - friend class
+        check("class Foo {\n"
+              "private:\n"
+              "    friend Bar;\n"
+              "    void f() { }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void borland()
     {
         // ticket #2034 - Borland C++ __property
@@ -412,6 +431,122 @@ private:
               "T A::getVal() const {\n"
               "    return internalGetVal();\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void fp_operator()
+    {
+        // #2407 - FP when function is called from operator()
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    void operator()(int x) {\n"
+              "        startListening();\n"
+              "    }\n"
+              "\n"
+              "private:\n"
+              "    void startListening() {\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    void operator()(int x) {\n"
+              "    }\n"
+              "\n"
+              "private:\n"
+              "    void startListening() {\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) Unused private function 'Fred::startListening'\n", errout.str());
+    }
+
+    void testDoesNotIdentifyMethodAsFirstFunctionArgument()
+    {
+        check("#include <iostream>"
+              "void callback(void (*func)(int), int arg)"
+              "{"
+              "    (*func)(arg);"
+              "}"
+              "class MountOperation"
+              "{"
+              "    static void Completed(int i);"
+              "public:"
+              "    MountOperation(int i);"
+              "};"
+              "void MountOperation::Completed(int i)"
+              "{"
+              "    std::cerr << i << std::endl;"
+              "}"
+              "MountOperation::MountOperation(int i)"
+              "{"
+              "    callback(MountOperation::Completed, i);"
+              "}"
+              "int main(void)"
+              "{"
+              "    MountOperation aExample(10);"
+              "}"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testDoesNotIdentifyMethodAsMiddleFunctionArgument()
+    {
+        check("#include <iostream>"
+              "void callback(char, void (*func)(int), int arg)"
+              "{"
+              "    (*func)(arg);"
+              "}"
+              "class MountOperation"
+              "{"
+              "    static void Completed(int i);"
+              "public:"
+              "    MountOperation(int i);"
+              "};"
+              "void MountOperation::Completed(int i)"
+              "{"
+              "    std::cerr << i << std::endl;"
+              "}"
+              "MountOperation::MountOperation(int i)"
+              "{"
+              "    callback('a', MountOperation::Completed, i);"
+              "}"
+              "int main(void)"
+              "{"
+              "    MountOperation aExample(10);"
+              "}"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testDoesNotIdentifyMethodAsLastFunctionArgument()
+    {
+        check("#include <iostream>"
+              "void callback(int arg, void (*func)(int))"
+              "{"
+              "    (*func)(arg);"
+              "}"
+              "class MountOperation"
+              "{"
+              "    static void Completed(int i);"
+              "public:"
+              "    MountOperation(int i);"
+              "};"
+              "void MountOperation::Completed(int i)"
+              "{"
+              "    std::cerr << i << std::endl;"
+              "}"
+              "MountOperation::MountOperation(int i)"
+              "{"
+              "    callback(i, MountOperation::Completed);"
+              "}"
+              "int main(void)"
+              "{"
+              "    MountOperation aExample(10);"
+              "}"
+             );
         ASSERT_EQUALS("", errout.str());
     }
 };

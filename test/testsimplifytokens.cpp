@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -233,6 +233,7 @@ private:
         TEST_CASE(simplifyTypedef73); // ticket #2412
         TEST_CASE(simplifyTypedef74); // ticket #2414
         TEST_CASE(simplifyTypedef75); // ticket #2426
+        TEST_CASE(simplifyTypedef76); // ticket #2453
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -241,6 +242,7 @@ private:
         TEST_CASE(simplifyTypedefFunction5);
         TEST_CASE(simplifyTypedefFunction6);
         TEST_CASE(simplifyTypedefFunction7);
+        TEST_CASE(simplifyTypedefFunction8);
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -275,6 +277,7 @@ private:
         TEST_CASE(enum15);
         TEST_CASE(enum16); // ticket #1988
         TEST_CASE(enum17); // ticket #2381 (duplicate enums)
+        TEST_CASE(enum18); // #2466 (array with same name as enum constant)
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -379,8 +382,8 @@ private:
         ASSERT_EQUALS("if ( * a )", tok("if ((char)*a)"));
         ASSERT_EQUALS("if ( & a )", tok("if ((int)&a)"));
         ASSERT_EQUALS("if ( * a )", tok("if ((unsigned int)(unsigned char)*a)"));
-        ASSERT_EQUALS("class A { A operator * ( int ) ; } ;", tok("class A { A operator *(int); };"));
-        ASSERT_EQUALS("class A { A operator * ( int ) const ; } ;", tok("class A { A operator *(int) const; };"));
+        ASSERT_EQUALS("class A { A operator* ( int ) ; } ;", tok("class A { A operator *(int); };"));
+        ASSERT_EQUALS("class A { A operator* ( int ) const ; } ;", tok("class A { A operator *(int) const; };"));
         ASSERT_EQUALS("if ( ! p )", tok("if (p == (char *)(char *)0)"));
     }
 
@@ -694,8 +697,8 @@ private:
                             "    if (c>0) { c++; }\n"
                             "    c++;\n"
                             "}\n";
-        TODO_ASSERT_EQUALS("void f ( int & c ) { c = 3 ; { ; } ; }", tok(code));
-        ASSERT_EQUALS("void f ( int & c ) { c = 1 ; { c ++ ; } c ++ ; }", tok(code));
+        TODO_ASSERT_EQUALS("void f ( int & c ) { c = 3 ; { ; } ; }",
+                           "void f ( int & c ) { c = 1 ; { c ++ ; } c ++ ; }", tok(code));
     }
 
 
@@ -709,8 +712,8 @@ private:
                                 "    if (c>0) { ++c; }\n"
                                 "    ++c;\n"
                                 "}\n";
-            TODO_ASSERT_EQUALS("void f ( int & c ) { c = 3 ; { ; } ; }", tok(code));
-            ASSERT_EQUALS("void f ( int & c ) { c = 1 ; { ++ c ; } ++ c ; }", tok(code));
+            TODO_ASSERT_EQUALS("void f ( int & c ) { c = 3 ; { ; } ; }",
+                               "void f ( int & c ) { c = 1 ; { ++ c ; } ++ c ; }", tok(code));
         }
 
         {
@@ -1597,14 +1600,22 @@ private:
                                 "    return 0;\n"
                                 "}\n";
 
-            const std::string expected("; "
-                                       "int main ( ) { "
-                                       "std :: vector < int > v ; "
-                                       "v . push_back ( 4 ) ; "
-                                       "return 0 ; "
-                                       "}");
+            const std::string wanted("; "
+                                     "int main ( ) { "
+                                     "std :: vector < int > v ; "
+                                     "v . push_back ( 4 ) ; "
+                                     "return 0 ; "
+                                     "}");
 
-            TODO_ASSERT_EQUALS(expected, sizeof_(code));
+            const std::string current("; "
+                                      "int main ( ) { "
+                                      "ABC < int > :: type v ; "
+                                      "v . push_back ( 4 ) ; "
+                                      "return 0 ; "
+                                      "}"
+                                     );
+
+            TODO_ASSERT_EQUALS(wanted, current, sizeof_(code));
         }
 
         {
@@ -1819,14 +1830,18 @@ private:
                             "    return 0;\n"
                             "}\n";
 
-        // The expected result..
-        const std::string expected("; "
-                                   "; "
-                                   "int main ( ) { b<2> ( ) ; return 0 ; } "
-                                   "void b<2> ( ) { a<2> ( ) ; } "
-                                   "void a<2> ( ) { }");
+        const std::string wanted("; "
+                                 "; "
+                                 "int main ( ) { b<2> ( ) ; return 0 ; } "
+                                 "void b<2> ( ) { a<2> ( ) ; } "
+                                 "void a<2> ( ) { }");
 
-        TODO_ASSERT_EQUALS(expected, sizeof_(code));
+        const std::string current("; "
+                                  "int main ( ) { b<2> ( ) ; return 0 ; } "
+                                  "void b<2> ( ) { a < 2 > ( ) ; }"
+                                 );
+
+        TODO_ASSERT_EQUALS(wanted, current, sizeof_(code));
     }
 
     void template17()
@@ -1842,7 +1857,7 @@ private:
                             "\n"
                             "shared_ptr<int> i;\n";
 
-        // Assert that there are not segmentation fault..
+        // Assert that there is no segmentation fault..
         sizeof_(code);
     }
 
@@ -2027,20 +2042,29 @@ private:
                                 "    A<int> a2;\n"
                                 "}\n";
 
-            // The expected result..
-            const std::string expected("template < class T , int n >"
-                                       " class A"
-                                       " { T ar [ n ] ; } ;"
-                                       " void f ( )"
-                                       " {"
-                                       " A<int,(int)2> a1 ;"
-                                       " A<int,3> a2 ;"
-                                       " }"
-                                       " class A<int,2>"
-                                       " { int ar [ 2 ] ; }"
-                                       " class A<int,3>"
-                                       " { int ar [ 3 ] ; }");
-            TODO_ASSERT_EQUALS(expected, sizeof_(code));
+            const std::string wanted("template < class T , int n >"
+                                     " class A"
+                                     " { T ar [ n ] ; } ;"
+                                     " void f ( )"
+                                     " {"
+                                     " A<int,(int)2> a1 ;"
+                                     " A<int,3> a2 ;"
+                                     " }"
+                                     " class A<int,2>"
+                                     " { int ar [ 2 ] ; }"
+                                     " class A<int,3>"
+                                     " { int ar [ 3 ] ; }");
+
+            const std::string current("; "
+                                      "void f ( ) "
+                                      "{ "
+                                      "A < int , ( int ) 2 > a1 ; "
+                                      "A<int,3> a2 ; "
+                                      "} "
+                                      "class A<int,3> "
+                                      "{ int ar [ 3 ] ; }"
+                                     );
+            TODO_ASSERT_EQUALS(wanted, current, sizeof_(code));
         }
     }
 
@@ -2174,7 +2198,9 @@ private:
         ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAssign(";if(!(a->x=b()));"));
         ASSERT_EQUALS("A ( ) a = b ; if ( a ) { ; }", simplifyIfAssign("A() if(a=b);"));
         ASSERT_EQUALS("void foo ( int a ) { a = b ( ) ; if ( 0 <= a ) { ; } }", tok("void foo(int a) {if((a=b())>=0);}"));
-        TODO_ASSERT_EQUALS("void foo ( A a ) { a . c = b ( ) ; if ( 0 <= a . c ) { ; } }", tok("void foo(A a) {if((a.c=b())>=0);}"));
+        TODO_ASSERT_EQUALS("void foo ( A a ) { a . c = b ( ) ; if ( 0 <= a . c ) { ; } }",
+                           "void foo ( A a ) { a . c = b ( ) ; if ( a . c >= 0 ) { ; } }",
+                           tok("void foo(A a) {if((a.c=b())>=0);}"));
     }
 
     void ifAssignWithCast()
@@ -2575,7 +2601,7 @@ private:
         {
             // Ticket #1997
             const char code[] = "void * operator new[](size_t);";
-            ASSERT_EQUALS("void * operator new [ ] ( size_t ) ;", tok(code));
+            ASSERT_EQUALS("void * operatornew[] ( size_t ) ;", tok(code));
         }
 
         ASSERT_EQUALS("; a [ 0 ] ;", tok(";a[0*(*p)];"));
@@ -3505,14 +3531,20 @@ private:
             ASSERT_EQUALS(expected, tok(code, false));
 
             // TODO: the definition and assignment should be split up
-            const char todo[] =
+            const char wanted[] =
                 "; "
                 "void g ( fp f ) "
                 "{ "
                 "int ( * f2 ) ( ) ; f2 = ( int ( * ) ( ) ) f ; "
                 "}";
+            const char current[] =
+                "; "
+                "void g ( int ( * f ) ( ) ) "
+                "{ "
+                "int ( * f2 ) ( ) = ( int ( * ) ( ) ) f ; "
+                "}";
 
-            TODO_ASSERT_EQUALS(todo, tok(code, false));
+            TODO_ASSERT_EQUALS(wanted, current, tok(code, false));
         }
 
         {
@@ -4426,7 +4458,7 @@ private:
         const std::string expected("struct C { "
                                    "; "
                                    "const void * pr ; " // this gets simplified to a regular pointer
-                                   "operator const void ( * ) ( ) & ( ) { return pr ; } "
+                                   "operatorconstvoid(*)()& ( ) { return pr ; } "
                                    "} ;");
         ASSERT_EQUALS(expected, sizeof_(code));
 
@@ -4710,7 +4742,7 @@ private:
                                 "};\n";
             const std::string expected = "class Fred { "
                                          "; "
-                                         "operator int * * ( ) const { } "
+                                         "operatorint** ( ) const { } "
                                          "} ;";
             ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
@@ -4752,9 +4784,9 @@ private:
                                 "Fred::operator F() const { }\n";
             const std::string expected = "class Fred { "
                                          "; "
-                                         "operator int * * ( ) const ; "
+                                         "operatorint** ( ) const ; "
                                          "} ; "
-                                         "Fred :: operator int * * ( ) const { }";
+                                         "Fred :: operatorint** ( ) const { }";
             ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
         }
@@ -4793,6 +4825,14 @@ private:
         const std::string expected = ";";
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef76() // ticket #2453 segmentation fault
+    {
+        const char code[] = "void f1(typedef int x) {}\n";
+        const std::string expected = "void f1 ( typedef int x ) { }";
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void simplifyTypedefFunction1()
@@ -5395,6 +5435,15 @@ private:
 
         checkSimplifyTypedef(code);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedefFunction8()
+    {
+        // #2376 - internal error
+        const char code[] = "typedef int f_expand(const nrv_byte *);\n"
+                            "void f(f_expand   *(*get_fexp(int))){}\n";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());  // make sure that there is no internal error
     }
 
     void reverseArraySyntax()
@@ -6041,6 +6090,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void enum18() // ticket #2466 - array with same name as enum constant
+    {
+        const char code[] = "enum ab { a=0, b };\n"
+                            "void f() { a[0]; }\n";
+        ASSERT_EQUALS("; void f ( ) { a [ 0 ] ; }", tok(code, false));
+    }
+
     void removestd()
     {
         ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));
@@ -6132,7 +6188,9 @@ private:
         ASSERT_EQUALS("; struct A a ; a . buf = x ;", tok("; struct A a = { .buf = x };"));
         ASSERT_EQUALS("; struct A a ; a . buf = & key ;", tok("; struct A a = { .buf = &key };"));
         ASSERT_EQUALS("; struct ABC abc ; abc . a = 3 ; abc . b = x ; abc . c = & key ;", tok("; struct ABC abc = { .a = 3, .b = x, .c = &key };"));
-        TODO_ASSERT_EQUALS("; struct A a ; a . buf = { 0 } ;", tok("; struct A a = { .buf = {0} };"));
+        TODO_ASSERT_EQUALS("; struct A a ; a . buf = { 0 } ;",
+                           "; struct A a ; a = { . buf = { 0 } } ;",
+                           tok("; struct A a = { .buf = {0} };"));
     }
 
     void simplifyStructDecl()
@@ -6262,6 +6320,20 @@ private:
             const char expected[] = ";";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+
+        // ticket 2464
+        {
+            const char code[] = "static struct ABC { } abc ;";
+            const char expected[] = "struct ABC { } ; static ABC abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        // ticket #980
+        {
+            const char code[] = "void f() { int A(1),B(2),C=3,D,E(5),F=6; }";
+            const char expected[] = "void f ( ) { int A ; A = 1 ; int B ; B = 2 ; int C ; C = 3 ; int D ; int E ; E = 5 ; int F ; F = 6 ; }";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void removeUnwantedKeywords()
@@ -6273,12 +6345,13 @@ private:
         ASSERT_EQUALS("int foo ( ) { }", tok("__forceinline int foo ( ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( likely ( a ) ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( unlikely ( a ) ) { }", true));
-        ASSERT_EQUALS("int * p ;", tok("int * __restrict__ p;", true));
+        ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", true));
         ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", true));
         ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * __restrict__ a, float * __restrict__ b);", true));
         ASSERT_EQUALS("int * p ;", tok("int * restrict p;", true));
         ASSERT_EQUALS("int * * p ;", tok("int * restrict * p;", true));
         ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", true));
+        ASSERT_EQUALS("; int * p ;", tok("typedef int * __restrict__ rint; rint p;", true));
     }
 
     void simplifyCallingConvention()

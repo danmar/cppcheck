@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,6 +102,11 @@ private:
      * Report progress time
      */
     std::time_t time1;
+
+    /**
+     * Has --errorlist been given?
+     */
+    bool errorlist;
 };
 
 #endif // CPPCHECKEXECUTOR_H

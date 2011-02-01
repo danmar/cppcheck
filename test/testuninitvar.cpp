@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -798,7 +798,8 @@ private:
                        "        x--;\n"
                        "    }\n"
                        "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: pItem\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: pItem\n",
+                           "", errout.str());
     }
 
     // switch..
@@ -1363,8 +1364,8 @@ private:
                        "    int x[10];\n"
                        "    calc(x,10);\n"
                        "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n",
+                           "", errout.str());
 
         // #2401 - unknown function/macro might init the variable
         checkUninitVar("int f() {\n"

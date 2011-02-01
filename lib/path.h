@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,15 @@ public:
      * @return simplified path
      */
     static std::string simplifyPath(const char *originalPath);
+
+    /**
+     * @brief Compare filenames to see if they are the same.
+     * On Linux the comparison is case-sensitive. On Windows it is case-insensitive.
+     * @param fname1 one filename
+     * @param fname2 other filename
+     * @return true if the filenames match on the current platform
+     */
+    static bool sameFileName(const std::string &fname1, const std::string &fname2);
 };
 
 /// @}

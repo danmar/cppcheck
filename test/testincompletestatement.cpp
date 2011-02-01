@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,6 +66,8 @@ private:
         TEST_CASE(intarray);
         TEST_CASE(structarraynull);
         TEST_CASE(structarray);
+        TEST_CASE(conditionalcall);     // ; 0==x ? X() : Y();
+        TEST_CASE(structinit);          // #2462 : ABC abc{1,2,3};
     }
 
     void test1()
@@ -170,6 +172,26 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void conditionalcall()
+    {
+        check("void f() {\n"
+              "    0==x ? X() : Y();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structinit()
+    {
+        // #2462 - C++0x struct initialization
+        check("void f() {\n"
+              "    ABC abc{1,2,3};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #2482 - false positive for empty struct
+        check("struct A {};");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestIncompleteStatement)

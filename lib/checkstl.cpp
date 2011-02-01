@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -284,9 +284,13 @@ public:
         while (indentlevel > 0 && 0 != (tok = tok->next()))
         {
             if (tok->str() == "(")
-                ++indentlevel;
+                tok = tok->link();
             else if (tok->str() == ")")
-                --indentlevel;
+                break;
+
+            // reassigning iterator in loop head
+            else if (Token::Match(tok, "%var% =") && tok->str() == it->str())
+                break;
         }
 
         if (! Token::simpleMatch(tok, ") {"))
@@ -594,7 +598,7 @@ void CheckStl::pushback()
                             break;
                         --indent3;
                     }
-                    else if (tok3->str() == "break")
+                    else if (tok3->str() == "break" || tok3->str() == "return")
                     {
                         pushbackTok = 0;
                         break;
@@ -634,15 +638,10 @@ void CheckStl::pushback()
                 }
 
                 invalidIterator = tok2->strAt(2);
-                if (!iteratorDeclaredInsideLoop)
-                {
-                    tok2 = tok2->tokAt(3)->link();
-                    if (!tok2)
-                        break;
-                }
+                tok2 = tok2->tokAt(3)->link();
             }
 
-            else if (tok2->str() == "return")
+            else if (tok2->str() == "return" || tok2->str() == "break")
             {
                 invalidIterator.clear();
             }
@@ -684,10 +683,9 @@ void CheckStl::stlBoundries()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring iterator..
-        const std::string checkStr = (std::string(STL_CONTAINER_LIST) + " <");
-        if (Token::Match(tok, checkStr.c_str()))
+        if (tok->str() == "<" && Token::Match(tok->previous(), STL_CONTAINER_LIST))
         {
-            const std::string container_name(tok->strAt(0));
+            const std::string container_name(tok->strAt(-1));
             while (tok && tok->str() != ">")
                 tok = tok->next();
             if (!tok)
@@ -962,13 +960,13 @@ void CheckStl::missingComparison()
                             break;
                         --indentlevel;
                     }
-                    else if (tok3->varId() == iteratorId && Token::simpleMatch(tok3->next(), "++"))
+                    else if (Token::Match(tok3, "%varid% ++", iteratorId))
                         incrementToken = tok3;
-                    else if (tok3->str() == "++" && tok3->next() && tok3->next()->varId() == iteratorId)
+                    else if (Token::Match(tok3->previous(), "++ %varid% !!.", iteratorId))
                         incrementToken = tok3;
-                    else if (tok3->varId() == iteratorId && Token::Match(tok3->next(), "!=|=="))
+                    else if (Token::Match(tok3, "%varid% !=|==", iteratorId))
                         incrementToken = 0;
-                    else if (tok3->str() == "break")
+                    else if (tok3->str() == "break" || tok3->str() == "return")
                         incrementToken = 0;
                 }
                 if (incrementToken)

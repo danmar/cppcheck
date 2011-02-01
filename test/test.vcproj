@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="test"
-	ProjectGUID="{E690724D-4286-3049-8439-595D1CB80EAB}"
+	ProjectGUID="{48110A35-C2BB-3F1C-A741-C15295041A2D}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -158,11 +158,11 @@
 			<File
 				RelativePath="..\lib\executionpath.cpp" />
 			<File
-				RelativePath="..\lib\filelister.cpp" />
+				RelativePath="..\cli\filelister.cpp" />
 			<File
-				RelativePath="..\lib\filelister_unix.cpp" />
+				RelativePath="..\cli\filelister_unix.cpp" />
 			<File
-				RelativePath="..\lib\filelister_win32.cpp" />
+				RelativePath="..\cli\filelister_win32.cpp" />
 			<File
 				RelativePath="..\lib\mathlib.cpp" />
 			<File
@@ -297,11 +297,11 @@
 			<File
 				RelativePath="..\lib\executionpath.h" />
 			<File
-				RelativePath="..\lib\filelister.h" />
+				RelativePath="..\cli\filelister.h" />
 			<File
-				RelativePath="..\lib\filelister_unix.h" />
+				RelativePath="..\cli\filelister_unix.h" />
 			<File
-				RelativePath="..\lib\filelister_win32.h" />
+				RelativePath="..\cli\filelister_win32.h" />
 			<File
 				RelativePath="..\lib\mathlib.h" />
 			<File

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ class ErrorLine;
 
 /**
 * @brief A class containing error data for one error.
-* 
+*
 * The paths are stored with internal ("/") separators. Only when we show the
 * path or copy if for user (to clipboard) we convert to native separators.
 * Full path is stored instead of relative path for flexibility. It is easy

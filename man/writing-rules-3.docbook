@@ -73,7 +73,10 @@ void CheckOther::divisionByZero()
 // Report error
 void CheckOther::divisionByZeroError()
 {
-    reportError(tok, Severity::error, "divisionByZero", "Division by zero");
+    reportError(tok,                  // location
+                Severity::error,      // severity
+                "divisionByZero",     // id
+                "Division by zero");  // message
 }</programlisting>
 
     <para>The <literal>Token::Match</literal> matches tokens against
@@ -111,9 +114,8 @@ void CheckOther::divisionByZeroError()
 
     <programlisting>if ( %var% ) { free ( %var% ) ; }</programlisting>
 
-    <para>Any variable name is matched by <literal>%var%</literal>.</para>
-
-    <para>Here is a C++ function:</para>
+    <para>The <literal>%var%</literal> pattern match any variable name. Here
+    is a C++ function:</para>
 
     <programlisting>// Find redundant condition before deallocation
 void CheckOther::dealloc()
@@ -143,10 +145,105 @@ void CheckOther::dealloc()
 // Report warning
 void CheckOther::deallocWarning()
 {
-    reportError(tok, Severity::warning, "dealloc", "Redundant condition before deallocation");
+    reportError(tok,                      // location
+                Severity::warning,        // severity
+                "dealloc",                // id
+                "Redundant condition");   // message
 }</programlisting>
 
     <para>The strAt function is used to fetch strings from the token list. The
-    parameter specifies the token offset.</para>
+    parameter specifies the token offset. The result for "tok-&gt;tokAt(1)" is
+    the same as for "tok-&gt;next()".</para>
+  </section>
+
+  <section>
+    <title>Validate function parameters</title>
+
+    <para>Sometimes it is known that a function can't handle certain
+    parameters. Here is an example rule that checks that the parameters for
+    strtol or strtoul are valid:</para>
+
+    <programlisting>//---------------------------------------------------------------------------
+// strtol(str, 0, radix)  &lt;- radix must be 0 or 2-36
+//---------------------------------------------------------------------------
+
+void CheckOther::invalidFunctionUsage()
+{
+    // Loop through all tokens
+    for (const Token *tok = _tokenizer-&gt;tokens(); tok; tok = tok-&gt;next())
+    {
+        // Is there a function call for strtol or strtoul?
+        if (!Token::Match(tok, "strtol|strtoul ("))
+            continue;
+
+        // Locate the third parameter of the function call..
+
+        // Counter that counts the parameters.
+        int param = 1;
+
+        // Scan the function call tokens. The "tok-&gt;tokAt(2)" returns
+        // the token after the "("
+        for (const Token *tok2 = tok-&gt;tokAt(2); tok2; tok2 = tok2-&gt;next())
+        {
+            // If a "(" is found then jump to the corresponding ")"
+            if (tok2-&gt;str() == "(")
+                tok2 = tok2-&gt;link();
+
+            // End of function call.
+            else if (tok2-&gt;str() == ")")
+                break;
+
+            // Found a ",". increment param counter
+            else if (tok2-&gt;str() == ",")
+            {
+                ++param;
+
+                // If the param is 3 then check if the parameter is valid
+                if (param == 3)
+                {
+                    if (Token::Match(tok2, ", %num% )"))
+                    {
+                        // convert next token into a number
+                        MathLib::bigint radix;
+                        radix = MathLib::toLongNumber(tok2-&gt;strAt(1));
+
+                        // invalid radix?
+                        if (!(radix == 0 || (radix &gt;= 2 &amp;&amp; radix &lt;= 36)))
+                        {
+                            dangerousUsageStrtolError(tok2);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::dangerousUsageStrtolError(const Token *tok)
+{
+    reportError(tok,                          // location
+                Severity::error,              // severity
+                "dangerousUsageStrtol",       // id
+                "Invalid radix");             // message
+}</programlisting>
+
+    <para>The link() member function is used to find the corresponding ( ) [ ]
+    or { } token.</para>
+
+    <para>The inner loop is not necessary if you just want to get the last
+    parameter. This code will check if the last parameter is
+    numerical..</para>
+
+    <programlisting>..
+        // Is there a function call?
+        if (!Token::Match(tok, "do_something ("))
+            continue;
+
+        if (Token::Match(tok-&gt;next()-&gt;link()-&gt;tokAt(-2), "(|, %num% )"))
+            ...</programlisting>
+
+    <para>The pattern <literal>(|,</literal> can also be written as
+    <literal>[(,]</literal>.</para>
   </section>
 </article>

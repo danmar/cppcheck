@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,18 +32,6 @@ CheckUninitVar instance;
 }
 
 //---------------------------------------------------------------------------
-
-/** Is string uppercase? */
-static bool isUpper(const std::string &str)
-{
-    for (unsigned int i = 0; i < str.length(); ++i)
-    {
-        if (str[i] >= 'a' && str[i] <= 'z')
-            return false;
-    }
-    return true;
-}
-
 
 /// @addtogroup Checks
 /// @{
@@ -679,7 +667,7 @@ private:
                 }
 
                 // ticket #2367 : unexpanded macro that uses sizeof|typeof?
-                else if (Token::Match(tok2, "%type% (") && isUpper(tok2->str()))
+                else if (Token::Match(tok2, "%type% (") && CheckNullPointer::isUpper(tok2->str()))
                 {
                     tok2 = tok2->next()->link();
                     if (!tok2)
@@ -703,7 +691,7 @@ private:
                         functionCall = functionCall ? functionCall->previous() : 0;
                         if (functionCall)
                         {
-                            if (functionCall->isName() && !isUpper(functionCall->str()) && use_dead_pointer(checks, tok2))
+                            if (functionCall->isName() && !CheckNullPointer::isUpper(functionCall->str()) && use_dead_pointer(checks, tok2))
                                 ExecutionPath::bailOutVar(checks, tok2->varId());
                         }
                     }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,12 +62,15 @@ public:
         checkOther.sizeofCalculation();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
+        checkOther.checkSizeofForArrayParameter();
     }
 
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckOther checkOther(tokenizer, settings, errorLogger);
+
+        checkOther.clarifyCalculation();
 
         // Coding style checks
         checkOther.checkConstantFunctionParameter();
@@ -85,6 +88,10 @@ public:
         checkOther.checkCatchExceptionByValue();
         checkOther.checkMemsetZeroBytes();
     }
+
+    /** @brief Clarify calculation for ".. a * b ? .." */
+    void clarifyCalculation();
+    void clarifyCalculationError(const Token *tok);
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
@@ -170,6 +177,9 @@ public:
     /** @brief %Check for filling zero bytes with memset() */
     void checkMemsetZeroBytes();
 
+    /** @brief %Check for using sizeof with array given as function argument */
+    void checkSizeofForArrayParameter();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -193,6 +203,7 @@ public:
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void catchExceptionByValueError(const Token *tok);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
+    void sizeofForArrayParameterError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -205,6 +216,7 @@ public:
         c.mathfunctionCallError(0);
         c.fflushOnInputStreamError(0, "stdin");
         c.misusedScopeObjectError(NULL, "varname");
+        c.sizeofForArrayParameterError(0);
 
         // style/warning
         c.cstyleCastError(0);
@@ -230,6 +242,7 @@ public:
         c.unassignedVariableError(0, "varname");
         c.catchExceptionByValueError(0);
         c.memsetZeroBytesError(0, "varname");
+        c.clarifyCalculationError(0);
     }
 
     std::string name() const
@@ -247,6 +260,7 @@ public:
                "* using fflush() on an input stream\n"
                "* scoped object destroyed immediately after construction\n"
                "* assignment in an assert statement\n"
+               "* sizeof for array given as function argument\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
@@ -267,6 +281,7 @@ public:
                "* assignment of a variable to itself\n"
                "* mutual exclusion over || always evaluating to true\n"
                "* exception caught by value instead of by reference\n"
+               "* Clarify calculation with parantheses\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
@@ -293,16 +308,6 @@ private:
 
         return varname;
     }
-
-    /**
-     * @brief query type of identifier
-     * @param tok Token of the identifier
-     * @return true if the identifier is of type 'class' or 'struct',
-     *         false otherwise.
-     */
-    bool isIdentifierObjectType(const Token* const tok);
-
-    std::map<std::string, bool> isClassResults;
 };
 /// @}
 //---------------------------------------------------------------------------

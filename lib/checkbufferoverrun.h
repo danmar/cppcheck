@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -169,12 +169,19 @@ public:
     void parse_for_body(const Token *tok2, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value);
 
     /**
-     * Helper function for checkScope - check a function call
+     * Helper function for checkFunctionCall - check a function parameter
      * \param tok token for the function name
      * \param par on what parameter is the array used
      * \param arrayInfo the array information
      */
-    void checkFunctionCall(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo);
+    void checkFunctionParameter(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo);
+
+    /**
+     * Helper function that checks if the array is used and if so calls the checkFunctionCall
+     * @param tok token that matches "%var% ("
+     * @param arrayInfo the array information
+     */
+    void checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo);
 
     void arrayIndexOutOfBounds(const Token *tok, MathLib::bigint size, MathLib::bigint index);
     void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);

@@ -208,12 +208,12 @@ kate -l(line) (file)</translation>
     <name>MainWindow</name>
     <message>
         <location filename="main.ui" line="26"/>
-        <location filename="mainwindow.cpp" line="237"/>
-        <location filename="mainwindow.cpp" line="267"/>
-        <location filename="mainwindow.cpp" line="552"/>
-        <location filename="mainwindow.cpp" line="670"/>
-        <location filename="mainwindow.cpp" line="688"/>
-        <location filename="mainwindow.cpp" line="852"/>
+        <location filename="mainwindow.cpp" line="203"/>
+        <location filename="mainwindow.cpp" line="233"/>
+        <location filename="mainwindow.cpp" line="524"/>
+        <location filename="mainwindow.cpp" line="642"/>
+        <location filename="mainwindow.cpp" line="660"/>
+        <location filename="mainwindow.cpp" line="811"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -234,341 +234,336 @@ kate -l(line) (file)</translation>
     </message>
     <message>
         <location filename="main.ui" line="118"/>
-        <source>&amp;Language</source>
-        <translation>言語(&amp;L)</translation>
-    </message>
-    <message>
-        <location filename="main.ui" line="123"/>
         <source>&amp;Help</source>
         <translation>ヘルプ(&amp;H)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="133"/>
+        <location filename="main.ui" line="128"/>
         <source>&amp;Check</source>
         <translation>解析(&amp;A)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="142"/>
+        <location filename="main.ui" line="137"/>
         <source>&amp;Edit</source>
         <translation>編集(&amp;E)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="156"/>
+        <location filename="main.ui" line="150"/>
         <source>Standard</source>
         <translation>標準(&amp;S)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="175"/>
+        <location filename="main.ui" line="169"/>
         <source>Categories</source>
         <translation>カテゴリ(&amp;C)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="192"/>
+        <location filename="main.ui" line="186"/>
         <source>&amp;License...</source>
         <translation>ライセンス(&amp;L)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="197"/>
+        <location filename="main.ui" line="191"/>
         <source>A&amp;uthors...</source>
         <translation>作者(&amp;u)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="206"/>
+        <location filename="main.ui" line="200"/>
         <source>&amp;About...</source>
         <translation>Cppcheckについて(&amp;A)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="211"/>
+        <location filename="main.ui" line="205"/>
         <source>&amp;Files...</source>
         <translation>ファイル選択(&amp;F)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="214"/>
-        <location filename="main.ui" line="217"/>
+        <location filename="main.ui" line="208"/>
+        <location filename="main.ui" line="211"/>
         <source>Check files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="220"/>
+        <location filename="main.ui" line="214"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="main.ui" line="229"/>
+        <location filename="main.ui" line="223"/>
         <source>&amp;Directory...</source>
         <translation>ディレクトリ選択(&amp;D)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="232"/>
-        <location filename="main.ui" line="235"/>
+        <location filename="main.ui" line="226"/>
+        <location filename="main.ui" line="229"/>
         <source>Check directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="238"/>
+        <location filename="main.ui" line="232"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="main.ui" line="247"/>
+        <location filename="main.ui" line="241"/>
         <source>&amp;Recheck files</source>
         <translation>再チェック(&amp;R)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="250"/>
+        <location filename="main.ui" line="244"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="main.ui" line="259"/>
+        <location filename="main.ui" line="253"/>
         <source>&amp;Stop</source>
         <translation>停止(&amp;S)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="262"/>
-        <location filename="main.ui" line="265"/>
+        <location filename="main.ui" line="256"/>
+        <location filename="main.ui" line="259"/>
         <source>Stop checking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="268"/>
+        <location filename="main.ui" line="262"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="main.ui" line="277"/>
+        <location filename="main.ui" line="271"/>
         <source>&amp;Save results to file...</source>
         <translation>結果をファイルに保存(&amp;S)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="280"/>
+        <location filename="main.ui" line="274"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="main.ui" line="285"/>
+        <location filename="main.ui" line="279"/>
         <source>&amp;Quit</source>
         <translation>終了(&amp;Q)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="294"/>
+        <location filename="main.ui" line="288"/>
         <source>&amp;Clear results</source>
         <translation>結果をクリア(&amp;C)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="303"/>
+        <location filename="main.ui" line="297"/>
         <source>&amp;Preferences</source>
         <translation>設定(&amp;P)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="315"/>
+        <location filename="main.ui" line="309"/>
         <source>Style warnings</source>
         <translation>スタイル警告</translation>
     </message>
     <message>
-        <location filename="main.ui" line="318"/>
-        <location filename="main.ui" line="321"/>
+        <location filename="main.ui" line="312"/>
+        <location filename="main.ui" line="315"/>
         <source>Show style warnings</source>
         <translation>スタイル警告を表示</translation>
     </message>
     <message>
-        <location filename="main.ui" line="333"/>
+        <location filename="main.ui" line="327"/>
         <source>Errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="336"/>
-        <location filename="main.ui" line="339"/>
+        <location filename="main.ui" line="330"/>
+        <location filename="main.ui" line="333"/>
         <source>Show errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="505"/>
+        <location filename="main.ui" line="499"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="508"/>
+        <location filename="main.ui" line="502"/>
         <source>Show information messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="520"/>
+        <location filename="main.ui" line="514"/>
         <source>Portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="523"/>
+        <location filename="main.ui" line="517"/>
         <source>Show portability warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="432"/>
+        <location filename="main.ui" line="426"/>
         <source>C&amp;lose Project File</source>
         <translation>プロジェクトを閉じる(&amp;l)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="440"/>
+        <location filename="main.ui" line="434"/>
         <source>&amp;Edit Project File...</source>
         <translation>プロジェクトの編集(&amp;E)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="449"/>
+        <location filename="main.ui" line="443"/>
         <source>&amp;Statistics</source>
         <translation>統計情報(&amp;S)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="461"/>
+        <location filename="main.ui" line="455"/>
         <source>Warnings</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="main.ui" line="464"/>
-        <location filename="main.ui" line="467"/>
+        <location filename="main.ui" line="458"/>
+        <location filename="main.ui" line="461"/>
         <source>Show warnings</source>
         <translation>警告を表示</translation>
     </message>
     <message>
-        <location filename="main.ui" line="479"/>
+        <location filename="main.ui" line="473"/>
         <source>Performance warnings</source>
         <translation>パフォーマンス警告</translation>
     </message>
     <message>
-        <location filename="main.ui" line="482"/>
-        <location filename="main.ui" line="485"/>
+        <location filename="main.ui" line="476"/>
+        <location filename="main.ui" line="479"/>
         <source>Show performance warnings</source>
         <translation>パフォーマンス警告を表示</translation>
     </message>
     <message>
-        <location filename="main.ui" line="493"/>
+        <location filename="main.ui" line="487"/>
         <source>Show &amp;hidden</source>
         <translation>非表示を表示(&amp;h)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="344"/>
+        <location filename="main.ui" line="338"/>
         <source>&amp;Check all</source>
         <translation>すべてのエラーを表示(&amp;C)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="349"/>
+        <location filename="main.ui" line="343"/>
         <source>&amp;Uncheck all</source>
         <translation>すべてのエラーを非表示(&amp;U)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="354"/>
+        <location filename="main.ui" line="348"/>
         <source>Collapse &amp;all</source>
         <translation>ツリーを折り畳む(&amp;A)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="359"/>
+        <location filename="main.ui" line="353"/>
         <source>&amp;Expand all</source>
         <translation>ツリーを展開(&amp;E)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="367"/>
+        <location filename="main.ui" line="361"/>
         <source>&amp;Standard</source>
         <translation>標準(&amp;S)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="370"/>
+        <location filename="main.ui" line="364"/>
         <source>Standard items</source>
         <translation>標準項目</translation>
     </message>
     <message>
-        <location filename="main.ui" line="375"/>
+        <location filename="main.ui" line="369"/>
         <source>&amp;Contents</source>
         <translation>コンテンツ(&amp;C)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="378"/>
+        <location filename="main.ui" line="372"/>
         <source>Open the help contents</source>
         <translation>ヘルプファイルを開く</translation>
     </message>
     <message>
-        <location filename="main.ui" line="381"/>
+        <location filename="main.ui" line="375"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="main.ui" line="386"/>
+        <location filename="main.ui" line="380"/>
         <source>Toolbar</source>
         <translation>ツールバー</translation>
     </message>
     <message>
-        <location filename="main.ui" line="394"/>
+        <location filename="main.ui" line="388"/>
         <source>&amp;Categories</source>
         <translation>カテゴリ(&amp;C)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="397"/>
+        <location filename="main.ui" line="391"/>
         <source>Error categories</source>
         <translation>エラーカテゴリ</translation>
     </message>
     <message>
-        <location filename="main.ui" line="402"/>
+        <location filename="main.ui" line="396"/>
         <source>&amp;Open XML...</source>
         <translation>XMLを開く(&amp;O)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="411"/>
+        <location filename="main.ui" line="405"/>
         <source>Open P&amp;roject File...</source>
         <translation>プロジェクトを開く(&amp;R)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="416"/>
+        <location filename="main.ui" line="410"/>
         <source>&amp;New Project File...</source>
         <translation>新規プロジェクト(&amp;N)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="421"/>
+        <location filename="main.ui" line="415"/>
         <source>&amp;Log View</source>
         <translation>ログを表示(&amp;L)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="424"/>
+        <location filename="main.ui" line="418"/>
         <source>Log View</source>
         <translation>ログ表示</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="238"/>
+        <location filename="mainwindow.cpp" line="204"/>
         <source>No suitable files found to check!</source>
         <translation>解析可能なファイルではありません</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="268"/>
+        <location filename="mainwindow.cpp" line="234"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>新しいファイル／ディレクトリを解析するには現在のプロジェクトを閉じてください</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="283"/>
+        <location filename="mainwindow.cpp" line="249"/>
         <source>Select files to check</source>
         <translation>チェック対象のファイルを選択</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="297"/>
+        <location filename="mainwindow.cpp" line="263"/>
         <source>Select directory to check</source>
         <translation>チェック対象のディレクトリを選択</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="340"/>
-        <location filename="mainwindow.cpp" line="783"/>
-        <location filename="mainwindow.cpp" line="829"/>
+        <location filename="mainwindow.cpp" line="306"/>
+        <location filename="mainwindow.cpp" line="742"/>
+        <location filename="mainwindow.cpp" line="788"/>
         <source>Project: </source>
         <translation>プロジェクト：</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="471"/>
-        <location filename="mainwindow.cpp" line="620"/>
+        <location filename="mainwindow.cpp" line="443"/>
+        <location filename="mainwindow.cpp" line="592"/>
         <source>XML files (*.xml)</source>
         <translation>XML ファイル (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="473"/>
+        <location filename="mainwindow.cpp" line="445"/>
         <source>Open the report file</source>
         <translation>レポートを開く</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="548"/>
+        <location filename="mainwindow.cpp" line="520"/>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?.</source>
@@ -577,42 +572,42 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 解析を停止してCppcheckを終了しますか？.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="595"/>
+        <location filename="mainwindow.cpp" line="567"/>
         <source>License</source>
         <translation>ライセンス</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="602"/>
+        <location filename="mainwindow.cpp" line="574"/>
         <source>Authors</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="610"/>
+        <location filename="mainwindow.cpp" line="582"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML ファイル (*.xml);;テキストファイル (*.txt);;CSV形式ファイル (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="612"/>
+        <location filename="mainwindow.cpp" line="584"/>
         <source>Save the report file</source>
         <translation>レポートを保存</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="626"/>
+        <location filename="mainwindow.cpp" line="598"/>
         <source>Text files (*.txt)</source>
         <translation>テキストファイル (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="632"/>
+        <location filename="mainwindow.cpp" line="604"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV形式ファイル (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="672"/>
+        <location filename="mainwindow.cpp" line="644"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="689"/>
+        <location filename="mainwindow.cpp" line="661"/>
         <source>Failed to change the language:
 
 %1
@@ -625,85 +620,85 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="750"/>
-        <location filename="mainwindow.cpp" line="759"/>
+        <location filename="mainwindow.cpp" line="709"/>
+        <location filename="mainwindow.cpp" line="718"/>
         <source>Cppcheck Help</source>
         <translation>Cppcheck ヘルプ</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="750"/>
+        <location filename="mainwindow.cpp" line="709"/>
         <source>Failed to load help file (not found)</source>
         <translation>ヘルプファイルが見つかりませんでした</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="759"/>
+        <location filename="mainwindow.cpp" line="718"/>
         <source>Failed to load help file</source>
         <translation>ヘルプファイルの読み込みに失敗しました</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="773"/>
-        <location filename="mainwindow.cpp" line="818"/>
+        <location filename="mainwindow.cpp" line="732"/>
+        <location filename="mainwindow.cpp" line="777"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>プロジェクトファイル (*.cppcheck);;All files(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="775"/>
+        <location filename="mainwindow.cpp" line="734"/>
         <source>Select Project File</source>
         <translation>プロジェクトファイルを選択</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="820"/>
+        <location filename="mainwindow.cpp" line="779"/>
         <source>Select Project Filename</source>
         <translation>プロジェクトファイル名を選択</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="853"/>
+        <location filename="mainwindow.cpp" line="812"/>
         <source>No project file loaded</source>
         <translation>プロジェクトファイルが読み込まれていません</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="32"/>
+        <location filename="translationhandler.cpp" line="31"/>
         <source>English</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="33"/>
+        <location filename="translationhandler.cpp" line="32"/>
         <source>Dutch</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="33"/>
         <source>Finnish</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="34"/>
         <source>Swedish</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>German</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="36"/>
         <source>Russian</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="38"/>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>Polish</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="39"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>Japanese</source>
         <oldsource>Japanease</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="40"/>
+        <location filename="translationhandler.cpp" line="39"/>
         <source>Serbian</source>
         <translation type="unfinished"></translation>
     </message>
@@ -782,17 +777,17 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="97"/>
+        <location filename="translationhandler.cpp" line="96"/>
         <source>Incorrect language specified!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="107"/>
+        <location filename="translationhandler.cpp" line="106"/>
         <source>Language file %1 not found!</source>
         <translation>言語ファイル %1 が見つかりません!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="113"/>
+        <location filename="translationhandler.cpp" line="112"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -997,85 +992,106 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation>解析スレッド数:</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="124"/>
-        <source>Check all #ifdef configurations</source>
-        <translation>すべての #ifdef をチェックする</translation>
+        <location filename="settings.ui" line="109"/>
+        <source>Ideal count:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="131"/>
+        <location filename="settings.ui" line="116"/>
+        <source>TextLabel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="138"/>
+        <source>Force checking all #ifdef configurations</source>
+        <oldsource>Check all #ifdef configurations</oldsource>
+        <translation type="unfinished">すべての #ifdef をチェックする</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="145"/>
         <source>Show full path of files</source>
         <translation>ファイルのフルパスを表示</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="138"/>
+        <location filename="settings.ui" line="152"/>
         <source>Show &quot;No errors found&quot; message when no errors found</source>
         <translation>エラーが無いときは&quot;エラーなし&quot;を表示</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="145"/>
+        <location filename="settings.ui" line="159"/>
         <source>Show internal warnings in log</source>
         <translation>cppcheck内部警告をログに表示する</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="152"/>
+        <location filename="settings.ui" line="166"/>
         <source>Enable inline suppressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="173"/>
+        <location filename="settings.ui" line="187"/>
         <source>Applications</source>
         <translation>アプリケーション</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="182"/>
+        <location filename="settings.ui" line="196"/>
         <source>Add application</source>
         <translation>アプリケーションを追加</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="189"/>
+        <location filename="settings.ui" line="203"/>
         <source>Delete application</source>
         <translation>アプリケーションの削除</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="196"/>
+        <location filename="settings.ui" line="210"/>
         <source>Modify application</source>
         <translation>アプリケーション設定の変更</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="203"/>
+        <location filename="settings.ui" line="217"/>
         <source>Set as default application</source>
         <translation>デフォルトアプリケーションに設定</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="211"/>
+        <location filename="settings.ui" line="225"/>
         <source>Reports</source>
         <translation>レポート</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="217"/>
+        <location filename="settings.ui" line="231"/>
         <source>Save all errors when creating report</source>
         <translation>すべての警告/エラーを保存</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="224"/>
+        <location filename="settings.ui" line="238"/>
         <source>Save full path to files in reports</source>
         <translation>ファイルのフルパスを保存</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="259"/>
+        <source>Language</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="settingsdialog.cpp" line="138"/>
+        <location filename="settingsdialog.cpp" line="81"/>
+        <source>N/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settingsdialog.cpp" line="161"/>
         <source>Add a new application</source>
         <translation>新しいアプリケーションの追加</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="171"/>
+        <location filename="settingsdialog.cpp" line="194"/>
         <source>Modify an application</source>
         <translation>アプリケーションの変更</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="236"/>
+        <location filename="settingsdialog.cpp" line="259"/>
         <source>Select include directory</source>
         <translation>include ディレクトリを選択</translation>
     </message>
