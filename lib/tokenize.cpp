@@ -2555,11 +2555,13 @@ void Tokenizer::arraySize()
             const Token *tok2 = tok->tokAt(5);
             while (Token::Match(tok2, "%any% ,"))
             {
+                if (tok2->isName())
+                    break;
                 sz++;
                 tok2 = tok2->tokAt(2);
             }
 
-            if (Token::Match(tok2, "%any% } ;"))
+            if (!tok2->isName() && Token::Match(tok2, "%any% } ;"))
                 tok->next()->insertToken(MathLib::toString<unsigned int>(sz));
         }
 
@@ -4431,7 +4433,8 @@ void Tokenizer::removeRedundantAssignment()
                 }
                 else if (tok2->varId() &&
                          !Token::Match(tok2->previous(), "[;{}] %var% = %var% ;") &&
-                         !Token::Match(tok2->previous(), "[;{}] %var% = %num% ;"))
+                         !Token::Match(tok2->previous(), "[;{}] %var% = %num% ;") &&
+                         !(Token::Match(tok2->previous(), "[;{}] %var% = %any% ;") && tok2->strAt(2)[0] == '\''))
                 {
                     localvars.erase(tok2->varId());
                 }
@@ -6318,6 +6321,7 @@ bool Tokenizer::simplifyKnownVariables()
             else if (tok2->previous()->str() != "*" &&
                      (Token::Match(tok2, "%var% = %num% ;") ||
                       Token::Match(tok2, "%var% = %str% ;") ||
+                      (Token::Match(tok2, "%var% = %any% ;") && tok2->strAt(2)[0] == '\'') ||
                       Token::Match(tok2, "%var% [ ] = %str% ;") ||
                       Token::Match(tok2, "%var% [ %num% ] = %str% ;") ||
                       Token::Match(tok2, "%var% = %bool% ;") ||
@@ -6704,6 +6708,28 @@ bool Tokenizer::simplifyKnownVariables()
                             tok3->deleteThis();
                         }
                         ret = true;
+                    }
+
+                    if (Token::simpleMatch(tok3, "= {"))
+                    {
+                        unsigned int indentlevel4 = 0;
+                        for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
+                        {
+                            if (tok4->str() == "{")
+                                ++indentlevel4;
+                            else if (tok4->str() == "}")
+                            {
+                                if (indentlevel4 <= 1)
+                                    break;
+                                --indentlevel4;
+                            }
+                            if (Token::Match(tok4, "{|, %varid% ,|}", varid))
+                            {
+                                tok4->next()->str(value);
+                                tok4->next()->varId(valueVarId);
+                                ret = true;
+                            }
+                        }
                     }
 
                     // Using the variable in for-condition..
