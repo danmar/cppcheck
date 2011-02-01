@@ -25,6 +25,9 @@ PathMatch::PathMatch(const std::vector<std::string> &masks)
 
 bool PathMatch::Match(const std::string &path)
 {
+    if (path.empty())
+        return false;
+
     std::vector<std::string>::const_iterator iterMask;
     for (iterMask = _masks.begin(); iterMask != _masks.end(); ++iterMask)
     {
