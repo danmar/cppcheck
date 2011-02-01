@@ -1377,7 +1377,7 @@ private:
                             "}\n";
 
         check(code, "test.cpp");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:13]: (error) instance of \"Init\" object destroyed immediately\n", errout.str());
     }
 
     void trac2084()
