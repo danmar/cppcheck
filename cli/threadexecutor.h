@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@
 #include <list>
 #include "settings.h"
 #include "errorlogger.h"
+
+/// @addtogroup CLI
+/// @{
 
 /**
  * This class will take a list of filenames and settings and check then
@@ -94,5 +97,7 @@ private:
     /** disabled assignment operator */
     void operator=(const ThreadExecutor &);
 };
+
+/// @}
 
 #endif // THREADEXECUTOR_H

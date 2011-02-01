@@ -113,11 +113,6 @@
     <addaction name="mActionViewLog"/>
     <addaction name="mActionViewStats"/>
    </widget>
-   <widget class="QMenu" name="mMenuLanguage">
-    <property name="title">
-     <string>&amp;Language</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="mMenuHelp">
     <property name="title">
      <string>&amp;Help</string>
@@ -148,7 +143,6 @@
    <addaction name="mMenuEdit"/>
    <addaction name="mMenuView"/>
    <addaction name="mMenuCheck"/>
-   <addaction name="mMenuLanguage"/>
    <addaction name="mMenuHelp"/>
   </widget>
   <widget class="QToolBar" name="mToolBarMain">

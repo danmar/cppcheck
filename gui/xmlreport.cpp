@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -159,6 +159,16 @@ ErrorLine XmlReport::ReadError(QXmlStreamReader *reader)
         line.line = attribs.value("", LineAttribute).toString().toUInt();
         line.id = attribs.value("", IdAttribute).toString();
         line.severity = attribs.value("", SeverityAttribute).toString();
+
+        // NOTE: This dublicates the message to Summary-field. But since
+        // old XML format doesn't have separate summary and verbose messages
+        // we must add same message to both data so it shows up in GUI.
+        // Check if there is full stop and cut the summary to it.
+        QString summary = attribs.value("", MsgAttribute).toString();
+        const int ind = summary.indexOf('.');
+        if (ind != -1)
+            summary = summary.left(ind + 1);
+        line.summary = summary;
         line.message = attribs.value("", MsgAttribute).toString();
     }
     return line;

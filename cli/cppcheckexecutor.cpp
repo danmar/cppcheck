@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,12 @@
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include "cmdlineparser.h"
 #include "filelister.h"
+#include "path.h"
 
 CppCheckExecutor::CppCheckExecutor()
 {
     time1 = 0;
+    errorlist = false;
 }
 
 CppCheckExecutor::~CppCheckExecutor()
@@ -43,16 +45,36 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     if (success)
     {
-        if (parser.GetShowVersion())
+        if (parser.GetShowVersion() && !parser.GetShowErrorMessages())
         {
             std::cout << "Cppcheck " << cppcheck->version() << std::endl;
-            return true;
         }
 
         if (parser.GetShowErrorMessages())
         {
+            errorlist = true;
+            std::cout << ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version);
             cppcheck->getErrorMessages();
+            std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
+        }
+
+        if (parser.ExitAfterPrinting())
             std::exit(0);
+    }
+
+    // Check that all include paths exist
+    {
+        std::list<std::string>::const_iterator iter;
+        for (iter = _settings._includePaths.begin();
+             iter != _settings._includePaths.end();
+             ++iter)
+        {
+            const std::string path(Path::toNativeSeparators(*iter));
+            if (!getFileLister()->isDirectory(path.c_str()))
+            {
+                std::cout << "cppcheck: error: Couldn't find path given by -I '" + path + "'" << std::endl;
+                return false;
+            }
         }
     }
 
@@ -64,7 +86,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // Execute recursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
         for (iter = pathnames.begin(); iter != pathnames.end(); ++iter)
-            getFileLister()->recursiveAddFiles(filenames, iter->c_str());
+            getFileLister()->recursiveAddFiles(filenames, Path::toNativeSeparators(iter->c_str()));
 
         for (iter = filenames.begin(); iter != filenames.end(); ++iter)
             cppcheck->addFile(*iter);
@@ -182,7 +204,11 @@ void CppCheckExecutor::reportStatus(unsigned int index, unsigned int max)
 
 void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    if (_settings._xml)
+    if (errorlist)
+    {
+        reportOut(msg.toXML(false, _settings._xml_version));
+    }
+    else if (_settings._xml)
     {
         reportErr(msg.toXML(_settings._verbose, _settings._xml_version));
     }

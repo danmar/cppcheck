@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,15 +30,18 @@
 #include "settingsdialog.h"
 #include "applicationdialog.h"
 #include "applicationlist.h"
+#include "translationhandler.h"
 #include "common.h"
 
 SettingsDialog::SettingsDialog(QSettings *programSettings,
                                ApplicationList *list,
+                               TranslationHandler *translator,
                                QWidget *parent) :
     QDialog(parent),
     mSettings(programSettings),
     mApplications(list),
-    mTempApplications(new ApplicationList(this))
+    mTempApplications(new ApplicationList(this)),
+    mTranslator(translator)
 {
     mUI.setupUi(this);
     mTempApplications->Copy(list);
@@ -78,11 +81,23 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
         mUI.mLblIdealThreads->setText(tr("N/A"));
 
     LoadSettings();
+    InitTranslationsList();
 }
 
 SettingsDialog::~SettingsDialog()
 {
     SaveSettings();
+}
+
+void SettingsDialog::InitTranslationsList()
+{
+    QStringList languages = mTranslator->GetNames();
+    foreach(const QString lang, languages)
+    {
+        mUI.mListLanguages->addItem(lang);
+    }
+    const int current = mTranslator->GetCurrentLanguage();
+    mUI.mListLanguages->setCurrentRow(current);
 }
 
 Qt::CheckState SettingsDialog::BoolToCheckState(bool yes) const
@@ -133,6 +148,7 @@ void SettingsDialog::SaveSettingValues()
     SaveCheckboxValue(mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
     SaveCheckboxValue(mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
     mSettings->setValue(SETTINGS_GLOBAL_INCLUDE_PATHS, mUI.mEditIncludePaths->text());
+    mSettings->setValue(SETTINGS_LANGUAGE, mUI.mListLanguages->currentRow());
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)

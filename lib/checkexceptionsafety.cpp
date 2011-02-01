@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -106,7 +106,7 @@ void CheckExceptionSafety::deallocThrow()
             bool globalVar = false;
             for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next())
             {
-                if (tok->varId() == varid)
+                if (tok2->varId() == varid)
                 {
                     globalVar = true;
                     break;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,13 +74,11 @@ public:
     /**
      * @brief Add new file to be checked.
      *
-     * @param path Relative or absolute path to the file to be checked,
+     * @param filepath Relative or absolute path to the file to be checked,
      * e.g. "cppcheck.cpp". Note that only source files (.c, .cc or .cpp)
      * should be added to the list. Include files are gathered automatically.
-     * You can also give path, e.g. "src/" which will be scanned for source
-     * files recursively.
      */
-    void addFile(const std::string &path);
+    void addFile(const std::string &filepath);
 
     /**
      * @brief Add new unreal file to be checked.

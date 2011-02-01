@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>589</width>
-    <height>281</height>
+    <height>313</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -135,7 +135,7 @@
        <item>
         <widget class="QCheckBox" name="mForce">
          <property name="text">
-          <string>Check all #ifdef configurations</string>
+          <string>Force checking all #ifdef configurations</string>
          </property>
         </widget>
        </item>
@@ -251,6 +251,20 @@
           </size>
          </property>
         </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_4">
+      <attribute name="title">
+       <string>Language</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QListWidget" name="mListLanguages">
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

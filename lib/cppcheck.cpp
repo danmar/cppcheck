@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 
 #include "preprocessor.h" // preprocessor.
 #include "tokenize.h"   // <- Tokenizer
-
-#include "filelister.h"
 
 #include "check.h"
 #include "path.h"
@@ -56,14 +54,14 @@ void CppCheck::settings(const Settings &currentSettings)
     _settings = currentSettings;
 }
 
-void CppCheck::addFile(const std::string &path)
+void CppCheck::addFile(const std::string &filepath)
 {
-    getFileLister()->recursiveAddFiles(_filenames, path.c_str());
+    _filenames.push_back(Path::fromNativeSeparators(filepath));
 }
 
 void CppCheck::addFile(const std::string &path, const std::string &content)
 {
-    _filenames.push_back(path);
+    _filenames.push_back(Path::fromNativeSeparators(path));
     _fileContents[ path ] = content;
 }
 
@@ -153,13 +151,21 @@ unsigned int CppCheck::check()
                 // was used.
                 if (!_settings._force && checkCount > 11)
                 {
-                    if (_settings._errorsOnly == false)
-                    {
-                        const std::string fixedpath = Path::toNativeSeparators(fname);
-                        _errorLogger.reportOut(std::string("Bailing out from checking ") + fixedpath +
-                                               ": Too many configurations. Recheck this file with --force if you want to check them all.");
-                    }
-
+                    const std::string fixedpath = Path::toNativeSeparators(fname);
+                    ErrorLogger::ErrorMessage::FileLocation location;
+                    location.setfile(fixedpath);
+                    std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
+                    loclist.push_back(location);
+                    const std::string msg("Interrupted checking because of too many #ifdef configurations.\n"
+                                          "The checking of the file was interrupted because there were too many "
+                                          "#ifdef configurations. Checking of all #ifdef configurations can be forced "
+                                          "by --force command line option or from GUI preferences. However that may "
+                                          "increase the checking time.");
+                    ErrorLogger::ErrorMessage errmsg(loclist,
+                                                     Severity::information,
+                                                     msg,
+                                                     "toomanyconfigs");
+                    _errorLogger.reportErr(errmsg);
                     break;
                 }
 
@@ -440,7 +446,6 @@ void CppCheck::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
 void CppCheck::getErrorMessages()
 {
     // call all "getErrorMessages" in all registered Check classes
-    std::cout << ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version);
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
         (*it)->getErrorMessages(this, &_settings);
 
@@ -448,6 +453,4 @@ void CppCheck::getErrorMessages()
     tokenizer.getErrorMessages(this, &_settings);
 
     Preprocessor::getErrorMessages(this, &_settings);
-
-    std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
 }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,7 +98,6 @@ MainWindow::MainWindow() :
 
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
 
-    CreateLanguageMenuItems();
     LoadSettings();
 
     mThread->Initialize(mUI.mResults);
@@ -126,39 +125,6 @@ MainWindow::~MainWindow()
     delete mLogView;
     delete mHelpWindow;
     delete mProject;
-}
-
-void MainWindow::CreateLanguageMenuItems()
-{
-    QStringList languages = mTranslation->GetNames();
-
-    for (int i = 0; i < languages.size(); i++)
-    {
-        //Create an action for each language
-        //Language name is pre translated
-        QAction *temp = new QAction(languages[i], this);
-
-        temp->setCheckable(true);
-
-        //Add the action to menu
-        mUI.mMenuLanguage->addAction(temp);
-
-        //Add action to the group
-        mLanguages->addAction(temp);
-
-        //Check it if it's the value stored to settings
-        if (i == mSettings->value(SETTINGS_LANGUAGE, 0).toInt())
-        {
-            temp->setChecked(true);
-        }
-        else
-        {
-            temp->setChecked(false);
-        }
-    }
-
-    connect(mLanguages, SIGNAL(triggered(QAction *)),
-            this, SLOT(MapLanguage(QAction *)));
 }
 
 void MainWindow::LoadSettings()
@@ -392,6 +358,7 @@ Settings MainWindow::GetCppcheckSettings()
 
     result.addEnabled("style");
     result.addEnabled("information");
+    result.addEnabled("missingInclude");
     result.debug = false;
     result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
     result._errorsOnly = false;
@@ -436,7 +403,7 @@ void MainWindow::CheckDone()
 
 void MainWindow::ProgramSettings()
 {
-    SettingsDialog dialog(mSettings, mApplications, this);
+    SettingsDialog dialog(mSettings, mApplications, mTranslation, this);
     if (dialog.exec() == QDialog::Accepted)
     {
         dialog.SaveSettingValues();
@@ -444,6 +411,10 @@ void MainWindow::ProgramSettings()
                                      dialog.SaveFullPath(),
                                      dialog.SaveAllErrors(),
                                      dialog.ShowNoErrorsMessage());
+        const int currentLang = mTranslation->GetCurrentLanguage();
+        const int newLang = mSettings->value(SETTINGS_LANGUAGE, 0).toInt();
+        if (currentLang != newLang)
+            SetLanguage(newLang);
     }
 }
 
@@ -707,19 +678,6 @@ void MainWindow::SetLanguage(int index)
             {
                 actions[i]->setText(tr(languages[i].toLatin1()));
             }
-        }
-    }
-}
-
-void MainWindow::MapLanguage(QAction *action)
-{
-    //Find the action that has the language that user clicked
-    QList<QAction *> actions = mLanguages->actions();
-    for (int i = 0; i < actions.size(); i++)
-    {
-        if (actions[i] == action)
-        {
-            SetLanguage(i);
         }
     }
 }

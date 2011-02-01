@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,16 @@ CheckNullPointer instance;
 //---------------------------------------------------------------------------
 
 
+/** Is string uppercase? */
+bool CheckNullPointer::isUpper(const std::string &str)
+{
+    for (unsigned int i = 0; i < str.length(); ++i)
+    {
+        if (str[i] >= 'a' && str[i] <= 'z')
+            return false;
+    }
+    return true;
+}
 
 /**
  * @brief parse a function call and extract information about variable usage
@@ -59,6 +69,15 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1.insert("strndup");
         functionNames1.insert("strlen");
         functionNames1.insert("strstr");
+        functionNames1.insert("fclose");
+        functionNames1.insert("feof");
+        functionNames1.insert("fread");
+        functionNames1.insert("fwrite");
+        functionNames1.insert("fseek");
+        functionNames1.insert("ftell");
+        functionNames1.insert("fgetpos");
+        functionNames1.insert("fsetpos");
+        functionNames1.insert("rewind");
     }
 
     // standard functions that dereference second parameter..
@@ -461,7 +480,21 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     break;
                 }
 
-                if (tok1->varId() == varid)
+                if (tok1->str() == ")" && Token::Match(tok1->link()->previous(), "while ( %varid%", varid))
+                {
+                    break;
+                }
+
+                if (tok1->str() == ")" && Token::simpleMatch(tok1->link()->previous(), "sizeof ("))
+                {
+                    tok1 = tok1->link()->previous();
+                    continue;
+                }
+
+                if (tok1->str() == "break")
+                    break;
+
+                if (tok1->varId() == varid && !Token::Match(tok1->previous(), "[?:]"))
                 {
                     // unknown : this is set by isPointerDeRef if it is
                     //           uncertain
@@ -518,6 +551,17 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             // - if there are logical operators
             // - if (x) { } else { ... }
 
+            // If the if-body ends with a unknown macro then bailout
+            {
+                // goto the end paranthesis
+                const Token *endpar = tok->next()->link();
+                const Token *endbody = endpar ? endpar->next()->link() : 0;
+                if (endbody &&
+                    Token::Match(endbody->tokAt(-3), "[;{}] %var% ;") &&
+                    isUpper(endbody->tokAt(-2)->str()))
+                    continue;
+            }
+
             // vartok : token for the variable
             const Token *vartok = 0;
             if (Token::Match(tok, "if ( ! %var% ) {"))
@@ -525,6 +569,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             else if (Token::Match(tok, "if ( NULL|0 == %var% ) {"))
                 vartok = tok->tokAt(4);
             else if (Token::Match(tok, "if ( %var% == NULL|0 ) {"))
+                vartok = tok->tokAt(2);
+            else if (Token::Match(tok, "if|while ( %var% ) {") &&
+                     !Token::simpleMatch(tok->tokAt(4)->link(), "} else"))
                 vartok = tok->tokAt(2);
             else
                 continue;
@@ -541,12 +588,24 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             // if this is true then it is known that the pointer is null
             bool null = true;
 
+            // start token = inside the if-body
+            const Token *tok1 = tok->next()->link()->tokAt(2);
+
+            if (Token::Match(tok, "if|while ( %var% )"))
+            {
+                // pointer might be null
+                null = false;
+
+                // start token = first token after the if/while body
+                tok1 = tok1->previous()->link()->next();
+            }
+
             // Name of the pointer
             const std::string &pointerName = vartok->str();
 
             // Count { and } for tok2
             unsigned int indentlevel = 1;
-            for (const Token *tok2 = tok->next()->link()->tokAt(2); tok2; tok2 = tok2->next())
+            for (const Token *tok2 = tok1; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "{")
                     ++indentlevel;
@@ -564,7 +623,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     }
                 }
 
-                if (Token::Match(tok2, "goto|return|continue|break|throw|if"))
+                if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch"))
                 {
                     if (Token::Match(tok2, "return * %varid%", varid))
                         nullPointerError(tok2, tok->strAt(3));

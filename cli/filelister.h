@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include <vector>
 #include <string>
 
-/// @addtogroup Core
+/// @addtogroup CLI
 /// @{
 
 /**
@@ -50,15 +50,6 @@ public:
                                    const std::string &path) = 0;
 
     /**
-     * @brief Compare filenames to see if they are the same.
-     * On Linux the comparison is case-sensitive. On Windows it is case-insensitive.
-     * @param fname1 one filename
-     * @param fname2 other filename
-     * @return true if the filenames match on the current platform
-     */
-    virtual bool sameFileName(const std::string &fname1, const std::string &fname2) = 0;
-
-    /**
      * @brief Check if the file extension indicates that it's a source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param filename filename to check
@@ -66,6 +57,11 @@ public:
      */
     virtual bool acceptFile(const std::string &filename);
 
+    /**
+     * @brief Is given path a directory?
+     * @return returns true if the path is a directory
+     */
+    virtual bool isDirectory(const std::string &path) = 0;
 };
 
 /** @brief get filelister (platform dependent implementation) */

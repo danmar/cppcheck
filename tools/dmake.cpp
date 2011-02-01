@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +25,9 @@
 #include <vector>
 
 #if defined(_WIN32)
-#include "../lib/fileLister_win32.h"
+#include "../cli/fileLister_win32.h"
 #else // POSIX-style system
-#include "../lib/filelister_unix.h"
+#include "../cli/filelister_unix.h"
 #endif
 
 std::string objfile(std::string cppfile)
@@ -208,11 +208,11 @@ int main(int argc, char **argv)
     fout << "MAN_SOURCE=man/cppcheck.1.xml\n\n";
 
     fout << "\n###### Object Files\n\n";
-    fout << "LIBOBJ =     " << objfile(libfiles[0]);
+    fout << "LIBOBJ =      " << objfile(libfiles[0]);
     for (unsigned int i = 1; i < libfiles.size(); ++i)
         fout << " \\" << std::endl << std::string(14, ' ') << objfile(libfiles[i]);
     fout << "\n\n";
-    fout << "CLIOBJ =     " << objfile(clifiles[0]);
+    fout << "CLIOBJ =      " << objfile(clifiles[0]);
     for (unsigned int i = 1; i < clifiles.size(); ++i)
         fout << " \\" << std::endl << std::string(14, ' ') << objfile(clifiles[i]);
     fout << "\n\n";
@@ -220,24 +220,24 @@ int main(int argc, char **argv)
     for (unsigned int i = 1; i < testfiles.size(); ++i)
         fout << " \\" << std::endl << std::string(14, ' ') << objfile(testfiles[i]);
     fout << "\n\n";
-    fout << "EXTOBJ =     " << objfile(externalfiles[0]);
+    fout << "EXTOBJ =      " << objfile(externalfiles[0]);
     for (unsigned int i = 1; i < externalfiles.size(); ++i)
         fout << " \\" << std::endl << std::string(14, ' ') << objfile(externalfiles[i]);
     fout << "\n\n";
 
 
     fout << "\n###### Targets\n\n";
-    fout << "cppcheck:\t$(LIBOBJ)\t$(CLIOBJ)\t$(EXTOBJ)\n";
+    fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre $(LDFLAGS)\n\n";
-    fout << "all:\tcppcheck\ttestrunner\n\n";
-    fout << "testrunner:\t$(TESTOBJ)\t$(LIBOBJ)\t$(EXTOBJ)\tcli/threadexecutor.o\tcli/cmdlineparser.o\tcli/cppcheckexecutor.o\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o $(LDFLAGS)\n\n";
+    fout << "all:\tcppcheck testrunner\n\n";
+    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/filelister_unix.o\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/filelister.o cli/filelister_unix.o $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
     fout << "\t./testrunner -g -q\n\n";
     fout << "dmake:\ttools/dmake.cpp\n";
-    fout << "\t$(CXX) -o dmake tools/dmake.cpp lib/filelister*.cpp\n\n";
+    fout << "\t$(CXX) -o dmake tools/dmake.cpp cli/filelister*.cpp lib/path.cpp -Ilib\n\n";
     fout << "clean:\n";
 #ifdef _WIN32
     fout << "\tdel lib\*.o\n\tdel cli\*.o\n\tdel test\*.o\n\tdel *.exe\n";
@@ -248,7 +248,7 @@ int main(int argc, char **argv)
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
     fout << "tags:\n";
     fout << "\tctags -R --exclude=doxyoutput .\n\n";
-    fout << "install:\tcppcheck\n";
+    fout << "install: cppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n\n";
 #endif

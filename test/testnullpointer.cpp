@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -397,6 +397,55 @@ private:
               "        ;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(struct ABC *abc)\n"
+              "{\n"
+              "    abc = abc ? abc->next : 0;\n"
+              "    if (!abc)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("BOOL GotoFlyAnchor()\n"  // #2243
+              "{\n"
+              "    const SwFrm* pFrm = GetCurrFrm();\n"
+              "    do {\n"
+              "        pFrm = pFrm->GetUpper();\n"
+              "    } while( pFrm && !pFrm->IsFlyFrm() );\n"
+              "\n"
+              "    if( !pFrm )\n"
+              "        return FALSE;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Ticket #2463
+        check("struct A \n"
+              "{\n"
+              "    B* W;\n"
+              "\n"
+              "    void f() {\n"
+              "        switch (InData) {\n"
+              "            case 2:\n"
+              "                if (!W) return;\n"
+              "                W->foo();\n"
+              "                break;\n"
+              "            case 3:\n"
+              "                f();\n"
+              "                if (!W) return;\n"
+              "                break;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #2525 - sizeof
+        check("void f() {\n"
+              "    int *test = NULL;\n"
+              "    int c = sizeof(test[0]);\n"
+              "    if (!test)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer5()
@@ -424,8 +473,8 @@ private:
               "        p = new FooCar;\n"
               "    p->abcd();\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Possible null pointer dereference: p\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Possible null pointer dereference: p\n",
+                           "", errout.str());
 
         check("static void foo()\n"
               "{\n"
@@ -667,8 +716,8 @@ private:
               "        argv32[i] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("error", errout.str());
+        TODO_ASSERT_EQUALS("error",
+                           "", errout.str());
     }
 
     void nullpointer7()
@@ -809,6 +858,37 @@ private:
               "        fred->x = 0;\n"
               "    }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // ticket #1219
+        check("void foo(char *p) {\n"
+              "    if (p) {\n"
+              "        return;\n"
+              "    }\n"
+              "    *p = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        // #2467 - unknown macro may terminate the application
+        check("void f(Fred *fred) {\n"
+              "    if (fred == NULL) {\n"
+              "        MACRO;\n"
+              "    }\n"
+              "    fred->a();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #2493 - switch
+        check("void f(Fred *fred) {\n"
+              "    if (fred == NULL) {\n"
+              "        x = 0;\n"
+              "    }\n"
+              "    switch (x) {\n"
+              "        case 1:\n"
+              "            fred->a();\n"
+              "            break;\n"
+              "    };\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -173,6 +173,7 @@ private:
         TEST_CASE(endifsemicolon);
         TEST_CASE(missing_doublequote);
         TEST_CASE(handle_error);
+        TEST_CASE(dup_defines);
 
         TEST_CASE(unicodeInCode);
         TEST_CASE(unicodeInComment);
@@ -428,12 +429,117 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Make sure an error message is written..
-        ASSERT_EQUALS("", errout.str());    // no change?
-        TODO_ASSERT_EQUALS("[test.cpp:3]: this preprocessor condition is always true", errout.str());
+        ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
+                      errout.str());
 
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\nA\n\nB\n\n\n", actual["ABC"]);
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+
+        test7a();
+        test7b();
+        test7c();
+        test7d();
+    }
+
+    void test7a()
+    {
+        const char filedata[] = "#ifndef ABC\n"
+                                "A\n"
+                                "#ifndef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Make sure an error message is written..
+        TODO_ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed NOT to be defined\n",
+                           "", errout.str());
+
+        // Compare results..
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+    }
+
+    void test7b()
+    {
+        const char filedata[] = "#ifndef ABC\n"
+                                "A\n"
+                                "#ifdef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Make sure an error message is written..
+        TODO_ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed NOT to be defined\n",
+                           "", errout.str());
+
+        // Compare results..
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+    }
+
+    void test7c()
+    {
+        const char filedata[] = "#ifdef ABC\n"
+                                "A\n"
+                                "#ifndef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Make sure an error message is written..
+        ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
+                      errout.str());
+
+        // Compare results..
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+    }
+
+    void test7d()
+    {
+        const char filedata[] = "#if defined(ABC)\n"
+                                "A\n"
+                                "#if defined(ABC)\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Make sure an error message is written..
+        ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
+                      errout.str());
+
+        // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
@@ -754,7 +860,7 @@ private:
             ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A<2"));
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A==2"));
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A<1"));
-            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A>=1&&B<=A"));
+            TODO_ASSERT_EQUALS(true, false, Preprocessor::match_cfg_def(cfg, "A>=1&&B<=A"));
         }
     }
 
@@ -777,7 +883,8 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\n\n\nB\n\n", actual[""]);
-        TODO_ASSERT_EQUALS("\nA\n\n\n\n", actual["LIBVER=101"]);
+        TODO_ASSERT_EQUALS("\nA\n\n\n\n",
+                           "", actual["LIBVER=101"]);
     }
 
     void if_cond2()
@@ -804,6 +911,7 @@ private:
         if_cond2b();
         if_cond2c();
         if_cond2d();
+        if_cond2e();
     }
 
     void if_cond2b()
@@ -889,6 +997,31 @@ private:
         ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\n\n\n!b\n\n\n", actual["A"]);
         ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\nb\n\n\n\n\n", actual["A;B"]);
         ASSERT_EQUALS("\n!a\n\nb\n\n\n\n\n\n\n\n\n\n\n\n", actual["B"]);
+    }
+
+    void if_cond2e()
+    {
+        const char filedata[] = "#if !defined(A)\n"
+                                "!a\n"
+                                "#elif !defined(B)\n"
+                                "!b\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        errout.str("");
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        settings.debug = settings.debugwarnings = true;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n!a\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\n\n\n!b\n\n", actual["A"]);
+        TODO_ASSERT_EQUALS("\n\n\n\n\n", "", actual["A;B"]);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void if_cond3()
@@ -1008,8 +1141,7 @@ private:
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
-            ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-            TODO_ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+            TODO_ASSERT_EQUALS(2, 1, static_cast<unsigned int>(actual.size()));
             ASSERT_EQUALS("\nfoo();\n\n", actual[""]);
         }
     }
@@ -1169,8 +1301,9 @@ private:
 
         // the "defined(DEF_10) || defined(DEF_11)" are not handled correctly..
         ASSERT_EQUALS("(debug) unhandled configuration: defined(DEF_10)||defined(DEF_11)\n", errout.str());
-        TODO_ASSERT_EQUALS(2, actual.size());
-        TODO_ASSERT_EQUALS("\na1;\n\n", actual["DEF_10"]);
+        TODO_ASSERT_EQUALS(2, 1, actual.size());
+        TODO_ASSERT_EQUALS("\na1;\n\n",
+                           "", actual["DEF_10"]);
 
     }
 
@@ -2311,8 +2444,8 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n", actual[""]);
-        TODO_ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS(2, (int)actual.size());
+        TODO_ASSERT_EQUALS(1,
+                           2, actual.size());
     }
 
     void define_ifndef2()
@@ -2379,6 +2512,48 @@ private:
         // Compare results..
         ASSERT_EQUALS("char a[] = \"#endfile\";\nchar b[] = \"#endfile\";\n\n", actual[""]);
         ASSERT_EQUALS(1, (int)actual.size());
+    }
+
+    void dup_defines()
+    {
+        const char filedata[] = "#ifdef A\n"
+                                "#define B\n"
+                                "#if defined(B) && defined(A)\n"
+                                "a\n"
+                                "#else\n"
+                                "b\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // B will always be defined if A is defined; the following test
+        // cases should be fixed whenever this other bug is fixed
+        TODO_ASSERT_EQUALS(2,
+                           3, static_cast<unsigned int>(actual.size()));
+
+        if (actual.find("A") == actual.end())
+        {
+            ASSERT_EQUALS("A is checked", "failed");
+        }
+        else
+        {
+            ASSERT_EQUALS("A is checked", "A is checked");
+        }
+
+        if (actual.find("A;A;B") != actual.end())
+        {
+            ASSERT_EQUALS("A;A;B is NOT checked", "failed");
+        }
+        else
+        {
+            ASSERT_EQUALS("A;A;B is NOT checked", "A;A;B is NOT checked");
+        }
     }
 };
 

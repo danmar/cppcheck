@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,6 +84,14 @@ public:
         return _showHelp;
     }
 
+    /**
+     * Return if we should exit after printing version, help etc.
+     */
+    bool ExitAfterPrinting() const
+    {
+        return _exitAfterPrint;
+    }
+
 protected:
 
     /**
@@ -101,6 +109,7 @@ private:
     bool _showHelp;
     bool _showVersion;
     bool _showErrorMessages;
+    bool _exitAfterPrint;
     std::vector<std::string> _pathnames;
 };
 

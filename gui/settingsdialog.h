@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 class QSettings;
 class QWidget;
 class ApplicationList;
+class TranslationHandler;
 
 /// @addtogroup GUI
 /// @{
@@ -41,6 +42,7 @@ class SettingsDialog : public QDialog
 public:
     SettingsDialog(QSettings *programSettings,
                    ApplicationList *list,
+                   TranslationHandler *translator,
                    QWidget *parent = 0);
     virtual ~SettingsDialog();
 
@@ -163,6 +165,10 @@ protected:
     */
     bool CheckStateToBool(Qt::CheckState state) const;
 
+    /**
+    * @brief Populate the translations list.
+    */
+    void InitTranslationsList();
 
     /**
     * @brief Settings
@@ -182,6 +188,12 @@ protected:
     * when user clicks ok.
     */
     ApplicationList *mTempApplications;
+
+    /**
+    * @brief List of translations.
+    *
+    */
+    TranslationHandler *mTranslator;
 
     /**
     * @brief Dialog from UI designer

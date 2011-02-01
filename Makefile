@@ -22,7 +22,7 @@ MAN_SOURCE=man/cppcheck.1.xml
 
 ###### Object Files
 
-LIBOBJ =     lib/checkautovariables.o \
+LIBOBJ =      lib/checkautovariables.o \
               lib/checkbufferoverrun.o \
               lib/checkclass.o \
               lib/checkexceptionsafety.o \
@@ -37,9 +37,6 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/cppcheck.o \
               lib/errorlogger.o \
               lib/executionpath.o \
-              lib/filelister.o \
-              lib/filelister_unix.o \
-              lib/filelister_win32.o \
               lib/mathlib.o \
               lib/path.o \
               lib/preprocessor.o \
@@ -49,8 +46,11 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/token.o \
               lib/tokenize.o
 
-CLIOBJ =     cli/cmdlineparser.o \
+CLIOBJ =      cli/cmdlineparser.o \
               cli/cppcheckexecutor.o \
+              cli/filelister.o \
+              cli/filelister_unix.o \
+              cli/filelister_win32.o \
               cli/main.o \
               cli/threadexecutor.o
 
@@ -90,7 +90,7 @@ TESTOBJ =     test/options.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o
 
-EXTOBJ =     externals/tinyxml/tinystr.o \
+EXTOBJ =      externals/tinyxml/tinystr.o \
               externals/tinyxml/tinyxml.o \
               externals/tinyxml/tinyxmlerror.o \
               externals/tinyxml/tinyxmlparser.o
@@ -98,13 +98,13 @@ EXTOBJ =     externals/tinyxml/tinystr.o \
 
 ###### Targets
 
-cppcheck:	$(LIBOBJ)	$(CLIOBJ)	$(EXTOBJ)
+cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre $(LDFLAGS)
 
-all:	cppcheck	testrunner
+all:	cppcheck testrunner
 
-testrunner:	$(TESTOBJ)	$(LIBOBJ)	$(EXTOBJ)	cli/threadexecutor.o	cli/cmdlineparser.o	cli/cppcheckexecutor.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o $(LDFLAGS)
+testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/filelister_unix.o
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/filelister.o cli/filelister_unix.o $(LDFLAGS)
 
 test:	all
 	./testrunner
@@ -113,7 +113,7 @@ check:	all
 	./testrunner -g -q
 
 dmake:	tools/dmake.cpp
-	$(CXX) -o dmake tools/dmake.cpp lib/filelister*.cpp
+	$(CXX) -o dmake tools/dmake.cpp cli/filelister*.cpp lib/path.cpp -Ilib
 
 clean:
 	rm -f lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner cppcheck cppcheck.1
@@ -127,14 +127,14 @@ man/cppcheck.1:	$(MAN_SOURCE)
 tags:
 	ctags -R --exclude=doxyoutput .
 
-install:	cppcheck
+install: cppcheck
 	install -d ${BIN}
 	install cppcheck ${BIN}
 
 
 ###### Build
 
-lib/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
+lib/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/checkautovariables.o lib/checkautovariables.cpp
 
 lib/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h
@@ -170,7 +170,7 @@ lib/checkuninitvar.o: lib/checkuninitvar.cpp lib/checkuninitvar.h lib/check.h li
 lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/checkunusedfunctions.o lib/checkunusedfunctions.cpp
 
-lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/preprocessor.h lib/filelister.h lib/path.h lib/timer.h
+lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/preprocessor.h lib/path.h lib/timer.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/cppcheck.o lib/cppcheck.cpp
 
 lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/path.h lib/cppcheck.h lib/settings.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h
@@ -178,15 +178,6 @@ lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/path.h lib/cppcheck
 
 lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/executionpath.o lib/executionpath.cpp
-
-lib/filelister.o: lib/filelister.cpp lib/filelister.h lib/filelister_win32.h lib/filelister_unix.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/filelister.o lib/filelister.cpp
-
-lib/filelister_unix.o: lib/filelister_unix.cpp lib/filelister.h lib/filelister_unix.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/filelister_unix.o lib/filelister_unix.cpp
-
-lib/filelister_win32.o: lib/filelister_win32.cpp lib/filelister.h lib/filelister_win32.h lib/path.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/filelister_win32.o lib/filelister_win32.cpp
 
 lib/mathlib.o: lib/mathlib.cpp lib/mathlib.h lib/tokenize.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/mathlib.o lib/mathlib.cpp
@@ -200,7 +191,7 @@ lib/preprocessor.o: lib/preprocessor.cpp lib/preprocessor.h lib/tokenize.h lib/t
 lib/settings.o: lib/settings.cpp lib/settings.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/settings.o lib/settings.cpp
 
-lib/symboldatabase.o: lib/symboldatabase.cpp lib/symboldatabase.h lib/tokenize.h lib/token.h lib/settings.h lib/errorlogger.h lib/check.h
+lib/symboldatabase.o: lib/symboldatabase.cpp lib/symboldatabase.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/check.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/symboldatabase.o lib/symboldatabase.cpp
 
 lib/timer.o: lib/timer.cpp lib/timer.h
@@ -209,14 +200,23 @@ lib/timer.o: lib/timer.cpp lib/timer.h
 lib/token.o: lib/token.cpp lib/token.h lib/errorlogger.h lib/check.h lib/tokenize.h lib/settings.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/token.o lib/token.cpp
 
-lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/token.h lib/filelister.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h lib/path.h lib/symboldatabase.h
+lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/token.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h lib/path.h lib/symboldatabase.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/tokenize.o lib/tokenize.cpp
 
-cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/timer.h cli/cmdlineparser.h
+cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/timer.h cli/cmdlineparser.h lib/path.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h cli/threadexecutor.h cli/cmdlineparser.h lib/filelister.h
+cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h cli/threadexecutor.h cli/cmdlineparser.h cli/filelister.h lib/path.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
+
+cli/filelister.o: cli/filelister.cpp cli/filelister.h cli/filelister_win32.h cli/filelister_unix.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/filelister.o cli/filelister.cpp
+
+cli/filelister_unix.o: cli/filelister_unix.cpp lib/path.h cli/filelister.h cli/filelister_unix.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/filelister_unix.o cli/filelister_unix.cpp
+
+cli/filelister_win32.o: cli/filelister_win32.cpp cli/filelister.h cli/filelister_win32.h lib/path.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/filelister_win32.o cli/filelister_win32.cpp
 
 cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/main.o cli/main.cpp
@@ -257,7 +257,7 @@ test/testerrorlogger.o: test/testerrorlogger.cpp test/testsuite.h lib/errorlogge
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/tokenize.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
 
-test/testfilelister_unix.o: test/testfilelister_unix.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/filelister_unix.h lib/filelister.h
+test/testfilelister_unix.o: test/testfilelister_unix.cpp test/testsuite.h lib/errorlogger.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testfilelister_unix.o test/testfilelister_unix.cpp
 
 test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h

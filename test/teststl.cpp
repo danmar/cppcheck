@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ private:
         TEST_CASE(erase3);
         TEST_CASE(erase4);
         TEST_CASE(erase5);
+        TEST_CASE(erase6);
         TEST_CASE(eraseBreak);
         TEST_CASE(eraseContinue);
         TEST_CASE(eraseReturn1);
@@ -76,6 +77,7 @@ private:
         TEST_CASE(pushback10);
 
         TEST_CASE(insert1);
+        TEST_CASE(insert2);
 
         TEST_CASE(invalidcode);
 
@@ -222,6 +224,22 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Ticket #2481
+        check("void foo(std::vector<int> &r)\n"
+              "{\n"
+              "    std::vector<int>::iterator aI = r.begin();\n"
+              "    while(aI != r.end())\n"
+              "    {\n"
+              "        if (*aI == 0)\n"
+              "        {\n"
+              "            r.insert(aI, 42);\n"
+              "            break;\n"
+              "        }\n"
+              "        ++aI;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // Execution path checking..
         check("void foo(std::vector<int> &r, int c)\n"
               "{\n"
@@ -239,8 +257,7 @@ private:
               "        ++aI;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:14] (error) After insert, the iterator 'aI' may be invalid", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:14] (error) After insert, the iterator 'aI' may be invalid", "", errout.str());
     }
 
     void iterator8()
@@ -485,6 +502,20 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
     }
 
+    void erase6()
+    {
+        check("void f() {\n"
+              "    std::vector<int> vec(3);\n"
+              "    std::vector<int>::iterator it;\n"
+              "    std::vector<int>::iterator itEnd = vec.end();\n"
+              "    for (it = vec.begin(); it != itEnd; it = vec.begin(), itEnd = vec.end())\n"
+              "    {\n"
+              "        vec.erase(it);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void eraseBreak()
     {
         check("void f()\n"
@@ -597,8 +628,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Dangerous iterator usage after erase()-method.\n", "", errout.str());
     }
 
     void eraseGoto()
@@ -669,7 +699,7 @@ private:
               "        foo.erase(*it);\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' becomes invalid when deleted by value from 'foo'\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' becomes invalid when deleted by value from 'foo'\n", "", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -888,7 +918,29 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) After insert, the iterator 'iter' may be invalid\n", errout.str());
     }
 
+    void insert2()
+    {
+        // Ticket: #2169
+        check("void f(std::vector<int> &vec) {\n"
+              "    for(std::vector<int>::iterator iter = vec.begin(); iter != vec.end(); ++iter)\n"
+              "    {\n"
+              "        vec.insert(iter, 0);\n"
+              "        break;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::vector<int> &vec) {\n"
+              "    for(std::vector<int>::iterator iter = vec.begin(); iter != vec.end(); ++iter)\n"
+              "    {\n"
+              "        if (*it == 0) {\n"
+              "            vec.insert(iter, 0);\n"
+              "            return;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void invalidcode()
     {
@@ -1080,6 +1132,13 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Missing bounds check for extra iterator increment in loop.\n", errout.str());
+
+        check("void f(std::map<int,int> &ints) {\n"
+              "    for (std::map<int,int>::iterator it = ints.begin(); it != ints.end(); ++it) {\n"
+              "        ++it->second;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingInnerComparison2()
@@ -1114,6 +1173,16 @@ private:
               "        if (*i == 44) {\n"
               "            l1.insert(++i, 55);\n"
               "            break;\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("function f1(std::list<int> &l1) {\n"
+              "    for(std::list<int>::iterator i = l1.begin(); i != l1.end(); i++) {\n"
+              "        if (*i == 44) {\n"
+              "            l1.insert(++i, 55);\n"
+              "            return;\n"
               "        }\n"
               "    }\n"
               "}");

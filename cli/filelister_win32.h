@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,31 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FileListerUnixH
-#define FileListerUnixH
+#ifndef FileListerWin32H
+#define FileListerWin32H
 
 #include <vector>
 #include <string>
 #include "filelister.h"
 
-/// @addtogroup Core
+/// @addtogroup CLI
 /// @{
 
 
-class FileListerUnix : public FileLister
+class FileListerWin32 : public FileLister
 {
 public:
     virtual void recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path);
-    virtual bool sameFileName(const std::string &fname1, const std::string &fname2);
-//    virtual static bool acceptFile(const std::string &filename);
+    virtual bool isDirectory(const std::string &path);
 private:
-#ifndef _WIN32
-    void recursiveAddFiles2(std::vector<std::string> &relative,
-                            std::vector<std::string> &absolute,
-                            const std::string &path);
-#endif
+
 };
 
 /// @}
 
-#endif // #ifndef FileListerUnixH
+#endif // #ifndef FileListerWin32H

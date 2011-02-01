@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -176,9 +176,13 @@ void TestFixture::assertEqualsDouble(const char *filename, int linenr, double ex
     assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
 }
 
-void TestFixture::todoAssertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual)
+void TestFixture::todoAssertEquals(const char *filename, int linenr,
+                                   const std::string &wanted,
+                                   const std::string &current,
+                                   const std::string &actual)
 {
-    if (expected == actual)
+    assertEquals(filename, linenr, current, actual);
+    if (wanted == actual)
     {
         assertEquals(filename, linenr, "TODO assertion", "The assertion succeeded");
     }
@@ -188,13 +192,13 @@ void TestFixture::todoAssertEquals(const char *filename, int linenr, const std::
     }
 }
 
-void TestFixture::todoAssertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual)
+void TestFixture::todoAssertEquals(const char *filename, int linenr, unsigned int wanted, unsigned int current, unsigned int actual)
 {
-    std::ostringstream ostr1;
-    ostr1 << expected;
-    std::ostringstream ostr2;
-    ostr2 << actual;
-    todoAssertEquals(filename, linenr, ostr1.str(), ostr2.str());
+    std::ostringstream wantedStr, currentStr, actualStr;
+    wantedStr << wanted;
+    currentStr << current;
+    actualStr << actual;
+    todoAssertEquals(filename, linenr, wantedStr.str(), currentStr.str(), actualStr.str());
 }
 
 void TestFixture::assertThrowFail(const char *filename, int linenr)

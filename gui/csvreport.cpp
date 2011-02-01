@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ void CsvReport::WriteError(const ErrorItem &error)
     QString line;
     const QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
     line += QString("%1,%2,").arg(file).arg(error.lines[error.lines.size() - 1]);
-    line += QString("%1,%2").arg(error.severity).arg(error.message);
+    line += QString("%1,%2").arg(error.severity).arg(error.summary);
 
     mTxtWriter << line << endl;
 }

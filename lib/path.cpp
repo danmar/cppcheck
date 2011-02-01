@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
+#include <cstring>
 #include "path.h"
 
 std::string Path::toNativeSeparators(const std::string &path)
@@ -96,4 +97,20 @@ std::string Path::simplifyPath(const char *originalPath)
     }
 
     return oss.str();
+}
+
+bool Path::sameFileName(const std::string &fname1, const std::string &fname2)
+{
+#if defined(__linux__) || defined(__sun)
+    return bool(fname1 == fname2);
+#endif
+#ifdef __GNUC__
+    return bool(strcasecmp(fname1.c_str(), fname2.c_str()) == 0);
+#endif
+#ifdef __BORLANDC__
+    return bool(stricmp(fname1.c_str(), fname2.c_str()) == 0);
+#endif
+#ifdef _MSC_VER
+    return bool(_stricmp(fname1.c_str(), fname2.c_str()) == 0);
+#endif
 }

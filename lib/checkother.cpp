@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,60 @@ CheckOther instance;
 
 //---------------------------------------------------------------------------
 
+
+void CheckOther::clarifyCalculation()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() == "?")
+        {
+            // condition
+            const Token *cond = tok->previous();
+            if (cond->isName() || cond->isNumber())
+                cond = cond->previous();
+            else if (cond->str() == ")")
+                cond = cond->link()->previous();
+            else
+                continue;
+
+            // multiplication
+            if (cond->str() == "*")
+                cond = cond->previous();
+            else
+                continue;
+
+            // skip previous multiplications..
+            while (cond && cond->strAt(-1) == "*" && (cond->isName() || cond->isNumber()))
+                cond = cond->tokAt(-2);
+
+            if (!cond)
+                continue;
+
+            // first multiplication operand
+            if (cond->str() == ")")
+            {
+                clarifyCalculationError(cond);
+            }
+            else if (cond->isName() || cond->isNumber())
+            {
+                if (Token::Match(cond->previous(),"return|+|-|,|("))
+                    clarifyCalculationError(cond);
+            }
+        }
+    }
+}
+
+void CheckOther::clarifyCalculationError(const Token *tok)
+{
+    reportError(tok,
+                Severity::information,
+                "clarifyCalculation",
+                "Please clarify precedence: 'a*b?..'\n"
+                "Found a suspicious multiplication of condition. Please use parantheses to clarify the code. "
+                "The code 'a*b?1:2' should be written as either '(a*b)?1:2' or 'a*(b?1:2)'.");
+}
 
 
 void CheckOther::warningOldStylePointerCast()
@@ -77,6 +131,64 @@ void CheckOther::checkFflushOnInputStream()
         tok = tok->tokAt(4);
     }
 }
+
+
+void CheckOther::checkSizeofForArrayParameter()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var% "))
+        {
+            int tokIdx = 1;
+            if (tok->tokAt(tokIdx)->str() == "(")
+            {
+                ++tokIdx;
+            }
+            if (tok->tokAt(tokIdx)->varId() > 0)
+            {
+                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->tokAt(tokIdx)->varId());
+                if (declTok)
+                {
+                    if (Token::simpleMatch(declTok->next(), "["))
+                    {
+                        declTok = declTok->next()->link();
+                        // multidimensional array
+                        while (Token::simpleMatch(declTok->next(), "["))
+                        {
+                            declTok = declTok->next()->link();
+                        }
+                        if (!(Token::Match(declTok->next(), "= %str%")) && !(Token::simpleMatch(declTok->next(), "= {")) && !(Token::simpleMatch(declTok->next(), ";")))
+                        {
+                            if (Token::simpleMatch(declTok->next(), ","))
+                            {
+                                declTok = declTok->next();
+                                while (!Token::simpleMatch(declTok, ";"))
+                                {
+                                    if (Token::simpleMatch(declTok, ")"))
+                                    {
+                                        sizeofForArrayParameterError(tok);
+                                        break;
+                                    }
+                                    if (Token::Match(declTok, "(|[|{"))
+                                    {
+                                        declTok = declTok->link();
+                                    }
+                                    declTok = declTok->next();
+                                }
+                            }
+                        }
+                        if (Token::simpleMatch(declTok->next(), ")"))
+                        {
+                            sizeofForArrayParameterError(tok);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 
 //---------------------------------------------------------------------------
 //    switch (x)
@@ -254,7 +366,11 @@ void CheckOther::checkIncorrectLogicOperator()
             {
                 const unsigned int varId = term1Tok->varId();
                 if (!varId)
+                {
+                    tok = Token::findmatch(endTok->next(), conditionPattern);
+                    endTok = tok ? tok->next()->link() : NULL;
                     continue;
+                }
                 firstConstant = term1Tok->tokAt(2)->str();
 
                 if (Token::Match(term2Tok, "%varid% != %num%", varId))
@@ -338,19 +454,18 @@ void CheckOther::invalidFunctionUsage()
     // strtol and strtoul..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if ((tok->str() != "strtol") && (tok->str() != "strtoul"))
+        if (!Token::Match(tok, "strtol|strtoul ("))
             continue;
 
         // Locate the third parameter of the function call..
-        int parlevel = 0;
         int param = 1;
-        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "(")
-                ++parlevel;
+                tok2 = tok2->link();
             else if (tok2->str() == ")")
-                --parlevel;
-            else if (parlevel == 1 && tok2->str() == ",")
+                break;
+            else if (tok2->str() == ",")
             {
                 ++param;
                 if (param == 3)
@@ -451,6 +566,22 @@ void CheckOther::invalidScanf()
     }
 }
 
+void CheckOther::sizeofForArrayParameterError(const Token *tok)
+{
+    reportError(tok, Severity::error,
+                "sizeofwithsilentarraypointer", "Using sizeof for array given as function argument "
+                "returns the size of pointer.\n"
+                "Giving array as function parameter and then using sizeof-operator for the array "
+                "argument. In this case the sizeof-operator returns the size of pointer (in the "
+                "system). It does not return the size of the whole array in bytes as might be "
+                "expected. For example, this code:\n"
+                "     int f(char a[100]) {\n"
+                "         return sizeof(a);\n"
+                "     }\n"
+                " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 100 (the "
+                "size of the array in bytes)."
+               );
+}
 void CheckOther::invalidScanfError(const Token *tok)
 {
     reportError(tok, Severity::warning,
@@ -559,27 +690,27 @@ static bool isOp(const Token *tok)
 /**
  * @brief This class is used to capture the control flow within a function.
  */
-class Scope
+class ScopeInfo
 {
 public:
-    Scope() : _token(NULL), _parent(NULL) { }
-    Scope(const Token *token, Scope *parent_) : _token(token), _parent(parent_) { }
-    ~Scope();
+    ScopeInfo() : _token(NULL), _parent(NULL) { }
+    ScopeInfo(const Token *token, ScopeInfo *parent_) : _token(token), _parent(parent_) { }
+    ~ScopeInfo();
 
-    Scope *parent()
+    ScopeInfo *parent()
     {
         return _parent;
     }
-    Scope *addChild(const Token *token);
-    void remove(Scope *scope);
+    ScopeInfo *addChild(const Token *token);
+    void remove(ScopeInfo *scope);
 
 private:
     const Token *_token;
-    Scope *_parent;
-    std::list<Scope *> _children;
+    ScopeInfo *_parent;
+    std::list<ScopeInfo *> _children;
 };
 
-Scope::~Scope()
+ScopeInfo::~ScopeInfo()
 {
     while (!_children.empty())
     {
@@ -588,18 +719,18 @@ Scope::~Scope()
     }
 }
 
-Scope *Scope::addChild(const Token *token)
+ScopeInfo *ScopeInfo::addChild(const Token *token)
 {
-    Scope *temp = new Scope(token, this);
+    ScopeInfo *temp = new ScopeInfo(token, this);
 
     _children.push_back(temp);
 
     return temp;
 }
 
-void Scope::remove(Scope *scope)
+void ScopeInfo::remove(ScopeInfo *scope)
 {
-    std::list<Scope *>::iterator it;
+    std::list<ScopeInfo *>::iterator it;
 
     for (it = _children.begin(); it != _children.end(); ++it)
     {
@@ -626,7 +757,7 @@ public:
     public:
         VariableUsage(const Token *name = 0,
                       VariableType type = standard,
-                      Scope *scope = NULL,
+                      ScopeInfo *scope = NULL,
                       bool read = false,
                       bool write = false,
                       bool modified = false,
@@ -656,13 +787,13 @@ public:
 
         const Token *_name;
         VariableType _type;
-        Scope *_scope;
+        ScopeInfo *_scope;
         bool _read;
         bool _write;
         bool _modified; // read/modify/write
         bool _allocateMemory;
         std::set<unsigned int> _aliases;
-        std::set<Scope *> _assignments;
+        std::set<ScopeInfo *> _assignments;
     };
 
     typedef std::map<unsigned int, VariableUsage> VariableMap;
@@ -675,7 +806,7 @@ public:
     {
         return _varUsage;
     }
-    void addVar(const Token *name, VariableType type, Scope *scope, bool write_);
+    void addVar(const Token *name, VariableType type, ScopeInfo *scope, bool write_);
     void allocateMemory(unsigned int varid);
     void read(unsigned int varid);
     void readAliases(unsigned int varid);
@@ -794,7 +925,7 @@ void Variables::eraseAll(unsigned int varid)
 
 void Variables::addVar(const Token *name,
                        VariableType type,
-                       Scope *scope,
+                       ScopeInfo *scope,
                        bool write_)
 {
     if (name->varId() > 0)
@@ -952,7 +1083,7 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
     return 0;
 }
 
-static int doAssignment(Variables &variables, const Token *tok, bool dereference, Scope *scope)
+static int doAssignment(Variables &variables, const Token *tok, bool dereference, ScopeInfo *scope)
 {
     int next = 0;
 
@@ -1087,7 +1218,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                             // not in same scope as declaration
                             else
                             {
-                                std::set<Scope *>::iterator assignment;
+                                std::set<ScopeInfo *>::iterator assignment;
 
                                 // check for an assignment in this scope
                                 assignment = var1->_assignments.find(scope);
@@ -1155,7 +1286,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                         variables.clearAliases(varid1);
                     else
                     {
-                        std::set<Scope *>::iterator assignment;
+                        std::set<ScopeInfo *>::iterator assignment;
 
                         // check for an assignment in this scope
                         assignment = var1->_assignments.find(scope);
@@ -1235,16 +1366,16 @@ void CheckOther::functionVariableUsage()
         return;
 
     // Parse all executing scopes..
-    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const Scope *info = *i;
 
         // only check functions
-        if (info->type != SymbolDatabase::SpaceInfo::Function)
+        if (info->type != Scope::eFunction)
             continue;
 
         // First token for the current scope..
@@ -1254,8 +1385,8 @@ void CheckOther::functionVariableUsage()
         Variables variables;
 
         // scopes
-        Scope scopes;
-        Scope *scope = &scopes;
+        ScopeInfo scopes;
+        ScopeInfo *scope = &scopes;
 
         unsigned int indentlevel = 0;
         for (const Token *tok = tok1; tok; tok = tok->next())
@@ -1264,7 +1395,7 @@ void CheckOther::functionVariableUsage()
             {
                 // replace the head node when found
                 if (indentlevel == 0)
-                    scopes = Scope(tok, NULL);
+                    scopes = ScopeInfo(tok, NULL);
                 // add the new scope
                 else
                     scope = scope->addChild(tok);
@@ -1691,7 +1822,7 @@ void CheckOther::functionVariableUsage()
                             if (!start->tokAt(3)->isStandardType())
                             {
                                 // lookup the type
-                                const SymbolDatabase::SpaceInfo *type = symbolDatabase->findVarType(info, start->tokAt(3));
+                                const Scope *type = symbolDatabase->findVariableType(info, start->tokAt(3));
 
                                 // unknown type?
                                 if (!type)
@@ -1699,7 +1830,7 @@ void CheckOther::functionVariableUsage()
 
                                 // has default constructor or
                                 // has members with unknown type or default constructor
-                                else if (type->needInitialization == SymbolDatabase::SpaceInfo::False)
+                                else if (type->needInitialization == Scope::False)
                                     allocate = false;
                             }
                         }
@@ -1876,7 +2007,7 @@ void CheckOther::unusedVariableError(const Token *tok, const std::string &varnam
 
 void CheckOther::allocatedButUnusedVariableError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style, "unusedVariable", "Variable '" + varname + "' is allocated memory that is never used");
+    reportError(tok, Severity::style, "unusedAllocatedMemory", "Variable '" + varname + "' is allocated memory that is never used");
 }
 
 void CheckOther::unreadVariableError(const Token *tok, const std::string &varname)
@@ -1903,21 +2034,21 @@ void CheckOther::checkVariableScope()
     if (!_settings->isEnabled("information"))
         return;
 
-    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::const_iterator i;
+    std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const Scope *scope = *i;
 
         // only check functions
-        if (info->type != SymbolDatabase::SpaceInfo::Function)
+        if (scope->type != Scope::eFunction)
             continue;
 
         // Walk through all tokens..
         int indentlevel = 0;
-        for (const Token *tok = info->classStart; tok; tok = tok->next())
+        for (const Token *tok = scope->classStart; tok; tok = tok->next())
         {
             // Skip function local class and struct declarations..
             if ((tok->str() == "class") || (tok->str() == "struct") || (tok->str() == "union"))
@@ -2005,7 +2136,17 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
     {
         if (tok->str() == "{")
         {
-            ++indentlevel;
+            if (tok->strAt(-1) == "=")
+            {
+                if (Token::findmatch(tok, varname.c_str(), tok->link()))
+                {
+                    return;
+                }
+
+                tok = tok->link();
+            }
+            else
+                ++indentlevel;
         }
 
         else if (tok->str() == "}")
@@ -2101,6 +2242,8 @@ void CheckOther::checkConstantFunctionParameter()
     if (!_settings->_checkCodingStyle)
         return;
 
+    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "[,(] const std :: %type% %var% [,)]"))
@@ -2141,8 +2284,7 @@ void CheckOther::checkConstantFunctionParameter()
         else if (Token::Match(tok, "[,(] const %type% %var% [,)]"))
         {
             // Check if type is a struct or class.
-            const std::string pattern(std::string("class|struct ") + tok->strAt(2));
-            if (Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
+            if (symbolDatabase->isClassOrStruct(tok->strAt(2)))
             {
                 passedByValueError(tok, tok->strAt(3));
             }
@@ -2343,52 +2485,32 @@ void CheckOther::checkIncompleteStatement()
     if (!_settings->_checkCodingStyle)
         return;
 
-    int parlevel = 0;
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "(")
-            ++parlevel;
-        else if (tok->str() == ")")
-            --parlevel;
+            tok = tok->link();
 
-        if (parlevel != 0)
-            continue;
+        else if (Token::simpleMatch(tok, "= {"))
+            tok = tok->next()->link();
 
-        if (Token::simpleMatch(tok, "= {"))
+        else if (tok->str() == "{" && Token::Match(tok->tokAt(-2), "%type% %var%"))
+            tok = tok->link();
+
+        else if (Token::Match(tok, "[;{}] %str%") || Token::Match(tok, "[;{}] %num%"))
         {
-            /* We are in an assignment, so it's not a statement.
-             * Skip until ";" */
-
-            while (tok->str() != ";")
+            // bailout if there is a "? :" in this statement
+            bool bailout = false;
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
             {
-                int level = 0;
-                do
-                {
-                    if (tok->str() == "(" || tok->str() == "{")
-                        ++level;
-                    else if (tok->str() == ")" || tok->str() == "}")
-                        --level;
-
-                    tok = tok->next();
-
-                    if (tok == NULL)
-                        return;
-                }
-                while (level > 0);
+                if (tok2->str() == "?")
+                    bailout = true;
+                else if (tok2->str() == ";")
+                    break;
             }
+            if (bailout)
+                continue;
 
-            continue;
-        }
-
-        if (Token::Match(tok, "[;{}] %str%") && !Token::Match(tok->tokAt(2), "[,}]"))
-        {
-            constStatementError(tok->next(), "string");
-        }
-
-        if (Token::Match(tok, "[;{}] %num%") && !Token::Match(tok->tokAt(2), "[,}]"))
-        {
-            constStatementError(tok->next(), "numeric");
+            constStatementError(tok->next(), tok->next()->isNumber() ? "numeric" : "string");
         }
     }
 }
@@ -2543,24 +2665,6 @@ void CheckOther::checkMathFunctions()
     }
 }
 
-
-bool CheckOther::isIdentifierObjectType(const Token * const tok)
-{
-    const std::string identifier = tok->tokAt(1)->str();
-
-    const std::map<std::string, bool>::const_iterator found = isClassResults.find(identifier);
-    if (found != isClassResults.end())
-    {
-        return found->second;
-    }
-
-    const std::string classDefnOrDecl = std::string("class|struct ") + identifier + " [{:;]";
-    const bool result = Token::findmatch(_tokenizer->tokens(), classDefnOrDecl.c_str()) != NULL;
-    isClassResults.insert(std::make_pair(identifier, result));
-    return result;
-}
-
-
 void CheckOther::checkMisusedScopedObject()
 {
     // Skip this check for .c files
@@ -2571,21 +2675,21 @@ void CheckOther::checkMisusedScopedObject()
             return;
     }
 
-    SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<SymbolDatabase::SpaceInfo *>::iterator i;
+    std::list<Scope *>::const_iterator i;
 
-    for (i = symbolDatabase->spaceInfoList.begin(); i != symbolDatabase->spaceInfoList.end(); ++i)
+    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
     {
-        SymbolDatabase::SpaceInfo *info = *i;
+        const Scope *scope = *i;
 
         // only check functions
-        if (info->type != SymbolDatabase::SpaceInfo::Function)
+        if (scope->type != Scope::eFunction)
             continue;
 
         unsigned int depth = 0;
 
-        for (const Token *tok = info->classStart; tok; tok = tok->next())
+        for (const Token *tok = scope->classStart; tok; tok = tok->next())
         {
             if (tok->str() == "{")
             {
@@ -2600,7 +2704,7 @@ void CheckOther::checkMisusedScopedObject()
 
             if (Token::Match(tok, "[;{}] %var% (")
                 && Token::Match(tok->tokAt(2)->link(), ") ;")
-                && isIdentifierObjectType(tok)
+                && symbolDatabase->isClassOrStruct(tok->next()->str())
                )
             {
                 tok = tok->next();

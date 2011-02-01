@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "timer.h"
 #include "settings.h"
 #include "cmdlineparser.h"
+#include "path.h"
 
 // xml is used in rules
 #include "tinyxml/tinyxml.h"
@@ -59,6 +60,7 @@ CmdLineParser::CmdLineParser(Settings *settings)
     , _showHelp(false)
     , _showVersion(false)
     , _showErrorMessages(false)
+    , _exitAfterPrint(false)
 {
 }
 
@@ -74,6 +76,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         if (strcmp(argv[i], "--version") == 0)
         {
             _showVersion = true;
+            _exitAfterPrint = true;
             return true;
         }
         // Flag used for various purposes during debugging
@@ -101,20 +104,34 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Filter errors
-        else if (strcmp(argv[i], "--exitcode-suppressions") == 0)
+        else if (strncmp(argv[i], "--exitcode-suppressions", 23) == 0)
         {
-            ++i;
+            std::string filename;
 
-            if (i >= argc)
+            // exitcode-suppressions filename.txt
+            // Deprecated
+            if (strcmp(argv[i], "--exitcode-suppressions") == 0)
             {
-                PrintMessage("cppcheck: No file specified for the --exitcode-suppressions option");
-                return false;
+                ++i;
+
+                if (i >= argc || strncmp(argv[i], "-", 1) == 0 ||
+                    strncmp(argv[i], "--", 2) == 0)
+                {
+                    PrintMessage("cppcheck: No filename specified for the --exitcode-suppressions option");
+                    return false;
+                }
+                filename = argv[i];
+            }
+            // exitcode-suppressions=filename.txt
+            else
+            {
+                filename = 24 + argv[i];
             }
 
-            std::ifstream f(argv[i]);
+            std::ifstream f(filename.c_str());
             if (!f.is_open())
             {
-                PrintMessage("cppcheck: Couldn't open the file \"" + std::string(argv[i]) + "\"");
+                PrintMessage("cppcheck: Couldn't open the file \"" + std::string(filename) + "\"");
                 return false;
             }
             const std::string errmsg(_settings->nofail.parseFile(f));
@@ -126,7 +143,31 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Filter errors
-        else if (strcmp(argv[i], "--suppressions") == 0)
+        else if (strncmp(argv[i], "--suppressions-list=", 20) == 0)
+        {
+            std::string filename = argv[i];
+            filename = filename.substr(20);
+            std::ifstream f(filename.c_str());
+            if (!f.is_open())
+            {
+                std::string message("cppcheck: Couldn't open the file \"");
+                message += std::string(filename);
+                message += "\"";
+                PrintMessage(message);
+                return false;
+            }
+            const std::string errmsg(_settings->nomsg.parseFile(f));
+            if (!errmsg.empty())
+            {
+                PrintMessage(errmsg);
+                return false;
+            }
+        }
+
+        // Filter errors
+        // This is deprecated, see --supressions-list above
+        else if (strcmp(argv[i], "--suppressions") == 0 &&
+                 strlen(argv[i]) == 14)
         {
             ++i;
 
@@ -169,14 +210,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--xml") == 0)
             _settings->_xml = true;
 
-#ifndef NDEBUG
-        // Experimental: Write results in xml2 format
+        // Write results in xml2 format
         else if (strcmp(argv[i], "--xml-version=2") == 0)
         {
             _settings->_xml = true;
             _settings->_xml_version = 2;
         }
-#endif
 
         // Only print something when there are errors
         else if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--quiet") == 0)
@@ -224,16 +263,34 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // User define
         else if (strncmp(argv[i], "-D", 2) == 0)
         {
+            std::string define;
+
+            // "-D define"
+            if (strcmp(argv[i], "-D") == 0)
+            {
+                ++i;
+                if (i >= argc || strncmp(argv[i], "-", 1) == 0 ||
+                    strncmp(argv[i], "--", 2) == 0)
+                {
+                    PrintMessage("cppcheck: argument to '-D' is missing");
+                    return false;
+                }
+
+                define = argv[i];
+            }
+            // "-Ddefine"
+            else
+            {
+                define = 2 + argv[i];
+            }
+
             if (!_settings->userDefines.empty())
                 _settings->userDefines += ";";
-            if (strcmp(argv[i], "-D") == 0)
-                _settings->userDefines += argv[++i];
-            else
-                _settings->userDefines += 2 + argv[i];
+            _settings->userDefines += define;
         }
 
         // Include paths
-        else if (strcmp(argv[i], "-I") == 0 || strncmp(argv[i], "-I", 2) == 0)
+        else if (strncmp(argv[i], "-I", 2) == 0)
         {
             std::string path;
 
@@ -252,12 +309,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // "-Ipath/"
             else
             {
-                path = argv[i];
-                path = path.substr(2);
+                path = 2 + argv[i];
             }
+            path = Path::fromNativeSeparators(path);
 
             // If path doesn't end with / or \, add it
-            if (path[path.length()-1] != '/' && path[path.length()-1] != '\\')
+            if (path[path.length()-1] != '/')
                 path += '/';
 
             _settings->_includePaths.push_back(path);
@@ -345,10 +402,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // print all possible error messages..
         else if (strcmp(argv[i], "--errorlist") == 0)
         {
-            //_cppcheck->getErrorMessages();
             _showErrorMessages = true;
             _settings->_xml = true;
-            return true;
+            _exitAfterPrint = true;
         }
 
         // documentation..
@@ -366,6 +422,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             while (doc2.find("\n\n\n") != std::string::npos)
                 doc2.erase(doc2.find("\n\n\n"), 1);
             std::cout << doc2;
+            _exitAfterPrint = true;
             return true;
         }
 
@@ -390,8 +447,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->_showtime = SHOWTIME_NONE;
         }
 
-// Rules are a debug feature
-#ifndef NDEBUG
         // Rule given at command line
         else if (strncmp(argv[i], "--rule=", 7) == 0)
         {
@@ -438,13 +493,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 }
             }
         }
-#endif
 
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
             _pathnames.clear();
             _showHelp = true;
+            _exitAfterPrint = true;
             break;
         }
 
@@ -458,7 +513,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         else
-            _pathnames.push_back(argv[i]);
+            _pathnames.push_back(Path::fromNativeSeparators(argv[i]));
     }
 
     if (_settings->isEnabled("unusedFunctions") && _settings->_jobs > 1)
@@ -472,15 +527,17 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         PrintMessage("--test-2-pass doesn't work with -j option yet.");
     }
 
-
     if (argc <= 1)
         _showHelp = true;
 
     if (_showHelp)
     {
         PrintHelp();
+        return true;
     }
-    else if (_pathnames.empty())
+
+    // Print error only if we have "real" command and expect files
+    if (!_exitAfterPrint && _pathnames.empty())
     {
         PrintMessage("cppcheck: No C or C++ source files found.");
         return false;
@@ -497,7 +554,7 @@ void CmdLineParser::PrintHelp()
               "    cppcheck [--append=file] [-D<ID>] [--enable=<id>] [--error-exitcode=[n]]\n"
               "             [--exitcode-suppressions file] [--file-list=file.txt] [--force]\n"
               "             [--help] [-Idir] [--inline-suppr] [-j [jobs]] [--quiet]\n"
-              "             [--report-progress] [--style] [--suppressions file.txt]\n"
+              "             [--report-progress] [--style] [--suppressions-list=file.txt]\n"
               "             [--verbose] [--version] [--xml] [file or path1] [file or path]\n"
               "\n"
               "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
@@ -521,7 +578,8 @@ void CmdLineParser::PrintHelp()
               "                         if arguments are not valid or if no input files are\n"
               "                         provided. Note that your operating system can\n"
               "                         modify this value, e.g. 256 can become 0.\n"
-              "    --exitcode-suppressions file\n"
+              "    --errorlist          Print a list of all error messages in XML format.\n"
+              "    --exitcode-suppressions=file\n"
               "                         Used when certain messages should be displayed but\n"
               "                         should not cause a non-zero exitcode.\n"
               "    --file-list=file     Specify the files to check in a text file. One Filename per line.\n"
@@ -532,14 +590,16 @@ void CmdLineParser::PrintHelp()
               "                         several paths. First given path is checked first. If\n"
               "                         paths are relative to source files, this is not needed\n"
               "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
-              "                         more comments in the form: // cppcheck-suppress memleak\n"
+              "                         more comments, like: // cppcheck-suppress warningId\n"
               "                         on the lines before the warning to suppress.\n"
               "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
               "    -q, --quiet          Only print error messages\n"
               "    --report-progress    Report progress messages while checking a file.\n"
               "    -s, --style          deprecated, use --enable=style\n"
-              "    --suppressions file  Suppress warnings listed in the file. Filename and line\n"
-              "                         are optional. The format of the single line in file is:\n"
+              "    --suppressions-list=file\n"
+              "                         Suppress warnings listed in the file. Filename and line\n"
+              "                         are optional in the suppression file. The format of the\n"
+              "                         single line in the suppression file is:\n"
               "                         [error id]:[filename]:[line]\n"
               "    --template '[text]'  Format the error messages. E.g.\n"
               "                         '{file}:{line},{severity},{id},{message}' or\n"

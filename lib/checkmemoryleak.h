@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -349,7 +349,10 @@ public:
     /** Function names for functions that are "noreturn" */
     std::set<std::string> noreturn;
 
-    SymbolDatabase *symbolDatabase;
+    /** Function names for functions that are not "noreturn" */
+    std::set<std::string> notnoreturn;
+
+    const SymbolDatabase *symbolDatabase;
 };
 
 
@@ -384,10 +387,10 @@ public:
     void check();
 
 private:
-    void variable(const SymbolDatabase::SpaceInfo *spaceinfo, const Token *tokVarname);
+    void variable(const Scope *scope, const Token *tokVarname);
 
     /** Public functions: possible double-allocation */
-    void checkPublicFunctions(const SymbolDatabase::SpaceInfo *spaceinfo, const Token *classtok);
+    void checkPublicFunctions(const Scope *scope, const Token *classtok);
     void publicAllocationError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)

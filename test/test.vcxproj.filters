@@ -62,13 +62,13 @@
     <ClCompile Include="..\lib\executionpath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\filelister.cpp">
+    <ClCompile Include="..\cli\filelister.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\filelister_unix.cpp">
+    <ClCompile Include="..\cli\filelister_unix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\filelister_win32.cpp">
+    <ClCompile Include="..\cli\filelister_win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\mathlib.cpp">
@@ -265,13 +265,13 @@
     <ClInclude Include="..\lib\executionpath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\filelister.h">
+    <ClInclude Include="..\cli\filelister.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\filelister_unix.h">
+    <ClInclude Include="..\cli\filelister_unix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\filelister_win32.h">
+    <ClInclude Include="..\cli\filelister_win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\mathlib.h">

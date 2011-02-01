@@ -2,5 +2,6 @@
 <project version="1">
     <includedir>
         <dir name="../lib"/>
+        <dir name="temp"/>
     </includedir>
 </project>

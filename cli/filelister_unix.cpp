@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 
 #ifndef _WIN32
 
+#include "path.h"
 #include "filelister.h"
 #include "filelister_unix.h"
 
@@ -71,7 +72,7 @@ void FileListerUnix::recursiveAddFiles2(std::vector<std::string> &relative,
                 continue;
             }
 
-            if (sameFileName(path,filename) || FileListerUnix::acceptFile(filename))
+            if (Path::sameFileName(path,filename) || FileListerUnix::acceptFile(filename))
             {
                 relative.push_back(filename);
                 absolute.push_back(fname);
@@ -93,14 +94,23 @@ void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, cons
     recursiveAddFiles2(filenames, abs, path);
 }
 
-bool FileListerUnix::sameFileName(const std::string &fname1, const std::string &fname2)
+bool FileListerUnix::isDirectory(const std::string &path)
 {
-#if defined(__linux__) || defined(__sun)
-    return bool(fname1 == fname2);
-#endif
-#ifdef __GNUC__
-    return bool(strcasecmp(fname1.c_str(), fname2.c_str()) == 0);
-#endif
+    bool ret = false;
+
+    glob_t glob_results;
+    glob(path.c_str(), GLOB_MARK, 0, &glob_results);
+    if (glob_results.gl_pathc == 1)
+    {
+        const std::string glob_path = glob_results.gl_pathv[0];
+        if (!glob_path.empty() && glob_path[glob_path.size() - 1] == '/')
+        {
+            ret = true;
+        }
+    }
+    globfree(&glob_results);
+
+    return ret;
 }
 
 #endif // _WIN32

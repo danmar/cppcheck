@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -295,7 +295,8 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:8]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
     }
 
     void testiterator()

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2010 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,6 +58,7 @@ private:
         TEST_CASE(varScope8);
         TEST_CASE(varScope9);		// classes may have extra side-effects
         TEST_CASE(varScope10);      // Undefined macro FOR
+        TEST_CASE(varScope11);		// #2475 - struct initialization is not inner scope
 
         TEST_CASE(oldStylePointerCast);
 
@@ -88,6 +89,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickLocalClassConstructors);
         TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
         TEST_CASE(testMisusedScopeObjectDoesNotPickPureC);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
 
@@ -96,6 +98,10 @@ private:
         TEST_CASE(catchExceptionByValue);
 
         TEST_CASE(memsetZeroBytes);
+
+        TEST_CASE(sizeofForArrayParameter);
+
+        TEST_CASE(clarifyCalculation);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -117,6 +123,7 @@ private:
         checkOther.sizeofCalculation();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
+        checkOther.checkSizeofForArrayParameter();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -130,6 +137,7 @@ private:
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkCatchExceptionByValue();
         checkOther.checkMemsetZeroBytes();
+        checkOther.clarifyCalculation();
     }
 
 
@@ -572,6 +580,29 @@ private:
                  "    FOR {\n"
                  "        foo(x++);\n"
                  "    }\n"
+                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope11()
+    {
+        varScope("int f() {\n"
+                 "    int x = 0;\n"
+                 "    AB ab = { x, 0 };\n"
+                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        varScope("int f() {\n"
+                 "    int x = 0;\n"
+                 "    if (a == 0) { ++x; }\n"
+                 "    AB ab = { x, 0 };\n"
+                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        varScope("int f() {\n"
+                 "    int x = 0;\n"
+                 "    if (a == 0) { ++x; }\n"
+                 "    if (a == 1) { AB ab = { x, 0 }; }\n"
                  "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1328,6 +1359,27 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void testMisusedScopeObjectDoesNotPickNestedClass()
+    {
+        const char code[] = "class ios_base {\n"
+                            "public:\n"
+                            "  class Init {\n"
+                            "  public:\n"
+                            "  };\n"
+                            "};\n"
+                            "class foo {\n"
+                            "public:\n"
+                            "  foo();\n"
+                            "  void Init(int);\n"
+                            "};\n"
+                            "foo::foo() {\n"
+                            "  Init(0);\n"
+                            "}\n";
+
+        check(code, "test.cpp");
+        TODO_ASSERT_EQUALS("", "[test.cpp:13]: (error) instance of \"Init\" object destroyed immediately\n", errout.str());
+    }
+
     void trac2084()
     {
         check("#include <signal.h>\n"
@@ -1632,9 +1684,159 @@ private:
               "}\n"
              );
         TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
-                           " bytes of \"p\". Second and third arguments might be inverted.\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+                           " bytes of \"p\". Second and third arguments might be inverted.\n",
+
+                           "", errout.str());
     }
+
+    void sizeofForArrayParameter()
+    {
+        check("void f() {\n"
+              "    int a[10];\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    unsigned int a = 2;\n"
+              "    unsigned int b = 2;\n"
+              "    int c[(a+b)];\n"
+              "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    unsigned int a = { 2 };\n"
+              "    unsigned int b[] = { 0 };\n"
+              "    int c[a[b[0]]];\n"
+              "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("void f() {\n"
+              "    unsigned int a[] = { 1 };\n"
+              "    unsigned int b = 2;\n"
+              "    int c[(a[0]+b)];\n"
+              "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a[] = { 1, 2, 3 };\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a[3] = { 1, 2, 3 };\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f( int a[]) {\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        check("void f( int a[]) {\n"
+              "    std::cout << sizeof a / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        check("void f( int a[3] ) {\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        check("void f(int *p) {\n"
+              "    p[0] = 0;\n"
+              "    sizeof(p);\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char p[] = \"test\";\n"
+              "    sizeof(p);\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        // ticket 2495
+        check("void f() {\n"
+              "    static float col[][3]={\n"
+              "      {1,0,0},\n"
+              "      {0,0,1},\n"
+              "      {0,1,0},\n"
+              "      {1,0,1},\n"
+              "      {1,0,1},\n"
+              "      {1,0,1},\n"
+              "    };\n"
+              "    const int COL_MAX=sizeof(col)/sizeof(col[0]);\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        // ticket 155
+        check("void f() {\n"
+              "    char buff1[1024*64],buff2[sizeof(buff1)*2];\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        // ticket 2510
+        check("void f( int a[], int b) {\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        // ticket 2510
+        check("void f( int a[3] , int b[2] ) {\n"
+              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
+                      "function argument returns the size of pointer.\n", errout.str());
+
+        // ticket 2510
+        check("void f() {\n"
+              "    char buff1[1024*64],buff2[sizeof(buff1)*(2+1)];\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+
+
+    }
+
+    void clarifyCalculation()
+    {
+        check("int f(char c) {\n"
+              "    return 10 * (c == 0) ? 1 : 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (information) Please clarify precedence: 'a*b?..'\n", errout.str());
+
+        check("void f(char c) {\n"
+              "    printf(\"%i\", 10 * (c == 0) ? 1 : 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (information) Please clarify precedence: 'a*b?..'\n", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestOther)
