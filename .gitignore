@@ -36,7 +36,6 @@ gui/qrc_gui.cpp
 gui/*.qm
 # Doxygen output folder
 doxyoutput/
-htdocs/
 # qmake generated
 
 *.sdf
