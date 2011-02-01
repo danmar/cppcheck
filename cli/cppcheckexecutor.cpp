@@ -93,15 +93,12 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     if (!filenames.empty())
     {
         PathMatch matcher(parser.GetIgnoredPaths());
-        // Ignore files
-        std::vector<std::string>::iterator iter = filenames.end();
-        do
+        std::vector<std::string>::iterator iterBegin = filenames.begin();
+        for (int i = (int)filenames.size() - 1; i >= 0; i--)
         {
-            --iter;
-            if (matcher.Match(*iter))
-                filenames.erase(iter);
+            if (matcher.Match(filenames[i]))
+                filenames.erase(iterBegin + i);
         }
-        while (iter != filenames.begin());
     }
     else
     {
