@@ -2382,6 +2382,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // remove __attribute__((?))
     simplifyAttribute();
 
+    // remove unnecessary member qualification..
+    removeUnnecessaryQualification();
+
     // remove Microsoft MFC..
     simplifyMicrosoftMFC();
 
@@ -9325,3 +9328,60 @@ void Tokenizer::simplifyOperatorName()
         }
     }
 }
+
+// remove unnecessary member qualification..
+struct ClassInfo
+{
+    std::string className;
+    Token *end;
+};
+
+void Tokenizer::removeUnnecessaryQualification()
+{
+    std::stack<ClassInfo> classInfo;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "class|struct %type% :|{"))
+        {
+            tok = tok->next();
+            ClassInfo info;
+            info.className = tok->str();
+            tok = tok->next();
+            while (tok && tok->str() != "{")
+                tok = tok->next();
+            if (!tok)
+                return;
+            info.end = tok->link();
+            classInfo.push(info);
+        }
+        else if (!classInfo.empty())
+        {
+            if (tok == classInfo.top().end)
+                classInfo.pop();
+            else if (tok->str() == classInfo.top().className &&
+                     Token::Match(tok, "%type% :: %type% (") &&
+                     Token::Match(tok->tokAt(3)->link(), ") const| {|;"))
+            {
+                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                ErrorLogger::ErrorMessage::FileLocation loc;
+                loc.line = tok->linenr();
+                loc.setfile(file(tok));
+                locationList.push_back(loc);
+
+                const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                       Severity::portability,
+                                                       "Extra qualification \'" + tok->str() + "::\' unnecessary and considered an error by many compilers.",
+                                                       "portability");
+
+                if (_errorLogger)
+                    _errorLogger->reportErr(errmsg);
+                else
+                    Check::reportError(errmsg);
+
+                tok->deleteThis();
+                tok->deleteThis();
+            }
+        }
+    }
+}
+

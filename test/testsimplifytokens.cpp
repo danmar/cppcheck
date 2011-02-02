@@ -315,6 +315,8 @@ private:
         TEST_CASE(redundant_semicolon);
 
         TEST_CASE(simplifyFunctionReturn);
+
+        TEST_CASE(removeUnnecessaryQualification);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -6407,6 +6409,14 @@ private:
                                 "void ( * get4 ( ) ) ( ) ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void removeUnnecessaryQualification()
+    {
+        const char code[] = "class Fred { Fred::Fred() {} };";
+        const char expected[] = "class Fred { Fred ( ) { } } ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("[test.cpp:1]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
     }
 };
 
