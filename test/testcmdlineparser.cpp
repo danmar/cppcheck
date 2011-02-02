@@ -84,6 +84,8 @@ private:
         TEST_CASE(xmlver2);
         TEST_CASE(xmlver2both);
         TEST_CASE(xmlver2both2);
+        TEST_CASE(xmlverunknown);
+        TEST_CASE(xmlverinvalid);
         TEST_CASE(errorlist1);
         TEST_CASE(errorlistverbose1)
         TEST_CASE(errorlistverbose2)
@@ -616,6 +618,24 @@ private:
         ASSERT(parser.ParseFromArgs(4, argv));
         ASSERT(settings._xml);
         ASSERT_EQUALS(2, settings._xml_version);
+    }
+
+    void xmlverunknown()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--xml", "--xml-version=3", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(4, argv));
+    }
+
+    void xmlverinvalid()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--xml", "--xml-version=a", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(4, argv));
     }
 
     void errorlist1()
