@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <rule version="1">
-    <pattern>Token :: (?:findm|(?:simple|)M)atch \([^,]+,\s+"\s+</pattern>
+    <pattern>Token :: (?:findm|(?:simple|)M)atch \([^,]+,\s+"(?:\s+|[^"]+?\s+")</pattern>
     <message>
         <id>TokenMatchSpacing</id>
         <severity>style</severity>
