@@ -126,6 +126,7 @@ private:
         TEST_CASE(simplifyKnownVariables37);    // ticket #2398 - false positive caused by no simplification in for loop
         TEST_CASE(simplifyKnownVariables38);    // ticket #2399 - simplify conditions
         TEST_CASE(simplifyKnownVariables39);
+        TEST_CASE(simplifyKnownVariables40);
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -2044,6 +2045,16 @@ private:
                                 "}";
             ASSERT_EQUALS("void f ( ) {\nint * x ;\n\ndelete [ ] x ;\n}", tokenizeAndStringify(code, true));
         }
+    }
+
+
+    void simplifyKnownVariables40()
+    {
+        const char code[] = "void f() {\n"
+                            "    char c1 = 'a';\n"
+                            "    char c2 = { c1 };\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\n;\nchar c2 ; c2 = { 'a' } ;\n}", tokenizeAndStringify(code, true));
     }
 
     void simplifyKnownVariablesBailOutAssign()
@@ -4669,6 +4680,7 @@ private:
     void arraySize()
     {
         ASSERT_EQUALS("; int a[3]={1,2,3};", arraySize_(";int a[]={1,2,3};"));
+        ASSERT_EQUALS("; int a[]={ ABC,2,3};", arraySize_(";int a[]={ABC,2,3};"));
     }
 
     std::string labels_(const std::string &code)

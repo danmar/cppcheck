@@ -56,5 +56,5 @@ Cross compiling Win32 (CLI) version of Cppcheck in Linux
 
 Webpage
 
-    http://www.sf.net/projects/cppcheck
+    http://cppcheck.sourceforge.net/
 

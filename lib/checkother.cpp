@@ -1911,6 +1911,8 @@ void CheckOther::functionVariableUsage()
                 variables.use(tok->next()->varId());    // use = read + write
             else if (Token::Match(tok, "[;{}] %var% >>"))
                 variables.use(tok->next()->varId());    // use = read + write
+            else if (Token::Match(tok, "[{,] %var% [,}]"))
+                variables.read(tok->next()->varId());
 
             // function parameter
             else if (Token::Match(tok, "[(,] %var% ["))
@@ -1922,14 +1924,14 @@ void CheckOther::functionVariableUsage()
                 variables.use(tok->next()->link()->next()->varId());   // use = read + write
 
             // function
-            else if (Token::Match(tok, " %var% ("))
+            else if (Token::Match(tok, "%var% ("))
             {
                 variables.read(tok->varId());
                 if (Token::Match(tok->tokAt(2), "%var% ="))
                     variables.read(tok->tokAt(2)->varId());
             }
 
-            else if (Token::Match(tok, " %var% ."))
+            else if (Token::Match(tok, "%var% ."))
                 variables.use(tok->varId());   // use = read + write
 
             else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) &&

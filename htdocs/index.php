@@ -2,9 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="description" content="Cppcheck is an analysis tool for C/C++ code.
+It detects the types of bugs that the compilers normally fail to detect. The
+goal is no false positives." />
+  <meta name="keywords" content="Cppcheck, open source, analysis tool, C/C++,
+code, errors, bugs, compilers, bounds checking, memory leaks, obsolete functions,
+uninitialized variables, unused functions" />
   <title>Cppcheck - A tool for static C/C++ code analysis</title>
   <link rel="stylesheet" type="text/css" href="/site/css/all.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="alternate" type="application/rss+xml" title="Project News"
+        href="http://sourceforge.net/export/rss2_projnews.php?group_id=195752" />
 </head>
 <body>
 <div id="header">
@@ -33,6 +41,7 @@ only detects the types of bugs that the compilers normally fail to detect. The
 goal is no false positives.</p>
 
 <h2>Download</h2>
+<p><a class="downloadnow" href="http://downloads.sourceforge.net/cppcheck/cppcheck-1.46.1-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.46.1 for Windows</em></a></p>
 <p>You can download the standalone tool from our
 <a href="http://sourceforge.net/projects/cppcheck/">project page</a> or try it 
 as plugin for your favorite IDE:</p>
@@ -55,6 +64,22 @@ Cppcheck as an external tool.</p>
   <li>Check for invalid usage of <acronym title="Standard Template Library">STL</acronym></li>
   <li>Check for uninitialized variables and unused functions</li>
 </ul>
+
+<h2>News</h2>
+<?php
+  require './site/simplepie/simplepie.inc';
+
+  $feed = new SimplePie();
+  $feed->set_feed_url('http://sourceforge.net/export/rss2_projnews.php?group_id=195752');
+  $feed->set_cache_location('./site/simplepie/cache');
+  $feed->init();
+  print("<ul class=\"rssfeeditems\">\n");
+  foreach ($feed->get_items(0, 3) as $item) { //for the last 3 news items...
+    print("  <li><a href=\"".$item->get_link()."\">".$item->get_title()."</a> <em>".$item->get_date('Y-m-d')."</em></li>\n");
+  }
+  print("</ul>\n");
+?>
+<p><a href="http://sourceforge.net/news/?group_id=195752">View all news&hellip;</a></p>
 
 <h2>Support</h2>
 <ul>
