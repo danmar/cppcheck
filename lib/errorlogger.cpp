@@ -162,15 +162,16 @@ std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
     else
     {
         ostr << "<results version=\"" << xml_version << "\">\n";
-        ostr << "  <cppcheck version=\"" << CppCheck::version() << "\"/>";
+        ostr << "  <cppcheck version=\"" << CppCheck::version() << "\"/>\n";
+        ostr << "  <errors>";
     }
 
     return ostr.str();
 }
 
-std::string ErrorLogger::ErrorMessage::getXMLFooter()
+std::string ErrorLogger::ErrorMessage::getXMLFooter(int xml_version)
 {
-    return "</results>";
+    return (xml_version<=1) ? "</results>" : "  </errors>\n</results>";
 }
 
 static std::string stringToXml(std::string s)

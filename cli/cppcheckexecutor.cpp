@@ -55,7 +55,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             errorlist = true;
             std::cout << ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version);
             cppcheck->getErrorMessages();
-            std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
+            std::cout << ErrorLogger::ErrorMessage::getXMLFooter(_settings._xml_version) << std::endl;
         }
 
         if (parser.ExitAfterPrinting())
@@ -141,7 +141,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     if (_settings._xml)
     {
-        reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
+        reportErr(ErrorLogger::ErrorMessage::getXMLFooter(_settings._xml_version));
     }
 
     if (returnValue)

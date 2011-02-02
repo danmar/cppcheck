@@ -137,7 +137,7 @@ public:
         std::string toXML(bool verbose, int ver) const;
 
         static std::string getXMLHeader(int xml_version);
-        static std::string getXMLFooter();
+        static std::string getXMLFooter(int xml_version);
 
         /**
          * Format the error message into a string.

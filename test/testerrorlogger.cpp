@@ -124,7 +124,7 @@ private:
         locs.push_back(loc);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
         ASSERT_EQUALS("<?xml version=\"1.0\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
-        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter());
+        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
         ASSERT_EQUALS("<error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Programming error.\"/>", msg.toXML(false,1));
     }
 
@@ -137,7 +137,7 @@ private:
         locs.push_back(loc);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
         ASSERT_EQUALS("<?xml version=\"1.0\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
-        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter());
+        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
         ASSERT_EQUALS("<error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Verbose error\"/>", msg.toXML(true,1));
     }
 };
