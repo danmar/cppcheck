@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{42BC0E8E-9175-3B2D-B8B3-9EC5C36EF49A}</ProjectGuid>
+    <ProjectGuid>{A6DACC3F-847F-3498-9415-164FBC746D6B}</ProjectGuid>
     <RootNamespace>cppcheck</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
@@ -140,6 +140,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="..\lib\mathlib.cpp" />
     <ClCompile Include="..\lib\path.cpp" />
+    <ClCompile Include="pathmatch.cpp" />
     <ClCompile Include="..\lib\preprocessor.cpp" />
     <ClCompile Include="..\lib\settings.cpp" />
     <ClCompile Include="..\lib\symboldatabase.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="filelister_win32.h" />
     <ClInclude Include="..\lib\mathlib.h" />
     <ClInclude Include="..\lib\path.h" />
+    <ClInclude Include="pathmatch.h" />
     <ClInclude Include="..\lib\preprocessor.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\lib\settings.h" />

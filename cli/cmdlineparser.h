@@ -92,6 +92,14 @@ public:
         return _exitAfterPrint;
     }
 
+    /**
+     * Return a list of paths user wants to ignore.
+     */
+    std::vector<std::string> GetIgnoredPaths() const
+    {
+        return _ignoredPaths;
+    }
+
 protected:
 
     /**
@@ -111,6 +119,7 @@ private:
     bool _showErrorMessages;
     bool _exitAfterPrint;
     std::vector<std::string> _pathnames;
+    std::vector<std::string> _ignoredPaths;
 };
 
 /// @}

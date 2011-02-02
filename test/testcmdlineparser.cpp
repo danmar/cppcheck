@@ -90,6 +90,11 @@ private:
         TEST_CASE(errorlist1);
         TEST_CASE(errorlistverbose1)
         TEST_CASE(errorlistverbose2)
+        TEST_CASE(ignorepathsnopath)
+        TEST_CASE(ignorepaths1)
+        TEST_CASE(ignorepaths2)
+        TEST_CASE(ignorepaths3)
+        TEST_CASE(ignorepaths4)
         TEST_CASE(unknownParam);
     }
 
@@ -677,6 +682,62 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings._verbose);
+    }
+
+    void ignorepathsnopath()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-i"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(!parser.ParseFromArgs(2, argv));
+        ASSERT_EQUALS(0, parser.GetIgnoredPaths().size());
+    }
+
+    void ignorepaths1()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-isrc", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
+        ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
+    }
+
+    void ignorepaths2()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-i", "src", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
+        ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
+    }
+
+    void ignorepaths3()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-isrc", "-imodule", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS(2, parser.GetIgnoredPaths().size());
+        ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
+        ASSERT_EQUALS("module/", parser.GetIgnoredPaths()[1]);
+    }
+
+    void ignorepaths4()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-i", "src", "-i", "module", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(6, argv));
+        ASSERT_EQUALS(2, parser.GetIgnoredPaths().size());
+        ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
+        ASSERT_EQUALS("module/", parser.GetIgnoredPaths()[1]);
     }
 
     void unknownParam()
