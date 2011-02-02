@@ -4713,7 +4713,7 @@ void Tokenizer::simplifyIfAddBraces()
 
                 if (Token::simpleMatch(tempToken, "; else if"))
                     ;
-                else if (Token::Match(tempToken, "; else"))
+                else if (Token::simpleMatch(tempToken, "; else"))
                     innerIf = false;
                 else
                     break;
@@ -5760,35 +5760,35 @@ void Tokenizer::simplifyStdType()
 
         if (Token::simpleMatch(tok, "__int8"))
             tok->str("char");
-        else if (Token::Match(tok, "__int16"))
+        else if (Token::simpleMatch(tok, "__int16"))
             tok->str("short");
-        else if (Token::Match(tok, "__int32"))
+        else if (Token::simpleMatch(tok, "__int32"))
             tok->str("int");
-        else if (Token::Match(tok, "__int64"))
+        else if (Token::simpleMatch(tok, "__int64"))
         {
             tok->str("long");
             tok->isLong(true);
         }
-        else if (Token::Match(tok, "long"))
+        else if (Token::simpleMatch(tok, "long"))
         {
-            if (Token::Match(tok->next(), "long"))
+            if (Token::simpleMatch(tok->next(), "long"))
             {
                 tok->isLong(true);
                 tok->deleteNext();
             }
 
-            if (Token::Match(tok->next(), "int"))
+            if (Token::simpleMatch(tok->next(), "int"))
                 tok->deleteNext();
-            else if (Token::Match(tok->next(), "double"))
+            else if (Token::simpleMatch(tok->next(), "double"))
             {
                 tok->str("double");
                 tok->isLong(true);
                 tok->deleteNext();
             }
         }
-        else if (Token::Match(tok, "short"))
+        else if (Token::simpleMatch(tok, "short"))
         {
-            if (Token::Match(tok->next(), "int"))
+            if (Token::simpleMatch(tok->next(), "int"))
                 tok->deleteNext();
         }
     }
@@ -8251,7 +8251,7 @@ void Tokenizer::simplifyComma()
 
         if (tok->previous() && tok->previous()->previous())
         {
-            if (Token::Match(tok->previous()->previous(), "delete") &&
+            if (Token::simpleMatch(tok->previous()->previous(), "delete") &&
                 tok->next()->varId() != 0)
             {
                 // Handle "delete a, b;"
