@@ -572,7 +572,7 @@ void CheckStl::pushback()
             }
 
             // Using push_back or push_front inside a loop..
-            if (Token::Match(tok2, "for ("))
+            if (Token::simpleMatch(tok2, "for ("))
             {
                 tok2 = tok2->tokAt(2);
             }

@@ -1491,7 +1491,7 @@ void CheckOther::functionVariableUsage()
                         variables.read(nametok->tokAt(2)->varId());
 
                     // look at initializers
-                    if (Token::Match(nametok->tokAt(4), "= {"))
+                    if (Token::simpleMatch(nametok->tokAt(4), "= {"))
                     {
                         tok = nametok->tokAt(6);
                         while (tok->str() != "}")

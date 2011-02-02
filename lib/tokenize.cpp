@@ -552,7 +552,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
 
         if (end)
         {
-            if (Token::Match(end, ") {")) // function parameter ?
+            if (Token::simpleMatch(end, ") {")) // function parameter ?
             {
                 // look backwards
                 if (Token::Match(tok->previous(), "%type%") &&

@@ -348,7 +348,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
             }
         }
 
-        if (Token::Match(tok, "= {"))
+        if (Token::simpleMatch(tok, "= {"))
         {
             // GCC struct initialization.. bail out
             if (Token::Match(tok->tokAt(2), ". %var% ="))

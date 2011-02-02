@@ -931,7 +931,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             // check of *this is returned
             else if (!(Token::Match(tok->tokAt(1), "(| * this ;|=") ||
                        Token::Match(tok->tokAt(1), "(| * this +=") ||
-                       Token::Match(tok->tokAt(1), "operator= (")))
+                       Token::simpleMatch(tok->tokAt(1), "operator= (")))
                 operatorEqRetRefThisError(func->token);
         }
     }

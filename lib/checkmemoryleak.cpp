@@ -223,7 +223,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         return gMalloc;
 
     if (Token::Match(tok, "fclose ( %varid% )", varid) ||
-        Token::Match(tok, "fcloseall ( )"))
+        Token::simpleMatch(tok, "fcloseall ( )"))
         return File;
 
     if (Token::Match(tok, "close ( %varid% )", varid))

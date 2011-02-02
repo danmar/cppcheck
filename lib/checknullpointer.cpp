@@ -544,7 +544,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         if (Token::Match(tok, "* %var% [;,)=]"))
             pointerVariables.insert(tok->next()->varId());
 
-        else if (Token::Match(tok, "if ("))
+        else if (Token::simpleMatch(tok, "if ("))
         {
             // TODO: investigate false negatives:
             // - handle "while"?

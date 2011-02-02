@@ -766,7 +766,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
     const unsigned char varc(static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U));
 
-    if (Token::Match(tok, "return"))
+    if (Token::simpleMatch(tok, "return"))
     {
         tok = tok->next();
         if (!tok)
