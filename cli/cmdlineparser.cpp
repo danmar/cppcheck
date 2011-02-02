@@ -513,18 +513,17 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             TiXmlDocument doc;
             if (doc.LoadFile(12+argv[i]))
             {
-                TiXmlElement *root = doc.FirstChildElement();
-                if (root && root->ValueStr() == "rule")
-                {
+                TiXmlElement *node = doc.FirstChildElement();
+                for (; node && node->ValueStr() == "rule"; node = node->NextSiblingElement()) {
                     Settings::Rule rule;
 
-                    TiXmlElement *pattern = root->FirstChildElement("pattern");
+                    TiXmlElement *pattern = node->FirstChildElement("pattern");
                     if (pattern)
                     {
                         rule.pattern = pattern->GetText();
                     }
 
-                    TiXmlElement *message = root->FirstChildElement("message");
+                    TiXmlElement *message = node->FirstChildElement("message");
                     if (message)
                     {
                         TiXmlElement *severity = message->FirstChildElement("severity");
