@@ -36,7 +36,7 @@ class CheckClass : public Check
 {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(), symbolDatabase(NULL)
+    CheckClass() : Check(myName()), symbolDatabase(NULL)
     { }
 
     /** @brief This constructor is used when running checks. */
@@ -144,7 +144,7 @@ private:
         c.checkConstError(0, "class", "function");
     }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Class";
     }
