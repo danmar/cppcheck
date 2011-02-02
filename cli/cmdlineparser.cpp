@@ -210,11 +210,28 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--xml") == 0)
             _settings->_xml = true;
 
-        // Write results in xml2 format
-        else if (strcmp(argv[i], "--xml-version=2") == 0)
+        // Define the XML file version (and enable XML output)
+        else if (strncmp(argv[i], "--xml-version=", 14) == 0)
         {
+            std::string numberString(argv[i]);
+            numberString = numberString.substr(14);
+
+            std::istringstream iss(numberString);
+            if (!(iss >> _settings->_xml_version))
+            {
+                PrintMessage("cppcheck: argument to '--xml-version' is not a number");
+                return false;
+            }
+
+            if (_settings->_xml_version < 0 || _settings->_xml_version > 2)
+            {
+                // We only have xml versions 1 and 2
+                PrintMessage("cppcheck: --xml-version can only be 1 or 2.");
+                return false;
+            }
+
+            // Enable also XML if version is set
             _settings->_xml = true;
-            _settings->_xml_version = 2;
         }
 
         // Only print something when there are errors
