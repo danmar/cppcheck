@@ -588,7 +588,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
                     (tok->previous()->str() == "*" && tok->next()->str() != "(") ||
                     (Token::Match(tok->previous(), "%type%") &&
                      (!Token::Match(tok->previous(), "return|new|const|friend|public|private|protected|throw|extern") &&
-                      !Token::Match(tok->tokAt(-2), "friend class"))))
+                      !Token::simpleMatch(tok->tokAt(-2), "friend class"))))
                 {
                     // scan backwards for the end of the previous statement
                     int level = (tok->previous()->str() == "}") ? 1 : 0;
@@ -926,7 +926,7 @@ void Tokenizer::simplifyTypedef()
         Token *namespaceStart = 0;
         Token *namespaceEnd = 0;
 
-        if (Token::Match(tok->next(), "::") ||
+        if (Token::simpleMatch(tok->next(), "::") ||
             Token::Match(tok->next(), "%type%"))
         {
             typeStart = tok->next();
@@ -940,13 +940,13 @@ void Tokenizer::simplifyTypedef()
             bool atEnd = false;
             while (!atEnd)
             {
-                if (Token::Match(tok->tokAt(offset), "::"))
+                if (Token::simpleMatch(tok->tokAt(offset), "::"))
                     typeEnd = tok->tokAt(offset++);
 
                 if (Token::Match(tok->tokAt(offset), "%type%") &&
                     tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,|("))
                     typeEnd = tok->tokAt(offset++);
-                else if (Token::Match(tok->tokAt(offset), "const ("))
+                else if (Token::simpleMatch(tok->tokAt(offset), "const ("))
                 {
                     typeEnd = tok->tokAt(offset++);
                     atEnd = true;
@@ -1040,7 +1040,7 @@ void Tokenizer::simplifyTypedef()
                 tok = tok->tokAt(offset);
 
             // or a function typedef
-            else if (Token::Match(tok->tokAt(offset), "("))
+            else if (Token::simpleMatch(tok->tokAt(offset), "("))
             {
                 // unhandled typedef, skip it and continue
                 if (typeName->str() == "void")
@@ -1143,7 +1143,7 @@ void Tokenizer::simplifyTypedef()
 
         // function returning pointer to function
         else if (Token::Match(tok->tokAt(offset), "( * %type% (") &&
-                 Token::Match(tok->tokAt(offset + 3)->link(), ") ) ("))
+                 Token::simpleMatch(tok->tokAt(offset + 3)->link(), ") ) ("))
         {
             functionRetFuncPtr = true;
 
@@ -1397,8 +1397,8 @@ void Tokenizer::simplifyTypedef()
                         inTemplate = true;
 
                     // check for operator
-                    if (Token::Match(tok2->previous(), "operator") ||
-                        Token::Match(tok2->tokAt(-2), "operator const"))
+                    if (Token::simpleMatch(tok2->previous(), "operator") ||
+                        Token::simpleMatch(tok2->tokAt(-2), "operator const"))
                         inOperator = true;
 
                     // skip over class or struct in derived class declaration
@@ -2717,7 +2717,7 @@ void Tokenizer::simplifyTemplates()
                     ostr << " ";
                 ostr << tok3->str();
             }
-            if (!Token::Match(tok3, "> ("))
+            if (!Token::simpleMatch(tok3, "> ("))
                 continue;
             s = ostr.str();
         }
@@ -3999,7 +3999,7 @@ void Tokenizer::simplifySizeof()
             tok->next()->deleteNext();
         }
 
-        if (Token::Match(tok->next(), "( * )"))
+        if (Token::simpleMatch(tok->next(), "( * )"))
         {
             tok->str(MathLib::toString<unsigned long>(sizeOfType(tok->tokAt(2))));
             Token::eraseTokens(tok, tok->tokAt(4));
@@ -4711,7 +4711,7 @@ void Tokenizer::simplifyIfAddBraces()
                 if (!innerIf)
                     break;
 
-                if (Token::Match(tempToken, "; else if"))
+                if (Token::simpleMatch(tempToken, "; else if"))
                     ;
                 else if (Token::Match(tempToken, "; else"))
                     innerIf = false;
@@ -4754,7 +4754,7 @@ bool Tokenizer::simplifyDoWhileAddBracesHelper(Token *tok)
             tok2 = tok3;
             break;
         }
-        else if (Token::Match(tok3, "do {"))
+        else if (Token::simpleMatch(tok3, "do {"))
         {
             // Skip do{}while inside the current "do"
             tok3 = tok3->next()->link();
@@ -5758,7 +5758,7 @@ void Tokenizer::simplifyStdType()
             tok->isSigned(!isUnsigned);
         }
 
-        if (Token::Match(tok, "__int8"))
+        if (Token::simpleMatch(tok, "__int8"))
             tok->str("char");
         else if (Token::Match(tok, "__int16"))
             tok->str("short");
@@ -7492,7 +7492,7 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
 
         if (end)
         {
-            if (Token::Match(end, ") {")) // function parameter ?
+            if (Token::simpleMatch(end, ") {")) // function parameter ?
             {
                 // look backwards
                 if (tok->previous()->str() == "enum" ||
@@ -7908,7 +7908,7 @@ void Tokenizer::simplifyEnum()
                     }
                     else if (tok2->str() == "{")
                         ++level;
-                    else if (!pattern.empty() && ((Token::Match(tok2, "enum") && Token::Match(tok2->next(), pattern.c_str())) || Token::Match(tok2, pattern.c_str())))
+                    else if (!pattern.empty() && ((Token::simpleMatch(tok2, "enum") && Token::Match(tok2->next(), pattern.c_str())) || Token::Match(tok2, pattern.c_str())))
                     {
                         simplify = true;
                         hasClass = true;
@@ -8243,7 +8243,7 @@ void Tokenizer::simplifyComma()
 
         // We must not accept just any keyword, e.g. accepting int
         // would cause function parameters to corrupt.
-        if (Token::Match(tok->next(), "delete"))
+        if (Token::simpleMatch(tok->next(), "delete"))
         {
             // Handle "delete a, delete b;"
             tok->str(";");
@@ -8566,7 +8566,7 @@ void Tokenizer::simplifyStructInit()
                 if (Token::simpleMatch(tok2, ", ."))
                     tok2 = tok2->next();
             }
-            if (!Token::Match(tok2, "} ;"))
+            if (!Token::simpleMatch(tok2, "} ;"))
                 continue;
 
             // Known expression format => Perform simplification

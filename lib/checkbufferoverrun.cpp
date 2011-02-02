@@ -828,7 +828,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
                 if (index < 0 || index >= size)
                 {
-                    if (index > size || !Token::Match(tok->previous(), "& ("))
+                    if (index > size || !Token::simpleMatch(tok->previous(), "& ("))
                     {
                         arrayIndexOutOfBounds(tok->next(), size, index);
                     }

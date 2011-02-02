@@ -2705,7 +2705,7 @@ void CheckOther::checkMisusedScopedObject()
             }
 
             if (Token::Match(tok, "[;{}] %var% (")
-                && Token::Match(tok->tokAt(2)->link(), ") ;")
+                && Token::simpleMatch(tok->tokAt(2)->link(), ") ;")
                 && symbolDatabase->isClassOrStruct(tok->next()->str())
                )
             {

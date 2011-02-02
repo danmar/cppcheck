@@ -1038,7 +1038,7 @@ void CheckStl::string_c_str()
                     string_c_strError(tok);
                 }
                 else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
-                         Token::Match(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
+                         Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
                          tok->next()->varId() > 0 &&
                          pointers.find(tok->next()->varId()) != pointers.end() &&
                          Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str()))

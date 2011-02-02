@@ -1238,7 +1238,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
     const Token* localTypeTok = skipScopeIdentifiers(tok);
     const Token* localVarTok = NULL;
 
-    if (Token::Match(localTypeTok, "%type% < "))
+    if (Token::Match(localTypeTok, "%type% <"))
     {
         const Token* closeTok = NULL;
         bool found = findClosingBracket(localTypeTok->next(), closeTok);
