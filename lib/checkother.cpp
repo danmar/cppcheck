@@ -137,7 +137,7 @@ void CheckOther::checkSizeofForArrayParameter()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var% "))
+        if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var%"))
         {
             int tokIdx = 1;
             if (tok->tokAt(tokIdx)->str() == "(")

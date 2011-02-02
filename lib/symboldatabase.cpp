@@ -1213,7 +1213,7 @@ const Token* skipScopeIdentifiers(const Token* tok)
     {
         ret = ret->next();
     }
-    while (Token::Match(ret, "%type% :: "))
+    while (Token::Match(ret, "%type% ::"))
     {
         ret = ret->tokAt(2);
     }

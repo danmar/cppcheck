@@ -7702,7 +7702,7 @@ void Tokenizer::simplifyEnum()
                     lastEnumValueStart = 0;
                     lastEnumValueEnd = 0;
                 }
-                else if (Token::Match(tok1->previous(), ",|{ %type% = "))
+                else if (Token::Match(tok1->previous(), ",|{ %type% ="))
                 {
                     // value is specified expression
                     enumName = tok1;

@@ -302,7 +302,7 @@ static bool for_condition(const Token * const tok2, unsigned int varid, std::str
         maxMinFlipped = false;
         max_value = tok2->strAt(2);
     }
-    else if (Token::Match(tok2, " %num% < %varid% ;", varid) ||
+    else if (Token::Match(tok2, "%num% < %varid% ;", varid) ||
              Token::Match(tok2, "%num% != %varid% ; ++ %varid%", varid) ||
              Token::Match(tok2, "%num% != %varid% ; %varid% ++", varid))
     {

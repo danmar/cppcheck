@@ -310,7 +310,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
             ftok = ftok->next();
 
         // Using the operator= function to initialize all variables..
-        if (Token::simpleMatch(ftok->next(), "* this = "))
+        if (Token::simpleMatch(ftok->next(), "* this ="))
         {
             assignAllVar(usage);
             break;

@@ -445,7 +445,7 @@ void CheckStl::erase()
                     break;
                 }
 
-                if (Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% != %var% . end ( ) ") &&
+                if (Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% != %var% . end ( )") &&
                     tok2->str() == tok2->tokAt(8)->str() &&
                     tok2->tokAt(2)->str() == tok2->tokAt(10)->str())
                 {
