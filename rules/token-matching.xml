@@ -8,7 +8,7 @@
     </message>
 </rule>
 <rule version="1">
-    <pattern>Token :: Match \([^,]+,\s+"[^%|!\[\]]+"</pattern>
+    <pattern>(?U)Token :: Match \([^,]+,\s+"[^%|!\[\]]+"</pattern>
     <message>
 	<id>UseTokensimpleMatch</id>
 	<severity>error</severity>
