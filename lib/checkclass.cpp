@@ -42,7 +42,7 @@ CheckClass instance;
 //---------------------------------------------------------------------------
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    : Check(tokenizer, settings, errorLogger),
+    : Check(myName(), tokenizer, settings, errorLogger),
       symbolDatabase(NULL)
 {
 

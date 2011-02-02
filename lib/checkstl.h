@@ -35,12 +35,12 @@ class CheckStl : public Check
 {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckStl() : Check()
+    CheckStl() : Check(myName())
     { }
 
     /** This constructor is used when running checks. */
     CheckStl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
     /** Simplified checks. The token list is simplified. */
@@ -173,7 +173,7 @@ private:
         c.redundantIfRemoveError(0);
     }
 
-    std::string name() const
+    std::string myName() const
     {
         return "STL usage";
     }

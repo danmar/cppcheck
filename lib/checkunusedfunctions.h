@@ -33,12 +33,12 @@ class CheckUnusedFunctions: public Check
 {
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
-    CheckUnusedFunctions() : Check()
+    CheckUnusedFunctions() : Check(myName())
     { }
 
     /** @brief This constructor is used when running checks. */
     CheckUnusedFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
     // Parse current tokens and determine..
@@ -69,7 +69,7 @@ private:
 
     }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Unused functions";
     }

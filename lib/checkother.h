@@ -37,12 +37,12 @@ class CheckOther : public Check
 {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckOther() : Check()
+    CheckOther() : Check(myName())
     { }
 
     /** @brief This constructor is used when running checks. */
     CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
     /** @brief Run checks against the normal token list */
@@ -245,7 +245,7 @@ public:
         c.clarifyCalculationError(0);
     }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Other";
     }
