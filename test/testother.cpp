@@ -961,6 +961,18 @@ private:
               "    int i = sizeof sizeof char;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Calling sizeof for 'sizeof'.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    int i = sizeof (sizeof long);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling sizeof for 'sizeof'.\n", errout.str());
+
+        check("void foo(long *p)\n"
+              "{\n"
+              "    int i = sizeof (sizeof (p));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling sizeof for 'sizeof'.\n", errout.str());
     }
 
     void sizeofCalculation()
