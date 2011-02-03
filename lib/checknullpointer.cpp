@@ -71,7 +71,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1.insert("strstr");
         functionNames1.insert("fclose");
         functionNames1.insert("feof");
-        functionNames1.insert("fread");
         functionNames1.insert("fwrite");
         functionNames1.insert("fseek");
         functionNames1.insert("ftell");

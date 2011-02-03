@@ -1412,6 +1412,12 @@ private:
                        "    return cmd[0];\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("char fn(FILE *f) {\n"
+                       "    char buf[10];\n"
+                       "    fread(buf, 1, 10, f);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_typeof()
