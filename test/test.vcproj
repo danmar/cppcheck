@@ -230,6 +230,8 @@
 			<File
 				RelativePath="testsuite.cpp" />
 			<File
+				RelativePath="testsymboldatabase.cpp" />
+			<File
 				RelativePath="testthreadexecutor.cpp" />
 			<File
 				RelativePath="testtoken.cpp" />

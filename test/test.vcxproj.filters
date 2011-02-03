@@ -170,6 +170,9 @@
     <ClCompile Include="testsuite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testsymboldatabase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="testthreadexecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

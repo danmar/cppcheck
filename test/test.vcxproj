@@ -170,6 +170,7 @@
     <ClCompile Include="testsimplifytokens.cpp" />
     <ClCompile Include="teststl.cpp" />
     <ClCompile Include="testsuite.cpp" />
+    <ClCompile Include="testsymboldatabase.cpp" />
     <ClCompile Include="testthreadexecutor.cpp" />
     <ClCompile Include="testtoken.cpp" />
     <ClCompile Include="testtokenize.cpp" />
