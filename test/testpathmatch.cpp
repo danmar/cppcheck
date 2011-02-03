@@ -38,6 +38,10 @@ private:
         TEST_CASE(onemaskemptypath);
         TEST_CASE(onemasksamepath);
         TEST_CASE(onemasksamepathwithfile);
+        TEST_CASE(onemaskdifferentdir1);
+        TEST_CASE(onemaskdifferentdir2);
+        TEST_CASE(onemaskdifferentdir3);
+        TEST_CASE(onemaskdifferentdir4);
         TEST_CASE(onemasklongerpath1);
         TEST_CASE(onemasklongerpath2);
         TEST_CASE(onemasklongerpath3);
@@ -93,6 +97,38 @@ private:
         masks.push_back("src/");
         PathMatch match(masks);
         ASSERT(match.Match("src/file.txt"));
+    }
+
+    void onemaskdifferentdir1()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("src/");
+        PathMatch match(masks);
+        ASSERT(!match.Match("srcfiles/file.txt"));
+    }
+
+    void onemaskdifferentdir2()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("src/");
+        PathMatch match(masks);
+        ASSERT(!match.Match("proj/srcfiles/file.txt"));
+    }
+
+    void onemaskdifferentdir3()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("src/");
+        PathMatch match(masks);
+        ASSERT(!match.Match("proj/mysrc/file.txt"));
+    }
+
+    void onemaskdifferentdir4()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("src/");
+        PathMatch match(masks);
+        ASSERT(!match.Match("proj/mysrcfiles/file.txt"));
     }
 
     void onemasklongerpath1()

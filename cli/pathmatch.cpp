@@ -35,7 +35,14 @@ bool PathMatch::Match(const std::string &path)
         if (findpath[findpath.length() - 1] != '/')
             findpath = RemoveFilename(findpath);
 
-        if (findpath.find(*iterMask) != std::string::npos)
+        // Match relative paths starting with mask
+        // -isrc matches src/foo.cpp
+        if (findpath.compare(0, (*iterMask).size(), *iterMask) == 0)
+            return true;
+        // Match only full directory name in middle or end of the path
+        // -isrc matches myproject/src/ but does not match
+        // myproject/srcfiles/ or myproject/mysrc/
+        if (findpath.find("/" + *iterMask) != std::string::npos)
             return true;
     }
     return false;
