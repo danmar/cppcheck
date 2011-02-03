@@ -31,19 +31,37 @@ bool PathMatch::Match(const std::string &path)
     std::vector<std::string>::const_iterator iterMask;
     for (iterMask = _masks.begin(); iterMask != _masks.end(); ++iterMask)
     {
-        std::string findpath(path);
-        if (findpath[findpath.length() - 1] != '/')
-            findpath = RemoveFilename(findpath);
+        // Filtering directory name
+        if ((*iterMask)[(*iterMask).length() - 1] == '/')
+        {
+            std::string findpath(path);
+            if (findpath[findpath.length() - 1] != '/')
+                findpath = RemoveFilename(findpath);
 
-        // Match relative paths starting with mask
-        // -isrc matches src/foo.cpp
-        if (findpath.compare(0, (*iterMask).size(), *iterMask) == 0)
-            return true;
-        // Match only full directory name in middle or end of the path
-        // -isrc matches myproject/src/ but does not match
-        // myproject/srcfiles/ or myproject/mysrc/
-        if (findpath.find("/" + *iterMask) != std::string::npos)
-            return true;
+            if ((*iterMask).length() > findpath.length())
+                continue;
+            // Match relative paths starting with mask
+            // -isrc matches src/foo.cpp
+            if (findpath.compare(0, (*iterMask).size(), *iterMask) == 0)
+                return true;
+            // Match only full directory name in middle or end of the path
+            // -isrc matches myproject/src/ but does not match
+            // myproject/srcfiles/ or myproject/mysrc/
+            if (findpath.find("/" + *iterMask) != std::string::npos)
+                return true;
+        }
+        // Filtering filename
+        else
+        {
+            if ((*iterMask).length() > path.length())
+                continue;
+            // Check if path ends with mask
+            // -ifoo.cpp matches (./)foo.c, src/foo.cpp and proj/src/foo.cpp
+            // -isrc/file.cpp matches src/foo.cpp and proj/src/foo.cpp
+            if (path.compare(path.size() - (*iterMask).size(), path.size(), *iterMask) == 0)
+                return true;
+
+        }
     }
     return false;
 }

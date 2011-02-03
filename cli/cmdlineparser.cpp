@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "cmdlineparser.h"
 #include "path.h"
+#include "filelister.h"
 
 // xml is used in rules
 #include "tinyxml/tinyxml.h"
@@ -361,7 +362,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 path = argv[i];
             }
 
-            // "-Ipath/"
+            // "-ipath/"
             else
             {
                 path = 2 + argv[i];
@@ -371,10 +372,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             {
                 path = Path::fromNativeSeparators(path);
 
-                // If path doesn't end with / or \, add it
-                if (path[path.length()-1] != '/')
-                    path += '/';
-
+                // If not "known" filename extension then assume it is path
+                if (!FileLister::acceptFile(path))
+                {
+                    // If path doesn't end with / or \, add it
+                    if (path[path.length()-1] != '/')
+                        path += '/';
+                }
                 _ignoredPaths.push_back(path);
             }
         }
@@ -514,7 +518,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             if (doc.LoadFile(12+argv[i]))
             {
                 TiXmlElement *node = doc.FirstChildElement();
-                for (; node && node->ValueStr() == "rule"; node = node->NextSiblingElement()) {
+                for (; node && node->ValueStr() == "rule"; node = node->NextSiblingElement())
+                {
                     Settings::Rule rule;
 
                     TiXmlElement *pattern = node->FirstChildElement("pattern");
@@ -641,8 +646,9 @@ void CmdLineParser::PrintHelp()
               "                         several paths. First given path is checked first. If\n"
               "                         paths are relative to source files, this is not needed\n"
               "    -i [dir]             Give path to ignore. Give several -i parameters to ignore\n"
-              "                         several paths. If any part of the checked path matches the\n"
-              "                         given dir the path is ignored and not checked.\n"
+              "                         several paths. Give directory name or filename with path\n"
+              "                         as parameter. Directory name is matched to all parts of the\n"
+              "                         path."
               "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
               "                         more comments, like: // cppcheck-suppress warningId\n"
               "                         on the lines before the warning to suppress.\n"

@@ -95,6 +95,8 @@ private:
         TEST_CASE(ignorepaths2)
         TEST_CASE(ignorepaths3)
         TEST_CASE(ignorepaths4)
+        TEST_CASE(ignorefilepaths1)
+        TEST_CASE(ignorefilepaths2)
         TEST_CASE(unknownParam);
     }
 
@@ -738,6 +740,28 @@ private:
         ASSERT_EQUALS(2, parser.GetIgnoredPaths().size());
         ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
         ASSERT_EQUALS("module/", parser.GetIgnoredPaths()[1]);
+    }
+
+    void ignorefilepaths1()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-ifoo.cpp", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
+        ASSERT_EQUALS("foo.cpp", parser.GetIgnoredPaths()[0]);
+    }
+
+    void ignorefilepaths2()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-isrc/foo.cpp", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
+        ASSERT_EQUALS("src/foo.cpp", parser.GetIgnoredPaths()[0]);
     }
 
     void unknownParam()

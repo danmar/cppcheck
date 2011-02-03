@@ -45,6 +45,13 @@ private:
         TEST_CASE(onemasklongerpath1);
         TEST_CASE(onemasklongerpath2);
         TEST_CASE(onemasklongerpath3);
+        TEST_CASE(filemask1);
+        TEST_CASE(filemask2);
+        TEST_CASE(filemask3);
+        TEST_CASE(filemaskpath1);
+        TEST_CASE(filemaskpath2);
+        TEST_CASE(filemaskpath3);
+        TEST_CASE(filemaskpath4);
     }
 
     void emptymaskemptyfile()
@@ -191,6 +198,61 @@ private:
         ASSERT(match.Match("project/src/module/"));
     }
 
+    void filemask1()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("foo.cpp");
+        PathMatch match(masks);
+        ASSERT(match.Match("foo.cpp"));
+    }
+
+    void filemask2()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("foo.cpp");
+        PathMatch match(masks);
+        ASSERT(match.Match("../foo.cpp"));
+    }
+
+    void filemask3()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("foo.cpp");
+        PathMatch match(masks);
+        ASSERT(match.Match("src/foo.cpp"));
+    }
+
+    void filemaskpath1()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("src/foo.cpp");
+        PathMatch match(masks);
+        ASSERT(match.Match("src/foo.cpp"));
+    }
+
+    void filemaskpath2()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("src/foo.cpp");
+        PathMatch match(masks);
+        ASSERT(match.Match("proj/src/foo.cpp"));
+    }
+
+    void filemaskpath3()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("src/foo.cpp");
+        PathMatch match(masks);
+        ASSERT(!match.Match("foo.cpp"));
+    }
+
+    void filemaskpath4()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("src/foo.cpp");
+        PathMatch match(masks);
+        ASSERT(!match.Match("bar/foo.cpp"));
+    }
 };
 
 REGISTER_TEST(TestPathMatch)
