@@ -311,6 +311,12 @@ public:
      */
     Scope * findInNestedList(const std::string & name);
 
+    /**
+     * @brief find if name is in nested list
+     * @param name name of nested scope
+     */
+    Scope * findInNestedListRecursive(const std::string & name);
+
     void addVariable(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const Scope *type_)
     {
         varlist.push_back(Variable(token_, varlist.size(), access_, mutable_, static_, const_, class_, type_));

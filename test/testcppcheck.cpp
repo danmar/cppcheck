@@ -66,7 +66,19 @@ private:
 
     void run()
     {
+        TEST_CASE(instancesSorted);
         TEST_CASE(getErrorMessages);
+    }
+
+    void instancesSorted()
+    {
+        for (std::list<Check *>::iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
+            std::list<Check *>::iterator j = i;
+            ++j;
+            if (j != Check::instances().end()) {
+                ASSERT_EQUALS(true, (*i)->name() < (*j)->name());
+            }
+        }
     }
 
     void getErrorMessages()

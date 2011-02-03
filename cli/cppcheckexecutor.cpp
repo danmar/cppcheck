@@ -25,6 +25,7 @@
 #include "cmdlineparser.h"
 #include "filelister.h"
 #include "path.h"
+#include "pathmatch.h"
 
 CppCheckExecutor::CppCheckExecutor()
 {
@@ -55,7 +56,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             errorlist = true;
             std::cout << ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version);
             cppcheck->getErrorMessages();
-            std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
+            std::cout << ErrorLogger::ErrorMessage::getXMLFooter(_settings._xml_version) << std::endl;
         }
 
         if (parser.ExitAfterPrinting())
@@ -87,19 +88,36 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::vector<std::string>::const_iterator iter;
         for (iter = pathnames.begin(); iter != pathnames.end(); ++iter)
             getFileLister()->recursiveAddFiles(filenames, Path::toNativeSeparators(iter->c_str()));
-
-        for (iter = filenames.begin(); iter != filenames.end(); ++iter)
-            cppcheck->addFile(*iter);
     }
 
-    if (filenames.empty())
+    if (!filenames.empty())
+    {
+        PathMatch matcher(parser.GetIgnoredPaths());
+        std::vector<std::string>::iterator iterBegin = filenames.begin();
+        for (int i = (int)filenames.size() - 1; i >= 0; i--)
+        {
+            if (matcher.Match(filenames[i]))
+                filenames.erase(iterBegin + i);
+        }
+    }
+    else
     {
         std::cout << "cppcheck: error: could not find or open any of the paths given." << std::endl;
         return false;
     }
+
+    if (!filenames.empty())
+    {
+        std::vector<std::string>::iterator iter;
+        for (iter = filenames.begin(); iter != filenames.end(); ++iter)
+            cppcheck->addFile(*iter);
+
+        return true;
+    }
     else
     {
-        return true;
+        std::cout << "cppcheck: error: no files to check - all paths ignored." << std::endl;
+        return false;
     }
 }
 
@@ -141,7 +159,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     if (_settings._xml)
     {
-        reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
+        reportErr(ErrorLogger::ErrorMessage::getXMLFooter(_settings._xml_version));
     }
 
     if (returnValue)

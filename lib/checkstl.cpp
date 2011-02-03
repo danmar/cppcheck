@@ -445,7 +445,7 @@ void CheckStl::erase()
                     break;
                 }
 
-                if (Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% != %var% . end ( ) ") &&
+                if (Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% != %var% . end ( )") &&
                     tok2->str() == tok2->tokAt(8)->str() &&
                     tok2->tokAt(2)->str() == tok2->tokAt(10)->str())
                 {
@@ -572,7 +572,7 @@ void CheckStl::pushback()
             }
 
             // Using push_back or push_front inside a loop..
-            if (Token::Match(tok2, "for ("))
+            if (Token::simpleMatch(tok2, "for ("))
             {
                 tok2 = tok2->tokAt(2);
             }
@@ -1038,7 +1038,7 @@ void CheckStl::string_c_str()
                     string_c_strError(tok);
                 }
                 else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
-                         Token::Match(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
+                         Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
                          tok->next()->varId() > 0 &&
                          pointers.find(tok->next()->varId()) != pointers.end() &&
                          Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str()))

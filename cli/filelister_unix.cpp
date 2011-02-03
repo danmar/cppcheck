@@ -72,7 +72,7 @@ void FileListerUnix::recursiveAddFiles2(std::vector<std::string> &relative,
                 continue;
             }
 
-            if (Path::sameFileName(path,filename) || FileListerUnix::acceptFile(filename))
+            if (Path::sameFileName(path,filename) || FileLister::acceptFile(filename))
             {
                 relative.push_back(filename);
                 absolute.push_back(fname);

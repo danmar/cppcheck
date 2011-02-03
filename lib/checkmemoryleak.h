@@ -172,12 +172,12 @@ class CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak
 {
 public:
     /** @brief This constructor is used when registering this class */
-    CheckMemoryLeakInFunction() : Check(), CheckMemoryLeak(0, 0), symbolDatabase(NULL)
+    CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(0, 0), symbolDatabase(NULL)
     { }
 
     /** @brief This constructor is used when running checks */
     CheckMemoryLeakInFunction(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-        : Check(tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
+        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
     {
         // get the symbol database
         if (tokenizr)
@@ -329,7 +329,7 @@ public:
      * Get name of class (--doc)
      * @return name of class
      */
-    std::string name() const
+    std::string myName() const
     {
         return "Memory leaks (function variables)";
     }
@@ -364,11 +364,11 @@ public:
 class CheckMemoryLeakInClass : private Check, private CheckMemoryLeak
 {
 public:
-    CheckMemoryLeakInClass() : Check(), CheckMemoryLeak(0, 0)
+    CheckMemoryLeakInClass() : Check(myName()), CheckMemoryLeak(0, 0)
     { }
 
     CheckMemoryLeakInClass(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-        : Check(tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
+        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
@@ -396,7 +396,7 @@ private:
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
     { }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Memory leaks (class variables)";
     }
@@ -414,11 +414,11 @@ private:
 class CheckMemoryLeakStructMember : private Check, private CheckMemoryLeak
 {
 public:
-    CheckMemoryLeakStructMember() : Check(), CheckMemoryLeak(0, 0)
+    CheckMemoryLeakStructMember() : Check(myName()), CheckMemoryLeak(0, 0)
     { }
 
     CheckMemoryLeakStructMember(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-        : Check(tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
+        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
@@ -434,7 +434,7 @@ private:
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
     { }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Memory leaks (struct members)";
     }
@@ -452,11 +452,11 @@ private:
 class CheckMemoryLeakNoVar : private Check, private CheckMemoryLeak
 {
 public:
-    CheckMemoryLeakNoVar() : Check(), CheckMemoryLeak(0, 0)
+    CheckMemoryLeakNoVar() : Check(myName()), CheckMemoryLeak(0, 0)
     { }
 
     CheckMemoryLeakNoVar(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-        : Check(tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
+        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
@@ -474,7 +474,7 @@ private:
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
     { }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Memory leaks (address not taken)";
     }

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="cppcheck"
-	ProjectGUID="{7E69D6C6-32B2-32E1-BF56-A5BFBAF5E61F}"
+	ProjectGUID="{56B0F403-02CE-3F89-9A1B-E03F21240A63}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -170,6 +170,8 @@
 			<File
 				RelativePath="..\lib\path.cpp" />
 			<File
+				RelativePath="pathmatch.cpp" />
+			<File
 				RelativePath="..\lib\preprocessor.cpp" />
 			<File
 				RelativePath="..\lib\settings.cpp" />
@@ -242,6 +244,8 @@
 				RelativePath="..\lib\mathlib.h" />
 			<File
 				RelativePath="..\lib\path.h" />
+			<File
+				RelativePath="pathmatch.h" />
 			<File
 				RelativePath="..\lib\preprocessor.h" />
 			<File

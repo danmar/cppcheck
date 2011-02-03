@@ -520,6 +520,11 @@ public:
     void simplifyBuiltinExpect();
 
     /**
+     * Remove unnecessary member qualification
+     */
+    void removeUnnecessaryQualification();
+
+    /**
      * Remove Microsoft MFC 'DECLARE_MESSAGE_MAP()'
      */
     void simplifyMicrosoftMFC();

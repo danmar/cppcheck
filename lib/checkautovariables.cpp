@@ -448,7 +448,7 @@ void CheckAutoVariables::returncstr()
         }
 
         // have we reached a function that returns a reference?
-        if (Token::Match(tok, "const char *"))
+        if (Token::simpleMatch(tok, "const char *"))
         {
             // go to the '('
             const Token *tok2 = tok->tokAt(3);

@@ -2142,7 +2142,7 @@ public:
                     if (Token::Match(tok, "%var% %var%") ||
                         Token::Match(tok, "%var% %num%") ||
                         Token::Match(tok, "%num% %var%") ||
-                        Token::Match(tok, "> >"))
+                        Token::simpleMatch(tok, "> >"))
                         macrocode += " ";
                 }
             }

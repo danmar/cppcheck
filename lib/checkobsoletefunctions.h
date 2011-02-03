@@ -38,14 +38,14 @@ class CheckObsoleteFunctions : public Check
 {
 public:
     /** This constructor is used when registering the CheckObsoleteFunctions */
-    CheckObsoleteFunctions() : Check()
+    CheckObsoleteFunctions() : Check(myName())
     {
         initObsoleteFunctions();
     }
 
     /** This constructor is used when running checks. */
     CheckObsoleteFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
     {
         initObsoleteFunctions();
     }
@@ -125,7 +125,7 @@ private:
         }
     }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Obsolete functions";
     }

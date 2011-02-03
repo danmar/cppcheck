@@ -17,6 +17,7 @@
  */
 
 #include <list>
+#include "cppcheck.h"
 #include "testsuite.h"
 #include "errorlogger.h"
 
@@ -38,6 +39,7 @@ private:
         TEST_CASE(CustomFormat2);
         TEST_CASE(ToXml);
         TEST_CASE(ToVerboseXml);
+        TEST_CASE(ToXmlV2);
     }
 
     void FileLocationDefaults()
@@ -124,7 +126,7 @@ private:
         locs.push_back(loc);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
         ASSERT_EQUALS("<?xml version=\"1.0\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
-        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter());
+        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
         ASSERT_EQUALS("<error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Programming error.\"/>", msg.toXML(false,1));
     }
 
@@ -137,8 +139,28 @@ private:
         locs.push_back(loc);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
         ASSERT_EQUALS("<?xml version=\"1.0\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
-        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter());
+        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
         ASSERT_EQUALS("<error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Verbose error\"/>", msg.toXML(true,1));
+    }
+
+    void ToXmlV2()
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.setfile("foo.cpp");
+        loc.line = 5;
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+        locs.push_back(loc);
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        std::string header("<?xml version=\"1.0\"?>\n<results version=\"2\">\n");
+        header += "  <cppcheck version=\"";
+        header += CppCheck::version();
+        header += "\"/>\n  <errors>";
+        ASSERT_EQUALS(header, ErrorLogger::ErrorMessage::getXMLHeader(2));
+        ASSERT_EQUALS("  </errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter(2));
+        std::string message("  <error id=\"errorId\" severity=\"error\"");
+        message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
+        message += "    <location file=\"foo.cpp\" line=\"5\"/>\n  </error>";
+        ASSERT_EQUALS(message, msg.toXML(false,2));
     }
 };
 REGISTER_TEST(TestErrorLogger)

@@ -43,12 +43,12 @@ class CheckExceptionSafety : public Check
 {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckExceptionSafety() : Check()
+    CheckExceptionSafety() : Check(myName())
     { }
 
     /** This constructor is used when running checks. */
     CheckExceptionSafety(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
     /** Checks that uses the simplified token list */
@@ -86,7 +86,7 @@ private:
     }
 
     /** Short description of class (for --doc) */
-    std::string name() const
+    std::string myName() const
     {
         return "Exception Safety";
     }

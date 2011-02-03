@@ -50,12 +50,12 @@ class CheckBufferOverrun : public Check
 public:
 
     /** This constructor is used when registering the CheckClass */
-    CheckBufferOverrun() : Check()
+    CheckBufferOverrun() : Check(myName())
     { }
 
     /** This constructor is used when running checks. */
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -209,7 +209,7 @@ public:
         c.pointerOutOfBounds(0, "array");
     }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Bounds checking";
     }
