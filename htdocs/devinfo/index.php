@@ -46,6 +46,22 @@ cppcheck git repository</a>. To download it, run the following command:</p>
 the latest sources in a zip or tgz archive</a> from the github website.</p>
 <h3>Recent Commits</h3>
 <div id="github-commits"><a href="https://github.com/danmar/cppcheck/commits/master">View recent commits&hellip;</a></div>
+<h2>Trac Timeline</h2>
+<?php
+  require '../site/simplepie/simplepie.inc';
+
+  $feed = new SimplePie();
+  $feed->set_feed_url('http://sourceforge.net/apps/trac/cppcheck/timeline?changeset=on&ticket=on&milestone=on&wiki=on&max=10&daysback=90&format=rss');
+  $feed->set_cache_location('./site/simplepie/cache');
+  $feed->init();
+  print("<ul class=\"rssfeeditems\">\n");
+  foreach ($feed->get_items() as $item) { //for the last timeline items...
+    $author = $item->get_author();
+    print("  <li><a href=\"".$item->get_link()."\">".$item->get_title()."</a> by <strong>".$author->get_name()."</strong><em>".$item->get_date('Y-m-d')."</em></li>\n");
+  }
+  print("</ul>\n");
+?>
+<p><a href="http://sourceforge.net/apps/trac/cppcheck/timeline">View complete Trac timeline&hellip;</a></p>
 <h2>Doxygen</h2>
 <ul>
   <li><a href="/doxyoutput/">Output</a></li>
