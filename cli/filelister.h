@@ -55,7 +55,7 @@ public:
      * @param filename filename to check
      * @return returns true if the file extension indicates it should be checked
      */
-    virtual bool acceptFile(const std::string &filename);
+    static bool acceptFile(const std::string &filename);
 
     /**
      * @brief Is given path a directory?
