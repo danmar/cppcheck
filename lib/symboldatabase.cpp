@@ -254,9 +254,19 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     }
                 }
 
-                // nested class function?
+                // nested class or friend function?
                 else if (tok->previous()->str() == "::" && isFunction(tok, &funcStart, &argStart))
-                    addFunction(&scope, &tok, argStart);
+                {
+                    /** @todo check entire qualification for match */
+                    Scope * nested = scope->findInNestedListRecursive(tok->strAt(-2));
+
+                    if (nested)
+                        addFunction(&scope, &tok, argStart);
+                    else
+                    {
+                        /** @todo handle friend functions */
+                    }
+                }
 
                 // friend class declaration?
                 else if (Token::Match(tok, "friend class| %any% ;"))
@@ -1392,6 +1402,26 @@ Scope * Scope::findInNestedList(const std::string & name)
     {
         if ((*it)->className == name)
             return (*it);
+    }
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
+Scope * Scope::findInNestedListRecursive(const std::string & name)
+{
+    std::list<Scope *>::iterator it;
+
+    for (it = nestedList.begin(); it != nestedList.end(); ++it)
+    {
+        if ((*it)->className == name)
+            return (*it);
+    }
+
+    for (it = nestedList.begin(); it != nestedList.end(); ++it)
+    {
+        Scope *child = (*it)->findInNestedListRecursive(name);
+        return child;
     }
     return 0;
 }
