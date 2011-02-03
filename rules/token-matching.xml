@@ -16,3 +16,19 @@
 without special pattern requirements.</summary>
     </message>
 </rule>
+<rule version="1">
+    <pattern>\b[\w_]+ \. tokAt \( 0 \)</pattern>
+    <message>
+	<id>TokentokAt0</id>
+	<severity>error</severity>
+	<summary>tok->tokAt(0) is a slow way to say tok.</summary>
+    </message>
+</rule>
+<rule version="1">
+    <pattern>\b[\w_]+ \. strAt \( 0 \)</pattern>
+    <message>
+	<id>TokenstrAt0</id>
+	<severity>error</severity>
+	<summary>tok->strAt(0) is a slow way to say tok->str()</summary>
+    </message>
+</rule>
