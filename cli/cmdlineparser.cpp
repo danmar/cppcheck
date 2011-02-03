@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "cmdlineparser.h"
 #include "path.h"
+#include "filelister.h"
 
 // xml is used in rules
 #include "tinyxml/tinyxml.h"
@@ -210,11 +211,28 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--xml") == 0)
             _settings->_xml = true;
 
-        // Write results in xml2 format
-        else if (strcmp(argv[i], "--xml-version=2") == 0)
+        // Define the XML file version (and enable XML output)
+        else if (strncmp(argv[i], "--xml-version=", 14) == 0)
         {
+            std::string numberString(argv[i]);
+            numberString = numberString.substr(14);
+
+            std::istringstream iss(numberString);
+            if (!(iss >> _settings->_xml_version))
+            {
+                PrintMessage("cppcheck: argument to '--xml-version' is not a number");
+                return false;
+            }
+
+            if (_settings->_xml_version < 0 || _settings->_xml_version > 2)
+            {
+                // We only have xml versions 1 and 2
+                PrintMessage("cppcheck: --xml-version can only be 1 or 2.");
+                return false;
+            }
+
+            // Enable also XML if version is set
             _settings->_xml = true;
-            _settings->_xml_version = 2;
         }
 
         // Only print something when there are errors
@@ -325,6 +343,44 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         {
             // open this file and read every input file (1 file name per line)
             AddFilesToList(12 + argv[i], _pathnames);
+        }
+
+        // Ignored paths
+        else if (strncmp(argv[i], "-i", 2) == 0)
+        {
+            std::string path;
+
+            // "-i path/"
+            if (strcmp(argv[i], "-i") == 0)
+            {
+                ++i;
+                if (i >= argc)
+                {
+                    PrintMessage("cppcheck: argument to '-i' is missing");
+                    return false;
+                }
+                path = argv[i];
+            }
+
+            // "-ipath/"
+            else
+            {
+                path = 2 + argv[i];
+            }
+
+            if (!path.empty())
+            {
+                path = Path::fromNativeSeparators(path);
+
+                // If not "known" filename extension then assume it is path
+                if (!FileLister::acceptFile(path))
+                {
+                    // If path doesn't end with / or \, add it
+                    if (path[path.length()-1] != '/')
+                        path += '/';
+                }
+                _ignoredPaths.push_back(path);
+            }
         }
 
         // Report progress
@@ -461,18 +517,18 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             TiXmlDocument doc;
             if (doc.LoadFile(12+argv[i]))
             {
-                TiXmlElement *root = doc.FirstChildElement();
-                if (root && root->ValueStr() == "rule")
+                TiXmlElement *node = doc.FirstChildElement();
+                for (; node && node->ValueStr() == "rule"; node = node->NextSiblingElement())
                 {
                     Settings::Rule rule;
 
-                    TiXmlElement *pattern = root->FirstChildElement("pattern");
+                    TiXmlElement *pattern = node->FirstChildElement("pattern");
                     if (pattern)
                     {
                         rule.pattern = pattern->GetText();
                     }
 
-                    TiXmlElement *message = root->FirstChildElement("message");
+                    TiXmlElement *message = node->FirstChildElement("message");
                     if (message)
                     {
                         TiXmlElement *severity = message->FirstChildElement("severity");
@@ -589,6 +645,10 @@ void CmdLineParser::PrintHelp()
               "    -I [dir]             Give include path. Give several -I parameters to give\n"
               "                         several paths. First given path is checked first. If\n"
               "                         paths are relative to source files, this is not needed\n"
+              "    -i [dir]             Give path to ignore. Give several -i parameters to ignore\n"
+              "                         several paths. Give directory name or filename with path\n"
+              "                         as parameter. Directory name is matched to all parts of the\n"
+              "                         path."
               "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
               "                         more comments, like: // cppcheck-suppress warningId\n"
               "                         on the lines before the warning to suppress.\n"
@@ -608,6 +668,9 @@ void CmdLineParser::PrintHelp()
               "    -v, --verbose        More detailed error reports\n"
               "    --version            Print out version number\n"
               "    --xml                Write results in xml to error stream.\n"
+              "    --xml-version=[version]\n"
+              "                         Select the XML file version. Currently versions 1 and 2\n"
+              "                         are available. The default version is 1."
               "\n"
               "Example usage:\n"
               "  # Recursively check the current folder. Print the progress on the screen and\n"

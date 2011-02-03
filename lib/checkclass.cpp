@@ -42,7 +42,7 @@ CheckClass instance;
 //---------------------------------------------------------------------------
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    : Check(tokenizer, settings, errorLogger),
+    : Check(myName(), tokenizer, settings, errorLogger),
       symbolDatabase(NULL)
 {
 
@@ -310,7 +310,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
             ftok = ftok->next();
 
         // Using the operator= function to initialize all variables..
-        if (Token::simpleMatch(ftok->next(), "* this = "))
+        if (Token::simpleMatch(ftok->next(), "* this ="))
         {
             assignAllVar(usage);
             break;
@@ -799,7 +799,7 @@ void CheckClass::noMemset()
                 if (Token::Match(tstruct->next(), "std :: %type% %var% ;"))
                     memsetStructError(tok, tok->str(), tstruct->strAt(3));
 
-                else if (Token::Match(tstruct->next(), "std :: %type% < "))
+                else if (Token::Match(tstruct->next(), "std :: %type% <"))
                 {
                     // backup the type
                     const std::string typestr(tstruct->strAt(3));
@@ -931,7 +931,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             // check of *this is returned
             else if (!(Token::Match(tok->tokAt(1), "(| * this ;|=") ||
                        Token::Match(tok->tokAt(1), "(| * this +=") ||
-                       Token::Match(tok->tokAt(1), "operator= (")))
+                       Token::simpleMatch(tok->tokAt(1), "operator= (")))
                 operatorEqRetRefThisError(func->token);
         }
     }
@@ -1132,7 +1132,7 @@ bool CheckClass::hasAssignSelf(const Token *first, const Token *last, const Toke
 {
     for (const Token *tok = first; tok && tok != last; tok = tok->next())
     {
-        if (Token::Match(tok, "if ("))
+        if (Token::simpleMatch(tok, "if ("))
         {
             const Token *tok1 = tok->tokAt(2);
             const Token *tok2 = tok->tokAt(1)->link();
@@ -1412,7 +1412,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
 
     while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:|return|:|?"))
     {
-        if (Token::Match(tok->previous(),  "* this"))
+        if (Token::simpleMatch(tok->previous(),  "* this"))
             return true;
 
         tok = tok->previous();

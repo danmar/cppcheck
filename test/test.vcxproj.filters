@@ -80,6 +80,9 @@
     <ClCompile Include="..\lib\path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\cli\pathmatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\preprocessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -143,6 +146,9 @@
     <ClCompile Include="testpath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testpathmatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="testpostfixoperator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -162,6 +168,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testsuite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testsymboldatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testthreadexecutor.cpp">
@@ -281,6 +290,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cli\pathmatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\preprocessor.h">

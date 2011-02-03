@@ -335,48 +335,51 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
                 reportErr(errmsg);
             }
-            if (re)
+            if (!re)
+                continue;
+
+            int pos = 0;
+            int ovector[30];
+            while (0 <= pcre_exec(re, NULL, str.c_str(), (int)str.size(), pos, 0, ovector, 30))
             {
-                int pos = 0;
-                int ovector[30];
-                if (0 <= pcre_exec(re, NULL, str.c_str(), (int)str.size(), pos, 0, ovector, 30))
+                unsigned int pos1 = (unsigned int)ovector[0];
+                unsigned int pos2 = (unsigned int)ovector[1];
+
+                // jump to the end of the match for the next pcre_exec
+                pos = pos2;
+
+                // determine location..
+                ErrorLogger::ErrorMessage::FileLocation loc;
+                loc.setfile(_tokenizer.getFiles()->front());
+                loc.line = 0;
+
+                unsigned int len = 0;
+                for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next())
                 {
-                    unsigned int pos1 = (unsigned int)ovector[0];
-                    unsigned int pos2 = (unsigned int)ovector[1];
-
-                    // determine location..
-                    ErrorLogger::ErrorMessage::FileLocation loc;
-                    loc.setfile(_tokenizer.getFiles()->front());
-                    loc.line = 0;
-
-                    unsigned int len = 0;
-                    for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next())
+                    len = len + 1 + tok->str().size();
+                    if (len > pos1)
                     {
-                        len = len + 1 + tok->str().size();
-                        if (len > pos1)
-                        {
-                            loc.setfile(_tokenizer.getFiles()->at(tok->fileIndex()));
-                            loc.line = tok->linenr();
-                            break;
-                        }
+                        loc.setfile(_tokenizer.getFiles()->at(tok->fileIndex()));
+                        loc.line = tok->linenr();
+                        break;
                     }
-
-                    const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack(1, loc);
-
-                    // Create error message
-                    std::string summary;
-                    if (rule.summary.empty())
-                        summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
-                    else
-                        summary = rule.summary;
-                    ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id);
-
-                    // Report error
-                    reportErr(errmsg);
                 }
 
-                pcre_free(re);
+                const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack(1, loc);
+
+                // Create error message
+                std::string summary;
+                if (rule.summary.empty())
+                    summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
+                else
+                    summary = rule.summary;
+                ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id);
+
+                // Report error
+                reportErr(errmsg);
             }
+
+            pcre_free(re);
         }
     }
 #endif

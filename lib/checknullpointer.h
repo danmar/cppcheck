@@ -37,12 +37,12 @@ class CheckNullPointer : public Check
 {
 public:
     /** @brief This constructor is used when registering the CheckNullPointer */
-    CheckNullPointer() : Check()
+    CheckNullPointer() : Check(myName())
     { }
 
     /** @brief This constructor is used when running checks. */
     CheckNullPointer(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
     /** @brief Run checks against the normal token list */
@@ -112,7 +112,7 @@ public:
     }
 
     /** Name of check */
-    std::string name() const
+    std::string myName() const
     {
         return "Null pointer";
     }

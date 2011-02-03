@@ -52,6 +52,7 @@ CLIOBJ =      cli/cmdlineparser.o \
               cli/filelister_unix.o \
               cli/filelister_win32.o \
               cli/main.o \
+              cli/pathmatch.o \
               cli/threadexecutor.o
 
 TESTOBJ =     test/options.o \
@@ -74,6 +75,7 @@ TESTOBJ =     test/options.o \
               test/testoptions.o \
               test/testother.o \
               test/testpath.o \
+              test/testpathmatch.o \
               test/testpostfixoperator.o \
               test/testpreprocessor.o \
               test/testrunner.o \
@@ -103,8 +105,8 @@ cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)
 
 all:	cppcheck testrunner
 
-testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/filelister_unix.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/filelister.o cli/filelister_unix.o $(LDFLAGS)
+testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/filelister_unix.o cli/pathmatch.o
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/filelister.o cli/filelister_unix.o cli/pathmatch.o $(LDFLAGS)
 
 test:	all
 	./testrunner
@@ -206,7 +208,7 @@ lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/token.h lib/mathlib.h lib/se
 cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/timer.h cli/cmdlineparser.h lib/path.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h cli/threadexecutor.h cli/cmdlineparser.h cli/filelister.h lib/path.h
+cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h cli/threadexecutor.h cli/cmdlineparser.h cli/filelister.h lib/path.h cli/pathmatch.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
 
 cli/filelister.o: cli/filelister.cpp cli/filelister.h cli/filelister_win32.h cli/filelister_unix.h
@@ -220,6 +222,9 @@ cli/filelister_win32.o: cli/filelister_win32.cpp cli/filelister.h cli/filelister
 
 cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/main.o cli/main.cpp
+
+cli/pathmatch.o: cli/pathmatch.cpp cli/pathmatch.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/pathmatch.o cli/pathmatch.cpp
 
 cli/threadexecutor.o: cli/threadexecutor.cpp cli/threadexecutor.h lib/settings.h lib/errorlogger.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/threadexecutor.o cli/threadexecutor.cpp
@@ -283,6 +288,9 @@ test/testother.o: test/testother.cpp lib/tokenize.h lib/checkother.h lib/check.h
 
 test/testpath.o: test/testpath.cpp test/testsuite.h lib/errorlogger.h test/redirect.h lib/path.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testpath.o test/testpath.cpp
+
+test/testpathmatch.o: test/testpathmatch.cpp test/testsuite.h lib/errorlogger.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testpathmatch.o test/testpathmatch.cpp
 
 test/testpostfixoperator.o: test/testpostfixoperator.cpp lib/tokenize.h lib/checkpostfixoperator.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testpostfixoperator.o test/testpostfixoperator.cpp

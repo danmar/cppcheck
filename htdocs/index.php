@@ -81,6 +81,10 @@ Cppcheck as an external tool.</p>
 ?>
 <p><a href="http://sourceforge.net/news/?group_id=195752">View all news&hellip;</a></p>
 
+<h2>Documentation</h2>
+<p>You can read the <a href="manual.pdf">manual</a> or download some 
+<a href="http://sourceforge.net/projects/cppcheck/files/Articles/">articles</a>.</p>
+
 <h2>Support</h2>
 <ul>
   <li>Use <a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a> to report

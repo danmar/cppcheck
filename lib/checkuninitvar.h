@@ -37,12 +37,12 @@ class CheckUninitVar : public Check
 {
 public:
     /** @brief This constructor is used when registering the CheckUninitVar */
-    CheckUninitVar() : Check()
+    CheckUninitVar() : Check(myName())
     { }
 
     /** @brief This constructor is used when running checks. */
     CheckUninitVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
     /** @brief Run checks against the normal token list */
@@ -87,7 +87,7 @@ public:
         c.uninitvarError(0, "varname");
     }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Uninitialized variables";
     }

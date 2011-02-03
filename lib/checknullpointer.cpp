@@ -71,7 +71,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1.insert("strstr");
         functionNames1.insert("fclose");
         functionNames1.insert("feof");
-        functionNames1.insert("fread");
         functionNames1.insert("fwrite");
         functionNames1.insert("fseek");
         functionNames1.insert("ftell");
@@ -544,7 +543,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         if (Token::Match(tok, "* %var% [;,)=]"))
             pointerVariables.insert(tok->next()->varId());
 
-        else if (Token::Match(tok, "if ("))
+        else if (Token::simpleMatch(tok, "if ("))
         {
             // TODO: investigate false negatives:
             // - handle "while"?
@@ -617,7 +616,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     if (null && indentlevel == 0)
                     {
                         // skip all "else" blocks because they are not executed in this execution path
-                        while (Token::Match(tok2, "} else {"))
+                        while (Token::simpleMatch(tok2, "} else {"))
                             tok2 = tok2->tokAt(2)->link();
                         null = false;
                     }

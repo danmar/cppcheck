@@ -223,7 +223,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         return gMalloc;
 
     if (Token::Match(tok, "fclose ( %varid% )", varid) ||
-        Token::Match(tok, "fcloseall ( )"))
+        Token::simpleMatch(tok, "fcloseall ( )"))
         return File;
 
     if (Token::Match(tok, "close ( %varid% )", varid))
@@ -1445,7 +1445,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // Assignment..
         if (varid)
         {
-            if (Token::Match(tok, "= {"))
+            if (Token::simpleMatch(tok, "= {"))
             {
                 unsigned int indentlevel2 = 0;
                 bool use = false;
@@ -1754,7 +1754,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                     }
                 }
 
-                if (Token::Match(tok2, "while1 { if { dealloc ; return ; } }"))
+                if (Token::simpleMatch(tok2, "while1 { if { dealloc ; return ; } }"))
                 {
                     tok2->str(";");
                     Token::eraseTokens(tok2, tok2->tokAt(4));
@@ -1820,7 +1820,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 }
 
                 // Reduce "if continue ; if continue ;" => "if continue ;"
-                else if (Token::Match(tok2->next(), "if continue ; if continue ;"))
+                else if (Token::simpleMatch(tok2->next(), "if continue ; if continue ;"))
                 {
                     Token::eraseTokens(tok2, tok2->tokAt(4));
                     done = false;

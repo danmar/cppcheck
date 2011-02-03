@@ -39,16 +39,11 @@ class Check
 {
 public:
     /** This constructor is used when registering the CheckClass */
-    Check()
-        : _tokenizer(0), _settings(0), _errorLogger(0)
-    {
-        instances().push_back(this);
-        instances().sort();
-    }
+    Check(const std::string &aname);
 
     /** This constructor is used when running checks. */
-    Check(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
+    Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+        : _name(aname), _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
     { }
 
     virtual ~Check()
@@ -98,7 +93,10 @@ public:
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) = 0;
 
     /** class name, used to generate documentation */
-    virtual std::string name() const = 0;
+    std::string name() const
+    {
+        return _name;
+    }
 
     /** get information about this class, used to generate documentation */
     virtual std::string classInfo() const = 0;
@@ -114,6 +112,7 @@ public:
     }
 
 protected:
+    const std::string _name;
     const Tokenizer * const _tokenizer;
     const Settings * const _settings;
     ErrorLogger * const _errorLogger;
@@ -155,16 +154,29 @@ protected:
 
 
 private:
-    /** compare the names of Check classes, used when sorting the Check descendants */
-    bool operator<(const Check *other) const
-    {
-        return (name() < other->name());
-    }
-
     /** disabled assignment operator */
     void operator=(const Check &);
 
 };
+
+namespace std
+{
+/** compare the names of Check classes, used when sorting the Check descendants */
+template <> struct less<Check *>
+{
+    bool operator()(const Check *p1, const Check *p2) const
+    {
+        return (p1->name() < p2->name());
+    }
+};
+}
+
+inline Check::Check(const std::string &aname)
+    : _name(aname), _tokenizer(0), _settings(0), _errorLogger(0)
+{
+    instances().push_back(this);
+    instances().sort(std::less<Check *>());
+}
 
 /// @}
 

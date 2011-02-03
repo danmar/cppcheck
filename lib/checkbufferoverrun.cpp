@@ -302,7 +302,7 @@ static bool for_condition(const Token * const tok2, unsigned int varid, std::str
         maxMinFlipped = false;
         max_value = tok2->strAt(2);
     }
-    else if (Token::Match(tok2, " %num% < %varid% ;", varid) ||
+    else if (Token::Match(tok2, "%num% < %varid% ;", varid) ||
              Token::Match(tok2, "%num% != %varid% ; ++ %varid%", varid) ||
              Token::Match(tok2, "%num% != %varid% ; %varid% ++", varid))
     {
@@ -766,7 +766,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
     const unsigned char varc(static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U));
 
-    if (Token::Match(tok, "return"))
+    if (Token::simpleMatch(tok, "return"))
     {
         tok = tok->next();
         if (!tok)
@@ -828,7 +828,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
                 if (index < 0 || index >= size)
                 {
-                    if (index > size || !Token::Match(tok->previous(), "& ("))
+                    if (index > size || !Token::simpleMatch(tok->previous(), "& ("))
                     {
                         arrayIndexOutOfBounds(tok->next(), size, index);
                     }

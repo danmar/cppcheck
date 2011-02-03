@@ -278,6 +278,7 @@ private:
         TEST_CASE(enum16); // ticket #1988
         TEST_CASE(enum17); // ticket #2381 (duplicate enums)
         TEST_CASE(enum18); // #2466 (array with same name as enum constant)
+        TEST_CASE(enum19); // ticket #2536
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -315,6 +316,8 @@ private:
         TEST_CASE(redundant_semicolon);
 
         TEST_CASE(simplifyFunctionReturn);
+
+        TEST_CASE(removeUnnecessaryQualification);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -6097,6 +6100,13 @@ private:
         ASSERT_EQUALS("; void f ( ) { a [ 0 ] ; }", tok(code, false));
     }
 
+    void enum19() // ticket #2536
+    {
+        const char code[] = "enum class E1;\n"
+                            "enum class E2 : int;\n";
+        ASSERT_EQUALS(";", tok(code, false));
+    }
+
     void removestd()
     {
         ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));
@@ -6407,6 +6417,14 @@ private:
                                 "void ( * get4 ( ) ) ( ) ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void removeUnnecessaryQualification()
+    {
+        const char code[] = "class Fred { Fred::Fred() {} };";
+        const char expected[] = "class Fred { Fred ( ) { } } ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("[test.cpp:1]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
     }
 };
 

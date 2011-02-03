@@ -137,7 +137,7 @@ void CheckOther::checkSizeofForArrayParameter()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var% "))
+        if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var%"))
         {
             int tokIdx = 1;
             if (tok->tokAt(tokIdx)->str() == "(")
@@ -1491,7 +1491,7 @@ void CheckOther::functionVariableUsage()
                         variables.read(nametok->tokAt(2)->varId());
 
                     // look at initializers
-                    if (Token::Match(nametok->tokAt(4), "= {"))
+                    if (Token::simpleMatch(nametok->tokAt(4), "= {"))
                     {
                         tok = nametok->tokAt(6);
                         while (tok->str() != "}")
@@ -2705,7 +2705,7 @@ void CheckOther::checkMisusedScopedObject()
             }
 
             if (Token::Match(tok, "[;{}] %var% (")
-                && Token::Match(tok->tokAt(2)->link(), ") ;")
+                && Token::simpleMatch(tok->tokAt(2)->link(), ") ;")
                 && symbolDatabase->isClassOrStruct(tok->next()->str())
                )
             {
@@ -2834,8 +2834,11 @@ void CheckOther::sizeofsizeof()
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::simpleMatch(tok, "sizeof sizeof"))
+        if (Token::Match(tok, "sizeof (| sizeof"))
+        {
             sizeofsizeofError(tok);
+            tok = tok->next();
+        }
     }
 }
 

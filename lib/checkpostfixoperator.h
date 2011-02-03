@@ -35,12 +35,12 @@ class CheckPostfixOperator : public Check
 {
 public:
     /** This constructor is used when registering the CheckPostfixOperator */
-    CheckPostfixOperator() : Check()
+    CheckPostfixOperator() : Check(myName())
     { }
 
     /** This constructor is used when running checks. */
     CheckPostfixOperator(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -62,7 +62,7 @@ private:
         c.postfixOperatorError(0);
     }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Using postfix operators";
     }

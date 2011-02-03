@@ -188,6 +188,7 @@ private:
         TEST_CASE(symboldatabase7); // ticket #2230
         TEST_CASE(symboldatabase8); // ticket #2252
         TEST_CASE(symboldatabase9); // ticket #2525
+        TEST_CASE(symboldatabase10); // ticket #2537
     }
 
     // Check the operator Equal
@@ -5485,6 +5486,20 @@ private:
                    "        CString::operator=(lpsz);\n"
                    "        return *this;\n"
                    "    }\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase10()
+    {
+        // ticket #2537 - segmentation fault
+        checkConst("class A {\n"
+                   "private:\n"
+                   "  void f();\n"
+                   "};\n"
+                   "class B {\n"
+                   "  friend void A::f();\n"
                    "};\n");
 
         ASSERT_EQUALS("", errout.str());

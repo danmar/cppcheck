@@ -34,12 +34,12 @@ class CheckAutoVariables : public Check
 {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckAutoVariables() : Check()
+    CheckAutoVariables() : Check(myName())
     { }
 
     /** This constructor is used when running checks. */
     CheckAutoVariables(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -98,7 +98,7 @@ private:
         c.errorReturnTempPointer(0);
     }
 
-    std::string name() const
+    std::string myName() const
     {
         return "Auto Variables";
     }

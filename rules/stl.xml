@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<rule version="1">
+<!-- This should ideally be checked by lib/checkstl.cpp -->
+    <pattern> \. find \( "[^"]+?" \) == \d+ </pattern>
+    <message>
+        <id>UselessSTDStringFind</id>
+        <severity>performance</severity>
+        <summary>When looking for a string at a fixed position compare
+is faster.</summary>
+    </message>
+</rule>
