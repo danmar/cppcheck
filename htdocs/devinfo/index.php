@@ -46,6 +46,7 @@ cppcheck git repository</a>. To download it, run the following command:</p>
 the latest sources in a zip or tgz archive</a> from the github website.</p>
 <h3>Recent Commits</h3>
 <div id="github-commits"><a href="https://github.com/danmar/cppcheck/commits/master">View recent commits&hellip;</a></div>
+<p><a href="https://github.com/danmar/cppcheck/commits/master">View all commits&hellip;</a></p>
 <h2>Trac Timeline</h2>
 <?php
   require '../site/simplepie/simplepie.inc';
