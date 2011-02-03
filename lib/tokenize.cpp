@@ -824,7 +824,8 @@ void Tokenizer::simplifyTypedef()
         if (_errorLogger && !_files.empty())
             _errorLogger->reportProgress(_files[0], "Tokenize (typedef)", tok->progressValue());
 
-        if (Token::Match(tok, "class|struct|namespace %any%"))
+        if (Token::Match(tok, "class|struct|namespace %any%") &&
+            (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum")))
         {
             isNamespace = (tok->str() == "namespace");
             hasClass = true;
@@ -7549,7 +7550,8 @@ void Tokenizer::simplifyEnum()
     int classLevel = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class|struct|namespace %any%"))
+        if (Token::Match(tok, "class|struct|namespace %any%") &&
+            (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum")))
         {
             className = tok->next()->str();
             classLevel = 0;
@@ -7569,7 +7571,7 @@ void Tokenizer::simplifyEnum()
             continue;
         }
         else if (Token::Match(tok, "enum class|struct| {|:") ||
-                 Token::Match(tok, "enum class|struct| %type% {|:"))
+                 Token::Match(tok, "enum class|struct| %type% {|:|;"))
         {
             Token *tok1;
             Token *start = tok;
@@ -7590,12 +7592,19 @@ void Tokenizer::simplifyEnum()
                     offset = 3;
 
                 // check for forward declaration
-                /** @todo start substitution check at forward declaration */
                 const Token *temp = tok->tokAt(offset);
                 while (!Token::Match(temp, "{|;"))
                     temp = temp->next();
                 if (temp->str() == ";")
+                {
+                    /** @todo start substitution check at forward declaration */
+                    // delete forward declaration
+                    tok->deleteThis();
+                    tok->deleteThis();
+                    tok->deleteThis();
+                    tok->deleteThis();
                     continue;
+                }
 
                 typeTokenStart = tok->tokAt(offset);
                 typeTokenEnd = typeTokenStart;
@@ -7607,6 +7616,16 @@ void Tokenizer::simplifyEnum()
                     syntaxError(typeTokenEnd->next());
                     return;
                 }
+            }
+
+            // check for forward declaration
+            else if (Token::Match(tok->next(), "%type% ;"))
+            {
+                /** @todo start substitution check at forward declaration */
+                // delete forward declaration
+                tok->deleteThis();
+                tok->deleteThis();
+                continue;
             }
 
             if (tok->tokAt(1)->str() == "{")
@@ -9254,6 +9273,12 @@ void Tokenizer::simplifyQtSignalsSlots()
     Token *tok = _tokens;
     while ((tok = const_cast<Token *>(Token::findmatch(tok, "class %var% :"))))
     {
+        if (tok->previous() && tok->previous()->str() == "enum")
+        {
+            tok = tok->tokAt(2);
+            continue;
+        }
+
         // count { and } for tok2
         unsigned int indentlevel = 0;
         for (Token *tok2 = tok; tok2; tok2 = tok2->next())
@@ -9341,7 +9366,8 @@ void Tokenizer::removeUnnecessaryQualification()
     std::stack<ClassInfo> classInfo;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class|struct %type% :|{"))
+        if (Token::Match(tok, "class|struct %type% :|{") &&
+            (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum")))
         {
             tok = tok->next();
             ClassInfo info;
