@@ -31,6 +31,7 @@
 #include "report.h"
 #include "txtreport.h"
 #include "xmlreport.h"
+#include "xmlreportv2.h"
 #include "csvreport.h"
 #include "applicationlist.h"
 #include "checkstatistics.h"
@@ -131,6 +132,9 @@ void ResultsView::Save(const QString &filename, Report::Type type)
         break;
     case Report::XML:
         report = new XmlReport(filename, this);
+        break;
+    case Report::XMLV2:
+        report = new XmlReportV2(filename, this);
         break;
     }
 
