@@ -7,6 +7,8 @@
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="alternate" type="application/atom+xml" title="Recent Commits to cppcheck:master"
         href="https://github.com/danmar/cppcheck/commits/master.atom" />
+  <link rel="alternate" type="application/atom+xml" title="Trac Timeline"
+        href="http://sourceforge.net/apps/trac/cppcheck/timeline?changeset=on&amp;ticket=on&amp;milestone=on&amp;wiki=on&amp;max=50&amp;daysback=90&amp;format=rss" />
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script>
   <script src="/site/js/github.js" type="text/javascript"></script>
   <script type="text/javascript">
