@@ -93,7 +93,7 @@ public:
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) = 0;
 
     /** class name, used to generate documentation */
-    std::string name() const 
+    std::string name() const
     {
         return _name;
     }
@@ -159,14 +159,16 @@ private:
 
 };
 
-namespace std {
-    /** compare the names of Check classes, used when sorting the Check descendants */
-    template <> struct less<Check *> {
-        bool operator()(const Check *p1, const Check *p2) const
-        {
-            return (p1->name() < p2->name());
-        }
-    };
+namespace std
+{
+/** compare the names of Check classes, used when sorting the Check descendants */
+template <> struct less<Check *>
+{
+    bool operator()(const Check *p1, const Check *p2) const
+    {
+        return (p1->name() < p2->name());
+    }
+};
 }
 
 inline Check::Check(const std::string &aname)
