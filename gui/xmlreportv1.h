@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef XML_REPORTV2_H
-#define XML_REPORTV2_H
+#ifndef XML_REPORTV1_H
+#define XML_REPORTV1_H
 
 #include <QObject>
 #include <QString>
@@ -25,22 +25,22 @@
 #include <QFile>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-#include "report.h"
+#include "xmlreport.h"
 
 /// @addtogroup GUI
 /// @{
 
 
 /**
-* @brief XML file report version 2.
-* This report outputs XML-formatted report. The XML format must match command
+* @brief XML file report version 1.
+* This report outputs XML-formatted report, version 1. The XML format must match command
 * line version's XML output.
 */
-class XmlReportV2 : public Report
+class XmlReportV1 : public XmlReport
 {
 public:
-    XmlReportV2(const QString &filename, QObject * parent = 0);
-    virtual ~XmlReportV2();
+    XmlReportV1(const QString &filename, QObject * parent = 0);
+    virtual ~XmlReportV1();
 
     /**
     * @brief Create the report (file).
@@ -93,4 +93,4 @@ private:
     QXmlStreamWriter *mXmlWriter;
 };
 /// @}
-#endif // XML_REPORTV2_H
+#endif // XML_REPORTV1_H

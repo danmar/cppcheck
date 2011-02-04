@@ -69,6 +69,7 @@ HEADERS += mainwindow.h \
            report.h \
            txtreport.h \
            xmlreport.h \
+           xmlreportv1.h \
            xmlreportv2.h \
            translationhandler.h \
            csvreport.h \
@@ -97,6 +98,7 @@ SOURCES += main.cpp \
            report.cpp \
            txtreport.cpp \
            xmlreport.cpp \
+           xmlreportv1.cpp \
            xmlreportv2.cpp \
            translationhandler.cpp \
            csvreport.cpp \

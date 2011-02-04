@@ -31,6 +31,7 @@
 #include "report.h"
 #include "txtreport.h"
 #include "xmlreport.h"
+#include "xmlreportv1.h"
 #include "xmlreportv2.h"
 #include "csvreport.h"
 #include "applicationlist.h"
@@ -131,7 +132,7 @@ void ResultsView::Save(const QString &filename, Report::Type type)
         report = new TxtReport(filename, this);
         break;
     case Report::XML:
-        report = new XmlReport(filename, this);
+        report = new XmlReportV1(filename, this);
         break;
     case Report::XMLV2:
         report = new XmlReportV2(filename, this);
@@ -243,7 +244,7 @@ void ResultsView::DisableProgressbar()
 
 void ResultsView::ReadErrorsXml(const QString &filename)
 {
-    XmlReport *report = new XmlReport(filename, this);
+    XmlReportV1 *report = new XmlReportV1(filename, this);
     QList<ErrorLine> errors;
     if (report)
     {

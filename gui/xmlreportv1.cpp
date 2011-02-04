@@ -25,37 +25,31 @@
 #include <QDebug>
 #include "report.h"
 #include "erroritem.h"
-#include "xmlreportv2.h"
-#include "cppcheck.h"
+#include "xmlreportv1.h"
 
 static const char ResultElementName[] = "results";
-static const char CppcheckElementName[] = "cppcheck";
 static const char ErrorElementName[] = "error";
-static const char ErrorsElementName[] = "errors";
-static const char LocationElementName[] = "location";
 static const char FilenameAttribute[] = "file";
 static const char LineAttribute[] = "line";
 static const char IdAttribute[] = "id";
 static const char SeverityAttribute[] = "severity";
 static const char MsgAttribute[] = "msg";
-static const char VersionAttribute[] = "version";
-static const char VerboseAttribute[] = "verbose";
 
-XmlReportV2::XmlReportV2(const QString &filename, QObject * parent) :
-    Report(filename, parent),
+XmlReportV1::XmlReportV1(const QString &filename, QObject * parent) :
+    XmlReport(filename, parent),
     mXmlReader(NULL),
     mXmlWriter(NULL)
 {
 }
 
-XmlReportV2::~XmlReportV2()
+XmlReportV1::~XmlReportV1()
 {
     delete mXmlReader;
     delete mXmlWriter;
     Close();
 }
 
-bool XmlReportV2::Create()
+bool XmlReportV1::Create()
 {
     bool success = false;
     if (Report::Create())
@@ -66,7 +60,7 @@ bool XmlReportV2::Create()
     return success;
 }
 
-bool XmlReportV2::Open()
+bool XmlReportV1::Open()
 {
     bool success = false;
     if (Report::Open())
@@ -77,58 +71,39 @@ bool XmlReportV2::Open()
     return success;
 }
 
-void XmlReportV2::WriteHeader()
+void XmlReportV1::WriteHeader()
 {
     mXmlWriter->setAutoFormatting(true);
     mXmlWriter->writeStartDocument();
     mXmlWriter->writeStartElement(ResultElementName);
-    mXmlWriter->writeAttribute(VersionAttribute, QString::number(2));
-    mXmlWriter->writeStartElement(CppcheckElementName);
-    mXmlWriter->writeAttribute(VersionAttribute, QString(CppCheck::version()));
-    mXmlWriter->writeEndElement();
-    mXmlWriter->writeStartElement(ErrorsElementName);
 }
 
-void XmlReportV2::WriteFooter()
+void XmlReportV1::WriteFooter()
 {
-    mXmlWriter->writeEndElement(); // errors
-    mXmlWriter->writeEndElement(); // results
+    mXmlWriter->writeEndElement();
     mXmlWriter->writeEndDocument();
 }
 
-void XmlReportV2::WriteError(const ErrorItem &error)
+void XmlReportV1::WriteError(const ErrorItem &error)
 {
     /*
     Error example from the core program in xml
-    <error id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"
-              verbose="Mismatching allocation and deallocation: k">
-      <location file="..\..\test\test.cxx" line="16"/>
-      <location file="..\..\test\test.cxx" line="32"/>
-    </error>
+    <error file="gui/test.cpp" line="14" id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"/>
+    The callstack seems to be ignored here as well, instead last item of the stack is used
     */
 
     mXmlWriter->writeStartElement(ErrorElementName);
+    const QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
+    mXmlWriter->writeAttribute(FilenameAttribute, file);
+    const QString line = QString::number(error.lines[error.lines.size() - 1]);
+    mXmlWriter->writeAttribute(LineAttribute, line);
     mXmlWriter->writeAttribute(IdAttribute, error.id);
     mXmlWriter->writeAttribute(SeverityAttribute, error.severity);
-    mXmlWriter->writeAttribute(MsgAttribute, error.summary);
-    mXmlWriter->writeAttribute(VerboseAttribute, error.message);
-
-    for (int i = 0; i < error.files.count(); i++)
-    {
-        mXmlWriter->writeStartElement(LocationElementName);
-
-        const QString file = QDir::toNativeSeparators(error.files[i]);
-        mXmlWriter->writeAttribute(FilenameAttribute, file);
-        const QString line = QString::number(error.lines[i]);
-        mXmlWriter->writeAttribute(LineAttribute, line);
-
-        mXmlWriter->writeEndElement();
-    }
-
+    mXmlWriter->writeAttribute(MsgAttribute, error.message);
     mXmlWriter->writeEndElement();
 }
 
-QList<ErrorLine> XmlReportV2::Read()
+QList<ErrorLine> XmlReportV1::Read()
 {
     QList<ErrorLine> errors;
     bool insideResults = false;
@@ -174,7 +149,7 @@ QList<ErrorLine> XmlReportV2::Read()
     return errors;
 }
 
-ErrorLine XmlReportV2::ReadError(QXmlStreamReader *reader)
+ErrorLine XmlReportV1::ReadError(QXmlStreamReader *reader)
 {
     ErrorLine line;
     if (reader->name().toString() == ErrorElementName)
