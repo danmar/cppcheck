@@ -189,6 +189,7 @@ private:
         TEST_CASE(symboldatabase8); // ticket #2252
         TEST_CASE(symboldatabase9); // ticket #2525
         TEST_CASE(symboldatabase10); // ticket #2537
+        TEST_CASE(symboldatabase11); // ticket #2539
     }
 
     // Check the operator Equal
@@ -5500,6 +5501,17 @@ private:
                    "};\n"
                    "class B {\n"
                    "  friend void A::f();\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase11()
+    {
+        // ticket #2539 - segmentation fault
+        checkConst("int g ();\n"
+                   "struct S {\n"
+                   "  int i : (false ? g () : 1);\n"
                    "};\n");
 
         ASSERT_EQUALS("", errout.str());

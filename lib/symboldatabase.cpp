@@ -581,7 +581,9 @@ bool SymbolDatabase::isFunction(const Token *tok, const Token **funcStart, const
     }
 
     // regular function?
-    else if (Token::Match(tok, "%var% (") && Token::Match(tok->next()->link(), ") const| ;|{|=|:"))
+    else if (Token::Match(tok, "%var% (") &&
+             (Token::Match(tok->next()->link(), ") const| ;|{|=") ||
+              Token::Match(tok->next()->link(), ") : %var% (")))
     {
         *funcStart = tok;
         *argStart = tok->next();
