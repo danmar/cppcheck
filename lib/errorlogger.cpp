@@ -150,7 +150,7 @@ std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
 
     // standard xml header
     std::ostringstream ostr;
-    ostr << "<?xml version=\"1.0\"?>\n";
+    ostr << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
     // version 1 header
     if (xml_version <= 1)
