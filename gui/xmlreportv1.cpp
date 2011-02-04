@@ -25,6 +25,7 @@
 #include <QDebug>
 #include "report.h"
 #include "erroritem.h"
+#include "xmlreport.h"
 #include "xmlreportv1.h"
 
 static const char ResultElementName[] = "results";
@@ -93,13 +94,15 @@ void XmlReportV1::WriteError(const ErrorItem &error)
     */
 
     mXmlWriter->writeStartElement(ErrorElementName);
-    const QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
+    QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
+    file = XmlReport::quoteMessage(file);
     mXmlWriter->writeAttribute(FilenameAttribute, file);
     const QString line = QString::number(error.lines[error.lines.size() - 1]);
     mXmlWriter->writeAttribute(LineAttribute, line);
     mXmlWriter->writeAttribute(IdAttribute, error.id);
     mXmlWriter->writeAttribute(SeverityAttribute, error.severity);
-    mXmlWriter->writeAttribute(MsgAttribute, error.message);
+    const QString message = XmlReport::quoteMessage(error.message);
+    mXmlWriter->writeAttribute(MsgAttribute, message);
     mXmlWriter->writeEndElement();
 }
 

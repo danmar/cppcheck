@@ -27,3 +27,13 @@ XmlReport::XmlReport(const QString &filename, QObject * parent) :
 {
 }
 
+QString XmlReport::quoteMessage(const QString &message)
+{
+    QString quotedMessage(message);
+    quotedMessage.replace("&", "&amp;");
+    quotedMessage.replace("\"", "&quot;");
+    quotedMessage.replace("'", "&#039;");
+    quotedMessage.replace("<", "&lt;");
+    quotedMessage.replace(">", "&gt;");
+    return quotedMessage;
+}

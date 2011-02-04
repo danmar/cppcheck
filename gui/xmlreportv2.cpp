@@ -25,6 +25,7 @@
 #include <QDebug>
 #include "report.h"
 #include "erroritem.h"
+#include "xmlreport.h"
 #include "xmlreportv2.h"
 #include "cppcheck.h"
 
@@ -110,14 +111,17 @@ void XmlReportV2::WriteError(const ErrorItem &error)
     mXmlWriter->writeStartElement(ErrorElementName);
     mXmlWriter->writeAttribute(IdAttribute, error.id);
     mXmlWriter->writeAttribute(SeverityAttribute, error.severity);
-    mXmlWriter->writeAttribute(MsgAttribute, error.summary);
-    mXmlWriter->writeAttribute(VerboseAttribute, error.message);
+    const QString summary = XmlReport::quoteMessage(error.summary);
+    mXmlWriter->writeAttribute(MsgAttribute, summary);
+    const QString message = XmlReport::quoteMessage(error.message);
+    mXmlWriter->writeAttribute(VerboseAttribute, message);
 
     for (int i = 0; i < error.files.count(); i++)
     {
         mXmlWriter->writeStartElement(LocationElementName);
 
-        const QString file = QDir::toNativeSeparators(error.files[i]);
+        QString file = QDir::toNativeSeparators(error.files[i]);
+        file = XmlReport::quoteMessage(file);
         mXmlWriter->writeAttribute(FilenameAttribute, file);
         const QString line = QString::number(error.lines[i]);
         mXmlWriter->writeAttribute(LineAttribute, line);

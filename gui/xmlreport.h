@@ -35,6 +35,13 @@ class XmlReport : public Report
 {
 public:
     XmlReport(const QString &filename, QObject * parent = 0);
+
+    /**
+     * @brief Quote the message.
+     * @param message Message to quote.
+     * @return quoted message.
+     */
+    static QString quoteMessage(const QString &message);
 };
 /// @}
 
