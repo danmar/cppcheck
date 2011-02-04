@@ -63,6 +63,7 @@ public:
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
+        checkOther.checkSelfAssignment();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -82,7 +83,6 @@ public:
         checkOther.checkFflushOnInputStream();
         checkOther.invalidScanf();
 
-        checkOther.checkSelfAssignment();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
         checkOther.checkCatchExceptionByValue();
