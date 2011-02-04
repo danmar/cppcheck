@@ -289,7 +289,8 @@ void CheckOther::checkSelfAssignment()
     const Token *tok = Token::findmatch(_tokenizer->tokens(), selfAssignmentPattern);
     while (tok)
     {
-        if (tok->varId() && tok->varId() == tok->tokAt(2)->varId())
+        if (Token::Match(tok->previous(), "[;{}]") &&
+            tok->varId() && tok->varId() == tok->tokAt(2)->varId())
         {
             selfAssignmentError(tok, tok->str());
         }
