@@ -101,6 +101,7 @@ void CheckPostfixOperator::postfixOperatorError(const Token *tok)
 {
     reportError(tok, Severity::performance, "postfixOperator",
                 "Prefer prefix ++/-- operators for non-primitive types.\n"
+                "Prefix ++/-- operators should be preferred for non-primitive types. "
                 "Pre-increment/decrement can be more efficient than "
                 "post-increment/decrement. Post-increment/decrement usually "
                 "involves keeping a copy of the previous value around and "

@@ -724,6 +724,7 @@ void CheckStl::stlBoundriesError(const Token *tok, const std::string &container_
 {
     reportError(tok, Severity::error, "stlBoundries",
                 "Dangerous container iterator compare using < operator for " + container_name + "\n"
+                "Container '" + container_name + "' iterator compared with < operator. "
                 "Using < operator with container type iterators is dangerous since the order of "
                 "the items is not guaranteed. One should use != operator instead when comparing "
                 "iterators in the container.");
@@ -782,6 +783,7 @@ void CheckStl::if_findError(const Token *tok, bool str)
     if (str)
         reportError(tok, Severity::warning, "stlIfStrFind",
                     "Suspicious checking of string::find() return value.\n"
+                    "Checking of string::find() return value looks Suspicious. "
                     "string::find will return 0 if the string is found at position 0. "
                     "If that is wanted to check then string::compare is a faster alternative "
                     "because it doesn't scan through the string.");
@@ -870,6 +872,7 @@ void CheckStl::sizeError(const Token *tok)
     const std::string varname(tok ? tok->str().c_str() : "list");
     reportError(tok, Severity::performance, "stlSize",
                 "Possible inefficient checking for '" + varname + "' emptiness.\n"
+                "Checking for '" + varname + "' emptiness might be inefficient. "
                 "Using " + varname + ".empty() instead of " + varname + ".size() can be faster. " +
                 varname + ".size() can take linear time but " + varname + ".empty() is "
                 "guaranteed to take constant time.");
@@ -907,7 +910,9 @@ void CheckStl::redundantCondition()
 
 void CheckStl::redundantIfRemoveError(const Token *tok)
 {
-    reportError(tok, Severity::style, "redundantIfRemove", "Redundant checking of STL container element.\n"
+    reportError(tok, Severity::style, "redundantIfRemove",
+                "Redundant checking of STL container element.\n"
+                "Redundant checking of STL container element existence before removing it. "
                 "The remove method in the STL will not do anything if element doesn't exist");
 }
 

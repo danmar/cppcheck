@@ -1160,13 +1160,20 @@ private:
               "        std::string var = var = \"test\";\n"
               "        return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"var\" to itself\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"var\" to itself\n", "", errout.str());
 
         check("void foo()\n"
               "{\n"
               "        int x = 1;\n"
               "        x = x + 1;\n"
               "        return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "        int *x = getx();\n"
+              "        *x = x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

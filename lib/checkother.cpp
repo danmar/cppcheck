@@ -289,7 +289,8 @@ void CheckOther::checkSelfAssignment()
     const Token *tok = Token::findmatch(_tokenizer->tokens(), selfAssignmentPattern);
     while (tok)
     {
-        if (tok->varId() && tok->varId() == tok->tokAt(2)->varId())
+        if (Token::Match(tok->previous(), "[;{}]") &&
+            tok->varId() && tok->varId() == tok->tokAt(2)->varId())
         {
             selfAssignmentError(tok, tok->str());
         }
@@ -2731,9 +2732,9 @@ void CheckOther::sprintfOverlappingDataError(const Token *tok, const std::string
 {
     reportError(tok, Severity::error, "sprintfOverlappingData",
                 "Undefined behavior: variable is used as parameter and destination in s[n]printf().\n"
-                "The variable '" + varname + "' is used both as parameter and destination in "
-                "and destination buffer overlap. Quote from glibc (C-library) documentation "
-                "(http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
+                "The variable '" + varname + "' is used both as a parameter and as a destination in "
+                "s[n]printf(). The origin and destination buffers overlap. Quote from glibc (C-library) "
+                "documentation (http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
                 "'If copying takes place between objects that overlap as a result of a call "
                 "to sprintf() or snprintf(), the results are undefined.'");
 }
@@ -2846,8 +2847,9 @@ void CheckOther::sizeofsizeofError(const Token *tok)
 {
     reportError(tok, Severity::warning,
                 "sizeofsizeof", "Calling sizeof for 'sizeof'.\n"
-                "This is suspicious code and most likely there should be just"
-                "one 'sizeof'. The current code is equivalent to 'sizeof(size_t)'");
+                "Calling sizeof for 'sizeof looks like a suspicious code and "
+                "most likely there should be just one 'sizeof'. The current "
+                "code is equivalent to 'sizeof(size_t)'");
 }
 
 void CheckOther::sizeofCalculation()
@@ -2901,6 +2903,7 @@ void CheckOther::assignmentInAssertError(const Token *tok, const std::string &va
 {
     reportError(tok, Severity::warning,
                 "assignmentInAssert", "Assert statement modifies '" + varname + "'.\n"
+                "Variable '" + varname + "' is modified insert assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not run. If the code is needed also in release "
                 "builds this is a bug.");
