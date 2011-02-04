@@ -2708,7 +2708,7 @@ void CheckMemoryLeakInClass::check()
         const Scope *scope = *i;
 
         // only check classes and structures
-        if (scope->type == Scope::eClass)
+        if (scope->isClassOrStruct())
         {
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
