@@ -648,7 +648,7 @@ void CmdLineParser::PrintHelp()
               "    -i [dir]             Give path to ignore. Give several -i parameters to ignore\n"
               "                         several paths. Give directory name or filename with path\n"
               "                         as parameter. Directory name is matched to all parts of the\n"
-              "                         path."
+              "                         path.\n"
               "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
               "                         more comments, like: // cppcheck-suppress warningId\n"
               "                         on the lines before the warning to suppress.\n"
