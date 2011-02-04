@@ -2999,7 +2999,7 @@ void CheckMemoryLeakStructMember::check()
                     break;
 
                 // Struct member is allocated => check if it is also properly deallocated..
-                else if (Token::Match(tok2, "%varid% . %var% = malloc|strdup|kmalloc (", vartok->varId()))
+                else if (Token::Match(tok2->previous(), "[;{}] %varid% . %var% = malloc|strdup|kmalloc (", vartok->varId()))
                 {
                     const unsigned int structid(vartok->varId());
                     const unsigned int structmemberid(tok2->tokAt(2)->varId());

@@ -4253,7 +4253,8 @@ private:
         TEST_CASE(ret2);
 
         // assignments
-        TEST_CASE(assign);
+        TEST_CASE(assign1);
+        TEST_CASE(assign2);
 
         // Failed allocation
         TEST_CASE(failedAllocation);
@@ -4356,7 +4357,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void assign()
+    void assign1()
     {
         check("static void foo()\n"
               "{\n"
@@ -4383,6 +4384,15 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+    }
+
+    void assign2()
+    {
+        check("static void foo() {\n"
+              "    struct ABC *abc = malloc(123);\n"
+              "    abc->a = abc->b = malloc(10)\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void failedAllocation()
