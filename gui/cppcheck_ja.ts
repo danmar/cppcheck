@@ -211,9 +211,9 @@ kate -l(line) (file)</translation>
         <location filename="mainwindow.cpp" line="203"/>
         <location filename="mainwindow.cpp" line="233"/>
         <location filename="mainwindow.cpp" line="524"/>
-        <location filename="mainwindow.cpp" line="642"/>
-        <location filename="mainwindow.cpp" line="660"/>
-        <location filename="mainwindow.cpp" line="811"/>
+        <location filename="mainwindow.cpp" line="648"/>
+        <location filename="mainwindow.cpp" line="666"/>
+        <location filename="mainwindow.cpp" line="817"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -546,14 +546,13 @@ kate -l(line) (file)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="306"/>
-        <location filename="mainwindow.cpp" line="742"/>
-        <location filename="mainwindow.cpp" line="788"/>
+        <location filename="mainwindow.cpp" line="748"/>
+        <location filename="mainwindow.cpp" line="794"/>
         <source>Project: </source>
         <translation>プロジェクト：</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="443"/>
-        <location filename="mainwindow.cpp" line="592"/>
         <source>XML files (*.xml)</source>
         <translation>XML ファイル (*.xml)</translation>
     </message>
@@ -583,8 +582,9 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="582"/>
-        <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation>XML ファイル (*.xml);;テキストファイル (*.txt);;CSV形式ファイル (*.csv)</translation>
+        <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
+        <oldsource>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</oldsource>
+        <translation type="unfinished">XML ファイル (*.xml);;テキストファイル (*.txt);;CSV形式ファイル (*.csv)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="584"/>
@@ -592,22 +592,22 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <translation>レポートを保存</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="598"/>
+        <location filename="mainwindow.cpp" line="604"/>
         <source>Text files (*.txt)</source>
         <translation>テキストファイル (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="604"/>
+        <location filename="mainwindow.cpp" line="610"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV形式ファイル (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="644"/>
+        <location filename="mainwindow.cpp" line="650"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="661"/>
+        <location filename="mainwindow.cpp" line="667"/>
         <source>Failed to change the language:
 
 %1
@@ -620,39 +620,39 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="709"/>
-        <location filename="mainwindow.cpp" line="718"/>
+        <location filename="mainwindow.cpp" line="715"/>
+        <location filename="mainwindow.cpp" line="724"/>
         <source>Cppcheck Help</source>
         <translation>Cppcheck ヘルプ</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="709"/>
+        <location filename="mainwindow.cpp" line="715"/>
         <source>Failed to load help file (not found)</source>
         <translation>ヘルプファイルが見つかりませんでした</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="718"/>
+        <location filename="mainwindow.cpp" line="724"/>
         <source>Failed to load help file</source>
         <translation>ヘルプファイルの読み込みに失敗しました</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="732"/>
-        <location filename="mainwindow.cpp" line="777"/>
+        <location filename="mainwindow.cpp" line="738"/>
+        <location filename="mainwindow.cpp" line="783"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>プロジェクトファイル (*.cppcheck);;All files(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="734"/>
+        <location filename="mainwindow.cpp" line="740"/>
         <source>Select Project File</source>
         <translation>プロジェクトファイルを選択</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="779"/>
+        <location filename="mainwindow.cpp" line="785"/>
         <source>Select Project Filename</source>
         <translation>プロジェクトファイル名を選択</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="812"/>
+        <location filename="mainwindow.cpp" line="818"/>
         <source>No project file loaded</source>
         <translation>プロジェクトファイルが読み込まれていません</translation>
     </message>
@@ -920,46 +920,47 @@ Please select the directory where file is located.</source>
         <translation>結果</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="117"/>
+        <location filename="resultsview.cpp" line="119"/>
         <source>No errors found, nothing to save.</source>
         <translation>警告/エラーが見つからなかったため、保存しません。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="144"/>
-        <location filename="resultsview.cpp" line="154"/>
+        <location filename="resultsview.cpp" line="149"/>
+        <location filename="resultsview.cpp" line="159"/>
         <source>Failed to save the report.</source>
         <translation>レポートの保存に失敗しました。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="190"/>
-        <location filename="resultsview.cpp" line="202"/>
+        <location filename="resultsview.cpp" line="195"/>
+        <location filename="resultsview.cpp" line="207"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="191"/>
+        <location filename="resultsview.cpp" line="196"/>
         <source>No errors found.</source>
         <translation>警告/エラーは見つかりませんでした。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="199"/>
+        <location filename="resultsview.cpp" line="204"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>警告/エラーが見つかりましたが、非表示設定になっています。</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="251"/>
-        <location filename="resultsview.cpp" line="261"/>
+        <location filename="resultsview.cpp" line="271"/>
+        <location filename="resultsview.cpp" line="281"/>
         <source>Failed to read the report.</source>
         <translation>レポートの読み込みに失敗.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="302"/>
+        <location filename="resultsview.cpp" line="321"/>
         <source>Summary</source>
         <translation>内容</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="303"/>
+        <location filename="resultsview.cpp" line="322"/>
         <source>Message</source>
         <translation>メッセージ</translation>
     </message>
