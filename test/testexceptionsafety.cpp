@@ -37,6 +37,9 @@ private:
         TEST_CASE(destructors);
         TEST_CASE(deallocThrow1);
         TEST_CASE(deallocThrow2);
+        TEST_CASE(rethrowCopy1);
+        TEST_CASE(rethrowCopy2);
+        TEST_CASE(rethrowCopy3);
     }
 
     void check(const std::string &code)
@@ -87,6 +90,52 @@ private:
               "    delete p;\n"
               "    throw 1;\n"
               "    p = new int;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void rethrowCopy1()
+    {
+        check("void f() {\n"
+              "    try\n"
+              "    {\n"
+              "       foo();\n"
+              "    }\n"
+              "    catch(const exception& err)\n"
+              "    {\n"
+              "        throw err;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception\n", errout.str());
+    }
+
+    void rethrowCopy2()
+    {
+        check("void f() {\n"
+              "    try\n"
+              "    {\n"
+              "       foo();\n"
+              "    }\n"
+              "    catch(exception err)\n"
+              "    {\n"
+              "        throw err;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception\n", errout.str());
+    }
+
+    void rethrowCopy3()
+    {
+        check("void f() {\n"
+              "    try\n"
+              "    {\n"
+              "       foo();\n"
+              "    }\n"
+              "    catch(exception err)\n"
+              "    {\n"
+              "        exception err2;\n"
+              "        throw err2;\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
