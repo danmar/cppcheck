@@ -31,6 +31,8 @@
 #include "report.h"
 #include "txtreport.h"
 #include "xmlreport.h"
+#include "xmlreportv1.h"
+#include "xmlreportv2.h"
 #include "csvreport.h"
 #include "applicationlist.h"
 #include "checkstatistics.h"
@@ -130,7 +132,10 @@ void ResultsView::Save(const QString &filename, Report::Type type)
         report = new TxtReport(filename, this);
         break;
     case Report::XML:
-        report = new XmlReport(filename, this);
+        report = new XmlReportV1(filename, this);
+        break;
+    case Report::XMLV2:
+        report = new XmlReportV2(filename, this);
         break;
     }
 
@@ -239,8 +244,23 @@ void ResultsView::DisableProgressbar()
 
 void ResultsView::ReadErrorsXml(const QString &filename)
 {
-    XmlReport *report = new XmlReport(filename, this);
-    QList<ErrorLine> errors;
+    const int version = XmlReport::determineVersion(filename);
+    if (version == 0)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(tr("Failed to read the report."));
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    XmlReport *report = NULL;
+    if (version == 1)
+        report = new XmlReportV1(filename, this);
+    else if (version == 2)
+        report = new XmlReportV2(filename, this);
+
+    QList<ErrorItem> errors;
     if (report)
     {
         if (report->Open())
@@ -263,10 +283,9 @@ void ResultsView::ReadErrorsXml(const QString &filename)
         msgBox.exec();
     }
 
-    ErrorLine line;
-    foreach(line, errors)
+    ErrorItem item;
+    foreach(item, errors)
     {
-        ErrorItem item(line);
         mUI.mTree->AddErrorItem(item);
     }
     mUI.mTree->SetCheckDirectory("");

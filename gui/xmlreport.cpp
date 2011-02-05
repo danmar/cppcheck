@@ -18,122 +18,70 @@
 
 #include <QObject>
 #include <QString>
-#include <QList>
-#include <QDir>
 #include <QFile>
-#include <QXmlStreamWriter>
-#include <QDebug>
+#include <QXmlStreamReader>
 #include "report.h"
-#include "erroritem.h"
 #include "xmlreport.h"
 
 static const char ResultElementName[] = "results";
-static const char ErrorElementName[] = "error";
-static const char FilenameAttribute[] = "file";
-static const char LineAttribute[] = "line";
-static const char IdAttribute[] = "id";
-static const char SeverityAttribute[] = "severity";
-static const char MsgAttribute[] = "msg";
+static const char VersionAttribute[] = "version";
 
 XmlReport::XmlReport(const QString &filename, QObject * parent) :
-    Report(filename, parent),
-    mXmlReader(NULL),
-    mXmlWriter(NULL)
+    Report(filename, parent)
 {
 }
 
-XmlReport::~XmlReport()
+QString XmlReport::quoteMessage(const QString &message)
 {
-    delete mXmlReader;
-    delete mXmlWriter;
-    Close();
+    QString quotedMessage(message);
+    quotedMessage.replace("&", "&amp;");
+    quotedMessage.replace("\"", "&quot;");
+    quotedMessage.replace("'", "&#039;");
+    quotedMessage.replace("<", "&lt;");
+    quotedMessage.replace(">", "&gt;");
+    return quotedMessage;
 }
 
-bool XmlReport::Create()
+QString XmlReport::unquoteMessage(const QString &message)
 {
-    bool success = false;
-    if (Report::Create())
+    QString quotedMessage(message);
+    quotedMessage.replace("&amp;", "&");
+    quotedMessage.replace("&quot;", "\"");
+    quotedMessage.replace("&#039;", "'");
+    quotedMessage.replace("&lt;", "<");
+    quotedMessage.replace("&gt;", ">");
+    return quotedMessage;
+}
+
+int XmlReport::determineVersion(const QString &filename)
+{
+    QFile file;
+    file.setFileName(filename);
+    bool succeed = file.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!succeed)
+        return 0;
+
+    QXmlStreamReader reader(&file);
+    while (!reader.atEnd())
     {
-        mXmlWriter = new QXmlStreamWriter(Report::GetFile());
-        success = true;
-    }
-    return success;
-}
-
-bool XmlReport::Open()
-{
-    bool success = false;
-    if (Report::Open())
-    {
-        mXmlReader = new QXmlStreamReader(Report::GetFile());
-        success = true;
-    }
-    return success;
-}
-
-void XmlReport::WriteHeader()
-{
-    mXmlWriter->setAutoFormatting(true);
-    mXmlWriter->writeStartDocument();
-    mXmlWriter->writeStartElement(ResultElementName);
-}
-
-void XmlReport::WriteFooter()
-{
-    mXmlWriter->writeEndElement();
-    mXmlWriter->writeEndDocument();
-}
-
-void XmlReport::WriteError(const ErrorItem &error)
-{
-    /*
-    Error example from the core program in xml
-    <error file="gui/test.cpp" line="14" id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"/>
-    The callstack seems to be ignored here as well, instead last item of the stack is used
-    */
-
-    mXmlWriter->writeStartElement(ErrorElementName);
-    const QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
-    mXmlWriter->writeAttribute(FilenameAttribute, file);
-    const QString line = QString::number(error.lines[error.lines.size() - 1]);
-    mXmlWriter->writeAttribute(LineAttribute, line);
-    mXmlWriter->writeAttribute(IdAttribute, error.id);
-    mXmlWriter->writeAttribute(SeverityAttribute, error.severity);
-    mXmlWriter->writeAttribute(MsgAttribute, error.message);
-    mXmlWriter->writeEndElement();
-}
-
-QList<ErrorLine> XmlReport::Read()
-{
-    QList<ErrorLine> errors;
-    bool insideResults = false;
-    if (!mXmlReader)
-    {
-        qDebug() << "You must Open() the file before reading it!";
-        return errors;
-    }
-    while (!mXmlReader->atEnd())
-    {
-        switch (mXmlReader->readNext())
+        switch (reader.readNext())
         {
         case QXmlStreamReader::StartElement:
-            if (mXmlReader->name() == ResultElementName)
-                insideResults = true;
-
-            // Read error element from inside result element
-            if (insideResults && mXmlReader->name() == ErrorElementName)
+            if (reader.name() == ResultElementName)
             {
-                ErrorLine line = ReadError(mXmlReader);
-                errors.append(line);
+                QXmlStreamAttributes attribs = reader.attributes();
+                if (attribs.hasAttribute(QString(VersionAttribute)))
+                {
+                    int ver = attribs.value("", VersionAttribute).toString().toInt();
+                    return ver;
+                }
+                else
+                    return 1;
             }
             break;
 
-        case QXmlStreamReader::EndElement:
-            if (mXmlReader->name() == ResultElementName)
-                insideResults = false;
-            break;
-
             // Not handled
+        case QXmlStreamReader::EndElement:
         case QXmlStreamReader::NoToken:
         case QXmlStreamReader::Invalid:
         case QXmlStreamReader::StartDocument:
@@ -146,30 +94,5 @@ QList<ErrorLine> XmlReport::Read()
             break;
         }
     }
-    return errors;
-}
-
-ErrorLine XmlReport::ReadError(QXmlStreamReader *reader)
-{
-    ErrorLine line;
-    if (reader->name().toString() == ErrorElementName)
-    {
-        QXmlStreamAttributes attribs = reader->attributes();
-        line.file = attribs.value("", FilenameAttribute).toString();
-        line.line = attribs.value("", LineAttribute).toString().toUInt();
-        line.id = attribs.value("", IdAttribute).toString();
-        line.severity = attribs.value("", SeverityAttribute).toString();
-
-        // NOTE: This dublicates the message to Summary-field. But since
-        // old XML format doesn't have separate summary and verbose messages
-        // we must add same message to both data so it shows up in GUI.
-        // Check if there is full stop and cut the summary to it.
-        QString summary = attribs.value("", MsgAttribute).toString();
-        const int ind = summary.indexOf('.');
-        if (ind != -1)
-            summary = summary.left(ind + 1);
-        line.summary = summary;
-        line.message = attribs.value("", MsgAttribute).toString();
-    }
-    return line;
+    return 0;
 }
