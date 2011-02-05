@@ -190,7 +190,9 @@ ErrorItem XmlReportV2::ReadError(QXmlStreamReader *reader)
     */
 
     ErrorItem item;
-    if (reader->name().toString() == ErrorElementName)
+
+    // Read error element from inside errors element
+    if (mXmlReader->name() == ErrorElementName)
     {
         QXmlStreamAttributes attribs = reader->attributes();
         item.id = attribs.value("", IdAttribute).toString();
@@ -199,23 +201,17 @@ ErrorItem XmlReportV2::ReadError(QXmlStreamReader *reader)
         item.summary = XmlReport::unquoteMessage(summary);
         const QString message = attribs.value("", VerboseAttribute).toString();
         item.message = XmlReport::unquoteMessage(message);
-
-        ReadLocations(item);
     }
-    return item;
-}
 
-void XmlReportV2::ReadLocations(ErrorItem &item)
-{
-    QList<ErrorItem> errors;
-    bool allRead = false;
-    while (!allRead && !mXmlReader->atEnd())
+    bool errorRead = false;
+    while (!errorRead && !mXmlReader->atEnd())
     {
         switch (mXmlReader->readNext())
         {
         case QXmlStreamReader::StartElement:
-            if (mXmlReader->name() != LocationElementName)
-                continue; // Skip other than location elements
+
+            // Read location element from inside error element
+            if (mXmlReader->name() == LocationElementName)
             {
                 QXmlStreamAttributes attribs = mXmlReader->attributes();
                 QString file = attribs.value("", FilenameAttribute).toString();
@@ -229,8 +225,8 @@ void XmlReportV2::ReadLocations(ErrorItem &item)
             break;
 
         case QXmlStreamReader::EndElement:
-            if (mXmlReader->name() == LocationElementName)
-                allRead = true;
+            if (mXmlReader->name() == ErrorElementName)
+                errorRead = true;
             break;
 
             // Not handled
@@ -246,4 +242,5 @@ void XmlReportV2::ReadLocations(ErrorItem &item)
             break;
         }
     }
+    return item;
 }

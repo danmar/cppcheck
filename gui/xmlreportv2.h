@@ -81,12 +81,6 @@ protected:
     */
     ErrorItem ReadError(QXmlStreamReader *reader);
 
-    /**
-    * @brief Read and parse error items location elements from XML stream.
-    * @param item ErrorItem to write the location data.
-    */
-    void ReadLocations(ErrorItem &item);
-
 private:
     /**
     * @brief XML stream reader for reading the report in XML format.
