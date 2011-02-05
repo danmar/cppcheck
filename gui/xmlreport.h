@@ -22,6 +22,7 @@
 #include <QString>
 #include <QList>
 #include "report.h"
+#include "erroritem.h"
 
 class QObject;
 
@@ -40,7 +41,7 @@ public:
     /**
      * @brief Read contents of the report file.
      */
-    virtual QList<ErrorLine> Read() = 0;
+    virtual QList<ErrorItem> Read() = 0;
 
     /**
      * @brief Quote the message.

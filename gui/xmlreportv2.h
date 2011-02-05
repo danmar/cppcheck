@@ -72,14 +72,14 @@ public:
     /**
     * @brief Read contents of the report file.
     */
-    virtual QList<ErrorLine> Read();
+    virtual QList<ErrorItem> Read();
 
 protected:
     /**
     * @brief Read and parse error item from XML stream.
     * @param reader XML stream reader to use.
     */
-    ErrorLine ReadError(QXmlStreamReader *reader);
+    ErrorItem ReadError(QXmlStreamReader *reader);
 
 private:
     /**

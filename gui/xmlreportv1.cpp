@@ -106,9 +106,9 @@ void XmlReportV1::WriteError(const ErrorItem &error)
     mXmlWriter->writeEndElement();
 }
 
-QList<ErrorLine> XmlReportV1::Read()
+QList<ErrorItem> XmlReportV1::Read()
 {
-    QList<ErrorLine> errors;
+    QList<ErrorItem> errors;
     bool insideResults = false;
     if (!mXmlReader)
     {
@@ -126,8 +126,8 @@ QList<ErrorLine> XmlReportV1::Read()
             // Read error element from inside result element
             if (insideResults && mXmlReader->name() == ErrorElementName)
             {
-                ErrorLine line = ReadError(mXmlReader);
-                errors.append(line);
+                ErrorItem item = ReadError(mXmlReader);
+                errors.append(item);
             }
             break;
 
@@ -152,16 +152,19 @@ QList<ErrorLine> XmlReportV1::Read()
     return errors;
 }
 
-ErrorLine XmlReportV1::ReadError(QXmlStreamReader *reader)
+ErrorItem XmlReportV1::ReadError(QXmlStreamReader *reader)
 {
-    ErrorLine line;
+    ErrorItem item;
     if (reader->name().toString() == ErrorElementName)
     {
         QXmlStreamAttributes attribs = reader->attributes();
-        line.file = attribs.value("", FilenameAttribute).toString();
-        line.line = attribs.value("", LineAttribute).toString().toUInt();
-        line.id = attribs.value("", IdAttribute).toString();
-        line.severity = attribs.value("", SeverityAttribute).toString();
+        const QString file = attribs.value("", FilenameAttribute).toString();
+        item.file = file;
+        item.files.push_back(file);
+        const int line = attribs.value("", LineAttribute).toString().toUInt();
+        item.lines.push_back(line);
+        item.id = attribs.value("", IdAttribute).toString();
+        item.severity = attribs.value("", SeverityAttribute).toString();
 
         // NOTE: This dublicates the message to Summary-field. But since
         // old XML format doesn't have separate summary and verbose messages
@@ -171,8 +174,8 @@ ErrorLine XmlReportV1::ReadError(QXmlStreamReader *reader)
         const int ind = summary.indexOf('.');
         if (ind != -1)
             summary = summary.left(ind + 1);
-        line.summary = summary;
-        line.message = attribs.value("", MsgAttribute).toString();
+        item.summary = summary;
+        item.message = attribs.value("", MsgAttribute).toString();
     }
-    return line;
+    return item;
 }

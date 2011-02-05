@@ -260,7 +260,7 @@ void ResultsView::ReadErrorsXml(const QString &filename)
     else if (version == 2)
         report = new XmlReportV2(filename, this);
 
-    QList<ErrorLine> errors;
+    QList<ErrorItem> errors;
     if (report)
     {
         if (report->Open())
@@ -283,10 +283,9 @@ void ResultsView::ReadErrorsXml(const QString &filename)
         msgBox.exec();
     }
 
-    ErrorLine line;
-    foreach(line, errors)
+    ErrorItem item;
+    foreach(item, errors)
     {
-        ErrorItem item(line);
         mUI.mTree->AddErrorItem(item);
     }
     mUI.mTree->SetCheckDirectory("");
