@@ -287,13 +287,13 @@ Directory name is matched to all parts of the path.</para>
       <varlistentry>
         <term><option>--rule=&lt;rule&gt;</option></term>
         <listitem>
-          <para>Match regular expression.</para>
+          <para>Match regular expression to create your own checks. E.g. rule &quot;/ 0&quot; can be used to check division by zero.</para>
         </listitem>
       </varlistentry>   
       <varlistentry>
         <term><option>--rule-file=&lt;file&gt;</option></term>
         <listitem>
-          <para>Use given rule file.</para>
+          <para>Use given rule XML file. See https://sourceforge.net/projects/cppcheck/files/Articles/ for more info about the syntax.</para>
         </listitem>
       </varlistentry>  
       <varlistentry>
