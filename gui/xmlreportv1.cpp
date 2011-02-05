@@ -158,7 +158,8 @@ ErrorItem XmlReportV1::ReadError(QXmlStreamReader *reader)
     if (reader->name().toString() == ErrorElementName)
     {
         QXmlStreamAttributes attribs = reader->attributes();
-        const QString file = attribs.value("", FilenameAttribute).toString();
+        QString file = attribs.value("", FilenameAttribute).toString();
+        file = XmlReport::unquoteMessage(file);
         item.file = file;
         item.files.push_back(file);
         const int line = attribs.value("", LineAttribute).toString().toUInt();
@@ -174,8 +175,9 @@ ErrorItem XmlReportV1::ReadError(QXmlStreamReader *reader)
         const int ind = summary.indexOf('.');
         if (ind != -1)
             summary = summary.left(ind + 1);
-        item.summary = summary;
-        item.message = attribs.value("", MsgAttribute).toString();
+        item.summary = XmlReport::unquoteMessage(summary);
+        QString message = attribs.value("", MsgAttribute).toString();
+        item.message = XmlReport::unquoteMessage(message);
     }
     return item;
 }

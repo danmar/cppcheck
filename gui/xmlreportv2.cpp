@@ -195,8 +195,10 @@ ErrorItem XmlReportV2::ReadError(QXmlStreamReader *reader)
         QXmlStreamAttributes attribs = reader->attributes();
         item.id = attribs.value("", IdAttribute).toString();
         item.severity = attribs.value("", SeverityAttribute).toString();
-        item.summary = attribs.value("", MsgAttribute).toString();
-        item.message = attribs.value("", VerboseAttribute).toString();
+        const QString summary = attribs.value("", MsgAttribute).toString();
+        item.summary = XmlReport::unquoteMessage(summary);
+        const QString message = attribs.value("", VerboseAttribute).toString();
+        item.message = XmlReport::unquoteMessage(message);
 
         ReadLocations(item);
     }
@@ -216,7 +218,8 @@ void XmlReportV2::ReadLocations(ErrorItem &item)
                 continue; // Skip other than location elements
             {
                 QXmlStreamAttributes attribs = mXmlReader->attributes();
-                const QString file = attribs.value("", FilenameAttribute).toString();
+                QString file = attribs.value("", FilenameAttribute).toString();
+                file = XmlReport::unquoteMessage(file);
                 if (item.file.isEmpty())
                     item.file = file;
                 item.files.push_back(file);
