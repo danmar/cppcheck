@@ -18,9 +18,13 @@
 
 #include <QObject>
 #include <QString>
+#include <QFile>
+#include <QXmlStreamReader>
 #include "report.h"
 #include "xmlreport.h"
 
+static const char ResultElementName[] = "results";
+static const char VersionAttribute[] = "version";
 
 XmlReport::XmlReport(const QString &filename, QObject * parent) :
     Report(filename, parent)
@@ -36,4 +40,48 @@ QString XmlReport::quoteMessage(const QString &message)
     quotedMessage.replace("<", "&lt;");
     quotedMessage.replace(">", "&gt;");
     return quotedMessage;
+}
+
+int XmlReport::determineVersion(const QString &filename)
+{
+    QFile file;
+    file.setFileName(filename);
+    bool succeed = file.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!succeed)
+        return 0;
+
+    QXmlStreamReader reader(&file);
+    while (!reader.atEnd())
+    {
+        switch (reader.readNext())
+        {
+        case QXmlStreamReader::StartElement:
+            if (reader.name() == ResultElementName)
+            {
+                QXmlStreamAttributes attribs = reader.attributes();
+                if (attribs.hasAttribute(QString(VersionAttribute)))
+                {
+                    int ver = attribs.value("", VersionAttribute).toString().toInt();
+                    return ver;
+                }
+                else
+                    return 1;
+            }
+            break;
+
+            // Not handled
+        case QXmlStreamReader::EndElement:
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    }
+    return 0;
 }

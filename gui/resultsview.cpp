@@ -244,7 +244,22 @@ void ResultsView::DisableProgressbar()
 
 void ResultsView::ReadErrorsXml(const QString &filename)
 {
-    XmlReportV1 *report = new XmlReportV1(filename, this);
+    const int version = XmlReport::determineVersion(filename);
+    if (version == 0)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(tr("Failed to read the report."));
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    XmlReport *report = NULL;
+    if (version == 1)
+        report = new XmlReportV1(filename, this);
+    else if (version == 2)
+        report = new XmlReportV2(filename, this);
+
     QList<ErrorLine> errors;
     if (report)
     {

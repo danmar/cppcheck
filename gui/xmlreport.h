@@ -20,6 +20,7 @@
 #define XML_REPORT_H
 
 #include <QString>
+#include <QList>
 #include "report.h"
 
 class QObject;
@@ -37,11 +38,23 @@ public:
     XmlReport(const QString &filename, QObject * parent = 0);
 
     /**
+     * @brief Read contents of the report file.
+     */
+    virtual QList<ErrorLine> Read() = 0;
+
+    /**
      * @brief Quote the message.
      * @param message Message to quote.
      * @return quoted message.
      */
     static QString quoteMessage(const QString &message);
+
+    /**
+     * @brief Get the XML report format version from the file.
+     * @param filename Filename of the report file.
+     * @return XML report format version or 0 if error happened.
+     */
+    static int determineVersion(const QString &filename);
 };
 /// @}
 
