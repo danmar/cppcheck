@@ -668,7 +668,7 @@ private:
         check("void f(int a) {\n"
               "    const char *p = 0;\n"
               "    if (a) {\n"
-              "    	 p = \"abcd\";\n"
+              "        p = \"abcd\";\n"
               "    }\n"
               "    for (int i = 0; i < 3; i++) {\n"
               "        if (a && (p[i] == '1'));\n"
