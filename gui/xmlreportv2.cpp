@@ -180,28 +180,67 @@ QList<ErrorItem> XmlReportV2::Read()
 
 ErrorItem XmlReportV2::ReadError(QXmlStreamReader *reader)
 {
+    /*
+    Error example from the core program in xml
+    <error id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"
+              verbose="Mismatching allocation and deallocation: k">
+      <location file="..\..\test\test.cxx" line="16"/>
+      <location file="..\..\test\test.cxx" line="32"/>
+    </error>
+    */
+
     ErrorItem item;
     if (reader->name().toString() == ErrorElementName)
     {
         QXmlStreamAttributes attribs = reader->attributes();
-        const QString file = attribs.value("", FilenameAttribute).toString();
-        item.file = file;
-        item.files.push_back(file);
-        const int line = attribs.value("", LineAttribute).toString().toUInt();
-        item.lines.push_back(line);
         item.id = attribs.value("", IdAttribute).toString();
         item.severity = attribs.value("", SeverityAttribute).toString();
+        item.summary = attribs.value("", MsgAttribute).toString();
+        item.message = attribs.value("", VerboseAttribute).toString();
 
-        // NOTE: This dublicates the message to Summary-field. But since
-        // old XML format doesn't have separate summary and verbose messages
-        // we must add same message to both data so it shows up in GUI.
-        // Check if there is full stop and cut the summary to it.
-        QString summary = attribs.value("", MsgAttribute).toString();
-        const int ind = summary.indexOf('.');
-        if (ind != -1)
-            summary = summary.left(ind + 1);
-        item.summary = summary;
-        item.message = attribs.value("", MsgAttribute).toString();
+        ReadLocations(item);
     }
     return item;
+}
+
+void XmlReportV2::ReadLocations(ErrorItem &item)
+{
+    QList<ErrorItem> errors;
+    bool allRead = false;
+    while (!allRead && !mXmlReader->atEnd())
+    {
+        switch (mXmlReader->readNext())
+        {
+        case QXmlStreamReader::StartElement:
+            if (mXmlReader->name() != LocationElementName)
+                continue; // Skip other than location elements
+            {
+                QXmlStreamAttributes attribs = mXmlReader->attributes();
+                const QString file = attribs.value("", FilenameAttribute).toString();
+                if (item.file.isEmpty())
+                    item.file = file;
+                item.files.push_back(file);
+                const int line = attribs.value("", LineAttribute).toString().toUInt();
+                item.lines.push_back(line);
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (mXmlReader->name() == LocationElementName)
+                allRead = true;
+            break;
+
+            // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    }
 }
