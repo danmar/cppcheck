@@ -213,6 +213,7 @@ private:
         TEST_CASE(simplify_constants);
         TEST_CASE(simplify_constants2);
         TEST_CASE(simplify_constants3);
+        TEST_CASE(simplify_null);
 
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
@@ -3876,6 +3877,16 @@ private:
             "}\n";
         const char expected[] =
             "static const char str [ 5 ] = \"abcd\" ;\n\nvoid f ( ) {\na = 5 ;\n}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+    }
+
+    void simplify_null()
+    {
+        const char code[] =
+            "int * p = NULL;\n"
+            "int * q = __null;\n";
+        const char expected[] =
+            "int * p ; p = 0 ;\nint * q ; q = 0 ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
     }
 
