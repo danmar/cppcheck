@@ -213,7 +213,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         function.isConst = true;
 
                     // pure virtual function
-                    if (Token::Match(end, ") const| = 0 ;"))
+                    if (Token::Match(end, ") const| = %any% ;"))
                         function.isPure = true;
 
                     // count the number of constructors
@@ -227,7 +227,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                     // out of line function
                     if (Token::Match(end, ") const| ;") ||
-                        Token::Match(end, ") const| = 0 ;"))
+                        Token::Match(end, ") const| = %any% ;"))
                     {
                         // find the function implementation later
                         tok = end->next();

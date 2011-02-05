@@ -190,6 +190,7 @@ private:
         TEST_CASE(symboldatabase9); // ticket #2525
         TEST_CASE(symboldatabase10); // ticket #2537
         TEST_CASE(symboldatabase11); // ticket #2539
+        TEST_CASE(symboldatabase12); // ticket #2547
     }
 
     // Check the operator Equal
@@ -5512,6 +5513,16 @@ private:
         checkConst("int g ();\n"
                    "struct S {\n"
                    "  int i : (false ? g () : 1);\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase12()
+    {
+        // ticket #2547 - segmentation fault
+        checkConst("class foo {\n"
+                   "    void bar2 () = __null;\n"
                    "};\n");
 
         ASSERT_EQUALS("", errout.str());
