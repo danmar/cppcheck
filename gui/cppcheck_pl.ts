@@ -579,6 +579,16 @@ kate -l(line) (file)</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="mainwindow.cpp" line="592"/>
+        <source>XML files version 1 (*.xml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="598"/>
+        <source>XML files version 2 (*.xml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="mainwindow.cpp" line="715"/>
         <location filename="mainwindow.cpp" line="724"/>
         <source>Cppcheck Help</source>

@@ -592,6 +592,16 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <translation>レポートを保存</translation>
     </message>
     <message>
+        <location filename="mainwindow.cpp" line="592"/>
+        <source>XML files version 1 (*.xml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="598"/>
+        <source>XML files version 2 (*.xml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="mainwindow.cpp" line="604"/>
         <source>Text files (*.txt)</source>
         <translation>テキストファイル (*.txt)</translation>
