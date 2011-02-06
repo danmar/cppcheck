@@ -81,11 +81,12 @@ private:
         reportError(tok, Severity::error, "exceptDeallocThrow", "Throwing exception in invalid state, " + varname + " points at deallocated memory");
     }
 
-    void rethrowCopyError(const Token * const tok)
+    void rethrowCopyError(const Token * const tok, const std::string &varname)
     {
         reportError(tok, Severity::style, "exceptRethrowCopy",
                     "Throwing a copy of the caught exception instead of rethrowing the original exception\n"
-                    "To rethrow the caught exception without unnecessary copying or slicing, use a bare 'throw;'. ");
+                    "Rethrowing an exception with 'throw " + varname + ";' makes an unnecessary copy of '" + varname + "'.\n"
+                    "To rethrow the caught exception without unnecessary copying or slicing, use a bare 'throw;'.");
     }
 
     /** Generate all possible errors (for --errorlist) */
@@ -94,7 +95,7 @@ private:
         CheckExceptionSafety c(0, settings, errorLogger);
         c.destructorsError(0);
         c.deallocThrowError(0, "p");
-        c.rethrowCopyError(0);
+        c.rethrowCopyError(0, "varname");
     }
 
     /** Short description of class (for --doc) */
