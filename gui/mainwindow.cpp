@@ -42,7 +42,6 @@ MainWindow::MainWindow() :
     mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
     mApplications(new ApplicationList(this)),
     mTranslation(new TranslationHandler(this)),
-    mLanguages(new QActionGroup(this)),
     mLogView(NULL),
     mHelpWindow(NULL),
     mProject(NULL),
@@ -675,16 +674,6 @@ void MainWindow::SetLanguage(int index)
         //Translate everything that is visible here
         mUI.retranslateUi(this);
         mUI.mResults->Translate();
-        QStringList languages = mTranslation->GetNames();
-        QList<QAction *> actions = mLanguages->actions();
-
-        if (languages.size() <= actions.size())
-        {
-            for (int i = 0; i < languages.size(); i++)
-            {
-                actions[i]->setText(tr(languages[i].toLatin1()));
-            }
-        }
     }
 }
 

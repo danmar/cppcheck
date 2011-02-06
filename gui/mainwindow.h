@@ -385,12 +385,6 @@ protected:
     Ui::MainWindow mUI;
 
     /**
-    * @brief Group holding all supported languages
-    *
-    */
-    QActionGroup *mLanguages;
-
-    /**
     * @brief Current checked directory.
     */
     QString mCurrentDirectory;
