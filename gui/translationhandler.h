@@ -22,9 +22,16 @@
 #include <QStringList>
 #include <QTranslator>
 #include <QObject>
+#include <QList>
 
 /// @addtogroup GUI
 /// @{
+
+struct TranslationInfo
+{
+    QString mName;
+    QString mFilename;
+};
 
 
 class TranslationHandler : QObject
@@ -34,14 +41,14 @@ public:
     TranslationHandler(QObject *parent);
     virtual ~TranslationHandler();
     const QStringList GetNames() const;
-    const QStringList GetFiles() const;
     bool SetLanguage(const int index, QString &error);
     int GetCurrentLanguage() const;
     int SuggestLanguage() const;
 protected:
+    void AddTranslation(const char *name, const char *filename);
+
     int mCurrentLanguage;
-    QStringList mNames;
-    QStringList mFiles;
+    QList<TranslationInfo> mTranslations;
     QTranslator *mTranslator;
 private:
 };

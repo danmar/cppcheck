@@ -29,25 +29,15 @@ TranslationHandler::TranslationHandler(QObject *parent) :
 {
     // Add our available languages
     // Keep this list sorted
-    mNames  << QT_TRANSLATE_NOOP("MainWindow", "Dutch")
-            << QT_TRANSLATE_NOOP("MainWindow", "English")
-            << QT_TRANSLATE_NOOP("MainWindow", "Finnish")
-            << QT_TRANSLATE_NOOP("MainWindow", "German")
-            << QT_TRANSLATE_NOOP("MainWindow", "Japanese")
-            << QT_TRANSLATE_NOOP("MainWindow", "Polish")
-            << QT_TRANSLATE_NOOP("MainWindow", "Russian")
-            << QT_TRANSLATE_NOOP("MainWindow", "Serbian")
-            << QT_TRANSLATE_NOOP("MainWindow", "Swedish");
-
-    mFiles  << "cppcheck_nl"
-            << "cppcheck_en"
-            << "cppcheck_fi"
-            << "cppcheck_de"
-            << "cppcheck_ja"
-            << "cppcheck_pl"
-            << "cppcheck_ru"
-            << "cppcheck_sr"
-            << "cppcheck_se";
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Dutch"), "cppcheck_nl");
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "English"), "cppcheck_en");
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Finnish"), "cppcheck_fi");
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "German"), "cppcheck_de");
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Japanese"), "cppcheck_ja");
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Polish"), "cppcheck_pl");
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Russian"), "cppcheck_ru");
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Serbian"), "cppcheck_sr");
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Swedish"), "cppcheck_se");
 
     //Load English as a fallback language
     QTranslator *english = new QTranslator();
@@ -68,18 +58,18 @@ TranslationHandler::~TranslationHandler()
 
 const QStringList TranslationHandler::GetNames() const
 {
-    return mNames;
-}
-
-const QStringList TranslationHandler::GetFiles() const
-{
-    return mFiles;
+    QStringList names;
+    foreach(TranslationInfo translation, mTranslations)
+    {
+        names.append(translation.mName);
+    }
+    return names;
 }
 
 bool TranslationHandler::SetLanguage(const int index, QString &error)
 {
     //If English is the language
-    if (index == 0)
+    if (index == 2)
     {
         //Just remove all extra translators
         if (mTranslator)
@@ -92,27 +82,27 @@ bool TranslationHandler::SetLanguage(const int index, QString &error)
     }
 
     //Make sure the translator is otherwise valid
-    if (index >= mNames.size())
+    if (index >= mTranslations.size())
     {
         error = QObject::tr("Incorrect language specified!");
         return false;
     }
 
     //Load the new language
-    if (!mTranslator->load(mFiles[index]))
+    if (!mTranslator->load(mTranslations[index].mFilename))
     {
         //If it failed, lets check if the default file exists
-        if (!QFile::exists(mFiles[index] + ".qm"))
+        if (!QFile::exists(mTranslations[index].mFilename + ".qm"))
         {
             error = QObject::tr("Language file %1 not found!");
-            error = error.arg(mFiles[index] + ".qm");
+            error = error.arg(mTranslations[index].mFilename + ".qm");
             return false;
         }
 
         //If file exists, there's something wrong with it
         error = QObject::tr("Failed to load translation for language %1 from file %2");
-        error = error.arg(mNames[index]);
-        error = error.arg(mFiles[index] + ".qm");
+        error = error.arg(mTranslations[index].mName);
+        error = error.arg(mTranslations[index].mFilename + ".qm");
         return false;
     }
 
@@ -145,7 +135,15 @@ int TranslationHandler::SuggestLanguage() const
 
 
     //And see if we can find it from our list of language files
-    int index = mFiles.indexOf(file);
+    int index = 0;
+    for (int i = 0; i < mTranslations.size(); i++)
+    {
+        if (mTranslations[i].mFilename == file)
+        {
+            index = i;
+            break;
+        }
+    }
 
     //If nothing found, return English
     if (index < 0)
@@ -156,3 +154,10 @@ int TranslationHandler::SuggestLanguage() const
     return index;
 }
 
+void TranslationHandler::AddTranslation(const char *name, const char *filename)
+{
+    TranslationInfo info;
+    info.mName = name;
+    info.mFilename = filename;
+    mTranslations.append(info);
+}
