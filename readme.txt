@@ -16,10 +16,13 @@ Compiling
 
     Any C++ compiler should work.
 
-    To build the GUI, you need Qt. The command line tool doesn't have any dependencies.
+    To build the GUI, you need Qt.
+
+    To build the command line tool, PCRE is needed. More information about PCRE is found in
+    build.txt
 
     There are multiple compilation choices:
-      * qmake - cross platform build tool - but only the GUI can be built
+      * qmake - cross platform build tool
       * Visual Studio - Windows
       * gnu make
       * g++
