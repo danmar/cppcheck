@@ -1,11 +1,15 @@
 #!/bin/bash
-# A script for tagging and releasing.
 #
-# A tag will be created with the given name.
+# A script for creating release packages. The release packages are create in the home directory.
 #
-# Archive files are created in user's home directory.
+# Make sure "cppcheck --errorlist" works. For example with:
+# make test
+# cppcheck --errorlist > errlist.xml
+# xmllint --noout errlist.xml
+# cppcheck --xml-version=2 --errorlist > errlist.xml
+# xmllint --noout errlist.xml
 #
-# Before running this script, remember to update version number in:
+# Update version numbers in:
 # - lib/cppcheck.cpp
 # - cli/main.cpp
 # - cli/cppcheck.rc
@@ -16,12 +20,16 @@
 # wget http://josefsson.org/git2cl/git2cl
 # chmod 744 git2cl
 # ./git2cl > Changelog
-# git commit -a -m "Changelog: Updated for release"
+# git commit -a -m "1.43: Updated Changelog"
 #
 # Update the Makefile:
-# g++ -o dmake tools/dmake.cpp lib/filelister*.cpp
+# make dmake
 # ./dmake --release
-# git commit -a -m "Makefile: Set release mode"
+# git commit -a -m "1.43: Updated Makefile"
+#
+# Tag:
+# git tag 1.43
+# git push --tags
 #
 # Create release:
 # ./createrelease 1.43
@@ -33,12 +41,10 @@
 # Generate the manual.pdf and version.txt
 # make
 # ./cppcheck --version > version.txt
-# docbook2pdf man/manual.pdf
+# docbook2pdf man/manual.docbook
 #
 # Upload manual.pdf and version.txt...
 # sftp hyd_danmar,cppcheck@web.sourceforge.net
-#
-# Make sure "cppcheck --errorlist" works
 #
 # save "cppcheck --doc" output on wiki
 
