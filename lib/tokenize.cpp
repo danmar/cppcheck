@@ -3808,6 +3808,8 @@ void Tokenizer::simplifySizeof()
     {
         if (Token::Match(tok, "class|struct %var%"))
         {
+            // we assume that the size of structs and classes are always
+            // 100 bytes.
             _typeSize[tok->strAt(1)] = 100;
         }
     }

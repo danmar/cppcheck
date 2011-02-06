@@ -102,28 +102,30 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <arg choice="opt"><option>--append=[file]</option></arg>
-      <arg choice="opt"><option>-D[id]</option></arg>
-      <arg choice="opt"><option>--enable=[id]</option></arg>
-      <arg choice="opt"><option>--error-exitcode=[n]</option></arg>
+      <arg choice="opt"><option>--append=&lt;file&gt;</option></arg>
+      <arg choice="opt"><option>-D&lt;id&gt;</option></arg>
+      <arg choice="opt"><option>--enable=&lt;id&gt;</option></arg>
+      <arg choice="opt"><option>--error-exitcode=&lt;n&gt;</option></arg>
       <arg choice="opt"><option>--errorlist</option></arg>
-      <arg choice="opt"><option>--exitcode-suppressions=[file]</option></arg>
-      <arg choice="opt"><option>--file-list=file</option></arg>
+      <arg choice="opt"><option>--exitcode-suppressions=&lt;file&gt;</option></arg>
+      <arg choice="opt"><option>--file-list=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>--help</option></arg>
-      <arg choice="opt"><option>-I[dir]</option></arg>
-      <arg choice="opt"><option>-i[dir]</option></arg>
+      <arg choice="opt"><option>-I&lt;dir&gt;</option></arg>
+      <arg choice="opt"><option>-i&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--inline-suppr</option></arg>
-      <arg choice="opt"><option>-j[jobs]</option></arg>
+      <arg choice="opt"><option>-j&lt;jobs&gt;</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--report-progress</option></arg>
+      <arg choice="opt"><option>--rule=&lt;rule&gt;</option></arg>
+      <arg choice="opt"><option>--rule-file=&lt;file&gt;</option></arg>            
       <arg choice="opt"><option>--style</option></arg>
-      <arg choice="opt"><option>--suppressions-list=[file]</option></arg>
-      <arg choice="opt"><option>--template '[text]'</option></arg>
+      <arg choice="opt"><option>--suppressions-list=&lt;file&gt;</option></arg>
+      <arg choice="opt"><option>--template '&lt;text&gt;'</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>--version</option></arg>
       <arg choice="opt"><option>--xml</option></arg>
-      <arg choice="opt"><option>--xml-version=[version]</option></arg>
+      <arg choice="opt"><option>--xml-version=&lt;version&gt;]</option></arg>
       <arg choice="opt"><option>file or path</option></arg>
       <arg choice="plain"><option>...</option></arg>
     </cmdsynopsis>
@@ -146,20 +148,20 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
            variablelist.term.break.after parameters to
            control the term elements. -->
       <varlistentry>
-        <term><option>--append=[file]</option></term>
+        <term><option>--append=&lt;file&gt;</option></term>
         <listitem>
           <para>This allows you to provide information about functions by providing an implementation for these.</para>
         </listitem>
       </varlistentry>      
       <varlistentry>
-        <term><option>-D[id]</option></term>
+        <term><option>-D&lt;id&gt;</option></term>
         <listitem>
           <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration. 
 Example: -DDEBUG=1 -D__cplusplus</para>
         </listitem>
       </varlistentry>      
       <varlistentry>
-        <term><option>--enable=[id]</option></term>
+        <term><option>--enable=&lt;id&gt;</option></term>
         <listitem>
           <para>Enable additional checks. The available ids are:
             <glosslist>
@@ -199,9 +201,9 @@ Example: -DDEBUG=1 -D__cplusplus</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--error-exitcode=[n]</option></term>
+        <term><option>--error-exitcode=&lt;n&gt;</option></term>
         <listitem>
-          <para>If errors are found, integer [n] is returned instead of default 0.
+          <para>If errors are found, integer &lt;n&gt; is returned instead of default 0.
           EXIT_FAILURE is returned if arguments are not valid or if no input files are
           provided. Note that your operating system can modify this value, e.g.
           256 can become 0.</para>
@@ -214,13 +216,13 @@ Example: -DDEBUG=1 -D__cplusplus</para>
         </listitem>
       </varlistentry>      
       <varlistentry>
-        <term><option>--exitcode-suppressions=[file]</option></term>
+        <term><option>--exitcode-suppressions=&lt;file&gt;</option></term>
         <listitem>
           <para>Used when certain messages should be displayed but should not cause a non-zero exitcode.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--file-list=[file]</option></term>
+        <term><option>--file-list=&lt;file&gt;</option></term>
         <listitem>
           <para>Specify the files to check in a text file. One filename per line.</para>
         </listitem>
@@ -241,7 +243,7 @@ default.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-I [dir]</option></term>
+        <term><option>-I &lt;dir&gt;</option></term>
         <listitem>
           <para>Give include path. Give several -I parameters to give several paths. First given path is checked first. If paths are relative to source
 files, this is not needed.</para>
@@ -249,7 +251,7 @@ files, this is not needed.</para>
       </varlistentry>
       
       <varlistentry>
-        <term><option>-i [dir]</option></term>
+        <term><option>-i &lt;dir&gt;</option></term>
         <listitem>
           <para>Give path to ignore. Give several -i parameters to ignore several paths. Give directory name or filename with path as parameter. 
 Directory name is matched to all parts of the path.</para>
@@ -264,9 +266,9 @@ Directory name is matched to all parts of the path.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-j [jobs]</option></term>
+        <term><option>-j &lt;jobs&gt;</option></term>
         <listitem>
-          <para>Start [jobs] threads to do the checking work.</para>
+          <para>Start &lt;jobs&gt; threads to do the checking work.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -283,6 +285,18 @@ Directory name is matched to all parts of the path.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>--rule=&lt;rule&gt;</option></term>
+        <listitem>
+          <para>Match regular expression to create your own checks. E.g. rule &quot;/ 0&quot; can be used to check division by zero.</para>
+        </listitem>
+      </varlistentry>   
+      <varlistentry>
+        <term><option>--rule-file=&lt;file&gt;</option></term>
+        <listitem>
+          <para>Use given rule XML file. See https://sourceforge.net/projects/cppcheck/files/Articles/ for more info about the syntax.</para>
+        </listitem>
+      </varlistentry>  
+      <varlistentry>
         <term><option>-s</option></term>
         <term><option>--style</option></term>
         <listitem>
@@ -290,14 +304,14 @@ Directory name is matched to all parts of the path.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--suppressions-list=[file]</option></term>
+        <term><option>--suppressions-list=&lt;file&gt;</option></term>
         <listitem>
           <para>Suppress warnings listed in the file. Filename and line are optional. The format of the single line in file is: [error id]:[filename]:[line].
           You can use --template or --xml to see the error id.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--template '[text]'</option></term>
+        <term><option>--template '&lt;text&gt;'</option></term>
         <listitem>
           <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'. Pre-defined templates: gcc, vs</para>
         </listitem>
@@ -322,7 +336,7 @@ Directory name is matched to all parts of the path.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--xml-version=[version]</option></term>
+        <term><option>--xml-version=&lt;version&gt;</option></term>
         <listitem>
           <para>Select the XML file version. Currently versions 1 and 2 are available. The default version is 1.</para>
         </listitem>

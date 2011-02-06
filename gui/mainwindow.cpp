@@ -579,7 +579,7 @@ void MainWindow::ShowAuthors()
 void MainWindow::Save()
 {
     QString selectedFilter;
-    QString filter(tr("XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
+    QString filter(tr("XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
     QString selectedFile = QFileDialog::getSaveFileName(this,
                            tr("Save the report file"),
                            QString(),
@@ -589,9 +589,15 @@ void MainWindow::Save()
     if (!selectedFile.isEmpty())
     {
         Report::Type type = Report::TXT;
-        if (selectedFilter == tr("XML files (*.xml)"))
+        if (selectedFilter == tr("XML files version 1 (*.xml)"))
         {
             type = Report::XML;
+            if (!selectedFile.endsWith(".xml", Qt::CaseInsensitive))
+                selectedFile += ".xml";
+        }
+        else if (selectedFilter == tr("XML files version 2 (*.xml)"))
+        {
+            type = Report::XMLV2;
             if (!selectedFile.endsWith(".xml", Qt::CaseInsensitive))
                 selectedFile += ".xml";
         }

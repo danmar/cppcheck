@@ -488,11 +488,11 @@ private:
             "    UString& operator=( const UString& s );\n"
             "};\n"
             "UString& UString::assign( const char* c_str ) {\n"
-            "	std::string tmp( c_str );\n"
-            "	return assign( tmp );\n"
+            "    std::string tmp( c_str );\n"
+            "    return assign( tmp );\n"
             "}\n"
             "UString& UString::operator=( const UString& s ) {\n"
-            "	return assign( s );\n"
+            "    return assign( s );\n"
             "}\n");
     }
 
@@ -2723,7 +2723,7 @@ private:
                        "    A()\n"
                        "    {\n"
                        "        init();\n"
-                       "	}\n"
+                       "    }\n"
                        "\n"
                        "    void init() { init(0); }\n"
                        "\n"
@@ -5452,12 +5452,12 @@ private:
         checkConst("template<template<class> class E,class D> class C : E<D>\n"
                    "{\n"
                    "public:\n"
-                   "	int f();\n"
+                   "    int f();\n"
                    "};\n"
                    "class E : C<D,int>\n"
                    "{\n"
                    "public:\n"
-                   "	int f() { return C< ::D,int>::f(); }\n"
+                   "    int f() { return C< ::D,int>::f(); }\n"
                    "};\n");
 
         ASSERT_EQUALS("", errout.str());

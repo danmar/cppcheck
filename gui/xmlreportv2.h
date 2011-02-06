@@ -16,35 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REPORT_H
-#define REPORT_H
+#ifndef XML_REPORTV2_H
+#define XML_REPORTV2_H
 
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QFile>
-#include "erroritem.h"
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+#include "report.h"
 
 /// @addtogroup GUI
 /// @{
 
+
 /**
-* @brief A base class for reports.
+* @brief XML file report version 2.
+* This report outputs XML-formatted report. The XML format must match command
+* line version's XML output.
 */
-class Report : public QObject
+class XmlReportV2 : public XmlReport
 {
 public:
-
-    enum Type
-    {
-        TXT,
-        XML,
-        XMLV2,
-        CSV,
-    };
-
-    Report(const QString &filename, QObject * parent = 0);
-    virtual ~Report();
+    XmlReportV2(const QString &filename, QObject * parent = 0);
+    virtual ~XmlReportV2();
 
     /**
     * @brief Create the report (file).
@@ -53,50 +49,48 @@ public:
     virtual bool Create();
 
     /**
-    * @brief Open the existing report (file).
-    * @return true if succeeded, false if file could not be created.
+    * @brief Open existing report file.
     */
-    virtual bool Open();
-
-    /**
-    * @brief Close the report (file).
-    */
-    virtual void Close();
+    bool Open();
 
     /**
     * @brief Write report header.
     */
-    virtual void WriteHeader() = 0;
+    virtual void WriteHeader();
 
     /**
     * @brief Write report footer.
     */
-    virtual void WriteFooter() = 0;
+    virtual void WriteFooter();
 
     /**
     * @brief Write error to report.
     * @param error Error data.
     */
-    virtual void WriteError(const ErrorItem &error) = 0;
+    virtual void WriteError(const ErrorItem &error);
+
+    /**
+    * @brief Read contents of the report file.
+    */
+    virtual QList<ErrorItem> Read();
 
 protected:
-
     /**
-    * @brief Get the file object where the report is written to.
+    * @brief Read and parse error item from XML stream.
+    * @param reader XML stream reader to use.
     */
-    QFile* GetFile();
+    ErrorItem ReadError(QXmlStreamReader *reader);
 
 private:
+    /**
+    * @brief XML stream reader for reading the report in XML format.
+    */
+    QXmlStreamReader *mXmlReader;
 
     /**
-    * @brief Filename of the report.
+    * @brief XML stream writer for writing the report in XML format.
     */
-    QString mFilename;
-
-    /**
-    * @brief Fileobject for the report file.
-    */
-    QFile mFile;
+    QXmlStreamWriter *mXmlWriter;
 };
 /// @}
-#endif // REPORT_H
+#endif // XML_REPORTV2_H

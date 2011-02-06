@@ -4,7 +4,7 @@
     <?define Platform = "x86" ?>
   <?endif ?>
 
-  <?define CliBuildDir = "..\Build\release" ?>
+  <?define CliBuildDir = "..\cli\release" ?>
   <?define GuiBuildDir = "..\Build\gui" ?>
   <?define TranslationsDir = "..\gui" ?>
   <?define HelpDir = "..\gui\help" ?>
