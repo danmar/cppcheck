@@ -27,26 +27,27 @@ TranslationHandler::TranslationHandler(QObject *parent) :
     mCurrentLanguage(-1),
     mTranslator(new QTranslator(this))
 {
-    //Add our default languages
-    mNames  << QT_TRANSLATE_NOOP("MainWindow", "English")
-            << QT_TRANSLATE_NOOP("MainWindow", "Dutch")
+    // Add our available languages
+    // Keep this list sorted
+    mNames  << QT_TRANSLATE_NOOP("MainWindow", "Dutch")
+            << QT_TRANSLATE_NOOP("MainWindow", "English")
             << QT_TRANSLATE_NOOP("MainWindow", "Finnish")
-            << QT_TRANSLATE_NOOP("MainWindow", "Swedish")
             << QT_TRANSLATE_NOOP("MainWindow", "German")
-            << QT_TRANSLATE_NOOP("MainWindow", "Russian")
-            << QT_TRANSLATE_NOOP("MainWindow", "Polish")
             << QT_TRANSLATE_NOOP("MainWindow", "Japanese")
-            << QT_TRANSLATE_NOOP("MainWindow", "Serbian");
+            << QT_TRANSLATE_NOOP("MainWindow", "Polish")
+            << QT_TRANSLATE_NOOP("MainWindow", "Russian")
+            << QT_TRANSLATE_NOOP("MainWindow", "Serbian")
+            << QT_TRANSLATE_NOOP("MainWindow", "Swedish");
 
-    mFiles  << "cppcheck_en"
-            << "cppcheck_nl"
+    mFiles  << "cppcheck_nl"
+            << "cppcheck_en"
             << "cppcheck_fi"
-            << "cppcheck_se"
             << "cppcheck_de"
-            << "cppcheck_ru"
-            << "cppcheck_pl"
             << "cppcheck_ja"
-            << "cppcheck_sr";
+            << "cppcheck_pl"
+            << "cppcheck_ru"
+            << "cppcheck_sr"
+            << "cppcheck_se";
 
     //Load English as a fallback language
     QTranslator *english = new QTranslator();
