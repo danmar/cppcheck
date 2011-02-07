@@ -31,6 +31,7 @@ struct TranslationInfo
 {
     QString mName;
     QString mFilename;
+    QString mCode;
 };
 
 
@@ -41,13 +42,18 @@ public:
     TranslationHandler(QObject *parent);
     virtual ~TranslationHandler();
     const QStringList GetNames() const;
-    bool SetLanguage(const int index, QString &error);
-    int GetCurrentLanguage() const;
-    int SuggestLanguage() const;
+    QList<TranslationInfo> GetTranslations() const
+    {
+        return mTranslations;
+    }
+    bool SetLanguage(const QString &code, QString &error);
+    QString GetCurrentLanguage() const;
+    QString SuggestLanguage() const;
 protected:
     void AddTranslation(const char *name, const char *filename);
+    int GetLanguageIndexByCode(const QString &code) const;
 
-    int mCurrentLanguage;
+    QString mCurrentLanguage;
     QList<TranslationInfo> mTranslations;
     QTranslator *mTranslator;
 private:

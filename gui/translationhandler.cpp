@@ -24,7 +24,6 @@
 
 TranslationHandler::TranslationHandler(QObject *parent) :
     QObject(parent),
-    mCurrentLanguage(-1),
     mTranslator(new QTranslator(this))
 {
     // Add our available languages
@@ -66,10 +65,10 @@ const QStringList TranslationHandler::GetNames() const
     return names;
 }
 
-bool TranslationHandler::SetLanguage(const int index, QString &error)
+bool TranslationHandler::SetLanguage(const QString &code, QString &error)
 {
     //If English is the language
-    if (index == 2)
+    if (code == "en")
     {
         //Just remove all extra translators
         if (mTranslator)
@@ -77,12 +76,13 @@ bool TranslationHandler::SetLanguage(const int index, QString &error)
             qApp->removeTranslator(mTranslator);
         }
 
-        mCurrentLanguage = index;
+        mCurrentLanguage = code;
         return true;
     }
 
     //Make sure the translator is otherwise valid
-    if (index >= mTranslations.size())
+    int index = GetLanguageIndexByCode(code);
+    if (index == -1)
     {
         error = QObject::tr("Incorrect language specified!");
         return false;
@@ -108,17 +108,17 @@ bool TranslationHandler::SetLanguage(const int index, QString &error)
 
     qApp->installTranslator(mTranslator);
 
-    mCurrentLanguage = index;
+    mCurrentLanguage = code;
 
     return true;
 }
 
-int TranslationHandler::GetCurrentLanguage() const
+QString TranslationHandler::GetCurrentLanguage() const
 {
     return mCurrentLanguage;
 }
 
-int TranslationHandler::SuggestLanguage() const
+QString TranslationHandler::SuggestLanguage() const
 {
     /*
     Get language from system locale's name
@@ -129,29 +129,16 @@ int TranslationHandler::SuggestLanguage() const
     QString language = QLocale::system().name().left(2);
     //qDebug()<<"Your language is"<<language;
 
-    //catenate that to the default language filename
-    QString file = QString("cppcheck_%1").arg(language);
-    //qDebug()<<"Language file could be"<<file;
-
-
     //And see if we can find it from our list of language files
-    int index = 0;
-    for (int i = 0; i < mTranslations.size(); i++)
-    {
-        if (mTranslations[i].mFilename == file)
-        {
-            index = i;
-            break;
-        }
-    }
+    int index = GetLanguageIndexByCode(language);
 
     //If nothing found, return English
     if (index < 0)
     {
-        return 0;
+        return "en";
     }
 
-    return index;
+    return language;
 }
 
 void TranslationHandler::AddTranslation(const char *name, const char *filename)
@@ -159,5 +146,20 @@ void TranslationHandler::AddTranslation(const char *name, const char *filename)
     TranslationInfo info;
     info.mName = name;
     info.mFilename = filename;
+    info.mCode = QString(filename).right(2);
     mTranslations.append(info);
+}
+
+int TranslationHandler::GetLanguageIndexByCode(const QString &code) const
+{
+    int index = -1;
+    for (int i = 0; i < mTranslations.size(); i++)
+    {
+        if (mTranslations[i].mCode == code)
+        {
+            index = i;
+            break;
+        }
+    }
+    return index;
 }
