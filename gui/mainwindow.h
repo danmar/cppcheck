@@ -255,9 +255,9 @@ protected:
 
     /**
     * @brief Set current language
-    * @param index Index of the language to set
+    * @param code Language code of the language to set (e.g. "en").
     */
-    void SetLanguage(const int index);
+    void SetLanguage(const QString &code);
 
     /**
     * @brief Event coming when application is about to close.
@@ -383,12 +383,6 @@ protected:
     *
     */
     Ui::MainWindow mUI;
-
-    /**
-    * @brief Group holding all supported languages
-    *
-    */
-    QActionGroup *mLanguages;
 
     /**
     * @brief Current checked directory.

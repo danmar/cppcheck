@@ -19,78 +19,51 @@
 #ifndef XML_REPORT_H
 #define XML_REPORT_H
 
-#include <QObject>
 #include <QString>
-#include <QStringList>
-#include <QFile>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
+#include <QList>
 #include "report.h"
+#include "erroritem.h"
+
+class QObject;
 
 /// @addtogroup GUI
 /// @{
 
 
 /**
-* @brief XML file report.
-* This report outputs XML-formatted report. The XML format must match command
-* line version's XML output.
+* @brief Base class for XML report classes.
 */
 class XmlReport : public Report
 {
 public:
     XmlReport(const QString &filename, QObject * parent = 0);
-    virtual ~XmlReport();
 
     /**
-    * @brief Create the report (file).
-    * @return true if succeeded, false if file could not be created.
-    */
-    virtual bool Create();
+     * @brief Read contents of the report file.
+     */
+    virtual QList<ErrorItem> Read() = 0;
 
     /**
-    * @brief Open existing report file.
-    */
-    bool Open();
+     * @brief Quote the message.
+     * @param message Message to quote.
+     * @return quoted message.
+     */
+    static QString quoteMessage(const QString &message);
 
     /**
-    * @brief Write report header.
-    */
-    virtual void WriteHeader();
+     * @brief Unquote the message.
+     * @param message Message to quote.
+     * @return quoted message.
+     */
+    static QString unquoteMessage(const QString &message);
 
     /**
-    * @brief Write report footer.
-    */
-    virtual void WriteFooter();
-
-    /**
-    * @brief Write error to report.
-    * @param error Error data.
-    */
-    virtual void WriteError(const ErrorItem &error);
-
-    /**
-    * @brief Read contents of the report file.
-    */
-    QList<ErrorLine> Read();
-
-protected:
-    /**
-    * @brief Read and parse error item from XML stream.
-    * @param reader XML stream reader to use.
-    */
-    ErrorLine ReadError(QXmlStreamReader *reader);
-
-private:
-    /**
-    * @brief XML stream reader for reading the report in XML format.
-    */
-    QXmlStreamReader *mXmlReader;
-
-    /**
-    * @brief XML stream writer for writing the report in XML format.
-    */
-    QXmlStreamWriter *mXmlWriter;
+     * @brief Get the XML report format version from the file.
+     * @param filename Filename of the report file.
+     * @return XML report format version or 0 if error happened.
+     */
+    static int determineVersion(const QString &filename);
 };
 /// @}
+
 #endif // XML_REPORT_H

@@ -205,7 +205,7 @@ lib/token.o: lib/token.cpp lib/token.h lib/errorlogger.h lib/check.h lib/tokeniz
 lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/token.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h lib/path.h lib/symboldatabase.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -c -o lib/tokenize.o lib/tokenize.cpp
 
-cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/timer.h cli/cmdlineparser.h lib/path.h
+cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/timer.h cli/cmdlineparser.h lib/path.h cli/filelister.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Iexternals -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
 
 cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h cli/threadexecutor.h cli/cmdlineparser.h cli/filelister.h lib/path.h cli/pathmatch.h
@@ -256,7 +256,7 @@ test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/settings.h lib/err
 test/testdivision.o: test/testdivision.cpp lib/tokenize.h lib/checkother.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testdivision.o test/testdivision.cpp
 
-test/testerrorlogger.o: test/testerrorlogger.cpp test/testsuite.h lib/errorlogger.h test/redirect.h
+test/testerrorlogger.o: test/testerrorlogger.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -Ilib -Icli -Iexternals -c -o test/testerrorlogger.o test/testerrorlogger.cpp
 
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/tokenize.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h

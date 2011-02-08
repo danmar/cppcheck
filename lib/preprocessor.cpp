@@ -908,6 +908,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                         def += ";";
                     def += *it;
                 }
+
+                /* TODO: Fix TestPreprocessor::test7e (#2552)
                 else
                 {
                     std::ostringstream lineStream;
@@ -918,11 +920,12 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                     loc.setfile(filename);
                     loc.line = linenr;
                     errmsg._callStack.push_back(loc);
-                    errmsg._severity = Severity::fromString("error");
+                    errmsg._severity = Severity::error;
                     errmsg.setmsg(*it+" is already guaranteed to be defined");
                     errmsg._id  = "preprocessor" + lineStream.str();
                     _errorLogger->reportErr(errmsg);
                 }
+                */
             }
             if (from_negation)
             {

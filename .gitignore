@@ -9,6 +9,7 @@ tools/dmake
 dmake
 tools/errmsg
 # VS generated files
+*.obj
 *.ncb
 *.suo
 *.user

@@ -3,9 +3,9 @@
 "/usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.46</title>
+    <title>Cppcheck 1.47</title>
 
-    <date>2010-12-09</date>
+    <date>2011-02-06</date>
   </bookinfo>
 
   <chapter>
@@ -94,19 +94,20 @@ Checking path/file2.cpp...
     <section>
       <title>Excluding a file or folder from checking</title>
 
-      <para>There is no command to exclude a file or folder from checking. But
-      you can exclude a file or folder by being more careful when including
-      files and folders in the checking.</para>
+      <para>To exclude a file or folder, there are two options.</para>
 
-      <para>Imagine for example that the folder "src" contain the folders "a",
-      "b" and "c". To exclude "c" this command can be used:</para>
+      <para>The first option is to only provide the paths and files you want
+      to check.</para>
 
       <programlisting>cppcheck src/a src/b</programlisting>
 
       <para>All files under "src/a" and "src/b" are then checked.</para>
 
-      <para>The flag <literal>--file-list</literal> might also be
-      useful.</para>
+      <para>The second option is to use <literal>-i</literal>, with it you
+      specify files/paths to ignore. With this command no files in "src/c" are
+      checked:</para>
+
+      <programlisting>cppcheck -isrc/c src</programlisting>
     </section>
 
     <section>
@@ -146,6 +147,15 @@ Checking path/file2.cpp...
 
           <listitem>
             <para>suggestions for making the code faster</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>information</term>
+
+          <listitem>
+            <para>Informational messages that might be interesting. Ignore
+            these messages unless you really agree.</para>
           </listitem>
         </varlistentry>
       </variablelist>

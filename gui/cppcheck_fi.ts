@@ -227,9 +227,9 @@ kate -l(line) (file)
         <location filename="mainwindow.cpp" line="203"/>
         <location filename="mainwindow.cpp" line="233"/>
         <location filename="mainwindow.cpp" line="524"/>
-        <location filename="mainwindow.cpp" line="642"/>
-        <location filename="mainwindow.cpp" line="660"/>
-        <location filename="mainwindow.cpp" line="811"/>
+        <location filename="mainwindow.cpp" line="648"/>
+        <location filename="mainwindow.cpp" line="666"/>
+        <location filename="mainwindow.cpp" line="817"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -567,8 +567,9 @@ kate -l(line) (file)
     </message>
     <message>
         <location filename="mainwindow.cpp" line="582"/>
-        <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation>XML-tiedostot (*.xml);;Tekstitiedostot (*.txt);;CSV-tiedostot (*.csv)</translation>
+        <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
+        <oldsource>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</oldsource>
+        <translation type="unfinished">XML-tiedostot (*.xml);;Tekstitiedostot (*.txt);;CSV-tiedostot (*.csv)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="584"/>
@@ -577,7 +578,6 @@ kate -l(line) (file)
     </message>
     <message>
         <location filename="mainwindow.cpp" line="443"/>
-        <location filename="mainwindow.cpp" line="592"/>
         <source>XML files (*.xml)</source>
         <translation>XML-tiedostot (*xml)</translation>
     </message>
@@ -588,8 +588,8 @@ kate -l(line) (file)
     </message>
     <message>
         <location filename="mainwindow.cpp" line="306"/>
-        <location filename="mainwindow.cpp" line="742"/>
-        <location filename="mainwindow.cpp" line="788"/>
+        <location filename="mainwindow.cpp" line="748"/>
+        <location filename="mainwindow.cpp" line="794"/>
         <source>Project: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -606,22 +606,32 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="mainwindow.cpp" line="592"/>
+        <source>XML files version 1 (*.xml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="mainwindow.cpp" line="598"/>
+        <source>XML files version 2 (*.xml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="604"/>
         <source>Text files (*.txt)</source>
         <translation>Tekstitiedostot (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="604"/>
+        <location filename="mainwindow.cpp" line="610"/>
         <source>CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="644"/>
+        <location filename="mainwindow.cpp" line="650"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="661"/>
+        <location filename="mainwindow.cpp" line="667"/>
         <source>Failed to change the language:
 
 %1
@@ -637,39 +647,39 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="709"/>
-        <location filename="mainwindow.cpp" line="718"/>
+        <location filename="mainwindow.cpp" line="715"/>
+        <location filename="mainwindow.cpp" line="724"/>
         <source>Cppcheck Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="709"/>
+        <location filename="mainwindow.cpp" line="715"/>
         <source>Failed to load help file (not found)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="718"/>
+        <location filename="mainwindow.cpp" line="724"/>
         <source>Failed to load help file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="732"/>
-        <location filename="mainwindow.cpp" line="777"/>
+        <location filename="mainwindow.cpp" line="738"/>
+        <location filename="mainwindow.cpp" line="783"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="734"/>
+        <location filename="mainwindow.cpp" line="740"/>
         <source>Select Project File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="779"/>
+        <location filename="mainwindow.cpp" line="785"/>
         <source>Select Project Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="812"/>
+        <location filename="mainwindow.cpp" line="818"/>
         <source>No project file loaded</source>
         <translation type="unfinished"></translation>
     </message>
@@ -933,18 +943,18 @@ Please select the directory where file is located.</source>
 <context>
     <name>ResultsView</name>
     <message>
-        <location filename="resultsview.cpp" line="190"/>
-        <location filename="resultsview.cpp" line="202"/>
+        <location filename="resultsview.cpp" line="195"/>
+        <location filename="resultsview.cpp" line="207"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="191"/>
+        <location filename="resultsview.cpp" line="196"/>
         <source>No errors found.</source>
         <translation>Virheitä ei löytynyt.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="199"/>
+        <location filename="resultsview.cpp" line="204"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>Virheitä löytyi, mutta asetuksissa kyseiset virheet on määritelty piilotettavaksi.
@@ -952,28 +962,29 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     </message>
     <message>
         <location filename="resultsview.cpp" line="251"/>
-        <location filename="resultsview.cpp" line="261"/>
+        <location filename="resultsview.cpp" line="271"/>
+        <location filename="resultsview.cpp" line="281"/>
         <source>Failed to read the report.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="302"/>
+        <location filename="resultsview.cpp" line="321"/>
         <source>Summary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="303"/>
+        <location filename="resultsview.cpp" line="322"/>
         <source>Message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="117"/>
+        <location filename="resultsview.cpp" line="119"/>
         <source>No errors found, nothing to save.</source>
         <translation>Virheitä ei löytynyt, ei mitään tallennettavaa.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="144"/>
-        <location filename="resultsview.cpp" line="154"/>
+        <location filename="resultsview.cpp" line="149"/>
+        <location filename="resultsview.cpp" line="159"/>
         <source>Failed to save the report.</source>
         <translation>Raportin tallentaminen epäonnistui.</translation>
     </message>

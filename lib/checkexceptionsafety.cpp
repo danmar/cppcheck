@@ -167,4 +167,32 @@ void CheckExceptionSafety::deallocThrow()
     }
 }
 
+//---------------------------------------------------------------------------
+//      catch(const exception & err)
+//      {
+//         throw err;            // <- should be just "throw;"
+//      }
+//---------------------------------------------------------------------------
+void CheckExceptionSafety::checkRethrowCopy()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+    const char catchPattern[] = "catch ( const| %type% &|*| %var% ) { %any%";
+
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), catchPattern);
+    while (tok)
+    {
+        const Token *startBlockTok = tok->next()->link()->next();
+        const Token *endBlockTok = startBlockTok->link();
+        const unsigned int varid = startBlockTok->tokAt(-2)->varId();
+
+        const Token* rethrowTok = Token::findmatch(startBlockTok, "throw %varid%", endBlockTok, varid);
+        if (rethrowTok)
+        {
+            rethrowCopyError(rethrowTok, startBlockTok->tokAt(-2)->str());
+        }
+
+        tok = Token::findmatch(endBlockTok->next(), catchPattern);
+    }
+}
 

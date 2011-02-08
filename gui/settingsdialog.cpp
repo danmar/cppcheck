@@ -91,13 +91,17 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::InitTranslationsList()
 {
-    QStringList languages = mTranslator->GetNames();
-    foreach(const QString lang, languages)
+    const QString current = mTranslator->GetCurrentLanguage();
+    QList<TranslationInfo> translations = mTranslator->GetTranslations();
+    foreach(TranslationInfo translation, translations)
     {
-        mUI.mListLanguages->addItem(lang);
+        QListWidgetItem *item = new QListWidgetItem;
+        item->setText(translation.mName);
+        item->setData(LangCodeRole, QVariant(translation.mCode));
+        mUI.mListLanguages->addItem(item);
+        if (translation.mCode == current)
+            mUI.mListLanguages->setCurrentItem(item);
     }
-    const int current = mTranslator->GetCurrentLanguage();
-    mUI.mListLanguages->setCurrentRow(current);
 }
 
 Qt::CheckState SettingsDialog::BoolToCheckState(bool yes) const
@@ -148,7 +152,10 @@ void SettingsDialog::SaveSettingValues()
     SaveCheckboxValue(mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
     SaveCheckboxValue(mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
     mSettings->setValue(SETTINGS_GLOBAL_INCLUDE_PATHS, mUI.mEditIncludePaths->text());
-    mSettings->setValue(SETTINGS_LANGUAGE, mUI.mListLanguages->currentRow());
+
+    QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
+    const QString langcode = currentLang->data(LangCodeRole).toString();
+    mSettings->setValue(SETTINGS_LANGUAGE, langcode);
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)

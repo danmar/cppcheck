@@ -42,7 +42,6 @@ MainWindow::MainWindow() :
     mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
     mApplications(new ApplicationList(this)),
     mTranslation(new TranslationHandler(this)),
-    mLanguages(new QActionGroup(this)),
     mLogView(NULL),
     mHelpWindow(NULL),
     mProject(NULL),
@@ -155,7 +154,7 @@ void MainWindow::LoadSettings()
 
     mApplications->LoadSettings(mSettings);
 
-    SetLanguage(mSettings->value(SETTINGS_LANGUAGE, mTranslation->SuggestLanguage()).toInt());
+    SetLanguage(mSettings->value(SETTINGS_LANGUAGE, mTranslation->SuggestLanguage()).toString());
 }
 
 void MainWindow::SaveSettings()
@@ -411,10 +410,8 @@ void MainWindow::ProgramSettings()
                                      dialog.SaveFullPath(),
                                      dialog.SaveAllErrors(),
                                      dialog.ShowNoErrorsMessage());
-        const int currentLang = mTranslation->GetCurrentLanguage();
-        const int newLang = mSettings->value(SETTINGS_LANGUAGE, 0).toInt();
-        if (currentLang != newLang)
-            SetLanguage(newLang);
+        const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
+        SetLanguage(newLang);
     }
 }
 
@@ -579,7 +576,7 @@ void MainWindow::ShowAuthors()
 void MainWindow::Save()
 {
     QString selectedFilter;
-    QString filter(tr("XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
+    QString filter(tr("XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
     QString selectedFile = QFileDialog::getSaveFileName(this,
                            tr("Save the report file"),
                            QString(),
@@ -589,9 +586,15 @@ void MainWindow::Save()
     if (!selectedFile.isEmpty())
     {
         Report::Type type = Report::TXT;
-        if (selectedFilter == tr("XML files (*.xml)"))
+        if (selectedFilter == tr("XML files version 1 (*.xml)"))
         {
             type = Report::XML;
+            if (!selectedFile.endsWith(".xml", Qt::CaseInsensitive))
+                selectedFile += ".xml";
+        }
+        else if (selectedFilter == tr("XML files version 2 (*.xml)"))
+        {
+            type = Report::XMLV2;
             if (!selectedFile.endsWith(".xml", Qt::CaseInsensitive))
                 selectedFile += ".xml";
         }
@@ -645,20 +648,18 @@ void MainWindow::FormatAndSetTitle(const QString &text)
     setWindowTitle(title);
 }
 
-
-void MainWindow::SetLanguage(int index)
+void MainWindow::SetLanguage(const QString &code)
 {
-    if (mTranslation->GetCurrentLanguage() == index)
-    {
+    const QString currentLang = mTranslation->GetCurrentLanguage();
+    if (currentLang == code)
         return;
-    }
 
     QString error;
-    if (!mTranslation->SetLanguage(index, error))
+    if (!mTranslation->SetLanguage(code, error))
     {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        QString(tr("Failed to change the language:\n\n%1\n\n")).arg(error),
+                        QString(tr("Failed to change the language:\n\n%1")).arg(error),
                         QMessageBox::Ok,
                         this);
 
@@ -669,16 +670,6 @@ void MainWindow::SetLanguage(int index)
         //Translate everything that is visible here
         mUI.retranslateUi(this);
         mUI.mResults->Translate();
-        QStringList languages = mTranslation->GetNames();
-        QList<QAction *> actions = mLanguages->actions();
-
-        if (languages.size() <= actions.size())
-        {
-            for (int i = 0; i < languages.size(); i++)
-            {
-                actions[i]->setText(tr(languages[i].toLatin1()));
-            }
-        }
     }
 }
 

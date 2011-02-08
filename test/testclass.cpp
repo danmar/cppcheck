@@ -190,6 +190,7 @@ private:
         TEST_CASE(symboldatabase9); // ticket #2525
         TEST_CASE(symboldatabase10); // ticket #2537
         TEST_CASE(symboldatabase11); // ticket #2539
+        TEST_CASE(symboldatabase12); // ticket #2547
     }
 
     // Check the operator Equal
@@ -487,11 +488,11 @@ private:
             "    UString& operator=( const UString& s );\n"
             "};\n"
             "UString& UString::assign( const char* c_str ) {\n"
-            "	std::string tmp( c_str );\n"
-            "	return assign( tmp );\n"
+            "    std::string tmp( c_str );\n"
+            "    return assign( tmp );\n"
             "}\n"
             "UString& UString::operator=( const UString& s ) {\n"
-            "	return assign( s );\n"
+            "    return assign( s );\n"
             "}\n");
     }
 
@@ -2722,7 +2723,7 @@ private:
                        "    A()\n"
                        "    {\n"
                        "        init();\n"
-                       "	}\n"
+                       "    }\n"
                        "\n"
                        "    void init() { init(0); }\n"
                        "\n"
@@ -5451,12 +5452,12 @@ private:
         checkConst("template<template<class> class E,class D> class C : E<D>\n"
                    "{\n"
                    "public:\n"
-                   "	int f();\n"
+                   "    int f();\n"
                    "};\n"
                    "class E : C<D,int>\n"
                    "{\n"
                    "public:\n"
-                   "	int f() { return C< ::D,int>::f(); }\n"
+                   "    int f() { return C< ::D,int>::f(); }\n"
                    "};\n");
 
         ASSERT_EQUALS("", errout.str());
@@ -5512,6 +5513,16 @@ private:
         checkConst("int g ();\n"
                    "struct S {\n"
                    "  int i : (false ? g () : 1);\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase12()
+    {
+        // ticket #2547 - segmentation fault
+        checkConst("class foo {\n"
+                   "    void bar2 () = __null;\n"
                    "};\n");
 
         ASSERT_EQUALS("", errout.str());

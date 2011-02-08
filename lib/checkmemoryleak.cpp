@@ -1250,7 +1250,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         if ((tok->str() == "else") || (tok->str() == "switch"))
         {
             addtoken(&rettail, tok, tok->str());
-            if (tok->str() == "switch")
+            if (Token::simpleMatch(tok, "switch ("))
                 tok = tok->next()->link();
             continue;
         }

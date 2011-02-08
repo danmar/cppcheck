@@ -22,28 +22,131 @@
 #include <QStringList>
 #include <QTranslator>
 #include <QObject>
+#include <QList>
 
 /// @addtogroup GUI
 /// @{
 
+/**
+* @brief Information for one translation.
+*
+*/
+struct TranslationInfo
+{
+    /**
+    * @brief Readable name for the translation (e.g. "English").
+    *
+    */
+    QString mName;
 
+    /**
+    * @brief Filename for the translation.
+    *
+    */
+    QString mFilename;
+
+    /**
+    * @brief ISO 639 language code for the translation (e.g. "en").
+    *
+    */
+    QString mCode;
+};
+
+/**
+* @brief A class handling the available translations.
+*
+* This class contains a list of available translations. The class also keeps
+* track which translation is the currently active translation.
+*
+*/
 class TranslationHandler : QObject
 {
     Q_OBJECT
 public:
     TranslationHandler(QObject *parent);
     virtual ~TranslationHandler();
+
+    /**
+    * @brief Get a list of available translation names.
+    * @return List of available translation names.
+    *
+    */
     const QStringList GetNames() const;
-    const QStringList GetFiles() const;
-    bool SetLanguage(const int index, QString &error);
-    int GetCurrentLanguage() const;
-    int SuggestLanguage() const;
+
+    /**
+    * @brief Get a list of available translations.
+    * @return List of available translations.
+    *
+    */
+    QList<TranslationInfo> GetTranslations() const
+    {
+        return mTranslations;
+    }
+
+    /**
+    * @brief Set active translation.
+    * @param ISO 639 language code for new selected translation.
+    * @param error Returns error string if selection fails.
+    * @return true if succeeds, false otherwise.
+    *
+    */
+    bool SetLanguage(const QString &code, QString &error);
+
+    /**
+    * @brief Get currently selected translation.
+    * @return ISO 639 language code for current translation.
+    *
+    */
+    QString GetCurrentLanguage() const;
+
+    /**
+    * @brief Get translation suggestion for the system.
+    * This function checks the current system locale and determines which of
+    * the available translations is best as current translation. If none of
+    * the available translations is good then it returns English ("en").
+    * @return Suggested translation ISO 639 language code.
+    *
+    */
+    QString SuggestLanguage() const;
+
 protected:
-    int mCurrentLanguage;
-    QStringList mNames;
-    QStringList mFiles;
-    QTranslator *mTranslator;
+
+    /**
+    * @brief Add new translation to list of available translations.
+    * @param name Name of the translation ("English").
+    * @param filename Filename of the translation.
+    *
+    */
+    void AddTranslation(const char *name, const char *filename);
+
+    /**
+    * @brief Find language in the list and return its index.
+    * @param code ISO 639 language code.
+    * @return Index at list, or -1 if not found.
+    *
+    */
+    int GetLanguageIndexByCode(const QString &code) const;
+
 private:
+
+    /**
+    * @brief ISO 639 language code of the currently selected translation.
+    *
+    */
+    QString mCurrentLanguage;
+
+    /**
+    * @brief List of available translations.
+    *
+    */
+    QList<TranslationInfo> mTranslations;
+
+    /**
+    * @brief Translator class instance.
+    *
+    */
+    QTranslator *mTranslator;
 };
+
 /// @}
 #endif // TRANSLATIONHANDLER_H
