@@ -18,12 +18,12 @@
 
 #include <QtTest>
 #include <QObject>
-#include "testtranslationhandler.h"
-#include "translationhandler.h"
 
-void TestTranslationHandler::construct()
+class TestXmlReport: public QObject
 {
-    TranslationHandler handler;
-    QCOMPARE(10, handler.GetNames().size());
-    QCOMPARE(QString("en"), handler.GetCurrentLanguage());
-}
+    Q_OBJECT
+
+private slots:
+    void testQuoteMessage();
+    void testUnquoteMessage();
+};

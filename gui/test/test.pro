@@ -1,10 +1,22 @@
 TEMPLATE = app
-TARGET = 
+TARGET = test
 CONFIG += qtestlib
 DEPENDPATH += . ..
 INCLUDEPATH += . ..
 
-SOURCES += testtranslationhandler.cpp
+# tests
+SOURCES += main.cpp \
+    testtranslationhandler.cpp \
+    testxmlreport.cpp
 
-HEADERS += ../translationhandler.h
-SOURCES += ../translationhandler.cpp
+HEADERS += testtranslationhandler.h \
+    testxmlreport.h
+
+# GUI
+SOURCES += report.cpp \
+    ../translationhandler.cpp \
+    ../xmlreport.cpp
+    
+HEADERS += report.h \
+    ../translationhandler.h \
+    ../xmlreport.h

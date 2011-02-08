@@ -18,12 +18,20 @@
 
 #include <QtTest>
 #include <QObject>
-#include "testtranslationhandler.h"
-#include "translationhandler.h"
+#include "testxmlreport.h"
+#include "xmlreport.h"
 
-void TestTranslationHandler::construct()
+void TestXmlReport::testQuoteMessage()
 {
-    TranslationHandler handler;
-    QCOMPARE(10, handler.GetNames().size());
-    QCOMPARE(QString("en"), handler.GetCurrentLanguage());
+    const QString toQuote("abcdefgh&\"'<>12345");
+    const QString quoted("abcdefgh&amp;&quot;&#039;&lt;&gt;12345");
+    QCOMPARE(quoted, XmlReport::quoteMessage(toQuote));
 }
+
+void TestXmlReport::testUnquoteMessage()
+{
+    const QString toQuote("abcdefgh&\"'<>12345");
+    const QString quoted("abcdefgh&amp;&quot;&#039;&lt;&gt;12345");
+    QCOMPARE(toQuote, XmlReport::unquoteMessage(quoted));
+}
+
