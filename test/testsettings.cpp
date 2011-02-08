@@ -36,6 +36,7 @@ private:
         TEST_CASE(suppressionsBadId1);
         TEST_CASE(suppressionsDosFormat);     // Ticket #1836
         TEST_CASE(suppressionsFileNameWithColon);    // Ticket #1919 - filename includes colon
+        TEST_CASE(suppressionsGlob);
     }
 
     void suppressionsBadId1()
@@ -62,6 +63,15 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "c:\\foo.cpp", 1111));
         ASSERT_EQUALS(false, suppressions.isSuppressed("errorid", "c:\\bar.cpp", 10));
         ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "c:\\bar.cpp", 12));
+    }
+
+    void suppressionsGlob()
+    {
+        Settings::Suppressions suppressions;
+        std::istringstream s("error:x*.cpp\n");
+        ASSERT_EQUALS("", suppressions.parseFile(s));
+        ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "xyz.cpp", 1));
+        ASSERT_EQUALS(false, suppressions.isSuppressed("errorid", "abc.cpp", 1));
     }
 };
 
