@@ -307,7 +307,8 @@ Directory name is matched to all parts of the path.</para>
         <term><option>--suppressions-list=&lt;file&gt;</option></term>
         <listitem>
           <para>Suppress warnings listed in the file. Filename and line are optional. The format of the single line in file is: [error id]:[filename]:[line].
-          You can use --template or --xml to see the error id.</para>
+          You can use --template or --xml to see the error id.
+          The filename may contain the wildcard characters * or ?.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

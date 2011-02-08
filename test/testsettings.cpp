@@ -67,11 +67,37 @@ private:
 
     void suppressionsGlob()
     {
-        Settings::Suppressions suppressions;
-        std::istringstream s("error:x*.cpp\n");
-        ASSERT_EQUALS("", suppressions.parseFile(s));
-        ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "xyz.cpp", 1));
-        ASSERT_EQUALS(false, suppressions.isSuppressed("errorid", "abc.cpp", 1));
+        // Check for syntax errors in glob
+        {
+            Settings::Suppressions suppressions;
+            std::istringstream s("errorid:**.cpp\n");
+            ASSERT_EQUALS("Failed to add suppression. Syntax error in glob.", suppressions.parseFile(s));
+        }
+
+        // Check that globbing works
+        {
+            Settings::Suppressions suppressions;
+            std::istringstream s("errorid:x*.cpp\nerrorid:y?.cpp\nerrorid:test.c*");
+            ASSERT_EQUALS("", suppressions.parseFile(s));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "xyz.cpp", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "xyz.cpp.cpp", 1));
+            ASSERT_EQUALS(false, suppressions.isSuppressed("errorid", "abc.cpp", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "ya.cpp", 1));
+            ASSERT_EQUALS(false, suppressions.isSuppressed("errorid", "y.cpp", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "test.c", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "test.cpp", 1));
+        }
+
+        // Check that both a filename match and a glob match apply
+        {
+            Settings::Suppressions suppressions;
+            std::istringstream s("errorid:x*.cpp\nerrorid:xyz.cpp:1\nerrorid:a*.cpp:1\nerrorid:abc.cpp:2");
+            ASSERT_EQUALS("", suppressions.parseFile(s));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "xyz.cpp", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "xyz.cpp", 2));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "abc.cpp", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "abc.cpp", 2));
+        }
     }
 };
 
