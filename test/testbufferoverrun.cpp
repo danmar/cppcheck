@@ -116,6 +116,7 @@ private:
         TEST_CASE(array_index_for_break);  // FP: for,break
         TEST_CASE(array_index_for);        // FN: for,if
         TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
+        TEST_CASE(array_index_for_printf);
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -1387,6 +1388,16 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: a\n", errout.str());
+    }
+
+    void array_index_for_printf()
+    {
+        check("typedef char Str[10];\n"
+              "void f() {\n"
+              "    Str s;\n"
+              "    printf(\"%.*s %.*s\\n\", sizeof(Str), s, sizeof(Str), s);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_1()
