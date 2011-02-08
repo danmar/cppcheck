@@ -1226,21 +1226,41 @@ private:
 
     void if_cond7()
     {
-        const char filedata[] = "#define A 1\n"
-                                "#if A==1\n"
-                                "a1;\n"
-                                "#endif\n";
+        {
+            const char filedata[] = "#define A 1\n"
+                                    "#if A==1\n"
+                                    "a1;\n"
+                                    "#endif\n";
 
-        // Preprocess => actual result..
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Settings settings;
-        Preprocessor preprocessor(&settings, this);
-        preprocessor.preprocess(istr, actual, "file.c");
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Settings settings;
+            Preprocessor preprocessor(&settings, this);
+            preprocessor.preprocess(istr, actual, "file.c");
 
-        // Compare results..
-        ASSERT_EQUALS(1, (int)actual.size());
-        ASSERT_EQUALS("\n\na1;\n\n", actual[""]);
+            // Compare results..
+            ASSERT_EQUALS(1, (int)actual.size());
+            ASSERT_EQUALS("\n\na1;\n\n", actual[""]);
+        }
+
+        {
+            const char filedata[] = "#define A 0\n"
+                                    "#if A\n"
+                                    "foo();\n"
+                                    "#endif\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Settings settings;
+            Preprocessor preprocessor(&settings, this);
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+            ASSERT_EQUALS("\n\n\n\n", actual[""]);
+        }
     }
 
 
