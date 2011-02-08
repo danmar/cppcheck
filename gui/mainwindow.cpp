@@ -410,10 +410,8 @@ void MainWindow::ProgramSettings()
                                      dialog.SaveFullPath(),
                                      dialog.SaveAllErrors(),
                                      dialog.ShowNoErrorsMessage());
-        const QString currentLang = mTranslation->GetCurrentLanguage();
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
-        if (currentLang != newLang)
-            SetLanguage(newLang);
+        SetLanguage(newLang);
     }
 }
 
@@ -650,20 +648,18 @@ void MainWindow::FormatAndSetTitle(const QString &text)
     setWindowTitle(title);
 }
 
-
 void MainWindow::SetLanguage(const QString &code)
 {
-    if (mTranslation->GetCurrentLanguage() == code)
-    {
+    const QString currentLang = mTranslation->GetCurrentLanguage();
+    if (currentLang == code)
         return;
-    }
 
     QString error;
     if (!mTranslation->SetLanguage(code, error))
     {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        QString(tr("Failed to change the language:\n\n%1\n\n")).arg(error),
+                        QString(tr("Failed to change the language:\n\n%1")).arg(error),
                         QMessageBox::Ok,
                         this);
 

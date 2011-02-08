@@ -24,6 +24,7 @@
 
 TranslationHandler::TranslationHandler(QObject *parent) :
     QObject(parent),
+    mCurrentLanguage("en"),
     mTranslator(new QTranslator(this))
 {
     // Add our available languages
@@ -85,7 +86,7 @@ bool TranslationHandler::SetLanguage(const QString &code, QString &error)
     int index = GetLanguageIndexByCode(code);
     if (index == -1)
     {
-        error = QObject::tr("Incorrect language specified!");
+        error = QObject::tr("Unknown language specified!");
         return false;
     }
 
