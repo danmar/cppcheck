@@ -23,6 +23,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #if defined(_WIN32)
 #include "../cli/fileLister_win32.h"
@@ -107,6 +108,52 @@ static void makeConditionalVariable(std::ostream &os, const std::string &variabl
        << "\n";
 }
 
+static std::string getLibName(const std::string &path)
+{
+    // path can be e.g. "externals/foo/foo.cpp" then returned
+    // library name is "FOO".
+    std::string libName = path.substr(path.find('/')+1);
+    libName = libName.substr(0, libName.find('/'));
+    std::transform(libName.begin(), libName.end(),libName.begin(), ::toupper);
+    return libName;
+}
+
+static void makeExtObj(std::ostream &fout, const std::vector<std::string> &externalfiles)
+{
+    bool start = true;
+    std::ostringstream libNames;
+    std::string libName;
+    for (unsigned int i = 0; i < externalfiles.size(); ++i)
+    {
+        if (start)
+        {
+            libName = getLibName(externalfiles[i]);
+            fout << "#ifndef " << libName << std::endl;
+            fout << "    " << libName << " = " << objfile(externalfiles[i]);
+            libNames << "EXTOBJ += $(" << libName << ")" << std::endl;
+            start = false;
+        }
+        else
+        {
+            fout << std::string(14, ' ') << objfile(externalfiles[i]);
+        }
+
+        if (i+1 >= externalfiles.size() || libName != getLibName(externalfiles[i+1]))
+        {
+            // This was the last file for this library
+            fout << std::endl << "#endif" << std::endl;
+            fout << "\n\n";
+            start = true;
+        }
+        else
+        {
+            // There are more files for this library
+            fout << " \\" << std::endl;
+        }
+    }
+
+    fout << libNames.str();
+}
 
 int main(int argc, char **argv)
 {
@@ -220,11 +267,8 @@ int main(int argc, char **argv)
     for (unsigned int i = 1; i < testfiles.size(); ++i)
         fout << " \\" << std::endl << std::string(14, ' ') << objfile(testfiles[i]);
     fout << "\n\n";
-    fout << "EXTOBJ =      " << objfile(externalfiles[0]);
-    for (unsigned int i = 1; i < externalfiles.size(); ++i)
-        fout << " \\" << std::endl << std::string(14, ' ') << objfile(externalfiles[i]);
-    fout << "\n\n";
 
+    makeExtObj(fout, externalfiles);
 
     fout << "\n###### Targets\n\n";
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
