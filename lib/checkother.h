@@ -87,6 +87,7 @@ public:
         checkOther.checkMisusedScopedObject();
         checkOther.checkCatchExceptionByValue();
         checkOther.checkMemsetZeroBytes();
+        checkOther.checkIncorrectStringCompare();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -180,6 +181,9 @@ public:
     /** @brief %Check for using sizeof with array given as function argument */
     void checkSizeofForArrayParameter();
 
+    /** @brief %Check for using bad usage of strncmp and substr */
+    void checkIncorrectStringCompare();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -204,6 +208,7 @@ public:
     void catchExceptionByValueError(const Token *tok);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
+    void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -243,6 +248,7 @@ public:
         c.catchExceptionByValueError(0);
         c.memsetZeroBytesError(0, "varname");
         c.clarifyCalculationError(0);
+        c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
     }
 
     std::string myName() const
@@ -261,6 +267,7 @@ public:
                "* scoped object destroyed immediately after construction\n"
                "* assignment in an assert statement\n"
                "* sizeof for array given as function argument\n"
+               "* incorrect length arguments for 'substr' and 'strncmp'\n"
 
                // style
                "* C-style pointer cast in cpp file\n"

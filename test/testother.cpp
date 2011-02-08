@@ -102,6 +102,8 @@ private:
         TEST_CASE(sizeofForArrayParameter);
 
         TEST_CASE(clarifyCalculation);
+
+        TEST_CASE(incorrectStringCompare);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -138,6 +140,7 @@ private:
         checkOther.checkCatchExceptionByValue();
         checkOther.checkMemsetZeroBytes();
         checkOther.clarifyCalculation();
+        checkOther.checkIncorrectStringCompare();
     }
 
 
@@ -1854,6 +1857,39 @@ private:
               "    printf(\"%i\", 10 * (c == 0) ? 1 : 2);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (information) Please clarify precedence: 'a*b?..'\n", errout.str());
+    }
+
+    void incorrectStringCompare()
+    {
+        check("int f() {\n"
+              "    return test.substr( 0 , 4 ) == \"Hello\" ? : 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr(4).\n", errout.str());
+
+        check("int f() {\n"
+              "    return test.substr( 0 , 5 ) == \"Hello\" ? : 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              " return \"Hello\" == test.substr( 0 , 4 ) ? : 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr(4).\n", errout.str());
+
+        check("int f() {\n"
+              " return \"Hello\" == test.substr( 0 , 5 ) ? : 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    return strncmp(\"test\" , \"test\" , 2) ; \n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"test\" doesn't match length argument for strncmp(2).\n", errout.str());
+
+        check("int f() {\n"
+              "    return strncmp(\"test\" , \"test\" , 4) ; \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

@@ -2718,6 +2718,40 @@ void CheckOther::checkMisusedScopedObject()
     }
 }
 
+void CheckOther::checkIncorrectStringCompare()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, ". substr ( %any% , %num% ) ==|!= %str%"))
+        {
+            size_t clen = MathLib::toLongNumber(tok->tokAt(5)->str());
+            size_t slen = Token::getStrLength(tok->tokAt(8));
+            if (clen != slen)
+            {
+                incorrectStringCompareError(tok->next(), "substr", tok->tokAt(8)->str(), tok->tokAt(5)->str());
+            }
+        }
+        if (Token::Match(tok, "%str% ==|!= %var% . substr ( %any% , %num% )"))
+        {
+            size_t clen = MathLib::toLongNumber(tok->tokAt(8)->str());
+            size_t slen = Token::getStrLength(tok);
+            if (clen != slen)
+            {
+                incorrectStringCompareError(tok->next(), "substr", tok->str(), tok->tokAt(8)->str());
+            }
+        }
+        if (Token::Match(tok, "strncmp ( %any% , %str% , %num% )"))
+        {
+            size_t clen = MathLib::toLongNumber(tok->tokAt(6)->str());
+            size_t slen = Token::getStrLength(tok->tokAt(4));
+            if (clen != slen)
+            {
+                incorrectStringCompareError(tok, "strncmp", tok->tokAt(4)->str(), tok->tokAt(6)->str());
+            }
+        }
+    }
+}
+
 void CheckOther::cstyleCastError(const Token *tok)
 {
     reportError(tok, Severity::style, "cstyleCast", "C-style pointer casting");
@@ -2934,4 +2968,9 @@ void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varna
     const std::string summary("memset() called to fill 0 bytes of \'" + varname + "\'");
     const std::string verbose(summary + ". Second and third arguments might be inverted.");
     reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose);
+}
+
+void CheckOther::incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len)
+{
+    reportError(tok, Severity::warning, "incorrectStringCompare", "String literal " + string + " doesn't match length argument for " + func + "(" + len + ").");
 }
