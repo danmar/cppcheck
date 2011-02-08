@@ -7,6 +7,8 @@ astyle $style $options cli/*.cpp
 astyle $style $options cli/*.h
 astyle $style $options gui/*.cpp
 astyle $style $options gui/*.h
+astyle $style $options gui/test/*.cpp
+astyle $style $options gui/test/*.h
 astyle $style $options lib/*.cpp
 astyle $style $options lib/*.h
 astyle $style $options test/*.cpp

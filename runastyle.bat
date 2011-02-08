@@ -7,6 +7,8 @@ astyle %STYLE% %OPTIONS% cli/*.cpp
 astyle %STYLE% %OPTIONS% cli/*.h
 astyle %STYLE% %OPTIONS% gui/*.cpp
 astyle %STYLE% %OPTIONS% gui/*.h
+astyle %STYLE% %OPTIONS% gui/test/*.cpp
+astyle %STYLE% %OPTIONS% gui/test/*.h
 astyle %STYLE% %OPTIONS% lib/*.cpp
 astyle %STYLE% %OPTIONS% lib/*.h
 astyle %STYLE% %OPTIONS% test/*.cpp
