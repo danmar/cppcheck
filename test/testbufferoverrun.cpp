@@ -1366,6 +1366,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // check for conditional operator
+        check("void f() {\n"
+              "    int a[10];\n"
+              "    for (int i = 0; i < 10; i++) {\n"
+              "        i == 0 ? 0 : a[i-1];\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_for_neq()
