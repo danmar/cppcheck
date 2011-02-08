@@ -116,6 +116,31 @@ std::string Settings::Suppressions::parseFile(std::istream &istr)
     return "";
 }
 
+std::string Settings::Suppressions::FileMatcher::addFile(const std::string &name, unsigned int line)
+{
+    _files[name].insert(line);
+    return "";
+}
+
+bool Settings::Suppressions::FileMatcher::isSuppressed(const std::string &file, unsigned int line)
+{
+    // Check are all errors of this type filtered out
+    if (_files.find("") != _files.end())
+        return true;
+
+    if (_files.find(file) == _files.end())
+        return false;
+
+    // Check should all errors in this file be filtered out
+    if (std::find(_files[file].begin(), _files[file].end(), 0U) != _files[file].end())
+        return true;
+
+    if (std::find(_files[file].begin(), _files[file].end(), line) == _files[file].end())
+        return false;
+
+    return true;
+}
+
 std::string Settings::Suppressions::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
 {
     // Check that errorId is valid..
@@ -135,10 +160,7 @@ std::string Settings::Suppressions::addSuppression(const std::string &errorId, c
         }
     }
 
-    _suppressions[errorId][file].push_back(line);
-    _suppressions[errorId][file].sort();
-
-    return "";
+    return _suppressions[errorId].addFile(file, line);
 }
 
 bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std::string &file, unsigned int line)
@@ -146,21 +168,7 @@ bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std:
     if (_suppressions.find(errorId) == _suppressions.end())
         return false;
 
-    // Check are all errors of this type filtered out
-    if (_suppressions[errorId].find("") != _suppressions[errorId].end())
-        return true;
-
-    if (_suppressions[errorId].find(file) == _suppressions[errorId].end())
-        return false;
-
-    // Check should all errors in this file be filtered out
-    if (std::find(_suppressions[errorId][file].begin(), _suppressions[errorId][file].end(), 0) != _suppressions[errorId][file].end())
-        return true;
-
-    if (std::find(_suppressions[errorId][file].begin(), _suppressions[errorId][file].end(), line) == _suppressions[errorId][file].end())
-        return false;
-
-    return true;
+    return _suppressions[errorId].isSuppressed(file, line);
 }
 
 std::string Settings::addEnabled(const std::string &str)
