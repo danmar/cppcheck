@@ -209,7 +209,7 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
     if (type->str()[0] == '"')
         return static_cast<unsigned int>(Token::getStrLength(type) + 1);
 
-    std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->strAt(0));
+    std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
     if (it == _typeSize.end())
         return 0;
     else if (type->isLong())
@@ -804,7 +804,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
         tok1->insertToken("const");
         tok1 = tok1->next();
     }
-    tok1->insertToken(tok->next()->strAt(0)); // struct, union or enum
+    tok1->insertToken(tok->next()->str()); // struct, union or enum
     tok1 = tok1->next();
     tok1->insertToken(name.c_str());
     tok->deleteThis();
@@ -1451,7 +1451,7 @@ void Tokenizer::simplifyTypedef()
                         Token *nextTok;
                         for (nextTok = funcStart; nextTok != funcEnd->next(); nextTok = nextTok->next())
                         {
-                            tok2->insertToken(nextTok->strAt(0));
+                            tok2->insertToken(nextTok->str());
                             tok2 = tok2->next();
 
                             // Check for links and fix them up
@@ -1522,7 +1522,7 @@ void Tokenizer::simplifyTypedef()
                         tok3 = tok2;
                         for (nextTok = argStart->next(); nextTok != argEnd; nextTok = nextTok->next())
                         {
-                            tok2->insertToken(nextTok->strAt(0));
+                            tok2->insertToken(nextTok->str());
                             tok2 = tok2->next();
 
                             // Check for links and fix them up
@@ -1659,7 +1659,7 @@ void Tokenizer::simplifyTypedef()
                         std::stack<Token *> argLinks;
                         for (nextArgTok = argStart->next(); nextArgTok != argEnd; nextArgTok = nextArgTok->next())
                         {
-                            tok2->insertToken(nextArgTok->strAt(0));
+                            tok2->insertToken(nextArgTok->str());
                             tok2 = tok2->next();
 
                             // Check for links and fix them up
@@ -1864,7 +1864,7 @@ void Tokenizer::simplifyTypedef()
                         std::stack<Token *> argLinks;
                         for (nextArgTok = argStart->next(); nextArgTok != argEnd; nextArgTok = nextArgTok->next())
                         {
-                            tok2->insertToken(nextArgTok->strAt(0));
+                            tok2->insertToken(nextArgTok->str());
                             tok2 = tok2->next();
 
                             // Check for links and fix them up
@@ -1901,7 +1901,7 @@ void Tokenizer::simplifyTypedef()
                             std::stack<Token *> arrLinks;
                             for (nextArrTok = arrayStart; nextArrTok != arrayEnd->next(); nextArrTok = nextArrTok->next())
                             {
-                                tok2->insertToken(nextArrTok->strAt(0));
+                                tok2->insertToken(nextArrTok->str());
                                 tok2 = tok2->next();
 
                                 // Check for links and fix them up
@@ -5901,7 +5901,7 @@ void Tokenizer::simplifyIfAssign()
 
                 for (tok2 = tok2->next(); tok2 && tok2 != tok; tok2 = tok2->previous())
                 {
-                    tok3->insertToken(tok2->strAt(0));
+                    tok3->insertToken(tok2->str());
 
                     Token *newTok = tok3->next();
                     newTok->fileIndex(tok2->fileIndex());
@@ -7849,11 +7849,11 @@ void Tokenizer::simplifyEnum()
                         if (simplify)
                         {
                             if (enumValue)
-                                tok2->str(enumValue->strAt(0));
+                                tok2->str(enumValue->str());
                             else
                             {
                                 std::stack<Token *> links;
-                                tok2->str(enumValueStart->strAt(0));
+                                tok2->str(enumValueStart->str());
                                 if (tok2->str() == "(" || tok2->str() == "[" || tok2->str() == "{")
                                     links.push(tok2);
                                 Token * nextToken = enumValueStart->next();
