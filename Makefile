@@ -92,11 +92,15 @@ TESTOBJ =     test/options.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o
 
-EXTOBJ =      externals/tinyxml/tinystr.o \
+#ifndef TINYXML
+    TINYXML = externals/tinyxml/tinystr.o \
               externals/tinyxml/tinyxml.o \
               externals/tinyxml/tinyxmlerror.o \
               externals/tinyxml/tinyxmlparser.o
+#endif
 
+
+EXTOBJ += $(TINYXML)
 
 ###### Targets
 

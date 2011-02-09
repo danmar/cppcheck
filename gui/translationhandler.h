@@ -63,7 +63,7 @@ class TranslationHandler : QObject
 {
     Q_OBJECT
 public:
-    TranslationHandler(QObject *parent);
+    TranslationHandler(QObject *parent = 0);
     virtual ~TranslationHandler();
 
     /**

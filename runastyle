@@ -1,12 +1,14 @@
 #!/bin/bash
 
-style="--style=ansi --min-conditional-indent=0"
+style="--style=ansi --lineend=linux --min-conditional-indent=0"
 options="--pad-header --unpad-paren --suffix=none"
 
 astyle $style $options cli/*.cpp
 astyle $style $options cli/*.h
 astyle $style $options gui/*.cpp
 astyle $style $options gui/*.h
+astyle $style $options gui/test/*.cpp
+astyle $style $options gui/test/*.h
 astyle $style $options lib/*.cpp
 astyle $style $options lib/*.h
 astyle $style $options test/*.cpp
