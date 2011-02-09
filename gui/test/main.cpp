@@ -20,6 +20,7 @@
 #include <QtTest>
 #include "testtranslationhandler.h"
 #include "testxmlreport.h"
+#include "testxmlreportv1.h"
 
 int main(int argc, char *argv[])
 {
@@ -30,6 +31,9 @@ int main(int argc, char *argv[])
 
     TestXmlReport testXmlReport;
     QTest::qExec(&testXmlReport);
+
+    TestXmlReportV1 testXmlReportV1;
+    QTest::qExec(&testXmlReportV1);
 
     return a.exec();
 }

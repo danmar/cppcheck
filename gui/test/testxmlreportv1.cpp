@@ -18,31 +18,23 @@
 
 #include <QtTest>
 #include <QObject>
-#include "testxmlreport.h"
-#include "xmlreport.h"
+#include "testxmlreportv1.h"
+#include "xmlreportv1.h"
+#include "erroritem.h"
 
-void TestXmlReport::testQuoteMessage()
-{
-    const QString toQuote("abcdefgh&\"'<>12345");
-    const QString quoted("abcdefgh&amp;&quot;&#039;&lt;&gt;12345");
-    QCOMPARE(XmlReport::quoteMessage(toQuote), quoted);
-}
-
-void TestXmlReport::testUnquoteMessage()
-{
-    const QString toQuote("abcdefgh&\"'<>12345");
-    const QString quoted("abcdefgh&amp;&quot;&#039;&lt;&gt;12345");
-    QCOMPARE(XmlReport::unquoteMessage(quoted), toQuote);
-}
-
-void TestXmlReport::testGetVersion1()
+void TestXmlReportV1::readXml()
 {
     const QString filepath("xmlfiles/xmlreport_v1.xml");
-    QCOMPARE(XmlReport::determineVersion(filepath), 1);
-}
+    XmlReportV1 report(filepath);
+    QVERIFY(report.Open());
+    QList<ErrorItem> errors = report.Read();
+    QCOMPARE(6, errors.size());
 
-void TestXmlReport::testGetVersion2()
-{
-    const QString filepath("xmlfiles/xmlreport_v2.xml");
-    QCOMPARE(XmlReport::determineVersion(filepath), 2);
+    ErrorItem item = errors[0];
+    QCOMPARE(item.file, QString("test.cxx"));
+    QCOMPARE(item.lines[0], (unsigned int)11);
+    QCOMPARE(item.id, QString("unreadVariable"));
+    QCOMPARE(item.severity, QString("Style"));
+    QCOMPARE(item.summary, QString("Variable 'a' is assigned a value that is never used"));
+    QCOMPARE(item.message, QString("Variable 'a' is assigned a value that is never used"));
 }

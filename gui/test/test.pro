@@ -7,16 +7,22 @@ INCLUDEPATH += . ..
 # tests
 SOURCES += main.cpp \
     testtranslationhandler.cpp \
-    testxmlreport.cpp
+    testxmlreport.cpp \
+    testxmlreportv1.cpp
 
 HEADERS += testtranslationhandler.h \
-    testxmlreport.h
+    testxmlreport.h \
+    testxmlreportv1.h
 
 # GUI
-SOURCES += report.cpp \
+SOURCES += ../erroritem.cpp \
+    ../report.cpp \
     ../translationhandler.cpp \
-    ../xmlreport.cpp
+    ../xmlreport.cpp \
+    ../xmlreportv1.cpp
     
-HEADERS += report.h \
+HEADERS += ../erroritem.h \
+    ../report.h \
     ../translationhandler.h \
-    ../xmlreport.h
+    ../xmlreport.h \
+    ../xmlreportv1.h
