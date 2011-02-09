@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2011 Daniel Marjam√§ki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjam‰ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,28 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QCoreApplication>
 #include <QtTest>
-#include "testtranslationhandler.h"
-#include "testxmlreport.h"
-#include "testxmlreportv1.h"
-#include "testxmlreportv2.h"
+#include <QObject>
 
-int main(int argc, char *argv[])
+class TestXmlReportV2: public QObject
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
 
-    TestTranslationHandler testTtranslationHandler;
-    QTest::qExec(&testTtranslationHandler);
-
-    TestXmlReport testXmlReport;
-    QTest::qExec(&testXmlReport);
-
-    TestXmlReportV1 testXmlReportV1;
-    QTest::qExec(&testXmlReportV1);
-
-    TestXmlReportV2 testXmlReportV2;
-    QTest::qExec(&testXmlReportV2);
-
-    return a.exec();
-}
+private slots:
+    void readXml();
+};
