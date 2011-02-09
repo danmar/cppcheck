@@ -26,4 +26,6 @@ class TestXmlReport: public QObject
 private slots:
     void testQuoteMessage();
     void testUnquoteMessage();
+    void testGetVersion1();
+    void testGetVersion2();
 };

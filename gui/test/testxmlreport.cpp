@@ -35,3 +35,14 @@ void TestXmlReport::testUnquoteMessage()
     QCOMPARE(toQuote, XmlReport::unquoteMessage(quoted));
 }
 
+void TestXmlReport::testGetVersion1()
+{
+    const QString filepath("xmlfiles/xmlreport_v1.xml");
+    QCOMPARE(1, XmlReport::determineVersion(filepath));
+}
+
+void TestXmlReport::testGetVersion2()
+{
+    const QString filepath("xmlfiles/xmlreport_v2.xml");
+    QCOMPARE(2, XmlReport::determineVersion(filepath));
+}
