@@ -234,6 +234,7 @@ private:
         TEST_CASE(simplifyTypedef74); // ticket #2414
         TEST_CASE(simplifyTypedef75); // ticket #2426
         TEST_CASE(simplifyTypedef76); // ticket #2453
+        TEST_CASE(simplifyTypedef77); // ticket #2554
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4836,6 +4837,13 @@ private:
         const std::string expected = "void f1 ( typedef int x ) { }";
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void simplifyTypedef77() // ticket #2554
+    {
+        const char code[] = "typedef char Str[10]; int x = sizeof(Str);\n";
+        const std::string expected = "; int x ; x = 10 ;";
+        ASSERT_EQUALS(expected, sizeof_(code));
     }
 
     void simplifyTypedefFunction1()

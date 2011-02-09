@@ -1382,13 +1382,14 @@ void Tokenizer::simplifyTypedef()
                     bool inCast = false;
                     bool inTemplate = false;
                     bool inOperator = false;
+                    bool inSizeof = false;
 
                     // check for derived class: class A : some_typedef {
                     isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
 
                     // check for cast: (some_typedef) A or static_cast<some_typedef>(A)
                     // todo: check for more complicated casts like: (const some_typedef *)A
-                    if ((tok2->previous()->str() == "(" && tok2->next()->str() == ")") ||
+                    if ((tok2->previous()->str() == "(" && tok2->next()->str() == ")" && tok2->strAt(-2) != "sizeof") ||
                         (tok2->previous()->str() == "<" && Token::simpleMatch(tok2->next(), "> (")))
                         inCast = true;
 
@@ -1396,6 +1397,9 @@ void Tokenizer::simplifyTypedef()
                     else if (Token::Match(tok2->previous(), "<|,") &&
                              Token::Match(tok2->next(), "&|*| &|*| >|,"))
                         inTemplate = true;
+
+                    else if (Token::Match(tok2->tokAt(-2), "sizeof ( %type% )"))
+                        inSizeof = true;
 
                     // check for operator
                     if (Token::simpleMatch(tok2->previous(), "operator") ||
@@ -1891,7 +1895,8 @@ void Tokenizer::simplifyTypedef()
                     {
                         do
                         {
-                            tok2 = tok2->next();
+                            if (!inCast && !inSizeof)
+                                tok2 = tok2->next();
                             Token * nextArrTok;
                             std::stack<Token *> arrLinks;
                             for (nextArrTok = arrayStart; nextArrTok != arrayEnd->next(); nextArrTok = nextArrTok->next())
@@ -4058,6 +4063,13 @@ void Tokenizer::simplifySizeof()
                 {
                     sz = sizeOfType(decltok->tokAt(-2));
                 }
+            }
+            else if (tok->strAt(3) == "[" && tok->tokAt(2)->isStandardType())
+            {
+                sz = sizeOfType(tok->tokAt(2));
+                if (sz == 0)
+                    continue;
+                sz = sz * static_cast<unsigned long>(MathLib::toLongNumber(tok->strAt(4)));
             }
 
             if (sz > 0)
