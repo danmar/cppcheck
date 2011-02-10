@@ -29,7 +29,7 @@
 #include "filelister.h"
 
 // xml is used in rules
-#include "tinyxml/tinyxml.h"
+#include <tinyxml.h>
 
 static void AddFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
 {

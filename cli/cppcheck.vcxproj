@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A6DACC3F-847F-3498-9415-164FBC746D6B}</ProjectGuid>
+    <ProjectGuid>{E3A516D8-D69D-32D7-A444-A3674D4B1FE8}</ProjectGuid>
     <RootNamespace>cppcheck</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
@@ -50,7 +50,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">
     <ClCompile>
-      <AdditionalIncludeDirectories>".";"..\lib";"..\externals";c:\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>".";"..\lib";"..\externals";"..\externals\tinyxml";c:\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zm200 -w34100 -w34189 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -84,7 +84,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">
     <ClCompile>
-      <AdditionalIncludeDirectories>".";"..\lib";"..\externals";c:\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>".";"..\lib";"..\externals";"..\externals\tinyxml";c:\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zm200 -w34100 -w34189 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
