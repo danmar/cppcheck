@@ -26,7 +26,7 @@
 #include <sstream>
 
 #if defined(_WIN32)
-#include "../cli/fileLister_win32.h"
+#include "../cli/filelister_win32.h"
 #else // POSIX-style system
 #include "../cli/filelister_unix.h"
 #endif
