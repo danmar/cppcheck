@@ -164,6 +164,8 @@ public:
     /** Check for buffer overruns (based on ArrayInfo) */
     void checkScope(const Token *tok, const ArrayInfo &arrayInfo);
 
+    /** Check scope helper function - parse for body */
+    void checkScopeForBody(const Token *tok, const ArrayInfo &arrayInfo, bool &bailout);
 
     /** Helper function used when parsing for-loops */
     void parse_for_body(const Token *tok2, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value);

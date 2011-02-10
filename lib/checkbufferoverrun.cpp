@@ -758,6 +758,64 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
 }
 
 
+void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &arrayInfo, bool &bailout)
+{
+    bailout = false;
+    const Token *tok2 = tok->tokAt(2);
+    const MathLib::bigint size = arrayInfo.num[0];
+
+    // Check if there is a break in the body..
+    {
+        const Token *bodyStart = tok->next()->link()->next();
+        const Token *bodyEnd = bodyStart->link();
+        if (Token::findmatch(bodyStart, "break ;", bodyEnd))
+            return;
+    }
+
+    unsigned int counter_varid = 0;
+    std::string min_counter_value;
+    std::string max_counter_value;
+
+    tok2 = for_init(tok2, counter_varid, min_counter_value);
+    if (tok2 == 0 || counter_varid == 0)
+        return;
+
+    bool maxMinFlipped = false;
+    std::string strindex;
+    if (!for_condition(tok2, counter_varid, min_counter_value, max_counter_value, strindex, maxMinFlipped))
+        return;
+
+    // Get index variable and stopsize.
+    bool condition_out_of_bounds = true;
+    if (MathLib::toLongNumber(max_counter_value) < size)
+        condition_out_of_bounds = false;
+
+    if (!for3(tok2->tokAt(4), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
+        return;
+
+    if (Token::Match(tok2->tokAt(4), "%var% =|+=|-=") && MathLib::toLongNumber(max_counter_value) <= size)
+        condition_out_of_bounds = false;
+
+    // Goto the end parenthesis of the for-statement: "for (x; y; z)" ..
+    tok2 = tok->next()->link();
+    if (!tok2 || !tok2->tokAt(5))
+    {
+        bailout = true;
+        return;
+    }
+
+    // Check is the counter variable increased elsewhere inside the loop or used
+    // for anything else except reading
+    if (for_bailout(tok2->next(), counter_varid))
+    {
+        bailout = true;
+        return;
+    }
+
+    parse_for_body(tok2->next(), arrayInfo, strindex, condition_out_of_bounds, counter_varid, min_counter_value, max_counter_value);
+}
+
+
 void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const MathLib::bigint size, const MathLib::bigint total_size, unsigned int varid)
 {
     std::string varnames;
@@ -871,53 +929,11 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // Loop..
         if (Token::simpleMatch(tok, "for ("))
         {
-            const Token *tok2 = tok->tokAt(2);
-
-            // Check if there is a break in the body..
-            {
-                const Token *bodyStart = tok->next()->link()->next();
-                const Token *bodyEnd = bodyStart->link();
-                if (Token::findmatch(bodyStart, "break ;", bodyEnd))
-                    continue;
-            }
-
-            unsigned int counter_varid = 0;
-            std::string min_counter_value;
-            std::string max_counter_value;
-
-            tok2 = for_init(tok2, counter_varid, min_counter_value);
-            if (tok2 == 0 || counter_varid == 0)
-                continue;
-
-            bool maxMinFlipped = false;
-            std::string strindex;
-            if (!for_condition(tok2, counter_varid, min_counter_value, max_counter_value, strindex, maxMinFlipped))
-                continue;
-
-            // Get index variable and stopsize.
-            bool condition_out_of_bounds = true;
-            if (MathLib::toLongNumber(max_counter_value) < size)
-                condition_out_of_bounds = false;
-
-            if (!for3(tok2->tokAt(4), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
-                continue;
-
-            if (Token::Match(tok2->tokAt(4), "%var% =|+=|-=") && MathLib::toLongNumber(max_counter_value) <= size)
-                condition_out_of_bounds = false;
-
-            // Goto the end parenthesis of the for-statement: "for (x; y; z)" ..
-            tok2 = tok->next()->link();
-            if (!tok2 || !tok2->tokAt(5))
+            const ArrayInfo arrayInfo(varid, varnames, (unsigned int)size, (unsigned int)total_size);
+            bool bailout = false;
+            checkScopeForBody(tok, arrayInfo, bailout);
+            if (bailout)
                 break;
-
-            // Check is the counter variable increased elsewhere inside the loop or used
-            // for anything else except reading
-            if (for_bailout(tok2->next(), counter_varid))
-                break;
-
-            ArrayInfo arrayInfo(varid, varnames, (unsigned int)size, (unsigned int)total_size);
-            parse_for_body(tok2->next(), arrayInfo, strindex, condition_out_of_bounds, counter_varid, min_counter_value, max_counter_value);
-
             continue;
         }
 
@@ -1069,52 +1085,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         // Loop..
         else if (Token::simpleMatch(tok, "for ("))
         {
-            const Token *tok2 = tok->tokAt(2);
-
-            // Check if there is a break in the body..
-            {
-                const Token *bodyStart = tok->next()->link()->next();
-                const Token *bodyEnd = bodyStart->link();
-                if (Token::findmatch(bodyStart, "break ;", bodyEnd))
-                    continue;
-            }
-
-            unsigned int counter_varid = 0;
-            std::string min_counter_value;
-            std::string max_counter_value;
-
-            tok2 = for_init(tok2, counter_varid, min_counter_value);
-            if (tok2 == 0 || counter_varid == 0)
-                continue;
-
-            bool maxMinFlipped = false;
-            std::string strindex;
-            if (!for_condition(tok2, counter_varid, min_counter_value, max_counter_value, strindex, maxMinFlipped))
-                continue;
-
-            // Get index variable and stopsize.
-            bool condition_out_of_bounds = true;
-            if (MathLib::toLongNumber(max_counter_value) < (int)arrayInfo.num[0])
-                condition_out_of_bounds = false;
-
-            if (!for3(tok2->tokAt(4), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
-                continue;
-
-            if (Token::Match(tok2->tokAt(4), "%var% =|+=|-=") && MathLib::toLongNumber(max_counter_value) <= (int)arrayInfo.num[0])
-                condition_out_of_bounds = false;
-
-            // Goto the end parenthesis of the for-statement: "for (x; y; z)" ..
-            tok2 = tok->next()->link();
-            if (!tok2 || !tok2->tokAt(5))
+            bool bailout = false;
+            checkScopeForBody(tok, arrayInfo, bailout);
+            if (bailout)
                 break;
-
-            // Check is the counter variable increased elsewhere inside the loop or used
-            // for anything else except reading
-            if (for_bailout(tok2->next(), counter_varid))
-                break;
-
-            parse_for_body(tok2->next(), arrayInfo, strindex, condition_out_of_bounds, counter_varid, min_counter_value, max_counter_value);
-
             continue;
         }
 
