@@ -246,6 +246,36 @@ void Tokenizer::insertTokens(Token *dest, const Token *src, unsigned int n)
 }
 //---------------------------------------------------------------------------
 
+Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last)
+{
+    std::stack<Token *> links;
+    Token *tok2 = dest;
+    for (const Token *tok = first; tok != last->next(); tok = tok->next())
+    {
+        tok2->insertToken(tok->str());
+        tok2 = tok2->next();
+        tok2->fileIndex(dest->fileIndex());
+        tok2->linenr(dest->linenr());
+        tok2->isUnsigned(tok->isUnsigned());
+        tok2->isSigned(tok->isSigned());
+        tok2->isLong(tok->isLong());
+
+        // Check for links and fix them up
+        if (tok2->str() == "(" || tok2->str() == "[" || tok2->str() == "{")
+            links.push(tok2);
+        else if (tok2->str() == ")" || tok2->str() == "]" || tok2->str() == "}")
+        {
+            Token * link = links.top();
+
+            tok2->link(link);
+            link->link(tok2);
+
+            links.pop();
+        }
+    }
+    return tok2;
+}
+
 //---------------------------------------------------------------------------
 // Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
@@ -1412,26 +1442,7 @@ void Tokenizer::simplifyTypedef()
 
                     // start substituting at the typedef name by replacing it with the type
                     tok2->str(typeStart->str());
-                    Token * nextToken;
-                    std::stack<Token *> links;
-                    for (nextToken = typeStart->next(); nextToken != typeEnd->next(); nextToken = nextToken->next())
-                    {
-                        tok2->insertToken(nextToken->str());
-                        tok2 = tok2->next();
-
-                        // Check for links and fix them up
-                        if (tok2->str() == "(" || tok2->str() == "[")
-                            links.push(tok2);
-                        if (tok2->str() == ")" || tok2->str() == "]")
-                        {
-                            Token * link = links.top();
-
-                            tok2->link(link);
-                            link->link(tok2);
-
-                            links.pop();
-                        }
-                    }
+                    tok2 = copyTokens(tok2, typeStart->next(), typeEnd);
 
                     if (!pointers.empty())
                     {
@@ -1448,25 +1459,7 @@ void Tokenizer::simplifyTypedef()
                         tok2->insertToken("(");
                         tok2 = tok2->next();
                         Token *tok3 = tok2;
-                        Token *nextTok;
-                        for (nextTok = funcStart; nextTok != funcEnd->next(); nextTok = nextTok->next())
-                        {
-                            tok2->insertToken(nextTok->str());
-                            tok2 = tok2->next();
-
-                            // Check for links and fix them up
-                            if (tok2->str() == "(" || tok2->str() == "[")
-                                links.push(tok2);
-                            if (tok2->str() == ")" || tok2->str() == "]")
-                            {
-                                Token * link = links.top();
-
-                                tok2->link(link);
-                                link->link(tok2);
-
-                                links.pop();
-                            }
-                        }
+                        tok2 = copyTokens(tok2, funcStart, funcEnd);
 
                         if (!inCast)
                         {
@@ -1517,30 +1510,7 @@ void Tokenizer::simplifyTypedef()
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok3);
 
-                        tok2->insertToken("(");
-                        tok2 = tok2->next();
-                        tok3 = tok2;
-                        for (nextTok = argStart->next(); nextTok != argEnd; nextTok = nextTok->next())
-                        {
-                            tok2->insertToken(nextTok->str());
-                            tok2 = tok2->next();
-
-                            // Check for links and fix them up
-                            if (tok2->str() == "(" || tok2->str() == "[")
-                                links.push(tok2);
-                            if (tok2->str() == ")" || tok2->str() == "]")
-                            {
-                                Token * link = links.top();
-
-                                tok2->link(link);
-                                link->link(tok2);
-
-                                links.pop();
-                            }
-                        }
-                        tok2->insertToken(")");
-                        tok2 = tok2->next();
-                        Token::createMutualLinks(tok2, tok3);
+                        tok2 = copyTokens(tok2, argStart, argEnd);
 
                         if (specStart)
                         {
@@ -1652,32 +1622,7 @@ void Tokenizer::simplifyTypedef()
                             Token::createMutualLinks(tok2, tok3);
                         }
 
-                        tok2->insertToken("(");
-                        tok2 = tok2->next();
-                        tok3 = tok2;
-                        Token * nextArgTok;
-                        std::stack<Token *> argLinks;
-                        for (nextArgTok = argStart->next(); nextArgTok != argEnd; nextArgTok = nextArgTok->next())
-                        {
-                            tok2->insertToken(nextArgTok->str());
-                            tok2 = tok2->next();
-
-                            // Check for links and fix them up
-                            if (tok2->str() == "(" || tok2->str() == "[")
-                                argLinks.push(tok2);
-                            if (tok2->str() == ")" || tok2->str() == "]")
-                            {
-                                Token * link = argLinks.top();
-
-                                tok2->link(link);
-                                link->link(tok2);
-
-                                argLinks.pop();
-                            }
-                        }
-                        tok2->insertToken(")");
-                        tok2 = tok2->next();
-                        Token::createMutualLinks(tok2, tok3);
+                        tok2 = copyTokens(tok2, argStart, argEnd);
 
                         if (inTemplate)
                             tok2 = tok2->next();
@@ -1727,64 +1672,13 @@ void Tokenizer::simplifyTypedef()
                             Token::createMutualLinks(tok2, tok4);
                         }
 
-                        tok2->insertToken("(");
-                        tok2 = tok2->next();
-                        Token *tok5 = tok2;
-
-                        Token *nextArgTok;
-                        std::stack<Token *> argLinks;
-                        for (nextArgTok = argStart->next(); nextArgTok != argEnd; nextArgTok = nextArgTok->next())
-                        {
-                            tok2->insertToken(nextArgTok->str());
-                            tok2 = tok2->next();
-
-                            // Check for links and fix them up
-                            if (tok2->str() == "(" || tok2->str() == "[")
-                                argLinks.push(tok2);
-                            if (tok2->str() == ")" || tok2->str() == "]")
-                            {
-                                Token * link = argLinks.top();
-
-                                tok2->link(link);
-                                link->link(tok2);
-
-                                argLinks.pop();
-                            }
-                        }
-                        tok2->insertToken(")");
-                        tok2 = tok2->next();
-                        Token::createMutualLinks(tok2, tok5);
+                        tok2 = copyTokens(tok2, argStart, argEnd);
 
                         tok2->insertToken(")");
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok3);
 
-                        tok2->insertToken("(");
-                        tok2 = tok2->next();
-                        Token *tok6 = tok2;
-
-                        for (nextArgTok = argFuncRetStart->next(); nextArgTok != argFuncRetEnd; nextArgTok = nextArgTok->next())
-                        {
-                            tok2->insertToken(nextArgTok->str());
-                            tok2 = tok2->next();
-
-                            // Check for links and fix them up
-                            if (tok2->str() == "(" || tok2->str() == "[")
-                                argLinks.push(tok2);
-                            if (tok2->str() == ")" || tok2->str() == "]")
-                            {
-                                Token * link = argLinks.top();
-
-                                tok2->link(link);
-                                link->link(tok2);
-
-                                argLinks.pop();
-                            }
-                        }
-
-                        tok2->insertToken(")");
-                        tok2 = tok2->next();
-                        Token::createMutualLinks(tok2, tok6);
+                        tok2 = copyTokens(tok2, argFuncRetStart, argFuncRetEnd);
                     }
                     else if (ptrToArray || refToArray)
                     {
@@ -1857,33 +1751,7 @@ void Tokenizer::simplifyTypedef()
                     }
                     else if (typeOf)
                     {
-                        tok2->insertToken("(");
-                        tok2 = tok2->next();
-                        Token *tok3 = tok2;
-                        Token *nextArgTok;
-                        std::stack<Token *> argLinks;
-                        for (nextArgTok = argStart->next(); nextArgTok != argEnd; nextArgTok = nextArgTok->next())
-                        {
-                            tok2->insertToken(nextArgTok->str());
-                            tok2 = tok2->next();
-
-                            // Check for links and fix them up
-                            if (tok2->str() == "(" || tok2->str() == "[")
-                                argLinks.push(tok2);
-                            if (tok2->str() == ")" || tok2->str() == "]")
-                            {
-                                Token * link = argLinks.top();
-
-                                tok2->link(link);
-                                link->link(tok2);
-
-                                argLinks.pop();
-                            }
-                        }
-                        tok2->insertToken(")");
-                        tok2 = tok2->next();
-                        Token::createMutualLinks(tok2, tok3);
-
+                        tok2 = copyTokens(tok2, argStart, argEnd);
                     }
                     else if (tok2->tokAt(2) && tok2->tokAt(2)->str() == "[")
                     {
@@ -1897,27 +1765,7 @@ void Tokenizer::simplifyTypedef()
                         {
                             if (!inCast && !inSizeof)
                                 tok2 = tok2->next();
-                            Token * nextArrTok;
-                            std::stack<Token *> arrLinks;
-                            for (nextArrTok = arrayStart; nextArrTok != arrayEnd->next(); nextArrTok = nextArrTok->next())
-                            {
-                                tok2->insertToken(nextArrTok->str());
-                                tok2 = tok2->next();
-
-                                // Check for links and fix them up
-                                if (tok2->str() == "(" || tok2->str() == "[")
-                                    arrLinks.push(tok2);
-                                if (tok2->str() == ")" || tok2->str() == "]")
-                                {
-                                    Token * link = arrLinks.top();
-
-                                    tok2->link(link);
-                                    link->link(tok2);
-
-                                    arrLinks.pop();
-                                }
-                            }
-
+                            tok2 = copyTokens(tok2, arrayStart, arrayEnd);
                             tok2 = tok2->next();
 
                             if (tok2->str() == "=")
@@ -7691,26 +7539,8 @@ void Tokenizer::simplifyEnum()
                     if (lastEnumValueStart && lastEnumValueEnd)
                     {
                         // previous value was an expression
-                        Token * valueStart = tok1;
-                        std::stack<Token *> links;
-                        for (Token *tok2 = lastEnumValueStart; tok2 != lastEnumValueEnd->next(); tok2 = tok2->next())
-                        {
-                            tok1->insertToken(tok2->str());
-                            tok1 = tok1->next();
-
-                            // Check for links and fix them up
-                            if (tok1->str() == "(" || tok1->str() == "[" || tok1->str() == "{")
-                                links.push(tok1);
-                            else if (tok1->str() == ")" || tok1->str() == "]" || tok1->str() == "}")
-                            {
-                                Token * link = links.top();
-
-                                tok1->link(link);
-                                link->link(tok1);
-
-                                links.pop();
-                            }
-                        }
+                        Token *valueStart = tok1;
+                        tok1 = copyTokens(tok1, lastEnumValueStart, lastEnumValueEnd);
 
                         // value is previous expression + 1
                         tok1->insertToken("+");
@@ -7852,29 +7682,9 @@ void Tokenizer::simplifyEnum()
                                 tok2->str(enumValue->str());
                             else
                             {
-                                std::stack<Token *> links;
-                                tok2->str(enumValueStart->str());
-                                if (tok2->str() == "(" || tok2->str() == "[" || tok2->str() == "{")
-                                    links.push(tok2);
-                                Token * nextToken = enumValueStart->next();
-                                for (; nextToken != enumValueEnd->next(); nextToken = nextToken->next())
-                                {
-                                    tok2->insertToken(nextToken->str());
-                                    tok2 = tok2->next();
-
-                                    // Check for links and fix them up
-                                    if (tok2->str() == "(" || tok2->str() == "[" || tok2->str() == "{")
-                                        links.push(tok2);
-                                    else if (tok2->str() == ")" || tok2->str() == "]" || tok2->str() == "}")
-                                    {
-                                        Token * link = links.top();
-
-                                        tok2->link(link);
-                                        link->link(tok2);
-
-                                        links.pop();
-                                    }
-                                }
+                                tok2 = tok2->previous();
+                                tok2->deleteNext();
+                                tok2 = copyTokens(tok2, enumValueStart, enumValueEnd);
                             }
 
                             if (hasClass)

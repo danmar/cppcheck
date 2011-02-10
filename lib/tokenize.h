@@ -451,6 +451,15 @@ public:
     void insertTokens(Token *dest, const Token *src, unsigned int n);
 
     /**
+     * Copy tokens.
+     * @param dest destination token where copied tokens will be inserted after
+     * @param first first token to copy
+     * @param last last token to copy
+     * @return new location of last token copied
+     */
+    Token *copyTokens(Token *dest, const Token *first, const Token *last);
+
+    /**
      * Send error message to error logger about internal bug.
      * @param tok the token that this bug concerns.
      */
