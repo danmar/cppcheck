@@ -18,31 +18,11 @@
 
 #include <QtTest>
 #include <QObject>
-#include "testxmlreport.h"
-#include "xmlreport.h"
 
-void TestXmlReport::testQuoteMessage()
+class TestXmlReportV2: public QObject
 {
-    const QString toQuote("abcdefgh&\"'<>12345");
-    const QString quoted("abcdefgh&amp;&quot;&#039;&lt;&gt;12345");
-    QCOMPARE(XmlReport::quoteMessage(toQuote), quoted);
-}
+    Q_OBJECT
 
-void TestXmlReport::testUnquoteMessage()
-{
-    const QString toQuote("abcdefgh&\"'<>12345");
-    const QString quoted("abcdefgh&amp;&quot;&#039;&lt;&gt;12345");
-    QCOMPARE(XmlReport::unquoteMessage(quoted), toQuote);
-}
-
-void TestXmlReport::testGetVersion1()
-{
-    const QString filepath("xmlfiles/xmlreport_v1.xml");
-    QCOMPARE(XmlReport::determineVersion(filepath), 1);
-}
-
-void TestXmlReport::testGetVersion2()
-{
-    const QString filepath("xmlfiles/xmlreport_v2.xml");
-    QCOMPARE(XmlReport::determineVersion(filepath), 2);
-}
+private slots:
+    void readXml();
+};

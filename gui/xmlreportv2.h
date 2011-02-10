@@ -26,6 +26,7 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include "report.h"
+#include "xmlreport.h"
 
 /// @addtogroup GUI
 /// @{
