@@ -60,6 +60,7 @@ private:
         TEST_CASE(simple2);
         TEST_CASE(simple3);
         TEST_CASE(simple4);
+        TEST_CASE(simple5); // ticket #2560
 
         TEST_CASE(initvar_with_this);       // BUG 2190300
         TEST_CASE(initvar_if);              // BUG 2190290
@@ -258,6 +259,23 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::i' is not initialised in the constructor.\n", errout.str());
     }
 
+    void simple5() // ticket #2560
+    {
+        check("namespace Nsp\n"
+              "{\n"
+              "    class B { };\n"
+              "}\n"
+              "class Altren : public Nsp::B\n"
+              "{\n"
+              "public:\n"
+              "    Altren () : Nsp::B(), mValue(0)\n"
+              "    {\n"
+              "    }\n"
+              "private:\n"
+              "    int mValue;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void initvar_with_this()
     {
