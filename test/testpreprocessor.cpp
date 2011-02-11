@@ -149,6 +149,7 @@ private:
         TEST_CASE(macro_simple12);
         TEST_CASE(macro_simple13);
         TEST_CASE(macro_simple14);
+        TEST_CASE(macro_simple15);
         TEST_CASE(macroInMacro);
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
@@ -1587,6 +1588,13 @@ private:
         const char filedata[] = "#define A \"  a  \"\n"
                                 "printf(A);\n";
         ASSERT_EQUALS("\nprintf(\"  a  \");\n", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macro_simple15()
+    {
+        const char filedata[] = "#define FOO\"foo\"\n"
+                                "FOO\n";
+        ASSERT_EQUALS("\n\"foo\"\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macroInMacro()

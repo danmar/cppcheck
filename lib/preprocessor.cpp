@@ -2124,12 +2124,14 @@ public:
 
         else if (_params.empty())
         {
-            std::string::size_type pos = _macro.find(" ");
+            std::string::size_type pos = _macro.find_first_of(" \"");
             if (pos == std::string::npos)
                 macrocode = "";
             else
             {
-                macrocode = _macro.substr(pos + 1);
+                if (_macro[pos] == ' ')
+                    pos++;
+                macrocode = _macro.substr(pos);
                 if ((pos = macrocode.find_first_of("\r\n")) != std::string::npos)
                     macrocode.erase(pos);
             }
