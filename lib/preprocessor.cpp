@@ -208,7 +208,8 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
         // Preprocessor
         if (!line.empty() && line[0] == '#')
         {
-            enum {
+            enum
+            {
                 ESC_NONE,
                 ESC_SINGLE,
                 ESC_DOUBLE
@@ -221,7 +222,7 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
 
             // need space.. #if( => #if (
             bool needSpace = true;
-            while(i != line.end())
+            while (i != line.end())
             {
                 // disable esc-mode
                 if (escapeStatus != ESC_NONE)
@@ -234,7 +235,9 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
                     {
                         escapeStatus = ESC_NONE;
                     }
-                } else {
+                }
+                else
+                {
                     // enable esc-mode
                     if (escapeStatus == ESC_NONE && *i == '"')
                         escapeStatus = ESC_DOUBLE;
@@ -264,7 +267,9 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
                 if (escapeStatus != ESC_NONE && prev == '\\' && *i == '\\')
                 {
                     prev = ' ';
-                } else {
+                }
+                else
+                {
                     prev = *i;
                 }
                 i++;
@@ -273,7 +278,9 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
             {
                 // unmatched quotes.. compiler should probably complain about this..
             }
-        } else {
+        }
+        else
+        {
             // Do not mess with regular code..
             code << line;
         }

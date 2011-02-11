@@ -644,7 +644,7 @@ void CheckClass::privateFunctions()
             while (ftok->str() != "{")
                 ftok = ftok->next();
             const Token *etok = ftok->link();
-            
+
             for (; ftok != etok; ftok = ftok->next())
             {
                 if (Token::Match(ftok, "%var% ("))

@@ -152,7 +152,7 @@ protected:
     static std::string removeParantheses(const std::string &str);
 
     /**
-     * clean up #-preprocessor lines (only) 
+     * clean up #-preprocessor lines (only)
      * @param processedFile The data to be processed
      */
     std::string preprocessCleanupDirectives(const std::string &processedFile) const;
