@@ -1,4 +1,9 @@
 #!/bin/bash
+ASTYLE_VERSION="Artistic Style Version 2.01"
+if [ "`astyle --version 2>&1`" != "${ASTYLE_VERSION}" ]; then
+	echo "You should use: ${ASTYLE_VERSION}";
+	exit 1;
+fi
 
 style="--style=ansi --lineend=linux --min-conditional-indent=0"
 options="--pad-header --unpad-paren --suffix=none"
