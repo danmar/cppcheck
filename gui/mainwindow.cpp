@@ -213,14 +213,11 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
     mSettings->setValue(SETTINGS_CHECK_PATH, checkPath);
-    EnableCheckButtons(false);
-    mUI.mActionSettings->setEnabled(false);
-    mUI.mActionOpenXML->setEnabled(false);
-    mUI.mResults->SetCheckDirectory(checkPath);
 
+    CheckLockDownUI(); // lock UI while checking
+
+    mUI.mResults->SetCheckDirectory(checkPath);
     Settings checkSettings = GetCppcheckSettings();
-    EnableProjectActions(false);
-    EnableProjectOpenActions(false);
     mThread->Check(checkSettings, false);
 }
 
@@ -400,6 +397,15 @@ void MainWindow::CheckDone()
     QApplication::alert(this, 3000);
 }
 
+void MainWindow::CheckLockDownUI()
+{
+    EnableCheckButtons(false);
+    mUI.mActionSettings->setEnabled(false);
+    mUI.mActionOpenXML->setEnabled(false);
+    EnableProjectActions(false);
+    EnableProjectOpenActions(false);
+}
+
 void MainWindow::ProgramSettings()
 {
     SettingsDialog dialog(mSettings, mApplications, mTranslation, this);
@@ -418,7 +424,7 @@ void MainWindow::ProgramSettings()
 void MainWindow::ReCheck()
 {
     ClearResults();
-    EnableCheckButtons(false);
+    CheckLockDownUI(); // lock UI while checking
 
     const int filesCount = mThread->GetPreviousFilesCount();
     Q_ASSERT(filesCount > 0); // If no files should not be able to recheck
