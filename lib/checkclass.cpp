@@ -610,7 +610,9 @@ void CheckClass::privateFunctions()
             if (!func->hasBody)
             {
                 // empty private copy constructors and assignment operators are OK
-                if ((func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual) && func->access == Private)
+                if ((func->type == Function::eCopyConstructor ||
+                     func->type == Function::eOperatorEqual) &&
+                    func->access == Private)
                     continue;
 
                 whole = false;
@@ -630,98 +632,37 @@ void CheckClass::privateFunctions()
             for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
             {
                 // Get private functions..
-                if (func->type == Function::eFunction &&
-                    func->access == Private && func->hasBody)
+                if (func->type == Function::eFunction && func->access == Private)
                     FuncList.push_back(func->tokenDef);
             }
         }
 
         // Check that all private functions are used..
-        bool HasFuncImpl = false;
-        bool inclass = false;
-        int indent_level = 0;
-        for (const Token *ftok = _tokenizer->tokens(); ftok; ftok = ftok->next())
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
-            if (ftok->str() == "{")
-                ++indent_level;
-            else if (ftok->str() == "}")
+            const Token *ftok = func->arg->link()->next();
+            while (ftok->str() != "{")
+                ftok = ftok->next();
+            const Token *etok = ftok->link();
+            
+            for (; ftok != etok; ftok = ftok->next())
             {
-                if (indent_level > 0)
-                    --indent_level;
-                if (indent_level == 0)
-                    inclass = false;
-            }
-
-            else if (ftok->str() == "class" &&
-                     ftok->next()->str() == classname &&
-                     Token::Match(ftok->tokAt(2), ":|{"))
-            {
-                indent_level = 0;
-                inclass = true;
-            }
-
-            // Check member class functions to see what functions are used..
-            else if ((inclass && indent_level == 1 && Token::Match(ftok, "%var% (")) ||
-                     (ftok->str() == classname && Token::Match(ftok->next(), ":: ~| %var% (")))
-            {
-                while (ftok && ftok->str() != ")")
-                    ftok = ftok->next();
-                if (!ftok)
-                    break;
-                if (Token::Match(ftok, ") : %var% ("))
+                if (Token::Match(ftok, "%var% ("))
                 {
-                    while (!Token::Match(ftok->next(), "[{};]"))
+                    // Remove function from FuncList
+                    std::list<const Token *>::iterator it = FuncList.begin();
+                    while (it != FuncList.end())
                     {
-                        if (Token::Match(ftok, "::|,|( %var% ,|)"))
-                        {
-                            // Remove function from FuncList
-                            std::list<const Token *>::iterator it = FuncList.begin();
-                            while (it != FuncList.end())
-                            {
-                                if (ftok->next()->str() == (*it)->str())
-                                    FuncList.erase(it++);
-                                else
-                                    ++it;
-                            }
-                        }
-                        ftok = ftok->next();
-                    }
-                }
-                if (!Token::Match(ftok, ") const| {"))
-                    continue;
-
-                if (ftok->fileIndex() == 0)
-                    HasFuncImpl = true;
-
-                // Parse function..
-                int indentlevel2 = 0;
-                for (const Token *tok2 = ftok; tok2; tok2 = tok2->next())
-                {
-                    if (tok2->str() == "{")
-                        ++indentlevel2;
-                    else if (tok2->str() == "}")
-                    {
-                        --indentlevel2;
-                        if (indentlevel2 < 1)
-                            break;
-                    }
-                    else if (Token::Match(tok2, "%var% ("))
-                    {
-                        // Remove function from FuncList
-                        std::list<const Token *>::iterator it = FuncList.begin();
-                        while (it != FuncList.end())
-                        {
-                            if (tok2->str() == (*it)->str())
-                                FuncList.erase(it++);
-                            else
-                                ++it;
-                        }
+                        if (ftok->str() == (*it)->str())
+                            FuncList.erase(it++);
+                        else
+                            ++it;
                     }
                 }
             }
         }
 
-        while (HasFuncImpl && !FuncList.empty())
+        while (!FuncList.empty())
         {
             // Final check; check if the function pointer is used somewhere..
             const std::string _pattern("return|(|)|,|= " + FuncList.front()->str());

@@ -65,6 +65,8 @@ private:
         TEST_CASE(testDoesNotIdentifyMethodAsFirstFunctionArgument); // #2480
         TEST_CASE(testDoesNotIdentifyMethodAsMiddleFunctionArgument);
         TEST_CASE(testDoesNotIdentifyMethodAsLastFunctionArgument);
+
+        TEST_CASE(multiFile);
     }
 
 
@@ -547,6 +549,26 @@ private:
               "    MountOperation aExample(10);"
               "}"
              );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void multiFile() // ticket #2567
+    {
+        check("#file \"test.h\"\n"
+              "struct Fred\n"
+              "{\n"
+              "    Fred()\n"
+              "    {\n"
+              "        Init();\n"
+              "    }\n"
+              "private:\n"
+              "    void Init();\n"
+              "};\n"
+              "#endfile\n"
+              "void Fred::Init()\n"
+              "{\n"
+              "}\n");
+
         ASSERT_EQUALS("", errout.str());
     }
 };
