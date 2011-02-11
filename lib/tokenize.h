@@ -308,6 +308,12 @@ public:
      */
     bool simplifyKnownVariables();
 
+    /**
+     * utility function for simplifyKnownVariables. Perform simplification
+     * of a given variable
+     */
+    bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, bool pointeralias, int indentlevel);
+
     /** Replace a "goto" with the statements */
     void simplifyGoto();
 
