@@ -1544,7 +1544,8 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
             return "";
         }
 
-        if (!match && line.compare(0, 8, "#define ") == 0)
+        if (!match && (line.compare(0, 8, "#define ") == 0 ||
+                       line.compare(0, 6, "#undef") == 0))
         {
             // Remove define that is not part of this configuration
             line = "";

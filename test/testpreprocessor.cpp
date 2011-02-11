@@ -2483,6 +2483,25 @@ private:
             ASSERT_EQUALS("\n\n1\n\n", actual[""]);
             ASSERT_EQUALS(1, (int)actual.size());
         }
+
+        {
+            const char filedata[] = "#define A 1\n"
+                                    "#if 0\n"
+                                    "#undef A\n"
+                                    "#endif\n"
+                                    "A\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Settings settings;
+            Preprocessor preprocessor(&settings, this);
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS("\n\n\n\n1\n", actual[""]);
+            ASSERT_EQUALS(1, (int)actual.size());
+        }
     }
 
     void define_ifndef1()
