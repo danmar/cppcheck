@@ -47,6 +47,10 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+
+        CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
+        checkAutoVariables.runChecks(&tokenizer, &settings, this);
+
         tokenizer.simplifyTokenList();
 
         // Assign variable ids
@@ -56,10 +60,8 @@ private:
         tokenizer.fillFunctionList();
 
         // Check auto variables
-        CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();
-        checkAutoVariables.returnReference();
         checkAutoVariables.returncstr();
     }
 
@@ -81,6 +83,7 @@ private:
         // return reference..
         TEST_CASE(returnReference1);
         TEST_CASE(returnReference2);
+        TEST_CASE(returnReference3);
 
         // return c_str()..
         TEST_CASE(returncstr1);
@@ -349,6 +352,16 @@ private:
               "    return hello();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:11]: (error) Returning reference to temporary\n", errout.str());
+    }
+
+    void returnReference3()
+    {
+        check("double & f(double & rd) {\n"
+              "    double ret = getValue();\n"
+              "    rd = ret;\n"
+              "    return rd;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returncstr1()
