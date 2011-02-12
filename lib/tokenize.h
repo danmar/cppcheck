@@ -416,6 +416,14 @@ public:
     std::list<Token *> simplifyTemplatesGetTemplateInstantiations();
 
     /**
+     * simplify template instantiations (use default argument values)
+     * @param templates list of template declarations
+     * @param instantiations list of template instantiations
+     */
+    void simplifyTemplatesUseDefaultArgumentValues(const std::list<Token *> &templates,
+            const std::list<Token *> &instantiations);
+
+    /**
      * Used after simplifyTemplates to perform a little cleanup.
      * Sometimes the simplifyTemplates isn't fully successful and then
      * there are function calls etc with "wrong" syntax.

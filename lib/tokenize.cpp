@@ -2693,50 +2693,11 @@ std::list<Token *> Tokenizer::simplifyTemplatesGetTemplateInstantiations()
     return used;
 }
 
-void Tokenizer::simplifyTemplates()
+
+void Tokenizer::simplifyTemplatesUseDefaultArgumentValues(const std::list<Token *> &templates,
+        const std::list<Token *> &instantiations)
 {
-    std::set<std::string> expandedtemplates(simplifyTemplatesExpandSpecialized());
-
-    // Locate templates..
-    std::list<Token *> templates(simplifyTemplatesGetTemplateDeclarations());
-
-    if (templates.empty())
-    {
-        removeTemplates(_tokens);
-        return;
-    }
-
-    // There are templates..
-    // Remove "typename" unless used in template arguments..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (tok->str() == "typename")
-            tok->deleteThis();
-
-        if (Token::simpleMatch(tok, "template <"))
-        {
-            while (tok && tok->str() != ">")
-                tok = tok->next();
-            if (!tok)
-                break;
-        }
-    }
-
-    // Locate possible instantiations of templates..
-    std::list<Token *> used(simplifyTemplatesGetTemplateInstantiations());
-
-    // No template instantiations? Then remove all templates.
-    if (used.empty())
-    {
-        removeTemplates(_tokens);
-        return;
-    }
-
-
-
-
-    // Template arguments with default values
-    for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
+    for (std::list<Token *>::const_iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
     {
         // template parameters with default value has syntax such as:
         //     x = y
@@ -2772,7 +2733,7 @@ void Tokenizer::simplifyTemplates()
             continue;
 
         // iterate through all template instantiations
-        for (std::list<Token *>::iterator iter2 = used.begin(); iter2 != used.end(); ++iter2)
+        for (std::list<Token *>::const_iterator iter2 = instantiations.begin(); iter2 != instantiations.end(); ++iter2)
         {
             Token *tok = *iter2;
 
@@ -2828,7 +2789,49 @@ void Tokenizer::simplifyTemplates()
             (*it)->deleteThis();
         }
     }
+}
 
+void Tokenizer::simplifyTemplates()
+{
+    std::set<std::string> expandedtemplates(simplifyTemplatesExpandSpecialized());
+
+    // Locate templates..
+    std::list<Token *> templates(simplifyTemplatesGetTemplateDeclarations());
+
+    if (templates.empty())
+    {
+        removeTemplates(_tokens);
+        return;
+    }
+
+    // There are templates..
+    // Remove "typename" unless used in template arguments..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "typename")
+            tok->deleteThis();
+
+        if (Token::simpleMatch(tok, "template <"))
+        {
+            while (tok && tok->str() != ">")
+                tok = tok->next();
+            if (!tok)
+                break;
+        }
+    }
+
+    // Locate possible instantiations of templates..
+    std::list<Token *> used(simplifyTemplatesGetTemplateInstantiations());
+
+    // No template instantiations? Then remove all templates.
+    if (used.empty())
+    {
+        removeTemplates(_tokens);
+        return;
+    }
+
+    // Template arguments with default values
+    simplifyTemplatesUseDefaultArgumentValues(templates, used);
 
     // expand templates
     bool done = false;
