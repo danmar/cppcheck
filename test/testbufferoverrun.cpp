@@ -887,8 +887,8 @@ private:
                   "    a[-1] = 0;\n"    // negative index
                   "    a[256] = 0;\n"   // 256 > CHAR_MAX
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[256]' index -1 out of bounds\n"
-                          "[test.cpp:4]: (error) Array 'a[256]' index 256 out of bounds\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[256]' index 256 out of bounds\n"
+                          "[test.cpp:3]: (error) Array 'a[256]' index -1 out of bounds\n", errout.str());
         }
 
         check("void f(signed char n) {\n"
