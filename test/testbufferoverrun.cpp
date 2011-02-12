@@ -135,6 +135,7 @@ private:
         TEST_CASE(buffer_overrun_15); // ticket #1787
         TEST_CASE(buffer_overrun_16);
         TEST_CASE(buffer_overrun_17); // ticket #2548
+        TEST_CASE(buffer_overrun_18); // ticket #2576 - for, calculation with loop variable
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
 
         // It is undefined behaviour to point out of bounds of an array
@@ -1881,6 +1882,35 @@ private:
               "    sprintf(t, \"%s\", \"foo     bar\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+    }
+
+    void buffer_overrun_18() // ticket #2576
+    {
+        check("class A {\n"
+              "    void foo();\n"
+              "    bool b[7];\n"
+              "};\n"
+              "\n"
+              "void A::foo() {\n"
+              "    for (int i=0; i<6; i++) {\n"
+              "        b[i] = b[i+1];\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    void foo();\n"
+              "    bool b[7];\n"
+              "};\n"
+              "\n"
+              "void A::foo() {\n"
+              "    for (int i=0; i<7; i++) {\n"
+              "        b[i] = b[i+1];\n"
+              "    }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error",    // wanted result
+                           "",         // current result
+                           errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch()
