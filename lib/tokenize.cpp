@@ -2791,8 +2791,8 @@ void Tokenizer::simplifyTemplatesUseDefaultArgumentValues(const std::list<Token 
     }
 }
 
-void Tokenizer::simplifyTemplatesInstantiate(std::list<Token *> &used,
-        const Token *tok,
+void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
+        std::list<Token *> &used,
         std::set<std::string> &expandedtemplates)
 {
     // this variable is not used at the moment. the intention was to
@@ -3157,9 +3157,9 @@ void Tokenizer::simplifyTemplates()
     //while (!done)
     {
         done = true;
-        for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
+        for (std::list<Token *>::const_iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
         {
-            simplifyTemplatesInstantiate(used, *iter1, expandedtemplates);
+            simplifyTemplatesInstantiate(*iter1, used, expandedtemplates);
         }
     }
 

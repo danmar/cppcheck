@@ -425,9 +425,13 @@ public:
 
     /**
      * Simplify templates : expand all instantiatiations for a template
+     * @todo It seems that inner templates should be instantiated recursively
+     * @param tok token where the template declaration begins
+     * @param used a list of template usages (not necessarily just for this template)
+     * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
      */
-    void simplifyTemplatesInstantiate(std::list<Token *> &used,
-                                      const Token *tok,
+    void simplifyTemplatesInstantiate(const Token *tok,
+                                      std::list<Token *> &used,
                                       std::set<std::string> &expandedtemplates);
 
     /**
