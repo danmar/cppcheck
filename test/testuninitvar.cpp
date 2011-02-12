@@ -46,6 +46,7 @@ private:
         TEST_CASE(uninitvar_references); // references
         TEST_CASE(uninitvar_strncpy);   // strncpy doesn't always 0-terminate
         TEST_CASE(uninitvar_func);      // analyse functions
+        TEST_CASE(uninitvar_func2);     // usage of 'void a(int *p) { *p = 0; }'
         TEST_CASE(uninitvar_typeof);    // typeof
     }
 
@@ -1418,6 +1419,28 @@ private:
                        "    fread(buf, 1, 10, f);\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // valid and invalid use of 'void a(int *p) { *p = 0; }'
+    void uninitvar_func2()
+    {
+        const std::string funca("void a(int *p) { *p = 0; }\n");
+
+        // ok - initialized pointer
+        checkUninitVar((funca +
+                        "void b() {\n"
+                        "    int buf[10];\n"
+                        "    a(buf);\n"
+                        "}\n").c_str());
+        ASSERT_EQUALS("", errout.str());
+
+        // not ok - uninitialized pointer
+        checkUninitVar((funca +
+                        "void b() {\n"
+                        "    int *p;\n"
+                        "    a(p);\n"
+                        "}\n").c_str());
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void uninitvar_typeof()
