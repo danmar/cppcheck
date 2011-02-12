@@ -235,6 +235,7 @@ private:
         TEST_CASE(simplifyTypedef75); // ticket #2426
         TEST_CASE(simplifyTypedef76); // ticket #2453
         TEST_CASE(simplifyTypedef77); // ticket #2554
+        TEST_CASE(simplifyTypedef78); // ticket #2568
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3941,7 +3942,7 @@ private:
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n"
                       "[test.cpp:20] -> [test.cpp:1]: (style) Function parameter 'A' hides typedef with same name\n"
                       "[test.cpp:21] -> [test.cpp:1]: (style) Variable 'A' hides typedef with same name\n"
-                      "[test.cpp:24] -> [test.cpp:1]: (style) Struct 'A' hides typedef with same name\n", errout.str());
+                      "[test.cpp:24] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n", errout.str());
     }
 
     void simplifyTypedef36()
@@ -4843,6 +4844,16 @@ private:
     {
         const char code[] = "typedef char Str[10]; int x = sizeof(Str);\n";
         const std::string expected = "; int x ; x = 10 ;";
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void simplifyTypedef78() // ticket #2568
+    {
+        const char code[] = "typedef struct A A_t;\n"
+                            "A_t a;\n"
+                            "typedef struct A { } A_t;\n"
+                            "A_t a1;\n";
+        const std::string expected = "; struct A a ; struct A { } ; struct A a1 ;";
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 

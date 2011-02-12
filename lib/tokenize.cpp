@@ -509,7 +509,7 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
 }
 
 // check if this statement is a duplicate definition
-bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
+bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef)
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
@@ -624,7 +624,11 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
                     int level = (tok->previous()->str() == "}") ? 1 : 0;
                     while (tok && tok->previous() && (!Token::Match(tok->previous(), ";|{") || (level != 0)))
                     {
-                        if (tok->previous()->str() == "typedef")
+                        if (tok->previous()->str() == "}")
+                        {
+                            tok = tok->previous()->link();
+                        }
+                        else if (tok->previous()->str() == "typedef")
                         {
                             duplicateTypedefError(*tokPtr, name, "Typedef");
                             return true;
@@ -636,7 +640,14 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
                         }
                         else if (tok->previous()->str() == "struct")
                         {
-                            if (tok->next()->str() != ";")
+                            if (tok->strAt(-2) == "typedef" &&
+                                tok->next()->str() == "{" &&
+                                typeDef->strAt(3) != "{")
+                            {
+                                // declaration after forward declaration
+                                return true;
+                            }
+                            else if (tok->next()->str() != ";")
                             {
                                 duplicateTypedefError(*tokPtr, name, "Struct");
                                 return true;
@@ -1373,7 +1384,7 @@ void Tokenizer::simplifyTypedef()
                         {
                             tok2 = tok2->next();
                         }
-                        else if (duplicateTypedef(&tok2, typeName))
+                        else if (duplicateTypedef(&tok2, typeName, typeDef))
                         {
                             exitScope = scope;
 
