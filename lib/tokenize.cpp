@@ -2780,8 +2780,21 @@ void Tokenizer::simplifyTemplates()
                 {
                     tok->insertToken(",");
                     tok = tok->next();
-                    tok->insertToken((*it)->strAt(1));
-                    tok = tok->next();
+                    const Token *from = (*it)->next();
+                    std::stack<Token *> links;
+                    while (from && (!links.empty() || (from->str() != "," && from->str() != ">")))
+                    {
+                        tok->insertToken(from->str());
+                        tok = tok->next();
+                        if (Token::Match(tok, "(|["))
+                            links.push(tok);
+                        else if (!links.empty() && Token::Match(tok, ")|]"))
+                        {
+                            Token::createMutualLinks(links.top(), tok);
+                            links.pop();
+                        }
+                        from = from->next();
+                    }
                     ++it;
                 }
             }

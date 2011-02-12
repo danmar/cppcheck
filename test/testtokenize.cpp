@@ -264,6 +264,7 @@ private:
         TEST_CASE(removeattribute);
         TEST_CASE(cpp0xtemplate1);
         TEST_CASE(cpp0xtemplate2);
+        TEST_CASE(cpp0xtemplate3);
         TEST_CASE(cpp0xdefault);
 
         TEST_CASE(arraySize);
@@ -4632,6 +4633,18 @@ private:
         const char *code = "list<list<int>> ints;\n";
         TODO_ASSERT_EQUALS("list < list < int > > ints ;",
                            "list < list < int >> ints ;", tokenizeAndStringify(code));
+    }
+
+    void cpp0xtemplate3()
+    {
+        // #2549
+        const char *code = "template<class T, T t = (T)0>\n"
+                           "struct S\n"
+                           "{};\n"
+                           "S<int> s;\n";
+        TODO_ASSERT_EQUALS(";\n\n\nS < int , ( int ) 0 > s ;",   // wanted result
+                           ";\n\n\nS < int , ( T ) 0 > s ;",     // current result
+                           tokenizeAndStringify(code));
     }
 
     void cpp0xdefault()
