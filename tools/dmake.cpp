@@ -225,7 +225,7 @@ int main(int argc, char **argv)
     // Makefile settings..
     if (release)
     {
-        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall");
+        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -DHAVE_DEPENDENCIES -Wall");
     }
     else
     {
@@ -235,6 +235,7 @@ int main(int argc, char **argv)
 
         // The _GLIBCXX_DEBUG doesn't work in cygwin
         makeConditionalVariable(fout, "CXXFLAGS",
+                                "-DHAVE_DEPENDENCIES "
                                 "-Wall "
                                 "-Wextra "
                                 "-Wshadow "
