@@ -2646,37 +2646,10 @@ std::list<Token *> Tokenizer::simplifyTemplatesGetTemplateDeclarations()
     return templates;
 }
 
-void Tokenizer::simplifyTemplates()
+std::list<Token *> Tokenizer::simplifyTemplatesGetTemplateInstantiations()
 {
-    std::set<std::string> expandedtemplates(simplifyTemplatesExpandSpecialized());
-
-    // Locate templates..
-    std::list<Token *> templates(simplifyTemplatesGetTemplateDeclarations());
-
-    if (templates.empty())
-    {
-        removeTemplates(_tokens);
-        return;
-    }
-
-    // There are templates..
-    // Remove "typename" unless used in template arguments..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (tok->str() == "typename")
-            tok->deleteThis();
-
-        if (Token::simpleMatch(tok, "template <"))
-        {
-            while (tok && tok->str() != ">")
-                tok = tok->next();
-            if (!tok)
-                break;
-        }
-    }
-
-    // Locate possible instantiations of templates..
     std::list<Token *> used;
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         // template definition.. skip it
@@ -2716,6 +2689,41 @@ void Tokenizer::simplifyTemplates()
                 used.push_back(tok);
         }
     }
+
+    return used;
+}
+
+void Tokenizer::simplifyTemplates()
+{
+    std::set<std::string> expandedtemplates(simplifyTemplatesExpandSpecialized());
+
+    // Locate templates..
+    std::list<Token *> templates(simplifyTemplatesGetTemplateDeclarations());
+
+    if (templates.empty())
+    {
+        removeTemplates(_tokens);
+        return;
+    }
+
+    // There are templates..
+    // Remove "typename" unless used in template arguments..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "typename")
+            tok->deleteThis();
+
+        if (Token::simpleMatch(tok, "template <"))
+        {
+            while (tok && tok->str() != ">")
+                tok = tok->next();
+            if (!tok)
+                break;
+        }
+    }
+
+    // Locate possible instantiations of templates..
+    std::list<Token *> used(simplifyTemplatesGetTemplateInstantiations());
 
     // No template instantiations? Then remove all templates.
     if (used.empty())
