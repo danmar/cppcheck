@@ -464,6 +464,11 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
                 break;
         }
 
+        // TODO: try to reduce false negatives. This is just a quick fix
+        // for TestBufferOverrun::array_index_for_question
+        if (tok2->str() == "?")
+            break;
+
         if (Token::Match(tok2, "if|switch"))
         {
             if (bailoutIfSwitch(tok2, arrayInfo.varid))
