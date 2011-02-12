@@ -424,6 +424,13 @@ public:
             const std::list<Token *> &instantiations);
 
     /**
+     * Simplify templates : expand all instantiatiations for a template
+     */
+    void simplifyTemplatesInstantiate(std::list<Token *> &used,
+                                      const Token *tok,
+                                      std::set<std::string> &expandedtemplates);
+
+    /**
      * Used after simplifyTemplates to perform a little cleanup.
      * Sometimes the simplifyTemplates isn't fully successful and then
      * there are function calls etc with "wrong" syntax.
