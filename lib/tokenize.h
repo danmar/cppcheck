@@ -25,6 +25,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <set>
 
 class Token;
 class ErrorLogger;
@@ -394,6 +395,12 @@ public:
      * Simplify templates
      */
     void simplifyTemplates();
+
+    /**
+     * Expand specialized templates : "template<>.."
+     * \return names of expanded templates
+     */
+    std::set<std::string> simplifyTemplatesExpandSpecialized();
 
     /**
      * Used after simplifyTemplates to perform a little cleanup.
