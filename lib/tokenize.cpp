@@ -6237,77 +6237,9 @@ bool Tokenizer::simplifyKnownVariables()
                 Token *tok3 = NULL;
                 bool valueIsPointer = false;
 
-                if (Token::Match(tok2->tokAt(-2), "for ( %varid% = %num% ; %varid% <|<= %num% ; ++| %varid% ++| ) {", varid))
-                {
-                    // is there a "break" in the for loop?
-                    bool hasbreak = false;
-                    unsigned int indentlevel4 = 0;   // indentlevel for tok4
-                    for (const Token *tok4 = tok2->previous()->link(); tok4; tok4 = tok4->next())
-                    {
-                        if (tok4->str() == "{")
-                            ++indentlevel4;
-                        else if (tok4->str() == "}")
-                        {
-                            if (indentlevel4 <= 1)
-                                break;
-                            --indentlevel4;
-                        }
-                        else if (tok4->str() == "break")
-                        {
-                            hasbreak = true;
-                            break;
-                        }
-                    }
-                    if (hasbreak)
-                        break;
+                if (!simplifyKnownVariablesGetData(varid, &tok2, &tok3, value, valueVarId, valueIsPointer, floatvars.find(tok2->varId()) != floatvars.end()))
+                    continue;
 
-                    // no break => the value of the counter value is known after the for loop..
-                    const std::string compareop = tok2->strAt(5);
-                    if (compareop == "<")
-                    {
-                        value = tok2->strAt(6);
-                        valueVarId = tok2->tokAt(6)->varId();
-                    }
-                    else
-                        value = MathLib::toString(MathLib::toLongNumber(tok2->strAt(6)) + 1);
-
-                    // Skip for-body..
-                    tok3 = tok2->previous()->link()->next()->link()->next();
-                }
-                else
-                {
-                    value = tok2->strAt(2);
-                    valueVarId = tok2->tokAt(2)->varId();
-                    if (Token::simpleMatch(tok2->next(), "["))
-                    {
-                        value = tok2->next()->link()->strAt(2);
-                        valueVarId = 0;
-                    }
-                    else if (value == "&")
-                    {
-                        value = tok2->strAt(3);
-                        valueVarId = tok2->tokAt(3)->varId();
-
-                        // *ptr = &var; *ptr = 5;
-                        // equals
-                        // var = 5; not *var = 5;
-                        if (tok2->strAt(4) == ";")
-                            valueIsPointer = true;
-                    }
-
-                    // float value should contain a "."
-                    else if (tok2->tokAt(2)->isNumber() &&
-                             floatvars.find(tok2->varId()) != floatvars.end() &&
-                             value.find(".") == std::string::npos)
-                    {
-                        value += ".0";
-                    }
-
-                    if (Token::simpleMatch(tok2->next(), "= &"))
-                        tok2 = tok2->tokAt(3);
-
-                    tok3 = tok2->next();
-                }
                 ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, pointeralias, indentlevel);
             }
         }
@@ -6317,6 +6249,87 @@ bool Tokenizer::simplifyKnownVariables()
     }
 
     return ret;
+}
+
+bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2, Token **_tok3, std::string &value, unsigned int &valueVarId, bool &valueIsPointer, bool floatvar)
+{
+    Token *tok2 = *_tok2;
+    Token *tok3 = *_tok3;
+
+    if (Token::Match(tok2->tokAt(-2), "for ( %varid% = %num% ; %varid% <|<= %num% ; ++| %varid% ++| ) {", varid))
+    {
+        // is there a "break" in the for loop?
+        bool hasbreak = false;
+        unsigned int indentlevel4 = 0;   // indentlevel for tok4
+        for (const Token *tok4 = tok2->previous()->link(); tok4; tok4 = tok4->next())
+        {
+            if (tok4->str() == "{")
+                ++indentlevel4;
+            else if (tok4->str() == "}")
+            {
+                if (indentlevel4 <= 1)
+                    break;
+                --indentlevel4;
+            }
+            else if (tok4->str() == "break")
+            {
+                hasbreak = true;
+                break;
+            }
+        }
+        if (hasbreak)
+            return false;
+
+        // no break => the value of the counter value is known after the for loop..
+        const std::string compareop = tok2->strAt(5);
+        if (compareop == "<")
+        {
+            value = tok2->strAt(6);
+            valueVarId = tok2->tokAt(6)->varId();
+        }
+        else
+            value = MathLib::toString(MathLib::toLongNumber(tok2->strAt(6)) + 1);
+
+        // Skip for-body..
+        tok3 = tok2->previous()->link()->next()->link()->next();
+    }
+    else
+    {
+        value = tok2->strAt(2);
+        valueVarId = tok2->tokAt(2)->varId();
+        if (Token::simpleMatch(tok2->next(), "["))
+        {
+            value = tok2->next()->link()->strAt(2);
+            valueVarId = 0;
+        }
+        else if (value == "&")
+        {
+            value = tok2->strAt(3);
+            valueVarId = tok2->tokAt(3)->varId();
+
+            // *ptr = &var; *ptr = 5;
+            // equals
+            // var = 5; not *var = 5;
+            if (tok2->strAt(4) == ";")
+                valueIsPointer = true;
+        }
+
+        // float value should contain a "."
+        else if (tok2->tokAt(2)->isNumber() &&
+                 floatvar &&
+                 value.find(".") == std::string::npos)
+        {
+            value += ".0";
+        }
+
+        if (Token::simpleMatch(tok2->next(), "= &"))
+            tok2 = tok2->tokAt(3);
+
+        tok3 = tok2->next();
+    }
+    *_tok2 = tok2;
+    *_tok3 = tok3;
+    return true;
 }
 
 bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, bool pointeralias, int indentlevel)
