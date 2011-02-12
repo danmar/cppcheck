@@ -2617,13 +2617,8 @@ std::set<std::string> Tokenizer::simplifyTemplatesExpandSpecialized()
     return expandedtemplates;
 }
 
-void Tokenizer::simplifyTemplates()
+std::list<Token *> Tokenizer::simplifyTemplatesGetTemplateDeclarations()
 {
-    std::set<std::string> expandedtemplates;
-
-    expandedtemplates = simplifyTemplatesExpandSpecialized();
-
-    // Locate templates..
     std::list<Token *> templates;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -2648,6 +2643,16 @@ void Tokenizer::simplifyTemplates()
             }
         }
     }
+    return templates;
+}
+
+void Tokenizer::simplifyTemplates()
+{
+    std::set<std::string> expandedtemplates(simplifyTemplatesExpandSpecialized());
+
+    // Locate templates..
+    std::list<Token *> templates(simplifyTemplatesGetTemplateDeclarations());
+
     if (templates.empty())
     {
         removeTemplates(_tokens);

@@ -24,6 +24,7 @@
 
 #include <string>
 #include <map>
+#include <list>
 #include <vector>
 #include <set>
 
@@ -398,9 +399,15 @@ public:
 
     /**
      * Expand specialized templates : "template<>.."
-     * \return names of expanded templates
+     * @return names of expanded templates
      */
     std::set<std::string> simplifyTemplatesExpandSpecialized();
+
+    /**
+     * Get template declarations
+     * @return list of template declarations
+     */
+    std::list<Token *> simplifyTemplatesGetTemplateDeclarations();
 
     /**
      * Used after simplifyTemplates to perform a little cleanup.
