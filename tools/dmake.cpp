@@ -225,7 +225,7 @@ int main(int argc, char **argv)
     // Makefile settings..
     if (release)
     {
-        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall");
+        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -DHAVE_DEPENDENCIES -Wall");
     }
     else
     {
@@ -235,6 +235,7 @@ int main(int argc, char **argv)
 
         // The _GLIBCXX_DEBUG doesn't work in cygwin
         makeConditionalVariable(fout, "CXXFLAGS",
+                                "-DHAVE_DEPENDENCIES "
                                 "-Wall "
                                 "-Wextra "
                                 "-Wshadow "
@@ -251,7 +252,7 @@ int main(int argc, char **argv)
     makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib");
     makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Iexternals -Iexternals/tinyxml");
     makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -Iexternals -Iexternals/tinyxml");
-    
+
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";
     fout << "DB2MAN=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl\n";

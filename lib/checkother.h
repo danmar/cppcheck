@@ -88,6 +88,7 @@ public:
         checkOther.checkCatchExceptionByValue();
         checkOther.checkMemsetZeroBytes();
         checkOther.checkIncorrectStringCompare();
+        checkOther.checkIncrementBoolean();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -184,6 +185,9 @@ public:
     /** @brief %Check for using bad usage of strncmp and substr */
     void checkIncorrectStringCompare();
 
+    /** @brief %Check for using postfix increment on bool */
+    void checkIncrementBoolean();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -209,6 +213,7 @@ public:
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
+    void incrementBooleanError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -249,6 +254,7 @@ public:
         c.memsetZeroBytesError(0, "varname");
         c.clarifyCalculationError(0);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
+        c.incrementBooleanError(0);
     }
 
     std::string myName() const
@@ -289,6 +295,7 @@ public:
                "* mutual exclusion over || always evaluating to true\n"
                "* exception caught by value instead of by reference\n"
                "* Clarify calculation with parantheses\n"
+               "* using increment on boolean\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";

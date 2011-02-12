@@ -308,6 +308,18 @@ public:
      */
     bool simplifyKnownVariables();
 
+    /**
+     * Utility function for simplifyKnownVariables. Get data about an
+     * assigned variable.
+     */
+    bool simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2, Token **_tok3, std::string &value, unsigned int &valueVarId, bool &valueIsPointer, bool floatvar);
+
+    /**
+     * utility function for simplifyKnownVariables. Perform simplification
+     * of a given variable
+     */
+    bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, bool pointeralias, int indentlevel);
+
     /** Replace a "goto" with the statements */
     void simplifyGoto();
 
@@ -574,7 +586,7 @@ public:
      */
     void duplicateEnumError(const Token *tok1, const Token *tok2, const std::string & type);
 
-    bool duplicateTypedef(Token **tokPtr, const Token *name);
+    bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef);
     void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type);
 
     /**

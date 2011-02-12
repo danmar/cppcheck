@@ -109,38 +109,18 @@ static std::string join(const std::list<std::string> &list, char separator)
 /** Just read the code into a string. Perform simple cleanup of the code */
 std::string Preprocessor::read(std::istream &istr, const std::string &filename, Settings *settings)
 {
-    // Get filedata from stream..
-    bool ignoreSpace = true;
-
-    // need space.. #if( => #if (
-    bool needSpace = false;
-
+    // ------------------------------------------------------------------------------------------
+    //
     // handling <backspace><newline>
     // when this is encountered the <backspace><newline> will be "skipped".
     // on the next <newline>, extra newlines will be added
-    unsigned int newlines = 0;
-
     std::ostringstream code;
+    unsigned int newlines = 0;
     for (unsigned char ch = readChar(istr); istr.good(); ch = readChar(istr))
     {
         // Replace assorted special chars with spaces..
         if (((ch & 0x80) == 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
             ch = ' ';
-
-        // Skip spaces after ' ' and after '#'
-        if (ch == ' ' && ignoreSpace)
-            continue;
-        ignoreSpace = bool(ch == ' ' || ch == '#' || ch == '\n');
-
-        if (needSpace)
-        {
-            if (ch == '(' || ch == '!')
-                code << " ";
-            else if (!std::isalpha(ch))
-                needSpace = false;
-        }
-        if (ch == '#')
-            needSpace = true;
 
         // <backspace><newline>..
         // for gcc-compatibility the trailing spaces should be ignored
@@ -178,8 +158,6 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
             else
                 code << "\\";
         }
-
-        // Just some code..
         else
         {
             code << char(ch);
@@ -192,8 +170,124 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
             }
         }
     }
+    std::string result = code.str();
+    code.str("");
 
-    return removeParantheses(removeComments(code.str(), filename, settings));
+    // ------------------------------------------------------------------------------------------
+    //
+    // Remove all comments..
+    result = removeComments(result, filename, settings);
+
+    // ------------------------------------------------------------------------------------------
+    //
+    // Clean up all preprocessor statements
+    result = preprocessCleanupDirectives(result);
+
+    // ------------------------------------------------------------------------------------------
+    //
+    // Clean up preprocessor #if statements with Parantheses
+    result = removeParantheses(result);
+
+    return result;
+}
+
+std::string Preprocessor::preprocessCleanupDirectives(const std::string &processedFile) const
+{
+    std::ostringstream code;
+    std::istringstream sstr(processedFile);
+
+    std::string line;
+    while (std::getline(sstr, line))
+    {
+        // Trim lines..
+        if (!line.empty() && line[0] == ' ')
+            line.erase(0, line.find_first_not_of(" "));
+        if (!line.empty() && line[line.size()-1] == ' ')
+            line.erase(line.find_last_not_of(" ") + 1);
+
+        // Preprocessor
+        if (!line.empty() && line[0] == '#')
+        {
+            enum
+            {
+                ESC_NONE,
+                ESC_SINGLE,
+                ESC_DOUBLE
+            } escapeStatus = ESC_NONE;
+
+            char prev = ' '; // hack to make it skip spaces between # and the directive
+            code << "#";
+            std::string::const_iterator i = line.begin();
+            i++;
+
+            // need space.. #if( => #if (
+            bool needSpace = true;
+            while (i != line.end())
+            {
+                // disable esc-mode
+                if (escapeStatus != ESC_NONE)
+                {
+                    if (prev != '\\' && escapeStatus == ESC_SINGLE && *i == '\'')
+                    {
+                        escapeStatus = ESC_NONE;
+                    }
+                    if (prev != '\\' && escapeStatus == ESC_DOUBLE && *i == '"')
+                    {
+                        escapeStatus = ESC_NONE;
+                    }
+                }
+                else
+                {
+                    // enable esc-mode
+                    if (escapeStatus == ESC_NONE && *i == '"')
+                        escapeStatus = ESC_DOUBLE;
+                    if (escapeStatus == ESC_NONE && *i == '\'')
+                        escapeStatus = ESC_SINGLE;
+                }
+                // skip double whitespace between arguments
+                if (escapeStatus == ESC_NONE && prev == ' ' && *i == ' ')
+                {
+                    i++;
+                    continue;
+                }
+                // Convert #if( to "#if ("
+                if (escapeStatus == ESC_NONE)
+                {
+                    if (needSpace)
+                    {
+                        if (*i == '(' || *i == '!')
+                            code << " ";
+                        else if (!std::isalpha(*i))
+                            needSpace = false;
+                    }
+                    if (*i == '#')
+                        needSpace = true;
+                }
+                code << *i;
+                if (escapeStatus != ESC_NONE && prev == '\\' && *i == '\\')
+                {
+                    prev = ' ';
+                }
+                else
+                {
+                    prev = *i;
+                }
+                i++;
+            }
+            if (escapeStatus != ESC_NONE)
+            {
+                // unmatched quotes.. compiler should probably complain about this..
+            }
+        }
+        else
+        {
+            // Do not mess with regular code..
+            code << line;
+        }
+        code << (sstr.eof()?"":"\n");
+    }
+
+    return code.str();
 }
 
 static bool hasbom(const std::string &str)
@@ -667,9 +761,6 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         file0 = filename;
 
     processedFile = read(srcCodeStream, filename, _settings);
-
-    // normalize the whitespaces of the file
-    preprocessWhitespaces(processedFile);
 
     // Remove asm(...)
     removeAsm(processedFile);
@@ -1460,7 +1551,8 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
             return "";
         }
 
-        if (!match && line.compare(0, 8, "#define ") == 0)
+        if (!match && (line.compare(0, 8, "#define ") == 0 ||
+                       line.compare(0, 6, "#undef") == 0))
         {
             // Remove define that is not part of this configuration
             line = "";
@@ -1635,15 +1727,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
         if (!processedFile.empty())
         {
-            // Replace all tabs with spaces..
-            std::replace(processedFile.begin(), processedFile.end(), '\t', ' ');
-
-            // Remove all indentation..
-            if (!processedFile.empty() && processedFile[0] == ' ')
-                processedFile.erase(0, processedFile.find_first_not_of(" "));
-
             // Remove space characters that are after or before new line character
-            processedFile = removeSpaceNearNL(processedFile);
             processedFile = "#file \"" + filename + "\"\n" + processedFile + "\n#endfile";
             code.insert(pos, processedFile);
 
@@ -2048,12 +2132,14 @@ public:
 
         else if (_params.empty())
         {
-            std::string::size_type pos = _macro.find(" ");
+            std::string::size_type pos = _macro.find_first_of(" \"");
             if (pos == std::string::npos)
                 macrocode = "";
             else
             {
-                macrocode = _macro.substr(pos + 1);
+                if (_macro[pos] == ' ')
+                    pos++;
+                macrocode = _macro.substr(pos);
                 if ((pos = macrocode.find_first_of("\r\n")) != std::string::npos)
                     macrocode.erase(pos);
             }

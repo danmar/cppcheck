@@ -106,7 +106,6 @@ public:
      * @param processedFile The data to be processed
      */
     static void preprocessWhitespaces(std::string &processedFile);
-
 protected:
 
     /**
@@ -151,6 +150,12 @@ protected:
      * @return code with reduced parentheses
      */
     static std::string removeParantheses(const std::string &str);
+
+    /**
+     * clean up #-preprocessor lines (only)
+     * @param processedFile The data to be processed
+     */
+    std::string preprocessCleanupDirectives(const std::string &processedFile) const;
 
     /**
      * Returns the string between double quote characters or \< \> characters.

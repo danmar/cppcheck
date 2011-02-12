@@ -44,8 +44,11 @@ Compiling
 
     g++ (for experts)
     =================
-        If you just want to build Cppcheck then you can use this command:
-            g++ -o cppcheck -lpcre -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
+        If you just want to build Cppcheck without dependencies then you can use this command:
+            g++ -o cppcheck -Ilib cli/*.cpp lib/*.cpp
+
+        If you want to use --rule and --rule-file then dependencies are needed:
+            g++ -o cppcheck -lpcre -DHAVE_DEPENDENCIES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
     mingw
     =====
         make LDFLAGS=-lshlwapi

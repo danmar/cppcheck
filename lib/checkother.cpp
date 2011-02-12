@@ -34,6 +34,38 @@ CheckOther instance;
 
 //---------------------------------------------------------------------------
 
+void CheckOther::checkIncrementBoolean()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%var% ++"))
+        {
+            if (tok->varId())
+            {
+                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "bool %varid%", tok->varId());
+                if (declTok)
+                    incrementBooleanError(tok);
+            }
+        }
+    }
+}
+
+void CheckOther::incrementBooleanError(const Token *tok)
+{
+    reportError(
+        tok,
+        Severity::style,
+        "incrementboolean",
+        "The use of a variable of type bool with the ++ postfix operator is always true and deprecated by the C++ Standard.\n"
+        "The operand of a postfix increment operator may be of type bool but it is deprecated by C++ Standard (Annex D-1) and the operand is always set to true\n"
+    );
+}
+
+//---------------------------------------------------------------------------
+
 
 void CheckOther::clarifyCalculation()
 {

@@ -28,8 +28,10 @@
 #include "path.h"
 #include "filelister.h"
 
+#ifdef HAVE_DEPENDENCIES
 // xml is used in rules
 #include <tinyxml.h>
+#endif
 
 static void AddFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
 {
@@ -503,6 +505,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->_showtime = SHOWTIME_NONE;
         }
 
+#ifdef HAVE_DEPENDENCIES
         // Rule given at command line
         else if (strncmp(argv[i], "--rule=", 7) == 0)
         {
@@ -549,6 +552,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 }
             }
         }
+#endif
 
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)

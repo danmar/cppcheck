@@ -207,6 +207,12 @@ protected slots:
     void CheckDone();
 
     /**
+    * @brief Lock down UI while checking
+    *
+    */
+    void CheckLockDownUI();
+
+    /**
     * @brief Slot for enabling save and clear button
     *
     */

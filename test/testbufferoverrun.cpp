@@ -116,6 +116,7 @@ private:
         TEST_CASE(array_index_for_break);  // FP: for,break
         TEST_CASE(array_index_for);        // FN: for,if
         TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
+        TEST_CASE(array_index_for_question);	// #2561: for, ?:
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -133,6 +134,7 @@ private:
         TEST_CASE(buffer_overrun_14);
         TEST_CASE(buffer_overrun_15); // ticket #1787
         TEST_CASE(buffer_overrun_16);
+        TEST_CASE(buffer_overrun_17); // ticket #2548
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
 
         // It is undefined behaviour to point out of bounds of an array
@@ -886,8 +888,8 @@ private:
                   "    a[-1] = 0;\n"    // negative index
                   "    a[256] = 0;\n"   // 256 > CHAR_MAX
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[256]' index -1 out of bounds\n"
-                          "[test.cpp:4]: (error) Array 'a[256]' index 256 out of bounds\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[256]' index 256 out of bounds\n"
+                          "[test.cpp:3]: (error) Array 'a[256]' index -1 out of bounds\n", errout.str());
         }
 
         check("void f(signed char n) {\n"
@@ -1380,6 +1382,18 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: a\n", errout.str());
     }
 
+    void array_index_for_question()
+    {
+        // Ticket #2561 - using ?: inside for loop
+        check("void f() {\n"
+              "    int a[10];\n"
+              "    for (int i = 0; i != 10; ++i) {\n"
+              "        i == 0 ? 0 : a[i-1];\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void buffer_overrun_1()
     {
         check("void f()\n"
@@ -1858,6 +1872,15 @@ private:
               "    std::memcpy(b, a, sizeof(a));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void buffer_overrun_17() // ticket #2548
+    {
+        check("void f() {\n"
+              "    char t[8];\n"
+              "    sprintf(t, \"%s\", \"foo     bar\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch()

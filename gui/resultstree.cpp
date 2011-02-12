@@ -87,8 +87,9 @@ QStandardItem *ResultsTree::CreateNormalItem(const QString &name)
 
 QStandardItem *ResultsTree::CreateLineNumberItem(const QString &linenumber)
 {
-    QStandardItem *item = new QStandardItem(linenumber);
-    item->setData(linenumber, Qt::ToolTipRole);
+    QStandardItem *item = new QStandardItem();
+    item->setData(QVariant(linenumber.toULongLong()), Qt::DisplayRole);
+    item->setToolTip(linenumber);
     item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
     item->setEditable(false);
     return item;

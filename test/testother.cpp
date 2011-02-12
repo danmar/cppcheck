@@ -104,6 +104,8 @@ private:
         TEST_CASE(clarifyCalculation);
 
         TEST_CASE(incorrectStringCompare);
+
+        TEST_CASE(incrementBoolean);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -141,6 +143,7 @@ private:
         checkOther.checkMemsetZeroBytes();
         checkOther.clarifyCalculation();
         checkOther.checkIncorrectStringCompare();
+        checkOther.checkIncrementBoolean();
     }
 
 
@@ -1892,6 +1895,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+
+    void incrementBoolean()
+    {
+        check("bool bValue = true;\n"
+              "bValue++;\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The use of a variable of type bool with the ++ postfix operator is always true and deprecated by the C++ Standard.\n", errout.str());
+
+        check("void f(bool test){\n"
+              "    test++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The use of a variable of type bool with the ++ postfix operator is always true and deprecated by the C++ Standard.\n", errout.str());
+
+        check("void f(int test){\n"
+              "    test++;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestOther)

@@ -148,6 +148,8 @@ private:
         TEST_CASE(macro_simple11);
         TEST_CASE(macro_simple12);
         TEST_CASE(macro_simple13);
+        TEST_CASE(macro_simple14);
+        TEST_CASE(macro_simple15);
         TEST_CASE(macroInMacro);
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
@@ -198,6 +200,11 @@ private:
         TEST_CASE(endfile);
 
         TEST_CASE(redundant_config);
+
+        TEST_CASE(testPreprocessorRead1);
+        TEST_CASE(testPreprocessorRead2);
+        TEST_CASE(testPreprocessorRead3);
+        TEST_CASE(testPreprocessorRead4);
     }
 
 
@@ -209,7 +216,7 @@ private:
         Preprocessor preprocessor(&settings, this);
         std::istringstream istr(code);
         std::string codestr(preprocessor.read(istr,"test.c",0));
-        ASSERT_EQUALS("a \n#aa b \n", codestr);
+        ASSERT_EQUALS("a\n#aa b\n", codestr);
     }
 
     void readCode2()
@@ -323,7 +330,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS("\n\" #ifdef WIN32\"\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\n\" # ifdef WIN32\"\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\n\n\nqwerty\n\n", actual["WIN32"]);
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
@@ -1363,7 +1370,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS("#define str \"abc\" \"def\" \n\nabcdef = str;\n", preprocessor.read(istr, "test.c", 0));
+        ASSERT_EQUALS("#define str \"abc\" \"def\"\n\nabcdef = str;\n", preprocessor.read(istr, "test.c", 0));
     }
 
     void multiline2()
@@ -1574,6 +1581,20 @@ private:
         const char filedata[] = "#define TRACE(x)\n"
                                 "TRACE(;if(a))\n";
         ASSERT_EQUALS("\n\n", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macro_simple14()
+    {
+        const char filedata[] = "#define A \"  a  \"\n"
+                                "printf(A);\n";
+        ASSERT_EQUALS("\nprintf(\"  a  \");\n", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macro_simple15()
+    {
+        const char filedata[] = "#define FOO\"foo\"\n"
+                                "FOO\n";
+        ASSERT_EQUALS("\n\"foo\"\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macroInMacro()
@@ -2462,6 +2483,25 @@ private:
             ASSERT_EQUALS("\n\n1\n\n", actual[""]);
             ASSERT_EQUALS(1, (int)actual.size());
         }
+
+        {
+            const char filedata[] = "#define A 1\n"
+                                    "#if 0\n"
+                                    "#undef A\n"
+                                    "#endif\n"
+                                    "A\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Settings settings;
+            Preprocessor preprocessor(&settings, this);
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS("\n\n\n\n1\n", actual[""]);
+            ASSERT_EQUALS(1, (int)actual.size());
+        }
     }
 
     void define_ifndef1()
@@ -2589,6 +2629,63 @@ private:
         else
         {
             ASSERT_EQUALS("A;A;B is NOT checked", "A;A;B is NOT checked");
+        }
+    }
+
+    void testPreprocessorRead1()
+    {
+        const std::string filedata("/*\n*/ # /*\n*/ defi\\\nne FO\\\nO 10\\\n20");
+        std::istringstream istr(filedata.c_str());
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        ASSERT_EQUALS("#define FOO 1020", preprocessor.read(istr, "test.cpp", 0));
+    }
+
+    void testPreprocessorRead2()
+    {
+        const std::string filedata("\"foo\\\\\nbar\"");
+        std::istringstream istr(filedata.c_str());
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        ASSERT_EQUALS("\"foo\\bar\"", preprocessor.read(istr, "test.cpp", 0));
+    }
+
+    void testPreprocessorRead3()
+    {
+        const std::string filedata("#define A \" a  \"\n\" b\"");
+        std::istringstream istr(filedata.c_str());
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        ASSERT_EQUALS(filedata, preprocessor.read(istr, "test.cpp", 0));
+    }
+
+    void testPreprocessorRead4()
+    {
+        {
+            // test < \\> < > (unescaped)
+            const std::string filedata("#define A \" \\\\\"/*space*/  \" \"");
+            std::istringstream istr(filedata.c_str());
+            Settings settings;
+            Preprocessor preprocessor(&settings, this);
+            ASSERT_EQUALS("#define A \" \\\\\" \" \"", preprocessor.read(istr, "test.cpp", 0));
+        }
+
+        {
+            // test <" \\\"  "> (unescaped)
+            const std::string filedata("#define A \" \\\\\\\"  \"");
+            std::istringstream istr(filedata.c_str());
+            Settings settings;
+            Preprocessor preprocessor(&settings, this);
+            ASSERT_EQUALS("#define A \" \\\\\\\"  \"", preprocessor.read(istr, "test.cpp", 0));
+        }
+
+        {
+            // test <" \\\\">  <" "> (unescaped)
+            const std::string filedata("#define A \" \\\\\\\\\"/*space*/  \" \"");
+            std::istringstream istr(filedata.c_str());
+            Settings settings;
+            Preprocessor preprocessor(&settings, this);
+            ASSERT_EQUALS("#define A \" \\\\\\\\\" \" \"", preprocessor.read(istr, "test.cpp", 0));
         }
     }
 };
