@@ -1897,20 +1897,6 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-
-        check("class A {\n"
-              "    void foo();\n"
-              "    bool b[7];\n"
-              "};\n"
-              "\n"
-              "void A::foo() {\n"
-              "    for (int i=0; i<7; i++) {\n"
-              "        b[i] = b[i+1];\n"
-              "    }\n"
-              "}\n");
-        TODO_ASSERT_EQUALS("error",    // wanted result
-                           "",         // current result
-                           errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch()
