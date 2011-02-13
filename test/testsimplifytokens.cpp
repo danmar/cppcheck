@@ -304,7 +304,8 @@ private:
         TEST_CASE(initstruct);
 
         // struct ABC { } abc; => struct ABC { }; ABC abc;
-        TEST_CASE(simplifyStructDecl);
+        TEST_CASE(simplifyStructDecl1);
+        TEST_CASE(simplifyStructDecl2); // ticket #2579
 
         // register int var; => int var;
         // inline int foo() {} => int foo() {}
@@ -6222,7 +6223,7 @@ private:
                            tok("; struct A a = { .buf = {0} };"));
     }
 
-    void simplifyStructDecl()
+    void simplifyStructDecl1()
     {
         {
             const char code[] = "struct ABC { } abc;";
@@ -6363,6 +6364,13 @@ private:
             const char expected[] = "void f ( ) { int A ; A = 1 ; int B ; B = 2 ; int C ; C = 3 ; int D ; int E ; E = 5 ; int F ; F = 6 ; }";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+    }
+
+    void simplifyStructDecl2() // ticket #2479 (segmentation fault)
+    {
+        const char code[] = "struct { char c; }";
+        const char expected[] = "struct { char c ; }";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void removeUnwantedKeywords()

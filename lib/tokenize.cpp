@@ -8748,7 +8748,7 @@ void Tokenizer::simplifyStructDecl()
             }
 
             // unnamed anonymous struct/union so remove it
-            else if (tok->next()->str() == ";")
+            else if (tok->next() && tok->next()->str() == ";")
             {
                 if (tok1->str() == "union")
                 {
