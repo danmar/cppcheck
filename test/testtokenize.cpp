@@ -1637,21 +1637,14 @@ private:
                                 "  int i = v;\n"
                                 "  return h | i;\n"
                                 "}\n";
-            const char wanted[] = "\n\n##file 0\n"
-                                  "1: int foo ( int u@1 , int v@2 )\n"
-                                  "2: {\n"
-                                  "3: ;\n"
-                                  "4:\n"
-                                  "5: return u@1 | v@2 ;\n"
-                                  "6: }\n";
-            const char current[] = "\n\n##file 0\n"
-                                   "1: int foo ( int u@1 , int v@2 )\n"
-                                   "2: {\n"
-                                   "3: ;\n"
-                                   "4: int i@4 ; i@4 = v@2 ;\n"
-                                   "5: return u@1 | i@4 ;\n"
-                                   "6: }\n";
-            TODO_ASSERT_EQUALS(wanted, current, tokenizeDebugListing(code, true));
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3: ;\n"
+                                    "4:\n"
+                                    "5: return u@1 | v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
         }
 
         {
