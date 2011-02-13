@@ -227,7 +227,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                     // out of line function
                     if (Token::Match(end, ") const| ;") ||
-                        Token::Match(end, ") const| = %any% ;"))
+                        Token::Match(end, ") const| = %any%"))
                     {
                         // find the function implementation later
                         tok = end->next();

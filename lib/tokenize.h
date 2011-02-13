@@ -24,7 +24,9 @@
 
 #include <string>
 #include <map>
+#include <list>
 #include <vector>
+#include <set>
 
 class Token;
 class ErrorLogger;
@@ -394,6 +396,43 @@ public:
      * Simplify templates
      */
     void simplifyTemplates();
+
+    /**
+     * Expand specialized templates : "template<>.."
+     * @return names of expanded templates
+     */
+    std::set<std::string> simplifyTemplatesExpandSpecialized();
+
+    /**
+     * Get template declarations
+     * @return list of template declarations
+     */
+    std::list<Token *> simplifyTemplatesGetTemplateDeclarations();
+
+    /**
+     * Get template instantiations
+     * @return list of template instantiations
+     */
+    std::list<Token *> simplifyTemplatesGetTemplateInstantiations();
+
+    /**
+     * simplify template instantiations (use default argument values)
+     * @param templates list of template declarations
+     * @param instantiations list of template instantiations
+     */
+    void simplifyTemplatesUseDefaultArgumentValues(const std::list<Token *> &templates,
+            const std::list<Token *> &instantiations);
+
+    /**
+     * Simplify templates : expand all instantiatiations for a template
+     * @todo It seems that inner templates should be instantiated recursively
+     * @param tok token where the template declaration begins
+     * @param used a list of template usages (not necessarily just for this template)
+     * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
+     */
+    void simplifyTemplatesInstantiate(const Token *tok,
+                                      std::list<Token *> &used,
+                                      std::set<std::string> &expandedtemplates);
 
     /**
      * Used after simplifyTemplates to perform a little cleanup.

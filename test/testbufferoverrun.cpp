@@ -84,7 +84,6 @@ private:
         TEST_CASE(array_index_7);
         TEST_CASE(array_index_8);
         TEST_CASE(array_index_9);
-        TEST_CASE(array_index_10);
         TEST_CASE(array_index_11);
         TEST_CASE(array_index_12);
         TEST_CASE(array_index_13);
@@ -135,6 +134,7 @@ private:
         TEST_CASE(buffer_overrun_15); // ticket #1787
         TEST_CASE(buffer_overrun_16);
         TEST_CASE(buffer_overrun_17); // ticket #2548
+        TEST_CASE(buffer_overrun_18); // ticket #2576 - for, calculation with loop variable
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
 
         // It is undefined behaviour to point out of bounds of an array
@@ -594,27 +594,6 @@ private:
               "    foo(p+1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-
-    void array_index_10()
-    {
-        check("struct ABC\n"
-              "{\n"
-              "    char str[10];\n"
-              "};\n"
-              "\n"
-              "static void memclr( char *data )\n"
-              "{\n"
-              "    data[10] = 0;\n"
-              "}\n"
-              "\n"
-              "static void f(struct ABC *abc)\n"
-              "{\n"
-              "    memclr(abc->str);\n"
-              "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (possible error) Array index out of bounds\n",
-                           "", errout.str());
     }
 
 
@@ -1881,6 +1860,21 @@ private:
               "    sprintf(t, \"%s\", \"foo     bar\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+    }
+
+    void buffer_overrun_18() // ticket #2576
+    {
+        check("class A {\n"
+              "    void foo();\n"
+              "    bool b[7];\n"
+              "};\n"
+              "\n"
+              "void A::foo() {\n"
+              "    for (int i=0; i<6; i++) {\n"
+              "        b[i] = b[i+1];\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch()

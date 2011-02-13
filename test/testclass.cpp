@@ -191,6 +191,7 @@ private:
         TEST_CASE(symboldatabase10); // ticket #2537
         TEST_CASE(symboldatabase11); // ticket #2539
         TEST_CASE(symboldatabase12); // ticket #2547
+        TEST_CASE(symboldatabase13); // ticket #2577
     }
 
     // Check the operator Equal
@@ -5523,6 +5524,16 @@ private:
         // ticket #2547 - segmentation fault
         checkConst("class foo {\n"
                    "    void bar2 () = __null;\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase13()
+    {
+        // ticket #2577 - segmentation fault
+        checkConst("class foo {\n"
+                   "    void bar2 () = A::f;\n"
                    "};\n");
 
         ASSERT_EQUALS("", errout.str());

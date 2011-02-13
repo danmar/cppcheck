@@ -317,12 +317,21 @@ void CheckOther::checkSelfAssignment()
     if (!_settings->_checkCodingStyle)
         return;
 
+    // POD variables..
+    std::set<unsigned int> pod;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->isStandardType() && tok->next()->varId() && Token::Match(tok->tokAt(2), "[,);]"))
+            pod.insert(tok->next()->varId());
+    }
+
     const char selfAssignmentPattern[] = "%var% = %var% ;|=|)";
     const Token *tok = Token::findmatch(_tokenizer->tokens(), selfAssignmentPattern);
     while (tok)
     {
         if (Token::Match(tok->previous(), "[;{}]") &&
-            tok->varId() && tok->varId() == tok->tokAt(2)->varId())
+            tok->varId() && tok->varId() == tok->tokAt(2)->varId() &&
+            pod.find(tok->varId()) != pod.end())
         {
             selfAssignmentError(tok, tok->str());
         }

@@ -23,6 +23,7 @@
 #include <string>
 #include <istream>
 #include <map>
+#include <set>
 
 /// @addtogroup Core
 /// @{
@@ -135,8 +136,42 @@ public:
     class Suppressions
     {
     private:
+        class FileMatcher
+        {
+        private:
+            /** @brief List of filenames suppressed. */
+            std::map<std::string, std::set<unsigned int> > _files;
+            /** @brief List of globs suppressed. */
+            std::map<std::string, std::set<unsigned int> > _globs;
+
+            /**
+             * @brief Match a name against a glob pattern.
+             * @param pattern The glob pattern to match.
+             * @param name The filename to match against the glob pattern.
+             * @return match success
+             */
+            static bool match(const std::string &pattern, const std::string &name);
+
+        public:
+            /**
+             * @brief Add a file or glob (and line number).
+             * @param name File name or glob pattern
+             * @param line Line number
+             * @return error message. empty upon success
+             */
+            std::string addFile(const std::string &name, unsigned int line);
+
+            /**
+             * @brief Returns true if the file name matches a previously added file or glob pattern.
+             * @param name File name to check
+             * @param line Line number
+             * @return true if this filename/line matches
+             */
+            bool isSuppressed(const std::string &file, unsigned int line);
+        };
+
         /** @brief List of error which the user doesn't want to see. */
-        std::map<std::string, std::map<std::string, std::list<unsigned int> > > _suppressions;
+        std::map<std::string, FileMatcher> _suppressions;
     public:
         /**
          * @brief Don't show errors listed in the file.

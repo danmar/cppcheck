@@ -791,7 +791,7 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
         return;
 
     // Get index variable and stopsize.
-    bool condition_out_of_bounds = true;
+    bool condition_out_of_bounds = bool(size > 0);
     if (MathLib::toLongNumber(max_counter_value) < size)
         condition_out_of_bounds = false;
 

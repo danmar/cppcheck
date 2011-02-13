@@ -385,6 +385,10 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
     line flag. Copy and paste the <literal>id</literal> string from the XML
     output.</para>
 
+    <para>The <literal>filename</literal> may include the wildcard characters
+    * or ?, which match any sequence of characters or any single character
+    respectively.</para>
+
     <para>Here is an example:</para>
 
     <programlisting>memleak:file1.cpp

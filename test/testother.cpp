@@ -1157,14 +1157,12 @@ private:
         check("void foo()\n"
               "{\n"
               "        int x = x;\n"
-              "        return 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"x\" to itself\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "        std::string var = var = \"test\";\n"
-              "        return 0;\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"var\" to itself\n", "", errout.str());
 
@@ -1180,6 +1178,13 @@ private:
               "{\n"
               "        int *x = getx();\n"
               "        *x = x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // non-primitive type -> there might be some side effects
+        check("void foo()\n"
+              "{\n"
+              "        Fred fred; fred = fred;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
