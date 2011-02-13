@@ -6357,7 +6357,7 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
 
 bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, bool pointeralias, int indentlevel)
 {
-    bool ret = false;;
+    bool ret = false;
 
     Token* bailOutFromLoop = 0;
     int indentlevel3 = indentlevel;
@@ -6618,10 +6618,10 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 
         // Variable is used in calculation..
         if (((tok3->previous()->varId() > 0) && Token::Match(tok3, ("& " + structname + " %varid%").c_str(), varid)) ||
-            Token::Match(tok3, ("[=+-*/[] " + structname + " %varid% [=?+-*/;])]").c_str(), varid) ||
-            Token::Match(tok3, ("[(=+-*/[] " + structname + " %varid% <<|>>").c_str(), varid) ||
-            Token::Match(tok3, ("<<|>> " + structname + " %varid% [+-*/;])]").c_str(), varid) ||
-            Token::Match(tok3->previous(), ("[=+-*/[] ( " + structname + " %varid%").c_str(), varid))
+            Token::Match(tok3, ("[=+-*/%[] " + structname + " %varid% [=?+-*/%;])]").c_str(), varid) ||
+            Token::Match(tok3, ("[(=+-*/%[] " + structname + " %varid% <<|>>").c_str(), varid) ||
+            Token::Match(tok3, ("<<|>> " + structname + " %varid% [+-*/%;])]").c_str(), varid) ||
+            Token::Match(tok3->previous(), ("[=+-*/%[] ( " + structname + " %varid%").c_str(), varid))
         {
             if (!structname.empty())
             {
