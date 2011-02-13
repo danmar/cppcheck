@@ -84,7 +84,6 @@ private:
         TEST_CASE(array_index_7);
         TEST_CASE(array_index_8);
         TEST_CASE(array_index_9);
-        TEST_CASE(array_index_10);
         TEST_CASE(array_index_11);
         TEST_CASE(array_index_12);
         TEST_CASE(array_index_13);
@@ -595,27 +594,6 @@ private:
               "    foo(p+1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-
-    void array_index_10()
-    {
-        check("struct ABC\n"
-              "{\n"
-              "    char str[10];\n"
-              "};\n"
-              "\n"
-              "static void memclr( char *data )\n"
-              "{\n"
-              "    data[10] = 0;\n"
-              "}\n"
-              "\n"
-              "static void f(struct ABC *abc)\n"
-              "{\n"
-              "    memclr(abc->str);\n"
-              "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (possible error) Array index out of bounds\n",
-                           "", errout.str());
     }
 
 
