@@ -854,6 +854,65 @@ static Token *splitDefinitionFromTypedef(Token *tok)
     return tok;
 }
 
+/* This function is called when processing function related typedefs.
+ * If simplifyTypedef generates an "Internal Error" message and the
+ * code that generated it deals in some way with functions, then this
+ * fucntion will probably need to be extended to handle a new function
+ * related pattern */
+static Token *processFunc(Token *tok2, bool inOperator)
+{
+    if (tok2->next() && tok2->next()->str() != ")" &&
+        tok2->next()->str() != ",")
+    {
+        // skip over tokens for some types of canonicalization
+        if (Token::Match(tok2->next(), "( * %type% ) ("))
+            tok2 = tok2->tokAt(5)->link();
+        else if (Token::Match(tok2->next(), "* ( * %type% ) ("))
+            tok2 = tok2->tokAt(6)->link();
+        else if (Token::Match(tok2->next(), "* ( %type% [") &&
+                 Token::Match(tok2->tokAt(4)->link(), "] ) ;|="))
+            tok2 = tok2->tokAt(4)->link()->next();
+        else if (Token::Match(tok2->next(), "* ( * %type% ("))
+            tok2 = tok2->tokAt(5)->link()->next();
+        else
+        {
+            if (tok2->next()->str() == "(")
+                tok2 = tok2->next()->link();
+            else if (!inOperator && !Token::Match(tok2->next(), "[|>|;"))
+            {
+                tok2 = tok2->next();
+
+                while (Token::Match(tok2, "*|&") &&
+                       !Token::Match(tok2->next(), ")|>"))
+                    tok2 = tok2->next();
+
+                // skip over namespace
+                while (Token::Match(tok2, "%var% ::"))
+                    tok2 = tok2->tokAt(2);
+
+                if (tok2->str() == "(" &&
+                    tok2->link()->next()->str() == "(")
+                {
+                    tok2 = tok2->link();
+
+                    if (tok2->next()->str() == "(")
+                        tok2 = tok2->next()->link();
+                }
+
+                // skip over typedef parameter
+                if (tok2->next()->str() == "(")
+                {
+                    tok2 = tok2->next()->link();
+
+                    if (tok2->next()->str() == "(")
+                        tok2 = tok2->next()->link();
+                }
+            }
+        }
+    }
+    return tok2;
+}
+
 void Tokenizer::simplifyTypedef()
 {
     std::vector<Space> spaceInfo;
@@ -1473,49 +1532,7 @@ void Tokenizer::simplifyTypedef()
                         tok2 = copyTokens(tok2, funcStart, funcEnd);
 
                         if (!inCast)
-                        {
-                            if (tok2->next() && tok2->next()->str() != ")" &&
-                                tok2->next()->str() != ",")
-                            {
-                                if (Token::Match(tok2->next(), "( * %type% ) ("))
-                                    tok2 = tok2->tokAt(5)->link();
-                                else
-                                {
-                                    if (tok2->next()->str() == "(")
-                                        tok2 = tok2->next()->link();
-                                    else if (!inOperator && !Token::Match(tok2->next(), "[|>|;"))
-                                    {
-                                        tok2 = tok2->next();
-
-                                        while (Token::Match(tok2, "*|&") &&
-                                               !Token::Match(tok2->next(), ")|>"))
-                                            tok2 = tok2->next();
-
-                                        // skip over namespace
-                                        while (Token::Match(tok2, "%var% ::"))
-                                            tok2 = tok2->tokAt(2);
-
-                                        if (tok2->str() == "(" &&
-                                            tok2->link()->next()->str() == "(")
-                                        {
-                                            tok2 = tok2->link();
-
-                                            if (tok2->next()->str() == "(")
-                                                tok2 = tok2->next()->link();
-                                        }
-
-                                        // skip over typedef parameter
-                                        else if (tok2->next()->str() == "(")
-                                        {
-                                            tok2 = tok2->next()->link();
-
-                                            if (tok2->next()->str() == "(")
-                                                tok2 = tok2->next()->link();
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                            tok2 = processFunc(tok2, inOperator);
 
                         tok2->insertToken(")");
                         tok2 = tok2->next();
@@ -1586,45 +1603,7 @@ void Tokenizer::simplifyTypedef()
                         }
 
                         if (!inCast)
-                        {
-                            if (tok2->next() && tok2->next()->str() != ")" &&
-                                tok2->next()->str() != ",")
-                            {
-                                if (Token::Match(tok2->next(), "( * %type% ) ("))
-                                    tok2 = tok2->tokAt(5)->link();
-                                else if (Token::Match(tok2->next(), "* ( * %type% ) ("))
-                                    tok2 = tok2->tokAt(6)->link();
-                                else if (Token::Match(tok2->next(), "* ( %type% [") &&
-                                         Token::Match(tok2->tokAt(4)->link(), "] ) ;|="))
-                                    tok2 = tok2->tokAt(4)->link()->next();
-                                else
-                                {
-                                    if (tok2->next()->str() == "(")
-                                        tok2 = tok2->next()->link();
-                                    else if (!inOperator && !Token::Match(tok2->next(), "[|>|;"))
-                                    {
-                                        tok2 = tok2->next();
-
-                                        while (Token::Match(tok2, "*|&") &&
-                                               !Token::Match(tok2->next(), ")|>"))
-                                            tok2 = tok2->next();
-
-                                        // skip over namespace
-                                        while (Token::Match(tok2, "%var% ::"))
-                                            tok2 = tok2->tokAt(2);
-
-                                        // skip over typedef parameter
-                                        if (tok2->next()->str() == "(")
-                                        {
-                                            tok2 = tok2->next()->link();
-
-                                            if (tok2->next()->str() == "(")
-                                                tok2 = tok2->next()->link();
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                            tok2 = processFunc(tok2, inOperator);
 
                         if (needParen)
                         {
@@ -2290,14 +2269,10 @@ bool Tokenizer::tokenize(std::istream &code,
     // typedef..
     simplifyTypedef();
 
-    // Fix internal error by updating links (#2376)
-    // TODO: Remove this "createLinks". Make sure that the testcase
-    //       TestSimplifyTokens::simplifyTypedefFunction8
-    //       doesn't fail.
-    if (!createLinks())
+    // catch bad typedef canonicalization
+    if (!validate())
     {
         // Source has syntax errors, can't proceed
-        cppcheckError(0);
         return false;
     }
 
