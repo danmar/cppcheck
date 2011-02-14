@@ -5,7 +5,7 @@ INCLUDEPATH += . ../lib
 OBJECTS_DIR = temp
 CONFIG += warn_on
 CONFIG -= qt app_bundle
-DEFINES += HAVE_DEPENDENCIES
+DEFINES += HAVE_RULES
 
 BASEPATH = ../externals/tinyxml/
 include($$PWD/../externals/tinyxml/tinyxml.pri)
