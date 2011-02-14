@@ -236,6 +236,7 @@ private:
         TEST_CASE(simplifyTypedef76); // ticket #2453
         TEST_CASE(simplifyTypedef77); // ticket #2554
         TEST_CASE(simplifyTypedef78); // ticket #2568
+        TEST_CASE(simplifyTypedef79); // ticket #2348
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4855,6 +4856,21 @@ private:
                             "typedef struct A { } A_t;\n"
                             "A_t a1;\n";
         const std::string expected = "; struct A a ; struct A { } ; struct A a1 ;";
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void simplifyTypedef79() // ticket #2348
+    {
+        const char code[] = "typedef int (Tcl_ObjCmdProc) (int x);\n"
+                            "typedef struct LangVtab\n"
+                            "{\n"
+                            "    Tcl_ObjCmdProc * (*V_LangOptionCommand);\n"
+                            "} LangVtab;\n";
+        const std::string expected = "; "
+                                     "struct LangVtab "
+                                     "{ "
+                                     "int ( * ( * V_LangOptionCommand ) ) ( int x ) ; "
+                                     "} ;";
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 

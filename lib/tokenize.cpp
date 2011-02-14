@@ -869,6 +869,8 @@ static Token *processFunc(Token *tok2, bool inOperator)
             tok2 = tok2->tokAt(5)->link();
         else if (Token::Match(tok2->next(), "* ( * %type% ) ("))
             tok2 = tok2->tokAt(6)->link();
+        else if (Token::Match(tok2->next(), "* ( * %type% ) ;"))
+            tok2 = tok2->tokAt(5);
         else if (Token::Match(tok2->next(), "* ( %type% [") &&
                  Token::Match(tok2->tokAt(4)->link(), "] ) ;|="))
             tok2 = tok2->tokAt(4)->link()->next();
