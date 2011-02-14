@@ -2591,6 +2591,8 @@ private:
             ASSERT_EQUALS("a [ 0 ]", tok(code));
         }
 
+        ASSERT_EQUALS("a [ 4 ] ;", tok("a[1+3|4];"));
+
         ASSERT_EQUALS("x = 1 + 2 * y ;", tok("x=1+2*y;"));
         ASSERT_EQUALS("x = 7 ;", tok("x=1+2*3;"));
         ASSERT_EQUALS("x = 47185 ;", tok("x=(65536*72/100);"));

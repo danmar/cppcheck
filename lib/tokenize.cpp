@@ -7071,16 +7071,40 @@ bool Tokenizer::simplifyCalculations()
         {
 
             // (1-2)
-            while (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*/]") ||
-                   Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/]") ||
-                   Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% <<|>>") ||
-                   Token::Match(tok, "<< %num% [+-*/] %num% <<"))
+            while (Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% [],);=<>+-*/|&^]") ||
+                   Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/|&^]") ||
+                   Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% <<|>>") ||
+                   Token::Match(tok, "<< %num% [+-*/] %num% <<") ||
+                   Token::Match(tok, "[(,[] %num% [|&^] %num% [];,);]"))
             {
                 tok = tok->next();
 
                 // Don't simplify "%num% / 0"
                 if (Token::simpleMatch(tok->next(), "/ 0"))
                     continue;
+
+                // & | ^
+                if (Token::Match(tok->next(), "[&|^]"))
+                {
+                    std::string result;
+                    const std::string first(tok->str());
+                    const std::string second(tok->strAt(2));
+                    const char op = tok->next()->str()[0];
+                    if (op == '&')
+                        result = MathLib::toString<MathLib::bigint>(MathLib::toLongNumber(first) & MathLib::toLongNumber(second));
+                    else if (op == '|')
+                        result = MathLib::toString<MathLib::bigint>(MathLib::toLongNumber(first) | MathLib::toLongNumber(second));
+                    else if (op == '^')
+                        result = MathLib::toString<MathLib::bigint>(MathLib::toLongNumber(first) ^ MathLib::toLongNumber(second));
+
+                    if (!result.empty())
+                    {
+                        ret = true;
+                        tok->str(result);
+                        Token::eraseTokens(tok, tok->tokAt(3));
+                        continue;
+                    }
+                }
 
                 // + and - are calculated after * and /
                 if (Token::Match(tok->next(), "[+-/]"))
