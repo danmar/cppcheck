@@ -28,7 +28,7 @@
 #include "path.h"
 #include "filelister.h"
 
-#ifdef HAVE_DEPENDENCIES
+#ifdef HAVE_RULES
 // xml is used in rules
 #include <tinyxml.h>
 #endif
@@ -505,7 +505,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->_showtime = SHOWTIME_NONE;
         }
 
-#ifdef HAVE_DEPENDENCIES
+#ifdef HAVE_RULES
         // Rule given at command line
         else if (strncmp(argv[i], "--rule=", 7) == 0)
         {
