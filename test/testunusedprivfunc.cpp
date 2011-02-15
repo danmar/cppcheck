@@ -67,6 +67,7 @@ private:
         TEST_CASE(testDoesNotIdentifyMethodAsLastFunctionArgument);
 
         TEST_CASE(multiFile);
+        TEST_CASE(unknownBaseTemplate); // ticket #2580
     }
 
 
@@ -571,6 +572,20 @@ private:
 
         ASSERT_EQUALS("", errout.str());
     }
+
+    void unknownBaseTemplate() // ticket #2580
+    {
+        check("class Bla : public Base2<Base> {\n"
+              "public:\n"
+              "    Bla() {}\n"
+              "private:\n"
+              "    virtual void F() const;\n"
+              "};\n"
+              "void Bla::F() const { }");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestUnusedPrivateFunction)

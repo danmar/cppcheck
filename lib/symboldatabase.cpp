@@ -906,12 +906,14 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
             base.name += tok2->str();
             base.scope = 0;
 
-            // don't add unhandled templates
+            // add unhandled templates
             if (tok2->next()->str() == "<")
             {
                 int level1 = 1;
                 while (tok2->next())
                 {
+                    base.name += tok2->next()->str();
+
                     if (tok2->next()->str() == ">")
                     {
                         level1--;
@@ -926,10 +928,7 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
             }
 
             // save pattern for base class name
-            else
-            {
-                scope->derivedFrom.push_back(base);
-            }
+            scope->derivedFrom.push_back(base);
         }
         tok2 = tok2->next();
     }
