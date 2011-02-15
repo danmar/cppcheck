@@ -207,6 +207,10 @@ std::string Settings::Suppressions::FileMatcher::addFile(const std::string &name
         }
         _globs[name].insert(line);
     }
+    else if (name.empty())
+    {
+        _globs["*"].insert(0U);
+    }
     else
     {
         _files[name].insert(line);
@@ -216,10 +220,6 @@ std::string Settings::Suppressions::FileMatcher::addFile(const std::string &name
 
 bool Settings::Suppressions::FileMatcher::isSuppressed(const std::string &file, unsigned int line)
 {
-    // Check are all errors of this type filtered out
-    if (_files.find("") != _files.end())
-        return true;
-
     std::set<unsigned int> lineset;
 
     std::map<std::string, std::set<unsigned int> >::const_iterator f = _files.find(file);
