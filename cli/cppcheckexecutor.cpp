@@ -123,7 +123,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
-    CppCheck cppCheck(*this);
+    CppCheck cppCheck(*this, true);
     if (!parseFromArgs(&cppCheck, argc, argv))
     {
         return EXIT_FAILURE;
@@ -152,10 +152,12 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     {
         // Multiple processes
         const std::vector<std::string> &filenames = cppCheck.filenames();
-        Settings settings = cppCheck.settings();
+        Settings &settings = cppCheck.settings();
         ThreadExecutor executor(filenames, settings, *this);
         returnValue = executor.check();
     }
+
+    reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
 
     if (_settings._xml)
     {
