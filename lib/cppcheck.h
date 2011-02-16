@@ -43,7 +43,7 @@ public:
     /**
      * @brief Constructor.
      */
-    CppCheck(ErrorLogger &errorLogger);
+    CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions);
 
     /**
      * @brief Destructor.
@@ -66,10 +66,10 @@ public:
     void settings(const Settings &settings);
 
     /**
-     * @brief Get copy of current settings.
-     * @return a copy of current settings
+     * @brief Get reference to current settings.
+     * @return a reference to current settings
      */
-    Settings settings() const;
+    Settings &settings();
 
     /**
      * @brief Add new file to be checked.
@@ -147,6 +147,7 @@ private:
     std::list<std::string> _errorList;
     std::ostringstream _errout;
     Settings _settings;
+    bool _useGlobalSuppressions;
     std::vector<std::string> _filenames;
 
     void reportProgress(const std::string &filename, const char stage[], const unsigned int value);

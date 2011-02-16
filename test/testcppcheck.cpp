@@ -86,7 +86,7 @@ private:
     void getErrorMessages()
     {
         ErrorLogger2 errorLogger;
-        CppCheck cppCheck(errorLogger);
+        CppCheck cppCheck(errorLogger, true);
         cppCheck.getErrorMessages();
         ASSERT(!errorLogger.id.empty());
 

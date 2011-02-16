@@ -869,6 +869,8 @@ static Token *processFunc(Token *tok2, bool inOperator)
             tok2 = tok2->tokAt(5)->link();
         else if (Token::Match(tok2->next(), "* ( * %type% ) ("))
             tok2 = tok2->tokAt(6)->link();
+        else if (Token::Match(tok2->next(), "* ( * %type% ) ;"))
+            tok2 = tok2->tokAt(5);
         else if (Token::Match(tok2->next(), "* ( %type% [") &&
                  Token::Match(tok2->tokAt(4)->link(), "] ) ;|="))
             tok2 = tok2->tokAt(4)->link()->next();
@@ -6357,7 +6359,7 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
 
 bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, bool pointeralias, int indentlevel)
 {
-    bool ret = false;;
+    bool ret = false;
 
     Token* bailOutFromLoop = 0;
     int indentlevel3 = indentlevel;
@@ -6527,7 +6529,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         // Using the variable in condition..
         if (Token::Match(tok3->previous(), ("if ( " + structname + " %varid% ==|!=|<|<=|>|>=|)").c_str(), varid) ||
             Token::Match(tok3, ("( " + structname + " %varid% ==|!=|<|<=|>|>=").c_str(), varid) ||
-            Token::Match(tok3, ("!|==|!=|<|<=|>|>= " + structname + " %varid% ==|!=|<|<=|>|>=|)").c_str(), varid) ||
+            Token::Match(tok3, ("!|==|!=|<|<=|>|>= " + structname + " %varid% ==|!=|<|<=|>|>=|)|;").c_str(), varid) ||
             Token::Match(tok3->previous(), "strlen|free ( %varid% )", varid))
         {
             if (!structname.empty())
@@ -6618,10 +6620,10 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 
         // Variable is used in calculation..
         if (((tok3->previous()->varId() > 0) && Token::Match(tok3, ("& " + structname + " %varid%").c_str(), varid)) ||
-            Token::Match(tok3, ("[=+-*/[] " + structname + " %varid% [=?+-*/;])]").c_str(), varid) ||
-            Token::Match(tok3, ("[(=+-*/[] " + structname + " %varid% <<|>>").c_str(), varid) ||
-            Token::Match(tok3, ("<<|>> " + structname + " %varid% [+-*/;])]").c_str(), varid) ||
-            Token::Match(tok3->previous(), ("[=+-*/[] ( " + structname + " %varid%").c_str(), varid))
+            Token::Match(tok3, ("[=+-*/%^|[] " + structname + " %varid% [=?+-*/%^|;])]").c_str(), varid) ||
+            Token::Match(tok3, ("[(=+-*/%^|[] " + structname + " %varid% <<|>>").c_str(), varid) ||
+            Token::Match(tok3, ("<<|>> " + structname + " %varid% [+-*/%^|;])]").c_str(), varid) ||
+            Token::Match(tok3->previous(), ("[=+-*/%^|[] ( " + structname + " %varid%").c_str(), varid))
         {
             if (!structname.empty())
             {
@@ -7069,16 +7071,40 @@ bool Tokenizer::simplifyCalculations()
         {
 
             // (1-2)
-            while (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*/]") ||
-                   Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/]") ||
-                   Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% <<|>>") ||
-                   Token::Match(tok, "<< %num% [+-*/] %num% <<"))
+            while (Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% [],);=<>+-*/|&^]") ||
+                   Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/|&^]") ||
+                   Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% <<|>>") ||
+                   Token::Match(tok, "<< %num% [+-*/] %num% <<") ||
+                   Token::Match(tok, "[(,[] %num% [|&^] %num% [];,);]"))
             {
                 tok = tok->next();
 
                 // Don't simplify "%num% / 0"
                 if (Token::simpleMatch(tok->next(), "/ 0"))
                     continue;
+
+                // & | ^
+                if (Token::Match(tok->next(), "[&|^]"))
+                {
+                    std::string result;
+                    const std::string first(tok->str());
+                    const std::string second(tok->strAt(2));
+                    const char op = tok->next()->str()[0];
+                    if (op == '&')
+                        result = MathLib::toString<MathLib::bigint>(MathLib::toLongNumber(first) & MathLib::toLongNumber(second));
+                    else if (op == '|')
+                        result = MathLib::toString<MathLib::bigint>(MathLib::toLongNumber(first) | MathLib::toLongNumber(second));
+                    else if (op == '^')
+                        result = MathLib::toString<MathLib::bigint>(MathLib::toLongNumber(first) ^ MathLib::toLongNumber(second));
+
+                    if (!result.empty())
+                    {
+                        ret = true;
+                        tok->str(result);
+                        Token::eraseTokens(tok, tok->tokAt(3));
+                        continue;
+                    }
+                }
 
                 // + and - are calculated after * and /
                 if (Token::Match(tok->next(), "[+-/]"))

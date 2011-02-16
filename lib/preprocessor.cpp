@@ -218,7 +218,7 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
             char prev = ' '; // hack to make it skip spaces between # and the directive
             code << "#";
             std::string::const_iterator i = line.begin();
-            i++;
+            ++i;
 
             // need space.. #if( => #if (
             bool needSpace = true;
@@ -247,7 +247,7 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
                 // skip double whitespace between arguments
                 if (escapeStatus == ESC_NONE && prev == ' ' && *i == ' ')
                 {
-                    i++;
+                    ++i;
                     continue;
                 }
                 // Convert #if( to "#if ("
@@ -272,7 +272,7 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
                 {
                     prev = *i;
                 }
-                i++;
+                ++i;
             }
             if (escapeStatus != ESC_NONE)
             {

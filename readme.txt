@@ -18,8 +18,8 @@ Compiling
 
     To build the GUI, you need Qt.
 
-    To build the command line tool, PCRE is needed. More information about PCRE is found in
-    build.txt
+    To build the command line tool, no dependencies are required. However for
+    the handling of rules, PCRE is needed.
 
     There are multiple compilation choices:
       * qmake - cross platform build tool
@@ -48,7 +48,7 @@ Compiling
             g++ -o cppcheck -Ilib cli/*.cpp lib/*.cpp
 
         If you want to use --rule and --rule-file then dependencies are needed:
-            g++ -o cppcheck -lpcre -DHAVE_DEPENDENCIES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
+            g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
     mingw
     =====
         make LDFLAGS=-lshlwapi

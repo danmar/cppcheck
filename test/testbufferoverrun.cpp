@@ -868,7 +868,7 @@ private:
                   "    a[256] = 0;\n"   // 256 > CHAR_MAX
                   "}\n");
             ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[256]' index 256 out of bounds\n"
-                          "[test.cpp:3]: (error) Array 'a[256]' index -1 out of bounds\n", errout.str());
+                          "[test.cpp:3]: (error) Array index -1 out of bounds\n", errout.str());
         }
 
         check("void f(signed char n) {\n"
@@ -1875,6 +1875,20 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    void foo();\n"
+              "    bool b[7];\n"
+              "};\n"
+              "\n"
+              "void A::foo() {\n"
+              "    for (int i=0; i<7; i++) {\n"
+              "        b[i] = b[i+1];\n"
+              "    }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error",    // wanted result
+                           "",         // current result
+                           errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch()

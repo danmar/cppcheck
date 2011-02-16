@@ -30,15 +30,15 @@
 #include <ctime>
 #include "timer.h"
 
-#ifdef HAVE_DEPENDENCIES
+#ifdef HAVE_RULES
 #define PCRE_STATIC
 #include <pcre.h>
 #endif
 
 static TimerResults S_timerResults;
 
-CppCheck::CppCheck(ErrorLogger &errorLogger)
-    : _errorLogger(errorLogger)
+CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
+    : _useGlobalSuppressions(useGlobalSuppressions), _errorLogger(errorLogger)
 {
     exitcode = 0;
 }
@@ -197,6 +197,8 @@ unsigned int CppCheck::check()
             _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
         }
 
+        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions());
+
         _errorLogger.reportStatus(c + 1, (unsigned int)_filenames.size());
     }
 
@@ -309,7 +311,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
     }
 
-#ifdef HAVE_DEPENDENCIES
+#ifdef HAVE_RULES
     // Are there extra rules?
     if (!_settings.rules.empty())
     {
@@ -385,7 +387,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 #endif
 }
 
-Settings CppCheck::settings() const
+Settings &CppCheck::settings()
 {
     return _settings;
 }
@@ -408,8 +410,16 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
         line = msg._callStack.back().line;
     }
 
-    if (_settings.nomsg.isSuppressed(msg._id, file, line))
-        return;
+    if (_useGlobalSuppressions)
+    {
+        if (_settings.nomsg.isSuppressed(msg._id, file, line))
+            return;
+    }
+    else
+    {
+        if (_settings.nomsg.isSuppressedLocal(msg._id, file, line))
+            return;
+    }
 
     if (!_settings.nofail.isSuppressed(msg._id, file, line))
         exitcode = 1;

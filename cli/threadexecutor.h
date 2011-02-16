@@ -35,7 +35,7 @@
 class ThreadExecutor : public ErrorLogger
 {
 public:
-    ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &_errorLogger);
+    ThreadExecutor(const std::vector<std::string> &filenames, Settings &settings, ErrorLogger &_errorLogger);
     virtual ~ThreadExecutor();
     unsigned int check();
     virtual void reportOut(const std::string &outmsg);
@@ -52,7 +52,7 @@ public:
 
 private:
     const std::vector<std::string> &_filenames;
-    const Settings &_settings;
+    Settings &_settings;
     ErrorLogger &_errorLogger;
     unsigned int _fileCount;
 

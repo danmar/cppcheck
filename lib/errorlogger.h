@@ -23,6 +23,8 @@
 #include <list>
 #include <string>
 
+#include "settings.h"
+
 class Token;
 class Tokenizer;
 
@@ -106,6 +108,11 @@ public:
             FileLocation()
             {
                 line = 0;
+            }
+
+            FileLocation(const std::string &file, int aline)
+                : line(aline), _file(file)
+            {
             }
 
             /**
@@ -229,6 +236,12 @@ public:
         (void)stage;
         (void)value;
     }
+
+    /**
+     * Report list of unmatched suppressions
+     * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
+     */
+    void reportUnmatchedSuppressions(const std::list<Settings::Suppressions::SuppressionEntry> &unmatched);
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 };
