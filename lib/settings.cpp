@@ -214,47 +214,64 @@ std::string Settings::Suppressions::FileMatcher::addFile(const std::string &name
                 }
             }
         }
-        _globs[name].insert(line);
+        _globs[name][line] = false;
     }
     else if (name.empty())
     {
-        _globs["*"].insert(0U);
+        _globs["*"][0U] = false;
     }
     else
     {
-        _files[name].insert(line);
+        _files[name][line] = false;
     }
     return "";
 }
 
 bool Settings::Suppressions::FileMatcher::isSuppressed(const std::string &file, unsigned int line)
 {
-    std::set<unsigned int> lineset;
+    if (isSuppressedLocal(file, line))
+        return true;
 
-    std::map<std::string, std::set<unsigned int> >::const_iterator f = _files.find(file);
-    if (f != _files.end())
-    {
-        lineset.insert(f->second.begin(), f->second.end());
-    }
-    for (std::map<std::string, std::set<unsigned int> >::iterator g = _globs.begin(); g != _globs.end(); ++g)
+    for (std::map<std::string, std::map<unsigned int, bool> >::iterator g = _globs.begin(); g != _globs.end(); ++g)
     {
         if (match(g->first, file))
         {
-            lineset.insert(g->second.begin(), g->second.end());
+            if (g->second.find(0U) != g->second.end())
+            {
+                g->second[0U] = true;
+                return true;
+            }
+            std::map<unsigned int, bool>::iterator l = g->second.find(line);
+            if (l != g->second.end())
+            {
+                l->second = true;
+                return true;
+            }
         }
     }
 
-    if (lineset.empty())
-        return false;
+    return false;
+}
 
-    // Check should all errors in this file be filtered out
-    if (lineset.find(0U) != lineset.end())
-        return true;
+bool Settings::Suppressions::FileMatcher::isSuppressedLocal(const std::string &file, unsigned int line)
+{
+    std::map<std::string, std::map<unsigned int, bool> >::iterator f = _files.find(file);
+    if (f != _files.end())
+    {
+        if (f->second.find(0U) != f->second.end())
+        {
+            f->second[0U] = true;
+            return true;
+        }
+        std::map<unsigned int, bool>::iterator l = f->second.find(line);
+        if (l != f->second.end())
+        {
+            l->second = true;
+            return true;
+        }
+    }
 
-    if (lineset.find(line) == lineset.end())
-        return false;
-
-    return true;
+    return false;
 }
 
 std::string Settings::Suppressions::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
@@ -285,6 +302,52 @@ bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std:
         return false;
 
     return _suppressions[errorId].isSuppressed(file, line);
+}
+
+bool Settings::Suppressions::isSuppressedLocal(const std::string &errorId, const std::string &file, unsigned int line)
+{
+    if (_suppressions.find(errorId) == _suppressions.end())
+        return false;
+
+    return _suppressions[errorId].isSuppressedLocal(file, line);
+}
+
+std::list<Settings::Suppressions::SuppressionEntry> Settings::Suppressions::getUnmatchedLocalSuppressions() const
+{
+    std::list<SuppressionEntry> r;
+    for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i)
+    {
+        for (std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.begin(); f != i->second._files.end(); ++f)
+        {
+            for (std::map<unsigned int, bool>::const_iterator l = f->second.begin(); l != f->second.end(); ++l)
+            {
+                if (!l->second)
+                {
+                    r.push_back(SuppressionEntry(i->first, f->first, l->first));
+                }
+            }
+        }
+    }
+    return r;
+}
+
+std::list<Settings::Suppressions::SuppressionEntry> Settings::Suppressions::getUnmatchedGlobalSuppressions() const
+{
+    std::list<SuppressionEntry> r;
+    for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i)
+    {
+        for (std::map<std::string, std::map<unsigned int, bool> >::const_iterator g = i->second._globs.begin(); g != i->second._globs.end(); ++g)
+        {
+            for (std::map<unsigned int, bool>::const_iterator l = g->second.begin(); l != g->second.end(); ++l)
+            {
+                if (!l->second)
+                {
+                    r.push_back(SuppressionEntry(i->first, g->first, l->first));
+                }
+            }
+        }
+    }
+    return r;
 }
 
 std::string Settings::addEnabled(const std::string &str)

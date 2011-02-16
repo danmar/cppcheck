@@ -138,11 +138,12 @@ public:
     private:
         class FileMatcher
         {
+            friend class Suppressions;
         private:
-            /** @brief List of filenames suppressed. */
-            std::map<std::string, std::set<unsigned int> > _files;
-            /** @brief List of globs suppressed. */
-            std::map<std::string, std::set<unsigned int> > _globs;
+            /** @brief List of filenames suppressed, bool flag indicates whether suppression matched. */
+            std::map<std::string, std::map<unsigned int, bool> > _files;
+            /** @brief List of globs suppressed, bool flag indicates whether suppression matched. */
+            std::map<std::string, std::map<unsigned int, bool> > _globs;
 
             /**
              * @brief Match a name against a glob pattern.
@@ -168,6 +169,14 @@ public:
              * @return true if this filename/line matches
              */
             bool isSuppressed(const std::string &file, unsigned int line);
+
+            /**
+             * @brief Returns true if the file name matches a previously added file (only, not glob pattern).
+             * @param name File name to check
+             * @param line Line number
+             * @return true if this filename/line matches
+             */
+            bool isSuppressedLocal(const std::string &file, unsigned int line);
         };
 
         /** @brief List of error which the user doesn't want to see. */
@@ -205,6 +214,38 @@ public:
          * @return true if this error is suppressed.
          */
         bool isSuppressed(const std::string &errorId, const std::string &file, unsigned int line);
+
+        /**
+         * @brief Returns true if this message should not be shown to the user (explicit files only, not glob patterns).
+         * @param errorId the id for the error, e.g. "arrayIndexOutOfBounds"
+         * @param file File name with the path, e.g. "src/main.cpp"
+         * @param line number, e.g. "123"
+         * @return true if this error is suppressed.
+         */
+        bool isSuppressedLocal(const std::string &errorId, const std::string &file, unsigned int line);
+
+        struct SuppressionEntry
+        {
+            SuppressionEntry(const std::string &aid, const std::string &afile, const unsigned int &aline)
+                : id(aid), file(afile), line(aline)
+            { }
+
+            std::string id;
+            std::string file;
+            unsigned int line;
+        };
+
+        /**
+         * @brief Returns list of unmatched local (per-file) suppressions.
+         * @return list of unmatched suppressions
+         */
+        std::list<SuppressionEntry> getUnmatchedLocalSuppressions() const;
+
+        /**
+         * @brief Returns list of unmatched global (glob pattern) suppressions.
+         * @return list of unmatched suppressions
+         */
+        std::list<SuppressionEntry> getUnmatchedGlobalSuppressions() const;
     };
 
     /** @brief suppress message (--suppressions) */

@@ -291,11 +291,26 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     }
 }
 
+void ErrorLogger::reportUnmatchedSuppressions(const std::list<Settings::Suppressions::SuppressionEntry> &unmatched)
+{
+    for (std::list<Settings::Suppressions::SuppressionEntry>::const_iterator i = unmatched.begin(); i != unmatched.end(); ++i)
+    {
+        std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
+        callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(i->file, i->line));
+        reportErr(ErrorLogger::ErrorMessage(callStack, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression"));
+    }
+}
+
 std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack)
 {
     std::ostringstream ostr;
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok)
-        ostr << (tok == callStack.begin() ? "" : " -> ") << "[" << (*tok).getfile() << ":" << (*tok).line << "]";
+    {
+        ostr << (tok == callStack.begin() ? "" : " -> ") << "[" << (*tok).getfile();
+        if ((*tok).line != 0)
+            ostr << ":" << (*tok).line;
+        ostr << "]";
+    }
     return ostr.str();
 }
 
