@@ -4712,7 +4712,7 @@ void Tokenizer::simplifyCompoundAssignment()
     // "a+=b" => "a = a + b"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[;{}:] *| (| %var%"))
+        if (Token::Match(tok, "[;{}] (") || Token::Match(tok, "[;{}:] *| (| %var%"))
         {
             if (tok->str() == ":")
             {
