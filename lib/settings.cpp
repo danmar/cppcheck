@@ -70,49 +70,58 @@ std::string Settings::Suppressions::parseFile(std::istream &istr)
         if (line.length() >= 2 && line[0] == '/' && line[1] == '/')
             continue;
 
-        std::istringstream lineStream(line);
-        std::string id;
-        std::string file;
-        unsigned int lineNumber = 0;
-        if (std::getline(lineStream, id, ':'))
-        {
-            if (std::getline(lineStream, file))
-            {
-                // If there is not a dot after the last colon in "file" then
-                // the colon is a separator and the contents after the colon
-                // is a line number..
-
-                // Get position of last colon
-                const std::string::size_type pos = file.rfind(":");
-
-                // if a colon is found and there is no dot after it..
-                if (pos != std::string::npos &&
-                    file.find(".", pos) == std::string::npos)
-                {
-                    // Try to parse out the line number
-                    try
-                    {
-                        std::istringstream istr1(file.substr(pos+1));
-                        istr1 >> lineNumber;
-                    }
-                    catch (...)
-                    {
-                        lineNumber = 0;
-                    }
-
-                    if (lineNumber > 0)
-                    {
-                        file.erase(pos);
-                    }
-                }
-            }
-        }
-
-        // We could perhaps check if the id is valid and return error if it is not
-        const std::string errmsg(addSuppression(id, file, lineNumber));
+        const std::string errmsg(addSuppressionLine(line));
         if (!errmsg.empty())
             return errmsg;
     }
+
+    return "";
+}
+
+std::string Settings::Suppressions::addSuppressionLine(const std::string &line)
+{
+    std::istringstream lineStream(line);
+    std::string id;
+    std::string file;
+    unsigned int lineNumber = 0;
+    if (std::getline(lineStream, id, ':'))
+    {
+        if (std::getline(lineStream, file))
+        {
+            // If there is not a dot after the last colon in "file" then
+            // the colon is a separator and the contents after the colon
+            // is a line number..
+
+            // Get position of last colon
+            const std::string::size_type pos = file.rfind(":");
+
+            // if a colon is found and there is no dot after it..
+            if (pos != std::string::npos &&
+                file.find(".", pos) == std::string::npos)
+            {
+                // Try to parse out the line number
+                try
+                {
+                    std::istringstream istr1(file.substr(pos+1));
+                    istr1 >> lineNumber;
+                }
+                catch (...)
+                {
+                    lineNumber = 0;
+                }
+
+                if (lineNumber > 0)
+                {
+                    file.erase(pos);
+                }
+            }
+        }
+    }
+
+    // We could perhaps check if the id is valid and return error if it is not
+    const std::string errmsg(addSuppression(id, file, lineNumber));
+    if (!errmsg.empty())
+        return errmsg;
 
     return "";
 }

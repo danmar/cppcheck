@@ -181,6 +181,13 @@ public:
         std::string parseFile(std::istream &istr);
 
         /**
+         * @brief Don't show the given error.
+         * @param str Description of error to suppress (in id:file:line format).
+         * @return error message. empty upon success
+         */
+        std::string addSuppressionLine(const std::string &line);
+
+        /**
          * @brief Don't show this error. If file and/or line are optional. In which case
          * the errorId alone is used for filtering.
          * @param errorId the id for the error, e.g. "arrayIndexOutOfBounds"
