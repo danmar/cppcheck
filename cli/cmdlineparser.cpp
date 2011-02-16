@@ -197,6 +197,18 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
         }
 
+        else if (strncmp(argv[i], "--suppress=", 11) == 0)
+        {
+            std::string suppression = argv[i];
+            suppression = suppression.substr(11);
+            const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));
+            if (!errmsg.empty())
+            {
+                PrintMessage(errmsg);
+                return false;
+            }
+        }
+
         // Enables inline suppressions.
         else if (strcmp(argv[i], "--inline-suppr") == 0)
             _settings->_inlineSuppressions = true;
