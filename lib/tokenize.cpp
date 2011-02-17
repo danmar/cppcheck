@@ -5528,6 +5528,9 @@ void Tokenizer::simplifyVarDecl()
                 }
             }
 
+            if (!tok2)
+                break;
+
             if (Token::Match(tok2, ":: %type%"))
             {
                 typelen += 2;
