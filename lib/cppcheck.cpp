@@ -197,7 +197,7 @@ unsigned int CppCheck::check()
             _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
         }
 
-        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions());
+        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(fname));
 
         _errorLogger.reportStatus(c + 1, (unsigned int)_filenames.size());
     }
