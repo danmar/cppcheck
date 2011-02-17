@@ -96,7 +96,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::vector<std::string>::iterator iterBegin = filenames.begin();
         for (int i = (int)filenames.size() - 1; i >= 0; i--)
         {
-            if (matcher.Match(filenames[i]))
+            if (matcher.Match(filenames[(unsigned int)i]))
                 filenames.erase(iterBegin + i);
         }
     }

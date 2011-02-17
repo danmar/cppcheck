@@ -2932,6 +2932,17 @@ private:
                       " memset(&fail, 0, sizeof(struct A));\n"
                       "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
+
+        checkNoMemset("struct Fred\n"
+                      "{\n"
+                      "     std::string s;\n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(fred));\n"
+                      "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void memsetVector()

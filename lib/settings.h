@@ -239,7 +239,7 @@ public:
          * @brief Returns list of unmatched local (per-file) suppressions.
          * @return list of unmatched suppressions
          */
-        std::list<SuppressionEntry> getUnmatchedLocalSuppressions() const;
+        std::list<SuppressionEntry> getUnmatchedLocalSuppressions(const std::string &file) const;
 
         /**
          * @brief Returns list of unmatched global (glob pattern) suppressions.

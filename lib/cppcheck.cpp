@@ -197,7 +197,7 @@ unsigned int CppCheck::check()
             _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
         }
 
-        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions());
+        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(fname));
 
         _errorLogger.reportStatus(c + 1, (unsigned int)_filenames.size());
     }
@@ -348,7 +348,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
                 unsigned int pos2 = (unsigned int)ovector[1];
 
                 // jump to the end of the match for the next pcre_exec
-                pos = pos2;
+                pos = (int)pos2;
 
                 // determine location..
                 ErrorLogger::ErrorMessage::FileLocation loc;

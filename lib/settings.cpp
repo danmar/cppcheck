@@ -312,12 +312,13 @@ bool Settings::Suppressions::isSuppressedLocal(const std::string &errorId, const
     return _suppressions[errorId].isSuppressedLocal(file, line);
 }
 
-std::list<Settings::Suppressions::SuppressionEntry> Settings::Suppressions::getUnmatchedLocalSuppressions() const
+std::list<Settings::Suppressions::SuppressionEntry> Settings::Suppressions::getUnmatchedLocalSuppressions(const std::string &file) const
 {
     std::list<SuppressionEntry> r;
     for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i)
     {
-        for (std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.begin(); f != i->second._files.end(); ++f)
+        std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(file);
+        if (f != i->second._files.end())
         {
             for (std::map<unsigned int, bool>::const_iterator l = f->second.begin(); l != f->second.end(); ++l)
             {

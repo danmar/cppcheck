@@ -110,7 +110,7 @@ public:
                 line = 0;
             }
 
-            FileLocation(const std::string &file, int aline)
+            FileLocation(const std::string &file, unsigned int aline)
                 : line(aline), _file(file)
             {
             }
