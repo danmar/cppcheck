@@ -36,6 +36,7 @@ private:
     void run()
     {
         TEST_CASE(suppressionsSettings);
+        TEST_CASE(suppressionsMultiFile);
     }
 
     // Check the suppression
@@ -82,6 +83,26 @@ private:
         executor.check();
 
         reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
+    }
+
+    // Check the suppression for multiple files
+    void checkSuppression(const char *names[], const char *codes[], const std::string &suppression = "")
+    {
+        // Clear the error log
+        errout.str("");
+
+        Settings settings;
+        settings._inlineSuppressions = true;
+        if (!suppression.empty())
+            settings.nomsg.addSuppressionLine(suppression);
+
+        CppCheck cppCheck(*this, true);
+        cppCheck.settings(settings);
+        for (int i = 0; names[i] != NULL; ++i)
+            cppCheck.addFile(names[i], codes[i]);
+        cppCheck.check();
+
+        reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
     }
 
     void runChecks(void (TestSuppressions::*check)(const char[], const std::string &))
@@ -165,6 +186,23 @@ private:
     {
         runChecks(&TestSuppressions::checkSuppression);
         runChecks(&TestSuppressions::checkSuppressionThreads);
+    }
+
+    void suppressionsMultiFile()
+    {
+        const char *names[] = {"abc.cpp", "xyz.cpp", NULL};
+        const char *codes[] = {
+            "void f() {\n"
+            "}\n",
+            "void f() {\n"
+            "    int a;\n"
+            "    a++;\n"
+            "}\n",
+        };
+
+        // suppress uninitvar for this file and line
+        checkSuppression(names, codes, "uninitvar:xyz.cpp:3");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };
