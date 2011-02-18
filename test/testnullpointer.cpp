@@ -890,6 +890,9 @@ private:
               "    };\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #2582 - segmentation fault
+        check("if()");
     }
 
     // Test CheckNullPointer::nullConstantDereference

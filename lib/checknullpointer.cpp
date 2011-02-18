@@ -554,7 +554,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             {
                 // goto the end paranthesis
                 const Token *endpar = tok->next()->link();
-                const Token *endbody = endpar ? endpar->next()->link() : 0;
+                const Token *endbody = Token::simpleMatch(endpar, ") {") ? endpar->next()->link() : 0;
                 if (endbody &&
                     Token::Match(endbody->tokAt(-3), "[;{}] %var% ;") &&
                     isUpper(endbody->tokAt(-2)->str()))
