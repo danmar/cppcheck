@@ -232,6 +232,7 @@ int main(int argc, char **argv)
         // TODO: add more compiler warnings.
         // -Wlogical-op      : doesn't work on older GCC
         // -Wconversion      : too many warnings
+        // -Wsign-conversion : too many warnings
 
         // The _GLIBCXX_DEBUG doesn't work in cygwin
         makeConditionalVariable(fout, "CXXFLAGS",
@@ -243,7 +244,7 @@ int main(int argc, char **argv)
                                 "-Wno-long-long "
                                 "-Wfloat-equal "
                                 "-Wcast-qual "
-                                "-Wsign-conversion "
+//                                "-Wsign-conversion "
 //                                "-Wconversion "
                                 "-g");
     }

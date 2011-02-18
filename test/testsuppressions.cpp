@@ -191,7 +191,8 @@ private:
     void suppressionsMultiFile()
     {
         const char *names[] = {"abc.cpp", "xyz.cpp", NULL};
-        const char *codes[] = {
+        const char *codes[] =
+        {
             "void f() {\n"
             "}\n",
             "void f() {\n"

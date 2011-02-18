@@ -1865,6 +1865,12 @@ private:
               "    printf(\"%i\", 10 * (c == 0) ? 1 : 2);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (information) Please clarify precedence: 'a*b?..'\n", errout.str());
+
+        // Ticket #2585 - segmentation fault for invalid code
+        check("abcdef?" "?<"
+              "123456?" "?>"
+              "+?" "?=");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectStringCompare()

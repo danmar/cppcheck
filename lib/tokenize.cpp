@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
@@ -5528,6 +5528,9 @@ void Tokenizer::simplifyVarDecl()
                 }
             }
 
+            if (!tok2)
+                break;
+
             if (Token::Match(tok2, ":: %type%"))
             {
                 typelen += 2;
@@ -7684,9 +7687,9 @@ void Tokenizer::simplifyEnum()
                 // find all uses of this enumerator and substitute it's value for it's name
                 if (enumName && (enumValue || (enumValueStart && enumValueEnd)))
                 {
-                    const std::string pattern(className.empty() ?
-                                              std::string("") :
-                                              (className + " :: " + enumName->str()));
+                    const std::string pattern = className.empty() ?
+                                                std::string("") :
+                                                std::string(className + " :: " + enumName->str());
                     int level = 1;
                     bool inScope = true;
 

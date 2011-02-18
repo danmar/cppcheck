@@ -234,7 +234,8 @@ private:
         TEST_CASE(vardecl_union);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
-        TEST_CASE(syntax_error_templates);
+        TEST_CASE(syntax_error_templates_1);
+        TEST_CASE(syntax_error_templates_2);
 
         TEST_CASE(removeKeywords);
 
@@ -4165,7 +4166,7 @@ private:
     }
 
 
-    void syntax_error_templates()
+    void syntax_error_templates_1()
     {
         // ok code.. using ">" for a comparison
         {
@@ -4233,6 +4234,14 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
         }
+    }
+
+    void syntax_error_templates_2()
+    {
+        std::istringstream istr("template<>\n");
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        tokenizer.tokenize(istr, "test.cpp");   // shouldn't segfault
     }
 
     void removeKeywords()
