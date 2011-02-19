@@ -306,6 +306,46 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 }
 
 
+void CheckOther::checkSwitchCaseFallThrough()
+{
+    const char switchPattern[] = "switch ( %any% ) { case";
+    //const char breakPattern[] = "break|continue|return|exit|goto";
+    //const char functionPattern[] = "%var% (";
+    // nested switch
+
+    // Find the beginning of a switch. E.g.:
+    //   switch (var) { ...
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), switchPattern);
+    while (tok)
+    {
+
+        // Check the contents of the switch statement
+        for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
+        {
+            if (Token::Match(tok2, switchPattern))
+            {
+                tok2 = tok2->tokAt(4)->link()->previous();
+            }
+            else if (tok2->str() == "case")
+            {
+                if (!Token::Match(tok2->previous()->previous(), "break"))
+                {
+                    switchCaseFallThrough(tok2);
+                }
+            }
+            else if (tok2->str() == "}")
+            {
+                // End of the switch block
+                break;
+            }
+
+        }
+
+        tok = Token::findmatch(tok->next(), switchPattern);
+    }
+}
+
+
 //---------------------------------------------------------------------------
 //    int x = 1;
 //    x = x;            // <- redundant assignment to self
@@ -2996,6 +3036,12 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::s
 {
     reportError(tok, Severity::warning,
                 "redundantAssignInSwitch", "Redundant assignment of \"" + varname + "\" in switch");
+}
+
+void CheckOther::switchCaseFallThrough(const Token *tok)
+{
+    reportError(tok, Severity::warning,
+                "switchCaseFallThrough", "Switch falls through case without comment");
 }
 
 void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)

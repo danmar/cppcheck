@@ -377,10 +377,10 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             i = str.find('\n', i);
             if (i == std::string::npos)
                 break;
+            std::string comment(str, commentStart, i - commentStart);
 
             if (settings && settings->_inlineSuppressions)
             {
-                std::string comment(str, commentStart, i - commentStart);
                 std::istringstream iss(comment);
                 std::string word;
                 iss >> word;
@@ -390,6 +390,11 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                     if (iss)
                         suppressionIDs.push_back(word);
                 }
+            }
+
+            if (comment.find("fall through") != std::string::npos)
+            {
+                suppressionIDs.push_back("switchCaseFallThrough");
             }
 
             code << "\n";

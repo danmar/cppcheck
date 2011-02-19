@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "preprocessor.h"
 #include "tokenize.h"
 #include "checkother.h"
 #include "testsuite.h"
@@ -74,6 +75,7 @@ private:
         TEST_CASE(sizeofCalculation);
 
         TEST_CASE(switchRedundantAssignmentTest);
+        TEST_CASE(switchFallThroughCase);
 
         TEST_CASE(selfAssignment);
         TEST_CASE(testScanf1);
@@ -146,6 +148,60 @@ private:
         checkOther.checkIncorrectStringCompare();
         checkOther.checkIncrementBoolean();
         checkOther.checkComparisonOfBoolWithInt();
+    }
+
+    class SimpleSuppressor: public ErrorLogger
+    {
+    public:
+        SimpleSuppressor(Settings &settings, ErrorLogger *next)
+            : _settings(settings), _next(next)
+        { }
+        virtual void reportOut(const std::string &outmsg)
+        {
+            _next->reportOut(outmsg);
+        }
+        virtual void reportErr(const ErrorLogger::ErrorMessage &msg)
+        {
+            if (!msg._callStack.empty() && !_settings.nomsg.isSuppressed(msg._id, msg._callStack.begin()->getfile(), msg._callStack.begin()->line))
+                _next->reportErr(msg);
+        }
+        virtual void reportStatus(unsigned int index, unsigned int max)
+        {
+            _next->reportStatus(index, max);
+        }
+    private:
+        Settings &_settings;
+        ErrorLogger *_next;
+    };
+
+    void check_preprocess_suppress(const char precode[], const char *filename = NULL)
+    {
+        // Clear the error buffer..
+        errout.str("");
+
+        if (filename == NULL)
+            filename = "test.cpp";
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
+        // Preprocess file..
+        Preprocessor preprocessor(&settings, this);
+        std::list<std::string> configurations;
+        std::string filedata = "";
+        std::istringstream fin(precode);
+        preprocessor.preprocess(fin, filedata, configurations, filename, settings._includePaths);
+        SimpleSuppressor logger(settings, this);
+        const std::string code = Preprocessor::getcode(filedata, "", filename, &settings, &logger);
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, &logger);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, filename);
+
+        // Check..
+        CheckOther checkOther(&tokenizer, &settings, &logger);
+        checkOther.checkSwitchCaseFallThrough();
     }
 
 
@@ -1143,6 +1199,56 @@ private:
               "            y = 3;\n"
               "        }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void switchFallThroughCase()
+    {
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            break;\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            g();\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Switch falls through case without comment\n", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            g();\n"
+            "            // fall through\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            g();\n"
+            "            break;\n"
+            "            // fall through\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
