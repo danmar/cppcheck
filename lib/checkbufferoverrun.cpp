@@ -1405,7 +1405,7 @@ void CheckBufferOverrun::checkStructVariable()
         const std::string &structname = tok->next()->str();
         const Token *tok2 = tok;
 
-        while (tok2->str() != "{")
+        while (tok2 && tok2->str() != "{")
             tok2 = tok2->next();
 
         // Found a struct declaration. Search for arrays..

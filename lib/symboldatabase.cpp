@@ -57,6 +57,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                 // goto initial '{'
                 tok2 = initBaseInfo(new_scope, tok);
+
+                // make sure we have valid code
+                if (!tok2)
+                {
+                    delete new_scope;
+                    break;
+                }
             }
 
             new_scope->classStart = tok2;
@@ -871,6 +878,10 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
             Scope::BaseInfo base;
 
             tok2 = tok2->next();
+
+            // check for invalid code
+            if (!tok2->next())
+                return NULL;
 
             if (tok2->str() == "public")
             {
