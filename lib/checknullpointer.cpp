@@ -350,8 +350,19 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             continue;
         }
 
+        /**
+         * @todo There are lots of false negatives here. A dereference
+         *  is only investigated if a few specific conditions are met.
+         */
+
         // dereference in assignment
-        if (Token::Match(tok1, "[{};] %var% = %var% . %var%"))
+        if (Token::Match(tok1, "[;{}] %var% . %var%"))
+        {
+            tok1 = tok1->next();
+        }
+
+        // dereference in assignment
+        else if (Token::Match(tok1, "[{};] %var% = %var% . %var%"))
         {
             if (std::string(tok1->strAt(1)) == tok1->strAt(3))
                 continue;
