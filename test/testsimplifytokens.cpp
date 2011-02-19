@@ -237,6 +237,7 @@ private:
         TEST_CASE(simplifyTypedef77); // ticket #2554
         TEST_CASE(simplifyTypedef78); // ticket #2568
         TEST_CASE(simplifyTypedef79); // ticket #2348
+        TEST_CASE(simplifyTypedef80); // ticket #2587
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4874,6 +4875,23 @@ private:
                                      "int ( * ( * V_LangOptionCommand ) ) ( int x ) ; "
                                      "} ;";
         ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void simplifyTypedef80() // ticket #2587
+    {
+        const char code[] = "typedef struct s { };\n"
+                            "void f() {\n"
+                            "    sizeof(struct s);\n"
+                            "};\n";
+        const std::string expected = "struct s { } ; "
+                                     "void f ( ) { "
+                                     "sizeof ( struct s ) ; "
+                                     "} ;";
+        ASSERT_EQUALS(expected, sizeof_(code));
+
+        // Check for output..
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1()

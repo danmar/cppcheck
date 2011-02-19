@@ -837,19 +837,29 @@ static Token *splitDefinitionFromTypedef(Token *tok)
 
     tok1->insertToken(";");
     tok1 = tok1->next();
-    tok1->insertToken("typedef");
-    tok1 = tok1->next();
-    Token * tok3 = tok1;
-    if (isConst)
+
+    if (tok1->next()->str() == ";" && tok1 && tok1->previous()->str() == "}")
     {
-        tok1->insertToken("const");
-        tok1 = tok1->next();
+        tok->deleteThis();
+        tok1->deleteThis();
+        return NULL;
     }
-    tok1->insertToken(tok->next()->str()); // struct, union or enum
-    tok1 = tok1->next();
-    tok1->insertToken(name.c_str());
-    tok->deleteThis();
-    tok = tok3;
+    else
+    {
+        tok1->insertToken("typedef");
+        tok1 = tok1->next();
+        Token * tok3 = tok1;
+        if (isConst)
+        {
+            tok1->insertToken("const");
+            tok1 = tok1->next();
+        }
+        tok1->insertToken(tok->next()->str()); // struct, union or enum
+        tok1 = tok1->next();
+        tok1->insertToken(name.c_str());
+        tok->deleteThis();
+        tok = tok3;
+    }
 
     return tok;
 }
