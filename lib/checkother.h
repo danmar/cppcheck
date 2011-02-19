@@ -61,7 +61,6 @@ public:
         checkOther.sizeofsizeof();
         checkOther.sizeofCalculation();
         checkOther.checkRedundantAssignmentInSwitch();
-        checkOther.checkSwitchCaseFallThrough();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
         checkOther.checkSelfAssignment();
@@ -91,6 +90,7 @@ public:
         checkOther.checkIncorrectStringCompare();
         checkOther.checkIncrementBoolean();
         checkOther.checkComparisonOfBoolWithInt();
+        checkOther.checkSwitchCaseFallThrough();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */

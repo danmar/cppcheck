@@ -24,6 +24,7 @@
 
 #include <cctype> // std::isupper
 #include <cmath> // fabs()
+#include <stack>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -308,10 +309,8 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 
 void CheckOther::checkSwitchCaseFallThrough()
 {
-    const char switchPattern[] = "switch ( %any% ) { case";
-    //const char breakPattern[] = "break|continue|return|exit|goto";
-    //const char functionPattern[] = "%var% (";
-    // nested switch
+    const char switchPattern[] = "switch (";
+    const char breakPattern[] = "break|continue|return|exit|goto";
 
     // Find the beginning of a switch. E.g.:
     //   switch (var) { ...
@@ -320,23 +319,99 @@ void CheckOther::checkSwitchCaseFallThrough()
     {
 
         // Check the contents of the switch statement
-        for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
+        std::stack<std::pair<Token *, bool> > ifnest;
+        std::stack<Token *> loopnest;
+        std::stack<Token *> scopenest;
+        bool justbreak = true;
+        for (const Token *tok2 = tok->tokAt(1)->link()->tokAt(2); tok2; tok2 = tok2->next())
         {
-            if (Token::Match(tok2, switchPattern))
+            if (Token::Match(tok2, "if ("))
             {
-                tok2 = tok2->tokAt(4)->link()->previous();
+                tok2 = tok2->tokAt(1)->link()->next();
+                ifnest.push(std::make_pair(tok2->link(), false));
+                justbreak = false;
             }
-            else if (tok2->str() == "case")
+            else if (Token::Match(tok2, "while ("))
             {
-                if (!Token::Match(tok2->previous()->previous(), "break"))
+                tok2 = tok2->tokAt(1)->link()->next();
+                loopnest.push(tok2->link());
+                justbreak = false;
+            }
+            else if (Token::Match(tok2, "do {"))
+            {
+                tok2 = tok2->tokAt(1);
+                loopnest.push(tok2->link());
+                justbreak = false;
+            }
+            else if (Token::Match(tok2, "for ("))
+            {
+                tok2 = tok2->tokAt(1)->link()->next();
+                loopnest.push(tok2->link());
+                justbreak = false;
+            }
+            else if (Token::Match(tok2, switchPattern))
+            {
+                // skip over nested switch, we'll come to that soon
+                tok2 = tok2->tokAt(1)->link()->next()->link();
+            }
+            else if (Token::Match(tok2, breakPattern))
+            {
+                if (loopnest.empty())
+                {
+                    justbreak = true;
+                }
+                tok2 = Token::findmatch(tok2, ";");
+            }
+            else if (Token::Match(tok2, "case|default"))
+            {
+                if (!justbreak)
                 {
                     switchCaseFallThrough(tok2);
                 }
+                tok2 = Token::findmatch(tok2, ":");
+                justbreak = true;
+            }
+            else if (tok2->str() == "{")
+            {
+                scopenest.push(tok2->link());
             }
             else if (tok2->str() == "}")
             {
-                // End of the switch block
-                break;
+                if (!ifnest.empty() && tok2 == ifnest.top().first)
+                {
+                    if (tok2->next()->str() == "else")
+                    {
+                        tok2 = tok2->tokAt(2);
+                        ifnest.pop();
+                        ifnest.push(std::make_pair(tok2->link(), justbreak));
+                        justbreak = false;
+                    }
+                    else
+                    {
+                        justbreak &= ifnest.top().second;
+                        ifnest.pop();
+                    }
+                }
+                else if (!loopnest.empty() && tok2 == loopnest.top())
+                {
+                    loopnest.pop();
+                }
+                else if (!scopenest.empty() && tok2 == scopenest.top())
+                {
+                    scopenest.pop();
+                }
+                else
+                {
+                    assert(ifnest.empty());
+                    assert(loopnest.empty());
+                    assert(scopenest.empty());
+                    // end of switch block
+                    break;
+                }
+            }
+            else if (tok2->str() != ";")
+            {
+                justbreak = false;
             }
 
         }

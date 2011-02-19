@@ -202,6 +202,8 @@ private:
         // Check..
         CheckOther checkOther(&tokenizer, &settings, &logger);
         checkOther.checkSwitchCaseFallThrough();
+
+        logger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(filename));
     }
 
 
@@ -1218,9 +1220,32 @@ private:
         check_preprocess_suppress(
             "void foo() {\n"
             "    switch (a) {\n"
+            "        case 0:\n"
+            "        case 1:\n"
+            "            break;\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
             "        case 1:\n"
             "            g();\n"
             "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Switch falls through case without comment\n", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            g();\n"
+            "        default:\n"
             "            break;\n"
             "    }\n"
             "}\n");
@@ -1249,7 +1274,103 @@ private:
             "            break;\n"
             "    }\n"
             "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (information) Unmatched suppression: switchCaseFallThrough\n", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            {\n"
+            "                break;\n"
+            "            }\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            for (;;) {\n"
+            "                break;\n"
+            "            }\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Switch falls through case without comment\n", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            if (b) {\n"
+            "                break;\n"
+            "            } else {\n"
+            "                break;\n"
+            "            }\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            if (b) {\n"
+            "                break;\n"
+            "            } else {\n"
+            "            }\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Switch falls through case without comment\n", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            if (b) {\n"
+            "                break;\n"
+            "            }\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Switch falls through case without comment\n", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            if (b) {\n"
+            "            } else {\n"
+            "                break;\n"
+            "            }\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Switch falls through case without comment\n", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            if (b) {\n"
+            "        case 2:\n"
+            "            } else {\n"
+            "                break;\n"
+            "            }\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Switch falls through case without comment\n", errout.str());
     }
 
     void selfAssignment()
