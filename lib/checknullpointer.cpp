@@ -444,8 +444,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
                 break;
 
             // Check if pointer is null.
-            // TODO: false negatives for something like: "if (p &&.."?
-            else if (Token::Match(tok2, "if ( !| %varid% )", varid1))
+            // TODO: false negatives for "if (!p || .."
+            else if (Token::Match(tok2, "if ( !| %varid% )|&&", varid1))
             {
                 // Is this variable a pointer?
                 if (isPointer(varid1))

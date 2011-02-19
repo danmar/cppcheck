@@ -215,6 +215,13 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", "", errout.str());
 
+        check("void foo(ABC *abc) {\n"
+              "    abc->a = 0;\n"
+              "    if (abc && abc->b == 0)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", errout.str());
+
         // ok dereferencing in a condition
         check("void foo(struct ABC *abc)\n"
               "{\n"
