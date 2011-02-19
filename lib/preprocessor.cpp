@@ -338,20 +338,32 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             continue;
         }
 
-        // We have finished a line that didn't contain any comment
-        // (the '\n' is swallowed when a // comment is detected)
-        if ((ch == '\n' || str.compare(i,2,"//")==0) && !suppressionIDs.empty())
+        // First skip over any whitespace that may be present
+        if (std::isspace(ch))
         {
-            // Add the suppressions.
-            for (size_t j(0); j < suppressionIDs.size(); ++j)
+            if (ch == ' ' && previous == ' ')
             {
-                const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
-                if (!errmsg.empty())
+                // Skip double white space
+            }
+            else
+            {
+                code << char(ch);
+                previous = ch;
+            }
+
+            // if there has been <backspace><newline> sequences, add extra newlines..
+            if (ch == '\n')
+            {
+                ++lineno;
+                if (newlines > 0)
                 {
-                    writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
+                    code << std::string(newlines, '\n');
+                    newlines = 0;
+                    previous = '\n';
                 }
             }
-            suppressionIDs.clear();
+
+            continue;
         }
 
         // Remove comments..
@@ -382,6 +394,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         }
         else if (str.compare(i, 2, "/*", 0, 2) == 0)
         {
+            size_t commentStart = i + 2;
             unsigned char chPrev = 0;
             ++i;
             while (i < str.length() && (chPrev != '*' || ch != '/'))
@@ -395,125 +408,138 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                     ++lineno;
                 }
             }
-        }
 
-        // String or char constants..
-        else if (ch == '\"' || ch == '\'')
-        {
-            code << char(ch);
-            char chNext;
-            do
+            if (settings && settings->_inlineSuppressions)
             {
-                ++i;
-                chNext = str[i];
-                if (chNext == '\\')
+                std::string comment(str, commentStart, i - commentStart);
+                std::istringstream iss(comment);
+                std::string word;
+                iss >> word;
+                if (word == "cppcheck-suppress")
+                {
+                    iss >> word;
+                    if (iss)
+                        suppressionIDs.push_back(word);
+                }
+            }
+        }
+        else
+        {
+            // Not whitespace and not a comment. Must be code here!
+            // Add any pending inline suppressions that have accumulated.
+            if (!suppressionIDs.empty())
+            {
+                if (settings != NULL)
+                {
+                    // Add the suppressions.
+                    for (size_t j(0); j < suppressionIDs.size(); ++j)
+                    {
+                        const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
+                        if (!errmsg.empty())
+                        {
+                            writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
+                        }
+                    }
+                }
+                suppressionIDs.clear();
+            }
+
+            // String or char constants..
+            if (ch == '\"' || ch == '\'')
+            {
+                code << char(ch);
+                char chNext;
+                do
                 {
                     ++i;
-                    char chSeq = str[i];
-                    if (chSeq == '\n')
-                        ++newlines;
+                    chNext = str[i];
+                    if (chNext == '\\')
+                    {
+                        ++i;
+                        char chSeq = str[i];
+                        if (chSeq == '\n')
+                            ++newlines;
+                        else
+                        {
+                            code << chNext;
+                            code << chSeq;
+                            previous = static_cast<unsigned char>(chSeq);
+                        }
+                    }
                     else
                     {
                         code << chNext;
-                        code << chSeq;
-                        previous = static_cast<unsigned char>(chSeq);
+                        previous = static_cast<unsigned char>(chNext);
                     }
+                }
+                while (i < str.length() && chNext != ch && chNext != '\n');
+            }
+
+            // Rawstring..
+            else if (str.compare(i,2,"R\"")==0)
+            {
+                std::string delim;
+                for (std::string::size_type i2 = i+2; i2 < str.length(); ++i2)
+                {
+                    if (i2 > 16 ||
+                        std::isspace(str[i2]) ||
+                        std::iscntrl(str[i2]) ||
+                        str[i2] == ')' ||
+                        str[i2] == '\\')
+                    {
+                        delim = " ";
+                        break;
+                    }
+                    else if (str[i2] == '(')
+                        break;
+
+                    delim += str[i2];
+                }
+                const std::string::size_type endpos = str.find(")" + delim + "\"", i);
+                if (delim != " " && endpos != std::string::npos)
+                {
+                    unsigned int rawstringnewlines = 0;
+                    code << '\"';
+                    for (std::string::size_type p = i + 3 + delim.size(); p < endpos; ++p)
+                    {
+                        if (str[p] == '\n')
+                        {
+                            rawstringnewlines++;
+                            code << "\\n";
+                        }
+                        else if (std::iscntrl((unsigned char)str[p]) ||
+                                 std::isspace((unsigned char)str[p]))
+                        {
+                            code << " ";
+                        }
+                        else if (str[p] == '\\')
+                        {
+                            code << "\\";
+                        }
+                        else if (str[p] == '\"' || str[p] == '\'')
+                        {
+                            code << "\\" << (char)str[p];
+                        }
+                        else
+                        {
+                            code << (char)str[p];
+                        }
+                    }
+                    code << "\"";
+                    if (rawstringnewlines > 0)
+                        code << std::string(rawstringnewlines, '\n');
+                    i = endpos + delim.size() + 2;
                 }
                 else
                 {
-                    code << chNext;
-                    previous = static_cast<unsigned char>(chNext);
+                    code << "R";
+                    previous = 'R';
                 }
-            }
-            while (i < str.length() && chNext != ch && chNext != '\n');
-        }
-
-        // Rawstring..
-        else if (str.compare(i,2,"R\"")==0)
-        {
-            std::string delim;
-            for (std::string::size_type i2 = i+2; i2 < str.length(); ++i2)
-            {
-                if (i2 > 16 ||
-                    std::isspace(str[i2]) ||
-                    std::iscntrl(str[i2]) ||
-                    str[i2] == ')' ||
-                    str[i2] == '\\')
-                {
-                    delim = " ";
-                    break;
-                }
-                else if (str[i2] == '(')
-                    break;
-
-                delim += str[i2];
-            }
-            const std::string::size_type endpos = str.find(")" + delim + "\"", i);
-            if (delim != " " && endpos != std::string::npos)
-            {
-                unsigned int rawstringnewlines = 0;
-                code << '\"';
-                for (std::string::size_type p = i + 3 + delim.size(); p < endpos; ++p)
-                {
-                    if (str[p] == '\n')
-                    {
-                        rawstringnewlines++;
-                        code << "\\n";
-                    }
-                    else if (std::iscntrl((unsigned char)str[p]) ||
-                             std::isspace((unsigned char)str[p]))
-                    {
-                        code << " ";
-                    }
-                    else if (str[p] == '\\')
-                    {
-                        code << "\\";
-                    }
-                    else if (str[p] == '\"' || str[p] == '\'')
-                    {
-                        code << "\\" << (char)str[p];
-                    }
-                    else
-                    {
-                        code << (char)str[p];
-                    }
-                }
-                code << "\"";
-                if (rawstringnewlines > 0)
-                    code << std::string(rawstringnewlines, '\n');
-                i = endpos + delim.size() + 2;
-            }
-            else
-            {
-                code << "R";
-                previous = 'R';
-            }
-        }
-
-        // Just some code..
-        else
-        {
-            if (ch == ' ' && previous == ' ')
-            {
-                // Skip double white space
             }
             else
             {
                 code << char(ch);
                 previous = ch;
-            }
-
-
-            // if there has been <backspace><newline> sequences, add extra newlines..
-            if (ch == '\n')
-            {
-                ++lineno;
-                if (newlines > 0)
-                {
-                    code << std::string(newlines, '\n');
-                    newlines = 0;
-                    previous = '\n';
-                }
             }
         }
     }

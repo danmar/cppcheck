@@ -172,6 +172,35 @@ private:
                        "");
         ASSERT_EQUALS("", errout.str());
 
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    // cppcheck-suppress uninitvar\n"
+                       "\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    /* cppcheck-suppress uninitvar */\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    /* cppcheck-suppress uninitvar */\n"
+                       "\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
         // suppress uninitvar inline, without error present
         (this->*check)("void f() {\n"
                        "    int a;\n"
