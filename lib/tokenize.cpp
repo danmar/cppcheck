@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
