@@ -1268,6 +1268,18 @@ private:
             "    switch (a) {\n"
             "        case 1:\n"
             "            g();\n"
+            "            /* FALLTHRU */\n"
+            "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            g();\n"
             "            break;\n"
             "            // fall through\n"
             "        case 2:\n"

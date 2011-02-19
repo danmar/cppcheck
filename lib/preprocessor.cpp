@@ -392,7 +392,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 }
             }
 
-            if (comment.find("fall through") != std::string::npos)
+            std::transform(comment.begin(), comment.end(), comment.begin(), ::tolower);
+            if (comment.find("fall") != std::string::npos && comment.find("thr") != std::string::npos)
             {
                 suppressionIDs.push_back("switchCaseFallThrough");
             }
@@ -417,10 +418,16 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                     ++lineno;
                 }
             }
+            std::string comment(str, commentStart, i - commentStart);
+
+            std::transform(comment.begin(), comment.end(), comment.begin(), ::tolower);
+            if (comment.find("fall") != std::string::npos && comment.find("thr") != std::string::npos)
+            {
+                suppressionIDs.push_back("switchCaseFallThrough");
+            }
 
             if (settings && settings->_inlineSuppressions)
             {
-                std::string comment(str, commentStart, i - commentStart);
                 std::istringstream iss(comment);
                 std::string word;
                 iss >> word;
