@@ -718,6 +718,21 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("error",
                            "", errout.str());
+
+        // #2231 - error if assignment in loop is not used
+        check("void f() {\n"
+              "    char *p = 0;\n"
+              "\n"
+              "    for (int x = 0; x < 3; ++x) {\n"
+              "        if (y[x] == 0) {\n"
+              "            p = malloc(10);\n"
+              "            break;\n"
+              "        }\n"
+              "    }\n"
+              "\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer7()

@@ -801,6 +801,21 @@ private:
                        "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: pItem\n",
                            "", errout.str());
+
+        // #2231 - conditional initialization in loop..
+        checkUninitVar("int foo(char *a) {\n"
+                       "    int x;\n"
+                       "\n"
+                       "    for (int i = 0; i < 10; ++i) {\n"
+                       "        if (a[i] == 'x') {\n"
+                       "            x = i;\n"
+                       "            break;\n"
+                       "        }\n"
+                       "    }\n"
+                       "\n"
+                       "    return x;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Uninitialized variable: x\n", errout.str());
     }
 
     // switch..
