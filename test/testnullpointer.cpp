@@ -823,6 +823,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
 
+        check("void foo(char *p) {\n"
+              "    if (p && *p == 0) {\n"
+              "    }\n"
+              "    printf(\"%c\", *p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
+
         check("void foo(abc *p) {\n"
               "    if (!p) {\n"
               "    }\n"
