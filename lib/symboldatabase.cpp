@@ -1422,7 +1422,8 @@ Scope * Scope::findInNestedListRecursive(const std::string & name)
     for (it = nestedList.begin(); it != nestedList.end(); ++it)
     {
         Scope *child = (*it)->findInNestedListRecursive(name);
-        return child;
+        if (child)
+            return child;
     }
     return 0;
 }
