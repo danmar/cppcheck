@@ -320,7 +320,7 @@ public:
      * utility function for simplifyKnownVariables. Perform simplification
      * of a given variable
      */
-    bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, bool pointeralias, int indentlevel);
+    bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel);
 
     /** Replace a "goto" with the statements */
     void simplifyGoto();

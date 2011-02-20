@@ -6308,7 +6308,7 @@ bool Tokenizer::simplifyKnownVariables()
                 if (tok2->str() == tok2->strAt(2))
                     continue;
 
-                const bool pointeralias(tok2->tokAt(2)->isName() || tok2->tokAt(2)->str() == "&");
+                const Token * const valueToken = tok2->tokAt(2);
 
                 std::string value;
                 unsigned int valueVarId = 0;
@@ -6319,7 +6319,7 @@ bool Tokenizer::simplifyKnownVariables()
                 if (!simplifyKnownVariablesGetData(varid, &tok2, &tok3, value, valueVarId, valueIsPointer, floatvars.find(tok2->varId()) != floatvars.end()))
                     continue;
 
-                ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, pointeralias, indentlevel);
+                ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, valueToken, indentlevel);
             }
         }
 
@@ -6411,8 +6411,10 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
     return true;
 }
 
-bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, bool pointeralias, int indentlevel)
+bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel)
 {
+    const bool pointeralias(valueToken->isName() || Token::Match(valueToken, "& %var% ["));
+
     bool ret = false;
 
     Token* bailOutFromLoop = 0;
@@ -6590,6 +6592,11 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             {
                 tok3->deleteNext();
                 tok3->deleteNext();
+            }
+            if (Token::Match(valueToken, "& %var% ;"))
+            {
+                tok3->insertToken("&");
+                tok3 = tok3->next();
             }
             tok3 = tok3->next();
             tok3->str(value);

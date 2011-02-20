@@ -127,6 +127,7 @@ private:
         TEST_CASE(simplifyKnownVariables38);    // ticket #2399 - simplify conditions
         TEST_CASE(simplifyKnownVariables39);
         TEST_CASE(simplifyKnownVariables40);
+        TEST_CASE(simplifyKnownVariables41);    // p=&x; if (p) ..
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -2018,6 +2019,16 @@ private:
                             "    char c2 = { c1 };\n"
                             "}";
         ASSERT_EQUALS("void f ( ) {\n;\nchar c2 ; c2 = { 'a' } ;\n}", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables41()
+    {
+        const char code[] = "void f() {\n"
+                            "    int x = 0;\n"
+                            "    const int *p; p = &x;\n"
+                            "    if (p) { return 0; }\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\nint x ; x = 0 ;\nconst int * p ; p = & x ;\nif ( & x ) { return 0 ; }\n}", tokenizeAndStringify(code, true));
     }
 
     void simplifyKnownVariablesBailOutAssign()

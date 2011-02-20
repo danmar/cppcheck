@@ -5799,11 +5799,7 @@ private:
                             "}\n";
         const char expected[] = "int f ( ) "
                                 "{"
-                                " int i ;"
-                                " int * p ;"
-                                " p = & i ;"
-                                " i = 5 ;"
-                                " return 5 ; "
+                                " ; return 5 ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
     }
