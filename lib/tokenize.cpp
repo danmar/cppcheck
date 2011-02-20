@@ -8136,7 +8136,7 @@ void Tokenizer::cppcheckError(const Token *tok) const
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            Severity::error,
-                                           "### Internal error in Cppcheck. Please report it.",
+                                           "Analysis failed. If the code is valid then please report this failure.",
                                            "cppcheckError");
 
     if (_errorLogger)
