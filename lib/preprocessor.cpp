@@ -303,6 +303,18 @@ static bool hasbom(const std::string &str)
 }
 
 
+static bool isFallThroughComment(std::string comment)
+{
+    // convert comment to lower case without whitespace
+    std::transform(comment.begin(), comment.end(), comment.begin(), ::tolower);
+    comment.erase(std::remove_if(comment.begin(), comment.end(), ::isspace), comment.end());
+
+    return comment.find("fallthr") != std::string::npos ||
+           comment.find("dropthr") != std::string::npos ||
+           comment.find("passthr") != std::string::npos ||
+           comment.find("nobreak") != std::string::npos;
+}
+
 std::string Preprocessor::removeComments(const std::string &str, const std::string &filename, Settings *settings)
 {
     // For the error report
@@ -392,8 +404,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 }
             }
 
-            std::transform(comment.begin(), comment.end(), comment.begin(), ::tolower);
-            if (comment.find("fall") != std::string::npos && comment.find("thr") != std::string::npos)
+            if (isFallThroughComment(comment))
             {
                 suppressionIDs.push_back("switchCaseFallThrough");
             }
@@ -420,8 +431,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             }
             std::string comment(str, commentStart, i - commentStart);
 
-            std::transform(comment.begin(), comment.end(), comment.begin(), ::tolower);
-            if (comment.find("fall") != std::string::npos && comment.find("thr") != std::string::npos)
+            if (isFallThroughComment(comment))
             {
                 suppressionIDs.push_back("switchCaseFallThrough");
             }
