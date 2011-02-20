@@ -110,6 +110,7 @@ private:
         TEST_CASE(template19);
         TEST_CASE(template20);
         TEST_CASE(template21);
+        TEST_CASE(template22);
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -1984,6 +1985,19 @@ private:
             ASSERT_EQUALS(expected, sizeof_(code));
         }
     }
+
+    void template22()
+    {
+            const char code[] = "template <classname T> struct Fred { T a; };\n"
+                                "Fred<std::string> fred;";
+
+            const std::string expected("; "
+                                       "Fred<std::string> fred ; "
+                                       "struct Fred<std::string> { std :: string a ; }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
 
     void template_unhandled()
     {
