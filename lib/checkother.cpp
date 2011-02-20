@@ -415,6 +415,13 @@ void CheckOther::checkSwitchCaseFallThrough()
                     {
                         tok2 = tok2->tokAt(2);
                         ifnest.pop();
+                        if (tok2->link() == NULL)
+                        {
+                            std::ostringstream errmsg;
+                            errmsg << "unmatched if in switch: " << tok2->linenr();
+                            reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
+                            break;
+                        }
                         ifnest.push(std::make_pair(tok2->link(), justbreak));
                         justbreak = false;
                     }
