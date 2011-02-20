@@ -1330,7 +1330,33 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
         if (it != variables.end())
         {
             if (!it->second.empty())
-                tok->str(it->second);
+            {
+                // Tokenize the value
+                Tokenizer tokenizer2(&settings,NULL);
+                std::istringstream istr2(it->second);
+                tokenizer2.tokenize(istr2,"","",true);
+                
+                // Copy the value tokens
+                std::stack<Token *> link;
+                for (const Token *tok2 = tokenizer2.tokens(); tok2; tok2 = tok2->next())
+                {
+                    tok->str(tok2->str());
+
+                    if (Token::Match(tok2,"[{([]"))
+                        link.push(tok);
+                    else if (!link.empty() && Token::Match(tok2,"[})]]"))
+                    {
+                        Token::createMutualLinks(link.top(), tok);
+                        link.pop();
+                    }
+
+                    if (tok2->next())
+                    {
+                        tok->insertToken("");
+                        tok = tok->next();
+                    }
+                }
+            }
             else if ((!tok->previous() || tok->strAt(-1) == "||" || tok->strAt(-1) == "&&" || tok->strAt(-1) == "(") &&
                      (!tok->next() || tok->strAt(1) == "||" || tok->strAt(1) == "&&" || tok->strAt(1) == ")"))
                 tok->str("1");

@@ -1343,18 +1343,11 @@ private:
 
     void if_cond12()
     {
-        errout.str("");
         const char filedata[] = "#define A (1)\n"
                                 "#if A == 1\n"
                                 ";\n"
                                 "#endif\n";
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Settings settings;
-        Preprocessor preprocessor(&settings, this);
-        preprocessor.preprocess(istr, actual, "file.c");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("\n\n;\n\n", "\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\n\n;\n\n", Preprocessor::getcode(filedata,"","",NULL,NULL));
     }
 
 
