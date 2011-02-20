@@ -1988,15 +1988,15 @@ private:
 
     void template22()
     {
-            const char code[] = "template <classname T> struct Fred { T a; };\n"
-                                "Fred<std::string> fred;";
+        const char code[] = "template <classname T> struct Fred { T a; };\n"
+                            "Fred<std::string> fred;";
 
-            const std::string expected("; "
-                                       "Fred<std::string> fred ; "
-                                       "struct Fred<std::string> { std :: string a ; }");
+        const std::string expected("; "
+                                   "Fred<std::string> fred ; "
+                                   "struct Fred<std::string> { std :: string a ; }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
-        }
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
 
 
     void template_unhandled()

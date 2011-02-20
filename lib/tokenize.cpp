@@ -2482,7 +2482,7 @@ static unsigned int templateParameters(const Token *tok)
     while (tok)
     {
         ++numberOfParameters;
-    
+
         // skip std::
         while (Token::Match(tok, "%var% ::"))
             tok = tok->tokAt(2);
@@ -2975,8 +2975,8 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                 }
 
                 // member function implemented outside class definition
-                else if (_indentlevel == 0 && 
-                         _parlevel == 0 && 
+                else if (_indentlevel == 0 &&
+                         _parlevel == 0 &&
                          simplifyTemplatesInstantiateMatch(tok3, name, type.size(), ":: ~| %var% ("))
                 {
                     addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
@@ -3025,8 +3025,8 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                         // replace type with given type..
                         if (itype < type.size())
                         {
-                            for (const Token *typetok = types2[itype]; 
-                                 typetok && !Token::Match(typetok, "[,>]"); 
+                            for (const Token *typetok = types2[itype];
+                                 typetok && !Token::Match(typetok, "[,>]");
                                  typetok = typetok->next())
                             {
                                 addtoken(typetok, tok3->linenr(), tok3->fileIndex());
@@ -3111,7 +3111,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                             match = false;
                             break;
                         }
-                        
+
                         typetok = typetok ? typetok->next() : 0;
                     }
                     else
