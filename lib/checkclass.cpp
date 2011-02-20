@@ -640,9 +640,7 @@ void CheckClass::privateFunctions()
         // Check that all private functions are used..
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
-            const Token *ftok = func->arg->link()->next();
-            while (ftok->str() != "{")
-                ftok = ftok->next();
+            const Token *ftok = func->start;
             const Token *etok = ftok->link();
 
             for (; ftok != etok; ftok = ftok->next())
