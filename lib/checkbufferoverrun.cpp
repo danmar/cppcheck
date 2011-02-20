@@ -992,7 +992,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         }
 
         // Check function call..
-        if (Token::Match(tok, "%var% ("))
+        if (Token::Match(tok, "%var% (") && total_size > 0)
         {
             // No varid => function calls are not handled
             if (varid == 0)
