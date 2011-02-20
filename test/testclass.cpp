@@ -113,6 +113,7 @@ private:
         TEST_CASE(operatorEqToSelf6);   // ticket # 1550
         TEST_CASE(operatorEqToSelf7);
         TEST_CASE(operatorEqToSelf8);   // ticket #2179
+        TEST_CASE(operatorEqToSelf9);   // ticket #2592
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetVector);
         TEST_CASE(memsetOnClass);
@@ -1296,6 +1297,26 @@ private:
             "{\n"
             "    return copy(in);\n"
             "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void operatorEqToSelf9()
+    {
+        checkOpertorEqToSelf(
+            "class Foo\n"
+            "{\n"
+            "public:\n"
+            "    Foo& operator=(Foo* pOther);\n"
+            "    Foo& operator=(Foo& other);\n"
+            "};\n"
+            "Foo& Foo::operator=(Foo* pOther)\n"
+            "{\n"
+            "    return *this;\n"
+            "}\n"
+            "Foo& Foo::operator=(Foo& other)\n"
+            "{\n"
+            "    return Foo::operator=(&other);\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
