@@ -220,7 +220,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         function.isConst = true;
 
                     // pure virtual function
-                    if (Token::Match(end, ") const| = %any% ;"))
+                    if (Token::Match(end, ") const| = %any%"))
                         function.isPure = true;
 
                     // count the number of constructors
@@ -247,6 +247,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     {
                         function.isInline = true;
                         function.hasBody = true;
+
+                        // find start of function '{'
+                        while (end && end->str() != "{")
+                            end = end->next();
+
+                        // save start of function
+                        function.start = end;
 
                         scope->functionList.push_back(function);
 
@@ -768,6 +775,10 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                             func->hasBody = true;
                             func->token = *tok;
                             func->arg = argStart;
+                            const Token *start = argStart->link()->next();
+                            while (start && start->str() != "{")
+                                start = start->next();
+                            func->start = start;
                         }
                     }
                     else if (func->tokenDef->str() == (*tok)->str() && (*tok)->previous()->str() != "~")
@@ -783,6 +794,10 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                                     func->hasBody = true;
                                     func->token = *tok;
                                     func->arg = argStart;
+                                    const Token *start = argStart->link()->next();
+                                    while (start && start->str() != "{")
+                                        start = start->next();
+                                    func->start = start;
                                 }
                             }
 
@@ -793,6 +808,10 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                                 func->hasBody = true;
                                 func->token = *tok;
                                 func->arg = argStart;
+                                const Token *start = argStart->link()->next()->next()->link()->next();
+                                while (start && start->str() != "{")
+                                    start = start->next();
+                                func->start = start;
                             }
                         }
                     }
@@ -1153,6 +1172,7 @@ void Scope::getVariableList()
         // This is the start of a statement
         const Token *vartok = NULL;
         const Token *typetok = NULL;
+        const Token *typestart = tok;
 
         // Is it const..?
         bool isConst = false;
@@ -1222,7 +1242,7 @@ void Scope::getVariableList()
             if (typetok)
                 scope = check->findVariableType(this, typetok);
 
-            addVariable(vartok, varaccess, isMutable, isStatic, isConst, isClass, scope);
+            addVariable(vartok, typestart, varaccess, isMutable, isStatic, isConst, isClass, scope);
         }
     }
 }

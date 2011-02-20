@@ -73,10 +73,11 @@ class Variable
     }
 
 public:
-    Variable(const Token *name_, std::size_t index_, AccessControl access_,
-             bool mutable_, bool static_, bool const_, bool class_,
-             const Scope *type_)
+    Variable(const Token *name_, const Token *start_, std::size_t index_,
+             AccessControl access_, bool mutable_, bool static_, bool const_,
+             bool class_, const Scope *type_)
         : _name(name_),
+          _start(start_),
           _index(index_),
           _access(access_),
           _flags(0),
@@ -95,6 +96,15 @@ public:
     const Token *nameToken() const
     {
         return _name;
+    }
+
+    /**
+     * Get type start token.
+     * @return type start token
+     */
+    const Token *typeStartToken() const
+    {
+        return _start;
     }
 
     /**
@@ -200,6 +210,9 @@ private:
     /** @brief variable name token */
     const Token *_name;
 
+    /** @brief variable type start token */
+    const Token *_start;
+
     /** @brief order declared */
     std::size_t _index;
 
@@ -223,6 +236,7 @@ public:
           argDef(NULL),
           token(NULL),
           arg(NULL),
+          start(NULL),
           access(Public),
           hasBody(false),
           isInline(false),
@@ -245,6 +259,7 @@ public:
     const Token *argDef;   // function argument start '(' in class definition
     const Token *token;    // function name token in implementation
     const Token *arg;      // function argument start '('
+    const Token *start;    // function start '{'
     AccessControl access;  // public/protected/private
     bool hasBody;          // has implementation
     bool isInline;         // implementation in class definition
@@ -317,9 +332,9 @@ public:
      */
     Scope * findInNestedListRecursive(const std::string & name);
 
-    void addVariable(const Token *token_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const Scope *type_)
+    void addVariable(const Token *token_, const Token *start_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const Scope *type_)
     {
-        varlist.push_back(Variable(token_, varlist.size(), access_, mutable_, static_, const_, class_, type_));
+        varlist.push_back(Variable(token_, start_, varlist.size(), access_, mutable_, static_, const_, class_, type_));
     }
 
     /** @brief initialize varlist */
