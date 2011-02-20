@@ -1335,7 +1335,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
                 Tokenizer tokenizer2(&settings,NULL);
                 std::istringstream istr2(it->second);
                 tokenizer2.tokenize(istr2,"","",true);
-                
+
                 // Copy the value tokens
                 std::stack<Token *> link;
                 for (const Token *tok2 = tokenizer2.tokens(); tok2; tok2 = tok2->next())
