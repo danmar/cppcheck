@@ -207,6 +207,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", errout.str());
 
+        check("void foo(ABC *abc) {\n"
+              "    if (abc->a == 3) {\n"
+              "        return;\n"
+              "    }\n"
+              "    if (abc) {}\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 5\n", "", errout.str());
+
         // TODO: False negative if member of member is dereferenced
         check("void foo(ABC *abc) {\n"
               "    abc->next->a = 0;\n"
