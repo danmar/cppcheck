@@ -279,6 +279,7 @@ private:
         TEST_CASE(bitfields3);
         TEST_CASE(bitfields4); // ticket #1956
         TEST_CASE(bitfields5); // ticket #1956
+        TEST_CASE(bitfields6); // ticket #2595
 
         TEST_CASE(microsoftMFC);
 
@@ -5081,6 +5082,18 @@ private:
 
         const char code3[] = "struct A { virtual void f() {} int f1 : 1; };";
         ASSERT_EQUALS("struct A { virtual void f ( ) { } int f1 ; } ;", tokenizeAndStringify(code3,false));
+    }
+
+    void bitfields6() // ticket #2595
+    {
+        const char code1[] = "struct A { bool b : true; };";
+        ASSERT_EQUALS("struct A { bool b ; } ;", tokenizeAndStringify(code1,false));
+
+        const char code2[] = "struct A { bool b : true, c : true; };";
+        ASSERT_EQUALS("struct A { bool b ; bool c ; } ;", tokenizeAndStringify(code2,false));
+
+        const char code3[] = "struct A { bool : true; };";
+        ASSERT_EQUALS("struct A { } ;", tokenizeAndStringify(code3,false));
     }
 
     void microsoftMFC()

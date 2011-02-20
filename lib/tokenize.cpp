@@ -9073,7 +9073,7 @@ void Tokenizer::simplifyBitfields()
     {
         Token *last = 0;
 
-        if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% %var% : %num% ;|,"))
+        if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% %var% : %any% ;|,"))
         {
             int offset = 0;
             if (tok->next()->str() == "const")
@@ -9082,7 +9082,7 @@ void Tokenizer::simplifyBitfields()
             last = tok->tokAt(5 + offset);
             Token::eraseTokens(tok->tokAt(2 + offset), tok->tokAt(5 + offset));
         }
-        else if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% : %num% ;"))
+        else if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% : %any% ;"))
         {
             int offset = 0;
             if (tok->next()->str() == "const")
