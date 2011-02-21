@@ -84,6 +84,7 @@ private:
         TEST_CASE(sizeof19);    // #1891 - sizeof 'x'
         TEST_CASE(sizeof20);    // #2024 - sizeof a)
         TEST_CASE(sizeof21);    // #2232 - sizeof...(Args)
+        TEST_CASE(sizeof22);    // #2599
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
@@ -1413,6 +1414,15 @@ private:
                             "    int n = 0; n = internal(1);\n"
                             "    return 0;\n"
                             "}\n";
+
+        // don't segfault
+        tok(code);
+    }
+
+    void sizeof22()
+    {
+        // ticket #2599 segmentation fault
+        const char code[] = "sizeof\n";
 
         // don't segfault
         tok(code);

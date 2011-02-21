@@ -3809,6 +3809,9 @@ void Tokenizer::simplifySizeof()
         if (tok->str() != "sizeof")
             continue;
 
+        if (!tok->next())
+            break;
+
         if (Token::simpleMatch(tok->next(), "sizeof"))
             continue;
 
