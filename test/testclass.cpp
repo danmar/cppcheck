@@ -195,6 +195,7 @@ private:
         TEST_CASE(symboldatabase12); // ticket #2547
         TEST_CASE(symboldatabase13); // ticket #2577
         TEST_CASE(symboldatabase14); // ticket #2589
+        TEST_CASE(symboldatabase15); // ticket #2591
     }
 
     // Check the operator Equal
@@ -5592,6 +5593,14 @@ private:
     {
         // ticket #2589 - segmentation fault
         checkConst("struct B : A\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase15()
+    {
+        // ticket #2591 - segmentation fault
+        checkConst("struct A :\n");
 
         ASSERT_EQUALS("", errout.str());
     }
