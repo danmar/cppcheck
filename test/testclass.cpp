@@ -164,6 +164,7 @@ private:
         TEST_CASE(const41); // ticket #2255
         TEST_CASE(const42); // ticket #2282
         TEST_CASE(const43); // ticket #2377
+        TEST_CASE(const44); // ticket #2595
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -4978,6 +4979,21 @@ private:
                    "        a = b;\n"
                    "    }\n"
                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const44() // ticket 2595
+    {
+        checkConst("class A\n"
+                   "{\n"
+                   "public:\n"
+                   "    bool bOn;\n"
+                   "    bool foo()\n"
+                   "    {\n"
+                   "        return 0 != (bOn = bOn && true);\n"
+                   "    }\n"
+                   "};\n");
+
         ASSERT_EQUALS("", errout.str());
     }
 

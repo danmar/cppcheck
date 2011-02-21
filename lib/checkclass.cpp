@@ -1351,7 +1351,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
 {
     const Token *tok1 = tok;
 
-    while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:|return|:|?"))
+    while (tok->previous() && !Token::Match(tok->previous(), "}|{|;(||public:|protected:|private:|return|:|?"))
     {
         if (Token::simpleMatch(tok->previous(),  "* this"))
             return true;
@@ -1485,6 +1485,12 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
 
         // streaming: <<
         else if (tok1->str() == "<<" && isMemberVar(scope, tok1->previous()))
+        {
+            isconst = false;
+            break;
+        }
+        else if (Token::simpleMatch(tok1->previous(), ") <<") &&
+                 isMemberVar(scope, tok1->tokAt(-2)))
         {
             isconst = false;
             break;
