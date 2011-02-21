@@ -275,6 +275,40 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                         ++it;
                 }
 
+                // #2231 - loop body only contains a conditional initialization..
+                if (Token::simpleMatch(tok2->next(), "if ("))
+                {
+                    // Start { for the if block
+                    const Token *tok3 = tok2->tokAt(2)->link();
+                    if (Token::simpleMatch(tok3,") {"))
+                    {
+                        tok3 = tok3->next();
+
+                        // End } for the if block
+                        const Token *tok4 = tok3->link();
+                        if (Token::Match(tok3, "{ %var% =") &&
+                            Token::simpleMatch(tok4, "} }") &&
+                            Token::simpleMatch(tok4->tokAt(-2), "break ;"))
+                        {
+                            // Is there a assignment and then a break?
+                            const Token *t = Token::findmatch(tok3, ";");
+                            if (t && t->tokAt(3) == tok4)
+                            {
+                                for (std::list<ExecutionPath *>::iterator it = checks.begin(); it != checks.end(); ++it)
+                                {
+                                    if ((*it)->varId == tok3->next()->varId())
+                                    {
+                                        (*it)->numberOfIf++;
+                                        break;
+                                    }
+                                }
+                                tok = tok2->link();
+                                continue;
+                            }
+                        }
+                    }
+                }
+
                 // parse loop bodies
                 check->parseLoopBody(tok2->next(), checks);
             }

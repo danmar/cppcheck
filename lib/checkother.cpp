@@ -321,7 +321,7 @@ void CheckOther::checkSelfAssignment()
     std::set<unsigned int> pod;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (tok->isStandardType() && tok->next()->varId() && Token::Match(tok->tokAt(2), "[,);]"))
+        if (tok->isStandardType() && Token::Match(tok->tokAt(2), "[,);]") && tok->next()->varId())
             pod.insert(tok->next()->varId());
     }
 

@@ -119,6 +119,7 @@ private:
         TEST_CASE(if_cond9);
         TEST_CASE(if_cond10);
         TEST_CASE(if_cond11);
+        TEST_CASE(if_cond12);
 
         TEST_CASE(if_or_1);
         TEST_CASE(if_or_2);
@@ -1338,6 +1339,15 @@ private:
         Preprocessor preprocessor(&settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void if_cond12()
+    {
+        const char filedata[] = "#define A (1)\n"
+                                "#if A == 1\n"
+                                ";\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\n\n;\n\n", Preprocessor::getcode(filedata,"","",NULL,NULL));
     }
 
 

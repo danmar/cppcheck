@@ -127,6 +127,7 @@ private:
         TEST_CASE(simplifyKnownVariables38);    // ticket #2399 - simplify conditions
         TEST_CASE(simplifyKnownVariables39);
         TEST_CASE(simplifyKnownVariables40);
+        TEST_CASE(simplifyKnownVariables41);    // p=&x; if (p) ..
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -278,6 +279,7 @@ private:
         TEST_CASE(bitfields3);
         TEST_CASE(bitfields4); // ticket #1956
         TEST_CASE(bitfields5); // ticket #1956
+        TEST_CASE(bitfields6); // ticket #2595
 
         TEST_CASE(microsoftMFC);
 
@@ -2018,6 +2020,16 @@ private:
                             "    char c2 = { c1 };\n"
                             "}";
         ASSERT_EQUALS("void f ( ) {\n;\nchar c2 ; c2 = { 'a' } ;\n}", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables41()
+    {
+        const char code[] = "void f() {\n"
+                            "    int x = 0;\n"
+                            "    const int *p; p = &x;\n"
+                            "    if (p) { return 0; }\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\nint x ; x = 0 ;\nconst int * p ; p = & x ;\nif ( & x ) { return 0 ; }\n}", tokenizeAndStringify(code, true));
     }
 
     void simplifyKnownVariablesBailOutAssign()
@@ -5070,6 +5082,18 @@ private:
 
         const char code3[] = "struct A { virtual void f() {} int f1 : 1; };";
         ASSERT_EQUALS("struct A { virtual void f ( ) { } int f1 ; } ;", tokenizeAndStringify(code3,false));
+    }
+
+    void bitfields6() // ticket #2595
+    {
+        const char code1[] = "struct A { bool b : true; };";
+        ASSERT_EQUALS("struct A { bool b ; } ;", tokenizeAndStringify(code1,false));
+
+        const char code2[] = "struct A { bool b : true, c : true; };";
+        ASSERT_EQUALS("struct A { bool b ; bool c ; } ;", tokenizeAndStringify(code2,false));
+
+        const char code3[] = "struct A { bool : true; };";
+        ASSERT_EQUALS("struct A { } ;", tokenizeAndStringify(code3,false));
     }
 
     void microsoftMFC()

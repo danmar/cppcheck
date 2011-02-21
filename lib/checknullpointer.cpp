@@ -350,8 +350,19 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             continue;
         }
 
+        /**
+         * @todo There are lots of false negatives here. A dereference
+         *  is only investigated if a few specific conditions are met.
+         */
+
         // dereference in assignment
-        if (Token::Match(tok1, "[{};] %var% = %var% . %var%"))
+        if (Token::Match(tok1, "[;{}] %var% . %var%"))
+        {
+            tok1 = tok1->next();
+        }
+
+        // dereference in assignment
+        else if (Token::Match(tok1, "[{};] %var% = %var% . %var%"))
         {
             if (std::string(tok1->strAt(1)) == tok1->strAt(3))
                 continue;
@@ -433,8 +444,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
                 break;
 
             // Check if pointer is null.
-            // TODO: false negatives for something like: "if (p &&.."?
-            else if (Token::Match(tok2, "if ( !| %varid% )", varid1))
+            // TODO: false negatives for "if (!p || .."
+            else if (Token::Match(tok2, "if ( !| %varid% )|&&", varid1))
             {
                 // Is this variable a pointer?
                 if (isPointer(varid1))
@@ -563,14 +574,13 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
             // vartok : token for the variable
             const Token *vartok = 0;
-            if (Token::Match(tok, "if ( ! %var% ) {"))
+            if (Token::Match(tok, "if ( ! %var% )|&&"))
                 vartok = tok->tokAt(3);
-            else if (Token::Match(tok, "if ( NULL|0 == %var% ) {"))
+            else if (Token::Match(tok, "if ( NULL|0 == %var% )|&&"))
                 vartok = tok->tokAt(4);
-            else if (Token::Match(tok, "if ( %var% == NULL|0 ) {"))
+            else if (Token::Match(tok, "if ( %var% == NULL|0 )|&&"))
                 vartok = tok->tokAt(2);
-            else if (Token::Match(tok, "if|while ( %var% ) {") &&
-                     !Token::simpleMatch(tok->tokAt(4)->link(), "} else"))
+            else if (Token::Match(tok, "if|while ( %var% )|&&"))
                 vartok = tok->tokAt(2);
             else
                 continue;
@@ -590,7 +600,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             // start token = inside the if-body
             const Token *tok1 = tok->next()->link()->tokAt(2);
 
-            if (Token::Match(tok, "if|while ( %var% )"))
+            if (Token::Match(tok, "if|while ( %var% )|&&"))
             {
                 // pointer might be null
                 null = false;

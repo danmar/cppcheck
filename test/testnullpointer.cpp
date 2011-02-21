@@ -193,13 +193,42 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 4\n", errout.str());
 
-        check("void foo(struct ABC *abc)\n"
-              "{\n"
+        check("void foo(struct ABC *abc) {\n"
               "    bar(abc->a);\n"
               "    if (!abc)\n"
               "        ;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 4\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", errout.str());
+
+        check("void foo(ABC *abc) {\n"
+              "    abc->do_something();\n"
+              "    if (abc)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", errout.str());
+
+        check("void foo(ABC *abc) {\n"
+              "    if (abc->a == 3) {\n"
+              "        return;\n"
+              "    }\n"
+              "    if (abc) {}\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 5\n", "", errout.str());
+
+        // TODO: False negative if member of member is dereferenced
+        check("void foo(ABC *abc) {\n"
+              "    abc->next->a = 0;\n"
+              "    if (abc->next)\n"
+              "        ;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", "", errout.str());
+
+        check("void foo(ABC *abc) {\n"
+              "    abc->a = 0;\n"
+              "    if (abc && abc->b == 0)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", errout.str());
 
         // ok dereferencing in a condition
         check("void foo(struct ABC *abc)\n"
@@ -718,6 +747,21 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("error",
                            "", errout.str());
+
+        // #2231 - error if assignment in loop is not used
+        check("void f() {\n"
+              "    char *p = 0;\n"
+              "\n"
+              "    for (int x = 0; x < 3; ++x) {\n"
+              "        if (y[x] == 0) {\n"
+              "            p = malloc(10);\n"
+              "            break;\n"
+              "        }\n"
+              "    }\n"
+              "\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer7()
@@ -786,6 +830,19 @@ private:
               "    printf(\"%c\", *p);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        check("void foo(char *p) {\n"
+              "    if (p && *p == 0) {\n"
+              "    }\n"
+              "    printf(\"%c\", *p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        check("void foo(char *p) {\n"
+              "    if (p && *p == 0) {\n"
+              "    } else { *p = 0; }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n", errout.str());
 
         check("void foo(abc *p) {\n"
               "    if (!p) {\n"

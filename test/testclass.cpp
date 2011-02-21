@@ -113,6 +113,7 @@ private:
         TEST_CASE(operatorEqToSelf6);   // ticket # 1550
         TEST_CASE(operatorEqToSelf7);
         TEST_CASE(operatorEqToSelf8);   // ticket #2179
+        TEST_CASE(operatorEqToSelf9);   // ticket #2592
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetVector);
         TEST_CASE(memsetOnClass);
@@ -163,6 +164,7 @@ private:
         TEST_CASE(const41); // ticket #2255
         TEST_CASE(const42); // ticket #2282
         TEST_CASE(const43); // ticket #2377
+        TEST_CASE(const44); // ticket #2595
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -192,6 +194,7 @@ private:
         TEST_CASE(symboldatabase11); // ticket #2539
         TEST_CASE(symboldatabase12); // ticket #2547
         TEST_CASE(symboldatabase13); // ticket #2577
+        TEST_CASE(symboldatabase14); // ticket #2589
     }
 
     // Check the operator Equal
@@ -1295,6 +1298,26 @@ private:
             "{\n"
             "    return copy(in);\n"
             "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void operatorEqToSelf9()
+    {
+        checkOpertorEqToSelf(
+            "class Foo\n"
+            "{\n"
+            "public:\n"
+            "    Foo& operator=(Foo* pOther);\n"
+            "    Foo& operator=(Foo& other);\n"
+            "};\n"
+            "Foo& Foo::operator=(Foo* pOther)\n"
+            "{\n"
+            "    return *this;\n"
+            "}\n"
+            "Foo& Foo::operator=(Foo& other)\n"
+            "{\n"
+            "    return Foo::operator=(&other);\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4959,6 +4982,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void const44() // ticket 2595
+    {
+        checkConst("class A\n"
+                   "{\n"
+                   "public:\n"
+                   "    bool bOn;\n"
+                   "    bool foo()\n"
+                   "    {\n"
+                   "        return 0 != (bOn = bOn && true);\n"
+                   "    }\n"
+                   "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void assigningPointerToPointerIsNotAConstOperation()
     {
         checkConst("struct s\n"
@@ -5546,6 +5584,14 @@ private:
         checkConst("class foo {\n"
                    "    void bar2 () = A::f;\n"
                    "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase14()
+    {
+        // ticket #2589 - segmentation fault
+        checkConst("struct B : A\n");
 
         ASSERT_EQUALS("", errout.str());
     }

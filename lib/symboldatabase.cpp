@@ -57,6 +57,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                 // goto initial '{'
                 tok2 = initBaseInfo(new_scope, tok);
+
+                // make sure we have valid code
+                if (!tok2)
+                {
+                    delete new_scope;
+                    break;
+                }
             }
 
             new_scope->classStart = tok2;
@@ -213,7 +220,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         function.isConst = true;
 
                     // pure virtual function
-                    if (Token::Match(end, ") const| = %any% ;"))
+                    if (Token::Match(end, ") const| = %any%"))
                         function.isPure = true;
 
                     // count the number of constructors
@@ -240,6 +247,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     {
                         function.isInline = true;
                         function.hasBody = true;
+
+                        // find start of function '{'
+                        while (end && end->str() != "{")
+                            end = end->next();
+
+                        // save start of function
+                        function.start = end;
 
                         scope->functionList.push_back(function);
 
@@ -761,6 +775,10 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                             func->hasBody = true;
                             func->token = *tok;
                             func->arg = argStart;
+                            const Token *start = argStart->link()->next();
+                            while (start && start->str() != "{")
+                                start = start->next();
+                            func->start = start;
                         }
                     }
                     else if (func->tokenDef->str() == (*tok)->str() && (*tok)->previous()->str() != "~")
@@ -776,6 +794,10 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                                     func->hasBody = true;
                                     func->token = *tok;
                                     func->arg = argStart;
+                                    const Token *start = argStart->link()->next();
+                                    while (start && start->str() != "{")
+                                        start = start->next();
+                                    func->start = start;
                                 }
                             }
 
@@ -786,6 +808,10 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                                 func->hasBody = true;
                                 func->token = *tok;
                                 func->arg = argStart;
+                                const Token *start = argStart->link()->next()->next()->link()->next();
+                                while (start && start->str() != "{")
+                                    start = start->next();
+                                func->start = start;
                             }
                         }
                     }
@@ -871,6 +897,10 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
             Scope::BaseInfo base;
 
             tok2 = tok2->next();
+
+            // check for invalid code
+            if (!tok2->next())
+                return NULL;
 
             if (tok2->str() == "public")
             {
@@ -1142,6 +1172,7 @@ void Scope::getVariableList()
         // This is the start of a statement
         const Token *vartok = NULL;
         const Token *typetok = NULL;
+        const Token *typestart = tok;
 
         // Is it const..?
         bool isConst = false;
@@ -1211,7 +1242,7 @@ void Scope::getVariableList()
             if (typetok)
                 scope = check->findVariableType(this, typetok);
 
-            addVariable(vartok, varaccess, isMutable, isStatic, isConst, isClass, scope);
+            addVariable(vartok, typestart, varaccess, isMutable, isStatic, isConst, isClass, scope);
         }
     }
 }
@@ -1422,7 +1453,8 @@ Scope * Scope::findInNestedListRecursive(const std::string & name)
     for (it = nestedList.begin(); it != nestedList.end(); ++it)
     {
         Scope *child = (*it)->findInNestedListRecursive(name);
-        return child;
+        if (child)
+            return child;
     }
     return 0;
 }

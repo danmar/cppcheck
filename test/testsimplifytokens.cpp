@@ -110,6 +110,7 @@ private:
         TEST_CASE(template19);
         TEST_CASE(template20);
         TEST_CASE(template21);
+        TEST_CASE(template22);
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -237,6 +238,7 @@ private:
         TEST_CASE(simplifyTypedef77); // ticket #2554
         TEST_CASE(simplifyTypedef78); // ticket #2568
         TEST_CASE(simplifyTypedef79); // ticket #2348
+        TEST_CASE(simplifyTypedef80); // ticket #2587
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -1983,6 +1985,19 @@ private:
             ASSERT_EQUALS(expected, sizeof_(code));
         }
     }
+
+    void template22()
+    {
+        const char code[] = "template <classname T> struct Fred { T a; };\n"
+                            "Fred<std::string> fred;";
+
+        const std::string expected("; "
+                                   "Fred<std::string> fred ; "
+                                   "struct Fred<std::string> { std :: string a ; }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
 
     void template_unhandled()
     {
@@ -4876,6 +4891,23 @@ private:
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
+    void simplifyTypedef80() // ticket #2587
+    {
+        const char code[] = "typedef struct s { };\n"
+                            "void f() {\n"
+                            "    sizeof(struct s);\n"
+                            "};\n";
+        const std::string expected = "struct s { } ; "
+                                     "void f ( ) { "
+                                     "sizeof ( struct s ) ; "
+                                     "} ;";
+        ASSERT_EQUALS(expected, sizeof_(code));
+
+        // Check for output..
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void simplifyTypedefFunction1()
     {
         {
@@ -5767,11 +5799,7 @@ private:
                             "}\n";
         const char expected[] = "int f ( ) "
                                 "{"
-                                " int i ;"
-                                " int * p ;"
-                                " p = & i ;"
-                                " i = 5 ;"
-                                " return 5 ; "
+                                " ; return 5 ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
     }

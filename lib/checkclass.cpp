@@ -640,9 +640,7 @@ void CheckClass::privateFunctions()
         // Check that all private functions are used..
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
-            const Token *ftok = func->arg->link()->next();
-            while (ftok->str() != "{")
-                ftok = ftok->next();
+            const Token *ftok = func->start;
             const Token *etok = ftok->link();
 
             for (; ftok != etok; ftok = ftok->next())
@@ -869,10 +867,12 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                 }
             }
 
-            // check of *this is returned
+            // check if *this is returned
             else if (!(Token::Match(tok->tokAt(1), "(| * this ;|=") ||
                        Token::Match(tok->tokAt(1), "(| * this +=") ||
-                       Token::simpleMatch(tok->tokAt(1), "operator= (")))
+                       Token::simpleMatch(tok->tokAt(1), "operator= (") ||
+                       (Token::Match(tok->tokAt(1), "%type% :: operator= (") &&
+                        tok->next()->str() == scope->className)))
                 operatorEqRetRefThisError(func->token);
         }
     }
@@ -1351,7 +1351,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
 {
     const Token *tok1 = tok;
 
-    while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:|return|:|?"))
+    while (tok->previous() && !Token::Match(tok->previous(), "}|{|;(||public:|protected:|private:|return|:|?"))
     {
         if (Token::simpleMatch(tok->previous(),  "* this"))
             return true;
@@ -1485,6 +1485,12 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
 
         // streaming: <<
         else if (tok1->str() == "<<" && isMemberVar(scope, tok1->previous()))
+        {
+            isconst = false;
+            break;
+        }
+        else if (Token::simpleMatch(tok1->previous(), ") <<") &&
+                 isMemberVar(scope, tok1->tokAt(-2)))
         {
             isconst = false;
             break;
