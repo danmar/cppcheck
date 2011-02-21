@@ -9237,9 +9237,11 @@ void Tokenizer::simplifyBorland()
 // Remove Qt signals and slots
 void Tokenizer::simplifyQtSignalsSlots()
 {
-    Token *tok = _tokens;
-    while (NULL != (tok = const_cast<Token *>(Token::findmatch(tok, "class %var% :"))))
+    for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        if (!Token::Match(tok, "class %var% :"))
+            continue;
+
         if (tok->previous() && tok->previous()->str() == "enum")
         {
             tok = tok->tokAt(2);
