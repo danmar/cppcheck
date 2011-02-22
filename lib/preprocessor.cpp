@@ -927,7 +927,18 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         if (line.compare(0, 8, "#define ") == 0)
         {
-            if (line.find(" ", 8) == std::string::npos)
+            bool valid = true;
+            for (std::string::size_type pos = 8; pos < line.size() && line[pos] != ' '; ++pos)
+            {
+                char ch = line[pos];
+                if (ch=='_' || (ch>='a' && ch<='z') || (ch>='A' && ch<='Z') || (pos>8 && ch>='0' && ch<='9'))
+                    continue;
+                valid = false;
+                break;
+            }
+            if (!valid)
+                line.clear();
+            else if (line.find(" ", 8) == std::string::npos)
                 defines.insert(line.substr(8));
             else
             {

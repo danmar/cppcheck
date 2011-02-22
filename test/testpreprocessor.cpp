@@ -206,6 +206,8 @@ private:
         TEST_CASE(testPreprocessorRead2);
         TEST_CASE(testPreprocessorRead3);
         TEST_CASE(testPreprocessorRead4);
+
+        TEST_CASE(invalid_define);	// #2605 - hang for: '#define ='
     }
 
 
@@ -2719,6 +2721,18 @@ private:
             Preprocessor preprocessor(&settings, this);
             ASSERT_EQUALS("#define A \" \\\\\\\\\" \" \"", preprocessor.read(istr, "test.cpp", 0));
         }
+    }
+
+    void invalid_define()
+    {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream src("#define =\n");
+        std::string processedFile;
+        std::list<std::string> cfg;
+        std::list<std::string> paths;
+        preprocessor.preprocess(src, processedFile, cfg, "", paths);		// don't hang
     }
 };
 
