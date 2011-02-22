@@ -641,20 +641,23 @@ void CheckClass::privateFunctions()
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
             const Token *ftok = func->start;
-            const Token *etok = ftok->link();
-
-            for (; ftok != etok; ftok = ftok->next())
+            if (ftok)
             {
-                if (Token::Match(ftok, "%var% ("))
+                const Token *etok = ftok->link();
+
+                for (; ftok != etok; ftok = ftok->next())
                 {
-                    // Remove function from FuncList
-                    std::list<const Token *>::iterator it = FuncList.begin();
-                    while (it != FuncList.end())
+                    if (Token::Match(ftok, "%var% ("))
                     {
-                        if (ftok->str() == (*it)->str())
-                            FuncList.erase(it++);
-                        else
-                            ++it;
+                        // Remove function from FuncList
+                        std::list<const Token *>::iterator it = FuncList.begin();
+                        while (it != FuncList.end())
+                        {
+                            if (ftok->str() == (*it)->str())
+                                FuncList.erase(it++);
+                            else
+                                ++it;
+                        }
                     }
                 }
             }

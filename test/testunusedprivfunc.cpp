@@ -39,6 +39,7 @@ private:
         TEST_CASE(test3);
         TEST_CASE(test4);
         TEST_CASE(test5);
+        TEST_CASE(test6); // ticket #2602
 
         // [ 2236547 ] False positive --style unused function, called via pointer
         TEST_CASE(func_pointer1);
@@ -221,6 +222,14 @@ private:
               "    A() : lock(new Lock())\n"
               "    { }\n"
               "    Lock *lock;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void test6() // ticket #2602 segmentation fault
+    {
+        check("class A {\n"
+              "    A& operator=(const A&);\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }
