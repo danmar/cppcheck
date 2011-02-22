@@ -5980,6 +5980,9 @@ void Tokenizer::simplifyIfNotNull()
         {
             tok = tok->next();
 
+            if (!tok)
+                break;
+
             if (Token::simpleMatch(tok, "0 != (") ||
                 Token::Match(tok, "0 != %var%"))
             {

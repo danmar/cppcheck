@@ -326,6 +326,8 @@ private:
         TEST_CASE(simplifyFunctionReturn);
 
         TEST_CASE(removeUnnecessaryQualification);
+
+        TEST_CASE(simplifyIfNotNull);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -6515,6 +6517,13 @@ private:
         const char expected[] = "class Fred { Fred ( ) { } } ;";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("[test.cpp:1]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
+    }
+
+    void simplifyIfNotNull() // ticket # 2601 segmentation fault
+    {
+        const char code[] = "|| #if #define <=";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
