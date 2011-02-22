@@ -7845,7 +7845,7 @@ void Tokenizer::simplifyEnum()
             }
 
             // check for a variable definition: enum {} x;
-            if (end->next()->str() != ";")
+            if (end->next() && end->next()->str() != ";")
             {
                 Token *tempTok = end;
 

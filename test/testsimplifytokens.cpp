@@ -285,6 +285,7 @@ private:
         TEST_CASE(enum17); // ticket #2381 (duplicate enums)
         TEST_CASE(enum18); // #2466 (array with same name as enum constant)
         TEST_CASE(enum19); // ticket #2536
+        TEST_CASE(enum20); // ticket #2600
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6180,6 +6181,12 @@ private:
     {
         const char code[] = "enum class E1;\n"
                             "enum class E2 : int;\n";
+        ASSERT_EQUALS(";", tok(code, false));
+    }
+
+    void enum20() // ticket #2600 segmentation fault
+    {
+        const char code[] = "enum { const }\n";
         ASSERT_EQUALS(";", tok(code, false));
     }
 
