@@ -899,7 +899,7 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
             tok2 = tok2->next();
 
             // check for invalid code
-            if (!tok2->next())
+            if (!tok2 || !tok2->next())
                 return NULL;
 
             if (tok2->str() == "public")

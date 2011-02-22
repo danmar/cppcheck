@@ -84,6 +84,7 @@ private:
         TEST_CASE(sizeof19);    // #1891 - sizeof 'x'
         TEST_CASE(sizeof20);    // #2024 - sizeof a)
         TEST_CASE(sizeof21);    // #2232 - sizeof...(Args)
+        TEST_CASE(sizeof22);    // #2599
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
@@ -239,6 +240,7 @@ private:
         TEST_CASE(simplifyTypedef78); // ticket #2568
         TEST_CASE(simplifyTypedef79); // ticket #2348
         TEST_CASE(simplifyTypedef80); // ticket #2587
+        TEST_CASE(simplifyTypedef81); // ticket #2603
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -284,6 +286,7 @@ private:
         TEST_CASE(enum17); // ticket #2381 (duplicate enums)
         TEST_CASE(enum18); // #2466 (array with same name as enum constant)
         TEST_CASE(enum19); // ticket #2536
+        TEST_CASE(enum20); // ticket #2600
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -324,6 +327,8 @@ private:
         TEST_CASE(simplifyFunctionReturn);
 
         TEST_CASE(removeUnnecessaryQualification);
+
+        TEST_CASE(simplifyIfNotNull);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -1413,6 +1418,15 @@ private:
                             "    int n = 0; n = internal(1);\n"
                             "    return 0;\n"
                             "}\n";
+
+        // don't segfault
+        tok(code);
+    }
+
+    void sizeof22()
+    {
+        // ticket #2599 segmentation fault
+        const char code[] = "sizeof\n";
 
         // don't segfault
         tok(code);
@@ -4908,6 +4922,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void simplifyTypedef81() // ticket #2603 segmentation fault
+    {
+        checkSimplifyTypedef("typedef\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        checkSimplifyTypedef("typedef constexpr\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
     void simplifyTypedefFunction1()
     {
         {
@@ -6173,6 +6196,12 @@ private:
         ASSERT_EQUALS(";", tok(code, false));
     }
 
+    void enum20() // ticket #2600 segmentation fault
+    {
+        const char code[] = "enum { const }\n";
+        ASSERT_EQUALS(";", tok(code, false));
+    }
+
     void removestd()
     {
         ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));
@@ -6498,6 +6527,13 @@ private:
         const char expected[] = "class Fred { Fred ( ) { } } ;";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("[test.cpp:1]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
+    }
+
+    void simplifyIfNotNull() // ticket # 2601 segmentation fault
+    {
+        const char code[] = "|| #if #define <=";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

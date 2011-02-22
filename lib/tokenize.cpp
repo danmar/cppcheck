@@ -1039,6 +1039,13 @@ void Tokenizer::simplifyTypedef()
         Token *namespaceStart = 0;
         Token *namespaceEnd = 0;
 
+        // check for invalid input
+        if (!tok->next())
+        {
+            syntaxError(tok);
+            return;
+        }
+
         if (Token::simpleMatch(tok->next(), "::") ||
             Token::Match(tok->next(), "%type%"))
         {
@@ -1070,6 +1077,13 @@ void Tokenizer::simplifyTypedef()
         }
         else
             continue; // invalid input
+
+        // check for invalid input
+        if (!tok->tokAt(offset))
+        {
+            syntaxError(tok);
+            return;
+        }
 
         // check for template
         if (tok->tokAt(offset)->str() == "<")
@@ -3809,6 +3823,9 @@ void Tokenizer::simplifySizeof()
         if (tok->str() != "sizeof")
             continue;
 
+        if (!tok->next())
+            break;
+
         if (Token::simpleMatch(tok->next(), "sizeof"))
             continue;
 
@@ -5977,6 +5994,9 @@ void Tokenizer::simplifyIfNotNull()
         {
             tok = tok->next();
 
+            if (!tok)
+                break;
+
             if (Token::simpleMatch(tok, "0 != (") ||
                 Token::Match(tok, "0 != %var%"))
             {
@@ -7842,7 +7862,7 @@ void Tokenizer::simplifyEnum()
             }
 
             // check for a variable definition: enum {} x;
-            if (end->next()->str() != ";")
+            if (end->next() && end->next()->str() != ";")
             {
                 Token *tempTok = end;
 
