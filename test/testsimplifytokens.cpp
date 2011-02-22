@@ -240,6 +240,7 @@ private:
         TEST_CASE(simplifyTypedef78); // ticket #2568
         TEST_CASE(simplifyTypedef79); // ticket #2348
         TEST_CASE(simplifyTypedef80); // ticket #2587
+        TEST_CASE(simplifyTypedef81); // ticket #2603
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4919,6 +4920,15 @@ private:
         // Check for output..
         checkSimplifyTypedef(code);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef81() // ticket #2603 segmentation fault
+    {
+        checkSimplifyTypedef("typedef\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        checkSimplifyTypedef("typedef constexpr\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void simplifyTypedefFunction1()

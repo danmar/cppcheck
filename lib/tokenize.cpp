@@ -1039,6 +1039,13 @@ void Tokenizer::simplifyTypedef()
         Token *namespaceStart = 0;
         Token *namespaceEnd = 0;
 
+        // check for invalid input
+        if (!tok->next())
+        {
+            syntaxError(tok);
+            return;
+        }
+
         if (Token::simpleMatch(tok->next(), "::") ||
             Token::Match(tok->next(), "%type%"))
         {
@@ -1070,6 +1077,13 @@ void Tokenizer::simplifyTypedef()
         }
         else
             continue; // invalid input
+
+        // check for invalid input
+        if (!tok->tokAt(offset))
+        {
+            syntaxError(tok);
+            return;
+        }
 
         // check for template
         if (tok->tokAt(offset)->str() == "<")
