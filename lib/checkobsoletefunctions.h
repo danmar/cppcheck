@@ -75,7 +75,7 @@ private:
                                      "Found obsolete function 'usleep'. POSIX.1-2001 declares usleep() function obsolete and POSIX.1-2008 removes it. It is recommended that new applications use the 'nanosleep' or 'setitimer' function."));
 
         _obsoleteFunctions.push_back(std::make_pair("bcmp","Found obsolete function 'bcmp'. It is recommended that new applications use the 'memcmp' function"));
-        _obsoleteFunctions.push_back(std::make_pair("bcopy","Found obsolete function 'bcopy'. It is recommended that new applications use the 'memmove' function"));
+        _obsoleteFunctions.push_back(std::make_pair("bcopy","Found obsolete function 'bcopy'. It is recommended that new applications use the 'memmove' or 'memcpy' functions"));
         _obsoleteFunctions.push_back(std::make_pair("bzero","Found obsolete function 'bzero'. It is recommended that new applications use the 'memset' function"));
 
         _obsoleteFunctions.push_back(std::make_pair("ecvt","Found obsolete function 'ecvt'. It is recommended that new applications use the 'sprintf' function"));
