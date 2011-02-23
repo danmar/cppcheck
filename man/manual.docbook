@@ -374,7 +374,8 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
     <title>Suppressions</title>
 
     <para>If you want to filter out certain errors you can suppress these.
-    First you need to create a suppressions file. The format is:</para>
+    The <literal>--suppress=</literal> command line option is used to specify
+    suppressions on the command line.  The format is one of:</para>
 
     <programlisting>[error id]:[filename]:[line]
 [error id]:[filename2]
@@ -388,6 +389,11 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
     <para>The <literal>filename</literal> may include the wildcard characters
     * or ?, which match any sequence of characters or any single character
     respectively.</para>
+
+    <programlisting>cppcheck --suppress=memleak:file1.cpp src/</programlisting>
+
+    <para>If you have more than a couple of suppressions, create a suppressions
+    file with one line per suppression as above.</para>
 
     <para>Here is an example:</para>
 

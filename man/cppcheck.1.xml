@@ -120,6 +120,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--rule=&lt;rule&gt;</option></arg>
       <arg choice="opt"><option>--rule-file=&lt;file&gt;</option></arg>            
       <arg choice="opt"><option>--style</option></arg>
+      <arg choice="opt"><option>--suppress=&lt;spec&gt;</option></arg>
       <arg choice="opt"><option>--suppressions-list=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>--template '&lt;text&gt;'</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
@@ -304,11 +305,18 @@ Directory name is matched to all parts of the path.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>--suppress=&lt;spec&gt;</option></term>
+        <listitem>
+          <para>Suppress a specific warning. The format of &lt;spec&gt; is: [error id]:[filename]:[line].
+          The [filename] and [line] are optional.
+          [filename] may contain the wildcard characters * or ?.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><option>--suppressions-list=&lt;file&gt;</option></term>
         <listitem>
-          <para>Suppress warnings listed in the file. Filename and line are optional. The format of the single line in file is: [error id]:[filename]:[line].
-          You can use --template or --xml to see the error id.
-          The filename may contain the wildcard characters * or ?.</para>
+          <para>Suppress warnings listed in the file.
+          Each suppression is in the format of &lt;spec&gt; above.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
