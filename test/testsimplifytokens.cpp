@@ -241,6 +241,7 @@ private:
         TEST_CASE(simplifyTypedef79); // ticket #2348
         TEST_CASE(simplifyTypedef80); // ticket #2587
         TEST_CASE(simplifyTypedef81); // ticket #2603
+        TEST_CASE(simplifyTypedef82); // ticket #2403
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4929,6 +4930,24 @@ private:
 
         checkSimplifyTypedef("typedef constexpr\n");
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void simplifyTypedef82() // ticket #2403
+    {
+        checkSimplifyTypedef("class A {\n"
+                             "public:\n"
+                             "  typedef int F(int idx);\n"
+                             "};\n"
+                             "class B {\n"
+                             "public:\n"
+                             "  A::F ** f;\n"
+                             "};\n"
+                             "int main()\n"
+                             "{\n"
+                             "  B * b = new B;\n"
+                             "  b->f = new A::F * [ 10 ];\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1()
