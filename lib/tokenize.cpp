@@ -3918,9 +3918,13 @@ void Tokenizer::simplifySizeof()
                     --parlevel;
                 if (Token::Match(tempToken, "%var%"))
                 {
-                    while (tempToken->next()->str() == "[")
+                    while (tempToken && tempToken->next() && tempToken->next()->str() == "[")
                     {
                         tempToken = tempToken->next()->link();
+                    }
+                    if (!tempToken || !tempToken->next())
+                    {
+                        break;
                     }
 
                     if (tempToken->next()->str() == ".")
