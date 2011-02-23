@@ -1383,6 +1383,16 @@ private:
             "    }\n"
             "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Switch falls through case without comment\n", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "            int x;\n"
+            "        case 1:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void selfAssignment()

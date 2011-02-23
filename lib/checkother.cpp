@@ -323,6 +323,7 @@ void CheckOther::checkSwitchCaseFallThrough()
         std::stack<Token *> loopnest;
         std::stack<Token *> scopenest;
         bool justbreak = true;
+        bool firstcase = true;
         for (const Token *tok2 = tok->tokAt(1)->link()->tokAt(2); tok2; tok2 = tok2->next())
         {
             if (Token::Match(tok2, "if ("))
@@ -396,12 +397,13 @@ void CheckOther::checkSwitchCaseFallThrough()
             }
             else if (Token::Match(tok2, "case|default"))
             {
-                if (!justbreak)
+                if (!justbreak && !firstcase)
                 {
                     switchCaseFallThrough(tok2);
                 }
                 tok2 = Token::findmatch(tok2, ":");
                 justbreak = true;
+                firstcase = false;
             }
             else if (tok2->str() == "{")
             {
