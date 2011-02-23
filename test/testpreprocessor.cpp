@@ -114,7 +114,6 @@ private:
         TEST_CASE(if_cond4);
         TEST_CASE(if_cond5);
         TEST_CASE(if_cond6);
-        TEST_CASE(if_cond7);
         TEST_CASE(if_cond8);
         TEST_CASE(if_cond9);
         TEST_CASE(if_cond10);
@@ -195,6 +194,7 @@ private:
         TEST_CASE(ifdef_ifdefined);
 
         // define and then ifdef
+        TEST_CASE(define_if);
         TEST_CASE(define_ifdef);
         TEST_CASE(define_ifndef1);
         TEST_CASE(define_ifndef2);
@@ -1233,48 +1233,6 @@ private:
         // Compare results..
         ASSERT_EQUALS("[file.c:2]: (error) mismatching number of '(' and ')' in this line: defined(A)&&defined(B))\n", errout.str());
     }
-
-    void if_cond7()
-    {
-        {
-            const char filedata[] = "#define A 1\n"
-                                    "#if A==1\n"
-                                    "a1;\n"
-                                    "#endif\n";
-
-            // Preprocess => actual result..
-            std::istringstream istr(filedata);
-            std::map<std::string, std::string> actual;
-            Settings settings;
-            Preprocessor preprocessor(&settings, this);
-            preprocessor.preprocess(istr, actual, "file.c");
-
-            // Compare results..
-            ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\na1;\n\n", actual[""]);
-        }
-
-        {
-            const char filedata[] = "#define A 0\n"
-                                    "#if A\n"
-                                    "foo();\n"
-                                    "#endif\n";
-
-            // Preprocess => actual result..
-            std::istringstream istr(filedata);
-            std::map<std::string, std::string> actual;
-            Settings settings;
-            Preprocessor preprocessor(&settings, this);
-            preprocessor.preprocess(istr, actual, "file.c");
-
-            // Compare results..
-            TODO_ASSERT_EQUALS(2,
-                               1, static_cast<unsigned int>(actual.size()));
-            TODO_ASSERT_EQUALS("\n\n\n\n",
-                               "\n\nfoo();\n\n", actual[""]);
-        }
-    }
-
 
     void if_cond8()
     {
@@ -2440,6 +2398,24 @@ private:
         ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\nA\n\n\nA\n\n", actual["ABC"]);
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+    }
+
+    void define_if()
+    {
+        {
+            const char filedata[] = "#define A 0\n"
+                                    "#if A\n"
+                                    "FOO\n"
+                                    "#endif";
+            ASSERT_EQUALS("\n\n\n\n", Preprocessor::getcode(filedata,"","",NULL,NULL));
+        }
+        {
+            const char filedata[] = "#define A 1\n"
+                                    "#if A==1\n"
+                                    "FOO\n"
+                                    "#endif";
+            ASSERT_EQUALS("\n\nFOO\n\n", Preprocessor::getcode(filedata,"","",NULL,NULL));
+        }
     }
 
     void define_ifdef()
