@@ -197,6 +197,18 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
         }
 
+        else if (strncmp(argv[i], "--suppress=", 11) == 0)
+        {
+            std::string suppression = argv[i];
+            suppression = suppression.substr(11);
+            const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));
+            if (!errmsg.empty())
+            {
+                PrintMessage(errmsg);
+                return false;
+            }
+        }
+
         // Enables inline suppressions.
         else if (strcmp(argv[i], "--inline-suppr") == 0)
             _settings->_inlineSuppressions = true;
@@ -661,11 +673,12 @@ void CmdLineParser::PrintHelp()
               "    --rule-file=<file>   Use given rule file. For more information, see: \n"
               "                         https://sourceforge.net/projects/cppcheck/files/Articles/\n"
               "    -s, --style          Deprecated, use --enable=style\n"
-              "    --suppressions-list=<file>\n"
-              "                         Suppress warnings listed in the file. Filename and line\n"
-              "                         are optional in the suppression file. The format of the\n"
-              "                         single line in the suppression file is:\n"
+              "    --suppress=<spec>    Suppress a specific warning. The format of <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"
+              "                         The [filename] and [line] are optional.\n"
+              "    --suppressions-list=<file>\n"
+              "                         Suppress warnings listed in the file. Each suppression\n"
+              "                         is in the same format as <spec> above.\n"
               "    --template '<text>'  Format the error messages. E.g.\n"
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}'\n"
