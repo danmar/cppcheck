@@ -4663,6 +4663,8 @@ void Tokenizer::simplifyIfAddBraces()
                     break;
                 }
                 tempToken = tempToken->link();
+                if (!tempToken || !tempToken->next())
+                    break;
                 if (tempToken->next()->isName() && tempToken->next()->str() != "else")
                     break;
                 continue;
