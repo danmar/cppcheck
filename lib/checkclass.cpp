@@ -712,6 +712,18 @@ void CheckClass::noMemset()
             type = tok->strAt(10);
         else if (Token::Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
             type = tok->strAt(8);
+        else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %var% ) )"))
+        {
+            unsigned int varid = tok->tokAt(3)->varId();
+            for (const Token *lookback = tok->previous(); lookback; lookback = lookback->previous())
+            {
+                if (Token::Match(lookback, "%type% %varid%",varid))
+                {
+                    type = lookback->str();
+                    break;
+                }
+            }
+        }
 
         // No type defined => The tokens didn't match
         if (type.empty())

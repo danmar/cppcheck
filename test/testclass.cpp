@@ -2966,7 +2966,7 @@ private:
                       "    Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
     }
 
     void memsetVector()
