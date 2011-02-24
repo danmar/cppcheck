@@ -118,7 +118,26 @@ protected slots:
     */
     void AddIncludePath();
 
+    /**
+    * @brief Slot for removing an include path.
+    *
+    */
+    void RemoveIncludePath();
+
+    /**
+    * @brief Slot for editing an include path.
+    *
+    */
+    void EditIncludePath();
+
 protected:
+
+    /**
+    * @brief Add new include path to the list.
+    * @param path Path to add.
+    *
+    */
+    void AddIncludePath(const QString &path);
 
     /**
     * @brief Clear all applications from the list and re insert them from mTempApplications
@@ -164,6 +183,11 @@ protected:
     * @return converted value
     */
     bool CheckStateToBool(Qt::CheckState state) const;
+
+    /**
+    * @brief Populate the include paths-list.
+    */
+    void InitIncludepathsList();
 
     /**
     * @brief Populate the translations list.
