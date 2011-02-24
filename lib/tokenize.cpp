@@ -9382,7 +9382,8 @@ void Tokenizer::removeUnnecessaryQualification()
                 classInfo.pop();
             else if (tok->str() == classInfo.top().className &&
                      Token::Match(tok, "%type% :: %type% (") &&
-                     Token::Match(tok->tokAt(3)->link(), ") const| {|;"))
+                     Token::Match(tok->tokAt(3)->link(), ") const| {|;") &&
+                     tok->previous()->str() != ":")
             {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
