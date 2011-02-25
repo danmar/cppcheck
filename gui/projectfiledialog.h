@@ -93,16 +93,33 @@ public:
 protected slots:
     /**
     * @brief Browse for include directory.
-    * Allow user to choose new include directory.
+    * Allow user to add new include directory to the list.
     */
-    void BrowseIncludes();
+    void AddIncludeDir();
     /**
     * @brief Browse for checked directory.
     * Allow user to choose new checked directory.
     */
     void BrowsePaths();
 
+    /**
+    * @brief Remove include directory from the list.
+    */
+    void RemoveIncludeDir();
+
+    /**
+    * @brief Edit include directory in the list.
+    */
+    void EditIncludeDir();
+
 protected:
+
+    /**
+    * @brief Add new indlude directory.
+    * @param dir Directory to add.
+    */
+    void AddIncludeDir(const QString &dir);
+
     /**
     * @brief Append new path to the edit control.
     * @param edit Edit control to modify.

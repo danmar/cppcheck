@@ -37,8 +37,20 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     setWindowTitle(title);
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(mUI.mBtnBrowseIncludes, SIGNAL(clicked()), this, SLOT(BrowseIncludes()));
+    connect(mUI.mBtnAddInclude, SIGNAL(clicked()), this, SLOT(AddIncludeDir()));
     connect(mUI.mBtnBrowsePaths, SIGNAL(clicked()), this, SLOT(BrowsePaths()));
+    connect(mUI.mBtnEditInclude, SIGNAL(clicked()), this, SLOT(EditIncludeDir()));
+    connect(mUI.mBtnRemoveInclude, SIGNAL(clicked()), this, SLOT(RemoveIncludeDir()));
+}
+
+void ProjectFileDialog::AddIncludeDir(const QString &dir)
+{
+    if (dir.isNull() || dir.isEmpty())
+        return;
+
+    QListWidgetItem *item = new QListWidgetItem(dir);
+    item->setFlags(item->flags() | Qt::ItemIsEditable);
+    mUI.mListIncludeDirs->addItem(item);
 }
 
 QString ProjectFileDialog::GetRootPath() const
@@ -50,18 +62,14 @@ QString ProjectFileDialog::GetRootPath() const
 
 QStringList ProjectFileDialog::GetIncludePaths() const
 {
-    QString include = mUI.mEditIncludePaths->text();
-    QStringList includes;
-    if (!include.isEmpty())
+    const int count = mUI.mListIncludeDirs->count();
+    QStringList includePaths;
+    for (int i = 0; i < count; i++)
     {
-        include = include.trimmed();
-        include = QDir::fromNativeSeparators(include);
-        if (include.indexOf(';') != -1)
-            includes = include.split(";");
-        else
-            includes.append(include);
+        QListWidgetItem *item = mUI.mListIncludeDirs->item(i);
+        includePaths << item->text();
     }
-    return includes;
+    return includePaths;
 }
 
 QStringList ProjectFileDialog::GetDefines() const
@@ -102,18 +110,11 @@ void ProjectFileDialog::SetRootPath(const QString &root)
 
 void ProjectFileDialog::SetIncludepaths(const QStringList &includes)
 {
-    QString includestr;
     QString dir;
     foreach(dir, includes)
     {
-        includestr += dir;
-        includestr += ";";
+        AddIncludeDir(dir);
     }
-    // Remove ; from the end of the string
-    if (includestr.endsWith(';'))
-        includestr = includestr.left(includestr.length() - 1);
-    includestr = QDir::toNativeSeparators(includestr);
-    mUI.mEditIncludePaths->setText(includestr);
 }
 
 void ProjectFileDialog::SetDefines(const QStringList &defines)
@@ -147,7 +148,7 @@ void ProjectFileDialog::SetPaths(const QStringList &paths)
     mUI.mEditPaths->setText(pathstr);
 }
 
-void ProjectFileDialog::BrowseIncludes()
+void ProjectFileDialog::AddIncludeDir()
 {
     QString selectedDir = QFileDialog::getExistingDirectory(this,
                           tr("Select include directory"),
@@ -155,7 +156,7 @@ void ProjectFileDialog::BrowseIncludes()
 
     if (!selectedDir.isEmpty())
     {
-        AppendDirname(mUI.mEditIncludePaths, selectedDir);
+        AddIncludeDir(selectedDir);
     }
 }
 
@@ -179,4 +180,17 @@ void ProjectFileDialog::AppendDirname(QLineEdit *edit, const QString &dir)
     if (!wholeText.endsWith(QDir::separator()))
         wholeText += QDir::separator();
     edit->setText(wholeText);
+}
+
+void ProjectFileDialog::RemoveIncludeDir()
+{
+    const int row = mUI.mListIncludeDirs->currentRow();
+    QListWidgetItem *item = mUI.mListIncludeDirs->takeItem(row);
+    delete item;
+}
+
+void ProjectFileDialog::EditIncludeDir()
+{
+    QListWidgetItem *item = mUI.mListIncludeDirs->currentItem();
+    mUI.mListIncludeDirs->editItem(item);
 }
