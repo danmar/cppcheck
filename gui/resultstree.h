@@ -238,9 +238,10 @@ protected:
     * @brief Helper function to open an error within target with application*
     *
     * @param target Error tree item to open
-    * @param application Index of the application to open with
+    * @param application Index of the application to open with. Giving -1
+    *  (default value) will open the default application.
     */
-    void StartApplication(QStandardItem *target, int application);
+    void StartApplication(QStandardItem *target, int application = -1);
 
     /**
     * @brief Helper function to copy filename/full path to the clipboard
