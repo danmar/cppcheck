@@ -143,13 +143,13 @@ protected:
     * @brief Clear all applications from the list and re insert them from mTempApplications
     *
     */
-    void PopulateListWidget();
+    void PopulateApplicationList();
 
     /**
-        * @brief Load saved values
-        * Loads dialog size and column widths.
-        *
-        */
+    * @brief Load saved values
+    * Loads dialog size and column widths.
+    *
+    */
     void SaveSettings();
 
     /**

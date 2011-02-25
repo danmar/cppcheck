@@ -75,7 +75,7 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
             this, SLOT(EditIncludePath()));
 
     mUI.mListWidget->setSortingEnabled(false);
-    PopulateListWidget();
+    PopulateApplicationList();
 
     const int count = QThread::idealThreadCount();
     if (count != -1)
@@ -217,7 +217,7 @@ void SettingsDialog::DeleteApplication()
     {
         mTempApplications->RemoveApplication(mUI.mListWidget->row(item));
         mUI.mListWidget->clear();
-        PopulateListWidget();
+        PopulateApplicationList();
     }
 }
 
@@ -249,11 +249,11 @@ void SettingsDialog::DefaultApplication()
         int index = mUI.mListWidget->row(selected[0]);
         mTempApplications->MoveFirst(index);
         mUI.mListWidget->clear();
-        PopulateListWidget();
+        PopulateApplicationList();
     }
 }
 
-void SettingsDialog::PopulateListWidget()
+void SettingsDialog::PopulateApplicationList()
 {
     for (int i = 0; i < mTempApplications->GetApplicationCount(); i++)
     {
