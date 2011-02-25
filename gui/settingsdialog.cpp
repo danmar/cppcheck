@@ -202,7 +202,7 @@ void SettingsDialog::AddApplication()
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        mTempApplications->AddApplicationType(dialog.GetName(), dialog.GetPath());
+        mTempApplications->AddApplication(dialog.GetName(), dialog.GetPath());
         mUI.mListWidget->addItem(dialog.GetName());
     }
 }
@@ -240,7 +240,7 @@ void SettingsDialog::EditApplication()
 
         if (dialog.exec() == QDialog::Accepted)
         {
-            mTempApplications->SetApplicationType(row, dialog.GetName(), dialog.GetPath());
+            mTempApplications->SetApplication(row, dialog.GetName(), dialog.GetPath());
             item->setText(dialog.GetName());
         }
     }

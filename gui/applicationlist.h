@@ -122,9 +122,8 @@ public:
     * @param name New name for the application
     * @param path New path for the application
     */
-    void SetApplicationType(const int index,
-                            const QString &name,
-                            const QString &path);
+    void SetApplication(const int index, const QString &name,
+                        const QString &path);
 
     /**
     * @brief Add a new application
@@ -132,7 +131,7 @@ public:
     * @param name Name of the application
     * @param path Path to the application
     */
-    void AddApplicationType(const QString &name, const QString &path);
+    void AddApplication(const QString &name, const QString &path);
 
     /**
     * @brief Remove an application from the list
@@ -152,7 +151,7 @@ public:
     * list given as a parameter.
     * @param list Copying source
     */
-    void Copy(ApplicationList *list);
+    void Copy(const ApplicationList *list);
 
 protected:
 
