@@ -209,16 +209,21 @@ void SettingsDialog::AddApplication()
 
 void SettingsDialog::RemoveApplication()
 {
-
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    QListWidgetItem *item = 0;
-
-    foreach(item, selected)
+    foreach(QListWidgetItem *item, selected)
     {
-        mTempApplications->RemoveApplication(mUI.mListWidget->row(item));
-        mUI.mListWidget->clear();
-        PopulateApplicationList();
+        const int removeIndex = mUI.mListWidget->row(item);
+        const int currentDefault = mTempApplications->GetDefaultApplication();
+        mTempApplications->RemoveApplication(removeIndex);
+        if (removeIndex == currentDefault)
+            // If default app is removed set default to unknown
+            mTempApplications->SetDefault(-1);
+        else if (removeIndex < currentDefault)
+            // Move default app one up if earlier app was removed
+            mTempApplications->SetDefault(currentDefault - 1);
     }
+    mUI.mListWidget->clear();
+    PopulateApplicationList();
 }
 
 void SettingsDialog::EditApplication()
