@@ -56,7 +56,7 @@ public:
     typedef struct
     {
         /**
-        * @brief Applicaton's name
+        * @brief Application's name
         *
         */
         QString Name;
@@ -107,6 +107,15 @@ public:
     QString GetApplicationPath(const int index) const;
 
     /**
+    * @brief Return the default application.
+    * @return Index of the default application.
+    */
+    int GetDefaultApplication() const
+    {
+        return mDefaultApplicationIndex;
+    }
+
+    /**
     * @brief Modify an application
     *
     * @param index Index of the application to modify
@@ -133,14 +142,10 @@ public:
     void RemoveApplication(const int index);
 
     /**
-    * @brief Move certain application as first.
-    * Position of the application is used by the application to determine
-    * which of the applications is the default application. First application
-    * (index 0) is the default application.
-    *
+    * @brief Set application as default application.
     * @param index Index of the application to make the default one
     */
-    void MoveFirst(const int index);
+    void SetDefault(const int index);
 
     /**
     * @brief Remove all applications from this list and copy all applications from
@@ -148,6 +153,7 @@ public:
     * @param list Copying source
     */
     void Copy(ApplicationList *list);
+
 protected:
 
     /**
@@ -162,12 +168,19 @@ protected:
     */
     bool FindDefaultWindowsEditor();
 
+private:
+
     /**
     * @brief List of applications
     *
     */
     QList<ApplicationType> mApplications;
-private:
+
+    /**
+    * @brief Index of the default application.
+    *
+    */
+    int mDefaultApplicationIndex;
 };
 /// @}
 #endif // APPLICATIONLIST_H

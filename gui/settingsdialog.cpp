@@ -247,7 +247,7 @@ void SettingsDialog::DefaultApplication()
     if (selected.size() > 0)
     {
         int index = mUI.mListWidget->row(selected[0]);
-        mTempApplications->MoveFirst(index);
+        mTempApplications->SetDefault(index);
         mUI.mListWidget->clear();
         PopulateApplicationList();
     }
@@ -255,9 +255,16 @@ void SettingsDialog::DefaultApplication()
 
 void SettingsDialog::PopulateApplicationList()
 {
+    const int defapp = mTempApplications->GetDefaultApplication();
     for (int i = 0; i < mTempApplications->GetApplicationCount(); i++)
     {
-        mUI.mListWidget->addItem(mTempApplications->GetApplicationName(i));
+        QString name = mTempApplications->GetApplicationName(i);
+        if (i == defapp)
+        {
+            name += " ";
+            name += tr("[Default]");
+        }
+        mUI.mListWidget->addItem(name);
     }
 
     // If list contains items select first item
