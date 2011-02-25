@@ -117,8 +117,7 @@ private:
     void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
-    void memsetClassError(const Token *tok, const std::string &memfunc);
-    void memsetStructError(const Token *tok, const std::string &memfunc, const std::string &classname);
+    void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
     void operatorEqReturnError(const Token *tok);
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
     void thisSubtractionError(const Token *tok);
@@ -134,8 +133,7 @@ private:
         c.uninitVarError(0, "classname", "varname");
         c.operatorEqVarError(0, "classname", "");
         c.unusedPrivateFunctionError(0, "classname", "funcname");
-        c.memsetClassError(0, "memfunc");
-        c.memsetStructError(0, "memfunc", "classname");
+        c.memsetError(0, "memfunc", "classname", "class");
         c.operatorEqReturnError(0);
         //c.virtualDestructorError(0, "Base", "Derived");
         c.thisSubtractionError(0);
