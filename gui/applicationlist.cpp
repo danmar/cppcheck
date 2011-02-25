@@ -63,7 +63,6 @@ void ApplicationList::LoadSettings(QSettings *programSettings)
                 defapp = 0;
                 break;
             }
-            // use as default for windows environments
             if (FindDefaultWindowsEditor())
             {
                 defapp = 0;
@@ -76,10 +75,14 @@ void ApplicationList::LoadSettings(QSettings *programSettings)
     if (names.size() > 0 && (names.size() == paths.size()))
     {
         for (int i = 0; i < names.size(); i++)
-        {
             AddApplication(names[i], paths[i]);
-        }
-        mDefaultApplicationIndex = 1;
+
+        if (defapp == -1)
+            mDefaultApplicationIndex = 0;
+        else if (defapp < names.size())
+            mDefaultApplicationIndex = defapp;
+        else
+            mDefaultApplicationIndex = 0;
     }
 }
 
