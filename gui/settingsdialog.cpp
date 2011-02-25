@@ -57,16 +57,16 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(mUI.mButtonAdd, SIGNAL(clicked()),
+    connect(mUI.mBtnAddApplication, SIGNAL(clicked()),
             this, SLOT(AddApplication()));
-    connect(mUI.mButtonDelete, SIGNAL(clicked()),
-            this, SLOT(DeleteApplication()));
-    connect(mUI.mButtonModify, SIGNAL(clicked()),
-            this, SLOT(ModifyApplication()));
-    connect(mUI.mButtonDefault, SIGNAL(clicked()),
+    connect(mUI.mBtnRemoveApplication, SIGNAL(clicked()),
+            this, SLOT(RemoveApplication()));
+    connect(mUI.mBtnEditApplication, SIGNAL(clicked()),
+            this, SLOT(EditApplication()));
+    connect(mUI.mBtnDefaultApplication, SIGNAL(clicked()),
             this, SLOT(DefaultApplication()));
     connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
-            this, SLOT(ModifyApplication()));
+            this, SLOT(EditApplication()));
     connect(mUI.mBtnAddIncludePath, SIGNAL(clicked()),
             this, SLOT(AddIncludePath()));
     connect(mUI.mBtnRemoveIncludePath, SIGNAL(clicked()),
@@ -207,7 +207,7 @@ void SettingsDialog::AddApplication()
     }
 }
 
-void SettingsDialog::DeleteApplication()
+void SettingsDialog::RemoveApplication()
 {
 
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
@@ -221,7 +221,7 @@ void SettingsDialog::DeleteApplication()
     }
 }
 
-void SettingsDialog::ModifyApplication()
+void SettingsDialog::EditApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
     QListWidgetItem *item = 0;
