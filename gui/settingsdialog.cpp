@@ -272,10 +272,16 @@ void SettingsDialog::PopulateApplicationList()
         mUI.mListWidget->addItem(name);
     }
 
-    // If list contains items select first item
-    if (mTempApplications->GetApplicationCount())
-    {
+    // Select default application, or if there is no default app then the
+    // first item.
+    if (defapp == -1)
         mUI.mListWidget->setCurrentRow(0);
+    else
+    {
+        if (mTempApplications->GetApplicationCount() > defapp)
+            mUI.mListWidget->setCurrentRow(defapp);
+        else
+            mUI.mListWidget->setCurrentRow(0);
     }
 }
 
