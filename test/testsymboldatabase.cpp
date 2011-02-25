@@ -93,6 +93,10 @@ private:
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
+
+        TEST_CASE(hasGlobalVariables1);
+        TEST_CASE(hasGlobalVariables2);
+        TEST_CASE(hasGlobalVariables3);
     }
 
     void test_isVariableDeclarationCanHandleNull()
@@ -520,6 +524,60 @@ private:
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
             ASSERT(function && function->hasBody && !function->isInline && function->retFuncPtr);
+        }
+    }
+
+    void hasGlobalVariables1()
+    {
+        GET_SYMBOL_DB("int i;\n")
+
+        ASSERT(db && db->scopeList.size() == 1);
+        if (db && db->scopeList.size() == 1)
+        {
+            std::list<Scope *>::const_iterator it = db->scopeList.begin();
+            ASSERT((*it)->varlist.size() == 1);
+            if ((*it)->varlist.size() == 1)
+            {
+                std::list<Variable>::const_iterator var = (*it)->varlist.begin();
+                ASSERT(var->name() == "i");
+                ASSERT(var->typeStartToken()->str() == "int");
+            }
+        }
+    }
+
+    void hasGlobalVariables2()
+    {
+        GET_SYMBOL_DB("int array[2][2];\n")
+
+        ASSERT(db && db->scopeList.size() == 1);
+        if (db && db->scopeList.size() == 1)
+        {
+            std::list<Scope *>::const_iterator it = db->scopeList.begin();
+            ASSERT((*it)->varlist.size() == 1);
+            if ((*it)->varlist.size() == 1)
+            {
+                std::list<Variable>::const_iterator var = (*it)->varlist.begin();
+                ASSERT(var->name() == "array");
+                ASSERT(var->typeStartToken()->str() == "int");
+            }
+        }
+    }
+
+    void hasGlobalVariables3()
+    {
+        GET_SYMBOL_DB("int array[2][2] = { { 0, 0 }, { 0, 0 } };\n")
+
+        ASSERT(db && db->scopeList.size() == 1);
+        if (db && db->scopeList.size() == 1)
+        {
+            std::list<Scope *>::const_iterator it = db->scopeList.begin();
+            ASSERT((*it)->varlist.size() == 1);
+            if ((*it)->varlist.size() == 1)
+            {
+                std::list<Variable>::const_iterator var = (*it)->varlist.begin();
+                ASSERT(var->name() == "array");
+                ASSERT(var->typeStartToken()->str() == "int");
+            }
         }
     }
 };

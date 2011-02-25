@@ -1164,7 +1164,7 @@ void Scope::getVariableList()
             continue;
 
         // Search for start of statement..
-        else if (!tok->previous() || !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
+        else if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
             continue;
         else if (Token::Match(tok, ";|{|}"))
             continue;
@@ -1288,7 +1288,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         {
             localVarTok = skipPointers(closeTok->next());
 
-            if (Token::Match(localVarTok, ":: %type% %var% ;"))
+            if (Token::Match(localVarTok, ":: %type% %var% ;|="))
             {
                 localTypeTok = localVarTok->next();
                 localVarTok = localVarTok->tokAt(2);
@@ -1311,7 +1311,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
 
 bool Scope::isSimpleVariable(const Token* tok) const
 {
-    return Token::Match(tok, "%var% ;");
+    return Token::Match(tok, "%var% ;|=");
 }
 
 bool Scope::isArrayVariable(const Token* tok) const
@@ -1325,7 +1325,7 @@ bool Scope::findClosingBracket(const Token* tok, const Token*& close) const
     if (NULL != tok && tok->str() == "<")
     {
         unsigned int depth = 0;
-        for (close = tok; (close != NULL) && (close->str() != ";"); close = close->next())
+        for (close = tok; (close != NULL) && (close->str() != ";") && (close->str() != "="); close = close->next())
         {
             if (close->str() == "<")
             {
