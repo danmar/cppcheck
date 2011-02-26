@@ -339,7 +339,7 @@ kate -l(ligne) (fichier)</translation>
 %1
 
 </source>
-        <translation type="unfinished">Erreur lors du chargement de la langue :
+        <translation type="obsolete">Erreur lors du chargement de la langue :
 
 %1
 
@@ -563,6 +563,16 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <source>Serbian</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Failed to change the language:
+
+%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>French</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Project</name>
@@ -594,15 +604,31 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Browse...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Include paths:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Defines:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Includes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Include directories:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -625,7 +651,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <name>QObject</name>
     <message>
         <source>Incorrect language specified!</source>
-        <translation type="unfinished">Langue incorrecte !</translation>
+        <translation type="obsolete">Langue incorrecte !</translation>
     </message>
     <message>
         <source>Language file %1 not found!</source>
@@ -634,6 +660,10 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation type="unfinished">Erreur lors du chargement de la langue %1 depuis le fichier %2</translation>
+    </message>
+    <message>
+        <source>Unknown language specified!</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -798,19 +828,19 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Add application</source>
-        <translation type="unfinished">Ajouter une application</translation>
+        <translation type="obsolete">Ajouter une application</translation>
     </message>
     <message>
         <source>Delete application</source>
-        <translation type="unfinished">Supprimer l&apos;application</translation>
+        <translation type="obsolete">Supprimer l&apos;application</translation>
     </message>
     <message>
         <source>Modify application</source>
-        <translation type="unfinished">Modifier l&apos;application</translation>
+        <translation type="obsolete">Modifier l&apos;application</translation>
     </message>
     <message>
         <source>Set as default application</source>
-        <translation type="unfinished">Définir comme application par défaut</translation>
+        <translation type="obsolete">Définir comme application par défaut</translation>
     </message>
     <message>
         <source>Reports</source>
@@ -856,6 +886,26 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Paths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set as default</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsDialog</name>
@@ -873,6 +923,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Select include directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>[Default]</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
