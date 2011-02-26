@@ -695,6 +695,8 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 
 void CheckClass::noMemset()
 {
+    createSymbolDatabase();
+
     // Locate all 'memset' tokens..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -715,14 +717,9 @@ void CheckClass::noMemset()
         else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %var% ) )"))
         {
             unsigned int varid = tok->tokAt(3)->varId();
-            for (const Token *lookback = tok->previous(); lookback; lookback = lookback->previous())
-            {
-                if (Token::Match(lookback, "%type% %varid%", varid))
-                {
-                    type = lookback->str();
-                    break;
-                }
-            }
+            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+            if (var && var->typeStartToken() == var->typeEndToken())
+                type = var->typeStartToken()->str();
         }
 
         // No type defined => The tokens didn't match
