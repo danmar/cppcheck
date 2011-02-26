@@ -178,6 +178,10 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
     // Remove all comments..
     result = removeComments(result, filename, settings);
 
+    // Remove '#if 0' blocks
+    if (result.find("#if 0\n") != std::string::npos)
+        result = removeIf0(result);
+
     // ------------------------------------------------------------------------------------------
     //
     // Clean up all preprocessor statements
@@ -545,6 +549,37 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     }
 
     return code.str();
+}
+
+std::string Preprocessor::removeIf0(const std::string &code)
+{
+    std::ostringstream ret;
+    std::istringstream istr(code);
+    std::string line;
+    while (std::getline(istr,line))
+    {
+        if (line != "#if 0")
+            ret << line << "\n";
+        else
+        {
+            // replace '#if 0' with empty line
+            ret << "\n";
+
+            // goto the end of the '#if 0' block
+            unsigned int level = 1;
+            while (level > 0 && std::getline(istr,line))
+            {
+                if (line.compare(0,3,"#if") == 0)
+                    ++level;
+                else if (line == "#endif")
+                    --level;
+                
+                // replace code within '#if 0' block with empty lines
+                ret << "\n";
+            }
+        }
+    }
+    return ret.str();
 }
 
 
