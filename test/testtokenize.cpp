@@ -129,6 +129,7 @@ private:
         TEST_CASE(simplifyKnownVariables39);
         TEST_CASE(simplifyKnownVariables40);
         TEST_CASE(simplifyKnownVariables41);    // p=&x; if (p) ..
+        TEST_CASE(simplifyKnownVariables42);    // ticket #2031 - known string value after strcpy
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -2038,6 +2039,21 @@ private:
                             "    if (p) { return 0; }\n"
                             "}";
         ASSERT_EQUALS("void f ( ) {\nint x ; x = 0 ;\nconst int * p ; p = & x ;\nif ( & x ) { return 0 ; }\n}", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables42()
+    {
+        const char code[] = "void f() {\n"
+                            "    char str1[10], str2[10];\n"
+                            "    strcpy(str1, \"abc\");\n"
+                            "    strcpy(str2, str1);\n"
+                            "}";
+        const char expected[] = "void f ( ) {\n"
+                                "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                "strcpy ( str1 , \"abc\" ) ;\n"
+                                "strcpy ( str2 , \"abc\" ) ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
     void simplifyKnownVariablesBailOutAssign()
