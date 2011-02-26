@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>467</width>
-    <height>313</height>
+    <height>329</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,77 +23,113 @@
       <attribute name="title">
        <string>Project</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Project:</string>
-           </property>
-           <property name="buddy">
-            <cstring>mEditProjectRoot</cstring>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Project:</string>
+             </property>
+             <property name="buddy">
+              <cstring>mEditProjectRoot</cstring>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="mEditProjectRoot"/>
+           </item>
+          </layout>
          </item>
          <item>
-          <widget class="QLineEdit" name="mEditProjectRoot"/>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Defines:</string>
+             </property>
+             <property name="buddy">
+              <cstring>mEditDefines</cstring>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="mEditDefines"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_5">
+             <item>
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Paths:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QListWidget" name="mListPaths"/>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QPushButton" name="mBtnAddPath">
+               <property name="text">
+                <string>Add...</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="mBtnEditPath">
+               <property name="text">
+                <string>Edit</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="mBtnRemovePath">
+               <property name="text">
+                <string>Remove</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
          </item>
         </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Paths:</string>
-           </property>
-           <property name="buddy">
-            <cstring>mEditPaths</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="mEditPaths"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="mBtnBrowsePaths">
-           <property name="text">
-            <string>Browse...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Defines:</string>
-           </property>
-           <property name="buddy">
-            <cstring>mEditDefines</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="mEditDefines"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
@@ -178,9 +214,11 @@
   <tabstop>mButtons</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>mEditProjectRoot</tabstop>
-  <tabstop>mEditPaths</tabstop>
-  <tabstop>mBtnBrowsePaths</tabstop>
   <tabstop>mEditDefines</tabstop>
+  <tabstop>mListPaths</tabstop>
+  <tabstop>mBtnAddPath</tabstop>
+  <tabstop>mBtnEditPath</tabstop>
+  <tabstop>mBtnRemovePath</tabstop>
   <tabstop>mListIncludeDirs</tabstop>
   <tabstop>mBtnAddInclude</tabstop>
   <tabstop>mBtnEditInclude</tabstop>
@@ -195,8 +233,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>257</x>
-     <y>148</y>
+     <x>266</x>
+     <y>319</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -211,8 +249,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>325</x>
-     <y>148</y>
+     <x>334</x>
+     <y>319</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

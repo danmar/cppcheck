@@ -38,9 +38,11 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
     connect(mUI.mBtnAddInclude, SIGNAL(clicked()), this, SLOT(AddIncludeDir()));
-    connect(mUI.mBtnBrowsePaths, SIGNAL(clicked()), this, SLOT(BrowsePaths()));
+    connect(mUI.mBtnAddPath, SIGNAL(clicked()), this, SLOT(AddPath()));
     connect(mUI.mBtnEditInclude, SIGNAL(clicked()), this, SLOT(EditIncludeDir()));
     connect(mUI.mBtnRemoveInclude, SIGNAL(clicked()), this, SLOT(RemoveIncludeDir()));
+    connect(mUI.mBtnEditPath, SIGNAL(clicked()), this, SLOT(EditPath()));
+    connect(mUI.mBtnRemovePath, SIGNAL(clicked()), this, SLOT(RemovePath()));
 }
 
 void ProjectFileDialog::AddIncludeDir(const QString &dir)
@@ -51,6 +53,16 @@ void ProjectFileDialog::AddIncludeDir(const QString &dir)
     QListWidgetItem *item = new QListWidgetItem(dir);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI.mListIncludeDirs->addItem(item);
+}
+
+void ProjectFileDialog::AddPath(const QString &path)
+{
+    if (path.isNull() || path.isEmpty())
+        return;
+
+    QListWidgetItem *item = new QListWidgetItem(path);
+    item->setFlags(item->flags() | Qt::ItemIsEditable);
+    mUI.mListPaths->addItem(item);
 }
 
 QString ProjectFileDialog::GetRootPath() const
@@ -89,16 +101,12 @@ QStringList ProjectFileDialog::GetDefines() const
 
 QStringList ProjectFileDialog::GetPaths() const
 {
-    QString path = mUI.mEditPaths->text();
+    const int count = mUI.mListPaths->count();
     QStringList paths;
-    if (!path.isEmpty())
+    for (int i = 0; i < count; i++)
     {
-        path = path.trimmed();
-        path = QDir::fromNativeSeparators(path);
-        if (path.indexOf(';') != -1)
-            paths = path.split(";");
-        else
-            paths.append(path);
+        QListWidgetItem *item = mUI.mListPaths->item(i);
+        paths << item->text();
     }
     return paths;
 }
@@ -110,8 +118,7 @@ void ProjectFileDialog::SetRootPath(const QString &root)
 
 void ProjectFileDialog::SetIncludepaths(const QStringList &includes)
 {
-    QString dir;
-    foreach(dir, includes)
+    foreach(QString dir, includes)
     {
         AddIncludeDir(dir);
     }
@@ -134,18 +141,10 @@ void ProjectFileDialog::SetDefines(const QStringList &defines)
 
 void ProjectFileDialog::SetPaths(const QStringList &paths)
 {
-    QString pathstr;
-    QString path;
-    foreach(path, paths)
+    foreach(QString path, paths)
     {
-        pathstr += path;
-        pathstr += ";";
+        AddPath(path);
     }
-    // Remove ; from the end of the string
-    if (pathstr.endsWith(';'))
-        pathstr = pathstr.left(pathstr.length() - 1);
-    pathstr = QDir::toNativeSeparators(pathstr);
-    mUI.mEditPaths->setText(pathstr);
 }
 
 void ProjectFileDialog::AddIncludeDir()
@@ -160,7 +159,7 @@ void ProjectFileDialog::AddIncludeDir()
     }
 }
 
-void ProjectFileDialog::BrowsePaths()
+void ProjectFileDialog::AddPath()
 {
     QString selectedDir = QFileDialog::getExistingDirectory(this,
                           tr("Select directory to check"),
@@ -168,18 +167,8 @@ void ProjectFileDialog::BrowsePaths()
 
     if (!selectedDir.isEmpty())
     {
-        AppendDirname(mUI.mEditPaths, selectedDir);
+        AddPath(selectedDir);
     }
-}
-
-void ProjectFileDialog::AppendDirname(QLineEdit *edit, const QString &dir)
-{
-    QString wholeText = edit->text();
-    wholeText += ";";
-    wholeText += dir;
-    if (!wholeText.endsWith(QDir::separator()))
-        wholeText += QDir::separator();
-    edit->setText(wholeText);
 }
 
 void ProjectFileDialog::RemoveIncludeDir()
@@ -193,4 +182,17 @@ void ProjectFileDialog::EditIncludeDir()
 {
     QListWidgetItem *item = mUI.mListIncludeDirs->currentItem();
     mUI.mListIncludeDirs->editItem(item);
+}
+
+void ProjectFileDialog::EditPath()
+{
+    QListWidgetItem *item = mUI.mListPaths->currentItem();
+    mUI.mListPaths->editItem(item);
+}
+
+void ProjectFileDialog::RemovePath()
+{
+    const int row = mUI.mListPaths->currentRow();
+    QListWidgetItem *item = mUI.mListPaths->takeItem(row);
+    delete item;
 }

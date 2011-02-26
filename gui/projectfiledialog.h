@@ -96,11 +96,11 @@ protected slots:
     * Allow user to add new include directory to the list.
     */
     void AddIncludeDir();
+
     /**
-    * @brief Browse for checked directory.
-    * Allow user to choose new checked directory.
+    * @brief Add new path to check.
     */
-    void BrowsePaths();
+    void AddPath();
 
     /**
     * @brief Remove include directory from the list.
@@ -112,6 +112,16 @@ protected slots:
     */
     void EditIncludeDir();
 
+    /**
+    * @brief Edit path in the list.
+    */
+    void EditPath();
+
+    /**
+    * @brief Remove path from the list.
+    */
+    void RemovePath();
+
 protected:
 
     /**
@@ -121,11 +131,10 @@ protected:
     void AddIncludeDir(const QString &dir);
 
     /**
-    * @brief Append new path to the edit control.
-    * @param edit Edit control to modify.
-    * @param dir Path to add.
+    * @brief Add new path to check.
+    * @param path Path to add.
     */
-    void AppendDirname(QLineEdit *edit, const QString &dir);
+    void AddPath(const QString &path);
 
 private:
     Ui::ProjectFile mUI;
