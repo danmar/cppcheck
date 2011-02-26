@@ -58,6 +58,9 @@ Tokenizer::Tokenizer()
 
     // symbol database
     _symbolDatabase = NULL;
+
+    // variable count
+    _varId = 0;
 }
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
@@ -75,6 +78,9 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
 
     // symbol database
     _symbolDatabase = NULL;
+
+    // variable count
+    _varId = 0;
 }
 
 Tokenizer::~Tokenizer()
@@ -3271,7 +3277,7 @@ void Tokenizer::setVarId()
         tok->varId(0);
 
     // Set variable ids..
-    unsigned int _varId = 0;
+    _varId = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok != _tokens && !Token::Match(tok, "[;{}(,] %type%"))
