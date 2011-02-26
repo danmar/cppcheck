@@ -456,6 +456,20 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
+    // fill in function arguments
+    for (it = scopeList.begin(); it != scopeList.end(); ++it)
+    {
+        scope = *it;
+
+        std::list<Function>::iterator func;
+
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
+        {
+            // add arguments
+            func->addArguments(this, scope);
+        }
+    }
+
     // determine if user defined type needs initialization
     unsigned int unknowns = 0; // stop checking when there are no unknowns
     unsigned int retry = 0;    // bail if we don't resolve all the variable types for some reason
@@ -1000,6 +1014,58 @@ unsigned int Function::initializedArgCount() const
     }
 
     return count;
+}
+
+void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
+{
+    // check for non-empty argument list "( ... )"
+    if (arg->link() != arg->next())
+    {
+        unsigned int count = 0;
+        const Token *startTok;
+        const Token *endTok;
+        const Token *nameTok;
+        bool isConstVar;
+        const Token *tok = arg->next();
+        for (;;)
+        {
+            startTok = tok;
+            endTok = NULL;
+            nameTok = NULL;
+            isConstVar = bool(tok->str() == "const");
+
+            while (tok->str() != "," && tok->str() != ")")
+            {
+                if (tok->varId() != 0)
+                {
+                    nameTok = tok;
+                    endTok = tok->previous();
+                }
+                tok = tok->next();
+            }
+
+            // check for argument with no name
+            if (!endTok)
+                endTok = tok->previous();
+
+            const Token *typeTok = startTok;
+            if (isConstVar)
+                typeTok = typeTok->next();
+
+            const Scope *argType = NULL;
+            if (!typeTok->isStandardType())
+                argType = symbolDatabase->findVariableType(scope, typeTok);
+
+            bool isClassVar = startTok == endTok && !startTok->isStandardType();
+
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, scope));
+
+            if (tok->str() == ")")
+                break;
+
+            tok = tok->next();
+        }
+    }
 }
 
 //---------------------------------------------------------------------------

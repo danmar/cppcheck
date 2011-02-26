@@ -317,6 +317,7 @@ public:
 
     unsigned int argCount() const;
     unsigned int initializedArgCount() const;
+    void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
 
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition
@@ -335,6 +336,7 @@ public:
     bool isOperator;       // is operator
     bool retFuncPtr;       // returns function pointer
     Type type;             // constructor, destructor, ...
+    std::list<Variable> argumentList; // argument list
 };
 
 class Scope
