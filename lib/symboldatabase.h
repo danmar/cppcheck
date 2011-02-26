@@ -125,7 +125,13 @@ public:
      */
     const std::string &name() const
     {
-        return _name->str();
+        static const std::string noname;
+
+        // name may not exist for function arguments
+        if (_name)
+            return _name->str();
+
+        return noname;
     }
 
     /**
@@ -134,7 +140,11 @@ public:
      */
     unsigned int varId() const
     {
-        return _name->varId();
+        // name may not exist for function arguments
+        if (_name)
+            return _name->varId();
+
+        return 0;
     }
 
     /**
