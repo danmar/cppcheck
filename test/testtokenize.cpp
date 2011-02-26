@@ -79,6 +79,7 @@ private:
         TEST_CASE(ifAddBraces11);
         TEST_CASE(ifAddBraces12);
         TEST_CASE(ifAddBraces13);
+        TEST_CASE(ifAddBraces14);	// #2610 - segfault: if()<{}
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -849,6 +850,13 @@ private:
         const char expected2[] = "{ if ( x ) { while ( y ) { } } else { } }";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, true));
     }
+
+    void ifAddBraces14()
+    {
+        // ticket #2610 (segfault)
+        tokenizeAndStringify("if()<{}", false);
+    }
+
 
     void whileAddBraces()
     {

@@ -2908,7 +2908,52 @@ private:
 
     void memsetOnClass()
     {
-        checkNoMemset("class A\n"
+        checkNoMemset("class Fred\n"
+                      "{\n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(Fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("class Fred\n"
+                      "{\n"
+                      "    std::string b; \n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(Fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+
+        checkNoMemset("class Fred\n"
+                      "{\n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("class Fred\n"
+                      "{\n"
+                      "    std::string s;\n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+    }
+
+    void memsetOnStruct()
+    {
+        checkNoMemset("struct A\n"
                       "{\n"
                       "};\n"
                       "void f()\n"
@@ -2924,23 +2969,24 @@ private:
                       "void f()\n"
                       "{\n"
                       "    struct A a;\n"
-                      "    memset(&a, 0, sizeof(A));\n"
+                      "    memset(&a, 0, sizeof(struct A));\n"
                       "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
 
-    void memsetOnStruct()
-    {
-        checkNoMemset("class A\n"
+        checkNoMemset("struct A\n"
                       "{\n"
-                      " void g( struct sockaddr_in6& a);\n"
-                      "private:\n"
-                      " std::string b; \n"
                       "};\n"
                       "void f()\n"
                       "{\n"
-                      " struct sockaddr_in6 fail;\n"
-                      " memset(&fail, 0, sizeof(struct sockaddr_in6));\n"
+                      "    struct A a;\n"
+                      "    memset(&a, 0, sizeof(A));\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("void f()\n"
+                      "{\n"
+                      "    struct sockaddr_in6 fail;\n"
+                      "    memset(&fail, 0, sizeof(struct sockaddr_in6));\n"
                       "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -2966,18 +3012,68 @@ private:
                       "    Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
     }
 
     void memsetVector()
     {
+        checkNoMemset("class A\n"
+                      "{ std::vector<int> ints; }\n"
+                      "\n"
+                      "void f()\n"
+                      "{\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(A));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on class that contains a 'std::vector'\n", errout.str());
+
         checkNoMemset("struct A\n"
                       "{ std::vector<int> ints; }\n"
                       "\n"
                       "void f()\n"
                       "{\n"
                       "    A a;\n"
-                      "    memset(a, 0, sizeof(A));\n"
+                      "    memset(&a, 0, sizeof(A));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
+
+        checkNoMemset("struct A\n"
+                      "{ std::vector<int> ints; }\n"
+                      "\n"
+                      "void f()\n"
+                      "{\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(struct A));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
+
+        checkNoMemset("struct A\n"
+                      "{ std::vector<int> ints; }\n"
+                      "\n"
+                      "void f()\n"
+                      "{\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(a));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
+
+        checkNoMemset("class A\n"
+                      "{ std::vector< std::vector<int> > ints; }\n"
+                      "\n"
+                      "void f()\n"
+                      "{\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(A));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on class that contains a 'std::vector'\n", errout.str());
+
+        checkNoMemset("struct A\n"
+                      "{ std::vector< std::vector<int> > ints; }\n"
+                      "\n"
+                      "void f()\n"
+                      "{\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(A));\n"
                       "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
 
@@ -2987,7 +3083,7 @@ private:
                       "void f()\n"
                       "{\n"
                       "    A a;\n"
-                      "    memset(a, 0, sizeof(A));\n"
+                      "    memset(&a, 0, sizeof(a));\n"
                       "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
 
@@ -2997,7 +3093,7 @@ private:
                       "void f()\n"
                       "{\n"
                       "    A a;\n"
-                      "    memset(a, 0, sizeof(A));\n"
+                      "    memset(&a, 0, sizeof(A));\n"
                       "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
     }

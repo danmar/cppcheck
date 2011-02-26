@@ -46,7 +46,6 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
     mUI.setupUi(this);
     mTempApplications->Copy(list);
 
-    mUI.mEditIncludePaths->setText(programSettings->value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString());
     mUI.mJobs->setText(programSettings->value(SETTINGS_CHECK_THREADS, 1).toString());
     mUI.mForce->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_CHECK_FORCE, false).toBool()));
     mUI.mShowFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_FULL_PATH, false).toBool()));
@@ -58,21 +57,25 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(mUI.mButtonAdd, SIGNAL(clicked()),
+    connect(mUI.mBtnAddApplication, SIGNAL(clicked()),
             this, SLOT(AddApplication()));
-    connect(mUI.mButtonDelete, SIGNAL(clicked()),
-            this, SLOT(DeleteApplication()));
-    connect(mUI.mButtonModify, SIGNAL(clicked()),
-            this, SLOT(ModifyApplication()));
-    connect(mUI.mButtonDefault, SIGNAL(clicked()),
+    connect(mUI.mBtnRemoveApplication, SIGNAL(clicked()),
+            this, SLOT(RemoveApplication()));
+    connect(mUI.mBtnEditApplication, SIGNAL(clicked()),
+            this, SLOT(EditApplication()));
+    connect(mUI.mBtnDefaultApplication, SIGNAL(clicked()),
             this, SLOT(DefaultApplication()));
     connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
-            this, SLOT(ModifyApplication()));
+            this, SLOT(EditApplication()));
     connect(mUI.mBtnAddIncludePath, SIGNAL(clicked()),
             this, SLOT(AddIncludePath()));
+    connect(mUI.mBtnRemoveIncludePath, SIGNAL(clicked()),
+            this, SLOT(RemoveIncludePath()));
+    connect(mUI.mBtnEditIncludePath, SIGNAL(clicked()),
+            this, SLOT(EditIncludePath()));
 
     mUI.mListWidget->setSortingEnabled(false);
-    PopulateListWidget();
+    PopulateApplicationList();
 
     const int count = QThread::idealThreadCount();
     if (count != -1)
@@ -82,11 +85,32 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
 
     LoadSettings();
     InitTranslationsList();
+    InitIncludepathsList();
 }
 
 SettingsDialog::~SettingsDialog()
 {
     SaveSettings();
+}
+
+void SettingsDialog::AddIncludePath(const QString &path)
+{
+    if (path.isNull() || path.isEmpty())
+        return;
+
+    QListWidgetItem *item = new QListWidgetItem(path);
+    item->setFlags(item->flags() | Qt::ItemIsEditable);
+    mUI.mListIncludePaths->addItem(item);
+}
+
+void SettingsDialog::InitIncludepathsList()
+{
+    const QString allPaths = mSettings->value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
+    const QStringList paths = allPaths.split(";", QString::SkipEmptyParts);
+    foreach(QString path, paths)
+    {
+        AddIncludePath(path);
+    }
 }
 
 void SettingsDialog::InitTranslationsList()
@@ -151,11 +175,20 @@ void SettingsDialog::SaveSettingValues()
     SaveCheckboxValue(mUI.mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
     SaveCheckboxValue(mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
     SaveCheckboxValue(mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
-    mSettings->setValue(SETTINGS_GLOBAL_INCLUDE_PATHS, mUI.mEditIncludePaths->text());
 
     QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
     const QString langcode = currentLang->data(LangCodeRole).toString();
     mSettings->setValue(SETTINGS_LANGUAGE, langcode);
+
+    const int count = mUI.mListIncludePaths->count();
+    QString includePaths;
+    for (int i = 0; i < count; i++)
+    {
+        QListWidgetItem *item = mUI.mListIncludePaths->item(i);
+        includePaths += item->text();
+        includePaths += ";";
+    }
+    mSettings->setValue(SETTINGS_GLOBAL_INCLUDE_PATHS, includePaths);
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
@@ -169,26 +202,31 @@ void SettingsDialog::AddApplication()
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        mTempApplications->AddApplicationType(dialog.GetName(), dialog.GetPath());
+        mTempApplications->AddApplication(dialog.GetName(), dialog.GetPath());
         mUI.mListWidget->addItem(dialog.GetName());
     }
 }
 
-void SettingsDialog::DeleteApplication()
+void SettingsDialog::RemoveApplication()
 {
-
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    QListWidgetItem *item = 0;
-
-    foreach(item, selected)
+    foreach(QListWidgetItem *item, selected)
     {
-        mTempApplications->RemoveApplication(mUI.mListWidget->row(item));
-        mUI.mListWidget->clear();
-        PopulateListWidget();
+        const int removeIndex = mUI.mListWidget->row(item);
+        const int currentDefault = mTempApplications->GetDefaultApplication();
+        mTempApplications->RemoveApplication(removeIndex);
+        if (removeIndex == currentDefault)
+            // If default app is removed set default to unknown
+            mTempApplications->SetDefault(-1);
+        else if (removeIndex < currentDefault)
+            // Move default app one up if earlier app was removed
+            mTempApplications->SetDefault(currentDefault - 1);
     }
+    mUI.mListWidget->clear();
+    PopulateApplicationList();
 }
 
-void SettingsDialog::ModifyApplication()
+void SettingsDialog::EditApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
     QListWidgetItem *item = 0;
@@ -202,7 +240,7 @@ void SettingsDialog::ModifyApplication()
 
         if (dialog.exec() == QDialog::Accepted)
         {
-            mTempApplications->SetApplicationType(row, dialog.GetName(), dialog.GetPath());
+            mTempApplications->SetApplication(row, dialog.GetName(), dialog.GetPath());
             item->setText(dialog.GetName());
         }
     }
@@ -214,23 +252,36 @@ void SettingsDialog::DefaultApplication()
     if (selected.size() > 0)
     {
         int index = mUI.mListWidget->row(selected[0]);
-        mTempApplications->MoveFirst(index);
+        mTempApplications->SetDefault(index);
         mUI.mListWidget->clear();
-        PopulateListWidget();
+        PopulateApplicationList();
     }
 }
 
-void SettingsDialog::PopulateListWidget()
+void SettingsDialog::PopulateApplicationList()
 {
+    const int defapp = mTempApplications->GetDefaultApplication();
     for (int i = 0; i < mTempApplications->GetApplicationCount(); i++)
     {
-        mUI.mListWidget->addItem(mTempApplications->GetApplicationName(i));
+        QString name = mTempApplications->GetApplicationName(i);
+        if (i == defapp)
+        {
+            name += " ";
+            name += tr("[Default]");
+        }
+        mUI.mListWidget->addItem(name);
     }
 
-    // If list contains items select first item
-    if (mTempApplications->GetApplicationCount())
-    {
+    // Select default application, or if there is no default app then the
+    // first item.
+    if (defapp == -1)
         mUI.mListWidget->setCurrentRow(0);
+    else
+    {
+        if (mTempApplications->GetApplicationCount() > defapp)
+            mUI.mListWidget->setCurrentRow(defapp);
+        else
+            mUI.mListWidget->setCurrentRow(0);
     }
 }
 
@@ -268,10 +319,19 @@ void SettingsDialog::AddIncludePath()
 
     if (!selectedDir.isEmpty())
     {
-        QString text = mUI.mEditIncludePaths->text();
-        if (!text.isEmpty())
-            text += ';';
-        text += selectedDir;
-        mUI.mEditIncludePaths->setText(text);
+        AddIncludePath(selectedDir);
     }
+}
+
+void SettingsDialog::RemoveIncludePath()
+{
+    const int row = mUI.mListIncludePaths->currentRow();
+    QListWidgetItem *item = mUI.mListIncludePaths->takeItem(row);
+    delete item;
+}
+
+void SettingsDialog::EditIncludePath()
+{
+    QListWidgetItem *item = mUI.mListIncludePaths->currentItem();
+    mUI.mListIncludePaths->editItem(item);
 }

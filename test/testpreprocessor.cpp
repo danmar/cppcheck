@@ -92,6 +92,10 @@ private:
 
         TEST_CASE(error3);
 
+        // Don't handle include in a #if 0 block
+        TEST_CASE(if0_include_1);
+        TEST_CASE(if0_include_2);
+
         // Handling include guards (don't create extra configuration for it)
         TEST_CASE(includeguard1);
         TEST_CASE(includeguard2);
@@ -637,6 +641,32 @@ private:
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
     }
 
+    void if0_include_1()
+    {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream code("#if 0\n"
+                                "#include \"a.h\"\n"
+                                "#endif\n"
+                                "AB\n");
+        ASSERT_EQUALS("\n\n\nAB\n", preprocessor.read(code,"",NULL));
+    }
+
+    void if0_include_2()
+    {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream code("#if 0\n"
+                                "#include \"a.h\"\n"
+                                "#ifdef WIN32\n"
+                                "#else\n"
+                                "#endif\n"
+                                "#endif\n"
+                                "AB\n");
+        ASSERT_EQUALS("\n\n\n\n\n\nAB\n", preprocessor.read(code,"",NULL));
+    }
 
     void includeguard1()
     {

@@ -650,6 +650,15 @@ public:
 
     Token *deleteInvalidTypedef(Token *typeDef);
 
+    /**
+     * Get variable count.
+     * @return number of variables
+     */
+    unsigned int varIdCount() const
+    {
+        return _varId;
+    }
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);
@@ -684,6 +693,9 @@ private:
 
     /** Symbol database that all checks etc can use */
     mutable SymbolDatabase *_symbolDatabase;
+
+    /** variable count */
+    unsigned int _varId;
 };
 
 /// @}

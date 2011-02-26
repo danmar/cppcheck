@@ -328,7 +328,8 @@ private:
 
         TEST_CASE(simplifyFunctionReturn);
 
-        TEST_CASE(removeUnnecessaryQualification);
+        TEST_CASE(removeUnnecessaryQualification1);
+        TEST_CASE(removeUnnecessaryQualification2);
 
         TEST_CASE(simplifyIfNotNull);
     }
@@ -6550,12 +6551,22 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void removeUnnecessaryQualification()
+    void removeUnnecessaryQualification1()
     {
         const char code[] = "class Fred { Fred::Fred() {} };";
         const char expected[] = "class Fred { Fred ( ) { } } ;";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("[test.cpp:1]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
+    }
+
+    void removeUnnecessaryQualification2()
+    {
+        const char code[] = "template<typename Iter, typename Skip>\n"
+                            "struct grammar : qi::grammar<Iter, int(), Skip> {\n"
+                            "    grammar() : grammar::base_type(start) { }\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyIfNotNull() // ticket # 2601 segmentation fault

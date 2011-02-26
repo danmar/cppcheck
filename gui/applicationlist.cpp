@@ -27,7 +27,8 @@
 
 
 ApplicationList::ApplicationList(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    mDefaultApplicationIndex(-1)
 {
     //ctor
 }
@@ -42,6 +43,7 @@ void ApplicationList::LoadSettings(QSettings *programSettings)
 
     QStringList names = programSettings->value(SETTINGS_APPLICATION_NAMES, QStringList()).toStringList();
     QStringList paths = programSettings->value(SETTINGS_APPLICATION_PATHS, QStringList()).toStringList();
+    int defapp = programSettings->value(SETTINGS_APPLICATION_DEFAULT, -1).toInt();
 
     if (names.empty() && paths.empty())
     {
@@ -50,28 +52,37 @@ void ApplicationList::LoadSettings(QSettings *programSettings)
             // use as default for gnome environments
             if (QFileInfo("/usr/bin/gedit").isExecutable())
             {
-                AddApplicationType("gedit", "/usr/bin/gedit +(line) (file)");
+                AddApplication("gedit", "/usr/bin/gedit +(line) (file)");
+                defapp = 0;
                 break;
             }
             // use as default for kde environments
             if (QFileInfo("/usr/bin/kate").isExecutable())
             {
-                AddApplicationType("kate", "/usr/bin/kate -l(line) (file)");
+                AddApplication("kate", "/usr/bin/kate -l(line) (file)");
+                defapp = 0;
                 break;
             }
-            // use as default for windows environments
             if (FindDefaultWindowsEditor())
+            {
+                defapp = 0;
                 break;
+            }
         }
         while (0);
     }
 
-    if (names.size() == paths.size())
+    if (names.size() > 0 && (names.size() == paths.size()))
     {
         for (int i = 0; i < names.size(); i++)
-        {
-            AddApplicationType(names[i], paths[i]);
-        }
+            AddApplication(names[i], paths[i]);
+
+        if (defapp == -1)
+            mDefaultApplicationIndex = 0;
+        else if (defapp < names.size())
+            mDefaultApplicationIndex = defapp;
+        else
+            mDefaultApplicationIndex = 0;
     }
 }
 
@@ -88,6 +99,7 @@ void ApplicationList::SaveSettings(QSettings *programSettings)
 
     programSettings->setValue(SETTINGS_APPLICATION_NAMES, names);
     programSettings->setValue(SETTINGS_APPLICATION_PATHS, paths);
+    programSettings->setValue(SETTINGS_APPLICATION_DEFAULT, mDefaultApplicationIndex);
 
 }
 
@@ -117,9 +129,9 @@ QString ApplicationList::GetApplicationPath(const int index) const
 
 }
 
-void ApplicationList::SetApplicationType(const int index,
-        const QString &name,
-        const QString &path)
+void ApplicationList::SetApplication(const int index,
+                                     const QString &name,
+                                     const QString &path)
 {
     if (index >= 0 && index < mApplications.size())
     {
@@ -128,7 +140,7 @@ void ApplicationList::SetApplicationType(const int index,
     }
 }
 
-void ApplicationList::AddApplicationType(const QString &name, const QString &path)
+void ApplicationList::AddApplication(const QString &name, const QString &path)
 {
     if (name.isEmpty() || path.isEmpty())
     {
@@ -146,15 +158,15 @@ void ApplicationList::RemoveApplication(const int index)
     mApplications.removeAt(index);
 }
 
-void ApplicationList::MoveFirst(const int index)
+void ApplicationList::SetDefault(const int index)
 {
-    if (index < mApplications.size() && index > 0)
+    if (index < mApplications.size() && index >= 0)
     {
-        mApplications.move(index, 0);
+        mDefaultApplicationIndex = index;
     }
 }
 
-void ApplicationList::Copy(ApplicationList *list)
+void ApplicationList::Copy(const ApplicationList *list)
 {
     if (!list)
     {
@@ -164,13 +176,15 @@ void ApplicationList::Copy(ApplicationList *list)
     Clear();
     for (int i = 0; i < list->GetApplicationCount(); i++)
     {
-        AddApplicationType(list->GetApplicationName(i), list->GetApplicationPath(i));
+        AddApplication(list->GetApplicationName(i), list->GetApplicationPath(i));
     }
+    mDefaultApplicationIndex = list->GetDefaultApplication();
 }
 
 void ApplicationList::Clear()
 {
     mApplications.clear();
+    mDefaultApplicationIndex = -1;
 }
 
 bool ApplicationList::FindDefaultWindowsEditor()
@@ -179,7 +193,7 @@ bool ApplicationList::FindDefaultWindowsEditor()
     const QString notepadppPath = appPath + "\\Notepad++\\notepad++.exe";
     if (QFileInfo(notepadppPath).isExecutable())
     {
-        AddApplicationType("Notepad++", "\"" + notepadppPath + "\" -n(line) (file)");
+        AddApplication("Notepad++", "\"" + notepadppPath + "\" -n(line) (file)");
         return true;
     }
 
@@ -187,7 +201,7 @@ bool ApplicationList::FindDefaultWindowsEditor()
     const QString notepadPath = windowsPath + "\\system32\\notepad.exe";
     if (QFileInfo(notepadPath).isExecutable())
     {
-        AddApplicationType("Notepad", notepadPath + " (file)");
+        AddApplication("Notepad", notepadPath + " (file)");
         return true;
     }
     return false;

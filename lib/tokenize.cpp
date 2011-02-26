@@ -58,6 +58,9 @@ Tokenizer::Tokenizer()
 
     // symbol database
     _symbolDatabase = NULL;
+
+    // variable count
+    _varId = 0;
 }
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
@@ -75,6 +78,9 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
 
     // symbol database
     _symbolDatabase = NULL;
+
+    // variable count
+    _varId = 0;
 }
 
 Tokenizer::~Tokenizer()
@@ -3271,7 +3277,7 @@ void Tokenizer::setVarId()
         tok->varId(0);
 
     // Set variable ids..
-    unsigned int _varId = 0;
+    _varId = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok != _tokens && !Token::Match(tok, "[;{}(,] %type%"))
@@ -4663,6 +4669,8 @@ void Tokenizer::simplifyIfAddBraces()
                     break;
                 }
                 tempToken = tempToken->link();
+                if (!tempToken || !tempToken->next())
+                    break;
                 if (tempToken->next()->isName() && tempToken->next()->str() != "else")
                     break;
                 continue;
@@ -9382,7 +9390,8 @@ void Tokenizer::removeUnnecessaryQualification()
                 classInfo.pop();
             else if (tok->str() == classInfo.top().className &&
                      Token::Match(tok, "%type% :: %type% (") &&
-                     Token::Match(tok->tokAt(3)->link(), ") const| {|;"))
+                     Token::Match(tok->tokAt(3)->link(), ") const| {|;") &&
+                     tok->previous()->str() != ":")
             {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
