@@ -573,7 +573,7 @@ std::string Preprocessor::removeIf0(const std::string &code)
                     ++level;
                 else if (line == "#endif")
                     --level;
-                
+
                 // replace code within '#if 0' block with empty lines
                 ret << "\n";
             }
