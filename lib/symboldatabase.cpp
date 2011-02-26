@@ -510,12 +510,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     {
         scope = *it;
 
-        // skip functions
-        if (scope->type != Scope::eFunction)
-        {
-            // find variables
-            scope->getVariableList();
-        }
+        // find variables
+        scope->getVariableList();
     }
 
     // fill in function arguments
@@ -642,6 +638,46 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     _errorLogger->reportErr(errmsg);
                 else
                     Check::reportError(errmsg);
+            }
+        }
+    }
+
+    // create variable symbol table
+    _variableList.resize(_tokenizer->varIdCount() + 1);
+    fill_n(_variableList.begin(), _variableList.size(), (const Variable*)NULL);
+
+    // check all scopes for variables
+    for (it = scopeList.begin(); it != scopeList.end(); ++it)
+    {
+        scope = *it;
+
+        // add all variables
+        std::list<Variable>::const_iterator var;
+        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
+        {
+            unsigned int varId = var->varId();
+            if (varId)
+                _variableList[varId] = &*var;
+        }
+
+        // add all function paramaters
+        std::list<Function>::const_iterator func;
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
+        {
+            // ignore function without implementations
+            if (!func->hasBody)
+                continue;
+
+            std::list<Variable>::const_iterator arg;
+            for (arg = func->argumentList.begin(); arg != func->argumentList.end(); ++arg)
+            {
+                // check for named parameters
+                if (arg->nameToken() && arg->varId())
+                {
+                    unsigned int varId = arg->varId();
+                    if (varId)
+                        _variableList[varId] = &*arg;
+                }
             }
         }
     }

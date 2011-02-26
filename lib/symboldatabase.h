@@ -473,6 +473,11 @@ public:
         return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
     }
 
+    const Variable *getVariableFromVarId(unsigned int varId) const
+    {
+        return _variableList[varId];
+    }
+
 private:
 
     // Needed by Borland C++:
@@ -489,6 +494,9 @@ private:
     const Tokenizer *_tokenizer;
     const Settings *_settings;
     ErrorLogger *_errorLogger;
+
+    /** variable symbol table */
+    std::vector<const Variable *> _variableList;
 };
 
 #endif
