@@ -38,7 +38,7 @@ class SymbolDatabase;
 /**
  * @brief Access control enumerations.
  */
-enum AccessControl { Public, Protected, Private };
+enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Local };
 
 /** @brief Information about a member variable. */
 class Variable
@@ -73,15 +73,18 @@ class Variable
     }
 
 public:
-    Variable(const Token *name_, const Token *start_, std::size_t index_,
-             AccessControl access_, bool mutable_, bool static_, bool const_,
-             bool class_, const Scope *type_)
+    Variable(const Token *name_, const Token *start_, const Token *end_,
+             std::size_t index_, AccessControl access_, bool mutable_,
+             bool static_, bool const_, bool class_, const Scope *type_,
+             const Scope *scope_)
         : _name(name_),
           _start(start_),
+          _end(end_),
           _index(index_),
           _access(access_),
           _flags(0),
-          _type(type_)
+          _type(type_),
+          _scope(scope_)
     {
         setFlag(fIsMutable, mutable_);
         setFlag(fIsStatic, static_);
@@ -105,6 +108,15 @@ public:
     const Token *typeStartToken() const
     {
         return _start;
+    }
+
+    /**
+     * Get type end token.
+     * @return type end token
+     */
+    const Token *typeEndToken() const
+    {
+        return _end;
     }
 
     /**
@@ -162,6 +174,42 @@ public:
     }
 
     /**
+     * Is variable global.
+     * @return true if global, false if not
+     */
+    bool isGlobal() const
+    {
+        return _access == Global;
+    }
+
+    /**
+     * Is variable in a namespace.
+     * @return true if in a namespace, false if not
+     */
+    bool isNamespace() const
+    {
+        return _access == Namespace;
+    }
+
+    /**
+     * Is variable a function argument.
+     * @return true if a function argument, false if not
+     */
+    bool isArgument() const
+    {
+        return _access == Argument;
+    }
+
+    /**
+     * Is variable local.
+     * @return true if local, false if not
+     */
+    bool isLocal() const
+    {
+        return _access == Local;
+    }
+
+    /**
      * Is variable mutable.
      * @return true if mutable, false if not
      */
@@ -206,12 +254,24 @@ public:
         return _type;
     }
 
+    /**
+     * Get Scope pointer of enclosing scope.
+     * @return pointer to enclosing scope
+     */
+    const Scope *scope() const
+    {
+        return _scope;
+    }
+
 private:
     /** @brief variable name token */
     const Token *_name;
 
     /** @brief variable type start token */
     const Token *_start;
+
+    /** @brief variable type end token */
+    const Token *_end;
 
     /** @brief order declared */
     std::size_t _index;
@@ -224,6 +284,9 @@ private:
 
     /** @brief pointer to user defined type info (for known types) */
     const Scope *_type;
+
+    /** @brief pointer to scope this variable is in */
+    const Scope *_scope;
 };
 
 class Function
@@ -313,7 +376,7 @@ public:
     AccessControl access;
     unsigned int numConstructors;
     NeedInitialization needInitialization;
-    Scope * functionOf; // class/struct this function belongs to
+    Scope *functionOf; // class/struct this function belongs to
 
     bool isClassOrStruct() const
     {
@@ -332,9 +395,14 @@ public:
      */
     Scope * findInNestedListRecursive(const std::string & name);
 
-    void addVariable(const Token *token_, const Token *start_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const Scope *type_)
+    void addVariable(const Token *token_, const Token *start_,
+                     const Token *end_, AccessControl access_, bool mutable_,
+                     bool static_, bool const_, bool class_, const Scope *type_,
+                     const Scope *scope_)
     {
-        varlist.push_back(Variable(token_, start_, varlist.size(), access_, mutable_, static_, const_, class_, type_));
+        varlist.push_back(Variable(token_, start_, end_, varlist.size(),
+                                   access_, mutable_, static_, const_, class_,
+                                   type_, scope_));
     }
 
     /** @brief initialize varlist */
@@ -351,6 +419,8 @@ public:
     unsigned int getNestedNonFunctions() const;
 
     bool hasDefaultConstructor() const;
+
+    AccessControl defaultAccess() const;
 
 private:
     /**

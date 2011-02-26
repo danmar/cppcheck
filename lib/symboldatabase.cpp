@@ -1071,10 +1071,31 @@ Scope::hasDefaultConstructor() const
     return false;
 }
 
+AccessControl Scope::defaultAccess() const
+{
+    switch (type)
+    {
+    case eGlobal:
+        return Global;
+    case eClass:
+        return Private;
+    case eStruct:
+        return Public;
+    case eUnion:
+        return Public;
+    case eNamespace:
+        return Namespace;
+    case eFunction:
+        return Local;
+    }
+
+    return Public;
+}
+
 // Get variable list..
 void Scope::getVariableList()
 {
-    AccessControl varaccess = type == eClass ? Private : Public;
+    AccessControl varaccess = defaultAccess();
     const Token *start;
 
     if (classStart)
@@ -1242,7 +1263,7 @@ void Scope::getVariableList()
             if (typetok)
                 scope = check->findVariableType(this, typetok);
 
-            addVariable(vartok, typestart, varaccess, isMutable, isStatic, isConst, isClass, scope);
+            addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this);
         }
     }
 }
