@@ -399,6 +399,68 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     }
                 }
             }
+            else if (scope->type == Scope::eFunction || scope->isLocal())
+            {
+                if (Token::simpleMatch(tok, "if (") &&
+                    Token::simpleMatch(tok->next()->link(), ") {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eIf, tok->next()->link()->next());
+                    tok = tok->next()->link()->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "else {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eElse, tok->next());
+                    tok = tok->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "else if (") &&
+                         Token::simpleMatch(tok->next()->next()->link(), ") {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eElseIf, tok->next()->next()->link()->next());
+                    tok = tok->next()->next()->link()->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "for (") &&
+                         Token::simpleMatch(tok->next()->link(), ") {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eFor, tok->next()->link()->next());
+                    tok = tok->next()->link()->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "while (") &&
+                         Token::simpleMatch(tok->next()->link(), ") {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eWhile, tok->next()->link()->next());
+                    tok = tok->next()->link()->next()->link();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "do {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eDo, tok->next());
+                    tok = tok->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "switch (") &&
+                         Token::simpleMatch(tok->next()->link(), ") {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eSwitch, tok->next()->link()->next());
+                    tok = tok->next()->link()->next();
+                    scopeList.push_back(scope);
+                }
+                else if (tok->str() == "{")
+                {
+                    if (!Token::Match(tok->previous(), "=|,|{"))
+                    {
+                        scope = new Scope(this, tok, scope, Scope::eUnconditional, tok);
+                        scopeList.push_back(scope);
+                    }
+                    else
+                    {
+                        tok = tok->link();
+                    }
+                }
+            }
         }
     }
 
@@ -1070,6 +1132,21 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
 //---------------------------------------------------------------------------
 
+Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, ScopeType type_, const Token *start_) :
+    check(check_),
+    type(type_),
+    classDef(classDef_),
+    classStart(start_),
+    classEnd(start_->link()),
+    nestedIn(nestedIn_),
+    access(Public),
+    numConstructors(0),
+    needInitialization(Scope::Unknown),
+    functionOf(NULL)
+{
+    nestedIn->nestedList.push_back(this);
+}
+
 Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
     check(check_),
     classDef(classDef_),
@@ -1151,7 +1228,7 @@ AccessControl Scope::defaultAccess() const
         return Public;
     case eNamespace:
         return Namespace;
-    case eFunction:
+    default:
         return Local;
     }
 

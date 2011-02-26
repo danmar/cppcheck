@@ -358,10 +358,11 @@ public:
         Scope *scope;
     };
 
-    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction };
+    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eElseIf, eFor, eWhile, eDo, eSwitch, eUnconditional };
     enum NeedInitialization { Unknown, True, False };
 
     Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_);
+    Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, ScopeType type_, const Token *start_);
 
     SymbolDatabase *check;
     ScopeType type;
@@ -385,6 +386,12 @@ public:
         return (type == eClass || type == eStruct);
     }
 
+    bool isLocal() const
+    {
+        return (type == eIf || type == eElse || type == eElseIf ||
+                type == eFor || type == eWhile || type == eDo ||
+                type == eSwitch || type == eUnconditional);
+    }
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope
