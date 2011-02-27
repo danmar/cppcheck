@@ -1363,6 +1363,14 @@ void Scope::getVariableList()
         else if (tok->str() == "__property")
             continue;
 
+        // skip return
+        else if (tok->str() == "return")
+        {
+            while (tok->next()->str() != ";")
+                tok = tok->next();
+            continue;
+        }
+
         // Search for start of statement..
         else if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
             continue;
