@@ -93,25 +93,25 @@ public:
     * @brief Set list of includes.
     * @param includes List of defines.
     */
-    void SetIncludes(QStringList includes);
+    void SetIncludes(const QStringList &includes);
 
     /**
     * @brief Set list of defines.
     * @param defines List of defines.
     */
-    void SetDefines(QStringList defines);
+    void SetDefines(const QStringList &defines);
 
     /**
     * @brief Set list of paths to check.
     * @param defines List of paths.
     */
-    void SetCheckPaths(QStringList paths);
+    void SetCheckPaths(const QStringList &paths);
 
     /**
     * @brief Set list of paths to ignore.
     * @param defines List of paths.
     */
-    void SetIgnoredPaths(QStringList paths);
+    void SetIgnoredPaths(const QStringList &paths);
 
     /**
     * @brief Write project file (to disk).

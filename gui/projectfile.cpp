@@ -316,22 +316,22 @@ void ProjectFile::ReadIgnores(QXmlStreamReader &reader)
     while (!allRead);
 }
 
-void ProjectFile::SetIncludes(QStringList includes)
+void ProjectFile::SetIncludes(const QStringList &includes)
 {
     mIncludeDirs = includes;
 }
 
-void ProjectFile::SetDefines(QStringList defines)
+void ProjectFile::SetDefines(const QStringList &defines)
 {
     mDefines = defines;
 }
 
-void ProjectFile::SetCheckPaths(QStringList paths)
+void ProjectFile::SetCheckPaths(const QStringList &paths)
 {
     mPaths = paths;
 }
 
-void ProjectFile::SetIgnoredPaths(QStringList paths)
+void ProjectFile::SetIgnoredPaths(const QStringList &paths)
 {
     mIgnoredPaths = paths;
 }
