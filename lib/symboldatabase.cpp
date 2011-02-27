@@ -1156,7 +1156,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             bool isClassVar = startTok == endTok && !startTok->isStandardType();
 
-            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, scope));
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, scope, false));
 
             if (tok->str() == ")")
                 break;
@@ -1418,7 +1418,9 @@ void Scope::getVariableList()
             tok = tok->next();
         }
 
-        if (isVariableDeclaration(tok, vartok, typetok))
+        bool isArray = false;
+
+        if (isVariableDeclaration(tok, vartok, typetok, isArray))
         {
             isClass = (!typetok->isStandardType() && vartok->previous()->str() != "*");
             tok = vartok->next();
@@ -1450,7 +1452,7 @@ void Scope::getVariableList()
             if (typetok)
                 scope = check->findVariableType(this, typetok);
 
-            addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this);
+            addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this, isArray);
         }
     }
 }
@@ -1483,7 +1485,7 @@ const Token* skipPointers(const Token* tok)
     return ret;
 }
 
-bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const
+bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray) const
 {
     const Token* localTypeTok = skipScopeIdentifiers(tok);
     const Token* localVarTok = NULL;
@@ -1508,10 +1510,17 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         localVarTok = skipPointers(localTypeTok->next());
     }
 
-    if (isSimpleVariable(localVarTok) || isArrayVariable(localVarTok))
+    if (isSimpleVariable(localVarTok))
     {
         vartok = localVarTok;
         typetok = localTypeTok;
+        isArray = false;
+    }
+    else if (isArrayVariable(localVarTok))
+    {
+        vartok = localVarTok;
+        typetok = localTypeTok;
+        isArray = true;
     }
 
     return NULL != vartok;
