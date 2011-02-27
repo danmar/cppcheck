@@ -724,8 +724,6 @@ void MainWindow::OpenHtmlHelpContents()
 
 void MainWindow::OpenProjectFile()
 {
-    delete mProject;
-
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     QString filepath = QFileDialog::getOpenFileName(this,
                        tr("Select Project File"),
@@ -740,6 +738,7 @@ void MainWindow::OpenProjectFile()
 
         mUI.mActionCloseProjectFile->setEnabled(true);
         mUI.mActionEditProjectFile->setEnabled(true);
+        delete mProject;
         mProject = new Project(filepath, this);
         mProject->Open();
         QString rootpath = mProject->GetProjectFile()->GetRootPath();
