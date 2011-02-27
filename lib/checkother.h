@@ -89,6 +89,7 @@ public:
         checkOther.checkMemsetZeroBytes();
         checkOther.checkIncorrectStringCompare();
         checkOther.checkIncrementBoolean();
+        checkOther.checkComparisonOfBoolWithInt();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -188,6 +189,9 @@ public:
     /** @brief %Check for using postfix increment on bool */
     void checkIncrementBoolean();
 
+    /** @brief %Check for suspicious comparison of a bool and a non-zero (and non-one) value (e.g. "if (!x==4)") */
+    void checkComparisonOfBoolWithInt();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -214,6 +218,7 @@ public:
     void sizeofForArrayParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
     void incrementBooleanError(const Token *tok);
+    void comparisonOfBoolWithIntError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -255,6 +260,7 @@ public:
         c.clarifyCalculationError(0);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
         c.incrementBooleanError(0);
+        c.comparisonOfBoolWithIntError(0, "varname");
     }
 
     std::string myName() const
@@ -296,6 +302,7 @@ public:
                "* exception caught by value instead of by reference\n"
                "* Clarify calculation with parantheses\n"
                "* using increment on boolean\n"
+               "* comparison of a boolean with a non-zero integer\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";

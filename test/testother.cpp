@@ -106,6 +106,7 @@ private:
         TEST_CASE(incorrectStringCompare);
 
         TEST_CASE(incrementBoolean);
+        TEST_CASE(comparisonOfBoolWithInt);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -144,6 +145,7 @@ private:
         checkOther.clarifyCalculation();
         checkOther.checkIncorrectStringCompare();
         checkOther.checkIncrementBoolean();
+        checkOther.checkComparisonOfBoolWithInt();
     }
 
 
@@ -1920,6 +1922,51 @@ private:
 
         check("void f(int test){\n"
               "    test++;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void comparisonOfBoolWithInt()
+    {
+        check("void f(int x) {\n"
+              "    if (!x == 10) {\n"
+              "        printf(\"x not equal to 10\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (!x != 10) {\n"
+              "        printf(\"x not equal to 10\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x != 10) {\n"
+              "        printf(\"x not equal to 10\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (10 == !x) {\n"
+              "        printf(\"x not equal to 10\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (10 != !x) {\n"
+              "        printf(\"x not equal to 10\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (10 != x) {\n"
+              "        printf(\"x not equal to 10\");\n"
+              "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

@@ -608,6 +608,35 @@ void CheckOther::invalidScanf()
     }
 }
 
+//---------------------------------------------------------------------------
+//    if (!x==3) <- Probably meant to be "x!=3"
+//---------------------------------------------------------------------------
+void CheckOther::checkComparisonOfBoolWithInt()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "( ! %var% ==|!= %num% )"))
+        {
+            const Token *numTok = tok->tokAt(4);
+            if (numTok && numTok->str() != "0")
+            {
+                comparisonOfBoolWithIntError(numTok, tok->strAt(2));
+            }
+        }
+        else if (Token::Match(tok, "( %num% ==|!= ! %var% )"))
+        {
+            const Token *numTok = tok->tokAt(1);
+            if (numTok && numTok->str() != "0")
+            {
+                comparisonOfBoolWithIntError(numTok, tok->strAt(4));
+            }
+        }
+    }
+}
+
 void CheckOther::sizeofForArrayParameterError(const Token *tok)
 {
     reportError(tok, Severity::error,
@@ -3015,4 +3044,11 @@ void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varna
 void CheckOther::incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len)
 {
     reportError(tok, Severity::warning, "incorrectStringCompare", "String literal " + string + " doesn't match length argument for " + func + "(" + len + ").");
+}
+
+void CheckOther::comparisonOfBoolWithIntError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning, "comparisonOfBoolWithInt",
+                "Comparison of a boolean with a non-zero integer\n"
+                "The expression \"!" + varname + "\" is of type 'bool' but is compared against a non-zero 'int'.");
 }
