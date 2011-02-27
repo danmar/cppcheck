@@ -191,6 +191,8 @@ void MainWindow::DoCheckFiles(const QStringList &files)
 
     FileList pathList;
     pathList.AddPathList(files);
+    if (mProject)
+        pathList.AddIngoreList(mProject->GetProjectFile()->GetIgnoredPaths());
     QStringList fileNames = pathList.GetFileList();
 
     mUI.mResults->Clear();

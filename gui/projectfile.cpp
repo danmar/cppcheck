@@ -37,7 +37,7 @@ static const char PathName[] = "dir";
 static const char PathNameAttrib[] = "name";
 static const char RootPathName[] = "root";
 static const char RootPathNameAttrib[] = "name";
-static const char IgnoreElementName[] = "defines";
+static const char IgnoreElementName[] = "ignore";
 static const char IgnorePathName[] = "path";
 static const char IgnorePathNameAttrib[] = "name";
 

@@ -30,6 +30,10 @@
  * can be also added recursively when all files in subdirectories are added too.
  * The filenames are matched against the filter and only those files whose
  * filename extension is included in the filter list are added.
+ *
+ * This class also handles filtering of paths against ignore filters given. If
+ * there is ignore filters then only paths not matching those filters are
+ * returned.
  */
 class FileList
 {
@@ -60,6 +64,12 @@ public:
     */
     QStringList GetFileList() const;
 
+    /**
+    * @brief Add list of paths to ignore list.
+    * @param paths Paths to ignore.
+    */
+    void AddIngoreList(const QStringList &paths);
+
 protected:
 
     /**
@@ -74,8 +84,25 @@ protected:
     */
     bool FilterMatches(const QFileInfo &inf);
 
+    /**
+    * @brief Get filtered list of paths.
+    * This method takes the list of paths and applies the ignore lists to
+    * it. And then returns the list of paths that did not match the
+    * ignore filters.
+    * @return Filtered list of paths.
+    */
+    QStringList ApplyIgnoreList() const;
+
+    /**
+    * @brief Test if path matches any of the ignore filters.
+    * @param path Path to test against filters.
+    * @return true if any of the filters matches, false otherwise.
+    */
+    bool Match(const QString &path) const;
+
 private:
     QFileInfoList mFileList;
+    QStringList mIgnoredPaths;
 };
 
 #endif // FILELIST_H
