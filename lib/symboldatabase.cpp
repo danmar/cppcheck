@@ -432,7 +432,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                          Token::simpleMatch(tok->next()->link(), ") {"))
                 {
                     scope = new Scope(this, tok, scope, Scope::eWhile, tok->next()->link()->next());
-                    tok = tok->next()->link()->next()->link();
+                    tok = tok->next()->link()->next();
                     scopeList.push_back(scope);
                 }
                 else if (Token::simpleMatch(tok, "do {"))
