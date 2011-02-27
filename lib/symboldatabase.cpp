@@ -1363,8 +1363,8 @@ void Scope::getVariableList()
         else if (tok->str() == "__property")
             continue;
 
-        // skip return
-        else if (tok->str() == "return")
+        // skip return and delete
+        else if (Token::Match(tok, "return|delete"))
         {
             while (tok->next()->str() != ";")
                 tok = tok->next();
