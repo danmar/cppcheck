@@ -56,7 +56,7 @@ public:
     typedef struct
     {
         /**
-        * @brief Applicaton's name
+        * @brief Application's name
         *
         */
         QString Name;
@@ -107,15 +107,23 @@ public:
     QString GetApplicationPath(const int index) const;
 
     /**
+    * @brief Return the default application.
+    * @return Index of the default application.
+    */
+    int GetDefaultApplication() const
+    {
+        return mDefaultApplicationIndex;
+    }
+
+    /**
     * @brief Modify an application
     *
     * @param index Index of the application to modify
     * @param name New name for the application
     * @param path New path for the application
     */
-    void SetApplicationType(const int index,
-                            const QString &name,
-                            const QString &path);
+    void SetApplication(const int index, const QString &name,
+                        const QString &path);
 
     /**
     * @brief Add a new application
@@ -123,7 +131,7 @@ public:
     * @param name Name of the application
     * @param path Path to the application
     */
-    void AddApplicationType(const QString &name, const QString &path);
+    void AddApplication(const QString &name, const QString &path);
 
     /**
     * @brief Remove an application from the list
@@ -133,21 +141,18 @@ public:
     void RemoveApplication(const int index);
 
     /**
-    * @brief Move certain application as first.
-    * Position of the application is used by the application to determine
-    * which of the applications is the default application. First application
-    * (index 0) is the default application.
-    *
+    * @brief Set application as default application.
     * @param index Index of the application to make the default one
     */
-    void MoveFirst(const int index);
+    void SetDefault(const int index);
 
     /**
     * @brief Remove all applications from this list and copy all applications from
     * list given as a parameter.
     * @param list Copying source
     */
-    void Copy(ApplicationList *list);
+    void Copy(const ApplicationList *list);
+
 protected:
 
     /**
@@ -162,12 +167,19 @@ protected:
     */
     bool FindDefaultWindowsEditor();
 
+private:
+
     /**
     * @brief List of applications
     *
     */
     QList<ApplicationType> mApplications;
-private:
+
+    /**
+    * @brief Index of the default application.
+    *
+    */
+    int mDefaultApplicationIndex;
 };
 /// @}
 #endif // APPLICATIONLIST_H

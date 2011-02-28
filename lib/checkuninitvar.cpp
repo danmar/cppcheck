@@ -603,7 +603,10 @@ private:
                 std::list<const Token *> var;
                 CheckNullPointer::parseFunctionCall(tok, var, 1);
                 for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
+                {
                     use_array(checks, *it);
+                    use_dead_pointer(checks, *it);
+                }
 
                 // Using uninitialized pointer is bad if using null pointer is bad
                 std::list<const Token *> var2;

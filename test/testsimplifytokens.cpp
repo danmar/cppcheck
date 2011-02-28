@@ -85,6 +85,7 @@ private:
         TEST_CASE(sizeof20);    // #2024 - sizeof a)
         TEST_CASE(sizeof21);    // #2232 - sizeof...(Args)
         TEST_CASE(sizeof22);    // #2599
+        TEST_CASE(sizeof23);    // #2604
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
@@ -241,6 +242,7 @@ private:
         TEST_CASE(simplifyTypedef79); // ticket #2348
         TEST_CASE(simplifyTypedef80); // ticket #2587
         TEST_CASE(simplifyTypedef81); // ticket #2603
+        TEST_CASE(simplifyTypedef82); // ticket #2403
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -326,7 +328,8 @@ private:
 
         TEST_CASE(simplifyFunctionReturn);
 
-        TEST_CASE(removeUnnecessaryQualification);
+        TEST_CASE(removeUnnecessaryQualification1);
+        TEST_CASE(removeUnnecessaryQualification2);
 
         TEST_CASE(simplifyIfNotNull);
     }
@@ -1427,6 +1430,15 @@ private:
     {
         // ticket #2599 segmentation fault
         const char code[] = "sizeof\n";
+
+        // don't segfault
+        tok(code);
+    }
+
+    void sizeof23()
+    {
+        // ticket #2604 segmentation fault
+        const char code[] = "sizeof <= A\n";
 
         // don't segfault
         tok(code);
@@ -4931,6 +4943,24 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
+    void simplifyTypedef82() // ticket #2403
+    {
+        checkSimplifyTypedef("class A {\n"
+                             "public:\n"
+                             "  typedef int F(int idx);\n"
+                             "};\n"
+                             "class B {\n"
+                             "public:\n"
+                             "  A::F ** f;\n"
+                             "};\n"
+                             "int main()\n"
+                             "{\n"
+                             "  B * b = new B;\n"
+                             "  b->f = new A::F * [ 10 ];\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void simplifyTypedefFunction1()
     {
         {
@@ -6521,12 +6551,22 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void removeUnnecessaryQualification()
+    void removeUnnecessaryQualification1()
     {
         const char code[] = "class Fred { Fred::Fred() {} };";
         const char expected[] = "class Fred { Fred ( ) { } } ;";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("[test.cpp:1]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
+    }
+
+    void removeUnnecessaryQualification2()
+    {
+        const char code[] = "template<typename Iter, typename Skip>\n"
+                            "struct grammar : qi::grammar<Iter, int(), Skip> {\n"
+                            "    grammar() : grammar::base_type(start) { }\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyIfNotNull() // ticket # 2601 segmentation fault

@@ -77,6 +77,8 @@ private:
         TEST_CASE(suppressionsOld); // TODO: Create and test real suppression file
         TEST_CASE(suppressions)
         TEST_CASE(suppressionsNoFile)
+        TEST_CASE(suppressionSingle)
+        TEST_CASE(suppressionSingleFile)
         TEST_CASE(templates);
         TEST_CASE(templatesGcc);
         TEST_CASE(templatesVs);
@@ -552,6 +554,26 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void suppressionSingle()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--suppress=uninitvar", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
+    }
+
+    void suppressionSingleFile()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--suppress=uninitvar:file.cpp", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
     }
 
     void templates()

@@ -695,6 +695,8 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 
 void CheckClass::noMemset()
 {
+    createSymbolDatabase();
+
     // Locate all 'memset' tokens..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -712,6 +714,13 @@ void CheckClass::noMemset()
             type = tok->strAt(10);
         else if (Token::Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
             type = tok->strAt(8);
+        else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %var% ) )"))
+        {
+            unsigned int varid = tok->tokAt(3)->varId();
+            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+            if (var && var->typeStartToken() == var->typeEndToken())
+                type = var->typeStartToken()->str();
+        }
 
         // No type defined => The tokens didn't match
         if (type.empty())
@@ -719,7 +728,14 @@ void CheckClass::noMemset()
 
         // Warn if type is a class or struct that contains any std::* variables
         const std::string pattern2(std::string("struct|class ") + type + " {");
-        for (const Token *tstruct = Token::findmatch(_tokenizer->tokens(), pattern2.c_str()); tstruct; tstruct = tstruct->next())
+        const Token *tstruct = Token::findmatch(_tokenizer->tokens(), pattern2.c_str());
+
+        if (!tstruct)
+            continue;
+
+        const std::string &typeName = tstruct->str();
+
+        for (; tstruct; tstruct = tstruct->next())
         {
             if (tstruct->str() == "}")
                 break;
@@ -739,7 +755,7 @@ void CheckClass::noMemset()
                 tstruct->str().find(":") != std::string::npos)
             {
                 if (Token::Match(tstruct->next(), "std :: %type% %var% ;"))
-                    memsetStructError(tok, tok->str(), tstruct->strAt(3));
+                    memsetError(tok, tok->str(), tstruct->strAt(3), typeName);
 
                 else if (Token::Match(tstruct->next(), "std :: %type% <"))
                 {
@@ -767,21 +783,16 @@ void CheckClass::noMemset()
 
                     // found error => report
                     if (Token::Match(tstruct, "> %var% ;"))
-                        memsetStructError(tok, tok->str(), typestr);
+                        memsetError(tok, tok->str(), typestr, typeName);
                 }
             }
         }
     }
 }
 
-void CheckClass::memsetClassError(const Token *tok, const std::string &memfunc)
+void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
 {
-    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on class");
-}
-
-void CheckClass::memsetStructError(const Token *tok, const std::string &memfunc, const std::string &classname)
-{
-    reportError(tok, Severity::error, "memsetStruct", "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'");
+    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a 'std::" + classname + "'");
 }
 
 //---------------------------------------------------------------------------

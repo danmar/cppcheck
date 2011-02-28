@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>589</width>
-    <height>313</height>
+    <height>319</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,37 +17,13 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>General</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Include paths:</string>
-           </property>
-           <property name="buddy">
-            <cstring>mEditIncludePaths</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="mEditIncludePaths"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="mBtnAddIncludePath">
-           <property name="text">
-            <string>Add...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="sizeConstraint">
@@ -182,41 +158,125 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tab_5">
+      <attribute name="title">
+       <string>Paths</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Include paths:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QListWidget" name="mListIncludePaths">
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <widget class="QPushButton" name="mBtnAddIncludePath">
+             <property name="text">
+              <string>Add...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnEditIncludePath">
+             <property name="text">
+              <string>Edit</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnRemoveIncludePath">
+             <property name="text">
+              <string>Remove</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
        <string>Applications</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <widget class="QListWidget" name="mListWidget"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="mButtonAdd">
-         <property name="text">
-          <string>Add application</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="mButtonDelete">
-         <property name="text">
-          <string>Delete application</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="mButtonModify">
-         <property name="text">
-          <string>Modify application</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="mButtonDefault">
-         <property name="text">
-          <string>Set as default application</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QListWidget" name="mListWidget"/>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="QPushButton" name="mBtnAddApplication">
+             <property name="text">
+              <string>Add...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnEditApplication">
+             <property name="text">
+              <string>Edit...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnRemoveApplication">
+             <property name="text">
+              <string>Remove</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnDefaultApplication">
+             <property name="text">
+              <string>Set as default</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -284,18 +344,15 @@
  </widget>
  <tabstops>
   <tabstop>tabWidget</tabstop>
-  <tabstop>mEditIncludePaths</tabstop>
-  <tabstop>mBtnAddIncludePath</tabstop>
   <tabstop>mJobs</tabstop>
   <tabstop>mForce</tabstop>
   <tabstop>mShowFullPath</tabstop>
   <tabstop>mShowNoErrorsMessage</tabstop>
   <tabstop>mShowDebugWarnings</tabstop>
   <tabstop>mListWidget</tabstop>
-  <tabstop>mButtonAdd</tabstop>
-  <tabstop>mButtonDelete</tabstop>
-  <tabstop>mButtonModify</tabstop>
-  <tabstop>mButtonDefault</tabstop>
+  <tabstop>mBtnAddApplication</tabstop>
+  <tabstop>mBtnEditApplication</tabstop>
+  <tabstop>mBtnDefaultApplication</tabstop>
   <tabstop>mSaveAllErrors</tabstop>
   <tabstop>mSaveFullPath</tabstop>
   <tabstop>mButtons</tabstop>

@@ -564,6 +564,9 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         return;
     }
 
+    if (application == -1)
+        application = mApplications->GetDefaultApplication();
+
     if (target && application >= 0 && application < mApplications->GetApplicationCount() && target->parent())
     {
         // Make sure we are working with the first column
@@ -704,7 +707,7 @@ void ResultsTree::Context(int application)
 
 void ResultsTree::QuickStartApplication(const QModelIndex &index)
 {
-    StartApplication(mModel.itemFromIndex(index), 0);
+    StartApplication(mModel.itemFromIndex(index));
 }
 
 void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)

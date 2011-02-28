@@ -75,6 +75,12 @@ public:
     QStringList GetCheckPaths() const;
 
     /**
+    * @brief Get list of paths to ignore.
+    * @return list of paths.
+    */
+    QStringList GetIgnoredPaths() const;
+
+    /**
     * @brief Set project root path.
     * @param rootpath new project root path.
     */
@@ -87,19 +93,25 @@ public:
     * @brief Set list of includes.
     * @param includes List of defines.
     */
-    void SetIncludes(QStringList includes);
+    void SetIncludes(const QStringList &includes);
 
     /**
     * @brief Set list of defines.
     * @param defines List of defines.
     */
-    void SetDefines(QStringList defines);
+    void SetDefines(const QStringList &defines);
 
     /**
     * @brief Set list of paths to check.
     * @param defines List of paths.
     */
-    void SetCheckPaths(QStringList paths);
+    void SetCheckPaths(const QStringList &paths);
+
+    /**
+    * @brief Set list of paths to ignore.
+    * @param defines List of paths.
+    */
+    void SetIgnoredPaths(const QStringList &paths);
 
     /**
     * @brief Write project file (to disk).
@@ -142,6 +154,12 @@ protected:
     */
     void ReadCheckPaths(QXmlStreamReader &reader);
 
+    /**
+    * @brief Read lists of ignores.
+    * @param reader XML stream reader.
+    */
+    void ReadIgnores(QXmlStreamReader &reader);
+
 private:
 
     /**
@@ -171,6 +189,11 @@ private:
     * @brief List of paths to check.
     */
     QStringList mPaths;
+
+    /**
+    * @brief Paths ignored from the check.
+    */
+    QStringList mIgnoredPaths;
 };
 /// @}
 #endif  // PROJECT_FILE_H

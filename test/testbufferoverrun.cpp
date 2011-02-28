@@ -850,27 +850,17 @@ private:
     void array_index_24()
     {
         // ticket #1492 and #1539
-        if (CHAR_MAX == SCHAR_MAX) // plain char is signed
-        {
-            check("void f(char n) {\n"
-                  "    int a[n];\n"     // n <= CHAR_MAX
-                  "    a[-1] = 0;\n"    // negative index
-                  "    a[128] = 0;\n"   // 128 > CHAR_MAX
-                  "}\n");
-            ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[128]' index 128 out of bounds\n"
-                          "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
-
-        }
-        else // plain char is unsigned
-        {
-            check("void f(char n) {\n"
-                  "    int a[n];\n"     // n <= CHAR_MAX
-                  "    a[-1] = 0;\n"    // negative index
-                  "    a[256] = 0;\n"   // 256 > CHAR_MAX
-                  "}\n");
-            ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[256]' index 256 out of bounds\n"
-                          "[test.cpp:3]: (error) Array index -1 out of bounds\n", errout.str());
-        }
+        // CHAR_MAX can be equal to SCHAR_MAX or UCHAR_MAX depending on the environment.
+        // This test should work for both environments.
+        std::ostringstream charMaxPlusOne;
+        charMaxPlusOne << (CHAR_MAX+1);
+        check(("void f(char n) {\n"
+               "    int a[n];\n"     // n <= CHAR_MAX
+               "    a[-1] = 0;\n"    // negative index
+               "    a[" + charMaxPlusOne.str() + "] = 0;\n"   // 128/256 > CHAR_MAX
+               "}\n").c_str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a["+charMaxPlusOne.str()+"]' index "+charMaxPlusOne.str()+" out of bounds\n"
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
         check("void f(signed char n) {\n"
               "    int a[n];\n"     // n <= SCHAR_MAX

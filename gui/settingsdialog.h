@@ -98,13 +98,13 @@ protected slots:
     * @brief Slot for deleting an application from the list
     *
     */
-    void DeleteApplication();
+    void RemoveApplication();
 
     /**
     * @brief Slot for modifying an application in the list
     *
     */
-    void ModifyApplication();
+    void EditApplication();
 
     /**
     * @brief Slot for making the selected application as the default (first)
@@ -118,19 +118,38 @@ protected slots:
     */
     void AddIncludePath();
 
+    /**
+    * @brief Slot for removing an include path.
+    *
+    */
+    void RemoveIncludePath();
+
+    /**
+    * @brief Slot for editing an include path.
+    *
+    */
+    void EditIncludePath();
+
 protected:
+
+    /**
+    * @brief Add new include path to the list.
+    * @param path Path to add.
+    *
+    */
+    void AddIncludePath(const QString &path);
 
     /**
     * @brief Clear all applications from the list and re insert them from mTempApplications
     *
     */
-    void PopulateListWidget();
+    void PopulateApplicationList();
 
     /**
-        * @brief Load saved values
-        * Loads dialog size and column widths.
-        *
-        */
+    * @brief Load saved values
+    * Loads dialog size and column widths.
+    *
+    */
     void SaveSettings();
 
     /**
@@ -164,6 +183,11 @@ protected:
     * @return converted value
     */
     bool CheckStateToBool(Qt::CheckState state) const;
+
+    /**
+    * @brief Populate the include paths-list.
+    */
+    void InitIncludepathsList();
 
     /**
     * @brief Populate the translations list.

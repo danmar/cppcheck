@@ -25,7 +25,7 @@
 CheckThread::CheckThread(ThreadResult &result) :
     mState(Ready),
     mResult(result),
-    mCppcheck(result)
+    mCppcheck(result, true)
 {
     //ctor
 }

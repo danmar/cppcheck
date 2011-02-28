@@ -38,7 +38,7 @@ class SymbolDatabase;
 /**
  * @brief Access control enumerations.
  */
-enum AccessControl { Public, Protected, Private };
+enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Local };
 
 /** @brief Information about a member variable. */
 class Variable
@@ -49,7 +49,8 @@ class Variable
         fIsMutable = (1 << 0), /** @brief mutable variable */
         fIsStatic  = (1 << 1), /** @brief static variable */
         fIsConst   = (1 << 2), /** @brief const variable */
-        fIsClass   = (1 << 3)  /** @brief user defined type */
+        fIsClass   = (1 << 3), /** @brief user defined type */
+        fIsArray   = (1 << 4)  /** @brief array variable */
     };
 
     /**
@@ -73,20 +74,24 @@ class Variable
     }
 
 public:
-    Variable(const Token *name_, const Token *start_, std::size_t index_,
-             AccessControl access_, bool mutable_, bool static_, bool const_,
-             bool class_, const Scope *type_)
+    Variable(const Token *name_, const Token *start_, const Token *end_,
+             std::size_t index_, AccessControl access_, bool mutable_,
+             bool static_, bool const_, bool class_, const Scope *type_,
+             const Scope *scope_, bool array_)
         : _name(name_),
           _start(start_),
+          _end(end_),
           _index(index_),
           _access(access_),
           _flags(0),
-          _type(type_)
+          _type(type_),
+          _scope(scope_)
     {
         setFlag(fIsMutable, mutable_);
         setFlag(fIsStatic, static_);
         setFlag(fIsConst, const_);
         setFlag(fIsClass, class_);
+        setFlag(fIsArray, array_);
     }
 
     /**
@@ -108,12 +113,27 @@ public:
     }
 
     /**
+     * Get type end token.
+     * @return type end token
+     */
+    const Token *typeEndToken() const
+    {
+        return _end;
+    }
+
+    /**
      * Get name string.
      * @return name string
      */
     const std::string &name() const
     {
-        return _name->str();
+        static const std::string noname;
+
+        // name may not exist for function arguments
+        if (_name)
+            return _name->str();
+
+        return noname;
     }
 
     /**
@@ -122,7 +142,11 @@ public:
      */
     unsigned int varId() const
     {
-        return _name->varId();
+        // name may not exist for function arguments
+        if (_name)
+            return _name->varId();
+
+        return 0;
     }
 
     /**
@@ -162,6 +186,42 @@ public:
     }
 
     /**
+     * Is variable global.
+     * @return true if global, false if not
+     */
+    bool isGlobal() const
+    {
+        return _access == Global;
+    }
+
+    /**
+     * Is variable in a namespace.
+     * @return true if in a namespace, false if not
+     */
+    bool isNamespace() const
+    {
+        return _access == Namespace;
+    }
+
+    /**
+     * Is variable a function argument.
+     * @return true if a function argument, false if not
+     */
+    bool isArgument() const
+    {
+        return _access == Argument;
+    }
+
+    /**
+     * Is variable local.
+     * @return true if local, false if not
+     */
+    bool isLocal() const
+    {
+        return _access == Local;
+    }
+
+    /**
      * Is variable mutable.
      * @return true if mutable, false if not
      */
@@ -198,6 +258,15 @@ public:
     }
 
     /**
+     * Is variable an array.
+     * @return true if array, false if not
+     */
+    bool isArray() const
+    {
+        return getFlag(fIsArray);
+    }
+
+    /**
      * Get Scope pointer of known type.
      * @return pointer to type if known, NULL if not known
      */
@@ -206,12 +275,24 @@ public:
         return _type;
     }
 
+    /**
+     * Get Scope pointer of enclosing scope.
+     * @return pointer to enclosing scope
+     */
+    const Scope *scope() const
+    {
+        return _scope;
+    }
+
 private:
     /** @brief variable name token */
     const Token *_name;
 
     /** @brief variable type start token */
     const Token *_start;
+
+    /** @brief variable type end token */
+    const Token *_end;
 
     /** @brief order declared */
     std::size_t _index;
@@ -224,6 +305,9 @@ private:
 
     /** @brief pointer to user defined type info (for known types) */
     const Scope *_type;
+
+    /** @brief pointer to scope this variable is in */
+    const Scope *_scope;
 };
 
 class Function
@@ -254,6 +338,7 @@ public:
 
     unsigned int argCount() const;
     unsigned int initializedArgCount() const;
+    void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
 
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition
@@ -272,6 +357,7 @@ public:
     bool isOperator;       // is operator
     bool retFuncPtr;       // returns function pointer
     Type type;             // constructor, destructor, ...
+    std::list<Variable> argumentList; // argument list
 };
 
 class Scope
@@ -293,10 +379,11 @@ public:
         Scope *scope;
     };
 
-    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction };
+    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eElseIf, eFor, eWhile, eDo, eSwitch, eUnconditional };
     enum NeedInitialization { Unknown, True, False };
 
     Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_);
+    Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, ScopeType type_, const Token *start_);
 
     SymbolDatabase *check;
     ScopeType type;
@@ -313,13 +400,19 @@ public:
     AccessControl access;
     unsigned int numConstructors;
     NeedInitialization needInitialization;
-    Scope * functionOf; // class/struct this function belongs to
+    Scope *functionOf; // class/struct this function belongs to
 
     bool isClassOrStruct() const
     {
         return (type == eClass || type == eStruct);
     }
 
+    bool isLocal() const
+    {
+        return (type == eIf || type == eElse || type == eElseIf ||
+                type == eFor || type == eWhile || type == eDo ||
+                type == eSwitch || type == eUnconditional);
+    }
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope
@@ -332,9 +425,14 @@ public:
      */
     Scope * findInNestedListRecursive(const std::string & name);
 
-    void addVariable(const Token *token_, const Token *start_, AccessControl access_, bool mutable_, bool static_, bool const_, bool class_, const Scope *type_)
+    void addVariable(const Token *token_, const Token *start_,
+                     const Token *end_, AccessControl access_, bool mutable_,
+                     bool static_, bool const_, bool class_, const Scope *type_,
+                     const Scope *scope_, bool array_)
     {
-        varlist.push_back(Variable(token_, start_, varlist.size(), access_, mutable_, static_, const_, class_, type_));
+        varlist.push_back(Variable(token_, start_, end_, varlist.size(),
+                                   access_, mutable_, static_, const_, class_,
+                                   type_, scope_, array_));
     }
 
     /** @brief initialize varlist */
@@ -352,15 +450,18 @@ public:
 
     bool hasDefaultConstructor() const;
 
+    AccessControl defaultAccess() const;
+
 private:
     /**
      * @brief helper function for getVariableList()
      * @param tok pointer to token to check
      * @param vartok populated with pointer to the variable token, if found
      * @param typetok populated with pointer to the type token, if found
+     * @param isArray reference to variable to set if array is found
      * @return true if tok points to a variable declaration, false otherwise
      */
-    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
+    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray) const;
     bool isSimpleVariable(const Token* tok) const;
     bool isArrayVariable(const Token* tok) const;
     bool findClosingBracket(const Token* tok, const Token*& close) const;
@@ -394,6 +495,11 @@ public:
         return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
     }
 
+    const Variable *getVariableFromVarId(unsigned int varId) const
+    {
+        return _variableList[varId];
+    }
+
 private:
 
     // Needed by Borland C++:
@@ -410,6 +516,9 @@ private:
     const Tokenizer *_tokenizer;
     const Settings *_settings;
     ErrorLogger *_errorLogger;
+
+    /** variable symbol table */
+    std::vector<const Variable *> _variableList;
 };
 
 #endif

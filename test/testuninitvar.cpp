@@ -46,7 +46,8 @@ private:
         TEST_CASE(uninitvar_references); // references
         TEST_CASE(uninitvar_strncpy);   // strncpy doesn't always 0-terminate
         TEST_CASE(uninitvar_func);      // analyse functions
-        TEST_CASE(uninitvar_func2);     // usage of 'void a(int *p) { *p = 0; }'
+        TEST_CASE(func_uninit_var);     // analyse function calls for: 'int a(int x) { return x+x; }'
+        TEST_CASE(func_uninit_pointer); // analyse function calls for: 'void a(int *p) { *p = 0; }'
         TEST_CASE(uninitvar_typeof);    // typeof
     }
 
@@ -1436,8 +1437,29 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    // valid and invalid use of 'int a(int x) { return x + x; }'
+    void func_uninit_var()
+    {
+        const std::string funca("int a(int x) { return x + x; }\n");
+
+        checkUninitVar((funca +
+                        "void b() {\n"
+                        "    int x;\n"
+                        "    a(x);\n"
+                        "}").c_str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar((funca +
+                        "void b() {\n"
+                        "    int *p;\n"
+                        "    a(*p);\n"
+                        "}").c_str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+    }
+
+
     // valid and invalid use of 'void a(int *p) { *p = 0; }'
-    void uninitvar_func2()
+    void func_uninit_pointer()
     {
         const std::string funca("void a(int *p) { *p = 0; }\n");
 
@@ -1455,7 +1477,7 @@ private:
                         "    int *p;\n"
                         "    a(p);\n"
                         "}\n").c_str());
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
     }
 
     void uninitvar_typeof()

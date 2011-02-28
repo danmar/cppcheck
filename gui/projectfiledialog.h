@@ -67,6 +67,12 @@ public:
     QStringList GetPaths() const;
 
     /**
+    * @brief Return ignored paths from the dialog control.
+    * @return List of ignored paths.
+    */
+    QStringList GetIgnorePaths() const;
+
+    /**
     * @brief Set project root path to dialog control.
     * @param root Project root path to set to dialog control.
     */
@@ -90,25 +96,78 @@ public:
     */
     void SetPaths(const QStringList &paths);
 
+    /**
+    * @brief Set ignored paths to dialog control.
+    * @param paths List of path names to set to dialog control.
+    */
+    void SetIgnorePaths(const QStringList &paths);
+
 protected slots:
     /**
     * @brief Browse for include directory.
-    * Allow user to choose new include directory.
+    * Allow user to add new include directory to the list.
     */
-    void BrowseIncludes();
+    void AddIncludeDir();
+
     /**
-    * @brief Browse for checked directory.
-    * Allow user to choose new checked directory.
+    * @brief Add new path to check.
     */
-    void BrowsePaths();
+    void AddPath();
+
+    /**
+    * @brief Remove include directory from the list.
+    */
+    void RemoveIncludeDir();
+
+    /**
+    * @brief Edit include directory in the list.
+    */
+    void EditIncludeDir();
+
+    /**
+    * @brief Edit path in the list.
+    */
+    void EditPath();
+
+    /**
+    * @brief Remove path from the list.
+    */
+    void RemovePath();
+
+    /**
+    * @brief Add new path to ignore.
+    */
+    void AddIgnorePath();
+
+    /**
+    * @brief Edit ignored path in the list.
+    */
+    void EditIgnorePath();
+
+    /**
+    * @brief Remove ignored path from the list.
+    */
+    void RemoveIgnorePath();
 
 protected:
+
     /**
-    * @brief Append new path to the edit control.
-    * @param edit Edit control to modify.
-    * @param dir Path to add.
+    * @brief Add new indlude directory.
+    * @param dir Directory to add.
     */
-    void AppendDirname(QLineEdit *edit, const QString &dir);
+    void AddIncludeDir(const QString &dir);
+
+    /**
+    * @brief Add new path to check.
+    * @param path Path to add.
+    */
+    void AddPath(const QString &path);
+
+    /**
+    * @brief Add new path to ignore list.
+    * @param path Path to add.
+    */
+    void AddIgnorePath(const QString &path);
 
 private:
     Ui::ProjectFile mUI;

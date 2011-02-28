@@ -178,6 +178,10 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
     // Remove all comments..
     result = removeComments(result, filename, settings);
 
+    // Remove '#if 0' blocks
+    if (result.find("#if 0\n") != std::string::npos)
+        result = removeIf0(result);
+
     // ------------------------------------------------------------------------------------------
     //
     // Clean up all preprocessor statements
@@ -545,6 +549,37 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     }
 
     return code.str();
+}
+
+std::string Preprocessor::removeIf0(const std::string &code)
+{
+    std::ostringstream ret;
+    std::istringstream istr(code);
+    std::string line;
+    while (std::getline(istr,line))
+    {
+        if (line != "#if 0")
+            ret << line << "\n";
+        else
+        {
+            // replace '#if 0' with empty line
+            ret << "\n";
+
+            // goto the end of the '#if 0' block
+            unsigned int level = 1;
+            while (level > 0 && std::getline(istr,line))
+            {
+                if (line.compare(0,3,"#if") == 0)
+                    ++level;
+                else if (line == "#endif")
+                    --level;
+
+                // replace code within '#if 0' block with empty lines
+                ret << "\n";
+            }
+        }
+    }
+    return ret.str();
 }
 
 
@@ -927,7 +962,18 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         if (line.compare(0, 8, "#define ") == 0)
         {
-            if (line.find(" ", 8) == std::string::npos)
+            bool valid = true;
+            for (std::string::size_type pos = 8; pos < line.size() && line[pos] != ' '; ++pos)
+            {
+                char ch = line[pos];
+                if (ch=='_' || (ch>='a' && ch<='z') || (ch>='A' && ch<='Z') || (pos>8 && ch>='0' && ch<='9'))
+                    continue;
+                valid = false;
+                break;
+            }
+            if (!valid)
+                line.clear();
+            else if (line.find(" ", 8) == std::string::npos)
                 defines.insert(line.substr(8));
             else
             {
@@ -1278,8 +1324,12 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
     if (Token::Match(tokenizer.tokens(), "( %var% )"))
     {
-        if (variables.find(tokenizer.tokens()->strAt(1)) != variables.end())
-            condition = "1";
+        std::map<std::string,std::string>::const_iterator var = variables.find(tokenizer.tokens()->strAt(1));
+        if (var != variables.end())
+        {
+            const std::string &value = (*var).second;
+            condition = (value == "0") ? "0" : "1";
+        }
         else if (match)
             condition = "0";
         return;

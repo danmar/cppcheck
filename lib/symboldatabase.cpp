@@ -399,6 +399,68 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     }
                 }
             }
+            else if (scope->type == Scope::eFunction || scope->isLocal())
+            {
+                if (Token::simpleMatch(tok, "if (") &&
+                    Token::simpleMatch(tok->next()->link(), ") {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eIf, tok->next()->link()->next());
+                    tok = tok->next()->link()->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "else {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eElse, tok->next());
+                    tok = tok->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "else if (") &&
+                         Token::simpleMatch(tok->next()->next()->link(), ") {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eElseIf, tok->next()->next()->link()->next());
+                    tok = tok->next()->next()->link()->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "for (") &&
+                         Token::simpleMatch(tok->next()->link(), ") {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eFor, tok->next()->link()->next());
+                    tok = tok->next()->link()->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "while (") &&
+                         Token::simpleMatch(tok->next()->link(), ") {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eWhile, tok->next()->link()->next());
+                    tok = tok->next()->link()->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "do {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eDo, tok->next());
+                    tok = tok->next();
+                    scopeList.push_back(scope);
+                }
+                else if (Token::simpleMatch(tok, "switch (") &&
+                         Token::simpleMatch(tok->next()->link(), ") {"))
+                {
+                    scope = new Scope(this, tok, scope, Scope::eSwitch, tok->next()->link()->next());
+                    tok = tok->next()->link()->next();
+                    scopeList.push_back(scope);
+                }
+                else if (tok->str() == "{")
+                {
+                    if (!Token::Match(tok->previous(), "=|,|{"))
+                    {
+                        scope = new Scope(this, tok, scope, Scope::eUnconditional, tok);
+                        scopeList.push_back(scope);
+                    }
+                    else
+                    {
+                        tok = tok->link();
+                    }
+                }
+            }
         }
     }
 
@@ -448,11 +510,21 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     {
         scope = *it;
 
-        // skip functions
-        if (scope->type != Scope::eFunction)
+        // find variables
+        scope->getVariableList();
+    }
+
+    // fill in function arguments
+    for (it = scopeList.begin(); it != scopeList.end(); ++it)
+    {
+        scope = *it;
+
+        std::list<Function>::iterator func;
+
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
-            // find variables
-            scope->getVariableList();
+            // add arguments
+            func->addArguments(this, scope);
         }
     }
 
@@ -566,6 +638,46 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     _errorLogger->reportErr(errmsg);
                 else
                     Check::reportError(errmsg);
+            }
+        }
+    }
+
+    // create variable symbol table
+    _variableList.resize(_tokenizer->varIdCount() + 1);
+    fill_n(_variableList.begin(), _variableList.size(), (const Variable*)NULL);
+
+    // check all scopes for variables
+    for (it = scopeList.begin(); it != scopeList.end(); ++it)
+    {
+        scope = *it;
+
+        // add all variables
+        std::list<Variable>::const_iterator var;
+        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
+        {
+            unsigned int varId = var->varId();
+            if (varId)
+                _variableList[varId] = &*var;
+        }
+
+        // add all function paramaters
+        std::list<Function>::const_iterator func;
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
+        {
+            // ignore function without implementations
+            if (!func->hasBody)
+                continue;
+
+            std::list<Variable>::const_iterator arg;
+            for (arg = func->argumentList.begin(); arg != func->argumentList.end(); ++arg)
+            {
+                // check for named parameters
+                if (arg->nameToken() && arg->varId())
+                {
+                    unsigned int varId = arg->varId();
+                    if (varId)
+                        _variableList[varId] = &*arg;
+                }
             }
         }
     }
@@ -1002,7 +1114,74 @@ unsigned int Function::initializedArgCount() const
     return count;
 }
 
+void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
+{
+    // check for non-empty argument list "( ... )"
+    if (arg->link() != arg->next())
+    {
+        unsigned int count = 0;
+        const Token *startTok;
+        const Token *endTok;
+        const Token *nameTok;
+        bool isConstVar;
+        const Token *tok = arg->next();
+        for (;;)
+        {
+            startTok = tok;
+            endTok = NULL;
+            nameTok = NULL;
+            isConstVar = bool(tok->str() == "const");
+
+            while (tok->str() != "," && tok->str() != ")")
+            {
+                if (tok->varId() != 0)
+                {
+                    nameTok = tok;
+                    endTok = tok->previous();
+                }
+                tok = tok->next();
+            }
+
+            // check for argument with no name
+            if (!endTok)
+                endTok = tok->previous();
+
+            const Token *typeTok = startTok;
+            if (isConstVar)
+                typeTok = typeTok->next();
+
+            const Scope *argType = NULL;
+            if (!typeTok->isStandardType())
+                argType = symbolDatabase->findVariableType(scope, typeTok);
+
+            bool isClassVar = startTok == endTok && !startTok->isStandardType();
+
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, scope, false));
+
+            if (tok->str() == ")")
+                break;
+
+            tok = tok->next();
+        }
+    }
+}
+
 //---------------------------------------------------------------------------
+
+Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, ScopeType type_, const Token *start_) :
+    check(check_),
+    type(type_),
+    classDef(classDef_),
+    classStart(start_),
+    classEnd(start_->link()),
+    nestedIn(nestedIn_),
+    access(Public),
+    numConstructors(0),
+    needInitialization(Scope::Unknown),
+    functionOf(NULL)
+{
+    nestedIn->nestedList.push_back(this);
+}
 
 Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
     check(check_),
@@ -1071,10 +1250,31 @@ Scope::hasDefaultConstructor() const
     return false;
 }
 
+AccessControl Scope::defaultAccess() const
+{
+    switch (type)
+    {
+    case eGlobal:
+        return Global;
+    case eClass:
+        return Private;
+    case eStruct:
+        return Public;
+    case eUnion:
+        return Public;
+    case eNamespace:
+        return Namespace;
+    default:
+        return Local;
+    }
+
+    return Public;
+}
+
 // Get variable list..
 void Scope::getVariableList()
 {
-    AccessControl varaccess = type == eClass ? Private : Public;
+    AccessControl varaccess = defaultAccess();
     const Token *start;
 
     if (classStart)
@@ -1163,8 +1363,16 @@ void Scope::getVariableList()
         else if (tok->str() == "__property")
             continue;
 
+        // skip return and delete
+        else if (Token::Match(tok, "return|delete"))
+        {
+            while (tok->next()->str() != ";")
+                tok = tok->next();
+            continue;
+        }
+
         // Search for start of statement..
-        else if (!tok->previous() || !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
+        else if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
             continue;
         else if (Token::Match(tok, ";|{|}"))
             continue;
@@ -1210,7 +1418,9 @@ void Scope::getVariableList()
             tok = tok->next();
         }
 
-        if (isVariableDeclaration(tok, vartok, typetok))
+        bool isArray = false;
+
+        if (isVariableDeclaration(tok, vartok, typetok, isArray))
         {
             isClass = (!typetok->isStandardType() && vartok->previous()->str() != "*");
             tok = vartok->next();
@@ -1219,7 +1429,7 @@ void Scope::getVariableList()
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         if (vartok && vartok->str() != "operator")
         {
-            if (vartok->varId() == 0 && check->_settings->debugwarnings)
+            if (vartok->varId() == 0 && !vartok->isBoolean() && check->_settings->debugwarnings)
             {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
@@ -1242,7 +1452,7 @@ void Scope::getVariableList()
             if (typetok)
                 scope = check->findVariableType(this, typetok);
 
-            addVariable(vartok, typestart, varaccess, isMutable, isStatic, isConst, isClass, scope);
+            addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this, isArray);
         }
     }
 }
@@ -1275,7 +1485,7 @@ const Token* skipPointers(const Token* tok)
     return ret;
 }
 
-bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const
+bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray) const
 {
     const Token* localTypeTok = skipScopeIdentifiers(tok);
     const Token* localVarTok = NULL;
@@ -1288,7 +1498,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         {
             localVarTok = skipPointers(closeTok->next());
 
-            if (Token::Match(localVarTok, ":: %type% %var% ;"))
+            if (Token::Match(localVarTok, ":: %type% %var% ;|="))
             {
                 localTypeTok = localVarTok->next();
                 localVarTok = localVarTok->tokAt(2);
@@ -1300,10 +1510,17 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         localVarTok = skipPointers(localTypeTok->next());
     }
 
-    if (isSimpleVariable(localVarTok) || isArrayVariable(localVarTok))
+    if (isSimpleVariable(localVarTok))
     {
         vartok = localVarTok;
         typetok = localTypeTok;
+        isArray = false;
+    }
+    else if (isArrayVariable(localVarTok))
+    {
+        vartok = localVarTok;
+        typetok = localTypeTok;
+        isArray = true;
     }
 
     return NULL != vartok;
@@ -1311,7 +1528,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
 
 bool Scope::isSimpleVariable(const Token* tok) const
 {
-    return Token::Match(tok, "%var% ;");
+    return Token::Match(tok, "%var% ;|=");
 }
 
 bool Scope::isArrayVariable(const Token* tok) const
@@ -1325,7 +1542,7 @@ bool Scope::findClosingBracket(const Token* tok, const Token*& close) const
     if (NULL != tok && tok->str() == "<")
     {
         unsigned int depth = 0;
-        for (close = tok; (close != NULL) && (close->str() != ";"); close = close->next())
+        for (close = tok; (close != NULL) && (close->str() != ";") && (close->str() != "="); close = close->next())
         {
             if (close->str() == "<")
             {

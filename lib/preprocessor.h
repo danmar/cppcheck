@@ -145,6 +145,13 @@ protected:
     std::string removeComments(const std::string &str, const std::string &filename, Settings *settings);
 
     /**
+     * Cleanup 'if 0' from the code
+     * @param str Code processed by read().
+     * @return code without 'if 0'
+     */
+    static std::string removeIf0(const std::string &code);
+
+    /**
      * Remove redundant parentheses from preprocessor commands. This should only be called from read().
      * @param str Code processed by read().
      * @return code with reduced parentheses

@@ -21,6 +21,7 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QFile>
+#include <QDir>
 #include "projectfile.h"
 
 static const char ProjectElementName[] = "project";
@@ -37,6 +38,9 @@ static const char PathName[] = "dir";
 static const char PathNameAttrib[] = "name";
 static const char RootPathName[] = "root";
 static const char RootPathNameAttrib[] = "name";
+static const char IgnoreElementName[] = "ignore";
+static const char IgnorePathName[] = "path";
+static const char IgnorePathNameAttrib[] = "name";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -87,6 +91,10 @@ bool ProjectFile::Read(const QString &filename)
             if (insideProject && xmlReader.name() == DefinesElementName)
                 ReadDefines(xmlReader);
 
+            // Find ignore list from inside project element
+            if (insideProject && xmlReader.name() == IgnoreElementName)
+                ReadIgnores(xmlReader);
+
             break;
 
         case QXmlStreamReader::EndElement:
@@ -117,7 +125,12 @@ bool ProjectFile::Read(const QString &filename)
 
 QStringList ProjectFile::GetIncludeDirs() const
 {
-    return mIncludeDirs;
+    QStringList dirs;
+    foreach(QString path, mIncludeDirs)
+    {
+        dirs << QDir::fromNativeSeparators(path);
+    }
+    return dirs;
 }
 
 QStringList ProjectFile::GetDefines() const
@@ -127,7 +140,22 @@ QStringList ProjectFile::GetDefines() const
 
 QStringList ProjectFile::GetCheckPaths() const
 {
-    return mPaths;
+    QStringList paths;
+    foreach(QString path, mPaths)
+    {
+        paths << QDir::fromNativeSeparators(path);
+    }
+    return paths;
+}
+
+QStringList ProjectFile::GetIgnoredPaths() const
+{
+    QStringList paths;
+    foreach(QString path, mIgnoredPaths)
+    {
+        paths << QDir::fromNativeSeparators(path);
+    }
+    return paths;
 }
 
 void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
@@ -263,19 +291,65 @@ void ProjectFile::ReadCheckPaths(QXmlStreamReader &reader)
     while (!allRead);
 }
 
-void ProjectFile::SetIncludes(QStringList includes)
+void ProjectFile::ReadIgnores(QXmlStreamReader &reader)
+{
+    QXmlStreamReader::TokenType type;
+    bool allRead = false;
+    do
+    {
+        type = reader.readNext();
+        switch (type)
+        {
+        case QXmlStreamReader::StartElement:
+            // Read define-elements
+            if (reader.name().toString() == IgnorePathName)
+            {
+                QXmlStreamAttributes attribs = reader.attributes();
+                QString name = attribs.value("", IgnorePathNameAttrib).toString();
+                if (!name.isEmpty())
+                    mIgnoredPaths << name;
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() == IgnoreElementName)
+                allRead = true;
+            break;
+
+            // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    }
+    while (!allRead);
+}
+
+void ProjectFile::SetIncludes(const QStringList &includes)
 {
     mIncludeDirs = includes;
 }
 
-void ProjectFile::SetDefines(QStringList defines)
+void ProjectFile::SetDefines(const QStringList &defines)
 {
     mDefines = defines;
 }
 
-void ProjectFile::SetCheckPaths(QStringList paths)
+void ProjectFile::SetCheckPaths(const QStringList &paths)
 {
     mPaths = paths;
+}
+
+void ProjectFile::SetIgnoredPaths(const QStringList &paths)
+{
+    mIgnoredPaths = paths;
 }
 
 bool ProjectFile::Write(const QString &filename)
@@ -303,8 +377,7 @@ bool ProjectFile::Write(const QString &filename)
     if (!mIncludeDirs.isEmpty())
     {
         xmlWriter.writeStartElement(IncludDirElementName);
-        QString incdir;
-        foreach(incdir, mIncludeDirs)
+        foreach(QString incdir, mIncludeDirs)
         {
             xmlWriter.writeStartElement(DirElementName);
             xmlWriter.writeAttribute(DirNameAttrib, incdir);
@@ -316,8 +389,7 @@ bool ProjectFile::Write(const QString &filename)
     if (!mDefines.isEmpty())
     {
         xmlWriter.writeStartElement(DefinesElementName);
-        QString define;
-        foreach(define, mDefines)
+        foreach(QString define, mDefines)
         {
             xmlWriter.writeStartElement(DefineName);
             xmlWriter.writeAttribute(DefineNameAttrib, define);
@@ -329,11 +401,22 @@ bool ProjectFile::Write(const QString &filename)
     if (!mPaths.isEmpty())
     {
         xmlWriter.writeStartElement(PathsElementName);
-        QString path;
-        foreach(path, mPaths)
+        foreach(QString path, mPaths)
         {
             xmlWriter.writeStartElement(PathName);
             xmlWriter.writeAttribute(PathNameAttrib, path);
+            xmlWriter.writeEndElement();
+        }
+        xmlWriter.writeEndElement();
+    }
+
+    if (!mIgnoredPaths.isEmpty())
+    {
+        xmlWriter.writeStartElement(IgnoreElementName);
+        foreach(QString path, mIgnoredPaths)
+        {
+            xmlWriter.writeStartElement(IgnorePathName);
+            xmlWriter.writeAttribute(IgnorePathNameAttrib, path);
             xmlWriter.writeEndElement();
         }
         xmlWriter.writeEndElement();

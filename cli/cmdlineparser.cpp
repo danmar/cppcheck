@@ -197,6 +197,18 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
         }
 
+        else if (strncmp(argv[i], "--suppress=", 11) == 0)
+        {
+            std::string suppression = argv[i];
+            suppression = suppression.substr(11);
+            const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));
+            if (!errmsg.empty())
+            {
+                PrintMessage(errmsg);
+                return false;
+            }
+        }
+
         // Enables inline suppressions.
         else if (strcmp(argv[i], "--inline-suppr") == 0)
             _settings->_inlineSuppressions = true;
@@ -628,7 +640,8 @@ void CmdLineParser::PrintHelp()
               "                          * information - Enable information messages\n"
               "                          * unusedFunction - check for unused functions\n"
               "                          * missingInclude - check for missing includes\n"
-              "                         Several ids can be given if you separate them with commas.\n"
+              "                         Several ids can be given if you separate them with\n"
+              "                         commas.\n"
               "    --error-exitcode=<n> If errors are found, integer [n] is returned instead\n"
               "                         of default 0. EXIT_FAILURE is returned\n"
               "                         if arguments are not valid or if no input files are\n"
@@ -638,17 +651,18 @@ void CmdLineParser::PrintHelp()
               "    --exitcode-suppressions=<file>\n"
               "                         Used when certain messages should be displayed but\n"
               "                         should not cause a non-zero exitcode.\n"
-              "    --file-list=<file>   Specify the files to check in a text file. One Filename per line.\n"
+              "    --file-list=<file>   Specify the files to check in a text file. One Filename\n"
+              "                         per line.\n"
               "    -f, --force          Force checking on files that have \"too many\"\n"
               "                         configurations.\n"
               "    -h, --help           Print this help.\n"
               "    -I <dir>             Give include path. Give several -I parameters to give\n"
               "                         several paths. First given path is checked first. If\n"
               "                         paths are relative to source files, this is not needed.\n"
-              "    -i <dir>             Give path to ignore. Give several -i parameters to ignore\n"
-              "                         several paths. Give directory name or filename with path\n"
-              "                         as parameter. Directory name is matched to all parts of the\n"
-              "                         path.\n"
+              "    -i <dir>             Give path to ignore. Give several -i parameters to\n"
+              "                         ignore several paths. Give directory name or filename\n"
+              "                         with path as parameter. Directory name is matched to\n"
+              "                         all parts of the path.\n"
               "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
               "                         more comments, like: // cppcheck-suppress warningId\n"
               "                         on the lines before the warning to suppress.\n"
@@ -659,11 +673,12 @@ void CmdLineParser::PrintHelp()
               "    --rule-file=<file>   Use given rule file. For more information, see: \n"
               "                         https://sourceforge.net/projects/cppcheck/files/Articles/\n"
               "    -s, --style          Deprecated, use --enable=style\n"
-              "    --suppressions-list=<file>\n"
-              "                         Suppress warnings listed in the file. Filename and line\n"
-              "                         are optional in the suppression file. The format of the\n"
-              "                         single line in the suppression file is:\n"
+              "    --suppress=<spec>    Suppress a specific warning. The format of <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"
+              "                         The [filename] and [line] are optional.\n"
+              "    --suppressions-list=<file>\n"
+              "                         Suppress warnings listed in the file. Each suppression\n"
+              "                         is in the same format as <spec> above.\n"
               "    --template '<text>'  Format the error messages. E.g.\n"
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}'\n"

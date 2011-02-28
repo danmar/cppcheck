@@ -79,6 +79,7 @@ private:
         TEST_CASE(ifAddBraces11);
         TEST_CASE(ifAddBraces12);
         TEST_CASE(ifAddBraces13);
+        TEST_CASE(ifAddBraces14);	// #2610 - segfault: if()<{}
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -128,6 +129,7 @@ private:
         TEST_CASE(simplifyKnownVariables39);
         TEST_CASE(simplifyKnownVariables40);
         TEST_CASE(simplifyKnownVariables41);    // p=&x; if (p) ..
+        TEST_CASE(simplifyKnownVariables42);    // ticket #2031 - known string value after strcpy
         TEST_CASE(simplifyKnownVariablesBailOutAssign);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
@@ -849,6 +851,13 @@ private:
         const char expected2[] = "{ if ( x ) { while ( y ) { } } else { } }";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, true));
     }
+
+    void ifAddBraces14()
+    {
+        // ticket #2610 (segfault)
+        tokenizeAndStringify("if()<{}", false);
+    }
+
 
     void whileAddBraces()
     {
@@ -2030,6 +2039,21 @@ private:
                             "    if (p) { return 0; }\n"
                             "}";
         ASSERT_EQUALS("void f ( ) {\nint x ; x = 0 ;\nconst int * p ; p = & x ;\nif ( & x ) { return 0 ; }\n}", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables42()
+    {
+        const char code[] = "void f() {\n"
+                            "    char str1[10], str2[10];\n"
+                            "    strcpy(str1, \"abc\");\n"
+                            "    strcpy(str2, str1);\n"
+                            "}";
+        const char expected[] = "void f ( ) {\n"
+                                "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                "strcpy ( str1 , \"abc\" ) ;\n"
+                                "strcpy ( str2 , \"abc\" ) ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
     void simplifyKnownVariablesBailOutAssign()

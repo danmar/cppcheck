@@ -96,12 +96,54 @@ void FileList::AddPathList(const QStringList &paths)
 
 QStringList FileList::GetFileList() const
 {
-    QStringList names;
-    QFileInfo item;
-    foreach(item, mFileList)
+    if (mIgnoredPaths.empty())
+    {
+        QStringList names;
+        foreach(QFileInfo item, mFileList)
+        {
+            QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
+            names << name;
+        }
+        return names;
+    }
+    else
+    {
+        return ApplyIgnoreList();
+    }
+}
+
+void FileList::AddIngoreList(const QStringList &paths)
+{
+    mIgnoredPaths = paths;
+}
+
+QStringList FileList::ApplyIgnoreList() const
+{
+    QStringList paths;
+    foreach(QFileInfo item, mFileList)
     {
         QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
-        names << name;
+        if (!Match(name))
+            paths << name;
     }
-    return names;
+    return paths;
+}
+
+bool FileList::Match(const QString &path) const
+{
+    for (int i = 0; i < mIgnoredPaths.size(); i++)
+    {
+        if (mIgnoredPaths[i].endsWith('/'))
+        {
+            const QString pathignore("/" + mIgnoredPaths[i]);
+            if (path.indexOf(pathignore) != -1)
+                return true;
+        }
+        else
+        {
+            if (path.endsWith(mIgnoredPaths[i]))
+                return true;
+        }
+    }
+    return false;
 }

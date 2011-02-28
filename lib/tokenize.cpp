@@ -58,6 +58,9 @@ Tokenizer::Tokenizer()
 
     // symbol database
     _symbolDatabase = NULL;
+
+    // variable count
+    _varId = 0;
 }
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
@@ -75,6 +78,9 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
 
     // symbol database
     _symbolDatabase = NULL;
+
+    // variable count
+    _varId = 0;
 }
 
 Tokenizer::~Tokenizer()
@@ -886,6 +892,9 @@ static Token *processFunc(Token *tok2, bool inOperator)
             tok2 = tok2->tokAt(4)->link()->next();
         else if (Token::Match(tok2->next(), "* ( * %type% ("))
             tok2 = tok2->tokAt(5)->link()->next();
+        else if (Token::Match(tok2->next(), "* [") &&
+                 Token::simpleMatch(tok2->tokAt(2)->link(), "] ;"))
+            tok2 = tok2->next();
         else
         {
             if (tok2->next()->str() == "(")
@@ -3268,7 +3277,7 @@ void Tokenizer::setVarId()
         tok->varId(0);
 
     // Set variable ids..
-    unsigned int _varId = 0;
+    _varId = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok != _tokens && !Token::Match(tok, "[;{}(,] %type%"))
@@ -3915,9 +3924,13 @@ void Tokenizer::simplifySizeof()
                     --parlevel;
                 if (Token::Match(tempToken, "%var%"))
                 {
-                    while (tempToken->next()->str() == "[")
+                    while (tempToken && tempToken->next() && tempToken->next()->str() == "[")
                     {
                         tempToken = tempToken->next()->link();
+                    }
+                    if (!tempToken || !tempToken->next())
+                    {
+                        break;
                     }
 
                     if (tempToken->next()->str() == ".")
@@ -4656,6 +4669,8 @@ void Tokenizer::simplifyIfAddBraces()
                     break;
                 }
                 tempToken = tempToken->link();
+                if (!tempToken || !tempToken->next())
+                    break;
                 if (tempToken->next()->isName() && tempToken->next()->str() != "else")
                     break;
                 continue;
@@ -6339,6 +6354,22 @@ bool Tokenizer::simplifyKnownVariables()
                 if (!simplifyKnownVariablesGetData(varid, &tok2, &tok3, value, valueVarId, valueIsPointer, floatvars.find(tok2->varId()) != floatvars.end()))
                     continue;
 
+                ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, valueToken, indentlevel);
+            }
+
+            else if (Token::Match(tok2, "strcpy ( %var% , %str% ) ;"))
+            {
+                const unsigned int varid(tok2->tokAt(2)->varId());
+                if (varid == 0)
+                    continue;
+                const std::string structname("");
+                const Token * const valueToken = tok2->tokAt(4);
+                std::string value(valueToken->str());
+                const unsigned int valueVarId(0);
+                const bool valueIsPointer(false);
+                Token *tok3 = tok2;
+                for (int i = 0; i < 6; ++i)
+                    tok3 = tok3->next();
                 ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, valueToken, indentlevel);
             }
         }
@@ -9375,7 +9406,8 @@ void Tokenizer::removeUnnecessaryQualification()
                 classInfo.pop();
             else if (tok->str() == classInfo.top().className &&
                      Token::Match(tok, "%type% :: %type% (") &&
-                     Token::Match(tok->tokAt(3)->link(), ") const| {|;"))
+                     Token::Match(tok->tokAt(3)->link(), ") const| {|;") &&
+                     tok->previous()->str() != ":")
             {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
