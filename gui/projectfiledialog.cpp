@@ -238,6 +238,8 @@ void ProjectFileDialog::AddIgnorePath()
 
     if (!selectedDir.isEmpty())
     {
+        if (!selectedDir.endsWith('/'))
+            selectedDir += '/';
         AddIgnorePath(selectedDir);
     }
 }
