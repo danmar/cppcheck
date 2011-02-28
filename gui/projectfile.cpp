@@ -397,6 +397,19 @@ bool ProjectFile::Write(const QString &filename)
         xmlWriter.writeEndElement();
     }
 
+    if (!mIgnoredPaths.isEmpty())
+    {
+        xmlWriter.writeStartElement(IgnoreElementName);
+        QString path;
+        foreach(path, mIgnoredPaths)
+        {
+            xmlWriter.writeStartElement(IgnorePathName);
+            xmlWriter.writeAttribute(IgnorePathNameAttrib, path);
+            xmlWriter.writeEndElement();
+        }
+        xmlWriter.writeEndElement();
+    }
+
     xmlWriter.writeEndDocument();
     file.close();
     return true;
