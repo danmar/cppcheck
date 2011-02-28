@@ -43,6 +43,9 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     connect(mUI.mBtnRemoveInclude, SIGNAL(clicked()), this, SLOT(RemoveIncludeDir()));
     connect(mUI.mBtnEditPath, SIGNAL(clicked()), this, SLOT(EditPath()));
     connect(mUI.mBtnRemovePath, SIGNAL(clicked()), this, SLOT(RemovePath()));
+    connect(mUI.mBtnAddIgnorePath, SIGNAL(clicked()), this, SLOT(AddIgnorePath()));
+    connect(mUI.mBtnEditIgnorePath, SIGNAL(clicked()), this, SLOT(EditIgnorePath()));
+    connect(mUI.mBtnRemoveIgnorePath, SIGNAL(clicked()), this, SLOT(RemoveIgnorePath()));
 }
 
 void ProjectFileDialog::AddIncludeDir(const QString &dir)
@@ -63,6 +66,16 @@ void ProjectFileDialog::AddPath(const QString &path)
     QListWidgetItem *item = new QListWidgetItem(path);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI.mListPaths->addItem(item);
+}
+
+void ProjectFileDialog::AddIgnorePath(const QString &path)
+{
+    if (path.isNull() || path.isEmpty())
+        return;
+
+    QListWidgetItem *item = new QListWidgetItem(path);
+    item->setFlags(item->flags() | Qt::ItemIsEditable);
+    mUI.mListIgnoredPaths->addItem(item);
 }
 
 QString ProjectFileDialog::GetRootPath() const
@@ -111,6 +124,18 @@ QStringList ProjectFileDialog::GetPaths() const
     return paths;
 }
 
+QStringList ProjectFileDialog::GetIgnorePaths() const
+{
+    const int count = mUI.mListIgnoredPaths->count();
+    QStringList paths;
+    for (int i = 0; i < count; i++)
+    {
+        QListWidgetItem *item = mUI.mListIgnoredPaths->item(i);
+        paths << item->text();
+    }
+    return paths;
+}
+
 void ProjectFileDialog::SetRootPath(const QString &root)
 {
     mUI.mEditProjectRoot->setText(root);
@@ -144,6 +169,14 @@ void ProjectFileDialog::SetPaths(const QStringList &paths)
     foreach(QString path, paths)
     {
         AddPath(path);
+    }
+}
+
+void ProjectFileDialog::SetIgnorePaths(const QStringList &paths)
+{
+    foreach(QString path, paths)
+    {
+        AddIgnorePath(path);
     }
 }
 
@@ -194,5 +227,32 @@ void ProjectFileDialog::RemovePath()
 {
     const int row = mUI.mListPaths->currentRow();
     QListWidgetItem *item = mUI.mListPaths->takeItem(row);
+    delete item;
+}
+
+void ProjectFileDialog::AddIgnorePath()
+{
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                          tr("Select directory to ignore"),
+                          QString());
+
+    if (!selectedDir.isEmpty())
+    {
+        if (!selectedDir.endsWith('/'))
+            selectedDir += '/';
+        AddIgnorePath(selectedDir);
+    }
+}
+
+void ProjectFileDialog::EditIgnorePath()
+{
+    QListWidgetItem *item = mUI.mListIgnoredPaths->currentItem();
+    mUI.mListIgnoredPaths->editItem(item);
+}
+
+void ProjectFileDialog::RemoveIgnorePath()
+{
+    const int row = mUI.mListIgnoredPaths->currentRow();
+    QListWidgetItem *item = mUI.mListIgnoredPaths->takeItem(row);
     delete item;
 }
