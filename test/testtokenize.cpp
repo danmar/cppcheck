@@ -305,7 +305,10 @@ private:
         // Tokenize JAVA
         TEST_CASE(java);
 
-        TEST_CASE(simplifyOperatorName);
+        TEST_CASE(simplifyOperatorName1);
+        TEST_CASE(simplifyOperatorName2);
+        TEST_CASE(simplifyOperatorName3);
+        TEST_CASE(simplifyOperatorName4);
 
         // Some simple cleanups of unhandled macros in the global scope
         TEST_CASE(removeMacrosInGlobalScope);
@@ -5312,36 +5315,56 @@ private:
         ASSERT_EQUALS("void f ( ) { }", javatest("void f() throws Exception { }"));
     }
 
-    void simplifyOperatorName()
+    void simplifyOperatorName1()
     {
         // make sure C code doesn't get changed
-        const char code1[] = "void operator () {}"
-                             "int main()"
-                             "{"
-                             "    operator();"
-                             "}";
+        const char code[] = "void operator () {}"
+                            "int main()"
+                            "{"
+                            "    operator();"
+                            "}";
 
-        const char result1 [] = "void operator ( ) { } "
-                                "int main ( ) "
-                                "{ "
-                                "operator ( ) ; "
-                                "}";
+        const char result [] = "void operator ( ) { } "
+                               "int main ( ) "
+                               "{ "
+                               "operator ( ) ; "
+                               "}";
 
-        ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
+        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
+    }
 
-        const char code2[] = "class Fred"
-                             "{"
-                             "    Fred(const Fred & f) { operator = (f); }"
-                             "    operator = ();"
-                             "}";
+    void simplifyOperatorName2()
+    {
+        const char code[] = "class Fred"
+                            "{"
+                            "    Fred(const Fred & f) { operator = (f); }"
+                            "    operator = ();"
+                            "}";
 
-        const char result2 [] = "class Fred "
-                                "{ "
-                                "Fred ( const Fred & f ) { operator= ( f ) ; } "
-                                "operator= ( ) ; "
-                                "}";
+        const char result [] = "class Fred "
+                               "{ "
+                               "Fred ( const Fred & f ) { operator= ( f ) ; } "
+                               "operator= ( ) ; "
+                               "}";
 
-        ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
+        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
+    }
+
+    void simplifyOperatorName3()
+    {
+        // #2615
+        const char code[] = "void f() {"
+                            "static_cast<ScToken*>(xResult.operator->())->GetMatrix();"
+                            "}";
+        const char result[] = "void f ( ) { static_cast < ScToken * > ( xResult . operator. ( ) ) . GetMatrix ( ) ; }";
+        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
+    }
+
+    void simplifyOperatorName4()
+    {
+        const char code[] = "void operator==() { }";
+        const char result[] = "void operator== ( ) { }";
+        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
     }
 
     void removeMacrosInGlobalScope()

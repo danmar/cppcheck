@@ -9349,26 +9349,56 @@ const SymbolDatabase *Tokenizer::getSymbolDatabase() const
 
 void Tokenizer::simplifyOperatorName()
 {
-    for (const Token *tok = _tokens; tok; tok = tok->next())
+    for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, ") const| {|;|="))
+        if (tok->str() == "operator")
         {
-            Token *tok1 = tok->link();
-            Token *tok2 = tok1;
-
-            tok1 = tok1->previous();
-            while (tok1 && !Token::Match(tok1, "operator|{|}|;|public:|private|protected:"))
+            // operator op
+            std::string op;
+            Token *par = tok->next();
+            bool done = false;
+            while (!done && par)
             {
-                tok1 = tok1->previous();
+                done = true;
+                if (par && par->isName())
+                {
+                    op += par->str();
+                    par = par->next();
+                    done = false;
+                }
+                if (Token::Match(par, "[<>+-*&/=.]") || Token::Match(par, "==|!=|<=|>="))
+                {
+                    op += par->str();
+                    par = par->next();
+                    done = false;
+                }
+                if (Token::simpleMatch(par, "[ ]"))
+                {
+                    op += "[]";
+                    par = par->next()->next();
+                    done = false;
+                }
+                if (Token::Match(par, "( *| )"))
+                {
+                    // break out and simplify..
+                    if (Token::Match(par, "( ) const| [=;{),]"))
+                        break;
+
+                    while (par->str() != ")")
+                    {
+                        op += par->str();
+                        par = par->next();
+                    }
+                    op += ")";
+                    par = par->next();
+                    done = false;
+                }
             }
 
-            if (tok1 && tok1->str() == "operator")
+            if (par && Token::Match(par->link(), ") const| [=;{),]"))
             {
-                while (tok1->next() != tok2)
-                {
-                    tok1->str(tok1->str() + tok1->next()->str());
-                    tok1->deleteNext();
-                }
+                tok->str("operator" + op);
+                Token::eraseTokens(tok,par);
             }
         }
     }
