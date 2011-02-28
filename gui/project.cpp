@@ -85,6 +85,9 @@ void Project::Edit()
     dlg.SetDefines(defines);
     QStringList paths = mPFile->GetCheckPaths();
     dlg.SetPaths(paths);
+    QStringList ignorepaths = mPFile->GetIgnoredPaths();
+    dlg.SetIgnorePaths(ignorepaths);
+
     int rv = dlg.exec();
     if (rv == QDialog::Accepted)
     {
@@ -96,6 +99,9 @@ void Project::Edit()
         mPFile->SetDefines(defines);
         QStringList paths = dlg.GetPaths();
         mPFile->SetCheckPaths(paths);
+        QStringList ignorepaths = dlg.GetIgnorePaths();
+        mPFile->SetIgnoredPaths(ignorepaths);
+
         bool writeSuccess = mPFile->Write();
         if (!writeSuccess)
         {
