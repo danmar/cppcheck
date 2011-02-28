@@ -53,7 +53,8 @@ void ProjectFileDialog::AddIncludeDir(const QString &dir)
     if (dir.isNull() || dir.isEmpty())
         return;
 
-    QListWidgetItem *item = new QListWidgetItem(dir);
+    const QString newdir = QDir::toNativeSeparators(dir);
+    QListWidgetItem *item = new QListWidgetItem(newdir);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI.mListIncludeDirs->addItem(item);
 }
@@ -63,7 +64,8 @@ void ProjectFileDialog::AddPath(const QString &path)
     if (path.isNull() || path.isEmpty())
         return;
 
-    QListWidgetItem *item = new QListWidgetItem(path);
+    const QString newpath = QDir::toNativeSeparators(path);
+    QListWidgetItem *item = new QListWidgetItem(newpath);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI.mListPaths->addItem(item);
 }
@@ -73,7 +75,8 @@ void ProjectFileDialog::AddIgnorePath(const QString &path)
     if (path.isNull() || path.isEmpty())
         return;
 
-    QListWidgetItem *item = new QListWidgetItem(path);
+    const QString newpath = QDir::toNativeSeparators(path);
+    QListWidgetItem *item = new QListWidgetItem(newpath);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI.mListIgnoredPaths->addItem(item);
 }
@@ -82,6 +85,7 @@ QString ProjectFileDialog::GetRootPath() const
 {
     QString root = mUI.mEditProjectRoot->text();
     root = root.trimmed();
+    root = QDir::fromNativeSeparators(root);
     return root;
 }
 
@@ -92,9 +96,9 @@ QStringList ProjectFileDialog::GetIncludePaths() const
     for (int i = 0; i < count; i++)
     {
         QListWidgetItem *item = mUI.mListIncludeDirs->item(i);
-        includePaths << item->text();
+        includePaths << QDir::fromNativeSeparators((item->text());
     }
-    return includePaths;
+                 return includePaths;
 }
 
 QStringList ProjectFileDialog::GetDefines() const
@@ -119,7 +123,7 @@ QStringList ProjectFileDialog::GetPaths() const
     for (int i = 0; i < count; i++)
     {
         QListWidgetItem *item = mUI.mListPaths->item(i);
-        paths << item->text();
+        paths << QDir::fromNativeSeparators(item->text());
     }
     return paths;
 }
@@ -131,14 +135,15 @@ QStringList ProjectFileDialog::GetIgnorePaths() const
     for (int i = 0; i < count; i++)
     {
         QListWidgetItem *item = mUI.mListIgnoredPaths->item(i);
-        paths << item->text();
+        paths << QDir::fromNativeSeparators(item->text());
     }
     return paths;
 }
 
 void ProjectFileDialog::SetRootPath(const QString &root)
 {
-    mUI.mEditProjectRoot->setText(root);
+    QString newroot = QDir::toNativeSeparators(root);
+    mUI.mEditProjectRoot->setText(newroot);
 }
 
 void ProjectFileDialog::SetIncludepaths(const QStringList &includes)

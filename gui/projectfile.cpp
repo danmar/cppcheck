@@ -21,6 +21,7 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QFile>
+#include <QDir>
 #include "projectfile.h"
 
 static const char ProjectElementName[] = "project";
@@ -124,7 +125,12 @@ bool ProjectFile::Read(const QString &filename)
 
 QStringList ProjectFile::GetIncludeDirs() const
 {
-    return mIncludeDirs;
+    QStringList dirs;
+    foreach(QString path, mIncludeDirs)
+    {
+        dirs << QDir::fromNativeSeparators(path);
+    }
+    return dirs;
 }
 
 QStringList ProjectFile::GetDefines() const
@@ -134,12 +140,22 @@ QStringList ProjectFile::GetDefines() const
 
 QStringList ProjectFile::GetCheckPaths() const
 {
-    return mPaths;
+    QStringList paths;
+    foreach(QString path, mPaths)
+    {
+        paths << QDir::fromNativeSeparators(path);
+    }
+    return paths;
 }
 
 QStringList ProjectFile::GetIgnoredPaths() const
 {
-    return mIgnoredPaths;
+    QStringList paths;
+    foreach(QString path, mIgnoredPaths)
+    {
+        paths << QDir::fromNativeSeparators(path);
+    }
+    return paths;
 }
 
 void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
