@@ -126,11 +126,11 @@ QStringList ProjectFileDialog::GetPaths() const
 
 QStringList ProjectFileDialog::GetIgnorePaths() const
 {
-    const int count = mUI.mListIncludeDirs->count();
+    const int count = mUI.mListIgnoredPaths->count();
     QStringList paths;
     for (int i = 0; i < count; i++)
     {
-        QListWidgetItem *item = mUI.mListIncludeDirs->item(i);
+        QListWidgetItem *item = mUI.mListIgnoredPaths->item(i);
         paths << item->text();
     }
     return paths;
