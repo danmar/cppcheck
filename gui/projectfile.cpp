@@ -361,8 +361,7 @@ bool ProjectFile::Write(const QString &filename)
     if (!mIncludeDirs.isEmpty())
     {
         xmlWriter.writeStartElement(IncludDirElementName);
-        QString incdir;
-        foreach(incdir, mIncludeDirs)
+        foreach(QString incdir, mIncludeDirs)
         {
             xmlWriter.writeStartElement(DirElementName);
             xmlWriter.writeAttribute(DirNameAttrib, incdir);
@@ -374,8 +373,7 @@ bool ProjectFile::Write(const QString &filename)
     if (!mDefines.isEmpty())
     {
         xmlWriter.writeStartElement(DefinesElementName);
-        QString define;
-        foreach(define, mDefines)
+        foreach(QString define, mDefines)
         {
             xmlWriter.writeStartElement(DefineName);
             xmlWriter.writeAttribute(DefineNameAttrib, define);
@@ -387,8 +385,7 @@ bool ProjectFile::Write(const QString &filename)
     if (!mPaths.isEmpty())
     {
         xmlWriter.writeStartElement(PathsElementName);
-        QString path;
-        foreach(path, mPaths)
+        foreach(QString path, mPaths)
         {
             xmlWriter.writeStartElement(PathName);
             xmlWriter.writeAttribute(PathNameAttrib, path);
@@ -400,8 +397,7 @@ bool ProjectFile::Write(const QString &filename)
     if (!mIgnoredPaths.isEmpty())
     {
         xmlWriter.writeStartElement(IgnoreElementName);
-        QString path;
-        foreach(path, mIgnoredPaths)
+        foreach(QString path, mIgnoredPaths)
         {
             xmlWriter.writeStartElement(IgnorePathName);
             xmlWriter.writeAttribute(IgnorePathNameAttrib, path);
