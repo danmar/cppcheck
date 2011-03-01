@@ -92,6 +92,8 @@ private:
 
         TEST_CASE(error3);
 
+        TEST_CASE(if0_exclude);
+
         // Don't handle include in a #if 0 block
         TEST_CASE(if0_include_1);
         TEST_CASE(if0_include_2);
@@ -639,6 +641,18 @@ private:
         const std::string code("#error hello world!\n");
         Preprocessor::getcode(code, "X", "test.c", &settings, this);
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
+    }
+
+    void if0_exclude()
+    {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream code("#if 0\n"
+                                "A\n"
+                                "#endif\n"
+                                "B\n");
+        ASSERT_EQUALS("\n\n\nB\n", preprocessor.read(code,"",NULL));
     }
 
     void if0_include_1()
