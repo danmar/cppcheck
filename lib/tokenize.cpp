@@ -6636,6 +6636,12 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             Token::Match(tok3, ("!|==|!=|<|<=|>|>= " + structname + " %varid% ==|!=|<|<=|>|>=|)|;").c_str(), varid) ||
             Token::Match(tok3->previous(), "strlen|free ( %varid% )", varid))
         {
+            if (value[0] == '\"' && tok3->strAt(-1) != "strlen")
+            {
+                // bail out if value is a string unless if it's just given
+                // as parameter to strlen
+                break;
+            }
             if (!structname.empty())
             {
                 tok3->deleteNext();

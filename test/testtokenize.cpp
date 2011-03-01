@@ -2053,17 +2053,33 @@ private:
 
     void simplifyKnownVariables42()
     {
-        const char code[] = "void f() {\n"
-                            "    char str1[10], str2[10];\n"
-                            "    strcpy(str1, \"abc\");\n"
-                            "    strcpy(str2, str1);\n"
-                            "}";
-        const char expected[] = "void f ( ) {\n"
-                                "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
-                                "strcpy ( str1 , \"abc\" ) ;\n"
-                                "strcpy ( str2 , \"abc\" ) ;\n"
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[10], str2[10];\n"
+                                "    strcpy(str1, \"abc\");\n"
+                                "    strcpy(str2, str1);\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                    "strcpy ( str1 , \"abc\" ) ;\n"
+                                    "strcpy ( str2 , \"abc\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "void f() {"
+                                "    char *s = malloc(10);"
+                                "    strcpy(s, \"\");"
+                                "    free(s);"
+                                "}";
+            const char expected[] = "void f ( ) {"
+                                    " char * s ; s = malloc ( 10 ) ;"
+                                    " strcpy ( s , \"\" ) ;"
+                                    " free ( s ) ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
     }
 
     void simplifyKnownVariablesBailOutAssign()
