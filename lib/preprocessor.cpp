@@ -563,19 +563,33 @@ std::string Preprocessor::removeIf0(const std::string &code)
         else
         {
             // replace '#if 0' with empty line
-            ret << "\n";
+            ret << line << "\n";
 
             // goto the end of the '#if 0' block
             unsigned int level = 1;
+            bool in = false;
             while (level > 0 && std::getline(istr,line))
             {
                 if (line.compare(0,3,"#if") == 0)
                     ++level;
                 else if (line == "#endif")
                     --level;
+                else if (line == "#else")
+                {
+                    if (level == 1)
+                        in = true;
+                }
+                else
+                {
+                    if (in)
+                        ret << line << "\n";
+                    else
+                        // replace code within '#if 0' block with empty lines
+                        ret << "\n";
+                    continue;
+                }
 
-                // replace code within '#if 0' block with empty lines
-                ret << "\n";
+                ret << line << "\n";
             }
         }
     }
