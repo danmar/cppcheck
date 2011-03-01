@@ -658,9 +658,9 @@ private:
         ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code,"",NULL));
 
         std::istringstream code2("#if (0)\n"
-                                "A\n"
-                                "#endif\n"
-                                "B\n");
+                                 "A\n"
+                                 "#endif\n"
+                                 "B\n");
         ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code2,"",NULL));
     }
 
