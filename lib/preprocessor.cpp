@@ -183,14 +183,14 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
     // Clean up all preprocessor statements
     result = preprocessCleanupDirectives(result);
 
-    // Remove '#if 0' blocks
-    if (result.find("#if 0\n") != std::string::npos)
-        result = removeIf0(result);
-
     // ------------------------------------------------------------------------------------------
     //
     // Clean up preprocessor #if statements with Parantheses
     result = removeParantheses(result);
+
+    // Remove '#if 0' blocks
+    if (result.find("#if 0\n") != std::string::npos)
+        result = removeIf0(result);
 
     return result;
 }
