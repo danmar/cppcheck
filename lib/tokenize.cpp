@@ -4600,9 +4600,6 @@ void Tokenizer::simplifyIfAddBraces()
             continue;
         }
 
-        if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|else|)|:"))
-            continue;
-
         if (Token::Match(tok, "if|for|while ("))
         {
             // don't add "{}" around ";" in "do {} while();" (#609)
