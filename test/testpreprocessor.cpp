@@ -93,6 +93,7 @@ private:
         TEST_CASE(error3);
 
         TEST_CASE(if0_exclude);
+        TEST_CASE(if0_whitespace);
 
         // Don't handle include in a #if 0 block
         TEST_CASE(if0_include_1);
@@ -651,6 +652,18 @@ private:
         std::istringstream code("#if 0\n"
                                 "A\n"
                                 "#endif\n"
+                                "B\n");
+        ASSERT_EQUALS("\n\n\nB\n", preprocessor.read(code,"",NULL));
+    }
+
+    void if0_whitespace()
+    {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream code(" # if  0 \n"
+                                "A\n"
+                                " # endif \n"
                                 "B\n");
         ASSERT_EQUALS("\n\n\nB\n", preprocessor.read(code,"",NULL));
     }

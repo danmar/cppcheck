@@ -178,14 +178,14 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
     // Remove all comments..
     result = removeComments(result, filename, settings);
 
-    // Remove '#if 0' blocks
-    if (result.find("#if 0\n") != std::string::npos)
-        result = removeIf0(result);
-
     // ------------------------------------------------------------------------------------------
     //
     // Clean up all preprocessor statements
     result = preprocessCleanupDirectives(result);
+
+    // Remove '#if 0' blocks
+    if (result.find("#if 0\n") != std::string::npos)
+        result = removeIf0(result);
 
     // ------------------------------------------------------------------------------------------
     //
