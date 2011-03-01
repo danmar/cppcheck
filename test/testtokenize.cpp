@@ -5121,6 +5121,12 @@ private:
 
         const char code3[] = "struct A { bool : true; };";
         ASSERT_EQUALS("struct A { } ;", tokenizeAndStringify(code3,false));
+
+        const char code4[] = "void f(int a) { switch (a) { case b: break; } }";
+        ASSERT_EQUALS("void f ( int a ) { switch ( a ) { case b : ; break ; } }", tokenizeAndStringify(code4,true));
+
+        const char code5[] = "void f(int a) { switch (a) { default: break; } }";
+        ASSERT_EQUALS("void f ( int a ) { switch ( a ) { default : ; break ; } }", tokenizeAndStringify(code5,true));
     }
 
     void microsoftMFC()
