@@ -14,6 +14,8 @@ cmake_minimum_required (VERSION 2.6)
 
 PROJECT(CPPCHECK)
 
+set(CMAKE_MODULE_PATH "${CPPCHECK_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
+
 # Building lib as static library is disabled due to bug
 # #1299 CMake: The CheckClass is not used
 # https://sourceforge.net/apps/trac/cppcheck/ticket/1299
