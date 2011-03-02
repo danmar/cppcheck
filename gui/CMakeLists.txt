@@ -58,14 +58,6 @@ SET(CHECKGUI_SRCS
   xmlreport.cpp
 )
 
-# Add Windows resource file
-if (WIN32)
-  SET(CHECKGUI_SRCS
-    ${CHECKGUI_SRCS}
-    cppcheck-gui.rc
-  )
-endif (WIN32)
-
 # UI files
 SET(CHECK_UIS
   about.ui
@@ -96,14 +88,15 @@ aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
 #  checklib
 #)
 
-# Windows needs additional shlwapi library
-if (WIN32 AND NOT CYGWIN)
-set(CHECK_LIBS
-  ${CHECK_LIBS}
-  shlwapi
-  htmlhelp
-)
-endif (WIN32 AND NOT CYGWIN)
+if(WIN32)
+   # Add Windows resource file
+   set(CHECKGUI_SRCS ${CHECKGUI_SRCS} cppcheck-gui.rc)
+
+   if(NOT CYGWIN)
+      # Windows needs additional shlwapi library.
+      set(CHECK_LIBS ${CHECK_LIBS} shlwapi htmlhelp)
+   endif()
+endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
