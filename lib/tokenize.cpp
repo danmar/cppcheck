@@ -6741,6 +6741,8 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             Token::Match(tok3, ("<<|>> " + structname + " %varid% [+-*/%^|;])]").c_str(), varid) ||
             Token::Match(tok3->previous(), ("[=+-*/%^|[] ( " + structname + " %varid%").c_str(), varid))
         {
+            if (value[0] == '\"')
+                break;
             if (!structname.empty())
             {
                 tok3->deleteNext();
@@ -6857,13 +6859,14 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 
         // return variable..
         if (Token::Match(tok3, "return %varid% %any%", varid) &&
-            isOp(tok3->tokAt(2)))
+            isOp(tok3->tokAt(2)) &&
+            value[0] != '\"')
         {
             tok3->next()->str(value);
             tok3->next()->varId(valueVarId);
         }
 
-        else if (pointeralias && Token::Match(tok3, "return * %varid% ;", varid))
+        else if (pointeralias && Token::Match(tok3, "return * %varid% ;", varid) && value[0] != '\"')
         {
             tok3->deleteNext();
             tok3->next()->str(value);

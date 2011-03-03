@@ -2080,6 +2080,18 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
         }
+
+        {
+            const char code[] = "void f(char *p, char *q) {"
+                                "    strcpy(p, \"abc\");"
+                                "    q = p;"
+                                "}";
+            const char expected[] = "void f ( char * p , char * q ) {"
+                                    " strcpy ( p , \"abc\" ) ;"
+                                    " q = p ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
     }
 
     void simplifyKnownVariablesBailOutAssign()
