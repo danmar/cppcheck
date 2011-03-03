@@ -1791,10 +1791,6 @@ void Tokenizer::simplifyTypedef()
                             if (!inCast && !inSizeof)
                                 tok2 = tok2->next();
 
-                            // skip over reference
-                            if (tok2->str() == "&")
-                                tok2 = tok2->next();
-
                             tok2 = copyTokens(tok2, arrayStart, arrayEnd);
                             tok2 = tok2->next();
 

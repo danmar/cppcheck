@@ -243,7 +243,6 @@ private:
         TEST_CASE(simplifyTypedef80); // ticket #2587
         TEST_CASE(simplifyTypedef81); // ticket #2603
         TEST_CASE(simplifyTypedef82); // ticket #2403
-        TEST_CASE(simplifyTypedef83); // ticket #2620
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4960,17 +4959,6 @@ private:
                              "  b->f = new A::F * [ 10 ];\n"
                              "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void simplifyTypedef83() // ticket #2620
-    {
-        const char code[] = "typedef char Str[10];\n"
-                            "void f(Str &cl) { }\n";
-
-        // The expected result..
-        const std::string expected("; "
-                                   "void f ( char & cl [ 10 ] ) { }");
-        ASSERT_EQUALS(expected, sizeof_(code));
     }
 
     void simplifyTypedefFunction1()
