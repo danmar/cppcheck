@@ -92,6 +92,11 @@ private:
 
         TEST_CASE(error3);
 
+        TEST_CASE(if0_exclude);
+        TEST_CASE(if0_whitespace);
+        TEST_CASE(if0_else);
+        TEST_CASE(if0_elif);
+
         // Don't handle include in a #if 0 block
         TEST_CASE(if0_include_1);
         TEST_CASE(if0_include_2);
@@ -641,6 +646,74 @@ private:
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
     }
 
+    void if0_exclude()
+    {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream code("#if 0\n"
+                                "A\n"
+                                "#endif\n"
+                                "B\n");
+        ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code,"",NULL));
+
+        std::istringstream code2("#if (0)\n"
+                                 "A\n"
+                                 "#endif\n"
+                                 "B\n");
+        ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code2,"",NULL));
+    }
+
+    void if0_whitespace()
+    {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream code(" # if  0 \n"
+                                "A\n"
+                                " # endif \n"
+                                "B\n");
+        ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code,"",NULL));
+    }
+
+    void if0_else()
+    {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream code("#if 0\n"
+                                "A\n"
+                                "#else\n"
+                                "B\n"
+                                "#endif\n"
+                                "C\n");
+        ASSERT_EQUALS("#if 0\n\n#else\nB\n#endif\nC\n", preprocessor.read(code,"",NULL));
+
+        std::istringstream code2("#if 1\n"
+                                 "A\n"
+                                 "#else\n"
+                                 "B\n"
+                                 "#endif\n"
+                                 "C\n");
+        TODO_ASSERT_EQUALS("#if 1\nA\n#else\n\n#endif\nC\n",
+                           "#if 1\nA\n#else\nB\n#endif\nC\n", preprocessor.read(code2,"",NULL));
+    }
+
+    void if0_elif()
+    {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream code("#if 0\n"
+                                "A\n"
+                                "#elif 1\n"
+                                "B\n"
+                                "#endif\n"
+                                "C\n");
+        TODO_ASSERT_EQUALS("#if 0\n\n#elif 1\nB\n#endif\nC\n",
+                           "#if 0\n\n\n\n#endif\nC\n", preprocessor.read(code,"",NULL));
+    }
+
     void if0_include_1()
     {
         Settings settings;
@@ -650,7 +723,7 @@ private:
                                 "#include \"a.h\"\n"
                                 "#endif\n"
                                 "AB\n");
-        ASSERT_EQUALS("\n\n\nAB\n", preprocessor.read(code,"",NULL));
+        ASSERT_EQUALS("#if 0\n\n#endif\nAB\n", preprocessor.read(code,"",NULL));
     }
 
     void if0_include_2()
@@ -665,7 +738,7 @@ private:
                                 "#endif\n"
                                 "#endif\n"
                                 "AB\n");
-        ASSERT_EQUALS("\n\n\n\n\n\nAB\n", preprocessor.read(code,"",NULL));
+        ASSERT_EQUALS("#if 0\n\n#ifdef WIN32\n#else\n#endif\n#endif\nAB\n", preprocessor.read(code,"",NULL));
     }
 
     void includeguard1()

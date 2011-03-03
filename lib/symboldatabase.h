@@ -500,6 +500,11 @@ public:
         return _variableList[varId];
     }
 
+    /**
+     * @brief output a debug message
+     */
+    void debugMessage(const Token *tok, const std::string &msg) const;
+
 private:
 
     // Needed by Borland C++:

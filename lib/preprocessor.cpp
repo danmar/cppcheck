@@ -178,10 +178,6 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
     // Remove all comments..
     result = removeComments(result, filename, settings);
 
-    // Remove '#if 0' blocks
-    if (result.find("#if 0\n") != std::string::npos)
-        result = removeIf0(result);
-
     // ------------------------------------------------------------------------------------------
     //
     // Clean up all preprocessor statements
@@ -191,6 +187,10 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
     //
     // Clean up preprocessor #if statements with Parantheses
     result = removeParantheses(result);
+
+    // Remove '#if 0' blocks
+    if (result.find("#if 0\n") != std::string::npos)
+        result = removeIf0(result);
 
     return result;
 }
@@ -563,19 +563,33 @@ std::string Preprocessor::removeIf0(const std::string &code)
         else
         {
             // replace '#if 0' with empty line
-            ret << "\n";
+            ret << line << "\n";
 
             // goto the end of the '#if 0' block
             unsigned int level = 1;
+            bool in = false;
             while (level > 0 && std::getline(istr,line))
             {
                 if (line.compare(0,3,"#if") == 0)
                     ++level;
                 else if (line == "#endif")
                     --level;
+                else if (line == "#else")
+                {
+                    if (level == 1)
+                        in = true;
+                }
+                else
+                {
+                    if (in)
+                        ret << line << "\n";
+                    else
+                        // replace code within '#if 0' block with empty lines
+                        ret << "\n";
+                    continue;
+                }
 
-                // replace code within '#if 0' block with empty lines
-                ret << "\n";
+                ret << line << "\n";
             }
         }
     }

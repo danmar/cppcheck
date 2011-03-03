@@ -80,6 +80,7 @@ private:
         TEST_CASE(ifAddBraces12);
         TEST_CASE(ifAddBraces13);
         TEST_CASE(ifAddBraces14);	// #2610 - segfault: if()<{}
+        TEST_CASE(ifAddBraces15);	// #2616 - unknown macro before if
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -305,7 +306,10 @@ private:
         // Tokenize JAVA
         TEST_CASE(java);
 
-        TEST_CASE(simplifyOperatorName);
+        TEST_CASE(simplifyOperatorName1);
+        TEST_CASE(simplifyOperatorName2);
+        TEST_CASE(simplifyOperatorName3);
+        TEST_CASE(simplifyOperatorName4);
 
         // Some simple cleanups of unhandled macros in the global scope
         TEST_CASE(removeMacrosInGlobalScope);
@@ -856,6 +860,12 @@ private:
     {
         // ticket #2610 (segfault)
         tokenizeAndStringify("if()<{}", false);
+    }
+
+    void ifAddBraces15()
+    {
+        // ticket #2616 - unknown macro before if
+        ASSERT_EQUALS("{ A if ( x ) { y ( ) ; } }", tokenizeAndStringify("{A if(x)y();}", false));
     }
 
 
@@ -2043,17 +2053,45 @@ private:
 
     void simplifyKnownVariables42()
     {
-        const char code[] = "void f() {\n"
-                            "    char str1[10], str2[10];\n"
-                            "    strcpy(str1, \"abc\");\n"
-                            "    strcpy(str2, str1);\n"
-                            "}";
-        const char expected[] = "void f ( ) {\n"
-                                "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
-                                "strcpy ( str1 , \"abc\" ) ;\n"
-                                "strcpy ( str2 , \"abc\" ) ;\n"
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[10], str2[10];\n"
+                                "    strcpy(str1, \"abc\");\n"
+                                "    strcpy(str2, str1);\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                    "strcpy ( str1 , \"abc\" ) ;\n"
+                                    "strcpy ( str2 , \"abc\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "void f() {"
+                                "    char *s = malloc(10);"
+                                "    strcpy(s, \"\");"
+                                "    free(s);"
+                                "}";
+            const char expected[] = "void f ( ) {"
+                                    " char * s ; s = malloc ( 10 ) ;"
+                                    " strcpy ( s , \"\" ) ;"
+                                    " free ( s ) ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "void f(char *p, char *q) {"
+                                "    strcpy(p, \"abc\");"
+                                "    q = p;"
+                                "}";
+            const char expected[] = "void f ( char * p , char * q ) {"
+                                    " strcpy ( p , \"abc\" ) ;"
+                                    " q = p ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
     }
 
     void simplifyKnownVariablesBailOutAssign()
@@ -5118,6 +5156,12 @@ private:
 
         const char code3[] = "struct A { bool : true; };";
         ASSERT_EQUALS("struct A { } ;", tokenizeAndStringify(code3,false));
+
+        const char code4[] = "void f(int a) { switch (a) { case b: break; } }";
+        ASSERT_EQUALS("void f ( int a ) { switch ( a ) { case b : ; break ; } }", tokenizeAndStringify(code4,true));
+
+        const char code5[] = "void f(int a) { switch (a) { default: break; } }";
+        ASSERT_EQUALS("void f ( int a ) { switch ( a ) { default : ; break ; } }", tokenizeAndStringify(code5,true));
     }
 
     void microsoftMFC()
@@ -5312,36 +5356,56 @@ private:
         ASSERT_EQUALS("void f ( ) { }", javatest("void f() throws Exception { }"));
     }
 
-    void simplifyOperatorName()
+    void simplifyOperatorName1()
     {
         // make sure C code doesn't get changed
-        const char code1[] = "void operator () {}"
-                             "int main()"
-                             "{"
-                             "    operator();"
-                             "}";
+        const char code[] = "void operator () {}"
+                            "int main()"
+                            "{"
+                            "    operator();"
+                            "}";
 
-        const char result1 [] = "void operator ( ) { } "
-                                "int main ( ) "
-                                "{ "
-                                "operator ( ) ; "
-                                "}";
+        const char result [] = "void operator ( ) { } "
+                               "int main ( ) "
+                               "{ "
+                               "operator ( ) ; "
+                               "}";
 
-        ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
+        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
+    }
 
-        const char code2[] = "class Fred"
-                             "{"
-                             "    Fred(const Fred & f) { operator = (f); }"
-                             "    operator = ();"
-                             "}";
+    void simplifyOperatorName2()
+    {
+        const char code[] = "class Fred"
+                            "{"
+                            "    Fred(const Fred & f) { operator = (f); }"
+                            "    operator = ();"
+                            "}";
 
-        const char result2 [] = "class Fred "
-                                "{ "
-                                "Fred ( const Fred & f ) { operator= ( f ) ; } "
-                                "operator= ( ) ; "
-                                "}";
+        const char result [] = "class Fred "
+                               "{ "
+                               "Fred ( const Fred & f ) { operator= ( f ) ; } "
+                               "operator= ( ) ; "
+                               "}";
 
-        ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
+        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
+    }
+
+    void simplifyOperatorName3()
+    {
+        // #2615
+        const char code[] = "void f() {"
+                            "static_cast<ScToken*>(xResult.operator->())->GetMatrix();"
+                            "}";
+        const char result[] = "void f ( ) { static_cast < ScToken * > ( xResult . operator. ( ) ) . GetMatrix ( ) ; }";
+        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
+    }
+
+    void simplifyOperatorName4()
+    {
+        const char code[] = "void operator==() { }";
+        const char result[] = "void operator== ( ) { }";
+        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
     }
 
     void removeMacrosInGlobalScope()

@@ -98,7 +98,7 @@ QStringList ProjectFileDialog::GetIncludePaths() const
         QListWidgetItem *item = mUI.mListIncludeDirs->item(i);
         includePaths << QDir::fromNativeSeparators(item->text());
     }
-                 return includePaths;
+    return includePaths;
 }
 
 QStringList ProjectFileDialog::GetDefines() const
