@@ -623,22 +623,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             scope = *it;
 
             if (scope->isClassOrStruct() && scope->needInitialization == Scope::Unknown)
-            {
-                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.line = scope->classDef->linenr();
-                loc.setfile(_tokenizer->file(scope->classDef));
-                locationList.push_back(loc);
-
-                const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                       Severity::debug,
-                                                       "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.",
-                                                       "debug");
-                if (_errorLogger)
-                    _errorLogger->reportErr(errmsg);
-                else
-                    Check::reportError(errmsg);
-            }
+                debugMessage(scope->classDef, "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.");
         }
     }
 
@@ -1078,6 +1063,27 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
     return tok2;
 }
 
+void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) const
+{
+    if (tok && _settings->debugwarnings)
+    {
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok->linenr();
+        loc.setfile(_tokenizer->file(tok));
+        locationList.push_back(loc);
+
+        const ErrorLogger::ErrorMessage errmsg(locationList,
+                                               Severity::debug,
+                                               msg,
+                                               "debug");
+        if (_errorLogger)
+            _errorLogger->reportErr(errmsg);
+        else
+            Check::reportError(errmsg);
+    }
+}
+
 //---------------------------------------------------------------------------
 
 unsigned int Function::argCount() const
@@ -1124,6 +1130,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         const Token *endTok;
         const Token *nameTok;
         bool isConstVar;
+        bool isArrayVar;
         const Token *tok = arg->next();
         for (;;)
         {
@@ -1131,6 +1138,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             endTok = NULL;
             nameTok = NULL;
             isConstVar = bool(tok->str() == "const");
+            isArrayVar = false;
 
             while (tok->str() != "," && tok->str() != ")")
             {
@@ -1139,12 +1147,28 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                     nameTok = tok;
                     endTok = tok->previous();
                 }
+                else if (tok->str() == "[")
+                    isArrayVar = true;
+
                 tok = tok->next();
             }
 
-            // check for argument with no name
+            // check for argument with no name or missing varid
             if (!endTok)
-                endTok = tok->previous();
+            {
+                if (tok->previous()->isName())
+                {
+                    if (tok->previous() != startTok->tokAt(isConstVar ? 1 : 0))
+                    {
+                        nameTok = tok->previous();
+                        endTok = nameTok->previous();
+
+                        symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
+                    }
+                }
+                else
+                    endTok = tok->previous();
+            }
 
             const Token *typeTok = startTok;
             if (isConstVar)
@@ -1156,7 +1180,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             bool isClassVar = startTok == endTok && !startTok->isStandardType();
 
-            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, scope, false));
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, scope, isArrayVar));
 
             if (tok->str() == ")")
                 break;
@@ -1429,23 +1453,8 @@ void Scope::getVariableList()
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         if (vartok && vartok->str() != "operator")
         {
-            if (vartok->varId() == 0 && !vartok->isBoolean() && check->_settings->debugwarnings)
-            {
-                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.line = vartok->linenr();
-                loc.setfile(check->_tokenizer->file(vartok));
-                locationList.push_back(loc);
-
-                const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                       Severity::debug,
-                                                       "Scope::getVariableList found variable \'" + vartok->str() + "\' with varid 0.",
-                                                       "debug");
-                if (check->_errorLogger)
-                    check->_errorLogger->reportErr(errmsg);
-                else
-                    Check::reportError(errmsg);
-            }
+            if (vartok->varId() == 0 && !vartok->isBoolean())
+                check->debugMessage(vartok, "Scope::getVariableList found variable \'" + vartok->str() + "\' with varid 0.");
 
             const Scope *scope = NULL;
 
