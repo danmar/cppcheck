@@ -266,7 +266,6 @@ void CheckAutoVariables::returnPointerToLocalArray()
             tok2 = tok2->next()->link();
 
             unsigned int indentlevel = 0;
-            std::set<unsigned int> arrayVar;
             for (; tok2; tok2 = tok2->next())
             {
                 // indentlevel..
@@ -279,21 +278,13 @@ void CheckAutoVariables::returnPointerToLocalArray()
                     --indentlevel;
                 }
 
-                // Declaring a local array..
-                if (Token::Match(tok2, "[;{}] %type% %var% ["))
-                {
-                    const unsigned int varid = tok2->tokAt(2)->varId();
-                    if (varid > 0)
-                    {
-                        arrayVar.insert(varid);
-                    }
-                }
-
                 // Return pointer to local array variable..
                 if (Token::Match(tok2, "return %var% ;"))
                 {
                     const unsigned int varid = tok2->next()->varId();
-                    if (varid > 0 && arrayVar.find(varid) != arrayVar.end())
+                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+
+                    if (var && var->isLocal() && !var->isStatic() && var->isArray())
                     {
                         errorReturnPointerToLocalArray(tok2);
                     }
@@ -361,7 +352,6 @@ void CheckAutoVariables::returnReference()
             tok2 = tok2->link();
 
             unsigned int indentlevel = 0;
-            std::set<unsigned int> localvar;    // local variables in function
             for (; tok2; tok2 = tok2->next())
             {
                 // indentlevel..
@@ -374,33 +364,14 @@ void CheckAutoVariables::returnReference()
                     --indentlevel;
                 }
 
-                // declare local variable..
-                if (Token::Match(tok2, "[{};] %type%") && tok2->next()->str() != "return")
-                {
-                    // goto next token..
-                    tok2 = tok2->next();
-
-                    // skip "const"
-                    if (Token::Match(tok2, "const %type%"))
-                        tok2 = tok2->next();
-
-                    // skip "std::" if it is seen
-                    if (Token::simpleMatch(tok2, "std ::"))
-                        tok2 = tok2->tokAt(2);
-
-                    // is it a variable declaration?
-                    if (Token::Match(tok2, "%type% %var% ;"))
-                        localvar.insert(tok2->next()->varId());
-                    else if (Token::Match(tok2, "%type% < %any% > %var% ;"))
-                        localvar.insert(tok2->tokAt(4)->varId());
-                }
-
                 // return..
-                else if (Token::Match(tok2, "return %var% ;"))
+                if (Token::Match(tok2, "return %var% ;"))
                 {
                     // is the returned variable a local variable?
-                    if ((tok2->next()->varId() > 0) &&
-                        (localvar.find(tok2->next()->varId()) != localvar.end()))
+                    const unsigned int varid = tok2->next()->varId();
+                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+
+                    if (var && var->isLocal() && !var->isStatic())
                     {
                         // report error..
                         errorReturnReference(tok2);
@@ -462,7 +433,6 @@ void CheckAutoVariables::returncstr()
             tok2 = tok2->next()->link();
 
             unsigned int indentlevel = 0;
-            std::set<unsigned int> localvar;    // local variables in function
             for (; tok2; tok2 = tok2->next())
             {
                 // indentlevel..
@@ -475,31 +445,14 @@ void CheckAutoVariables::returncstr()
                     --indentlevel;
                 }
 
-                // declare local variable..
-                if (Token::Match(tok2, "[{};] %type%") && tok2->next()->str() != "return")
-                {
-                    // goto next token..
-                    tok2 = tok2->next();
-
-                    // skip "const"
-                    if (Token::Match(tok2, "const %type%"))
-                        tok2 = tok2->next();
-
-                    // skip "std::" if it is seen
-                    if (Token::simpleMatch(tok2, "std ::"))
-                        tok2 = tok2->tokAt(2);
-
-                    // is it a variable declaration?
-                    if (Token::Match(tok2, "%type% %var% [;=]"))
-                        localvar.insert(tok2->next()->varId());
-                }
-
                 // return..
-                else if (Token::Match(tok2, "return %var% . c_str ( ) ;"))
+                if (Token::Match(tok2, "return %var% . c_str ( ) ;"))
                 {
                     // is the returned variable a local variable?
-                    if ((tok2->next()->varId() > 0) &&
-                        (localvar.find(tok2->next()->varId()) != localvar.end()))
+                    const unsigned int varid = tok2->next()->varId();
+                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+
+                    if (var && var->isLocal() && !var->isStatic())
                     {
                         // report error..
                         errorReturnAutocstr(tok2);
