@@ -198,6 +198,7 @@ private:
         Tokenizer tokenizer(&settings, &logger);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
+        tokenizer.simplifyGoto();
 
         // Check..
         CheckOther checkOther(&tokenizer, &settings, &logger);
@@ -1428,6 +1429,26 @@ private:
             "    }\n"
             "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "    case 1:\n"
+            "        goto leave;\n"
+            "    case 2:\n"
+            "        break;\n"
+            "    }\n"
+            "leave:\n"
+            "    if (x) {\n"
+            "        g();\n"
+            "        return;\n"
+            "    }\n"
+            "}\n");
+        // This fails because Tokenizer::simplifyGoto() copies the "leave:" block
+        // into where the goto is, but because it contains a "return", it omits
+        // copying a final return after the block.
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:5]: (warning) Switch falls through case without comment\n", errout.str());
     }
 
     void selfAssignment()
