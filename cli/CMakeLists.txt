@@ -1,4 +1,5 @@
 # Minimal CMake build file to build cppcheck command line executable
+find_package(PCRE REQUIRED)
 
 SET(CHECKCLI_SRCS
   cppcheckexecutor.cpp

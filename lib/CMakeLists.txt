@@ -3,6 +3,8 @@
 # - cli
 # - tests
 # - Qt GUI
+find_package(PCRE REQUIRED)
+include_directories("${PCRE_INCLUDE_DIR}")
 
 SET(CHECKLIB_SRCS
   checkautovariables.cpp
@@ -33,3 +35,4 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 ADD_LIBRARY(checklib STATIC ${CHECKLIB_SRCS})
+target_link_libraries(checklib ${PCRE_LIBRARIES})
