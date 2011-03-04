@@ -90,6 +90,7 @@ public:
         checkOther.checkIncorrectStringCompare();
         checkOther.checkIncrementBoolean();
         checkOther.checkComparisonOfBoolWithInt();
+        checkOther.checkSwitchCaseFallThrough();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -162,6 +163,9 @@ public:
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
 
+    /** @brief %Check for switch case fall through without comment */
+    void checkSwitchCaseFallThrough();
+
     /** @brief %Check for assigning a variable to itself*/
     void checkSelfAssignment();
 
@@ -209,6 +213,7 @@ public:
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
+    void switchCaseFallThrough(const Token *tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
     void incorrectLogicOperatorError(const Token *tok);
@@ -247,6 +252,7 @@ public:
         c.sizeofsizeofError(0);
         c.sizeofCalculationError(0);
         c.redundantAssignmentInSwitchError(0, "varname");
+        c.switchCaseFallThrough(0);
         c.selfAssignmentError(0, "varname");
         c.assignmentInAssertError(0, "varname");
         c.invalidScanfError(0);

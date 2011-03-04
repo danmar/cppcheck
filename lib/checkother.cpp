@@ -24,6 +24,7 @@
 
 #include <cctype> // std::isupper
 #include <cmath> // fabs()
+#include <stack>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -298,6 +299,173 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             //    case 3: b = 1; break;
             if (Token::Match(tok2, functionPattern) || Token::Match(tok2, breakPattern))
                 varsAssigned.clear();
+
+        }
+
+        tok = Token::findmatch(tok->next(), switchPattern);
+    }
+}
+
+
+void CheckOther::checkSwitchCaseFallThrough()
+{
+    const char switchPattern[] = "switch (";
+    const char breakPattern[] = "break|continue|return|exit|goto";
+
+    // Find the beginning of a switch. E.g.:
+    //   switch (var) { ...
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), switchPattern);
+    while (tok)
+    {
+
+        // Check the contents of the switch statement
+        std::stack<std::pair<Token *, bool> > ifnest;
+        std::stack<Token *> loopnest;
+        std::stack<Token *> scopenest;
+        bool justbreak = true;
+        bool firstcase = true;
+        for (const Token *tok2 = tok->tokAt(1)->link()->tokAt(2); tok2; tok2 = tok2->next())
+        {
+            if (Token::Match(tok2, "if ("))
+            {
+                tok2 = tok2->tokAt(1)->link()->next();
+                if (tok2->link() == NULL)
+                {
+                    std::ostringstream errmsg;
+                    errmsg << "unmatched if in switch: " << tok2->linenr();
+                    reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
+                    break;
+                }
+                ifnest.push(std::make_pair(tok2->link(), false));
+                justbreak = false;
+            }
+            else if (Token::Match(tok2, "while ("))
+            {
+                tok2 = tok2->tokAt(1)->link()->next();
+                // skip over "do { } while ( ) ;" case
+                if (tok2->str() == "{")
+                {
+                    if (tok2->link() == NULL)
+                    {
+                        std::ostringstream errmsg;
+                        errmsg << "unmatched while in switch: " << tok2->linenr();
+                        reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
+                        break;
+                    }
+                    loopnest.push(tok2->link());
+                }
+                justbreak = false;
+            }
+            else if (Token::Match(tok2, "do {"))
+            {
+                tok2 = tok2->tokAt(1);
+                if (tok2->link() == NULL)
+                {
+                    std::ostringstream errmsg;
+                    errmsg << "unmatched do in switch: " << tok2->linenr();
+                    reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
+                    break;
+                }
+                loopnest.push(tok2->link());
+                justbreak = false;
+            }
+            else if (Token::Match(tok2, "for ("))
+            {
+                tok2 = tok2->tokAt(1)->link()->next();
+                if (tok2->link() == NULL)
+                {
+                    std::ostringstream errmsg;
+                    errmsg << "unmatched for in switch: " << tok2->linenr();
+                    reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
+                    break;
+                }
+                loopnest.push(tok2->link());
+                justbreak = false;
+            }
+            else if (Token::Match(tok2, switchPattern))
+            {
+                // skip over nested switch, we'll come to that soon
+                tok2 = tok2->tokAt(1)->link()->next()->link();
+            }
+            else if (Token::Match(tok2, breakPattern))
+            {
+                if (loopnest.empty())
+                {
+                    justbreak = true;
+                }
+                tok2 = Token::findmatch(tok2, ";");
+            }
+            else if (Token::Match(tok2, "case|default"))
+            {
+                if (!justbreak && !firstcase)
+                {
+                    switchCaseFallThrough(tok2);
+                }
+                tok2 = Token::findmatch(tok2, ":");
+                justbreak = true;
+                firstcase = false;
+            }
+            else if (tok2->str() == "{")
+            {
+                scopenest.push(tok2->link());
+            }
+            else if (tok2->str() == "}")
+            {
+                if (!ifnest.empty() && tok2 == ifnest.top().first)
+                {
+                    if (tok2->next()->str() == "else")
+                    {
+                        tok2 = tok2->tokAt(2);
+                        ifnest.pop();
+                        if (tok2->link() == NULL)
+                        {
+                            std::ostringstream errmsg;
+                            errmsg << "unmatched if in switch: " << tok2->linenr();
+                            reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
+                            break;
+                        }
+                        ifnest.push(std::make_pair(tok2->link(), justbreak));
+                        justbreak = false;
+                    }
+                    else
+                    {
+                        justbreak &= ifnest.top().second;
+                        ifnest.pop();
+                    }
+                }
+                else if (!loopnest.empty() && tok2 == loopnest.top())
+                {
+                    loopnest.pop();
+                }
+                else if (!scopenest.empty() && tok2 == scopenest.top())
+                {
+                    scopenest.pop();
+                }
+                else
+                {
+                    if (!ifnest.empty() || !loopnest.empty() || !scopenest.empty())
+                    {
+                        std::ostringstream errmsg;
+                        errmsg << "unexpected end of switch: ";
+                        errmsg << "ifnest=" << ifnest.size();
+                        if (!ifnest.empty())
+                            errmsg << "," << ifnest.top().first->linenr();
+                        errmsg << ", loopnest=" << loopnest.size();
+                        if (!loopnest.empty())
+                            errmsg << "," << loopnest.top()->linenr();
+                        errmsg << ", scopenest=" << scopenest.size();
+                        if (!scopenest.empty())
+                            errmsg << "," << scopenest.top()->linenr();
+                        reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
+                    }
+                    // end of switch block
+                    break;
+                }
+            }
+            else if (tok2->str() != ";")
+            {
+                justbreak = false;
+            }
 
         }
 
@@ -2996,6 +3164,12 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::s
 {
     reportError(tok, Severity::warning,
                 "redundantAssignInSwitch", "Redundant assignment of \"" + varname + "\" in switch");
+}
+
+void CheckOther::switchCaseFallThrough(const Token *tok)
+{
+    reportError(tok, Severity::warning,
+                "switchCaseFallThrough", "Switch falls through case without comment");
 }
 
 void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)
