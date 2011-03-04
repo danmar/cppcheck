@@ -326,6 +326,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     unsigned int newlines = 0;
     std::ostringstream code;
     unsigned char previous = 0;
+    bool inPreprocessorLine = false;
     std::vector<std::string> suppressionIDs;
 
     for (std::string::size_type i = hasbom(str) ? 3U : 0U; i < str.length(); ++i)
@@ -370,6 +371,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             // if there has been <backspace><newline> sequences, add extra newlines..
             if (ch == '\n')
             {
+                if (previous != '\\')
+                    inPreprocessorLine = false;
                 ++lineno;
                 if (newlines > 0)
                 {
@@ -449,25 +452,35 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 }
             }
         }
+        else if (ch == '#' && previous == '\n')
+        {
+            code << ch;
+            previous = ch;
+            inPreprocessorLine = true;
+        }
         else
         {
-            // Not whitespace and not a comment. Must be code here!
-            // Add any pending inline suppressions that have accumulated.
-            if (!suppressionIDs.empty())
+            if (!inPreprocessorLine)
             {
-                if (settings != NULL)
+                // Not whitespace, not a comment, and not preprocessor.
+                // Must be code here!
+                // Add any pending inline suppressions that have accumulated.
+                if (!suppressionIDs.empty())
                 {
-                    // Add the suppressions.
-                    for (size_t j(0); j < suppressionIDs.size(); ++j)
+                    if (settings != NULL)
                     {
-                        const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
-                        if (!errmsg.empty())
+                        // Add the suppressions.
+                        for (size_t j(0); j < suppressionIDs.size(); ++j)
                         {
-                            writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
+                            const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
+                            if (!errmsg.empty())
+                            {
+                                writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
+                            }
                         }
                     }
+                    suppressionIDs.clear();
                 }
-                suppressionIDs.clear();
             }
 
             // String or char constants..

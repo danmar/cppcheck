@@ -1414,6 +1414,20 @@ private:
         // (no pun intended).
         TODO_ASSERT_EQUALS("",
                            "[test.cpp:11]: (warning) Switch falls through case without comment\n", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "    case 1:\n"
+            "#ifndef A\n"
+            "        g();\n"
+            "        // fall through\n"
+            "#endif\n"
+            "    case 2:\n"
+            "        break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void selfAssignment()
