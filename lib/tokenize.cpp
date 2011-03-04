@@ -1791,6 +1791,17 @@ void Tokenizer::simplifyTypedef()
                             if (!inCast && !inSizeof)
                                 tok2 = tok2->next();
 
+                            // reference to array?
+                            if (tok2->str() == "&")
+                            {
+                                tok2 = tok2->previous();
+                                tok2->insertToken("(");
+                                tok2 = tok2->tokAt(3);
+                                tok2->insertToken(")");
+                                tok2 = tok2->next();
+                                Token::createMutualLinks(tok2, tok2->tokAt(-3));
+                            }
+
                             tok2 = copyTokens(tok2, arrayStart, arrayEnd);
                             tok2 = tok2->next();
 
