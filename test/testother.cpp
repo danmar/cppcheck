@@ -1393,6 +1393,27 @@ private:
             "    }\n"
             "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "    case 1:\n"
+            "        g();\n"
+            "        switch (b) {\n"
+            "            case 1:\n"
+            "                return;\n"
+            "            default:\n"
+            "                return;\n"
+            "        }\n"
+            "    case 2:\n"
+            "        break;\n"
+            "    }\n"
+            "}\n");
+        // This fails because the switch parsing code currently doesn't understand
+        // that all paths after g() actually return. It's a pretty unusual case
+        // (no pun intended).
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:11]: (warning) Switch falls through case without comment\n", errout.str());
     }
 
     void selfAssignment()
