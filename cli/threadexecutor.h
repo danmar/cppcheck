@@ -25,6 +25,10 @@
 #include "settings.h"
 #include "errorlogger.h"
 
+#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
+#define THREADING_MODEL_FORK
+#endif
+
 /// @addtogroup CLI
 /// @{
 
@@ -59,7 +63,7 @@ private:
     /** @brief Key is file name, and value is the content of the file */
     std::map<std::string, std::string> _fileContents;
 
-#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
+#ifdef THREADING_MODEL_FORK
 private:
     /**
      * Read from the pipe, parse and handle what ever is in there.

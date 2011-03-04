@@ -20,7 +20,7 @@
 #include "cppcheck.h"
 #include <iostream>
 #include <algorithm>
-#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
+#ifdef THREADING_MODEL_FORK
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -34,7 +34,7 @@
 ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, Settings &settings, ErrorLogger &errorLogger)
     : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
-#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
+#ifdef THREADING_MODEL_FORK
     _pipe[0] = _pipe[1] = 0;
 #endif
 }
@@ -50,10 +50,10 @@ void ThreadExecutor::addFileContent(const std::string &path, const std::string &
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-////// This code is for __GNUC__ and __sun only ///////////////////////////////
+////// This code is for platforms that support fork() only ////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
+#ifdef THREADING_MODEL_FORK
 
 int ThreadExecutor::handleRead(unsigned int &result)
 {
