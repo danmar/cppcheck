@@ -13,4 +13,7 @@
         <dir name="gui/"/>
         <dir name="test/"/>
     </paths>
+    <ignore>
+        <path name="gui/temp/"/>
+    </ignore>
 </project>
