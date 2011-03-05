@@ -1239,7 +1239,7 @@ private:
             "            break;\n"
             "    }\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Switch falls through case without comment\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Switch falls through case without comment\n", errout.str());
 
         check_preprocess_suppress(
             "void foo() {\n"
@@ -1250,7 +1250,7 @@ private:
             "            break;\n"
             "    }\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Switch falls through case without comment\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Switch falls through case without comment\n", errout.str());
 
         check_preprocess_suppress(
             "void foo() {\n"
@@ -1313,7 +1313,7 @@ private:
             "            break;\n"
             "    }\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Switch falls through case without comment\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Switch falls through case without comment\n", errout.str());
 
         check_preprocess_suppress(
             "void foo() {\n"
@@ -1342,7 +1342,7 @@ private:
             "            break;\n"
             "    }\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Switch falls through case without comment\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Switch falls through case without comment\n", errout.str());
 
         check_preprocess_suppress(
             "void foo() {\n"
@@ -1355,7 +1355,7 @@ private:
             "            break;\n"
             "    }\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Switch falls through case without comment\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Switch falls through case without comment\n", errout.str());
 
         check_preprocess_suppress(
             "void foo() {\n"
@@ -1369,7 +1369,7 @@ private:
             "            break;\n"
             "    }\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Switch falls through case without comment\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Switch falls through case without comment\n", errout.str());
 
         check_preprocess_suppress(
             "void foo() {\n"
@@ -1383,7 +1383,7 @@ private:
             "            break;\n"
             "    }\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Switch falls through case without comment\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Switch falls through case without comment\n", errout.str());
 
         check_preprocess_suppress(
             "void foo() {\n"
@@ -1414,7 +1414,7 @@ private:
         // that all paths after g() actually return. It's a pretty unusual case
         // (no pun intended).
         TODO_ASSERT_EQUALS("",
-                           "[test.cpp:11]: (warning) Switch falls through case without comment\n", errout.str());
+                           "[test.cpp:11]: (style) Switch falls through case without comment\n", errout.str());
 
         check_preprocess_suppress(
             "void foo() {\n"
@@ -1448,7 +1448,7 @@ private:
         // into where the goto is, but because it contains a "return", it omits
         // copying a final return after the block.
         TODO_ASSERT_EQUALS("",
-                           "[test.cpp:5]: (warning) Switch falls through case without comment\n", errout.str());
+                           "[test.cpp:5]: (style) Switch falls through case without comment\n", errout.str());
 
         check_preprocess_suppress(
             "void foo() {\n"

@@ -410,7 +410,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 }
             }
 
-            if (isFallThroughComment(comment))
+            if (_settings->_checkCodingStyle && isFallThroughComment(comment))
             {
                 suppressionIDs.push_back("switchCaseFallThrough");
             }
@@ -437,7 +437,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             }
             std::string comment(str, commentStart, i - commentStart - 1);
 
-            if (isFallThroughComment(comment))
+            if (_settings->_checkCodingStyle && isFallThroughComment(comment))
             {
                 suppressionIDs.push_back("switchCaseFallThrough");
             }

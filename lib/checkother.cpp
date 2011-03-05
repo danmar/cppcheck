@@ -309,6 +309,9 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 
 void CheckOther::checkSwitchCaseFallThrough()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     const char switchPattern[] = "switch (";
     const char breakPattern[] = "break|continue|return|exit|goto";
 
@@ -3168,7 +3171,7 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::s
 
 void CheckOther::switchCaseFallThrough(const Token *tok)
 {
-    reportError(tok, Severity::warning,
+    reportError(tok, Severity::style,
                 "switchCaseFallThrough", "Switch falls through case without comment");
 }
 
