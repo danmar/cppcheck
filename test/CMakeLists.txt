@@ -1,7 +1,7 @@
 # Minimal CMake build file to build cppcheck test suite
 find_package(PCRE REQUIRED)
 
-SET(CHECKTEST_SRCS
+SET(CPPCHECK_TEST_SOURCES
   testmemleak.cpp
   testother.cpp
   testpreprocessor.cpp
@@ -38,9 +38,7 @@ aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
 
 # Windows needs additional shlwapi library
 if (WIN32 AND NOT CYGWIN)
-set(CHECK_LIBS
-  ${CHECK_LIBS}
-  shlwapi
+  set(CPPCHECK_TEST_LINK_LIBRARIES ${CPPCHECK_TEST_LINK_LIBRARIES} shlwapi
 )
 endif (WIN32 AND NOT CYGWIN)
 
@@ -49,8 +47,8 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories("${CPPCHECK_SOURCE_DIR}/lib" "${PCRE_INCLUDE_DIR}")
-ADD_EXECUTABLE(test ${CHECKTEST_SRCS} ${LIB_SRCS})
-TARGET_LINK_LIBRARIES(test ${CHECK_LIBS} ${PCRE_LIBRARIES})
+ADD_EXECUTABLE(test ${CPPCHECK_TEST_SOURCES} ${LIB_SRCS})
+TARGET_LINK_LIBRARIES(test ${CPPCHECK_TEST_LINK_LIBRARIES} ${PCRE_LIBRARIES})
 
 # Add custom 'make check' -target
 # It compiles and runs tests

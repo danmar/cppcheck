@@ -1,7 +1,7 @@
 # Minimal CMake build file to build cppcheck command line executable
 find_package(PCRE REQUIRED)
 
-SET(CHECKCLI_SRCS
+SET(CPPCHECK_CLI_SOURCES
   cppcheckexecutor.cpp
   threadexecutor.cpp
   main.cpp
@@ -16,11 +16,11 @@ aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
 
 if(WIN32)
    # Add Windows resource file
-   set(CHECKCLI_SRCS ${CHECKCLI_SRCS} cppcheck.rc)
+   set(CPPCHECK_CLI_SOURCES ${CPPCHECK_CLI_SOURCES} cppcheck.rc)
 
    if(NOT CYGWIN)
       # Windows needs additional shlwapi library.
-      set(CHECK_LIBS ${CHECK_LIBS} shlwapi)
+      set(CPPCHECK_CLI_LINK_LIBRARIES ${CPPCHECK_CLI_LINK_LIBRARIES} shlwapi)
    endif()
 endif()
 
@@ -29,5 +29,5 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories (${CPPCHECK_SOURCE_DIR}/lib)
-ADD_EXECUTABLE(cppcheck ${CHECKCLI_SRCS} ${LIB_SRCS})
-TARGET_LINK_LIBRARIES(cppcheck ${CHECK_LIBS})
+ADD_EXECUTABLE(cppcheck ${CPPCHECK_CLI_SOURCES} ${LIB_SRCS})
+TARGET_LINK_LIBRARIES(cppcheck ${CPPCHECK_CLI_LINK_LIBRARIES})

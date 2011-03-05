@@ -19,7 +19,7 @@ include_directories("${CPPCHECK_SOURCE_DIR}/lib"
                     "${PCRE_INCLUDE_DIR}")
 
 # Header files - listed for mocking
-SET(CHECK_HEADERS
+SET(CPPCHECK_GUI_HEADERS
   aboutdialog.h
   applicationdialog.h
   applicationlist.h
@@ -41,7 +41,7 @@ SET(CHECK_HEADERS
 )
 
 # Source files
-SET(CHECKGUI_SRCS
+SET(CPPCHECK_GUI_SOURCES
   aboutdialog.cpp
   applicationdialog.cpp 
   applicationlist.cpp
@@ -63,7 +63,7 @@ SET(CHECKGUI_SRCS
 )
 
 # UI files
-SET(CHECK_UIS
+SET(CPPCHECK_UIS
   about.ui
   application.ui
   file.ui
@@ -73,7 +73,7 @@ SET(CHECK_UIS
 )
 
 # Translation files
-SET(CHECK_TRANS
+SET(CPPCHECK_GUI_TRANS
   cppcheck_de.ts
   cppcheck_fi.ts
   cppcheck_pl.ts
@@ -82,8 +82,6 @@ SET(CHECK_TRANS
   cppcheck_nl.ts
   cppcheck_ru.ts
 )
-
-SET(CHECK_RCCS gui.qrc)
 
 aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
 
@@ -94,11 +92,11 @@ aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
 
 if(WIN32)
    # Add Windows resource file
-   set(CHECKGUI_SRCS ${CHECKGUI_SRCS} cppcheck-gui.rc)
+   set(CPPCHECK_GUI_SOURCES ${CPPCHECK_GUI_SOURCES} cppcheck-gui.rc)
 
    if(NOT CYGWIN)
       # Windows needs additional shlwapi library.
-      set(CHECK_LIBS ${CHECK_LIBS} shlwapi htmlhelp)
+      set(CPPCHECK_GUI_LINK_LIBRARIES ${CPPCHECK_GUI_LINK_LIBRARIES} shlwapi htmlhelp)
    endif()
 endif()
 
@@ -107,25 +105,25 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 # Generate rules for building source files from the resources
-QT4_ADD_RESOURCES(CHECK_RCC_SRCS ${CHECK_RCCS})
+QT4_ADD_RESOURCES(CPPCHECK_RCC_SOURCES gui.qrc)
 
 # Process UI files
-QT4_WRAP_UI(CHECK_UIS_H ${CHECK_UIS})
+QT4_WRAP_UI(CPPCHECK_FORMS_HEADERS ${CPPCHECK_UIS})
 
 # Mock header files
-QT4_WRAP_CPP(CHECK_MOC_SRCS ${CHECK_HEADERS})
+QT4_WRAP_CPP(CPPCHECK_MOC_SOURCES ${CPPCHECK_GUI_HEADERS})
 
 # add translations ...
-QT4_ADD_TRANSLATION(CHECK_QM ${CHECK_TRANS})
+QT4_ADD_TRANSLATION(CPPCHECK_QM ${CPPCHECK_GUI_TRANS})
 
 # Create folders for Visual Studio IDE
-SOURCE_GROUP("Header Files" FILES ${CHECK_HEADERS})
+SOURCE_GROUP("Header Files" FILES ${CPPCHECK_GUI_HEADERS})
 SOURCE_GROUP("Ui Files" ".ui$")
 SOURCE_GROUP("Moc Files" "moc_.*cxx$")
 
-ADD_EXECUTABLE(gui WIN32 ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_HEADERS} 
-  ${CHECK_UIS_H} ${CHECK_RCC_SRCS} ${LIB_SRCS})
-TARGET_LINK_LIBRARIES(gui ${CHECK_LIBS} ${PCRE_LIBRARIES} ${QT_LIBRARIES})
+ADD_EXECUTABLE(gui WIN32 ${CPPCHECK_GUI_SOURCES} ${CPPCHECK_MOC_SOURCES}
+               ${CPPCHECK_FORMS_HEADERS} ${CPPCHECK_RCC_SOURCES} ${LIB_SRCS})
+TARGET_LINK_LIBRARIES(gui ${CPPCHECK_GUI_LINK_LIBRARIES} ${PCRE_LIBRARIES} ${QT_LIBRARIES})
 
 ELSE(QT4_FOUND)
 message("GUI not built since QT4 not found.")
