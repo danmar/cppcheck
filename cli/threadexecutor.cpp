@@ -35,7 +35,7 @@ ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, Settin
     : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
 #ifdef THREADING_MODEL_FORK
-    _pipe[0] = _pipe[1] = 0;
+    _wpipe = 0;
 #endif
 }
 
@@ -55,10 +55,10 @@ void ThreadExecutor::addFileContent(const std::string &path, const std::string &
 
 #ifdef THREADING_MODEL_FORK
 
-int ThreadExecutor::handleRead(unsigned int &result)
+int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 {
     char type = 0;
-    if (read(_pipe[0], &type, 1) <= 0)
+    if (read(rpipe, &type, 1) <= 0)
     {
         if (errno == EAGAIN)
             return 0;
@@ -73,14 +73,14 @@ int ThreadExecutor::handleRead(unsigned int &result)
     }
 
     unsigned int len = 0;
-    if (read(_pipe[0], &len, sizeof(len)) <= 0)
+    if (read(rpipe, &len, sizeof(len)) <= 0)
     {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
         exit(0);
     }
 
     char *buf = new char[len];
-    if (read(_pipe[0], buf, len) <= 0)
+    if (read(rpipe, buf, len) <= 0)
     {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
         exit(0);
@@ -134,32 +134,35 @@ unsigned int ThreadExecutor::check()
 {
     _fileCount = 0;
     unsigned int result = 0;
-    if (pipe(_pipe) == -1)
-    {
-        perror("pipe");
-        exit(1);
-    }
 
-    int flags = 0;
-    if ((flags = fcntl(_pipe[0], F_GETFL, 0)) < 0)
-    {
-        perror("fcntl");
-        exit(1);
-    }
-
-    if (fcntl(_pipe[0], F_SETFL, flags | O_NONBLOCK) < 0)
-    {
-        perror("fcntl");
-        exit(1);
-    }
-
-    unsigned int childCount = 0;
+    std::list<int> rpipes;
+    std::map<pid_t, std::string> childFile;
     unsigned int i = 0;
     while (true)
     {
         // Start a new child
-        if (i < _filenames.size() && childCount < _settings._jobs)
+        if (i < _filenames.size() && rpipes.size() < _settings._jobs)
         {
+            int pipes[2];
+            if (pipe(pipes) == -1)
+            {
+                perror("pipe");
+                exit(1);
+            }
+
+            int flags = 0;
+            if ((flags = fcntl(pipes[0], F_GETFL, 0)) < 0)
+            {
+                perror("fcntl");
+                exit(1);
+            }
+
+            if (fcntl(pipes[0], F_SETFL, flags | O_NONBLOCK) < 0)
+            {
+                perror("fcntl");
+                exit(1);
+            }
+
             pid_t pid = fork();
             if (pid < 0)
             {
@@ -169,6 +172,9 @@ unsigned int ThreadExecutor::check()
             }
             else if (pid == 0)
             {
+                close(pipes[0]);
+                _wpipe = pipes[1];
+
                 CppCheck fileChecker(*this, false);
                 fileChecker.settings(_settings);
 
@@ -190,31 +196,70 @@ unsigned int ThreadExecutor::check()
                 exit(0);
             }
 
-            ++childCount;
+            close(pipes[1]);
+            rpipes.push_back(pipes[0]);
+            childFile[pid] = _filenames[i];
+
             ++i;
         }
-        else if (childCount > 0)
+        else if (!rpipes.empty())
         {
-            // Wait for child to quit before stating new processes
-            while (true)
+            fd_set rfds;
+            FD_ZERO(&rfds);
+            for (std::list<int>::const_iterator rp = rpipes.begin(); rp != rpipes.end(); ++rp)
+                FD_SET(*rp, &rfds);
+
+            int r = select(*std::max_element(rpipes.begin(), rpipes.end()) + 1, &rfds, NULL, NULL, NULL);
+
+            if (r > 0)
             {
-                int readRes = handleRead(result);
-                if (readRes == -1)
-                    break;
-                else if (readRes == 0)
+                std::list<int>::iterator rp = rpipes.begin();
+                while (rp != rpipes.end())
                 {
-                    struct timespec duration;
-                    duration.tv_sec = 0;
-                    duration.tv_nsec = 5 * 1000 * 1000;        // 5 ms
-                    nanosleep(&duration, NULL);
+                    if (FD_ISSET(*rp, &rfds))
+                    {
+                        int readRes = handleRead(*rp, result);
+                        if (readRes == -1)
+                        {
+                            close(*rp);
+                            rp = rpipes.erase(rp);
+                        }
+                        else
+                            ++rp;
+                    }
+                    else
+                        ++rp;
                 }
             }
 
             int stat = 0;
-            waitpid(0, &stat, 0);
-            --childCount;
+            pid_t child = waitpid(0, &stat, WNOHANG);
+            if (child > 0)
+            {
+                std::string childname;
+                std::map<pid_t, std::string>::iterator c = childFile.find(child);
+                if (c != childFile.end())
+                {
+                    childname = c->second;
+                    childFile.erase(c);
+                }
+
+                if (WIFSIGNALED(stat))
+                {
+                    std::ostringstream oss;
+                    oss << "Internal error: Child process crashed with signal " << WTERMSIG(stat);
+
+                    std::list<ErrorLogger::ErrorMessage::FileLocation> locations;
+                    locations.push_back(ErrorLogger::ErrorMessage::FileLocation(childname, 0));
+                    const ErrorLogger::ErrorMessage errmsg(locations,
+                                                           Severity::error,
+                                                           oss.str(),
+                                                           "cppcheckError");
+                    _errorLogger.reportErr(errmsg);
+                }
+            }
         }
-        else if (childCount == 0)
+        else
         {
             // All done
             break;
@@ -232,7 +277,7 @@ void ThreadExecutor::writeToPipe(char type, const std::string &data)
     out[0] = type;
     std::memcpy(&(out[1]), &len, sizeof(len));
     std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
-    if (write(_pipe[1], out, len + 1 + sizeof(len)) <= 0)
+    if (write(_wpipe, out, len + 1 + sizeof(len)) <= 0)
     {
         delete [] out;
         out = 0;

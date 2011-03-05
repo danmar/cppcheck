@@ -71,9 +71,13 @@ private:
      *         0 if there is nothing in the pipe to be read
      *         1 if we did read something
      */
-    int handleRead(unsigned int &result);
+    int handleRead(int rpipe, unsigned int &result);
     void writeToPipe(char type, const std::string &data);
-    int _pipe[2];
+    /**
+     * Write end of status pipe, different for each child.
+     * Not used in master process.
+     */
+    int _wpipe;
     std::list<std::string> _errorList;
 public:
     /**
