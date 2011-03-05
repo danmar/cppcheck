@@ -7,6 +7,7 @@ find_package(Qt4)
 IF(QT4_FOUND)
 
 # Add needed Qt modules
+set(QT_USE_QTHELP TRUE)
 set(QT_USE_QTMAIN TRUE)
 set(QT_USE_QTXML TRUE)
 include(${QT_USE_FILE})
@@ -27,6 +28,7 @@ SET(CPPCHECK_GUI_HEADERS
   common.h
   csvreport.h
   fileviewdialog.h
+  helpwindow.h
   mainwindow.h
   projectfile.h
   report.h
