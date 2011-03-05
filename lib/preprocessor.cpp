@@ -331,6 +331,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     unsigned char previous = 0;
     bool inPreprocessorLine = false;
     std::vector<std::string> suppressionIDs;
+    bool fallThroughComment = false;
 
     for (std::string::size_type i = hasbom(str) ? 3U : 0U; i < str.length(); ++i)
     {
@@ -412,7 +413,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
             if (_settings->_checkCodingStyle && isFallThroughComment(comment))
             {
-                suppressionIDs.push_back("switchCaseFallThrough");
+                fallThroughComment = true;
             }
 
             code << "\n";
@@ -439,7 +440,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
             if (_settings->_checkCodingStyle && isFallThroughComment(comment))
             {
-                suppressionIDs.push_back("switchCaseFallThrough");
+                fallThroughComment = true;
             }
 
             if (settings && settings->_inlineSuppressions)
@@ -467,6 +468,18 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             {
                 // Not whitespace, not a comment, and not preprocessor.
                 // Must be code here!
+
+                // First check for a "fall through" comment match, but only
+                // add a suppression if the next token is 'case' or 'default'
+                if (fallThroughComment)
+                {
+                    std::string::size_type j = str.find_first_not_of("abcdefghijklmnopqrstuvwxyz", i);
+                    std::string tok = str.substr(i, j - i);
+                    if (tok == "case" || tok == "default")
+                        suppressionIDs.push_back("switchCaseFallThrough");
+                    fallThroughComment = false;
+                }
+
                 // Add any pending inline suppressions that have accumulated.
                 if (!suppressionIDs.empty())
                 {

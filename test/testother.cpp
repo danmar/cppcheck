@@ -1482,6 +1482,12 @@ private:
             "    }\n"
             "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    // unrelated comment saying 'fall through'\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void selfAssignment()
