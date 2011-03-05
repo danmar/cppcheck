@@ -1449,6 +1449,39 @@ private:
         // copying a final return after the block.
         TODO_ASSERT_EQUALS("",
                            "[test.cpp:5]: (warning) Switch falls through case without comment\n", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "    case 1:\n"
+            "        g();\n"
+            "        // fall through\n"
+            "    case 2:\n"
+            "        g();\n"
+            "        // falls through\n"
+            "    case 3:\n"
+            "        g();\n"
+            "        // fall-through\n"
+            "    case 4:\n"
+            "        g();\n"
+            "        // drop through\n"
+            "    case 5:\n"
+            "        g();\n"
+            "        // pass through\n"
+            "    case 5:\n"
+            "        g();\n"
+            "        // no break\n"
+            "    case 5:\n"
+            "        g();\n"
+            "        // fallthru\n"
+            "    case 6:\n"
+            "        g();\n"
+            "        /* fall */\n"
+            "    default:\n"
+            "        break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void selfAssignment()

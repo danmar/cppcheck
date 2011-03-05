@@ -310,9 +310,12 @@ static bool isFallThroughComment(std::string comment)
     comment.erase(std::remove_if(comment.begin(), comment.end(), ::isspace), comment.end());
 
     return comment.find("fallthr") != std::string::npos ||
+           comment.find("fallsthr") != std::string::npos ||
+           comment.find("fall-thr") != std::string::npos ||
            comment.find("dropthr") != std::string::npos ||
            comment.find("passthr") != std::string::npos ||
-           comment.find("nobreak") != std::string::npos;
+           comment.find("nobreak") != std::string::npos ||
+           comment == "fall";
 }
 
 std::string Preprocessor::removeComments(const std::string &str, const std::string &filename, Settings *settings)
@@ -432,7 +435,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                     ++lineno;
                 }
             }
-            std::string comment(str, commentStart, i - commentStart);
+            std::string comment(str, commentStart, i - commentStart - 1);
 
             if (isFallThroughComment(comment))
             {
