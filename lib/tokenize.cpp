@@ -5385,7 +5385,7 @@ void Tokenizer:: simplifyFunctionPointers()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok->previous() && !Token::Match(tok->previous(), "[{};]"))
+        if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|(|public:|protected:|private:"))
             continue;
 
         if (Token::Match(tok, "%type% *| *| ( * %var% ) ("))
@@ -5398,8 +5398,8 @@ void Tokenizer:: simplifyFunctionPointers()
         while (tok->next()->str() == "*")
             tok = tok->next();
 
-        // check that the declaration ends with ;
-        if (!Token::simpleMatch(tok->tokAt(5)->link(), ") ;"))
+        // check that the declaration ends
+        if (!Token::Match(tok->tokAt(5)->link(), ") ;|,|)|="))
             continue;
 
         // ok simplify this function pointer to an ordinary pointer
@@ -7063,6 +7063,7 @@ bool Tokenizer::simplifyCalculations()
         // keep parentheses here: int ( * * ( * compilerHookVector ) (void) ) ( ) ;
         // keep parentheses here: operator new [] (size_t);
         // keep parentheses here: Functor()(a ... )
+        // keep parentheses here: ) ( var ) ;
         if (Token::Match(tok->next(), "( %var% ) [;),+-*/><]]") &&
             !tok->isName() &&
             tok->str() != ">" &&
@@ -7071,7 +7072,8 @@ bool Tokenizer::simplifyCalculations()
             !Token::simpleMatch(tok->previous(), "* )") &&
             !Token::simpleMatch(tok->previous(), ") )") &&
             !Token::Match(tok->tokAt(-2), "* %var% )") &&
-            !Token::Match(tok->tokAt(-2), "%type% ( ) ( %var%")
+            !Token::Match(tok->tokAt(-2), "%type% ( ) ( %var%") &&
+            !Token::Match(tok, ") ( %var% ) ;")
            )
         {
             tok->deleteNext();

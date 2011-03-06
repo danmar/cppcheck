@@ -3557,8 +3557,8 @@ private:
 
         const char expected[] =
             "; "
-            "void addCallback ( bool ( * callback ) ( int i ) ) { } "
-            "void addCallback1 ( bool ( * callback ) ( int i ) , int j ) { }";
+            "void addCallback ( bool * callback ) { } "
+            "void addCallback1 ( bool * callback , int j ) { }";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -3574,28 +3574,12 @@ private:
 
             const char expected[] =
                 "; "
-                "void g ( int ( * f ) ( ) ) "
+                "void g ( int * f ) "
                 "{ "
-                "int ( * f2 ) ( ) = ( int ( * ) ( ) ) f ; "
+                "int * f2 ; f2 = ( int ( * ) ( ) ) f ; "
                 "}";
 
             ASSERT_EQUALS(expected, tok(code, false));
-
-            // TODO: the definition and assignment should be split up
-            const char wanted[] =
-                "; "
-                "void g ( fp f ) "
-                "{ "
-                "int ( * f2 ) ( ) ; f2 = ( int ( * ) ( ) ) f ; "
-                "}";
-            const char current[] =
-                "; "
-                "void g ( int ( * f ) ( ) ) "
-                "{ "
-                "int ( * f2 ) ( ) = ( int ( * ) ( ) ) f ; "
-                "}";
-
-            TODO_ASSERT_EQUALS(wanted, current, tok(code, false));
         }
 
         {
@@ -3607,9 +3591,9 @@ private:
 
             const char expected[] =
                 "; "
-                "void g ( int ( * f ) ( ) ) "
+                "void g ( int * f ) "
                 "{ "
-                "int ( * f2 ) ( ) = static_cast < int ( * ) ( ) > ( f ) ; "
+                "int * f2 ; f2 = static_cast < int ( * ) ( ) > ( f ) ; "
                 "}";
 
             ASSERT_EQUALS(expected, tok(code, false));
