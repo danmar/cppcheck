@@ -23,7 +23,8 @@ Compiling
 
     There are multiple compilation choices:
       * qmake - cross platform build tool
-      * Visual Studio - Windows
+      * Windows: Visual Studio
+      * Windows: Qt Creator + mingw
       * gnu make
       * g++
 
@@ -36,11 +37,21 @@ Compiling
 
     Visual Studio
     =============
-        Use the cppcheck.sln file.
+        Use the cppcheck.sln file. The pcre dll is needed, it can be downloaded from:
+            http://cppcheck.sf.net/pcre-8.10-vs.zip
+
+    Qt Creator + mingw
+    ==================
+        The PCRE dll is needed to build the CLI. It can be downloaded here:
+            http://software-download.name/pcre-library-windows/
 
     gnu make
     ========
-        make
+        To build Cppcheck with rules (pcre dependency):
+            make
+
+        To build Cppcheck without rules (no dependencies):
+            make CXXFLAGS="-O2"
 
     g++ (for experts)
     =================
