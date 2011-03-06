@@ -452,6 +452,14 @@ public:
 
     AccessControl defaultAccess() const;
 
+    /**
+     * @brief check if statement is variable declaration and add it if it is
+     * @param tok pointer to start of statement
+     * @param varaccess access control of statement
+     * @return pointer to last token
+     */
+    const Token *checkVariable(const Token *tok, AccessControl varaccess);
+
 private:
     /**
      * @brief helper function for getVariableList()

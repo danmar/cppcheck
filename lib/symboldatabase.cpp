@@ -424,9 +424,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 else if (Token::simpleMatch(tok, "for (") &&
                          Token::simpleMatch(tok->next()->link(), ") {"))
                 {
+                    // save location of initialization
+                    const Token *tok1 = tok->tokAt(2);
                     scope = new Scope(this, tok, scope, Scope::eFor, tok->next()->link()->next());
                     tok = tok->next()->link()->next();
                     scopeList.push_back(scope);
+                    // check for variable declaration and add it to new scope if found
+                    scope->checkVariable(tok1, Local);
                 }
                 else if (Token::simpleMatch(tok, "while (") &&
                          Token::simpleMatch(tok->next()->link(), ") {"))
@@ -1401,69 +1405,76 @@ void Scope::getVariableList()
         else if (Token::Match(tok, ";|{|}"))
             continue;
 
-        // This is the start of a statement
-        const Token *vartok = NULL;
-        const Token *typetok = NULL;
-        const Token *typestart = tok;
-
-        // Is it const..?
-        bool isConst = false;
-        if (tok->str() == "const")
-        {
-            tok = tok->next();
-            isConst = true;
-        }
-
-        // Is it a static variable?
-        const bool isStatic(Token::simpleMatch(tok, "static"));
-        if (isStatic)
-        {
-            tok = tok->next();
-        }
-
-        // Is it a mutable variable?
-        const bool isMutable(Token::simpleMatch(tok, "mutable"));
-        if (isMutable)
-        {
-            tok = tok->next();
-        }
-
-        // Is it const..?
-        if (tok->str() == "const")
-        {
-            tok = tok->next();
-            isConst = true;
-        }
-
-        bool isClass = false;
-
-        if (Token::Match(tok, "struct|union"))
-        {
-            tok = tok->next();
-        }
-
-        bool isArray = false;
-
-        if (isVariableDeclaration(tok, vartok, typetok, isArray))
-        {
-            isClass = (!typetok->isStandardType() && vartok->previous()->str() != "*");
-            tok = vartok->next();
-        }
-
-        // If the vartok was set in the if-blocks above, create a entry for this variable..
-        if (vartok && vartok->str() != "operator")
-        {
-            if (vartok->varId() == 0 && !vartok->isBoolean())
-                check->debugMessage(vartok, "Scope::getVariableList found variable \'" + vartok->str() + "\' with varid 0.");
-
-            const Scope *scope = NULL;
-
-            if (typetok)
-                scope = check->findVariableType(this, typetok);
-
-            addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this, isArray);
-        }
+        tok = checkVariable(tok, varaccess);
     }
+}
+
+const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
+{
+    // This is the start of a statement
+    const Token *vartok = NULL;
+    const Token *typetok = NULL;
+    const Token *typestart = tok;
+
+    // Is it const..?
+    bool isConst = false;
+    if (tok->str() == "const")
+    {
+        tok = tok->next();
+        isConst = true;
+    }
+
+    // Is it a static variable?
+    const bool isStatic(Token::simpleMatch(tok, "static"));
+    if (isStatic)
+    {
+        tok = tok->next();
+    }
+
+    // Is it a mutable variable?
+    const bool isMutable(Token::simpleMatch(tok, "mutable"));
+    if (isMutable)
+    {
+        tok = tok->next();
+    }
+
+    // Is it const..?
+    if (tok->str() == "const")
+    {
+        tok = tok->next();
+        isConst = true;
+    }
+
+    bool isClass = false;
+
+    if (Token::Match(tok, "struct|union"))
+    {
+        tok = tok->next();
+    }
+
+    bool isArray = false;
+
+    if (isVariableDeclaration(tok, vartok, typetok, isArray))
+    {
+        isClass = (!typetok->isStandardType() && vartok->previous()->str() != "*");
+        tok = vartok->next();
+    }
+
+    // If the vartok was set in the if-blocks above, create a entry for this variable..
+    if (vartok && vartok->str() != "operator")
+    {
+        if (vartok->varId() == 0 && !vartok->isBoolean())
+            check->debugMessage(vartok, "Scope::checkVariable found variable \'" + vartok->str() + "\' with varid 0.");
+
+        const Scope *scope = NULL;
+
+        if (typetok)
+            scope = check->findVariableType(this, typetok);
+
+        addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this, isArray);
+    }
+
+    return tok;
 }
 
 const Token* skipScopeIdentifiers(const Token* tok)
