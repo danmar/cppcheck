@@ -245,6 +245,7 @@ private:
         TEST_CASE(simplifyTypedef81); // ticket #2603
         TEST_CASE(simplifyTypedef82); // ticket #2403
         TEST_CASE(simplifyTypedef83); // ticket #2620
+        TEST_CASE(simplifyTypedef84); // ticket #2630
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4973,6 +4974,13 @@ private:
                                    "void f ( char ( & cl ) [ 10 ] ) { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void simplifyTypedef84() // ticket #2630 (segmentation fault)
+    {
+        const char code[] = "typedef y x () x\n";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void simplifyTypedefFunction1()

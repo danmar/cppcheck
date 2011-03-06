@@ -1185,19 +1185,16 @@ void Tokenizer::simplifyTypedef()
                     tok = deleteInvalidTypedef(typeDef);
                     continue;
                 }
+                else if (!Token::Match(tok->tokAt(offset)->link(), ") ;|,"))
+                {
+                    syntaxError(tok);
+                    return;
+                }
 
                 function = true;
-                if (tok->tokAt(offset)->link()->next())
-                {
-                    argStart = tok->tokAt(offset);
-                    argEnd = tok->tokAt(offset)->link();
-                    tok = argEnd->next();
-                }
-                else
-                {
-                    // internal error
-                    continue;
-                }
+                argStart = tok->tokAt(offset);
+                argEnd = tok->tokAt(offset)->link();
+                tok = argEnd->next();
             }
 
             // unhandled typedef, skip it and continue
