@@ -309,7 +309,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 
 void CheckOther::checkSwitchCaseFallThrough()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!(_settings->_checkCodingStyle && _settings->inconclusive))
         return;
 
     const char switchPattern[] = "switch (";

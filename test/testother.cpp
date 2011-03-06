@@ -184,6 +184,7 @@ private:
 
         Settings settings;
         settings._checkCodingStyle = true;
+        settings.inconclusive = true;
 
         // Preprocess file..
         Preprocessor preprocessor(&settings, this);
