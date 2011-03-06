@@ -3,6 +3,7 @@ find_package(PCRE REQUIRED)
 
 SET(CPPCHECK_CLI_SOURCES
   cppcheckexecutor.cpp
+  filelister.cpp
   threadexecutor.cpp
   main.cpp
 )
@@ -16,12 +17,15 @@ aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
 
 if(WIN32)
    # Add Windows resource file
-   set(CPPCHECK_CLI_SOURCES ${CPPCHECK_CLI_SOURCES} cppcheck.rc)
+   set(CPPCHECK_CLI_SOURCES ${CPPCHECK_CLI_SOURCES} filelister_win32.cpp
+       cppcheck.rc)
 
    if(NOT CYGWIN)
       # Windows needs additional shlwapi library.
       set(CPPCHECK_CLI_LINK_LIBRARIES ${CPPCHECK_CLI_LINK_LIBRARIES} shlwapi)
    endif()
+else()
+   set(CPPCHECK_CLI_SOURCES ${CPPCHECK_CLI_SOURCES} filelister_unix.cpp)
 endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX)
