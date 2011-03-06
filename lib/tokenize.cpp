@@ -5385,7 +5385,39 @@ void Tokenizer:: simplifyFunctionPointers()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|(|public:|protected:|private:"))
+        // check for function pointer cast
+        if (Token::Match(tok, "( %type% *| *| ( * ) (") ||
+            Token::Match(tok, "( %type% %type% *| *| ( * ) (") ||
+            Token::Match(tok, "static_cast < %type% *| *| ( * ) (") ||
+            Token::Match(tok, "static_cast < %type% %type% *| *| ( * ) ("))
+        {
+            Token *tok1 = tok;
+
+            if (tok1->str() == "static_cast")
+                tok1 = tok1->next();
+
+            tok1 = tok1->next();
+
+            if (Token::Match(tok1->next(), "%type%"))
+                tok1 = tok1->next();
+
+            while (tok1->next()->str() == "*")
+                tok1 = tok1->next();
+
+            // check that the cast ends
+            if (!Token::Match(tok1->tokAt(4)->link(), ") )|>"))
+                continue;
+
+            // ok simplify this function pointer cast to an ordinary pointer cast
+            tok1->deleteNext();
+            tok1->next()->deleteNext();
+            const Token *tok2 = tok1->tokAt(2)->link();
+            Token::eraseTokens(tok1->next(), tok2 ? tok2->next() : 0);
+            continue;
+        }
+
+        // check for start of statement
+        else if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|(|public:|protected:|private:"))
             continue;
 
         if (Token::Match(tok, "%type% *| *| ( * %var% ) ("))

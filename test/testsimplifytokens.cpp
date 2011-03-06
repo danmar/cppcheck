@@ -3576,7 +3576,7 @@ private:
                 "; "
                 "void g ( int * f ) "
                 "{ "
-                "int * f2 ; f2 = ( int ( * ) ( ) ) f ; "
+                "int * f2 ; f2 = ( int * ) f ; "
                 "}";
 
             ASSERT_EQUALS(expected, tok(code, false));
@@ -3593,7 +3593,7 @@ private:
                 "; "
                 "void g ( int * f ) "
                 "{ "
-                "int * f2 ; f2 = static_cast < int ( * ) ( ) > ( f ) ; "
+                "int * f2 ; f2 = static_cast < int * > ( f ) ; "
                 "}";
 
             ASSERT_EQUALS(expected, tok(code, false));
