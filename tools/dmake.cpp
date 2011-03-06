@@ -256,8 +256,8 @@ int main(int argc, char **argv)
     fout << "\n###### Build\n\n";
 
     compilefiles(fout, libfiles, "-Ilib");
-    compilefiles(fout, clifiles, "-Ilib -Iexternals");
-    compilefiles(fout, testfiles, "-Ilib -Icli -Iexternals");
+    compilefiles(fout, clifiles, "-Ilib -Iexternals/tinyxml -Iexternals");
+    compilefiles(fout, testfiles, "-Ilib -Icli -Iexternals/tinyxml -Iexternals");
 
     return 0;
 }

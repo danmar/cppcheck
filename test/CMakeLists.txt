@@ -1,6 +1,8 @@
 # Minimal CMake build file to build cppcheck test suite
 find_package(PCRE REQUIRED)
 
+set(TINYXML_INCLUDE_DIR "${CPPCHECK_SOURCE_DIR}/externals/tinyxml/")
+
 SET(CPPCHECK_TEST_SOURCES
   "${CPPCHECK_SOURCE_DIR}/cli/filelister.cpp"
   testmemleak.cpp
@@ -28,7 +30,10 @@ SET(CPPCHECK_TEST_SOURCES
   testincompletestatement.cpp
   testunusedvar.cpp
   testmathlib.cpp
-)
+  "${TINYXML_INCLUDE_DIR}tinystr.cpp"
+  "${TINYXML_INCLUDE_DIR}tinyxml.cpp"
+  "${TINYXML_INCLUDE_DIR}tinyxmlerror.cpp"
+  "${TINYXML_INCLUDE_DIR}tinyxmlparser.cpp")
 
 set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
 include("${CPPCHECK_LIB_DIR}library_sources.cmake")
@@ -50,7 +55,9 @@ if (CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wshadow -Wno-long-long -Wfloat-equal -Wcast-qual")
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
-include_directories("${CPPCHECK_SOURCE_DIR}/lib" "${PCRE_INCLUDE_DIR}")
+include_directories("${CPPCHECK_SOURCE_DIR}/lib"
+                    "${PCRE_INCLUDE_DIR}"
+                    "${TINYXML_INCLUDE_DIR}")
 add_executable(test ${CPPCHECK_TEST_SOURCES} ${CPPCHECK_LIB_SOURCES})
 TARGET_LINK_LIBRARIES(test ${CPPCHECK_TEST_LINK_LIBRARIES} ${PCRE_LIBRARIES})
 

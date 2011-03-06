@@ -1,13 +1,14 @@
 TEMPLATE = app
 TARGET = cppcheck
 DEPENDPATH += .
-INCLUDEPATH += . ../lib
+TINYXML_DIR = ../externals/tinyxml/
+INCLUDEPATH += . ../lib $${TINYXML_DIR}
 OBJECTS_DIR = temp
 CONFIG += warn_on
 CONFIG -= qt app_bundle
 
-BASEPATH = ../externals/tinyxml/
-include($$PWD/../externals/tinyxml/tinyxml.pri)
+BASEPATH = $${TINYXML_DIR}
+include($$PWD/$${TINYXML_DIR}tinyxml.pri)
 BASEPATH = ../lib/
 include($$PWD/../lib/lib.pri)
 

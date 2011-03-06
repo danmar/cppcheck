@@ -32,7 +32,7 @@
 #include <stdexcept>
 
 // use tinyxml with STL
-#include "tinyxml/tinyxml.h"
+#include "tinyxml.h"
 
 extern std::ostringstream errout;
 extern std::ostringstream output;
