@@ -47,14 +47,20 @@ public:
         /**
          * Programming error.
          * This indicates severe error like memory leak etc.
+         * The error is certain.
          */
         error,
         /**
          * Warning.
+         * Used for dangerous coding style that can cause severe runtime errors.
+         * For example: forgetting to initialize a member variable in a constructor.
          */
         warning,
         /**
          * Style warning.
+         * Used for general code cleanup recommendations. Fixing these
+         * will not fix any bugs but will make the code easier to maintain.
+         * For example: redundant code, unreachable code, etc.
          */
         style,
         /**
