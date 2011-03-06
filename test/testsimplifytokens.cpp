@@ -113,6 +113,7 @@ private:
         TEST_CASE(template20);
         TEST_CASE(template21);
         TEST_CASE(template22);
+        TEST_CASE(template23);
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2021,6 +2022,22 @@ private:
         const std::string expected("; "
                                    "Fred<std::string> fred ; "
                                    "struct Fred<std::string> { std :: string a ; }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template23()
+    {
+        const char code[] = "template <classname T> void foo() { }\n"
+                            "void bar() {\n"
+                            "    std::cout << (foo<double>());\n"
+                            "}";
+
+        const std::string expected("; "
+                                   "void bar ( ) {"
+                                   " std :: cout << ( foo<double> ( ) ) ; "
+                                   "} "
+                                   "void foo<double> ( ) { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }

@@ -2714,7 +2714,7 @@ std::list<Token *> Tokenizer::simplifyTemplatesGetTemplateInstantiations()
             if (!tok)
                 break;
         }
-        else if (Token::Match(tok->previous(), "[{};=] %var% <") ||
+        else if (Token::Match(tok->previous(), "[({};=] %var% <") ||
                  Token::Match(tok->tokAt(-2), "[,:] private|protected|public %var% <"))
         {
             if (templateParameters(tok->next()))
