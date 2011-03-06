@@ -49,6 +49,7 @@ private:
         TEST_CASE(tokenize13);  // bailout if the code contains "@" - that is not handled well.
         TEST_CASE(tokenize14);  // tokenize "0X10" => 16
         TEST_CASE(tokenize15);  // tokenize ".123"
+        TEST_CASE(tokenize16);  // #2612 - segfault for "<><<"
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -514,6 +515,12 @@ private:
     void tokenize15()
     {
         ASSERT_EQUALS("0.125", tokenizeAndStringify(".125"));
+    }
+
+    // #2612 - segfault for "<><<"
+    void tokenize16()
+    {
+        tokenizeAndStringify("<><<");
     }
 
     void wrong_syntax()

@@ -2057,7 +2057,7 @@ bool Tokenizer::tokenize(std::istream &code,
             {
                 tok->str(tok->str() + c2);
                 tok->deleteNext();
-                if (c1 == '<' && tok->next()->str() == "=")
+                if (c1 == '<' && Token::simpleMatch(tok->next(), "="))
                 {
                     tok->str("<<=");
                     tok->deleteNext();
