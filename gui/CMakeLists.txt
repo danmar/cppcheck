@@ -85,12 +85,8 @@ SET(CPPCHECK_GUI_TRANS
   cppcheck_ru.ts
 )
 
-aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
-
-# Libraries to link
-#set(CHECK_LIBS
-#  checklib
-#)
+set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
+include("${CPPCHECK_LIB_DIR}library_sources.cmake")
 
 if(WIN32)
    # Add Windows resource file
@@ -124,7 +120,7 @@ SOURCE_GROUP("Ui Files" ".ui$")
 SOURCE_GROUP("Moc Files" "moc_.*cxx$")
 
 ADD_EXECUTABLE(gui WIN32 ${CPPCHECK_GUI_SOURCES} ${CPPCHECK_MOC_SOURCES}
-               ${CPPCHECK_FORMS_HEADERS} ${CPPCHECK_RCC_SOURCES} ${LIB_SRCS})
+               ${CPPCHECK_FORMS_HEADERS} ${CPPCHECK_RCC_SOURCES} ${CPPCHECK_LIB_SOURCES})
 TARGET_LINK_LIBRARIES(gui ${CPPCHECK_GUI_LINK_LIBRARIES} ${PCRE_LIBRARIES} ${QT_LIBRARIES})
 
 ELSE(QT4_FOUND)
