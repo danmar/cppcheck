@@ -1588,17 +1588,19 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         }
 
         // Callback..
-        bool matchFirst = Token::Match(tok, "( %var%");
-        if (matchFirst || Token::Match(tok, "( * %var%"))
+        if (Token::Match(tok, "( *| %var%") && Token::simpleMatch(tok->link(),") ("))
         {
-            int tokIdx = matchFirst ? 2 : 3;
+            const Token *tok2 = tok->next();
+            if (tok2->str() == "*")
+                tok2 = tok2->next();
+            tok2 = tok2->next();
 
-            while (Token::Match(tok->tokAt(tokIdx), ". %var%"))
-                tokIdx += 2;
+            while (Token::Match(tok2, ". %var%"))
+                tok2 = tok2->tokAt(2);
 
-            if (Token::simpleMatch(tok->tokAt(tokIdx), ") ("))
+            if (Token::simpleMatch(tok2, ") ("))
             {
-                for (const Token *tok2 = tok->tokAt(tokIdx + 2); tok2; tok2 = tok2->next())
+                for (; tok2; tok2 = tok2->next())
                 {
                     if (Token::Match(tok2, "[;{]"))
                         break;
