@@ -109,7 +109,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
         realfile = tr("Undefined file");
     }
 
-    bool hide = !mShowTypes[SeverityToShowType(GuiSeverity::toString(item.severity))];
+    bool hide = !mShowTypes[SeverityToShowType(item.severity)];
 
     //if there is at least one error that is not hidden, we have a visible error
     if (!hide)
@@ -137,7 +137,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     //Add user data to that item
     QMap<QString, QVariant> data;
     data["hide"] = false;
-    data["severity"]  = SeverityToShowType(GuiSeverity::toString(item.severity));
+    data["severity"]  = SeverityToShowType(item.severity);
     data["summary"] = item.summary;
     data["message"]  = item.message;
     data["file"]  = item.files[0];
@@ -158,7 +158,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
 
         //Add user data to that item
         QMap<QString, QVariant> child_data;
-        child_data["severity"]  = SeverityToShowType(GuiSeverity::toString(line.severity));
+        child_data["severity"]  = SeverityToShowType(line.severity);
         child_data["summary"] = line.summary;
         child_data["message"]  = line.message;
         child_data["file"]  = item.files[i];
@@ -252,19 +252,19 @@ ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
     return (ShowTypes)value;
 }
 
-ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
+ShowTypes ResultsTree::SeverityToShowType(Severity::SeverityType severity)
 {
-    if (severity == "error")
+    if (severity == Severity::error)
         return SHOW_ERRORS;
-    if (severity == "style")
+    if (severity == Severity::style)
         return SHOW_STYLE;
-    if (severity == "warning")
+    if (severity == Severity::warning)
         return SHOW_WARNINGS;
-    if (severity == "performance")
+    if (severity == Severity::performance)
         return SHOW_PERFORMANCE;
-    if (severity == "portability")
+    if (severity == Severity::portability)
         return SHOW_PORTABILITY;
-    if (severity == "information")
+    if (severity == Severity::information)
         return SHOW_INFORMATION;
 
     return SHOW_NONE;

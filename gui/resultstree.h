@@ -28,6 +28,7 @@
 #include <QTextStream>
 #include "common.h"
 #include "applicationlist.h"
+#include "errorlogger.h" // Severity
 
 class Report;
 class ErrorItem;
@@ -128,10 +129,10 @@ public:
 
     /**
     * @brief Convert severity string to ShowTypes value
-    * @param severity Error severity string
+    * @param severity Error severity
     * @return Severity converted to ShowTypes value
     */
-    static ShowTypes SeverityToShowType(const QString &severity);
+    static ShowTypes SeverityToShowType(Severity::SeverityType severity);
 
 signals:
     /**
