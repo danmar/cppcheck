@@ -2684,11 +2684,23 @@ std::list<Token *> Tokenizer::simplifyTemplatesGetTemplateInstantiations()
         // template definition.. skip it
         if (Token::simpleMatch(tok, "template <"))
         {
+            unsigned int level = 0;
+
             // Goto the end of the template definition
             for (; tok; tok = tok->next())
             {
+                // skip '<' .. '>'
+                if (tok->str() == "<")
+                    ++level;
+                else if (tok->str() == ">")
+                {
+                    if (level <= 1)
+                        break;
+                    --level;
+                }
+
                 // skip inner '(' .. ')' and '{' .. '}'
-                if (tok->str() == "{" || tok->str() == "(")
+                else if (tok->str() == "{" || tok->str() == "(")
                 {
                     // skip inner tokens. goto ')' or '}'
                     tok = tok->link();
@@ -3217,7 +3229,7 @@ void Tokenizer::simplifyTemplates()
     //while (!done)
     {
         done = true;
-        for (std::list<Token *>::const_iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
+        for (std::list<Token *>::reverse_iterator iter1 = templates.rbegin(); iter1 != templates.rend(); ++iter1)
         {
             simplifyTemplatesInstantiate(*iter1, used, expandedtemplates);
         }

@@ -1714,7 +1714,7 @@ private:
                             "} ;\n";
 
         // The expected result..
-        std::string expected("; void f ( ) { A<int> a ; } ; class A<int> { }");
+        std::string expected("; void f ( ) { A<int> a ; } ; class A<int> { } class A<T> { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -1868,18 +1868,13 @@ private:
                             "    return 0;\n"
                             "}\n";
 
-        const std::string wanted("; "
-                                 "; "
-                                 "int main ( ) { b<2> ( ) ; return 0 ; } "
-                                 "void b<2> ( ) { a<2> ( ) ; } "
-                                 "void a<2> ( ) { }");
+        const std::string expected("; "
+                                   "int main ( ) { b<2> ( ) ; return 0 ; } "
+                                   "void b<2> ( ) { a<2> ( ) ; } "
+                                   "void a<i> ( ) { } "
+                                   "void a<2> ( ) { }");
 
-        const std::string current("; "
-                                  "int main ( ) { b<2> ( ) ; return 0 ; } "
-                                  "void b<2> ( ) { a < 2 > ( ) ; }"
-                                 );
-
-        TODO_ASSERT_EQUALS(wanted, current, sizeof_(code));
+        ASSERT_EQUALS(expected, sizeof_(code));
     }
 
     void template17()
