@@ -35,7 +35,7 @@ ErrorItem::ErrorItem(const ErrorLine &line)
     files.append(line.file);
     lines.append(line.line);
     id = line.id;
-    severity = GuiSeverity::fromString(line.severity);
+    severity = line.severity;
     summary = line.summary;
     message = line.message;
 }

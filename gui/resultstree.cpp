@@ -123,13 +123,13 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     line.line = item.lines[0];
     line.summary = item.summary;
     line.message = item.message;
-    line.severity = GuiSeverity::toString(item.severity);
+    line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
     QStandardItem *stditem = AddBacktraceFiles(EnsureFileItem(line.file, hide),
                              line,
                              hide,
-                             SeverityToIcon(line.severity));
+                             SeverityToIcon(GuiSeverity::toString(line.severity)));
 
     if (!stditem)
         return;
@@ -158,7 +158,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
 
         //Add user data to that item
         QMap<QString, QVariant> child_data;
-        child_data["severity"]  = SeverityToShowType(line.severity);
+        child_data["severity"]  = SeverityToShowType(GuiSeverity::toString(line.severity));
         child_data["summary"] = line.summary;
         child_data["message"]  = line.message;
         child_data["file"]  = item.files[i];
@@ -190,7 +190,8 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     // Ensure shown path is with native separators
     const QString file = QDir::toNativeSeparators(item.file);
     list << CreateNormalItem(file);
-    list << CreateNormalItem(tr(item.severity.toLatin1()));
+    const QString severity = GuiSeverity::toString(item.severity);
+    list << CreateNormalItem(severity.toLatin1());
     list << CreateLineNumberItem(QString("%1").arg(item.line));
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations

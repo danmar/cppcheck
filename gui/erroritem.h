@@ -128,7 +128,7 @@ public:
     QString file;
     unsigned int line;
     QString id;
-    QString severity;
+    Severity::SeverityType severity;
     QString summary;
     QString message;
 };
