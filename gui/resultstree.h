@@ -297,6 +297,13 @@ protected:
     Severity::SeverityType ShowTypeToSeverity(ShowTypes type);
 
     /**
+    * @brief Convert Severity to translated string for GUI.
+    * @param type Severity to convert
+    * @return Severity as translated string
+    */
+    QString SeverityToTranslatedString(Severity::SeverityType severity);
+
+    /**
     * @brief Load all settings
     * Colum widths
     */

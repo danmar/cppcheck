@@ -254,18 +254,25 @@ ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
 
 ShowTypes ResultsTree::SeverityToShowType(Severity::SeverityType severity)
 {
-    if (severity == Severity::error)
+    switch (severity)
+    {
+    case Severity::none:
+        return SHOW_NONE;
+    case Severity::error:
         return SHOW_ERRORS;
-    if (severity == Severity::style)
+    case Severity::style:
         return SHOW_STYLE;
-    if (severity == Severity::warning)
+    case Severity::warning:
         return SHOW_WARNINGS;
-    if (severity == Severity::performance)
+    case Severity::performance:
         return SHOW_PERFORMANCE;
-    if (severity == Severity::portability)
+    case Severity::portability:
         return SHOW_PORTABILITY;
-    if (severity == Severity::information)
+    case Severity::information:
         return SHOW_INFORMATION;
+    default:
+        return SHOW_NONE;
+    }
 
     return SHOW_NONE;
 }
@@ -304,6 +311,46 @@ Severity::SeverityType ResultsTree::ShowTypeToSeverity(ShowTypes type)
     }
 
     return Severity::none;
+}
+
+QString ResultsTree::SeverityToTranslatedString(Severity::SeverityType severity)
+{
+    switch (severity)
+    {
+    case Severity::style:
+        return tr("style");
+        break;
+
+    case Severity::error:
+        return tr("error");
+        break;
+
+    case Severity::warning:
+        return tr("warning");
+        break;
+
+    case Severity::performance:
+        return tr("performance");
+        break;
+
+    case Severity::portability:
+        return tr("portability");
+        break;
+
+    case Severity::information:
+        return tr("information");
+        break;
+
+    case Severity::debug:
+        return tr("debug");
+        break;
+
+    case Severity::none:
+        return "";
+        break;
+    }
+
+    return "";
 }
 
 QStandardItem *ResultsTree::FindFileItem(const QString &name)
