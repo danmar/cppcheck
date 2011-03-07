@@ -231,9 +231,9 @@ protected:
     /**
     * @brief Convert a severity string to a icon filename
     *
-    * @param severity Severity string
+    * @param severity Severity
     */
-    QString SeverityToIcon(const QString &severity) const;
+    QString SeverityToIcon(Severity::SeverityType severity) const;
 
     /**
     * @brief Helper function to open an error within target with application*
@@ -292,9 +292,9 @@ protected:
     /**
     * @brief Convert ShowType to severity string
     * @param type ShowType to convert
-    * @return ShowType converted to string
+    * @return ShowType converted to severity
     */
-    QString ShowTypeToString(ShowTypes type);
+    Severity::SeverityType ShowTypeToSeverity(ShowTypes type);
 
     /**
     * @brief Load all settings

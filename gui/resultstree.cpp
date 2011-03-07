@@ -129,7 +129,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     QStandardItem *stditem = AddBacktraceFiles(EnsureFileItem(line.file, hide),
                              line,
                              hide,
-                             SeverityToIcon(GuiSeverity::toString(line.severity)));
+                             SeverityToIcon(line.severity));
 
     if (!stditem)
         return;
@@ -268,6 +268,42 @@ ShowTypes ResultsTree::SeverityToShowType(Severity::SeverityType severity)
         return SHOW_INFORMATION;
 
     return SHOW_NONE;
+}
+
+Severity::SeverityType ResultsTree::ShowTypeToSeverity(ShowTypes type)
+{
+    switch (type)
+    {
+    case SHOW_STYLE:
+        return Severity::style;
+        break;
+
+    case SHOW_ERRORS:
+        return Severity::error;
+        break;
+
+    case SHOW_WARNINGS:
+        return Severity::warning;
+        break;
+
+    case SHOW_PERFORMANCE:
+        return Severity::performance;
+        break;
+
+    case SHOW_PORTABILITY:
+        return Severity::portability;
+        break;
+
+    case SHOW_INFORMATION:
+        return Severity::information;
+        break;
+
+    case SHOW_NONE:
+        return Severity::none;
+        break;
+    }
+
+    return Severity::none;
 }
 
 QStandardItem *ResultsTree::FindFileItem(const QString &name)
@@ -736,21 +772,25 @@ void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
     }
 }
 
-QString ResultsTree::SeverityToIcon(const QString &severity) const
+QString ResultsTree::SeverityToIcon(Severity::SeverityType severity) const
 {
-    if (severity == "error")
+    switch (severity)
+    {
+    case Severity::error:
         return ":images/dialog-error.png";
-    if (severity == "style")
+    case Severity::style:
         return ":images/applications-development.png";
-    if (severity == "warning")
+    case Severity::warning:
         return ":images/dialog-warning.png";
-    if (severity == "portability")
+    case Severity::portability:
         return ":images/applications-system.png";
-    if (severity == "performance")
+    case Severity::performance:
         return ":images/utilities-system-monitor.png";
-    if (severity == "information")
+    case Severity::information:
         return ":images/dialog-information.png";
-
+    default:
+        return "";
+    }
     return "";
 }
 
@@ -795,7 +835,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         QVariantMap data = userdata.toMap();
 
         ErrorItem item;
-        item.severity = GuiSeverity::fromString(ShowTypeToString(VariantToShowType(data["severity"])));
+        item.severity = ShowTypeToSeverity(VariantToShowType(data["severity"]));
         item.summary = data["summary"].toString();
         item.message = data["message"].toString();
         item.id = data["id"].toString();
@@ -822,42 +862,6 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
 
         report->WriteError(item);
     }
-}
-
-QString ResultsTree::ShowTypeToString(ShowTypes type)
-{
-    switch (type)
-    {
-    case SHOW_STYLE:
-        return tr("style");
-        break;
-
-    case SHOW_ERRORS:
-        return tr("error");
-        break;
-
-    case SHOW_WARNINGS:
-        return tr("warning");
-        break;
-
-    case SHOW_PERFORMANCE:
-        return tr("performance");
-        break;
-
-    case SHOW_PORTABILITY:
-        return tr("portability");
-        break;
-
-    case SHOW_INFORMATION:
-        return tr("information");
-        break;
-
-    case SHOW_NONE:
-        return "";
-        break;
-    }
-
-    return "";
 }
 
 void ResultsTree::UpdateSettings(bool showFullPath,
