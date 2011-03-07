@@ -2241,16 +2241,6 @@ private:
               " return \"Hello\" == test.substr( 0 , 5 ) ? : 0 : 1 ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
-        check("int f() {\n"
-              "    return strncmp(\"test\" , \"test\" , 2) ; \n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"test\" doesn't match length argument for strncmp(2).\n", errout.str());
-
-        check("int f() {\n"
-              "    return strncmp(\"test\" , \"test\" , 4) ; \n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
     }
 
 

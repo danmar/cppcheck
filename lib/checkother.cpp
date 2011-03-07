@@ -2982,15 +2982,6 @@ void CheckOther::checkIncorrectStringCompare()
                 incorrectStringCompareError(tok->next(), "substr", tok->str(), tok->tokAt(8)->str());
             }
         }
-        if (Token::Match(tok, "strncmp ( %any% , %str% , %num% )"))
-        {
-            size_t clen = MathLib::toLongNumber(tok->tokAt(6)->str());
-            size_t slen = Token::getStrLength(tok->tokAt(4));
-            if (clen != slen)
-            {
-                incorrectStringCompareError(tok, "strncmp", tok->tokAt(4)->str(), tok->tokAt(6)->str());
-            }
-        }
     }
 }
 
