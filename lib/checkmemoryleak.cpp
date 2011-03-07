@@ -75,10 +75,18 @@ bool CheckMemoryLeak::isclass(const Tokenizer *_tokenizer, const Token *tok) con
     if (tok->isStandardType())
         return false;
 
-    std::ostringstream pattern;
-    pattern << "struct " << tok->str();
-    if (Token::findmatch(_tokenizer->tokens(), pattern.str().c_str()))
-        return false;
+    // return false if the type is a simple struct without member functions
+    const std::string pattern("struct " + tok->str() + " {");
+    const Token *tok2 = Token::findmatch(_tokenizer->tokens(), pattern.c_str());
+    if (tok2)
+    {
+        while (tok2 && tok2->str() != "}" && tok2->str() != "(")
+            tok2 = tok2->next();
+
+        // Simple struct => return false
+        if (tok2 && tok2->str() == "}")
+            return false;
+    }
 
     return true;
 }
