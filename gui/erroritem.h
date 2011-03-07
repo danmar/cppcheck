@@ -97,7 +97,7 @@ public:
 class ErrorItem
 {
 public:
-    ErrorItem() { }
+    ErrorItem();
     ErrorItem(const ErrorItem &item);
     ErrorItem(const ErrorLine &line);
     ~ErrorItem() { }

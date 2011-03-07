@@ -18,6 +18,11 @@
 
 #include "erroritem.h"
 
+ErrorItem::ErrorItem()
+    : severity(Severity::none)
+{
+}
+
 ErrorItem::ErrorItem(const ErrorItem &item)
 {
     file = item.file;
