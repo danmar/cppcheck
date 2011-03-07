@@ -310,7 +310,7 @@ static bool isFallThroughComment(std::string comment)
     for (std::string::iterator i = comment.begin(); i != comment.end();)
     {
         if (::isspace(static_cast<unsigned char>(*i)))
-            comment.erase(i);
+            i = comment.erase(i);
         else
             ++i;
     }
