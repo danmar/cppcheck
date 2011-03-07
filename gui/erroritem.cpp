@@ -18,6 +18,11 @@
 
 #include "erroritem.h"
 
+ErrorItem::ErrorItem()
+    : severity(Severity::none)
+{
+}
+
 ErrorItem::ErrorItem(const ErrorItem &item)
 {
     file = item.file;
@@ -42,7 +47,7 @@ ErrorItem::ErrorItem(const ErrorLine &line)
 
 QString ErrorItem::ToString() const
 {
-    QString str = file + " - " + id + " - " + severity +"\n";
+    QString str = file + " - " + id + " - " + GuiSeverity::toString(severity) +"\n";
     str += summary + "\n";
     str += message + "\n";
     for (int i = 0; i < files.size(); i++)

@@ -190,7 +190,8 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     // Ensure shown path is with native separators
     const QString file = QDir::toNativeSeparators(item.file);
     list << CreateNormalItem(file);
-    list << CreateNormalItem(tr(item.severity.toLatin1()));
+    const QString severity = GuiSeverity::toString(item.severity);
+    list << CreateNormalItem(severity.toLatin1());
     list << CreateLineNumberItem(QString("%1").arg(item.line));
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
@@ -251,22 +252,105 @@ ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
     return (ShowTypes)value;
 }
 
-ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
+ShowTypes ResultsTree::SeverityToShowType(Severity::SeverityType severity)
 {
-    if (severity == "error")
+    switch (severity)
+    {
+    case Severity::none:
+        return SHOW_NONE;
+    case Severity::error:
         return SHOW_ERRORS;
-    if (severity == "style")
+    case Severity::style:
         return SHOW_STYLE;
-    if (severity == "warning")
+    case Severity::warning:
         return SHOW_WARNINGS;
-    if (severity == "performance")
+    case Severity::performance:
         return SHOW_PERFORMANCE;
-    if (severity == "portability")
+    case Severity::portability:
         return SHOW_PORTABILITY;
-    if (severity == "information")
+    case Severity::information:
         return SHOW_INFORMATION;
+    default:
+        return SHOW_NONE;
+    }
 
     return SHOW_NONE;
+}
+
+Severity::SeverityType ResultsTree::ShowTypeToSeverity(ShowTypes type)
+{
+    switch (type)
+    {
+    case SHOW_STYLE:
+        return Severity::style;
+        break;
+
+    case SHOW_ERRORS:
+        return Severity::error;
+        break;
+
+    case SHOW_WARNINGS:
+        return Severity::warning;
+        break;
+
+    case SHOW_PERFORMANCE:
+        return Severity::performance;
+        break;
+
+    case SHOW_PORTABILITY:
+        return Severity::portability;
+        break;
+
+    case SHOW_INFORMATION:
+        return Severity::information;
+        break;
+
+    case SHOW_NONE:
+        return Severity::none;
+        break;
+    }
+
+    return Severity::none;
+}
+
+QString ResultsTree::SeverityToTranslatedString(Severity::SeverityType severity)
+{
+    switch (severity)
+    {
+    case Severity::style:
+        return tr("style");
+        break;
+
+    case Severity::error:
+        return tr("error");
+        break;
+
+    case Severity::warning:
+        return tr("warning");
+        break;
+
+    case Severity::performance:
+        return tr("performance");
+        break;
+
+    case Severity::portability:
+        return tr("portability");
+        break;
+
+    case Severity::information:
+        return tr("information");
+        break;
+
+    case Severity::debug:
+        return tr("debug");
+        break;
+
+    case Severity::none:
+        return "";
+        break;
+    }
+
+    return "";
 }
 
 QStandardItem *ResultsTree::FindFileItem(const QString &name)
@@ -735,21 +819,25 @@ void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
     }
 }
 
-QString ResultsTree::SeverityToIcon(const QString &severity) const
+QString ResultsTree::SeverityToIcon(Severity::SeverityType severity) const
 {
-    if (severity == "error")
+    switch (severity)
+    {
+    case Severity::error:
         return ":images/dialog-error.png";
-    if (severity == "style")
+    case Severity::style:
         return ":images/applications-development.png";
-    if (severity == "warning")
+    case Severity::warning:
         return ":images/dialog-warning.png";
-    if (severity == "portability")
+    case Severity::portability:
         return ":images/applications-system.png";
-    if (severity == "performance")
+    case Severity::performance:
         return ":images/utilities-system-monitor.png";
-    if (severity == "information")
+    case Severity::information:
         return ":images/dialog-information.png";
-
+    default:
+        return "";
+    }
     return "";
 }
 
@@ -794,7 +882,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         QVariantMap data = userdata.toMap();
 
         ErrorItem item;
-        item.severity = ShowTypeToString(VariantToShowType(data["severity"]));
+        item.severity = ShowTypeToSeverity(VariantToShowType(data["severity"]));
         item.summary = data["summary"].toString();
         item.message = data["message"].toString();
         item.id = data["id"].toString();
@@ -821,42 +909,6 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
 
         report->WriteError(item);
     }
-}
-
-QString ResultsTree::ShowTypeToString(ShowTypes type)
-{
-    switch (type)
-    {
-    case SHOW_STYLE:
-        return tr("style");
-        break;
-
-    case SHOW_ERRORS:
-        return tr("error");
-        break;
-
-    case SHOW_WARNINGS:
-        return tr("warning");
-        break;
-
-    case SHOW_PERFORMANCE:
-        return tr("performance");
-        break;
-
-    case SHOW_PORTABILITY:
-        return tr("portability");
-        break;
-
-    case SHOW_INFORMATION:
-        return tr("information");
-        break;
-
-    case SHOW_NONE:
-        return "";
-        break;
-    }
-
-    return "";
 }
 
 void ResultsTree::UpdateSettings(bool showFullPath,
