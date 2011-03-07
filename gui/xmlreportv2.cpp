@@ -110,7 +110,9 @@ void XmlReportV2::WriteError(const ErrorItem &error)
 
     mXmlWriter->writeStartElement(ErrorElementName);
     mXmlWriter->writeAttribute(IdAttribute, error.id);
-    mXmlWriter->writeAttribute(SeverityAttribute, error.severity);
+
+    // Don't localize severity so we can read these files
+    mXmlWriter->writeAttribute(SeverityAttribute, GuiSeverity::toString(error.severity));
     const QString summary = XmlReport::quoteMessage(error.summary);
     mXmlWriter->writeAttribute(MsgAttribute, summary);
     const QString message = XmlReport::quoteMessage(error.message);
@@ -196,7 +198,7 @@ ErrorItem XmlReportV2::ReadError(QXmlStreamReader *reader)
     {
         QXmlStreamAttributes attribs = reader->attributes();
         item.id = attribs.value("", IdAttribute).toString();
-        item.severity = attribs.value("", SeverityAttribute).toString();
+        item.severity = GuiSeverity::fromString(attribs.value("", SeverityAttribute).toString());
         const QString summary = attribs.value("", MsgAttribute).toString();
         item.summary = XmlReport::unquoteMessage(summary);
         const QString message = attribs.value("", VerboseAttribute).toString();

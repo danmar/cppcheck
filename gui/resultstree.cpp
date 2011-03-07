@@ -109,7 +109,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
         realfile = tr("Undefined file");
     }
 
-    bool hide = !mShowTypes[SeverityToShowType(item.severity)];
+    bool hide = !mShowTypes[SeverityToShowType(GuiSeverity::toString(item.severity))];
 
     //if there is at least one error that is not hidden, we have a visible error
     if (!hide)
@@ -123,7 +123,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     line.line = item.lines[0];
     line.summary = item.summary;
     line.message = item.message;
-    line.severity = item.severity;
+    line.severity = GuiSeverity::toString(item.severity);
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
     QStandardItem *stditem = AddBacktraceFiles(EnsureFileItem(line.file, hide),
@@ -137,7 +137,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     //Add user data to that item
     QMap<QString, QVariant> data;
     data["hide"] = false;
-    data["severity"]  = SeverityToShowType(item.severity);
+    data["severity"]  = SeverityToShowType(GuiSeverity::toString(item.severity));
     data["summary"] = item.summary;
     data["message"]  = item.message;
     data["file"]  = item.files[0];
@@ -794,7 +794,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         QVariantMap data = userdata.toMap();
 
         ErrorItem item;
-        item.severity = ShowTypeToString(VariantToShowType(data["severity"]));
+        item.severity = GuiSeverity::fromString(ShowTypeToString(VariantToShowType(data["severity"])));
         item.summary = data["summary"].toString();
         item.message = data["message"].toString();
         item.id = data["id"].toString();

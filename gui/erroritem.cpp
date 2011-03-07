@@ -35,14 +35,14 @@ ErrorItem::ErrorItem(const ErrorLine &line)
     files.append(line.file);
     lines.append(line.line);
     id = line.id;
-    severity = line.severity;
+    severity = GuiSeverity::fromString(line.severity);
     summary = line.summary;
     message = line.message;
 }
 
 QString ErrorItem::ToString() const
 {
-    QString str = file + " - " + id + " - " + severity +"\n";
+    QString str = file + " - " + id + " - " + GuiSeverity::toString(severity) +"\n";
     str += summary + "\n";
     str += message + "\n";
     for (int i = 0; i < files.size(); i++)
