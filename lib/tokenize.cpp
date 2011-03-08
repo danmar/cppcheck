@@ -3603,6 +3603,10 @@ void Tokenizer::setVarId()
                         --indentlevel;
                     }
 
+                    // skip parantheses..
+                    else if (tok2->str() == "(")
+                        tok2 = tok2->link();
+
                     // Found a member variable..
                     else if (indentlevel == 1 && tok2->varId() > 0)
                         varlist[tok2->str()] = tok2->varId();
