@@ -108,6 +108,7 @@ private:
         TEST_CASE(array_index_32);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
+        TEST_CASE(array_index_for_in_for);   // FP: #2634
         TEST_CASE(array_index_calculation);
         TEST_CASE(array_index_negative);
         TEST_CASE(array_index_for_decr);
@@ -1187,6 +1188,19 @@ private:
               " }\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:12]: (error) Array index out of bounds\n", "", errout.str());
+    }
+
+    void array_index_for_in_for()
+    {
+        check("void f() {\n"
+              "    int a[5];\n"
+              "    for (int i = 0; i < 10; ++i) {\n"
+              "        for (int j = i; j < 5; ++j) {\n"
+              "            a[i] = 0;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_calculation()
