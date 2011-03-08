@@ -243,13 +243,18 @@ void Tokenizer::insertTokens(Token *dest, const Token *src, unsigned int n)
         dest->fileIndex(src->fileIndex());
         dest->linenr(src->linenr());
         dest->varId(src->varId());
+        dest->isName(src->isName());
+        dest->isNumber(src->isNumber());
+        dest->isBoolean(src->isBoolean());
         dest->isUnsigned(src->isUnsigned());
         dest->isSigned(src->isSigned());
         dest->isLong(src->isLong());
+        dest->isUnused(src->isUnused());
         src  = src->next();
         --n;
     }
 }
+
 //---------------------------------------------------------------------------
 
 Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last)
@@ -262,9 +267,13 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last)
         tok2 = tok2->next();
         tok2->fileIndex(dest->fileIndex());
         tok2->linenr(dest->linenr());
+        tok2->isName(tok->isName());
+        tok2->isNumber(tok->isNumber());
+        tok2->isBoolean(tok->isBoolean());
         tok2->isUnsigned(tok->isUnsigned());
         tok2->isSigned(tok->isSigned());
         tok2->isLong(tok->isLong());
+        tok2->isUnused(tok->isUnused());
 
         // Check for links and fix them up
         if (tok2->str() == "(" || tok2->str() == "[" || tok2->str() == "{")

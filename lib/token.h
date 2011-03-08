@@ -141,13 +141,25 @@ public:
     {
         return _isName;
     }
+    void isName(bool name)
+    {
+        _isName = name;
+    }
     bool isNumber() const
     {
         return _isNumber;
     }
+    void isNumber(bool number)
+    {
+        _isNumber = number;
+    }
     bool isBoolean() const
     {
         return _isBoolean;
+    }
+    void isBoolean(bool boolean)
+    {
+        _isBoolean = boolean;
     }
     bool isUnsigned() const
     {
