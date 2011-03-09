@@ -695,6 +695,14 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 
 void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
 {
+    // check for cached message for this type
+    std::map<std::string, std::string>::const_iterator msg = _memsetClassMessages.find(type);
+    if (msg != _memsetClassMessages.end())
+    {
+        memsetError(tok, type, msg->second);
+        return;
+    }
+
     // Warn if type is a class or struct that contains any std::* variables
     const std::string pattern2(std::string("struct|class ") + type + " :|{");
     const Token *tstruct = Token::findmatch(_tokenizer->tokens(), pattern2.c_str());
@@ -702,7 +710,8 @@ void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
     if (!tstruct)
         return;
 
-    const std::string &typeName = tstruct->str();
+    // typeKind is either 'struct' or 'class'
+    const std::string &typeKind = tstruct->str();
 
     if (tstruct->tokAt(2)->str() == ":")
     {
@@ -743,7 +752,7 @@ void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
             tstruct->str().find(":") != std::string::npos)
         {
             if (Token::Match(tstruct->next(), "std :: %type% %var% ;"))
-                memsetError(tok, tok->str(), "'std::" + tstruct->strAt(3) + "'", typeName);
+                memsetError(tok, type, tok->str(), "'std::" + tstruct->strAt(3) + "'", typeKind);
 
             else if (Token::Match(tstruct->next(), "std :: %type% <"))
             {
@@ -771,10 +780,12 @@ void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
 
                 // found error => report
                 if (Token::Match(tstruct, "> %var% ;"))
-                    memsetError(tok, tok->str(), "'std::" + typestr + "'", typeName);
+                    memsetError(tok, type, tok->str(), "'std::" + typestr + "'", typeKind);
             }
             else if (Token::simpleMatch(tstruct->next(), "virtual"))
-                memsetError(tok, tok->str(), "virtual method", typeName);
+                memsetError(tok, type, tok->str(), "virtual method", typeKind);
+            else if (!Token::Match(tstruct->next(), "static|}"))
+                checkMemsetType(tok, tstruct->next()->str());
         }
     }
 }
@@ -816,9 +827,16 @@ void CheckClass::noMemset()
     }
 }
 
-void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
+void CheckClass::memsetError(const Token *tok, const std::string &type, const std::string &message)
 {
-    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a " + classname);
+    reportError(tok, Severity::error, "memsetClass", message);
+    // cache the message for this type so we don't have to look it up again
+    _memsetClassMessages[type] = message;
+}
+
+void CheckClass::memsetError(const Token *tok, const std::string &type, const std::string &memfunc, const std::string &classname, const std::string &typekind)
+{
+    memsetError(tok, type, "Using '" + memfunc + "' on " + typekind + " that contains a " + classname);
 }
 
 //---------------------------------------------------------------------------
