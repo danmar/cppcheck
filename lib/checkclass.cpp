@@ -693,6 +693,90 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
 
+void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
+{
+    // Warn if type is a class or struct that contains any std::* variables
+    const std::string pattern2(std::string("struct|class ") + type + " :|{");
+    const Token *tstruct = Token::findmatch(_tokenizer->tokens(), pattern2.c_str());
+
+    if (!tstruct)
+        return;
+
+    const std::string &typeName = tstruct->str();
+
+    if (tstruct->tokAt(2)->str() == ":")
+    {
+        tstruct = tstruct->tokAt(3);
+        for (; tstruct; tstruct = tstruct->next())
+        {
+            while (Token::Match(tstruct, "public|private|protected|virtual"))
+            {
+                tstruct = tstruct->next();
+            }
+
+            // recursively check all parent classes
+            checkMemsetType(tok, tstruct->str());
+
+            tstruct = tstruct->next();
+            if (tstruct->str() != ",")
+                break;
+        }
+    }
+
+    for (; tstruct; tstruct = tstruct->next())
+    {
+        if (tstruct->str() == "}")
+            break;
+
+        // struct with function? skip function body..
+        if (Token::simpleMatch(tstruct, ") {"))
+        {
+            tstruct = tstruct->next()->link();
+            if (!tstruct)
+                break;
+        }
+
+        // before a statement there must be either:
+        // * private:|protected:|public:
+        // * { } ;
+        if (Token::Match(tstruct, "[;{}]") ||
+            tstruct->str().find(":") != std::string::npos)
+        {
+            if (Token::Match(tstruct->next(), "std :: %type% %var% ;"))
+                memsetError(tok, tok->str(), tstruct->strAt(3), typeName);
+
+            else if (Token::Match(tstruct->next(), "std :: %type% <"))
+            {
+                // backup the type
+                const std::string typestr(tstruct->strAt(3));
+
+                // check if it's a pointer variable..
+                unsigned int level = 0;
+                while (0 != (tstruct = tstruct->next()))
+                {
+                    if (tstruct->str() == "<")
+                        ++level;
+                    else if (tstruct->str() == ">")
+                    {
+                        if (level <= 1)
+                            break;
+                        --level;
+                    }
+                    else if (tstruct->str() == "(")
+                        tstruct = tstruct->link();
+                }
+
+                if (!tstruct)
+                    break;
+
+                // found error => report
+                if (Token::Match(tstruct, "> %var% ;"))
+                    memsetError(tok, tok->str(), typestr, typeName);
+            }
+        }
+    }
+}
+
 void CheckClass::noMemset()
 {
     createSymbolDatabase();
@@ -726,67 +810,7 @@ void CheckClass::noMemset()
         if (type.empty())
             continue;
 
-        // Warn if type is a class or struct that contains any std::* variables
-        const std::string pattern2(std::string("struct|class ") + type + " {");
-        const Token *tstruct = Token::findmatch(_tokenizer->tokens(), pattern2.c_str());
-
-        if (!tstruct)
-            continue;
-
-        const std::string &typeName = tstruct->str();
-
-        for (; tstruct; tstruct = tstruct->next())
-        {
-            if (tstruct->str() == "}")
-                break;
-
-            // struct with function? skip function body..
-            if (Token::simpleMatch(tstruct, ") {"))
-            {
-                tstruct = tstruct->next()->link();
-                if (!tstruct)
-                    break;
-            }
-
-            // before a statement there must be either:
-            // * private:|protected:|public:
-            // * { } ;
-            if (Token::Match(tstruct, "[;{}]") ||
-                tstruct->str().find(":") != std::string::npos)
-            {
-                if (Token::Match(tstruct->next(), "std :: %type% %var% ;"))
-                    memsetError(tok, tok->str(), tstruct->strAt(3), typeName);
-
-                else if (Token::Match(tstruct->next(), "std :: %type% <"))
-                {
-                    // backup the type
-                    const std::string typestr(tstruct->strAt(3));
-
-                    // check if it's a pointer variable..
-                    unsigned int level = 0;
-                    while (0 != (tstruct = tstruct->next()))
-                    {
-                        if (tstruct->str() == "<")
-                            ++level;
-                        else if (tstruct->str() == ">")
-                        {
-                            if (level <= 1)
-                                break;
-                            --level;
-                        }
-                        else if (tstruct->str() == "(")
-                            tstruct = tstruct->link();
-                    }
-
-                    if (!tstruct)
-                        break;
-
-                    // found error => report
-                    if (Token::Match(tstruct, "> %var% ;"))
-                        memsetError(tok, tok->str(), typestr, typeName);
-                }
-            }
-        }
+        checkMemsetType(tok, type);
     }
 }
 

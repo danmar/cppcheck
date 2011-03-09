@@ -2949,6 +2949,18 @@ private:
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+
+        checkNoMemset("class Fred\n"
+                      "{\n"
+                      "    std::string s;\n"
+                      "};\n"
+                      "class Pebbles: public Fred {};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Pebbles pebbles;\n"
+                      "    memset(&pebbles, 0, sizeof(pebbles));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
     }
 
     void memsetOnStruct()
