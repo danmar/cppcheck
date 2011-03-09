@@ -198,7 +198,8 @@ private:
         TEST_CASE(terminateStrncpy3);
         TEST_CASE(recursive_long_time);
 
-        TEST_CASE(crash);	// Ticket #1587 - crash
+        TEST_CASE(crash1);	// Ticket #1587 - crash
+        TEST_CASE(crash2);  // Ticket #2607 - crash
 
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
@@ -2709,7 +2710,7 @@ private:
 
 
     // Ticket #1587 - crash
-    void crash()
+    void crash1()
     {
         check("struct struct A\n"
               "{\n"
@@ -2724,6 +2725,10 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void crash2()
+    {
+        check("struct C {} {} x");
+    }
 
 
     void epcheck(const char code[])
