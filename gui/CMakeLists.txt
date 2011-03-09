@@ -1,4 +1,4 @@
-# Minimal CMake build file to build cppcheck Qt GUI
+# Instructions for building of the cppcheck Qt GUI
 find_package(PCRE REQUIRED)
 
 # find and setup Qt4 for this project
@@ -107,8 +107,28 @@ SET(CPPCHECK_GUI_TRANS
   cppcheck_sr.ts
 )
 
-set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
-include("${CPPCHECK_LIB_DIR}library_sources.cmake")
+option(CPPCHECK_GUI_BUILD_EMBED_LIBRARY_SOURCE_CODE
+       "The source files of Cppchecks's library should be directly included
+for the compilation of the graphical user interface.")
+mark_as_advanced(CPPCHECK_GUI_BUILD_EMBED_LIBRARY_SOURCE_CODE)
+
+if(CPPCHECK_GUI_BUILD_EMBED_LIBRARY_SOURCE_CODE)
+   set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
+   include("${CPPCHECK_LIB_DIR}library_sources.txt")
+   set(CPPCHECK_GUI_SOURCES ${CPPCHECK_GUI_SOURCES} ${CPPCHECK_LIB_SOURCES})
+   set(CPPCHECK_GUI_LINK_LIBRARIES ${PCRE_LIBRARIES})
+else()
+   option(CPPCHECK_GUI_BUILD_USE_STATICALLY_LINKED_LIBRARY
+          "The static library file that was generated for Cppchecks's class library should be
+used for the link step of the graphical user interface.")
+   mark_as_advanced(CPPCHECK_GUI_BUILD_USE_STATICALLY_LINKED_LIBRARY)
+
+   if(CPPCHECK_GUI_BUILD_USE_STATICALLY_LINKED_LIBRARY)
+      set(CPPCHECK_GUI_LINK_LIBRARIES libchecks ${PCRE_LIBRARIES})   # static approach
+   else()
+      set(CPPCHECK_GUI_LINK_LIBRARIES checks ${PCRE_LIBRARIES})   # shared approach
+   endif()
+endif()
 
 if(WIN32)
    # Add Windows resource file
@@ -142,8 +162,8 @@ SOURCE_GROUP("Ui Files" ".ui$")
 SOURCE_GROUP("Moc Files" "moc_.*cxx$")
 
 ADD_EXECUTABLE(gui WIN32 ${CPPCHECK_GUI_SOURCES} ${CPPCHECK_MOC_SOURCES}
-               ${CPPCHECK_FORMS_HEADERS} ${CPPCHECK_RCC_SOURCES} ${CPPCHECK_LIB_SOURCES})
-TARGET_LINK_LIBRARIES(gui ${CPPCHECK_GUI_LINK_LIBRARIES} ${PCRE_LIBRARIES} ${QT_LIBRARIES})
+               ${CPPCHECK_FORMS_HEADERS} ${CPPCHECK_RCC_SOURCES})
+TARGET_LINK_LIBRARIES(gui ${CPPCHECK_GUI_LINK_LIBRARIES} ${QT_LIBRARIES})
 
 ELSE(QT4_FOUND)
 message("GUI not built since QT4 not found.")
