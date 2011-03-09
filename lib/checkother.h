@@ -64,7 +64,9 @@ public:
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
         checkOther.checkSelfAssignment();
-        checkOther.clarifyCondition();   // not simplified because ifAssign
+
+        // I'll just fix a few false positives and then uncomment
+        // checkOther.clarifyCondition();   // not simplified because ifAssign
     }
 
     /** @brief Run checks against the simplified token list */
