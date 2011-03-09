@@ -743,7 +743,7 @@ void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
             tstruct->str().find(":") != std::string::npos)
         {
             if (Token::Match(tstruct->next(), "std :: %type% %var% ;"))
-                memsetError(tok, tok->str(), tstruct->strAt(3), typeName);
+                memsetError(tok, tok->str(), "'std::" + tstruct->strAt(3) + "'", typeName);
 
             else if (Token::Match(tstruct->next(), "std :: %type% <"))
             {
@@ -771,8 +771,10 @@ void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
 
                 // found error => report
                 if (Token::Match(tstruct, "> %var% ;"))
-                    memsetError(tok, tok->str(), typestr, typeName);
+                    memsetError(tok, tok->str(), "'std::" + typestr + "'", typeName);
             }
+            else if (Token::simpleMatch(tstruct->next(), "virtual"))
+                memsetError(tok, tok->str(), "virtual method", typeName);
         }
     }
 }
@@ -816,7 +818,7 @@ void CheckClass::noMemset()
 
 void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
 {
-    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a 'std::" + classname + "'");
+    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a " + classname);
 }
 
 //---------------------------------------------------------------------------
