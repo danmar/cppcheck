@@ -2949,6 +2949,56 @@ private:
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+
+        checkNoMemset("class Fred\n"
+                      "{\n"
+                      "    std::string s;\n"
+                      "};\n"
+                      "class Pebbles: public Fred {};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Pebbles pebbles;\n"
+                      "    memset(&pebbles, 0, sizeof(pebbles));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+
+        checkNoMemset("struct Stringy {\n"
+                      "    std::string inner;\n"
+                      "};\n"
+                      "struct Foo {\n"
+                      "    Stringy s;\n"
+                      "};\n"
+                      "int main() {\n"
+                      "    Foo foo;\n"
+                      "    memset(&foo, 0, sizeof(Foo));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
+
+        checkNoMemset("class Fred\n"
+                      "{\n"
+                      "    virtual ~Fred();\n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual method\n", errout.str());
+
+        checkNoMemset("class Fred\n"
+                      "{\n"
+                      "};\n"
+                      "class Wilma\n"
+                      "{\n"
+                      "    virtual ~Wilma();\n"
+                      "};\n"
+                      "class Pebbles: public Fred, Wilma {};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Pebbles pebbles;\n"
+                      "    memset(&pebbles, 0, sizeof(pebbles));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:12]: (error) Using 'memset' on class that contains a virtual method\n", errout.str());
     }
 
     void memsetOnStruct()
