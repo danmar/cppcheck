@@ -4598,6 +4598,8 @@ private:
     {
         ASSERT_EQUALS("( i < 10 )", tokenizeAndStringify("(10>i)"));
         ASSERT_EQUALS("; i < 10 ;", tokenizeAndStringify(";10>i;"));
+        ASSERT_EQUALS("void > ( ) ; void > ( )",
+                      tokenizeAndStringify("void>(); void>()"));
     }
 
 

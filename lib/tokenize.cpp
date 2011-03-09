@@ -8723,6 +8723,9 @@ void Tokenizer::simplifyComparisonOrder()
         {
             if (!tok->next()->isName() && !tok->next()->isNumber())
                 continue;
+            const Token *operand2 = tok->tokAt(3);
+            if (!operand2->isName() && !operand2->isNumber())
+                continue;
             const std::string op1(tok->strAt(1));
             tok->next()->str(tok->strAt(3));
             tok->tokAt(3)->str(op1);
