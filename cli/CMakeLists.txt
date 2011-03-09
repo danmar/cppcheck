@@ -34,7 +34,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wshadow -Wno-long-long -Wfloat-equal -Wcast-qual")
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
-include_directories(${CPPCHECK_SOURCE_DIR}/lib
+include_directories("${CPPCHECK_SOURCE_DIR}/lib"
                     "${PCRE_INCLUDE_DIR}"
                     "${TINYXML_INCLUDE_DIR}")
 add_executable(cppcheck ${CPPCHECK_CLI_SOURCES} ${CPPCHECK_LIB_SOURCES})

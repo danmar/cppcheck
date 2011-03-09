@@ -44,21 +44,21 @@ macro ( _XMLTO_FILE outfiles mode)
       string ( REGEX REPLACE "[[:space:]]" "" XMLTO_FILEEXT_${mode} "${XMLTO_FILEEXT_${mode}}" )
     endif ( "${mode}" STREQUAL "man" )
 
-    get_filename_component ( dbFilePath ${CMAKE_CURRENT_BINARY_DIR}/${dbFile} PATH )
-    get_filename_component ( dbFileWE ${dbFile} NAME_WE )
-    get_filename_component ( dbFileAbsWE ${dbFilePath}/${dbFileWE} ABSOLUTE )
+    get_filename_component ( dbFilePath "${CMAKE_CURRENT_BINARY_DIR}/${dbFile}" PATH )
+    get_filename_component ( dbFileWE "${dbFile}" NAME_WE )
+    get_filename_component ( dbFileAbsWE "${dbFilePath}/${dbFileWE}" ABSOLUTE )
 
     add_custom_command (
-      OUTPUT            ${dbFileAbsWE}.${XMLTO_FILEEXT_${mode}}
-      COMMAND           ${XMLTO_EXECUTABLE} ${XMLTO_COMMAND_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}
+      OUTPUT            "${dbFileAbsWE}.${XMLTO_FILEEXT_${mode}}"
+      COMMAND           "${XMLTO_EXECUTABLE}" ${XMLTO_COMMAND_ARGS} -o "${CMAKE_CURRENT_BINARY_DIR}"
                         ${XMLTO_MODE_${mode}} "${CMAKE_CURRENT_SOURCE_DIR}/${dbFile}"
-      MAIN_DEPENDENCY   ${CMAKE_CURRENT_SOURCE_DIR}/${dbFile}
+      MAIN_DEPENDENCY   "${CMAKE_CURRENT_SOURCE_DIR}/${dbFile}"
       VERBATIM
     )
 
     set ( ${outfiles}
       ${${outfiles}}
-      ${dbFileAbsWE}.${XMLTO_FILEEXT_${mode}}
+      "${dbFileAbsWE}.${XMLTO_FILEEXT_${mode}}"
     )
   endforeach ( dbFile )
 endmacro ( _XMLTO_FILE outfiles )
