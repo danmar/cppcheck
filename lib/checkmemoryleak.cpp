@@ -75,10 +75,18 @@ bool CheckMemoryLeak::isclass(const Tokenizer *_tokenizer, const Token *tok) con
     if (tok->isStandardType())
         return false;
 
-    std::ostringstream pattern;
-    pattern << "struct " << tok->str();
-    if (Token::findmatch(_tokenizer->tokens(), pattern.str().c_str()))
-        return false;
+    // return false if the type is a simple struct without member functions
+    const std::string pattern("struct " + tok->str() + " {");
+    const Token *tok2 = Token::findmatch(_tokenizer->tokens(), pattern.c_str());
+    if (tok2)
+    {
+        while (tok2 && tok2->str() != "}" && tok2->str() != "(")
+            tok2 = tok2->next();
+
+        // Simple struct => return false
+        if (tok2 && tok2->str() == "}")
+            return false;
+    }
 
     return true;
 }
@@ -1588,17 +1596,19 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         }
 
         // Callback..
-        bool matchFirst = Token::Match(tok, "( %var%");
-        if (matchFirst || Token::Match(tok, "( * %var%"))
+        if (Token::Match(tok, "( *| %var%") && Token::simpleMatch(tok->link(),") ("))
         {
-            int tokIdx = matchFirst ? 2 : 3;
+            const Token *tok2 = tok->next();
+            if (tok2->str() == "*")
+                tok2 = tok2->next();
+            tok2 = tok2->next();
 
-            while (Token::Match(tok->tokAt(tokIdx), ". %var%"))
-                tokIdx += 2;
+            while (Token::Match(tok2, ". %var%"))
+                tok2 = tok2->tokAt(2);
 
-            if (Token::simpleMatch(tok->tokAt(tokIdx), ") ("))
+            if (Token::simpleMatch(tok2, ") ("))
             {
-                for (const Token *tok2 = tok->tokAt(tokIdx + 2); tok2; tok2 = tok2->next())
+                for (; tok2; tok2 = tok2->next())
                 {
                     if (Token::Match(tok2, "[;{]"))
                         break;
@@ -1954,8 +1964,8 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 }
                 else
                 {
-                    // remove the "if* ;"
-                    Token::eraseTokens(tok2, tok2->tokAt(3));
+                    // remove the "if*"
+                    Token::eraseTokens(tok2, tok2->tokAt(2));
                 }
                 done = false;
             }

@@ -113,6 +113,7 @@ private:
         TEST_CASE(template20);
         TEST_CASE(template21);
         TEST_CASE(template22);
+        TEST_CASE(template23);
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -243,6 +244,8 @@ private:
         TEST_CASE(simplifyTypedef80); // ticket #2587
         TEST_CASE(simplifyTypedef81); // ticket #2603
         TEST_CASE(simplifyTypedef82); // ticket #2403
+        TEST_CASE(simplifyTypedef83); // ticket #2620
+        TEST_CASE(simplifyTypedef84); // ticket #2630
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -1711,7 +1714,7 @@ private:
                             "} ;\n";
 
         // The expected result..
-        std::string expected("; void f ( ) { A<int> a ; } ; class A<int> { }");
+        std::string expected("; void f ( ) { A<int> a ; } ; class A<int> { } class A<T> { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -1865,18 +1868,13 @@ private:
                             "    return 0;\n"
                             "}\n";
 
-        const std::string wanted("; "
-                                 "; "
-                                 "int main ( ) { b<2> ( ) ; return 0 ; } "
-                                 "void b<2> ( ) { a<2> ( ) ; } "
-                                 "void a<2> ( ) { }");
+        const std::string expected("; "
+                                   "int main ( ) { b<2> ( ) ; return 0 ; } "
+                                   "void b<2> ( ) { a<2> ( ) ; } "
+                                   "void a<i> ( ) { } "
+                                   "void a<2> ( ) { }");
 
-        const std::string current("; "
-                                  "int main ( ) { b<2> ( ) ; return 0 ; } "
-                                  "void b<2> ( ) { a < 2 > ( ) ; }"
-                                 );
-
-        TODO_ASSERT_EQUALS(wanted, current, sizeof_(code));
+        ASSERT_EQUALS(expected, sizeof_(code));
     }
 
     void template17()
@@ -2020,6 +2018,22 @@ private:
         const std::string expected("; "
                                    "Fred<std::string> fred ; "
                                    "struct Fred<std::string> { std :: string a ; }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template23()
+    {
+        const char code[] = "template <classname T> void foo() { }\n"
+                            "void bar() {\n"
+                            "    std::cout << (foo<double>());\n"
+                            "}";
+
+        const std::string expected("; "
+                                   "void bar ( ) {"
+                                   " std :: cout << ( foo<double> ( ) ) ; "
+                                   "} "
+                                   "void foo<double> ( ) { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -3556,8 +3570,8 @@ private:
 
         const char expected[] =
             "; "
-            "void addCallback ( bool ( * callback ) ( int i ) ) { } "
-            "void addCallback1 ( bool ( * callback ) ( int i ) , int j ) { }";
+            "void addCallback ( bool * callback ) { } "
+            "void addCallback1 ( bool * callback , int j ) { }";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -3573,28 +3587,12 @@ private:
 
             const char expected[] =
                 "; "
-                "void g ( int ( * f ) ( ) ) "
+                "void g ( int * f ) "
                 "{ "
-                "int ( * f2 ) ( ) = ( int ( * ) ( ) ) f ; "
+                "int * f2 ; f2 = ( int * ) f ; "
                 "}";
 
             ASSERT_EQUALS(expected, tok(code, false));
-
-            // TODO: the definition and assignment should be split up
-            const char wanted[] =
-                "; "
-                "void g ( fp f ) "
-                "{ "
-                "int ( * f2 ) ( ) ; f2 = ( int ( * ) ( ) ) f ; "
-                "}";
-            const char current[] =
-                "; "
-                "void g ( int ( * f ) ( ) ) "
-                "{ "
-                "int ( * f2 ) ( ) = ( int ( * ) ( ) ) f ; "
-                "}";
-
-            TODO_ASSERT_EQUALS(wanted, current, tok(code, false));
         }
 
         {
@@ -3606,9 +3604,9 @@ private:
 
             const char expected[] =
                 "; "
-                "void g ( int ( * f ) ( ) ) "
+                "void g ( int * f ) "
                 "{ "
-                "int ( * f2 ) ( ) = static_cast < int ( * ) ( ) > ( f ) ; "
+                "int * f2 ; f2 = static_cast < int * > ( f ) ; "
                 "}";
 
             ASSERT_EQUALS(expected, tok(code, false));
@@ -4959,6 +4957,33 @@ private:
                              "  b->f = new A::F * [ 10 ];\n"
                              "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef83() // ticket #2620
+    {
+        const char code[] = "typedef char Str[10];\n"
+                            "void f(Str &cl) { }\n";
+
+        // The expected result..
+        const std::string expected("; "
+                                   "void f ( char ( & cl ) [ 10 ] ) { }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void simplifyTypedef84() // ticket #2630 (segmentation fault)
+    {
+        const char code1[] = "typedef y x () x\n";
+        checkSimplifyTypedef(code1);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        const char code2[] = "typedef struct template <>\n";
+        checkSimplifyTypedef(code2);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        const char code3[] = "typedef ::<>\n";
+        checkSimplifyTypedef(code3);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void simplifyTypedefFunction1()

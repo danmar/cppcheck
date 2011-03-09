@@ -303,6 +303,27 @@ static bool hasbom(const std::string &str)
 }
 
 
+static bool isFallThroughComment(std::string comment)
+{
+    // convert comment to lower case without whitespace
+    std::transform(comment.begin(), comment.end(), comment.begin(), ::tolower);
+    for (std::string::iterator i = comment.begin(); i != comment.end();)
+    {
+        if (::isspace(static_cast<unsigned char>(*i)))
+            i = comment.erase(i);
+        else
+            ++i;
+    }
+
+    return comment.find("fallthr") != std::string::npos ||
+           comment.find("fallsthr") != std::string::npos ||
+           comment.find("fall-thr") != std::string::npos ||
+           comment.find("dropthr") != std::string::npos ||
+           comment.find("passthr") != std::string::npos ||
+           comment.find("nobreak") != std::string::npos ||
+           comment == "fall";
+}
+
 std::string Preprocessor::removeComments(const std::string &str, const std::string &filename, Settings *settings)
 {
     // For the error report
@@ -314,7 +335,9 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     unsigned int newlines = 0;
     std::ostringstream code;
     unsigned char previous = 0;
+    bool inPreprocessorLine = false;
     std::vector<std::string> suppressionIDs;
+    bool fallThroughComment = false;
 
     for (std::string::size_type i = hasbom(str) ? 3U : 0U; i < str.length(); ++i)
     {
@@ -358,6 +381,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             // if there has been <backspace><newline> sequences, add extra newlines..
             if (ch == '\n')
             {
+                if (previous != '\\')
+                    inPreprocessorLine = false;
                 ++lineno;
                 if (newlines > 0)
                 {
@@ -377,10 +402,10 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             i = str.find('\n', i);
             if (i == std::string::npos)
                 break;
+            std::string comment(str, commentStart, i - commentStart);
 
             if (settings && settings->_inlineSuppressions)
             {
-                std::string comment(str, commentStart, i - commentStart);
                 std::istringstream iss(comment);
                 std::string word;
                 iss >> word;
@@ -390,6 +415,11 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                     if (iss)
                         suppressionIDs.push_back(word);
                 }
+            }
+
+            if (isFallThroughComment(comment))
+            {
+                fallThroughComment = true;
             }
 
             code << "\n";
@@ -412,10 +442,15 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                     ++lineno;
                 }
             }
+            std::string comment(str, commentStart, i - commentStart - 1);
+
+            if (isFallThroughComment(comment))
+            {
+                fallThroughComment = true;
+            }
 
             if (settings && settings->_inlineSuppressions)
             {
-                std::string comment(str, commentStart, i - commentStart);
                 std::istringstream iss(comment);
                 std::string word;
                 iss >> word;
@@ -427,25 +462,47 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 }
             }
         }
+        else if (ch == '#' && previous == '\n')
+        {
+            code << ch;
+            previous = ch;
+            inPreprocessorLine = true;
+        }
         else
         {
-            // Not whitespace and not a comment. Must be code here!
-            // Add any pending inline suppressions that have accumulated.
-            if (!suppressionIDs.empty())
+            if (!inPreprocessorLine)
             {
-                if (settings != NULL)
+                // Not whitespace, not a comment, and not preprocessor.
+                // Must be code here!
+
+                // First check for a "fall through" comment match, but only
+                // add a suppression if the next token is 'case' or 'default'
+                if (_settings->_checkCodingStyle && _settings->inconclusive && fallThroughComment)
                 {
-                    // Add the suppressions.
-                    for (size_t j(0); j < suppressionIDs.size(); ++j)
+                    std::string::size_type j = str.find_first_not_of("abcdefghijklmnopqrstuvwxyz", i);
+                    std::string tok = str.substr(i, j - i);
+                    if (tok == "case" || tok == "default")
+                        suppressionIDs.push_back("switchCaseFallThrough");
+                    fallThroughComment = false;
+                }
+
+                // Add any pending inline suppressions that have accumulated.
+                if (!suppressionIDs.empty())
+                {
+                    if (settings != NULL)
                     {
-                        const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
-                        if (!errmsg.empty())
+                        // Add the suppressions.
+                        for (size_t j(0); j < suppressionIDs.size(); ++j)
                         {
-                            writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
+                            const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
+                            if (!errmsg.empty())
+                            {
+                                writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
+                            }
                         }
                     }
+                    suppressionIDs.clear();
                 }
-                suppressionIDs.clear();
             }
 
             // String or char constants..

@@ -35,7 +35,62 @@ class Tokenizer;
 class Severity
 {
 public:
-    enum SeverityType { none, error, warning, style, performance, portability, information, debug };
+    /**
+     * Message severities.
+     */
+    enum SeverityType
+    {
+        /**
+         * No severity (default value).
+         */
+        none,
+        /**
+         * Programming error.
+         * This indicates severe error like memory leak etc.
+         * The error is certain.
+         */
+        error,
+        /**
+         * Warning.
+         * Used for dangerous coding style that can cause severe runtime errors.
+         * For example: forgetting to initialize a member variable in a constructor.
+         */
+        warning,
+        /**
+         * Style warning.
+         * Used for general code cleanup recommendations. Fixing these
+         * will not fix any bugs but will make the code easier to maintain.
+         * For example: redundant code, unreachable code, etc.
+         */
+        style,
+        /**
+         * Performance warning.
+         * Not an error as is but suboptimal code and fixing it probably leads
+         * to faster performance of the compiled code.
+         */
+        performance,
+        /**
+         * Portability warning.
+         * This warning indicates the code is not properly portable for
+         * different platforms and bitnesses (32/64 bit). If the code is meant
+         * to compile in different platforms and bitnesses these warnings
+         * should be fixed.
+         */
+        portability,
+        /**
+         * Checking information.
+         * Information message about the checking (process) itself. These
+         * messages inform about header files not found etc issues that are
+         * not errors in the code but something user needs to know.
+         */
+        information,
+        /**
+         * Debug message.
+         * Debug-mode message useful for the developers.
+         */
+        debug
+    };
+
     static std::string toString(SeverityType severity)
     {
         switch (severity)

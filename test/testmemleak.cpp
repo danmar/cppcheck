@@ -285,6 +285,7 @@ private:
 
         // detect leak in class member function..
         TEST_CASE(class1);
+        TEST_CASE(class2);
 
         TEST_CASE(autoptr1);
         TEST_CASE(if_with_and);
@@ -726,6 +727,10 @@ private:
 
         // use ; dealloc ;
         ASSERT_EQUALS("; alloc ; use ; if return ; dealloc ;", simplifycode("; alloc ; use ; if { return ; } dealloc ;"));
+
+        // #2635 - false negative
+        ASSERT_EQUALS("; alloc ; return use ; }",
+                      simplifycode("; alloc ; if(!var) { loop { ifv { } } alloc ; } return use; }"));
     }
 
 
@@ -2516,6 +2521,37 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void class2()
+    {
+        check("class Fred {\n"
+              "public:\n"
+              "    Fred() : rootNode(0) {}\n"
+              "\n"
+              "private:\n"
+              "    struct Node {\n"
+              "        Node(Node* p) {\n"
+              "            parent = p;\n"
+              "            if (parent) {\n"
+              "                parent->children.append(this);\n"
+              "            }\n"
+              "        }\n"
+              "\n"
+              "        ~Node() {\n"
+              "            qDeleteAll(children);\n"
+              "        }\n"
+              "\n"
+              "        QList<Node*> children;\n"
+              "    };\n"
+              "\n"
+              "    Node rootNode;\n"
+              "\n"
+              "    void f() {\n"
+              "        Node* recordNode = new Node(&rootNode);\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -107,6 +107,9 @@ void Token::deleteThis()
         _isName = _next->_isName;
         _isNumber = _next->_isNumber;
         _isBoolean = _next->_isBoolean;
+        _isUnsigned = _next->_isUnsigned;
+        _isSigned = _next->_isSigned;
+        _isLong = _next->_isLong;
         _isUnused = _next->_isUnused;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;

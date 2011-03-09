@@ -25,6 +25,10 @@
 #include "settings.h"
 #include "errorlogger.h"
 
+#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
+#define THREADING_MODEL_FORK
+#endif
+
 /// @addtogroup CLI
 /// @{
 
@@ -59,7 +63,7 @@ private:
     /** @brief Key is file name, and value is the content of the file */
     std::map<std::string, std::string> _fileContents;
 
-#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
+#ifdef THREADING_MODEL_FORK
 private:
     /**
      * Read from the pipe, parse and handle what ever is in there.
@@ -67,9 +71,13 @@ private:
      *         0 if there is nothing in the pipe to be read
      *         1 if we did read something
      */
-    int handleRead(unsigned int &result);
+    int handleRead(int rpipe, unsigned int &result);
     void writeToPipe(char type, const std::string &data);
-    int _pipe[2];
+    /**
+     * Write end of status pipe, different for each child.
+     * Not used in master process.
+     */
+    int _wpipe;
     std::list<std::string> _errorList;
 public:
     /**

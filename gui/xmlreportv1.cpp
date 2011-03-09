@@ -100,7 +100,9 @@ void XmlReportV1::WriteError(const ErrorItem &error)
     const QString line = QString::number(error.lines[error.lines.size() - 1]);
     mXmlWriter->writeAttribute(LineAttribute, line);
     mXmlWriter->writeAttribute(IdAttribute, error.id);
-    mXmlWriter->writeAttribute(SeverityAttribute, error.severity);
+
+    // Don't localize severity so we can read these files
+    mXmlWriter->writeAttribute(SeverityAttribute, GuiSeverity::toString(error.severity));
     const QString message = XmlReport::quoteMessage(error.message);
     mXmlWriter->writeAttribute(MsgAttribute, message);
     mXmlWriter->writeEndElement();
@@ -165,7 +167,7 @@ ErrorItem XmlReportV1::ReadError(QXmlStreamReader *reader)
         const int line = attribs.value("", LineAttribute).toString().toUInt();
         item.lines.push_back(line);
         item.id = attribs.value("", IdAttribute).toString();
-        item.severity = attribs.value("", SeverityAttribute).toString();
+        item.severity = GuiSeverity::fromString(attribs.value("", SeverityAttribute).toString());
 
         // NOTE: This dublicates the message to Summary-field. But since
         // old XML format doesn't have separate summary and verbose messages

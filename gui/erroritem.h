@@ -22,11 +22,69 @@
 #include <QString>
 #include <QStringList>
 #include <QMetaType>
+#include "errorlogger.h"
 
 class ErrorLine;
 
 /// @addtogroup GUI
 /// @{
+
+
+/**
+ * @brief GUI versions of severity conversions.
+ * GUI needs its own versions of conversions since GUI uses Qt's QString
+ * instead of the std::string used by lib/cli.
+ */
+class GuiSeverity : Severity
+{
+public:
+    static QString toString(SeverityType severity)
+    {
+        switch (severity)
+        {
+        case none:
+            return "";
+        case error:
+            return "error";
+        case warning:
+            return "warning";
+        case style:
+            return "style";
+        case performance:
+            return "performance";
+        case portability:
+            return "portability";
+        case information:
+            return "information";
+        case debug:
+            return "debug";
+        };
+        return "???";
+    }
+
+    static SeverityType fromString(const QString &severity)
+    {
+        if (severity.isEmpty())
+            return none;
+        if (severity == "none")
+            return none;
+        if (severity == "error")
+            return error;
+        if (severity == "warning")
+            return warning;
+        if (severity == "style")
+            return style;
+        if (severity == "performance")
+            return performance;
+        if (severity == "portability")
+            return portability;
+        if (severity == "information")
+            return information;
+        if (severity == "debug")
+            return debug;
+        return none;
+    }
+};
 
 /**
 * @brief A class containing error data for one error.
@@ -39,7 +97,7 @@ class ErrorLine;
 class ErrorItem
 {
 public:
-    ErrorItem() { }
+    ErrorItem();
     ErrorItem(const ErrorItem &item);
     ErrorItem(const ErrorLine &line);
     ~ErrorItem() { }
@@ -54,7 +112,7 @@ public:
     QStringList files;
     QList<unsigned int> lines;
     QString id;
-    QString severity;
+    Severity::SeverityType severity;
     QString summary;
     QString message;
 };
@@ -70,7 +128,7 @@ public:
     QString file;
     unsigned int line;
     QString id;
-    QString severity;
+    Severity::SeverityType severity;
     QString summary;
     QString message;
 };

@@ -113,7 +113,6 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.inconclusive = true;
         settings._checkCodingStyle = true;
 
         // Tokenize..
@@ -1064,10 +1063,34 @@ private:
 
     void size1()
     {
+        check("struct Fred {\n"
+              "    void foo();\n"
+              "    std::list<int> x;\n"
+              "};\n"
+              "void Fred::foo()\n"
+              "{\n"
+              "    if (x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("std::list<int> x;\n"
+              "void f()\n"
+              "{\n"
+              "    if (x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    if (x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    if (0 == x.size()) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
 
@@ -1081,7 +1104,21 @@ private:
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
+              "    if (0 != x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
               "    if (x.size() > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    if (0 < x.size()) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
 
@@ -1095,7 +1132,21 @@ private:
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
+              "    if (!x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
               "    fun(x.size());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    fun(!x.size());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

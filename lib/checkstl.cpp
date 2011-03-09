@@ -17,8 +17,8 @@
  */
 
 #include "checkstl.h"
-#include "token.h"
 #include "executionpath.h"
+#include "symboldatabase.h"
 #include <sstream>
 
 // Register this check class (by creating a static instance of it)
@@ -799,11 +799,13 @@ bool CheckStl::isStlContainer(const Token *tok)
     if (tok->varId())
     {
         // find where this token is defined
-        const Token *type = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->varId());
+        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->varId());
+
+        if (!var)
+            return false;
 
         // find where this tokens type starts
-        while (type->previous() && !Token::Match(type->previous(), "[;{,(]"))
-            type = type->previous();
+        const Token *type = var->typeStartToken();
 
         // ignore "const"
         if (type->str() == "const")
@@ -829,38 +831,27 @@ bool CheckStl::isStlContainer(const Token *tok)
 
 void CheckStl::size()
 {
-    if (!_settings->_checkCodingStyle || !_settings->inconclusive)
+    if (!_settings->_checkCodingStyle)
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "%var% . size ( )"))
         {
-            if (Token::Match(tok->tokAt(5), "==|!=|> 0"))
+            // check for comparison to zero
+            if (Token::Match(tok->tokAt(5), "==|!=|> 0") ||
+                Token::Match(tok->tokAt(-2), "0 ==|!=|<"))
             {
                 if (isStlContainer(tok))
                     sizeError(tok);
             }
-            else if ((tok->tokAt(5)->str() == ")" ||
-                      tok->tokAt(5)->str() == "&&" ||
-                      tok->tokAt(5)->str() == "||" ||
-                      tok->tokAt(5)->str() == "!") &&
-                     (tok->tokAt(-1)->str() == "(" ||
-                      tok->tokAt(-1)->str() == "&&" ||
-                      tok->tokAt(-1)->str() == "||" ||
-                      tok->tokAt(-1)->str() == "!"))
+
+            // check for using as boolean expression
+            else if ((Token::Match(tok->tokAt(-2), "if|while (") ||
+                      Token::Match(tok->tokAt(-3), "if|while ( !")) &&
+                     tok->strAt(5) == ")")
             {
-                if (tok->tokAt(-1)->str() == "(" &&
-                    tok->tokAt(5)->str() == ")")
-                {
-                    // check for passing size to function call
-                    if (Token::Match(tok->tokAt(-2), "if|while"))
-                    {
-                        if (isStlContainer(tok))
-                            sizeError(tok);
-                    }
-                }
-                else if (isStlContainer(tok))
+                if (isStlContainer(tok))
                     sizeError(tok);
             }
         }

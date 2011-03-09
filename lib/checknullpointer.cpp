@@ -21,6 +21,7 @@
 #include "checknullpointer.h"
 #include "executionpath.h"
 #include "mathlib.h"
+#include "symboldatabase.h"
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -166,8 +167,12 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 bool CheckNullPointer::isPointer(const unsigned int varid)
 {
     // Check if given variable is a pointer
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
-    tok = tok->tokAt(-2);
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const Variable *variableInfo = symbolDatabase->getVariableFromVarId(varid);
+    const Token *tok = variableInfo ? variableInfo->typeStartToken() : NULL;
+
+    if (Token::Match(tok, "%type% %type% * %varid% [;)=]", varid))
+        return true;
 
     // maybe not a pointer
     if (!Token::Match(tok, "%type% * %varid% [;)=]", varid))

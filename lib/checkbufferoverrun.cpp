@@ -469,6 +469,15 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
         if (tok2->str() == "?")
             break;
 
+        if (Token::simpleMatch(tok2, "for (") && Token::simpleMatch(tok2->next()->link(), ") {"))
+        {
+            const Token *endpar = tok2->next()->link();
+            const Token *startbody = endpar->next();
+            const Token *endbody = startbody->link();
+            tok2 = endbody;
+            continue;
+        }
+
         if (Token::Match(tok2, "if|switch"))
         {
             if (bailoutIfSwitch(tok2, arrayInfo.varid))

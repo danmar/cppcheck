@@ -49,6 +49,7 @@ private:
         TEST_CASE(tokenize13);  // bailout if the code contains "@" - that is not handled well.
         TEST_CASE(tokenize14);  // tokenize "0X10" => 16
         TEST_CASE(tokenize15);  // tokenize ".123"
+        TEST_CASE(tokenize16);  // #2612 - segfault for "<><<"
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -189,6 +190,7 @@ private:
         TEST_CASE(varidclass6);
         TEST_CASE(varidclass7);
         TEST_CASE(varidclass8);
+        TEST_CASE(varidclass9);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -514,6 +516,12 @@ private:
     void tokenize15()
     {
         ASSERT_EQUALS("0.125", tokenizeAndStringify(".125"));
+    }
+
+    // #2612 - segfault for "<><<"
+    void tokenize16()
+    {
+        tokenizeAndStringify("<><<");
     }
 
     void wrong_syntax()
@@ -3352,6 +3360,32 @@ private:
                                    "5: }\n"
                                    "6: int x@3 ;\n"
                                    "7: }\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varidclass9()
+    {
+        const std::string code("typedef char Str[10];"
+                               "class A {\n"
+                               "public:\n"
+                               "    void f(Str &cl);\n"
+                               "    void g(Str cl);\n"
+                               "}\n"
+                               "void Fred::f(Str &cl) {\n"
+                               "    sizeof(cl);\n"
+                               "}");
+
+        const std::string expected("\n\n"
+                                   "##file 0\n"
+                                   "1: ; class A {\n"
+                                   "2: public:\n"
+                                   "3: void f ( char ( & cl ) [ 10 ] ) ;\n"
+                                   "4: void g ( char cl@1 [ 10 ] ) ;\n"
+                                   "5: }\n"
+                                   "6: void Fred :: f ( char ( & cl ) [ 10 ] ) {\n"
+                                   "7: sizeof ( cl ) ;\n"
+                                   "8: }\n");
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
