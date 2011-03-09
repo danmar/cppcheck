@@ -105,6 +105,8 @@ private:
 
         TEST_CASE(clarifyCalculation);
 
+        TEST_CASE(clarifyCondition);     // if (a = b() < 0)
+
         TEST_CASE(incorrectStringCompare);
 
         TEST_CASE(incrementBoolean);
@@ -131,6 +133,7 @@ private:
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
+        checkOther.clarifyCondition();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -2206,18 +2209,27 @@ private:
         check("int f(char c) {\n"
               "    return 10 * (c == 0) ? 1 : 2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (information) Please clarify precedence: 'a*b?..'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Please clarify precedence: 'a*b?..'\n", errout.str());
 
         check("void f(char c) {\n"
               "    printf(\"%i\", 10 * (c == 0) ? 1 : 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (information) Please clarify precedence: 'a*b?..'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Please clarify precedence: 'a*b?..'\n", errout.str());
 
         // Ticket #2585 - segmentation fault for invalid code
         check("abcdef?" "?<"
               "123456?" "?>"
               "+?" "?=");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // clarify conditions with = and comparison
+    void clarifyCondition()
+    {
+        check("void f() {\n"
+              "    if (x = b() < 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment+comparison), it can be clarified with parantheses\n", errout.str());
     }
 
     void incorrectStringCompare()

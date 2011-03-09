@@ -115,12 +115,47 @@ void CheckOther::clarifyCalculation()
 void CheckOther::clarifyCalculationError(const Token *tok)
 {
     reportError(tok,
-                Severity::information,
+                Severity::style,
                 "clarifyCalculation",
                 "Please clarify precedence: 'a*b?..'\n"
                 "Found a suspicious multiplication of condition. Please use parantheses to clarify the code. "
                 "The code 'a*b?1:2' should be written as either '(a*b)?1:2' or 'a*(b?1:2)'.");
 }
+
+
+// Clarify condition '(x = a < 0)' into '((x = a) < 0)' or '(x = (a < 0))'
+void CheckOther::clarifyCondition()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "( %var% ="))
+        {
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(" || tok2->str() == "[")
+                    tok2 = tok2->link();
+                else if (tok2->str() == "||" || tok2->str() == "&&" || tok2->str() == "?")
+                    break;
+                else if (Token::Match(tok2, "<|<=|==|!=|>|>= %num% )"))
+                {
+                    clarifyConditionError(tok);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::clarifyConditionError(const Token *tok)
+{
+    reportError(tok,
+                Severity::style,
+                "clarifyCondition",
+                "Suspicious condition (assignment+comparison), it can be clarified with parantheses");
+}
+
 
 
 void CheckOther::warningOldStylePointerCast()
