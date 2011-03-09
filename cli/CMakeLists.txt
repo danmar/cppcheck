@@ -4,10 +4,11 @@ find_package(PCRE REQUIRED)
 set(TINYXML_INCLUDE_DIR "${CPPCHECK_SOURCE_DIR}/externals/tinyxml/")
 
 SET(CPPCHECK_CLI_SOURCES
+  cmdlineparser.cpp
   cppcheckexecutor.cpp
   filelister.cpp
-  threadexecutor.cpp
   main.cpp
+  threadexecutor.cpp
   "${TINYXML_INCLUDE_DIR}tinystr.cpp"
   "${TINYXML_INCLUDE_DIR}tinyxml.cpp"
   "${TINYXML_INCLUDE_DIR}tinyxmlerror.cpp"
@@ -34,6 +35,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories(${CPPCHECK_SOURCE_DIR}/lib
+                    "${PCRE_INCLUDE_DIR}"
                     "${TINYXML_INCLUDE_DIR}")
 add_executable(cppcheck ${CPPCHECK_CLI_SOURCES} ${CPPCHECK_LIB_SOURCES})
-TARGET_LINK_LIBRARIES(cppcheck ${CPPCHECK_CLI_LINK_LIBRARIES})
+target_link_libraries(cppcheck ${CPPCHECK_CLI_LINK_LIBRARIES} ${PCRE_LIBRARIES})
