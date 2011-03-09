@@ -4973,8 +4973,16 @@ private:
 
     void simplifyTypedef84() // ticket #2630 (segmentation fault)
     {
-        const char code[] = "typedef y x () x\n";
-        checkSimplifyTypedef(code);
+        const char code1[] = "typedef y x () x\n";
+        checkSimplifyTypedef(code1);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        const char code2[] = "typedef struct template <>\n";
+        checkSimplifyTypedef(code2);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        const char code3[] = "typedef ::<>\n";
+        checkSimplifyTypedef(code3);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 

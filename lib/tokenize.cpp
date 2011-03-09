@@ -1151,6 +1151,13 @@ void Tokenizer::simplifyTypedef()
         while (Token::Match(tok->tokAt(offset), "*|&|const"))
             pointers.push_back(tok->tokAt(offset++)->str());
 
+        // check for invalid input
+        if (!tok->tokAt(offset))
+        {
+            syntaxError(tok);
+            return;
+        }
+
         if (Token::Match(tok->tokAt(offset), "%type%"))
         {
             // found the type name
