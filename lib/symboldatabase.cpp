@@ -920,7 +920,7 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                     if (func->hasBody)
                     {
                         addNewFunction(scope, tok);
-                        if (scope)
+                        if (*scope)
                         {
                             (*scope)->functionOf = scope1;
                             added = true;
