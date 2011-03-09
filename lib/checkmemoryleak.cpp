@@ -1964,8 +1964,8 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 }
                 else
                 {
-                    // remove the "if* ;"
-                    Token::eraseTokens(tok2, tok2->tokAt(3));
+                    // remove the "if*"
+                    Token::eraseTokens(tok2, tok2->tokAt(2));
                 }
                 done = false;
             }

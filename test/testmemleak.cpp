@@ -727,6 +727,10 @@ private:
 
         // use ; dealloc ;
         ASSERT_EQUALS("; alloc ; use ; if return ; dealloc ;", simplifycode("; alloc ; use ; if { return ; } dealloc ;"));
+
+        // #2635 - false negative
+        ASSERT_EQUALS("; alloc ; return use ; }",
+                      simplifycode("; alloc ; if(!var) { loop { ifv { } } alloc ; } return use; }"));
     }
 
 
