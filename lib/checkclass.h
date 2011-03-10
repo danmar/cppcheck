@@ -84,6 +84,7 @@ public:
      * Important: The checking doesn't work on simplified tokens list.
      */
     void noMemset();
+    void checkMemsetType(const Token *tok, const std::string &type);
 
     /** @brief 'operator=' should return something and it should not be const. */
     void operatorEq();
@@ -117,8 +118,7 @@ private:
     void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
-    void memsetError(const Token *tok, const std::string &type, const std::string &message);
-    void memsetError(const Token *tok, const std::string &type, const std::string &memfunc, const std::string &classname, const std::string &typekind);
+    void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
     void operatorEqReturnError(const Token *tok);
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
     void thisSubtractionError(const Token *tok);
@@ -134,7 +134,7 @@ private:
         c.uninitVarError(0, "classname", "varname");
         c.operatorEqVarError(0, "classname", "");
         c.unusedPrivateFunctionError(0, "classname", "funcname");
-        c.memsetError(0, "type", "memfunc", "classname", "class");
+        c.memsetError(0, "memfunc", "classname", "class");
         c.operatorEqReturnError(0);
         //c.virtualDestructorError(0, "Base", "Derived");
         c.thisSubtractionError(0);
@@ -228,10 +228,6 @@ private:
     void initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage);
 
     bool canNotCopy(const Scope *scope) const;
-
-    // noMemset helpers
-    void checkMemsetType(const Token *tok, const std::string &type);
-    std::map<std::string, std::string> _memsetClassMessages;
 };
 /// @}
 //---------------------------------------------------------------------------
