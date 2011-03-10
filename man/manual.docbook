@@ -384,7 +384,8 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
     <para>The <literal>error id</literal> is the id that you want to suppress.
     The easiest way to get it is to use the <literal>--xml</literal> command
     line flag. Copy and paste the <literal>id</literal> string from the XML
-    output.</para>
+    output. This may be * to suppress all warnings (for a specified file or
+    files).</para>
 
     <para>The <literal>filename</literal> may include the wildcard characters
     * or ?, which match any sequence of characters or any single character

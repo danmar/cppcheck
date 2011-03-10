@@ -281,15 +281,18 @@ std::string Settings::Suppressions::addSuppression(const std::string &errorId, c
     {
         return "Failed to add suppression. No id.";
     }
-    for (std::string::size_type pos = 0; pos < errorId.length(); ++pos)
+    if (errorId != "*")
     {
-        if (errorId[pos] < 0 || !std::isalnum(errorId[pos]))
+        for (std::string::size_type pos = 0; pos < errorId.length(); ++pos)
         {
-            return "Failed to add suppression. Invalid id \"" + errorId + "\"";
-        }
-        if (pos == 0 && std::isdigit(errorId[pos]))
-        {
-            return "Failed to add suppression. Invalid id \"" + errorId + "\"";
+            if (errorId[pos] < 0 || !std::isalnum(errorId[pos]))
+            {
+                return "Failed to add suppression. Invalid id \"" + errorId + "\"";
+            }
+            if (pos == 0 && std::isdigit(errorId[pos]))
+            {
+                return "Failed to add suppression. Invalid id \"" + errorId + "\"";
+            }
         }
     }
 
@@ -298,6 +301,10 @@ std::string Settings::Suppressions::addSuppression(const std::string &errorId, c
 
 bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std::string &file, unsigned int line)
 {
+    if (errorId != "unmatchedSuppression" && _suppressions.find("*") != _suppressions.end())
+        if (_suppressions["*"].isSuppressed(file, line))
+            return true;
+
     if (_suppressions.find(errorId) == _suppressions.end())
         return false;
 
@@ -306,6 +313,10 @@ bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std:
 
 bool Settings::Suppressions::isSuppressedLocal(const std::string &errorId, const std::string &file, unsigned int line)
 {
+    if (errorId != "unmatchedSuppression" && _suppressions.find("*") != _suppressions.end())
+        if (_suppressions["*"].isSuppressedLocal(file, line))
+            return true;
+
     if (_suppressions.find(errorId) == _suppressions.end())
         return false;
 

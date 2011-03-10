@@ -48,7 +48,10 @@ private:
         Settings settings;
         settings._inlineSuppressions = true;
         if (!suppression.empty())
-            settings.nomsg.addSuppressionLine(suppression);
+        {
+            std::string r = settings.nomsg.addSuppressionLine(suppression);
+            ASSERT_EQUALS("", r);
+        }
 
         CppCheck cppCheck(*this, true);
         cppCheck.settings(settings);
@@ -75,7 +78,10 @@ private:
         settings._jobs = 1;
         settings._inlineSuppressions = true;
         if (!suppression.empty())
-            settings.nomsg.addSuppressionLine(suppression);
+        {
+            std::string r = settings.nomsg.addSuppressionLine(suppression);
+            ASSERT_EQUALS("", r);
+        }
         ThreadExecutor executor(filenames, settings, *this);
         for (unsigned int i = 0; i < filenames.size(); ++i)
             executor.addFileContent(filenames[i], code);
@@ -146,6 +152,22 @@ private:
                        "}\n",
                        "uninitvar:test.cpp");
         ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: uninitvar\n", errout.str());
+
+        // suppress all for this file only
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    a++;\n"
+                       "}\n",
+                       "*:test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress all for this file only, without error present
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    b++;\n"
+                       "}\n",
+                       "*:test.cpp");
+        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: *\n", errout.str());
 
         // suppress uninitvar for this file and line
         (this->*check)("void f() {\n"

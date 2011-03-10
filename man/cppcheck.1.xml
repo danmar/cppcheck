@@ -309,6 +309,7 @@ Directory name is matched to all parts of the path.</para>
         <listitem>
           <para>Suppress a specific warning. The format of &lt;spec&gt; is: [error id]:[filename]:[line].
           The [filename] and [line] are optional.
+          [error id] may be * to suppress all warnings (for a specified file or files).
           [filename] may contain the wildcard characters * or ?.</para>
         </listitem>
       </varlistentry>
