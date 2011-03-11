@@ -1182,6 +1182,22 @@ private:
 
         check("void foo()\n"
               "{\n"
+              "    int y = 1;\n"
+              "    while(xyz()) {\n"
+              "        switch (x)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            y = 2;\n"
+              "            throw e;\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
               "        int y = 1;\n"
               "        switch (x)\n"
               "        {\n"
@@ -1217,6 +1233,27 @@ private:
             "        case 1:\n"
             "            break;\n"
             "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            break;\n"
+            "        case 2:\n"
+            "            continue;\n"
+            "        case 3:\n"
+            "            return;\n"
+            "        case 4:\n"
+            "            exit(1);\n"
+            "        case 5:\n"
+            "            goto end;\n"
+            "        case 6:\n"
+            "            throw e;\n"
+            "        case 7:\n"
             "            break;\n"
             "    }\n"
             "}\n");

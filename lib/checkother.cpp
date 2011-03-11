@@ -270,7 +270,7 @@ void CheckOther::checkSizeofForArrayParameter()
 void CheckOther::checkRedundantAssignmentInSwitch()
 {
     const char switchPattern[] = "switch ( %any% ) { case";
-    const char breakPattern[] = "break|continue|return|exit|goto";
+    const char breakPattern[] = "break|continue|return|exit|goto|throw";
     const char functionPattern[] = "%var% (";
 
     // Find the beginning of a switch. E.g.:
@@ -348,7 +348,7 @@ void CheckOther::checkSwitchCaseFallThrough()
         return;
 
     const char switchPattern[] = "switch (";
-    const char breakPattern[] = "break|continue|return|exit|goto";
+    const char breakPattern[] = "break|continue|return|exit|goto|throw";
 
     // Find the beginning of a switch. E.g.:
     //   switch (var) { ...
