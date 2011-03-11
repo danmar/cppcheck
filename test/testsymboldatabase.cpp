@@ -558,11 +558,11 @@ private:
         ASSERT(db && db->scopeList.size() == 1);
         if (db && db->scopeList.size() == 1)
         {
-            std::list<Scope *>::const_iterator it = db->scopeList.begin();
-            ASSERT((*it)->varlist.size() == 1);
-            if ((*it)->varlist.size() == 1)
+            std::list<Scope>::const_iterator it = db->scopeList.begin();
+            ASSERT(it->varlist.size() == 1);
+            if (it->varlist.size() == 1)
             {
-                std::list<Variable>::const_iterator var = (*it)->varlist.begin();
+                std::list<Variable>::const_iterator var = it->varlist.begin();
                 ASSERT(var->name() == "i");
                 ASSERT(var->typeStartToken()->str() == "int");
             }
@@ -576,11 +576,11 @@ private:
         ASSERT(db && db->scopeList.size() == 1);
         if (db && db->scopeList.size() == 1)
         {
-            std::list<Scope *>::const_iterator it = db->scopeList.begin();
-            ASSERT((*it)->varlist.size() == 1);
-            if ((*it)->varlist.size() == 1)
+            std::list<Scope>::const_iterator it = db->scopeList.begin();
+            ASSERT(it->varlist.size() == 1);
+            if (it->varlist.size() == 1)
             {
-                std::list<Variable>::const_iterator var = (*it)->varlist.begin();
+                std::list<Variable>::const_iterator var = it->varlist.begin();
                 ASSERT(var->name() == "array");
                 ASSERT(var->typeStartToken()->str() == "int");
             }
@@ -594,11 +594,11 @@ private:
         ASSERT(db && db->scopeList.size() == 1);
         if (db && db->scopeList.size() == 1)
         {
-            std::list<Scope *>::const_iterator it = db->scopeList.begin();
-            ASSERT((*it)->varlist.size() == 1);
-            if ((*it)->varlist.size() == 1)
+            std::list<Scope>::const_iterator it = db->scopeList.begin();
+            ASSERT(it->varlist.size() == 1);
+            if (it->varlist.size() == 1)
             {
-                std::list<Variable>::const_iterator var = (*it)->varlist.begin();
+                std::list<Variable>::const_iterator var = it->varlist.begin();
                 ASSERT(var->name() == "array");
                 ASSERT(var->typeStartToken()->str() == "int");
             }

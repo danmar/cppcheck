@@ -136,12 +136,10 @@ void CheckAutoVariables::autoVariables()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
@@ -240,12 +238,10 @@ void CheckAutoVariables::returnPointerToLocalArray()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
@@ -325,12 +321,10 @@ void CheckAutoVariables::returnReference()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
@@ -407,12 +401,10 @@ void CheckAutoVariables::returncstr()
     // locate function that returns a const char *..
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;

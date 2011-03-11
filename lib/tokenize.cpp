@@ -8131,12 +8131,10 @@ const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 {
     getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = _symbolDatabase->scopeList.begin(); i != _symbolDatabase->scopeList.end(); ++i)
+    for (scope = _symbolDatabase->scopeList.begin(); scope != _symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         if (scope->type == Scope::eFunction)
         {
             if (scope->classDef->str() == funcname)

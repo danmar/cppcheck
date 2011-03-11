@@ -1645,25 +1645,23 @@ void CheckOther::functionVariableUsage()
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *info = *i;
-
         // only check functions
-        if (info->type != Scope::eFunction)
+        if (scope->type != Scope::eFunction)
             continue;
 
         // First token for the current scope..
-        const Token *const tok1 = info->classStart;
+        const Token *const tok1 = scope->classStart;
 
         // varId, usage {read, write, modified}
         Variables variables;
 
         // scopes
         ScopeInfo scopes;
-        ScopeInfo *scope = &scopes;
+        ScopeInfo *info = &scopes;
 
         unsigned int indentlevel = 0;
         for (const Token *tok = tok1; tok; tok = tok->next())
@@ -1675,14 +1673,14 @@ void CheckOther::functionVariableUsage()
                     scopes = ScopeInfo(tok, NULL);
                 // add the new scope
                 else
-                    scope = scope->addChild(tok);
+                    info = info->addChild(tok);
                 ++indentlevel;
             }
             else if (tok->str() == "}")
             {
                 --indentlevel;
 
-                scope = scope->parent();
+                info = info->parent();
 
                 if (indentlevel == 0)
                     break;
@@ -1713,7 +1711,7 @@ void CheckOther::functionVariableUsage()
                 if (tok->str() == "static")
                     tok = tok->next();
 
-                variables.addVar(tok->next(), Variables::standard, scope,
+                variables.addVar(tok->next(), Variables::standard, info,
                                  tok->tokAt(2)->str() == "=" ||
                                  tok->previous()->str() == "static");
                 tok = tok->next();
@@ -1729,7 +1727,7 @@ void CheckOther::functionVariableUsage()
                 if (tok->str() == "static")
                     tok = tok->next();
 
-                variables.addVar(tok->next(), Variables::standard, scope, true);
+                variables.addVar(tok->next(), Variables::standard, info, true);
 
                 // check if a local variable is used to initialize this variable
                 if (tok->tokAt(3)->varId() > 0)
@@ -1760,7 +1758,7 @@ void CheckOther::functionVariableUsage()
                     bool isPointer = bool(tok->strAt(1) == "*");
                     const Token * const nametok = tok->tokAt(isPointer ? 2 : 1);
 
-                    variables.addVar(nametok, isPointer ? Variables::pointerArray : Variables::array, scope,
+                    variables.addVar(nametok, isPointer ? Variables::pointerArray : Variables::array, info,
                                      nametok->tokAt(4)->str() == "=" || isStatic);
 
                     // check for reading array size from local variable
@@ -1814,13 +1812,13 @@ void CheckOther::functionVariableUsage()
 
                     bool written = tok->tokAt(3)->str() == "=";
 
-                    variables.addVar(tok->tokAt(2), type, scope, written || isStatic);
+                    variables.addVar(tok->tokAt(2), type, info, written || isStatic);
 
                     int offset = 0;
 
                     // check for assignment
                     if (written)
-                        offset = doAssignment(variables, tok->tokAt(2), false, scope);
+                        offset = doAssignment(variables, tok->tokAt(2), false, info);
 
                     tok = tok->tokAt(2 + offset);
                 }
@@ -1847,13 +1845,13 @@ void CheckOther::functionVariableUsage()
                 {
                     bool written = tok->tokAt(4)->str() == "=";
 
-                    variables.addVar(tok->tokAt(3), Variables::pointerPointer, scope, written || isStatic);
+                    variables.addVar(tok->tokAt(3), Variables::pointerPointer, info, written || isStatic);
 
                     int offset = 0;
 
                     // check for assignment
                     if (written)
-                        offset = doAssignment(variables, tok->tokAt(3), false, scope);
+                        offset = doAssignment(variables, tok->tokAt(3), false, info);
 
                     tok = tok->tokAt(3 + offset);
                 }
@@ -1884,13 +1882,13 @@ void CheckOther::functionVariableUsage()
 
                 const bool written = tok->strAt(4) == "=";
 
-                variables.addVar(tok->tokAt(3), type, scope, written || isStatic);
+                variables.addVar(tok->tokAt(3), type, info, written || isStatic);
 
                 int offset = 0;
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(3), false, scope);
+                    offset = doAssignment(variables, tok->tokAt(3), false, info);
 
                 tok = tok->tokAt(3 + offset);
             }
@@ -1921,7 +1919,7 @@ void CheckOther::functionVariableUsage()
                 if (Token::Match(tok->tokAt(4), "%var%"))
                     varid = tok->tokAt(4)->varId();
 
-                variables.addVar(tok->tokAt(2), type, scope, true);
+                variables.addVar(tok->tokAt(2), type, info, true);
 
                 // check if a local variable is used to initialize this variable
                 if (varid > 0)
@@ -1966,7 +1964,7 @@ void CheckOther::functionVariableUsage()
                 if (tok->str() != "return")
                 {
                     variables.addVar(tok->tokAt(2),
-                                     tok->next()->str() == "*" ? Variables::pointerArray : Variables::referenceArray, scope,
+                                     tok->next()->str() == "*" ? Variables::pointerArray : Variables::referenceArray, info,
                                      tok->tokAt(6)->str() == "=" || isStatic);
 
                     // check for reading array size from local variable
@@ -1995,7 +1993,7 @@ void CheckOther::functionVariableUsage()
                     tok = tok->next();
 
                 variables.addVar(tok->tokAt(3),
-                                 tok->tokAt(2)->str() == "*" ? Variables::pointerArray : Variables::referenceArray, scope,
+                                 tok->tokAt(2)->str() == "*" ? Variables::pointerArray : Variables::referenceArray, info,
                                  tok->tokAt(7)->str() == "=" || isStatic);
 
                 // check for reading array size from local variable
@@ -2069,7 +2067,7 @@ void CheckOther::functionVariableUsage()
                 const unsigned int varid1 = tok->varId();
                 const Token *start = tok;
 
-                tok = tok->tokAt(doAssignment(variables, tok, dereference, scope));
+                tok = tok->tokAt(doAssignment(variables, tok, dereference, info));
 
                 if (pre || post)
                     variables.use(varid1);
@@ -2099,7 +2097,7 @@ void CheckOther::functionVariableUsage()
                             if (!start->tokAt(3)->isStandardType())
                             {
                                 // lookup the type
-                                const Scope *type = symbolDatabase->findVariableType(info, start->tokAt(3));
+                                const Scope *type = symbolDatabase->findVariableType(&(*scope), start->tokAt(3));
 
                                 // unknown type?
                                 if (!type)
@@ -2316,12 +2314,10 @@ void CheckOther::checkVariableScope()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
@@ -2957,12 +2953,10 @@ void CheckOther::checkMisusedScopedObject()
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;

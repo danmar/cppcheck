@@ -68,12 +68,10 @@ void CheckClass::constructors()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check classes and structures
         if (!scope->isClassOrStruct())
             continue;
@@ -107,7 +105,7 @@ void CheckClass::constructors()
             clearAllVar(usage);
 
             std::list<std::string> callstack;
-            initializeVarList(*func, callstack, scope, usage);
+            initializeVarList(*func, callstack, &(*scope), usage);
 
             // Check if any variables are uninitialized
             std::list<Variable>::const_iterator var;
@@ -581,12 +579,10 @@ void CheckClass::privateFunctions()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check classes and structures
         if (!scope->isClassOrStruct())
             continue;
@@ -832,18 +828,18 @@ void CheckClass::operatorEq()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        std::list<Function>::const_iterator it;
+        std::list<Function>::const_iterator func;
 
-        for (it = (*i)->functionList.begin(); it != (*i)->functionList.end(); ++it)
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
-            if (it->type == Function::eOperatorEqual && it->access != Private)
+            if (func->type == Function::eOperatorEqual && func->access != Private)
             {
-                if (it->token->strAt(-1) == "void")
-                    operatorEqReturnError(it->token->tokAt(-1));
+                if (func->token->strAt(-1) == "void")
+                    operatorEqReturnError(func->token->tokAt(-1));
             }
         }
     }
@@ -927,12 +923,10 @@ void CheckClass::operatorEqRetRefThis()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check classes and structures
         if (scope->isClassOrStruct())
         {
@@ -949,7 +943,7 @@ void CheckClass::operatorEqRetRefThis()
                         // find the ')'
                         const Token *tok = func->token->next()->link();
 
-                        checkReturnPtrThis(scope, &(*func), tok->tokAt(2), tok->next()->link());
+                        checkReturnPtrThis(&(*scope), &(*func), tok->tokAt(2), tok->next()->link());
                     }
                 }
             }
@@ -983,38 +977,37 @@ void CheckClass::operatorEqToSelf()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-        std::list<Function>::const_iterator it;
+        std::list<Function>::const_iterator func;
 
         // skip classes with multiple inheritance
         if (scope->derivedFrom.size() > 1)
             continue;
 
-        for (it = scope->functionList.begin(); it != scope->functionList.end(); ++it)
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
-            if (it->type == Function::eOperatorEqual && it->hasBody)
+            if (func->type == Function::eOperatorEqual && func->hasBody)
             {
                 // make sure return signature is correct
-                if (Token::Match(it->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
-                    it->tokenDef->strAt(-2) == scope->className)
+                if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
+                    func->tokenDef->strAt(-2) == scope->className)
                 {
                     // check for proper function parameter signature
-                    if ((Token::Match(it->tokenDef->next(), "( const %var% & )") ||
-                         Token::Match(it->tokenDef->next(), "( const %var% & %var% )")) &&
-                        it->tokenDef->strAt(3) == scope->className)
+                    if ((Token::Match(func->tokenDef->next(), "( const %var% & )") ||
+                         Token::Match(func->tokenDef->next(), "( const %var% & %var% )")) &&
+                        func->tokenDef->strAt(3) == scope->className)
                     {
                         // find the parameter name
-                        const Token *rhs = it->token;
+                        const Token *rhs = func->token;
                         while (rhs->str() != "&")
                             rhs = rhs->next();
                         rhs = rhs->next();
 
                         // find the ')'
-                        const Token *tok = it->token->next()->link();
+                        const Token *tok = func->token->next()->link();
                         const Token *tok1 = tok;
 
                         if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
@@ -1160,12 +1153,10 @@ void CheckClass::virtualDestructor()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // Skip base classes and namespaces
         if (scope->derivedFrom.empty())
             continue;
@@ -1279,12 +1270,10 @@ void CheckClass::checkConst()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator it;
+    std::list<Scope>::const_iterator scope;
 
-    for (it = symbolDatabase->scopeList.begin(); it != symbolDatabase->scopeList.end(); ++it)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *it;
-
         // only check classes and structures
         if (!scope->isClassOrStruct())
             continue;
@@ -1354,12 +1343,12 @@ void CheckClass::checkConst()
                 // check if base class function is virtual
                 if (!scope->derivedFrom.empty())
                 {
-                    if (isVirtualFunc(scope, func->tokenDef))
+                    if (isVirtualFunc(&(*scope), func->tokenDef))
                         continue;
                 }
 
                 // if nothing non-const was found. write error..
-                if (checkConstFunc(scope, paramEnd))
+                if (checkConstFunc(&(*scope), paramEnd))
                 {
                     std::string classname = scope->className;
                     const Scope *nest = scope->nestedIn;

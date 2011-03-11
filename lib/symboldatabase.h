@@ -479,10 +479,9 @@ class SymbolDatabase
 {
 public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
-    ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structrues */
-    std::list<Scope *> scopeList;
+    std::list<Scope> scopeList;
 
     /**
      * @brief find a variable type if it's a user defined type
