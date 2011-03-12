@@ -326,6 +326,15 @@ private:
               "        ;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #2641 - global pointer, function call
+        check("ABC *abc;\n"
+              "void f() {\n"
+              "    abc->a = 0;\n"
+              "    do_stuff();\n"
+              "    if (abc) { }\n"
+              "}");
+        ASSERT_EQUALS("",errout.str());
     }
 
     // Dereferencing a pointer and then checking if it is null

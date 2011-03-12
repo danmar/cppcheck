@@ -448,6 +448,15 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             else if (indentlevel2 == 0 && tok2->str() == "return")
                 break;
 
+            // Function call: If the pointer is a global variable it
+            // might be changed by the call.
+            // TODO: false negatives if the pointer is local.
+            else if (Token::Match(tok2, "[;{}] %var% (") &&
+                     Token::simpleMatch(tok2->tokAt(2)->link(), ") ;"))
+            {
+                break;
+            }
+
             // Check if pointer is null.
             // TODO: false negatives for "if (!p || .."
             else if (Token::Match(tok2, "if ( !| %varid% )|&&", varid1))
