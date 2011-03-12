@@ -415,7 +415,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         // is pointer local?
         bool isLocal = false;
         const Variable * var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok1->varId());
-        if (var && var->isLocal())
+        if (var && (var->isLocal() || var->isArgument()))
             isLocal = true;
 
         // count { and } using tok2
