@@ -3073,8 +3073,8 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
     reportError(tok,
                 Severity::information,
                 "variableScope",
-                "The scope of the variable " + varname + " can be reduced\n"
-                "The scope of the variable " + varname + " can be reduced. Warning: It can be unsafe "
+                "The scope of the variable '" + varname + "' can be reduced\n"
+                "The scope of the variable '" + varname + "' can be reduced. Warning: It can be unsafe "
                 "to fix this message. Be careful. Especially when there are inner loops. Here is an "
                 "example where cppcheck will write that the scope for 'i' can be reduced:\n"
                 "void f(int x)\n"
