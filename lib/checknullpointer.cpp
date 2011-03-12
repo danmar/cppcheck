@@ -418,6 +418,16 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         if (var && (var->isLocal() || var->isArgument()))
             isLocal = true;
 
+        // member function may or may not nullify the pointer if it's global (#2647)
+        if (!isLocal)
+        {
+            const Token *tok2 = tok1;
+            while (Token::Match(tok2, "%var% ."))
+                tok2 = tok2->tokAt(2);
+            if (Token::Match(tok2,"%var% ("))
+                continue;
+        }
+
         // count { and } using tok2
         unsigned int indentlevel2 = 0;
         for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())

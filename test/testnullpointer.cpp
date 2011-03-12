@@ -336,6 +336,13 @@ private:
               "}");
         ASSERT_EQUALS("",errout.str());
 
+        check("Fred *fred;\n"
+              "void f() {\n"
+              "    fred->foo();\n"
+              "    if (fred) { }\n"
+              "}");
+        ASSERT_EQUALS("",errout.str());
+
         // #2641 - local pointer, function call
         check("void f() {\n"
               "    ABC *abc;\n"
