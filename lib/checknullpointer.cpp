@@ -412,6 +412,12 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         // name of struct pointer
         const std::string varname(tok1->str());
 
+        // is pointer local?
+        bool isLocal = false;
+        const Variable * var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok1->varId());
+        if (var && var->isLocal())
+            isLocal = true;
+
         // count { and } using tok2
         unsigned int indentlevel2 = 0;
         for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())
@@ -448,11 +454,10 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             else if (indentlevel2 == 0 && tok2->str() == "return")
                 break;
 
-            // Function call: If the pointer is a global variable it
+            // Function call: If the pointer is not a local variable it
             // might be changed by the call.
-            // TODO: false negatives if the pointer is local.
             else if (Token::Match(tok2, "[;{}] %var% (") &&
-                     Token::simpleMatch(tok2->tokAt(2)->link(), ") ;"))
+                     Token::simpleMatch(tok2->tokAt(2)->link(), ") ;") && !isLocal)
             {
                 break;
             }

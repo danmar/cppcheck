@@ -413,6 +413,7 @@ public:
                 type == eFor || type == eWhile || type == eDo ||
                 type == eSwitch || type == eUnconditional);
     }
+
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope

@@ -335,6 +335,15 @@ private:
               "    if (abc) { }\n"
               "}");
         ASSERT_EQUALS("",errout.str());
+
+        // #2641 - local pointer, function call
+        check("void f() {\n"
+              "    ABC *abc;\n"
+              "    abc->a = 0;\n"
+              "    do_stuff();\n"
+              "    if (abc) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 5\n",errout.str());
     }
 
     // Dereferencing a pointer and then checking if it is null
