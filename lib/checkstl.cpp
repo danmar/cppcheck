@@ -964,6 +964,13 @@ void CheckStl::missingComparison()
                         incrementToken = 0;
                     else if (tok3->str() == "break" || tok3->str() == "return")
                         incrementToken = 0;
+                    else if (Token::Match(tok3, "%varid% = %var% . insert ( ++| %varid% ++| ,", iteratorId))
+                    {
+                        // skip insertion..
+                        tok3 = tok3->tokAt(6)->link();
+                        if (!tok3)
+                            break;
+                    }
                 }
                 if (incrementToken)
                     missingComparisonError(incrementToken, tok2->tokAt(16));
