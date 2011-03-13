@@ -3504,6 +3504,19 @@ void Tokenizer::setVarId()
             }
         }
 
+        // Don't set variable id for 'AAA a[0] = 0;' declaration (#2638)
+        if (tok2->previous()->varId() && tok2->str() == "[")
+        {
+            const Token *tok3 = tok2;
+            while (tok3 && tok3->str() == "[")
+            {
+                tok3 = tok3->link();
+                tok3 = tok3 ? tok3->next() : NULL;
+            }
+            if (Token::Match(tok3, "= !!{"))
+                continue;
+        }
+
         // Variable declaration found => Set variable ids
         if (Token::Match(tok2, "[,();[=]") && !varname.empty())
         {

@@ -2032,6 +2032,9 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
             atok = atok->tokAt(2);
     }
 
+    if (Token::Match(atok, "] = !!{"))
+        return false;
+
     return (!_num.empty() && Token::Match(atok, "] ;|="));
 }
 
