@@ -439,8 +439,18 @@ void CheckStl::erase()
                 {
                     if (Token::Match(tok2, "; %var% !="))
                     {
-                        const unsigned int varid = tok2->next()->varId();
-                        if (varid > 0 && Token::findmatch(_tokenizer->tokens(), "> :: iterator %varid%", varid))
+                        // Get declaration token for var..
+                        const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+                        const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->next()->varId());
+                        const Token *decltok = variableInfo ? variableInfo->typeEndToken() : NULL;
+
+                        // Is variable an iterator?
+                        bool isIterator = false;
+                        if (decltok && Token::Match(decltok->tokAt(-2), "> :: iterator %varid%", tok2->next()->varId()))
+                            isIterator = true;
+
+                        // If tok2->next() is an iterator, check scope
+                        if (isIterator)
                             EraseCheckLoop::checkScope(this, tok2->next());
                     }
                     break;
