@@ -100,10 +100,11 @@ void CheckStl::iterators()
                     // skip error message if container is a set..
                     if (tok2->varId() > 0)
                     {
-                        const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok2->varId());
-                        while (decltok && !Token::Match(decltok, "[;{},(]"))
-                            decltok = decltok->previous();
-                        if (Token::Match(decltok, "%any% const| std :: set"))
+                        const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+                        const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->varId());
+                        const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
+
+                        if (Token::Match(decltok, "const| std :: set"))
                             continue;	// No warning
                     }
 
