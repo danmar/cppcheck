@@ -349,6 +349,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             function.arg = function.argDef;
                             function.type = Function::eFunction;
 
+                            // find start of function '{'
+                            const Token *start = tok;
+                            while (start && start->str() != "{")
+                                start = start->next();
+
+                            // save start of function
+                            function.start = start;
+
                             addNewFunction(&scope, &tok);
 
                             if (scope)
@@ -394,6 +402,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             function.arg = function.argDef;
                             function.type = Function::eFunction;
                             function.retFuncPtr = true;
+
+                            // find start of function '{'
+                            const Token *start = tok;
+                            while (start && start->str() != "{")
+                                start = start->next();
+
+                            // save start of function
+                            function.start = start;
 
                             addNewFunction(&scope, &tok1);
 
