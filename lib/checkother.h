@@ -65,8 +65,7 @@ public:
         checkOther.checkSizeofForArrayParameter();
         checkOther.checkSelfAssignment();
 
-        // I'll just fix a few false positives and then uncomment
-        // checkOther.clarifyCondition();   // not simplified because ifAssign
+        checkOther.clarifyCondition();   // not simplified because ifAssign
     }
 
     /** @brief Run checks against the simplified token list */
