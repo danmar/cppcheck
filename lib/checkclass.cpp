@@ -689,15 +689,14 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
 
-void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
+void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Token *typeTok)
 {
     // Warn if type is a class or struct that contains any std::* variables
-    const std::string pattern2(std::string("struct|class ") + type + " :|{");
-    const Token *tstruct = Token::findmatch(_tokenizer->tokens(), pattern2.c_str());
-
-    if (!tstruct)
+    const Scope *scope = symbolDatabase->findVariableType(start, typeTok);
+    if (!scope)
         return;
 
+    const Token *tstruct = scope->classDef;
     const std::string &typeName = tstruct->str();
 
     if (tstruct->tokAt(2)->str() == ":")
@@ -711,7 +710,7 @@ void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
             }
 
             // recursively check all parent classes
-            checkMemsetType(tok, tstruct->str());
+            checkMemsetType(start, tok, tstruct);
 
             tstruct = tstruct->next();
             if (tstruct->str() != ",")
@@ -779,36 +778,54 @@ void CheckClass::noMemset()
 {
     createSymbolDatabase();
 
-    // Locate all 'memset' tokens..
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        if (!Token::Match(tok, "memset|memcpy|memmove"))
-            continue;
+        std::list<Function>::const_iterator func;
 
-        std::string type;
-        if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
-            type = tok->strAt(8);
-        else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
-            type = tok->strAt(9);
-        else if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( struct %type% ) )"))
-            type = tok->strAt(9);
-        else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
-            type = tok->strAt(10);
-        else if (Token::Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
-            type = tok->strAt(8);
-        else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %var% ) )"))
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
-            unsigned int varid = tok->tokAt(3)->varId();
-            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-            if (var && var->typeStartToken() == var->typeEndToken())
-                type = var->typeStartToken()->str();
+            // only check functions with bodies
+            if (!func->hasBody)
+                continue;
+
+            // Locate all 'memset' tokens..
+            const Token *end = func->start->link();
+            for (const Token *tok = func->start; tok && tok != end; tok = tok->next())
+            {
+                if (!Token::Match(tok, "memset|memcpy|memmove"))
+                    continue;
+
+                const Token *typeTok = 0;
+                if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
+                    typeTok = tok->tokAt(8);
+                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
+                    typeTok = tok->tokAt(9);
+                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% :: %type% ) )"))
+                    typeTok = tok->tokAt(11);
+                else if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( struct %type% ) )"))
+                    typeTok = tok->tokAt(9);
+                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
+                    typeTok = tok->tokAt(10);
+                else if (Token::Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
+                    typeTok = tok->tokAt(8);
+                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %var% ) )"))
+                {
+                    unsigned int varid = tok->tokAt(3)->varId();
+                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                    if (var && (var->typeStartToken() == var->typeEndToken() ||
+                                Token::Match(var->typeStartToken(), "%type% :: %type%")))
+                        typeTok = var->typeEndToken();
+                }
+
+                // No type defined => The tokens didn't match
+                if (!typeTok)
+                    continue;
+
+                checkMemsetType(&(*scope), tok, typeTok);
+            }
         }
-
-        // No type defined => The tokens didn't match
-        if (type.empty())
-            continue;
-
-        checkMemsetType(tok, type);
     }
 }
 

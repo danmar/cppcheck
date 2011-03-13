@@ -2987,6 +2987,48 @@ private:
                       "    memset(&pebbles, 0, sizeof(pebbles));\n"
                       "}\n");
         ASSERT_EQUALS("[test.cpp:12]: (error) Using 'memset' on class that contains a virtual method\n", errout.str());
+
+        // Fred not defined in scope
+        checkNoMemset("namespace n1 {\n"
+                      "    class Fred\n"
+                      "    {\n"
+                      "        std::string b; \n"
+                      "    };\n"
+                      "}\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(Fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Fred with namespace qualifier
+        checkNoMemset("namespace n1 {\n"
+                      "    class Fred\n"
+                      "    {\n"
+                      "        std::string b; \n"
+                      "    };\n"
+                      "}\n"
+                      "void f()\n"
+                      "{\n"
+                      "    n1::Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(n1::Fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+
+        // Fred with namespace qualifier
+        checkNoMemset("namespace n1 {\n"
+                      "    class Fred\n"
+                      "    {\n"
+                      "        std::string b; \n"
+                      "    };\n"
+                      "}\n"
+                      "void f()\n"
+                      "{\n"
+                      "    n1::Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
     }
 
     void memsetOnStruct()

@@ -84,7 +84,7 @@ public:
      * Important: The checking doesn't work on simplified tokens list.
      */
     void noMemset();
-    void checkMemsetType(const Token *tok, const std::string &type);
+    void checkMemsetType(const Scope *start, const Token *tok, const Token *typeTok);
 
     /** @brief 'operator=' should return something and it should not be const. */
     void operatorEq();
