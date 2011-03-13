@@ -1774,6 +1774,15 @@ private:
 
         check(code, "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #2639
+        check("struct stat { int a; int b; };\n"
+              "void stat(const char *fn, struct stat *);\n"
+              "\n"
+              "void foo() {\n"
+              "    stat(\"file.txt\", &st);\n"
+              "}\n");
+        ASSERT_EQUALS("",errout.str());
     }
 
     void testMisusedScopeObjectDoesNotPickNestedClass()

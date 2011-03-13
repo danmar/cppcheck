@@ -2941,6 +2941,23 @@ void CheckOther::checkMathFunctions()
     }
 }
 
+/** Is there a function with given name? */
+static bool isFunction(const std::string &name, const Token *startToken)
+{
+    const std::string pattern1(name + " (");
+    for (const Token *tok = startToken; tok; tok = tok->next())
+    {
+        // skip executable scopes etc
+        if (tok->str() == "(" || tok->str() == "{")
+            tok = tok->link();
+
+        // function declaration/implementation found
+        if (Token::simpleMatch(tok, pattern1.c_str()))
+            return true;
+    }
+    return false;
+}
+
 void CheckOther::checkMisusedScopedObject()
 {
     // Skip this check for .c files
@@ -2979,7 +2996,7 @@ void CheckOther::checkMisusedScopedObject()
             if (Token::Match(tok, "[;{}] %var% (")
                 && Token::simpleMatch(tok->tokAt(2)->link(), ") ;")
                 && symbolDatabase->isClassOrStruct(tok->next()->str())
-               )
+                && !isFunction(tok->next()->str(), _tokenizer->tokens()))
             {
                 tok = tok->next();
                 misusedScopeObjectError(tok, tok->str());
