@@ -46,6 +46,7 @@ private:
         TEST_CASE(nullpointer9);
         TEST_CASE(pointerCheckAndDeRef);	// check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);		// Dereference NULL constant
+        TEST_CASE(gcc_statement_expression);    // Don't crash
     }
 
     void check(const char code[])
@@ -1003,6 +1004,14 @@ private:
 
     }
 
+    void gcc_statement_expression()
+    {
+        // Ticket #2621
+        check("void f(struct ABC *abc) {\n"
+              "    ({ if (abc) dbg(); })\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestNullPointer)

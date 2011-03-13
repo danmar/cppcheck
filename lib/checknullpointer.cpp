@@ -635,7 +635,10 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 null = false;
 
                 // start token = first token after the if/while body
-                tok1 = tok1->previous()->link()->next();
+                tok1 = tok1->previous()->link();
+                tok1 = tok1 ? tok1->next() : NULL;
+                if (!tok1)
+                    continue;
             }
 
             // Name of the pointer
