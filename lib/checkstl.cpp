@@ -100,10 +100,11 @@ void CheckStl::iterators()
                     // skip error message if container is a set..
                     if (tok2->varId() > 0)
                     {
-                        const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok2->varId());
-                        while (decltok && !Token::Match(decltok, "[;{},(]"))
-                            decltok = decltok->previous();
-                        if (Token::Match(decltok, "%any% const| std :: set"))
+                        const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+                        const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->varId());
+                        const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
+
+                        if (Token::Match(decltok, "const| std :: set"))
                             continue;	// No warning
                     }
 
@@ -438,8 +439,18 @@ void CheckStl::erase()
                 {
                     if (Token::Match(tok2, "; %var% !="))
                     {
-                        const unsigned int varid = tok2->next()->varId();
-                        if (varid > 0 && Token::findmatch(_tokenizer->tokens(), "> :: iterator %varid%", varid))
+                        // Get declaration token for var..
+                        const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+                        const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->next()->varId());
+                        const Token *decltok = variableInfo ? variableInfo->typeEndToken() : NULL;
+
+                        // Is variable an iterator?
+                        bool isIterator = false;
+                        if (decltok && Token::Match(decltok->tokAt(-2), "> :: iterator %varid%", tok2->next()->varId()))
+                            isIterator = true;
+
+                        // If tok2->next() is an iterator, check scope
+                        if (isIterator)
                             EraseCheckLoop::checkScope(this, tok2->next());
                     }
                     break;
@@ -964,6 +975,13 @@ void CheckStl::missingComparison()
                         incrementToken = 0;
                     else if (tok3->str() == "break" || tok3->str() == "return")
                         incrementToken = 0;
+                    else if (Token::Match(tok3, "%varid% = %var% . insert ( ++| %varid% ++| ,", iteratorId))
+                    {
+                        // skip insertion..
+                        tok3 = tok3->tokAt(6)->link();
+                        if (!tok3)
+                            break;
+                    }
                 }
                 if (incrementToken)
                     missingComparisonError(incrementToken, tok2->tokAt(16));

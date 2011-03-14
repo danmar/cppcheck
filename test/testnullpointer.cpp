@@ -46,6 +46,7 @@ private:
         TEST_CASE(nullpointer9);
         TEST_CASE(pointerCheckAndDeRef);	// check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);		// Dereference NULL constant
+        TEST_CASE(gcc_statement_expression);    // Don't crash
     }
 
     void check(const char code[])
@@ -326,6 +327,39 @@ private:
               "        ;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #2641 - global pointer, function call
+        check("ABC *abc;\n"
+              "void f() {\n"
+              "    abc->a = 0;\n"
+              "    do_stuff();\n"
+              "    if (abc) { }\n"
+              "}");
+        ASSERT_EQUALS("",errout.str());
+
+        check("Fred *fred;\n"
+              "void f() {\n"
+              "    fred->foo();\n"
+              "    if (fred) { }\n"
+              "}");
+        ASSERT_EQUALS("",errout.str());
+
+        // #2641 - local pointer, function call
+        check("void f() {\n"
+              "    ABC *abc;\n"
+              "    abc->a = 0;\n"
+              "    do_stuff();\n"
+              "    if (abc) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 5\n",errout.str());
+
+        // #2641 - local pointer, function call
+        check("void f(ABC *abc) {\n"
+              "    abc->a = 0;\n"
+              "    do_stuff();\n"
+              "    if (abc) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 4\n",errout.str());
     }
 
     // Dereferencing a pointer and then checking if it is null
@@ -970,6 +1004,14 @@ private:
 
     }
 
+    void gcc_statement_expression()
+    {
+        // Ticket #2621
+        check("void f(struct ABC *abc) {\n"
+              "    ({ if (abc) dbg(); })\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestNullPointer)

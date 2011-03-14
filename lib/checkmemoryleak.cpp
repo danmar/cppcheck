@@ -573,12 +573,10 @@ void CheckMemoryLeakInFunction::parse_noreturn()
     noreturn.insert("errx");
     noreturn.insert("verrx");
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
@@ -2501,12 +2499,10 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 //---------------------------------------------------------------------------
 void CheckMemoryLeakInFunction::checkReallocUsage()
 {
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
@@ -2654,12 +2650,10 @@ void CheckMemoryLeakInFunction::check()
     // fill the "noreturn"
     parse_noreturn();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
@@ -2711,12 +2705,10 @@ void CheckMemoryLeakInClass::check()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check classes and structures
         if (scope->isClassOrStruct())
         {
@@ -2729,9 +2721,9 @@ void CheckMemoryLeakInClass::check()
                     if (var->nameToken()->tokAt(-2)->isStandardType())
                     {
                         if (var->isPrivate())
-                            checkPublicFunctions(scope, var->nameToken());
+                            checkPublicFunctions(&(*scope), var->nameToken());
 
-                        variable(scope, var->nameToken());
+                        variable(&(*scope), var->nameToken());
                     }
 
                     // known class?
@@ -2741,9 +2733,9 @@ void CheckMemoryLeakInClass::check()
                         if (var->type()->derivedFrom.empty())
                         {
                             if (var->isPrivate())
-                                checkPublicFunctions(scope, var->nameToken());
+                                checkPublicFunctions(&(*scope), var->nameToken());
 
-                            variable(scope, var->nameToken());
+                            variable(&(*scope), var->nameToken());
                         }
                     }
                 }
@@ -3177,12 +3169,10 @@ void CheckMemoryLeakNoVar::check()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        Scope *scope = *i;
-
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;

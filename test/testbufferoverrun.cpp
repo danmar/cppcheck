@@ -198,7 +198,8 @@ private:
         TEST_CASE(terminateStrncpy3);
         TEST_CASE(recursive_long_time);
 
-        TEST_CASE(crash);	// Ticket #1587 - crash
+        TEST_CASE(crash1);	// Ticket #1587 - crash
+        TEST_CASE(crash2);  // Ticket #2607 - crash
 
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
@@ -210,6 +211,8 @@ private:
         TEST_CASE(scope);   // handling different scopes
 
         TEST_CASE(getErrorMessages);
+
+        TEST_CASE(unknownMacroNoDecl);    // #2638 - not variable declaration: 'AAA a[0] = 0;'
     }
 
 
@@ -2709,7 +2712,7 @@ private:
 
 
     // Ticket #1587 - crash
-    void crash()
+    void crash1()
     {
         check("struct struct A\n"
               "{\n"
@@ -2724,6 +2727,10 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void crash2()
+    {
+        check("struct C {} {} x");
+    }
 
 
     void epcheck(const char code[])
@@ -2935,6 +2942,16 @@ private:
         // Ticket #2292: segmentation fault when using --errorlist
         CheckBufferOverrun c;
         c.getErrorMessages(this, 0);
+    }
+
+    void unknownMacroNoDecl()
+    {
+        check("void f() {\n"
+              "    int a[10];\n"
+              "    AAA a[0] = 0;\n"   // <- not a valid array declaration
+              "    a[1] = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

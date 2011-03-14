@@ -1975,6 +1975,9 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
     _element_size = 0;
     _varname.clear();
 
+    if (!tok)
+        return false;
+
     if (!tok->isName() || tok->str() == "return")
         return false;
 
@@ -2028,6 +2031,9 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
         if (Token::simpleMatch(atok, "] ["))
             atok = atok->tokAt(2);
     }
+
+    if (Token::Match(atok, "] = !!{"))
+        return false;
 
     return (!_num.empty() && Token::Match(atok, "] ;|="));
 }

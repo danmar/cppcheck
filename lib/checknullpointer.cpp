@@ -412,6 +412,22 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         // name of struct pointer
         const std::string varname(tok1->str());
 
+        // is pointer local?
+        bool isLocal = false;
+        const Variable * var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok1->varId());
+        if (var && (var->isLocal() || var->isArgument()))
+            isLocal = true;
+
+        // member function may or may not nullify the pointer if it's global (#2647)
+        if (!isLocal)
+        {
+            const Token *tok2 = tok1;
+            while (Token::Match(tok2, "%var% ."))
+                tok2 = tok2->tokAt(2);
+            if (Token::Match(tok2,"%var% ("))
+                continue;
+        }
+
         // count { and } using tok2
         unsigned int indentlevel2 = 0;
         for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())
@@ -447,6 +463,14 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             // return at base level => stop checking
             else if (indentlevel2 == 0 && tok2->str() == "return")
                 break;
+
+            // Function call: If the pointer is not a local variable it
+            // might be changed by the call.
+            else if (Token::Match(tok2, "[;{}] %var% (") &&
+                     Token::simpleMatch(tok2->tokAt(2)->link(), ") ;") && !isLocal)
+            {
+                break;
+            }
 
             // Check if pointer is null.
             // TODO: false negatives for "if (!p || .."
@@ -611,7 +635,10 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 null = false;
 
                 // start token = first token after the if/while body
-                tok1 = tok1->previous()->link()->next();
+                tok1 = tok1->previous()->link();
+                tok1 = tok1 ? tok1->next() : NULL;
+                if (!tok1)
+                    continue;
             }
 
             // Name of the pointer

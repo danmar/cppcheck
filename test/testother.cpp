@@ -105,6 +105,8 @@ private:
 
         TEST_CASE(clarifyCalculation);
 
+        TEST_CASE(clarifyCondition);     // if (a = b() < 0)
+
         TEST_CASE(incorrectStringCompare);
 
         TEST_CASE(incrementBoolean);
@@ -131,6 +133,7 @@ private:
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
+        checkOther.clarifyCondition();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -544,7 +547,7 @@ private:
                  "        for ( ; i < 10; ++i) ;\n"
                  "    }\n"
                  "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (information) The scope of the variable i can be reduced\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (information) The scope of the variable 'i' can be reduced\n", errout.str());
 
         varScope("void f(int x)\n"
                  "{\n"
@@ -554,7 +557,7 @@ private:
                  "        for ( ; i < 10; ++i) ;\n"
                  "    }\n"
                  "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (information) The scope of the variable i can be reduced\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (information) The scope of the variable 'i' can be reduced\n", errout.str());
     }
 
     void varScope6()
@@ -620,7 +623,7 @@ private:
                  "        edgeResistance = (edge+1) / 2.0;\n"
                  "    }\n"
                  "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (information) The scope of the variable edgeResistance can be reduced\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (information) The scope of the variable 'edgeResistance' can be reduced\n", errout.str());
     }
 
     void varScope9()
@@ -1179,6 +1182,22 @@ private:
 
         check("void foo()\n"
               "{\n"
+              "    int y = 1;\n"
+              "    while(xyz()) {\n"
+              "        switch (x)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            y = 2;\n"
+              "            throw e;\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
               "        int y = 1;\n"
               "        switch (x)\n"
               "        {\n"
@@ -1214,6 +1233,27 @@ private:
             "        case 1:\n"
             "            break;\n"
             "        case 2:\n"
+            "            break;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "void foo() {\n"
+            "    switch (a) {\n"
+            "        case 1:\n"
+            "            break;\n"
+            "        case 2:\n"
+            "            continue;\n"
+            "        case 3:\n"
+            "            return;\n"
+            "        case 4:\n"
+            "            exit(1);\n"
+            "        case 5:\n"
+            "            goto end;\n"
+            "        case 6:\n"
+            "            throw e;\n"
+            "        case 7:\n"
             "            break;\n"
             "    }\n"
             "}\n");
@@ -1734,6 +1774,15 @@ private:
 
         check(code, "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #2639
+        check("struct stat { int a; int b; };\n"
+              "void stat(const char *fn, struct stat *);\n"
+              "\n"
+              "void foo() {\n"
+              "    stat(\"file.txt\", &st);\n"
+              "}\n");
+        ASSERT_EQUALS("",errout.str());
     }
 
     void testMisusedScopeObjectDoesNotPickNestedClass()
@@ -2206,18 +2255,27 @@ private:
         check("int f(char c) {\n"
               "    return 10 * (c == 0) ? 1 : 2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (information) Please clarify precedence: 'a*b?..'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Please clarify precedence: 'a*b?..'\n", errout.str());
 
         check("void f(char c) {\n"
               "    printf(\"%i\", 10 * (c == 0) ? 1 : 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (information) Please clarify precedence: 'a*b?..'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Please clarify precedence: 'a*b?..'\n", errout.str());
 
         // Ticket #2585 - segmentation fault for invalid code
         check("abcdef?" "?<"
               "123456?" "?>"
               "+?" "?=");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // clarify conditions with = and comparison
+    void clarifyCondition()
+    {
+        check("void f() {\n"
+              "    if (x = b() < 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment+comparison), it can be clarified with parantheses\n", errout.str());
     }
 
     void incorrectStringCompare()

@@ -64,6 +64,8 @@ public:
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
         checkOther.checkSelfAssignment();
+
+        checkOther.clarifyCondition();   // not simplified because ifAssign
     }
 
     /** @brief Run checks against the simplified token list */
@@ -96,6 +98,10 @@ public:
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
     void clarifyCalculationError(const Token *tok);
+
+    /** @brief Suspicious condition (assignment+comparison) */
+    void clarifyCondition();
+    void clarifyConditionError(const Token *tok);
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
@@ -264,6 +270,7 @@ public:
         c.catchExceptionByValueError(0);
         c.memsetZeroBytesError(0, "varname");
         c.clarifyCalculationError(0);
+        c.clarifyConditionError(0);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
         c.incrementBooleanError(0);
         c.comparisonOfBoolWithIntError(0, "varname");
@@ -309,6 +316,7 @@ public:
                "* Clarify calculation with parantheses\n"
                "* using increment on boolean\n"
                "* comparison of a boolean with a non-zero integer\n"
+               "* suspicious condition (assignment+comparison)"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";

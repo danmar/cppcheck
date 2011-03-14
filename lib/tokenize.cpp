@@ -3504,6 +3504,19 @@ void Tokenizer::setVarId()
             }
         }
 
+        // Don't set variable id for 'AAA a[0] = 0;' declaration (#2638)
+        if (tok2->previous()->varId() && tok2->str() == "[")
+        {
+            const Token *tok3 = tok2;
+            while (tok3 && tok3->str() == "[")
+            {
+                tok3 = tok3->link();
+                tok3 = tok3 ? tok3->next() : NULL;
+            }
+            if (Token::Match(tok3, "= !!{"))
+                continue;
+        }
+
         // Variable declaration found => Set variable ids
         if (Token::Match(tok2, "[,();[=]") && !varname.empty())
         {
@@ -8131,12 +8144,10 @@ const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 {
     getSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = _symbolDatabase->scopeList.begin(); i != _symbolDatabase->scopeList.end(); ++i)
+    for (scope = _symbolDatabase->scopeList.begin(); scope != _symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         if (scope->type == Scope::eFunction)
         {
             if (scope->classDef->str() == funcname)
@@ -8722,6 +8733,9 @@ void Tokenizer::simplifyComparisonOrder()
         if (Token::Match(tok, "[;(] %any% >|>= %any% [);]"))
         {
             if (!tok->next()->isName() && !tok->next()->isNumber())
+                continue;
+            const Token *operand2 = tok->tokAt(3);
+            if (!operand2->isName() && !operand2->isNumber())
                 continue;
             const std::string op1(tok->strAt(1));
             tok->next()->str(tok->strAt(3));

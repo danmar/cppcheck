@@ -68,12 +68,10 @@ void CheckClass::constructors()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check classes and structures
         if (!scope->isClassOrStruct())
             continue;
@@ -107,7 +105,7 @@ void CheckClass::constructors()
             clearAllVar(usage);
 
             std::list<std::string> callstack;
-            initializeVarList(*func, callstack, scope, usage);
+            initializeVarList(*func, callstack, &(*scope), usage);
 
             // Check if any variables are uninitialized
             std::list<Variable>::const_iterator var;
@@ -581,12 +579,10 @@ void CheckClass::privateFunctions()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check classes and structures
         if (!scope->isClassOrStruct())
             continue;
@@ -693,25 +689,15 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
 
-void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
+void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Token *typeTok)
 {
-    // check for cached message for this type
-    std::map<std::string, std::string>::const_iterator msg = _memsetClassMessages.find(type);
-    if (msg != _memsetClassMessages.end())
-    {
-        memsetError(tok, type, msg->second);
-        return;
-    }
-
     // Warn if type is a class or struct that contains any std::* variables
-    const std::string pattern2(std::string("struct|class ") + type + " :|{");
-    const Token *tstruct = Token::findmatch(_tokenizer->tokens(), pattern2.c_str());
-
-    if (!tstruct)
+    const Scope *scope = symbolDatabase->findVariableType(start, typeTok);
+    if (!scope)
         return;
 
-    // typeKind is either 'struct' or 'class'
-    const std::string &typeKind = tstruct->str();
+    const Token *tstruct = scope->classDef;
+    const std::string &typeName = tstruct->str();
 
     if (tstruct->tokAt(2)->str() == ":")
     {
@@ -724,7 +710,7 @@ void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
             }
 
             // recursively check all parent classes
-            checkMemsetType(tok, tstruct->str());
+            checkMemsetType(start, tok, tstruct);
 
             tstruct = tstruct->next();
             if (tstruct->str() != ",")
@@ -752,7 +738,7 @@ void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
             tstruct->str().find(":") != std::string::npos)
         {
             if (Token::Match(tstruct->next(), "std :: %type% %var% ;"))
-                memsetError(tok, type, tok->str(), "'std::" + tstruct->strAt(3) + "'", typeKind);
+                memsetError(tok, tok->str(), "'std::" + tstruct->strAt(3) + "'", typeName);
 
             else if (Token::Match(tstruct->next(), "std :: %type% <"))
             {
@@ -780,12 +766,10 @@ void CheckClass::checkMemsetType(const Token *tok, const std::string &type)
 
                 // found error => report
                 if (Token::Match(tstruct, "> %var% ;"))
-                    memsetError(tok, type, tok->str(), "'std::" + typestr + "'", typeKind);
+                    memsetError(tok, tok->str(), "'std::" + typestr + "'", typeName);
             }
             else if (Token::simpleMatch(tstruct->next(), "virtual"))
-                memsetError(tok, type, tok->str(), "virtual method", typeKind);
-            else if (!Token::Match(tstruct->next(), "static|}"))
-                checkMemsetType(tok, tstruct->next()->str());
+                memsetError(tok, tok->str(), "virtual method", typeName);
         }
     }
 }
@@ -794,49 +778,60 @@ void CheckClass::noMemset()
 {
     createSymbolDatabase();
 
-    // Locate all 'memset' tokens..
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        if (!Token::Match(tok, "memset|memcpy|memmove"))
-            continue;
+        std::list<Function>::const_iterator func;
 
-        std::string type;
-        if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
-            type = tok->strAt(8);
-        else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
-            type = tok->strAt(9);
-        else if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( struct %type% ) )"))
-            type = tok->strAt(9);
-        else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
-            type = tok->strAt(10);
-        else if (Token::Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
-            type = tok->strAt(8);
-        else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %var% ) )"))
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
-            unsigned int varid = tok->tokAt(3)->varId();
-            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-            if (var && var->typeStartToken() == var->typeEndToken())
-                type = var->typeStartToken()->str();
+            // only check functions with bodies
+            if (!func->hasBody)
+                continue;
+
+            // Locate all 'memset' tokens..
+            const Token *end = func->start->link();
+            for (const Token *tok = func->start; tok && tok != end; tok = tok->next())
+            {
+                if (!Token::Match(tok, "memset|memcpy|memmove"))
+                    continue;
+
+                const Token *typeTok = 0;
+                if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
+                    typeTok = tok->tokAt(8);
+                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
+                    typeTok = tok->tokAt(9);
+                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% :: %type% ) )"))
+                    typeTok = tok->tokAt(11);
+                else if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( struct %type% ) )"))
+                    typeTok = tok->tokAt(9);
+                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
+                    typeTok = tok->tokAt(10);
+                else if (Token::Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
+                    typeTok = tok->tokAt(8);
+                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %var% ) )"))
+                {
+                    unsigned int varid = tok->tokAt(3)->varId();
+                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                    if (var && (var->typeStartToken() == var->typeEndToken() ||
+                                Token::Match(var->typeStartToken(), "%type% :: %type%")))
+                        typeTok = var->typeEndToken();
+                }
+
+                // No type defined => The tokens didn't match
+                if (!typeTok)
+                    continue;
+
+                checkMemsetType(&(*scope), tok, typeTok);
+            }
         }
-
-        // No type defined => The tokens didn't match
-        if (type.empty())
-            continue;
-
-        checkMemsetType(tok, type);
     }
 }
 
-void CheckClass::memsetError(const Token *tok, const std::string &type, const std::string &message)
+void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
 {
-    reportError(tok, Severity::error, "memsetClass", message);
-    // cache the message for this type so we don't have to look it up again
-    _memsetClassMessages[type] = message;
-}
-
-void CheckClass::memsetError(const Token *tok, const std::string &type, const std::string &memfunc, const std::string &classname, const std::string &typekind)
-{
-    memsetError(tok, type, "Using '" + memfunc + "' on " + typekind + " that contains a " + classname);
+    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a " + classname);
 }
 
 //---------------------------------------------------------------------------
@@ -850,18 +845,18 @@ void CheckClass::operatorEq()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        std::list<Function>::const_iterator it;
+        std::list<Function>::const_iterator func;
 
-        for (it = (*i)->functionList.begin(); it != (*i)->functionList.end(); ++it)
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
-            if (it->type == Function::eOperatorEqual && it->access != Private)
+            if (func->type == Function::eOperatorEqual && func->access != Private)
             {
-                if (it->token->strAt(-1) == "void")
-                    operatorEqReturnError(it->token->tokAt(-1));
+                if (func->token->strAt(-1) == "void")
+                    operatorEqReturnError(func->token->tokAt(-1));
             }
         }
     }
@@ -945,12 +940,10 @@ void CheckClass::operatorEqRetRefThis()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // only check classes and structures
         if (scope->isClassOrStruct())
         {
@@ -967,7 +960,7 @@ void CheckClass::operatorEqRetRefThis()
                         // find the ')'
                         const Token *tok = func->token->next()->link();
 
-                        checkReturnPtrThis(scope, &(*func), tok->tokAt(2), tok->next()->link());
+                        checkReturnPtrThis(&(*scope), &(*func), tok->tokAt(2), tok->next()->link());
                     }
                 }
             }
@@ -1001,38 +994,37 @@ void CheckClass::operatorEqToSelf()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-        std::list<Function>::const_iterator it;
+        std::list<Function>::const_iterator func;
 
         // skip classes with multiple inheritance
         if (scope->derivedFrom.size() > 1)
             continue;
 
-        for (it = scope->functionList.begin(); it != scope->functionList.end(); ++it)
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
-            if (it->type == Function::eOperatorEqual && it->hasBody)
+            if (func->type == Function::eOperatorEqual && func->hasBody)
             {
                 // make sure return signature is correct
-                if (Token::Match(it->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
-                    it->tokenDef->strAt(-2) == scope->className)
+                if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
+                    func->tokenDef->strAt(-2) == scope->className)
                 {
                     // check for proper function parameter signature
-                    if ((Token::Match(it->tokenDef->next(), "( const %var% & )") ||
-                         Token::Match(it->tokenDef->next(), "( const %var% & %var% )")) &&
-                        it->tokenDef->strAt(3) == scope->className)
+                    if ((Token::Match(func->tokenDef->next(), "( const %var% & )") ||
+                         Token::Match(func->tokenDef->next(), "( const %var% & %var% )")) &&
+                        func->tokenDef->strAt(3) == scope->className)
                     {
                         // find the parameter name
-                        const Token *rhs = it->token;
+                        const Token *rhs = func->token;
                         while (rhs->str() != "&")
                             rhs = rhs->next();
                         rhs = rhs->next();
 
                         // find the ')'
-                        const Token *tok = it->token->next()->link();
+                        const Token *tok = func->token->next()->link();
                         const Token *tok1 = tok;
 
                         if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
@@ -1178,12 +1170,10 @@ void CheckClass::virtualDestructor()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator i;
+    std::list<Scope>::const_iterator scope;
 
-    for (i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *i;
-
         // Skip base classes and namespaces
         if (scope->derivedFrom.empty())
             continue;
@@ -1297,12 +1287,10 @@ void CheckClass::checkConst()
 
     createSymbolDatabase();
 
-    std::list<Scope *>::const_iterator it;
+    std::list<Scope>::const_iterator scope;
 
-    for (it = symbolDatabase->scopeList.begin(); it != symbolDatabase->scopeList.end(); ++it)
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
-        const Scope *scope = *it;
-
         // only check classes and structures
         if (!scope->isClassOrStruct())
             continue;
@@ -1372,12 +1360,12 @@ void CheckClass::checkConst()
                 // check if base class function is virtual
                 if (!scope->derivedFrom.empty())
                 {
-                    if (isVirtualFunc(scope, func->tokenDef))
+                    if (isVirtualFunc(&(*scope), func->tokenDef))
                         continue;
                 }
 
                 // if nothing non-const was found. write error..
-                if (checkConstFunc(scope, paramEnd))
+                if (checkConstFunc(&(*scope), paramEnd))
                 {
                     std::string classname = scope->className;
                     const Scope *nest = scope->nestedIn;

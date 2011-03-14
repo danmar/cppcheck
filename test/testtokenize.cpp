@@ -181,6 +181,7 @@ private:
         TEST_CASE(varid_in_class2);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
+        TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -3133,6 +3134,23 @@ private:
         ASSERT_EQUALS(expected, actual);
     }
 
+    void varid_unknown_macro()
+    {
+        // #2638 - unknown macro
+        const char code[] = "void f() {\n"
+                            "    int a[10];\n"
+                            "    AAA\n"
+                            "    a[0] = 0;\n"
+                            "}";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( ) {\n"
+                                "2: int a@1 [ 10 ] ;\n"
+                                "3: AAA\n"
+                                "4: a@1 [ 0 ] = 0 ;\n"
+                                "5: }\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
     void varidclass1()
     {
         const std::string actual = tokenizeDebugListing(
@@ -4598,6 +4616,8 @@ private:
     {
         ASSERT_EQUALS("( i < 10 )", tokenizeAndStringify("(10>i)"));
         ASSERT_EQUALS("; i < 10 ;", tokenizeAndStringify(";10>i;"));
+        ASSERT_EQUALS("void > ( ) ; void > ( )",
+                      tokenizeAndStringify("void>(); void>()"));
     }
 
 

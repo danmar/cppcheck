@@ -400,7 +400,11 @@ public:
     AccessControl access;
     unsigned int numConstructors;
     NeedInitialization needInitialization;
-    Scope *functionOf; // class/struct this function belongs to
+    std::list<const Token *> usingList;
+
+    // function specific fields
+    Scope *functionOf; // scope this function belongs to
+    Function *function; // function info for this function
 
     bool isClassOrStruct() const
     {
@@ -413,6 +417,7 @@ public:
                 type == eFor || type == eWhile || type == eDo ||
                 type == eSwitch || type == eUnconditional);
     }
+
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope
@@ -479,10 +484,9 @@ class SymbolDatabase
 {
 public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
-    ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structrues */
-    std::list<Scope *> scopeList;
+    std::list<Scope> scopeList;
 
     /**
      * @brief find a variable type if it's a user defined type
