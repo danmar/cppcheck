@@ -101,6 +101,15 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             continue;
         }
 
+        // using namespace
+        else if (Token::Match(tok, "using namespace %type% ;|::"))
+        {
+            // save location
+            scope->usingList.push_back(tok);
+
+            tok = tok->tokAt(3);
+        }
+
         else
         {
             // check for end of space

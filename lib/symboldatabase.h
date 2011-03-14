@@ -400,7 +400,10 @@ public:
     AccessControl access;
     unsigned int numConstructors;
     NeedInitialization needInitialization;
-    Scope *functionOf; // class/struct this function belongs to
+    std::list<const Token *> usingList;
+
+    // function specific fields
+    Scope *functionOf; // scope this function belongs to
 
     bool isClassOrStruct() const
     {
