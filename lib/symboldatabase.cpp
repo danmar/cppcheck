@@ -438,6 +438,23 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                         tok = tok1;
                     }
+
+                    // function prototype
+                    else if (Token::simpleMatch(argStart->link(), ") ;"))
+                    {
+                        /** @todo save function prototypes in database someday */
+                        tok = argStart->link()->next();
+                        continue;
+                    }
+
+                    // function returning function pointer prototype
+                    else if (Token::simpleMatch(argStart->link(), ") ) (") &&
+                             Token::simpleMatch(argStart->link()->tokAt(2)->link(), ") ;"))
+                    {
+                        /** @todo save function prototypes in database someday */
+                        tok = argStart->link()->tokAt(2)->link()->next();
+                        continue;
+                    }
                 }
             }
             else if (scope->type == Scope::eFunction || scope->isLocal())
