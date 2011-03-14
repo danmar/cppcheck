@@ -284,7 +284,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                         addNewFunction(&scope, &tok2);
                         if (scope)
+                        {
                             scope->functionOf = functionOf;
+                            scope->function = &functionOf->functionList.back();
+                        }
 
                         tok = tok2;
                     }
@@ -968,6 +971,8 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                         if (*scope)
                         {
                             (*scope)->functionOf = scope1;
+                            (*scope)->function = &scope1->functionList.back();
+
                             added = true;
                         }
                         break;
@@ -1247,7 +1252,8 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, S
     access(Public),
     numConstructors(0),
     needInitialization(Scope::Unknown),
-    functionOf(NULL)
+    functionOf(NULL),
+    function(NULL)
 {
 }
 
@@ -1259,7 +1265,8 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
     nestedIn(nestedIn_),
     numConstructors(0),
     needInitialization(Scope::Unknown),
-    functionOf(NULL)
+    functionOf(NULL),
+    function(NULL)
 {
     if (!classDef)
     {

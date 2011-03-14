@@ -404,6 +404,7 @@ public:
 
     // function specific fields
     Scope *functionOf; // scope this function belongs to
+    Function *function; // function info for this function
 
     bool isClassOrStruct() const
     {
