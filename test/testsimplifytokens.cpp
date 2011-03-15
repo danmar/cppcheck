@@ -246,6 +246,7 @@ private:
         TEST_CASE(simplifyTypedef82); // ticket #2403
         TEST_CASE(simplifyTypedef83); // ticket #2620
         TEST_CASE(simplifyTypedef84); // ticket #2630
+        TEST_CASE(simplifyTypedef85); // ticket #2651
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4984,6 +4985,15 @@ private:
         const char code3[] = "typedef ::<>\n";
         checkSimplifyTypedef(code3);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void simplifyTypedef85() // ticket #2651
+    {
+        const char code[] = "typedef FOO ((BAR)(void, int, const int, int*));\n";
+        const char expected[] = ";";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1()

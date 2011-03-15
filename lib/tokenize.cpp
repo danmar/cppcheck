@@ -1234,10 +1234,17 @@ void Tokenizer::simplifyTypedef()
         }
 
         // function: typedef ... ( .... type )( ... );
-        else if (tok->tokAt(offset)->str() == "(" &&
-                 Token::Match(tok->tokAt(offset)->link()->previous(), "%type% ) (") &&
-                 Token::Match(tok->tokAt(offset)->link()->next()->link(), ") const|volatile|;"))
+        //           typedef ... (( .... type )( ... ));
+        else if ((tok->tokAt(offset)->str() == "(" &&
+                  Token::Match(tok->tokAt(offset)->link()->previous(), "%type% ) (") &&
+                  Token::Match(tok->tokAt(offset)->link()->next()->link(), ") const|volatile|;")) ||
+                 (Token::simpleMatch(tok->tokAt(offset), "( (") &&
+                  Token::Match(tok->tokAt(offset + 1)->link()->previous(), "%type% ) (") &&
+                  Token::Match(tok->tokAt(offset + 1)->link()->next()->link(), ") const|volatile| )")))
         {
+            if (tok->strAt(offset + 1) == "(")
+                offset++;
+
             funcStart = tok->tokAt(offset + 1);
             funcEnd = tok->tokAt(offset)->link()->tokAt(-2);
             typeName = tok->tokAt(offset)->link()->previous();
@@ -1256,6 +1263,8 @@ void Tokenizer::simplifyTypedef()
                 }
                 tok = specEnd->next();
             }
+            if (tok->str() == ")")
+                tok = tok->next();
         }
 
         else if (Token::Match(tok->tokAt(offset), "( %type% ("))
