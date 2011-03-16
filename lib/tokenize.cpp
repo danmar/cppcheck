@@ -1245,6 +1245,10 @@ void Tokenizer::simplifyTypedef()
             if (tok->strAt(offset + 1) == "(")
                 offset++;
 
+            if (tok->tokAt(offset)->link()->strAt(-2) == "*")
+                functionPtr = true;
+            else
+                function = true;
             funcStart = tok->tokAt(offset + 1);
             funcEnd = tok->tokAt(offset)->link()->tokAt(-2);
             typeName = tok->tokAt(offset)->link()->previous();
@@ -1528,6 +1532,15 @@ void Tokenizer::simplifyTypedef()
 
                 if (simplifyType)
                 {
+                    // can't simplify 'operator functionPtr ()' and 'functionPtr operator ... ()'
+                    if (functionPtr && (tok2->previous()->str() == "operator" ||
+                                        tok2->next()->str() == "operator"))
+                    {
+                        simplifyType = false;
+                        tok2 = tok2->next();
+                        break;
+                    }
+
                     // There are 2 categories of typedef substitutions:
                     // 1. variable declarations that preserve the variable name like
                     //    global, local, and function parameters
@@ -9472,7 +9485,7 @@ void Tokenizer::simplifyOperatorName()
                     par = par->next();
                     done = false;
                 }
-                if (Token::Match(par, "[<>+-*&/=.]") || Token::Match(par, "==|!=|<=|>="))
+                if (Token::Match(par, "[<>+-*&/=.!]") || Token::Match(par, "==|!=|<=|>="))
                 {
                     op += par->str();
                     par = par->next();

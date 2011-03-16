@@ -247,6 +247,7 @@ private:
         TEST_CASE(simplifyTypedef83); // ticket #2620
         TEST_CASE(simplifyTypedef84); // ticket #2630
         TEST_CASE(simplifyTypedef85); // ticket #2651
+        TEST_CASE(simplifyTypedef86); // ticket #2581
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4991,6 +4992,25 @@ private:
     {
         const char code[] = "typedef FOO ((BAR)(void, int, const int, int*));\n";
         const char expected[] = ";";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef86() // ticket #2581
+    {
+        const char code[] = "class relational {\n"
+                            "    typedef void (safe_bool_helper::*safe_bool)();\n"
+                            "public:\n"
+                            "    operator safe_bool() const;\n"
+                            "    safe_bool operator!() const;\n"
+                            "};\n";
+        const char expected[] = "class relational { "
+                                "; "
+                                "public: "
+                                "operatorsafe_bool ( ) const ; "
+                                "safe_bool operator! ( ) const ; "
+                                "} ;";
         checkSimplifyTypedef(code);
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
