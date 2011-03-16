@@ -1,10 +1,5 @@
 # Minimal CMake build file to build cppcheck command line executable
 
-SET(CHECKCLI_HDRS
-  cppcheckexecutor.h
-  threadexecutor.h
-)
-
 SET(CHECKCLI_SRCS
   cppcheckexecutor.cpp
   threadexecutor.cpp
@@ -13,11 +8,6 @@ SET(CHECKCLI_SRCS
 
 # Add Windows resource file
 if (WIN32)
-  SET(CHECKCLI_HDRS
-    ${CHECKCLI_HDRS}
-    resource.h
-  )
-
   SET(CHECKCLI_SRCS
     ${CHECKCLI_SRCS}
     cppcheck.rc
@@ -47,6 +37,5 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories (${CPPCHECK_SOURCE_DIR}/lib)
-ADD_EXECUTABLE(../cppcheck ${CHECKCLI_SRCS} ${CHECKCLI_HDRS} ${LIB_SRCS})
+ADD_EXECUTABLE(../cppcheck ${CHECKCLI_SRCS} ${LIB_SRCS})
 TARGET_LINK_LIBRARIES(../cppcheck ${CHECK_LIBS})
-

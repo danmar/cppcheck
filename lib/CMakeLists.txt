@@ -4,32 +4,6 @@
 # - tests
 # - Qt GUI
 
-SET(CHECKLIB_HDRS
-  check.h
-  checkautovariables.h
-  checkbufferoverrun.h
-  checkclass.h
-  checkdangerousfunctions.h
-  checkexceptionsafety.h
-  checkheaders.h
-  checkmemoryleak.h
-  checkother.h
-  checkstl.h
-  checkunusedfunctions.h
-  classinfo.h
-  cppcheck.h
-  errorlogger.h
-  executionpath.h
-  filelister.h
-  filelister_unix.h
-  filelister_win32.h
-  mathlib.h
-  preprocessor.h
-  settings.h
-  token.h
-  tokenize.h
-)
-
 SET(CHECKLIB_SRCS
   checkautovariables.cpp
   checkbufferoverrun.cpp
@@ -61,5 +35,4 @@ if (CMAKE_COMPILER_IS_GNUCXX)
   )
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
-ADD_LIBRARY(checklib STATIC ${CHECKLIB_SRCS} ${CHECKLIB_HDRS})
-
+ADD_LIBRARY(checklib STATIC ${CHECKLIB_SRCS})
