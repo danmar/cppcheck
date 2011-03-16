@@ -2977,6 +2977,25 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         if (tok2->str() != name)
             continue;
 
+        // #2648 - simple fix for sizeof used as template parameter
+        // TODO: this is a bit hardcoded. make a bit more generic
+        if (Token::Match(tok2, "%var% < sizeof ( %type% ) >") && tok2->tokAt(4)->isStandardType())
+        {
+            // make sure standard types have a known size..
+            _typeSize["char"] = sizeof(char);
+            _typeSize["short"] = sizeof(short);
+            _typeSize["int"] = sizeof(int);
+            _typeSize["long"] = sizeof(long);
+            _typeSize["float"] = sizeof(float);
+            _typeSize["double"] = sizeof(double);
+            _typeSize["size_t"] = sizeof(size_t);
+
+            Token * const tok3 = tok2->next();
+            const unsigned int sz = sizeOfType(tok3->tokAt(3));
+            Token::eraseTokens(tok3, tok3->tokAt(5));
+            tok3->insertToken(MathLib::toString<unsigned int>(sz));
+        }
+
         if (Token::Match(tok2->previous(), "[;{}=]") &&
             !simplifyTemplatesInstantiateMatch(*iter2, name, type.size(), isfunc ? "(" : "*| %var%"))
             continue;
