@@ -8558,9 +8558,15 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
         else if (tok->str() == "}")
             break;
 
-        else if (Token::simpleMatch(tok, ") throw ("))
+        else if (Token::Match(tok, ") const| throw ("))
         {
-            Token::eraseTokens(tok, tok->tokAt(2)->link());
+            if (tok->next()->str() == "const")
+            {
+                Token::eraseTokens(tok->next(), tok->tokAt(3)->link());
+                tok = tok->next();
+            }
+            else
+                Token::eraseTokens(tok, tok->tokAt(2)->link());
             tok->deleteNext();
         }
 

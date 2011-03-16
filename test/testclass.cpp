@@ -3301,6 +3301,11 @@ private:
                    "    { return 0; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    const std::string foo() const throw() { return ""; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const2()
