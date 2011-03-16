@@ -6,14 +6,6 @@ SET(CHECKCLI_SRCS
   main.cpp
 )
 
-# Add Windows resource file
-if (WIN32)
-  SET(CHECKCLI_SRCS
-    ${CHECKCLI_SRCS}
-    cppcheck.rc
-  )
-endif (WIN32)
-
 # Libraries to link
 #set(CHECK_LIBS
 #  checklib
@@ -21,13 +13,15 @@ endif (WIN32)
 
 aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
 
-# Windows needs additional shlwapi library
-if (WIN32 AND NOT CYGWIN)
-set(CHECK_LIBS
-  ${CHECK_LIBS}
-  shlwapi
-)
-endif (WIN32 AND NOT CYGWIN)
+if(WIN32)
+   # Add Windows resource file
+   set(CHECKCLI_SRCS ${CHECKCLI_SRCS} cppcheck.rc)
+
+   if(NOT CYGWIN)
+      # Windows needs additional shlwapi library.
+      set(CHECK_LIBS ${CHECK_LIBS} shlwapi)
+   endif()
+endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS
