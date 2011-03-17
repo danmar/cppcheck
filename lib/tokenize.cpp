@@ -2911,6 +2911,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         if (Token::Match(tok, "%var% ,|>"))
             type.push_back(tok);
     }
+
     // bail out if the end of the file was reached
     if (!tok)
         return;
@@ -3006,6 +3007,12 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         std::string s1(name + " < ");
         for (const Token *tok3 = tok2->tokAt(2); tok3 && tok3->str() != ">"; tok3 = tok3->next())
         {
+            // #2648 - unhandled paranthesis => bail out
+            if (tok3->str() == "(")
+            {
+                s.clear();
+                break;
+            }
             if (!tok3->next())
             {
                 s.clear();

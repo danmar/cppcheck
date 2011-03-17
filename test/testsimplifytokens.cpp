@@ -115,6 +115,7 @@ private:
         TEST_CASE(template22);
         TEST_CASE(template23);
         TEST_CASE(template24);  // #2648 - using sizeof in template parameter
+        TEST_CASE(template25);  // #2648 - another test for sizeof template parameter
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2058,6 +2059,30 @@ private:
                                 "class bitset<1> : B<4> { } "
                                 "struct B<4> { int a [ 4 ] ; }";
         ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template25()
+    {
+        const char code[] = "template<int n> struct B\n"
+                            "{\n"
+                            "  int a[n];\n"
+                            "};\n"
+                            "\n"
+                            "template<int x> class bitset: B<((sizeof(int)) ? : 1)>\n"
+                            "{};\n"
+                            "\n"
+                            "bitset<1> z;";
+
+        const char actual[] = "; bitset<1> z ; "
+                              "class bitset<1> : B < ( ) > { }";
+
+        const char expected[] = "; "
+                                "bitset<1> z ; "
+                                "class bitset<1> : B<4> { } "
+                                "struct B<4> { int a [ 4 ] ; }";
+
+        TODO_ASSERT_EQUALS(expected, actual, sizeof_(code));
+
     }
 
     void template_unhandled()
