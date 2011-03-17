@@ -114,6 +114,7 @@ private:
         TEST_CASE(template21);
         TEST_CASE(template22);
         TEST_CASE(template23);
+        TEST_CASE(template24);  // #2648 - using sizeof in template parameter
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -246,6 +247,8 @@ private:
         TEST_CASE(simplifyTypedef82); // ticket #2403
         TEST_CASE(simplifyTypedef83); // ticket #2620
         TEST_CASE(simplifyTypedef84); // ticket #2630
+        TEST_CASE(simplifyTypedef85); // ticket #2651
+        TEST_CASE(simplifyTypedef86); // ticket #2581
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2038,6 +2041,24 @@ private:
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
+    void template24()
+    {
+        // #2648
+        const char code[] = "template<int n> struct B\n"
+                            "{\n"
+                            "  int a[n];\n"
+                            "};\n"
+                            "\n"
+                            "template<int x> class bitset: B<sizeof(int)>\n"
+                            "{};\n"
+                            "\n"
+                            "bitset<1> z;";
+        const char expected[] = "; "
+                                "bitset<1> z ; "
+                                "class bitset<1> : B<4> { } "
+                                "struct B<4> { int a [ 4 ] ; }";
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
 
     void template_unhandled()
     {
@@ -4984,6 +5005,34 @@ private:
         const char code3[] = "typedef ::<>\n";
         checkSimplifyTypedef(code3);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void simplifyTypedef85() // ticket #2651
+    {
+        const char code[] = "typedef FOO ((BAR)(void, int, const int, int*));\n";
+        const char expected[] = ";";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef86() // ticket #2581
+    {
+        const char code[] = "class relational {\n"
+                            "    typedef void (safe_bool_helper::*safe_bool)();\n"
+                            "public:\n"
+                            "    operator safe_bool() const;\n"
+                            "    safe_bool operator!() const;\n"
+                            "};\n";
+        const char expected[] = "class relational { "
+                                "; "
+                                "public: "
+                                "operatorsafe_bool ( ) const ; "
+                                "safe_bool operator! ( ) const ; "
+                                "} ;";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1()

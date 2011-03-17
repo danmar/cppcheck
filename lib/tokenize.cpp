@@ -1234,10 +1234,21 @@ void Tokenizer::simplifyTypedef()
         }
 
         // function: typedef ... ( .... type )( ... );
-        else if (tok->tokAt(offset)->str() == "(" &&
-                 Token::Match(tok->tokAt(offset)->link()->previous(), "%type% ) (") &&
-                 Token::Match(tok->tokAt(offset)->link()->next()->link(), ") const|volatile|;"))
+        //           typedef ... (( .... type )( ... ));
+        else if ((tok->tokAt(offset)->str() == "(" &&
+                  Token::Match(tok->tokAt(offset)->link()->previous(), "%type% ) (") &&
+                  Token::Match(tok->tokAt(offset)->link()->next()->link(), ") const|volatile|;")) ||
+                 (Token::simpleMatch(tok->tokAt(offset), "( (") &&
+                  Token::Match(tok->tokAt(offset + 1)->link()->previous(), "%type% ) (") &&
+                  Token::Match(tok->tokAt(offset + 1)->link()->next()->link(), ") const|volatile| )")))
         {
+            if (tok->strAt(offset + 1) == "(")
+                offset++;
+
+            if (tok->tokAt(offset)->link()->strAt(-2) == "*")
+                functionPtr = true;
+            else
+                function = true;
             funcStart = tok->tokAt(offset + 1);
             funcEnd = tok->tokAt(offset)->link()->tokAt(-2);
             typeName = tok->tokAt(offset)->link()->previous();
@@ -1256,6 +1267,8 @@ void Tokenizer::simplifyTypedef()
                 }
                 tok = specEnd->next();
             }
+            if (tok->str() == ")")
+                tok = tok->next();
         }
 
         else if (Token::Match(tok->tokAt(offset), "( %type% ("))
@@ -1519,6 +1532,15 @@ void Tokenizer::simplifyTypedef()
 
                 if (simplifyType)
                 {
+                    // can't simplify 'operator functionPtr ()' and 'functionPtr operator ... ()'
+                    if (functionPtr && (tok2->previous()->str() == "operator" ||
+                                        tok2->next()->str() == "operator"))
+                    {
+                        simplifyType = false;
+                        tok2 = tok2->next();
+                        break;
+                    }
+
                     // There are 2 categories of typedef substitutions:
                     // 1. variable declarations that preserve the variable name like
                     //    global, local, and function parameters
@@ -2954,6 +2976,25 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         Token * const tok2 = *iter2;
         if (tok2->str() != name)
             continue;
+
+        // #2648 - simple fix for sizeof used as template parameter
+        // TODO: this is a bit hardcoded. make a bit more generic
+        if (Token::Match(tok2, "%var% < sizeof ( %type% ) >") && tok2->tokAt(4)->isStandardType())
+        {
+            // make sure standard types have a known size..
+            _typeSize["char"] = sizeof(char);
+            _typeSize["short"] = sizeof(short);
+            _typeSize["int"] = sizeof(int);
+            _typeSize["long"] = sizeof(long);
+            _typeSize["float"] = sizeof(float);
+            _typeSize["double"] = sizeof(double);
+            _typeSize["size_t"] = sizeof(size_t);
+
+            Token * const tok3 = tok2->next();
+            const unsigned int sz = sizeOfType(tok3->tokAt(3));
+            Token::eraseTokens(tok3, tok3->tokAt(5));
+            tok3->insertToken(MathLib::toString<unsigned int>(sz));
+        }
 
         if (Token::Match(tok2->previous(), "[;{}=]") &&
             !simplifyTemplatesInstantiateMatch(*iter2, name, type.size(), isfunc ? "(" : "*| %var%"))
@@ -8517,9 +8558,15 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
         else if (tok->str() == "}")
             break;
 
-        else if (Token::simpleMatch(tok, ") throw ("))
+        else if (Token::Match(tok, ") const| throw ("))
         {
-            Token::eraseTokens(tok, tok->tokAt(2)->link());
+            if (tok->next()->str() == "const")
+            {
+                Token::eraseTokens(tok->next(), tok->tokAt(3)->link());
+                tok = tok->next();
+            }
+            else
+                Token::eraseTokens(tok, tok->tokAt(2)->link());
             tok->deleteNext();
         }
 
@@ -9463,7 +9510,7 @@ void Tokenizer::simplifyOperatorName()
                     par = par->next();
                     done = false;
                 }
-                if (Token::Match(par, "[<>+-*&/=.]") || Token::Match(par, "==|!=|<=|>="))
+                if (Token::Match(par, "[<>+-*&/=.!]") || Token::Match(par, "==|!=|<=|>="))
                 {
                     op += par->str();
                     par = par->next();

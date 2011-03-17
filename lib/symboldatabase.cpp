@@ -1467,6 +1467,9 @@ void Scope::getVariableList()
             continue;
 
         tok = checkVariable(tok, varaccess);
+
+        if (!tok)
+            break;
     }
 }
 
@@ -1515,7 +1518,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
 
     bool isArray = false;
 
-    if (isVariableDeclaration(tok, vartok, typetok, isArray))
+    if (tok && isVariableDeclaration(tok, vartok, typetok, isArray))
     {
         isClass = (!typetok->isStandardType() && vartok->previous()->str() != "*");
         tok = vartok->next();
