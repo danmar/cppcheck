@@ -1235,15 +1235,24 @@ void Tokenizer::simplifyTypedef()
 
         // function: typedef ... ( .... type )( ... );
         //           typedef ... (( .... type )( ... ));
+        //           typedef ... ( * ( .... type )( ... ));
         else if ((tok->tokAt(offset)->str() == "(" &&
                   Token::Match(tok->tokAt(offset)->link()->previous(), "%type% ) (") &&
                   Token::Match(tok->tokAt(offset)->link()->next()->link(), ") const|volatile|;")) ||
                  (Token::simpleMatch(tok->tokAt(offset), "( (") &&
                   Token::Match(tok->tokAt(offset + 1)->link()->previous(), "%type% ) (") &&
-                  Token::Match(tok->tokAt(offset + 1)->link()->next()->link(), ") const|volatile| )")))
+                  Token::Match(tok->tokAt(offset + 1)->link()->next()->link(), ") const|volatile| ) ;|,")) ||
+                 (Token::simpleMatch(tok->tokAt(offset), "( * (") &&
+                  Token::Match(tok->tokAt(offset + 2)->link()->previous(), "%type% ) (") &&
+                  Token::Match(tok->tokAt(offset + 2)->link()->next()->link(), ") const|volatile| ) ;|,")))
         {
             if (tok->strAt(offset + 1) == "(")
                 offset++;
+            else if (Token::simpleMatch(tok->tokAt(offset), "( * ("))
+            {
+                pointers.push_back("*");
+                offset += 2;
+            }
 
             if (tok->tokAt(offset)->link()->strAt(-2) == "*")
                 functionPtr = true;
@@ -1289,7 +1298,9 @@ void Tokenizer::simplifyTypedef()
         }
 
         // pointer to function returning pointer to function
-        else if (Token::Match(tok->tokAt(offset), "( * ( * %type% ) ("))
+        else if (Token::Match(tok->tokAt(offset), "( * ( * %type% ) (") &&
+                 Token::Match(tok->tokAt(offset + 6)->link(), ") ) (") &&
+                 Token::Match(tok->tokAt(offset + 6)->link()->tokAt(2)->link(), ") ;|,"))
         {
             functionPtrRetFuncPtr = true;
 
@@ -1305,7 +1316,8 @@ void Tokenizer::simplifyTypedef()
 
         // function returning pointer to function
         else if (Token::Match(tok->tokAt(offset), "( * %type% (") &&
-                 Token::simpleMatch(tok->tokAt(offset + 3)->link(), ") ) ("))
+                 Token::simpleMatch(tok->tokAt(offset + 3)->link(), ") ) (") &&
+                 Token::Match(tok->tokAt(offset + 3)->link()->tokAt(2)->link(), ") ;|,"))
         {
             functionRetFuncPtr = true;
 
