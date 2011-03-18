@@ -1455,7 +1455,7 @@ void Scope::getVariableList()
         // skip return and delete
         else if (Token::Match(tok, "return|delete"))
         {
-            while (tok->next()->str() != ";")
+            while (tok->next() && tok->next()->str() != ";")
                 tok = tok->next();
             continue;
         }
