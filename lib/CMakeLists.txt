@@ -20,9 +20,6 @@ SET(CHECKLIB_SRCS
   cppcheck.cpp
   errorlogger.cpp
   executionpath.cpp
-  filelister.cpp
-  filelister_unix.cpp
-  filelister_win32.cpp
   mathlib.cpp
   preprocessor.cpp
   settings.cpp
