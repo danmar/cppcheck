@@ -176,7 +176,9 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
     if (Token::Match(tok2, "opendir|fdopendir ("))
         return Dir;
 
-    return No;
+    // User function
+    const Token *ftok = tokenizer->getFunctionTokenByName(tok2->str().c_str());
+    return functionReturnType(ftok);
 }
 
 
@@ -428,9 +430,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
         else if (tok2->str() == "return")
         {
             AllocType allocType = getAllocationType(tok2->next(), 0);
-            if (allocType != No)
-                return allocType;
-            allocType = getReallocationType(tok2->next(), 0);
             if (allocType != No)
                 return allocType;
         }
@@ -725,21 +724,6 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             ret = "dealloc";
         Tokenizer::deleteTokens(func);
         return ret;
-    }
-
-    // Check if this is a function that allocates memory..
-    if (Token::Match(tok->tokAt(-3), "[;{}] %varid% = %var% (", varid))
-    {
-        const Token *ftok = _tokenizer->getFunctionTokenByName(funcname.c_str());
-        AllocType a = functionReturnType(ftok);
-        if (a != No)
-        {
-            if (alloctype == No)
-                alloctype = a;
-            else if (alloctype != a)
-                alloctype = Many;
-            return "alloc";
-        }
     }
 
     // how many parameters is there in the function call?
