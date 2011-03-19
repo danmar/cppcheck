@@ -3449,7 +3449,7 @@ void Tokenizer::setVarId()
             {
                 again = false;
 
-                if (tok2->str() == "const")
+                if (tok2 && tok2->str() == "const")
                     tok2 = tok2->next();
 
                 while (Token::Match(tok2, "%var% ::"))
@@ -3484,7 +3484,7 @@ void Tokenizer::setVarId()
                 {
                     while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->str() == "*" || tok2->str() == "&" || tok2->str() == ","))
                         tok2 = tok2->next();
-                    if (tok2->str() == "(")
+                    if (tok2 && tok2->str() == "(")
                     {
                         tok2 = tok2->link()->next();
                         if (tok2->str() == "(")

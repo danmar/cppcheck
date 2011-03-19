@@ -170,6 +170,7 @@ private:
         TEST_CASE(varid25);
         TEST_CASE(varid26);   // ticket #1967 (list of function pointers)
         TEST_CASE(varid27);	// Ticket #2280 (same name for namespace and variable)
+        TEST_CASE(varid28);   // ticket #2630
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -2816,6 +2817,12 @@ private:
                                    "1: int fooled_ya@1 ;\n"
                                    "2: fooled_ya :: iterator iter@2 ;\n");
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid28() // ticket #2630 (segmentation fault)
+    {
+        tokenizeDebugListing("template <typedef A>\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void varidFunctionCall1()
