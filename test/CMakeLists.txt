@@ -4,32 +4,44 @@ find_package(PCRE REQUIRED)
 set(TINYXML_INCLUDE_DIR "${CPPCHECK_SOURCE_DIR}/externals/tinyxml/")
 
 SET(CHECKTEST_SRCS
+  "${CPPCHECK_SOURCE_DIR}/cli/cmdlineparser.cpp"
+  "${CPPCHECK_SOURCE_DIR}/cli/cppcheckexecutor.cpp"
   "${CPPCHECK_SOURCE_DIR}/cli/filelister.cpp"
-  testmemleak.cpp
-  testother.cpp
-  testpreprocessor.cpp
+  "${CPPCHECK_SOURCE_DIR}/cli/threadexecutor.cpp"
+  options.cpp
   testautovariables.cpp
-  testredundantif.cpp
   testbufferoverrun.cpp
-  testrunner.cpp
   testcharvar.cpp
-  testsimplifytokens.cpp
   testclass.cpp
-  teststl.cpp
+  testcmdlineparser.cpp
   testconstructors.cpp
-  testsuite.cpp
   testcppcheck.cpp
-  testdangerousfunctions.cpp
-  testtoken.cpp
   testdivision.cpp
-  testtokenize.cpp
+  testerrorlogger.cpp
   testexceptionsafety.cpp
-  testunusedfunctions.cpp
-  testfilelister.cpp
-  testunusedprivfunc.cpp
   testincompletestatement.cpp
-  testunusedvar.cpp
   testmathlib.cpp
+  testmemleak.cpp
+  testnullpointer.cpp
+  testobsoletefunctions.cpp
+  testoptions.cpp
+  testother.cpp
+  testpath.cpp
+  testpostfixoperator.cpp
+  testpreprocessor.cpp
+  testrunner.cpp
+  testsettings.cpp
+  testsimplifytokens.cpp
+  teststl.cpp
+  testsuite.cpp
+  testsymboldatabase.cpp
+  testthreadexecutor.cpp
+  testtoken.cpp
+  testtokenize.cpp
+  testuninitvar.cpp
+  testunusedfunctions.cpp
+  testunusedprivfunc.cpp
+  testunusedvar.cpp
   "${TINYXML_INCLUDE_DIR}tinystr.cpp"
   "${TINYXML_INCLUDE_DIR}tinyxml.cpp"
   "${TINYXML_INCLUDE_DIR}tinyxmlerror.cpp"
@@ -47,7 +59,7 @@ if(WIN32)
       set(CHECK_LIBS ${CHECK_LIBS} shlwapi)
    endif()
 else()
-   set(CHECKTEST_SRCS ${CHECKTEST_SRCS}
+   set(CHECKTEST_SRCS ${CHECKTEST_SRCS} testfilelister_unix.cpp
        "${CPPCHECK_SOURCE_DIR}/cli/filelister_unix.cpp")
 endif()
 
@@ -59,6 +71,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories("${CPPCHECK_SOURCE_DIR}/lib"
+                    "${CPPCHECK_SOURCE_DIR}/cli"
                     "${PCRE_INCLUDE_DIR}"
                     "${TINYXML_INCLUDE_DIR}")
 add_executable(test ${CHECKTEST_SRCS} ${CPPCHECK_LIB_SOURCES})

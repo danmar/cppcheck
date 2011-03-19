@@ -4,10 +4,11 @@ find_package(PCRE REQUIRED)
 set(TINYXML_INCLUDE_DIR "${CPPCHECK_SOURCE_DIR}/externals/tinyxml/")
 
 SET(CHECKCLI_SRCS
+  cmdlineparser.cpp
   cppcheckexecutor.cpp
   filelister.cpp
-  threadexecutor.cpp
   main.cpp
+  threadexecutor.cpp
   "${TINYXML_INCLUDE_DIR}tinystr.cpp"
   "${TINYXML_INCLUDE_DIR}tinyxml.cpp"
   "${TINYXML_INCLUDE_DIR}tinyxmlerror.cpp"
