@@ -8,12 +8,8 @@ SET(CHECKCLI_SRCS
   main.cpp
 )
 
-# Libraries to link
-#set(CHECK_LIBS
-#  checklib
-#)
-
-aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
+set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
+include("${CPPCHECK_LIB_DIR}library_sources.cmake")
 
 if(WIN32)
    # Add Windows resource file
@@ -37,5 +33,5 @@ endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories("${CPPCHECK_SOURCE_DIR}/lib"
                     "${PCRE_INCLUDE_DIR}")
-ADD_EXECUTABLE(cppcheck ${CHECKCLI_SRCS} ${LIB_SRCS})
+add_executable(cppcheck ${CHECKCLI_SRCS} ${CPPCHECK_LIB_SOURCES})
 TARGET_LINK_LIBRARIES(cppcheck ${CHECK_LIBS} ${PCRE_LIBRARIES})
