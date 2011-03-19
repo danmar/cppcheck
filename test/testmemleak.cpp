@@ -127,13 +127,13 @@ public:
     { }
 
 private:
-    void check(const char code[], bool showAll = false)
+    void check(const char code[], bool inconclusive = false)
     {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.inconclusive = showAll;
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
