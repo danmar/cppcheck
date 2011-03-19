@@ -2,7 +2,8 @@
 TEMPLATE = app
 TARGET = test
 DEPENDPATH += .
-INCLUDEPATH += . ../cli ../lib
+TINYXML_DIR = ../externals/tinyxml/
+INCLUDEPATH += . ../cli ../lib $${TINYXML_DIR}
 OBJECTS_DIR = temp
 CONFIG += warn_on console
 CONFIG -= qt app_bundle
@@ -10,8 +11,8 @@ win32 {
     LIBS += -lshlwapi
 }
 
-BASEPATH = ../externals/tinyxml/
-include(../externals/tinyxml/tinyxml.pri)
+BASEPATH = $${TINYXML_DIR}
+include($${TINYXML_DIR}tinyxml.pri)
 BASEPATH = ../lib/
 include(../lib/lib.pri)
 

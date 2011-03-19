@@ -50,7 +50,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">
     <ClCompile>
-      <AdditionalIncludeDirectories>".";"..\lib";"..\externals";c:\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>".";"..\lib";"..\externals\tinyxml";c:\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zm200 -w34100 -w34189 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -84,7 +84,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">
     <ClCompile>
-      <AdditionalIncludeDirectories>".";"..\lib";"..\externals";c:\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>".";"..\lib";"..\externals\tinyxml";c:\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zm200 -w34100 -w34189 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
