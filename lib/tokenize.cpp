@@ -5563,7 +5563,7 @@ void Tokenizer:: simplifyFunctionPointers()
             tok = tok->next();
 
         // check that the declaration ends
-        if (!Token::Match(tok->tokAt(5)->link(), ") ;|,|)|="))
+        if (!Token::Match(tok->tokAt(5)->link(), ") ;|,|)|=|["))
             continue;
 
         // ok simplify this function pointer to an ordinary pointer

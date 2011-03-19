@@ -267,7 +267,8 @@ private:
         TEST_CASE(simplifyConst);
         TEST_CASE(switchCase);
 
-        TEST_CASE(functionpointer);
+        TEST_CASE(functionpointer1);
+        TEST_CASE(functionpointer2);
 
         TEST_CASE(removeRedundantAssignment);
 
@@ -4738,12 +4739,25 @@ private:
         return ostr.str();
     }
 
-    void functionpointer()
+    void functionpointer1()
     {
         ASSERT_EQUALS(" void* f;", simplifyFunctionPointers("void (*f)();"));
         ASSERT_EQUALS(" void** f;", simplifyFunctionPointers("void *(*f)();"));
         ASSERT_EQUALS(" unsigned int* f;", simplifyFunctionPointers("unsigned int (*f)();"));
         ASSERT_EQUALS(" unsigned int** f;", simplifyFunctionPointers("unsigned int * (*f)();"));
+    }
+
+    void functionpointer2()
+    {
+        const char code[] = "typedef void (* PF)();"
+                            "void f1 ( ) { }"
+                            "PF pf = &f1;"
+                            "PF pfs[] = { &f1, &f1 };";
+        const char expected[] = "; "
+                                "void f1(){} "
+                                "void* pf; pf=& f1; "
+                                "void* pfs[]={& f1,& f1};";
+        ASSERT_EQUALS(expected, simplifyFunctionPointers(code));
     }
 
     void removeRedundantAssignment()
