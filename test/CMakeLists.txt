@@ -1,4 +1,5 @@
 # Minimal CMake build file to build cppcheck test suite
+find_package(PCRE REQUIRED)
 
 SET(CHECKTEST_SRCS
   testmemleak.cpp
@@ -50,9 +51,9 @@ if (CMAKE_COMPILER_IS_GNUCXX)
   )
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
-include_directories (${CPPCHECK_SOURCE_DIR}/lib)
+include_directories("${CPPCHECK_SOURCE_DIR}/lib" "${PCRE_INCLUDE_DIR}")
 ADD_EXECUTABLE(test ${CHECKTEST_SRCS} ${LIB_SRCS})
-TARGET_LINK_LIBRARIES(test ${CHECK_LIBS})
+TARGET_LINK_LIBRARIES(test ${CHECK_LIBS} ${PCRE_LIBRARIES})
 
 # Add custom 'make check' -target
 # It compiles and runs tests

@@ -1,4 +1,5 @@
 # Minimal CMake build file to build cppcheck command line executable
+find_package(PCRE REQUIRED)
 
 SET(CHECKCLI_SRCS
   cppcheckexecutor.cpp
@@ -30,6 +31,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
   )
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
-include_directories (${CPPCHECK_SOURCE_DIR}/lib)
+include_directories("${CPPCHECK_SOURCE_DIR}/lib"
+                    "${PCRE_INCLUDE_DIR}")
 ADD_EXECUTABLE(../cppcheck ${CHECKCLI_SRCS} ${LIB_SRCS})
-TARGET_LINK_LIBRARIES(../cppcheck ${CHECK_LIBS})
+TARGET_LINK_LIBRARIES(../cppcheck ${CHECK_LIBS} ${PCRE_LIBRARIES})
