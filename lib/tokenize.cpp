@@ -3580,11 +3580,36 @@ void Tokenizer::setVarId()
         // Variable declaration found => Set variable ids
         if (Token::Match(tok2, "[,();[=]") && !varname.empty())
         {
+            // Are we in a class declaration?
+            // Then start at the start of the class declaration..
+            while (NULL != (tok2 = tok2->previous()))
+            {
+                if (tok2->str() == "}" || tok2->str() == ")")
+                    tok2 = tok2->link();
+                else if (tok2->str() == "(")
+                    break;
+                else if (tok2->str() == "{")
+                {
+                    while (NULL != (tok2 = tok2->previous()))
+                    {
+                        if (Token::Match(tok2, "[,;{})]"))
+                            break;
+                        if (Token::Match(tok2, "class|struct"))
+                            break;
+                    }
+                    break;
+                }
+            }
+
+            // Start token
+            if (!Token::Match(tok2, "class|struct"))
+                tok2 = tok;
+
             ++_varId;
             int indentlevel = 0;
             int parlevel = 0;
             bool funcDeclaration = false;
-            for (tok2 = tok->next(); tok2; tok2 = tok2->next())
+            while (NULL != (tok2 = tok2->next()))
             {
                 const char c = tok2->str()[0];
                 if (c == varname[0])

@@ -193,6 +193,7 @@ private:
         TEST_CASE(varidclass7);
         TEST_CASE(varidclass8);
         TEST_CASE(varidclass9);
+        TEST_CASE(varidclass10);  // variable declaration below usage
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -3090,7 +3091,7 @@ private:
                                    "10:\n"
                                    "11: void Bar :: f ( )\n"
                                    "12: {\n"
-                                   "13: foo@2 . x = x@3 ;\n"    // TODO: it would be even better if the ". x" was ". x@4" instead
+                                   "13: foo@2 . x@4 = x@3 ;\n"
                                    "14: }\n");
         ASSERT_EQUALS(expected, actual);
     }
@@ -3261,7 +3262,7 @@ private:
                                    "8:\n"
                                    "9: void A :: f ( )\n"
                                    "10: {\n"
-                                   "11: i = 0 ;\n"
+                                   "11: i@1 = 0 ;\n"
                                    "12: }\n");
 
         ASSERT_EQUALS(expected, actual);
@@ -3381,7 +3382,7 @@ private:
                                    "1: class Fred {\n"
                                    "2: public:\n"
                                    "3: void foo ( int d@1 ) {\n"
-                                   "4: int i@2 ; i@2 = bar ( x * d@1 ) ;\n"
+                                   "4: int i@2 ; i@2 = bar ( x@3 * d@1 ) ;\n"
                                    "5: }\n"
                                    "6: int x@3 ;\n"
                                    "7: }\n");
@@ -3412,6 +3413,25 @@ private:
                                    "7: sizeof ( cl ) ;\n"
                                    "8: }\n");
 
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varidclass10()
+    {
+        const std::string code("class A {\n"
+                               "    void f() {\n"
+                               "        a = 3;\n"
+                               "    }\n"
+                               "    int a;\n"
+                               "};\n;");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class A {\n"
+                                   "2: void f ( ) {\n"
+                                   "3: a@1 = 3 ;\n"
+                                   "4: }\n"
+                                   "5: int a@1 ;\n"
+                                   "6: } ;\n");
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 

@@ -4235,8 +4235,7 @@ private:
               "private:\n"
               "    char *s;\n"
               "};\n");
-        TODO_ASSERT_EQUALS("publicAllocation",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
     }
 
     void func2()
