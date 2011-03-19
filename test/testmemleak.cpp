@@ -236,6 +236,7 @@ private:
         TEST_CASE(allocfunc5);
         TEST_CASE(allocfunc6);
         TEST_CASE(allocfunc7);
+        TEST_CASE(allocfunc8);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1971,9 +1972,23 @@ private:
               "{\n"
               "    char* s = data();\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
+    void allocfunc8()
+    {
+        // Ticket #2213 - calling alloc function twice
+        check("FILE *foo() {\n"
+              "    return fopen(a,b);\n"
+              "}\n"
+              "\n"
+              "void bar() {\n"
+              "    FILE *f = foo();\n"
+              "    f = foo();\n"
+              "    fclose(f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Resource leak: f\n", errout.str());
+    }
 
 
     void throw1()
