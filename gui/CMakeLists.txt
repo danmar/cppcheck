@@ -7,6 +7,7 @@ find_package(Qt4)
 IF(QT4_FOUND)
 
 # Add needed Qt modules
+set(QT_USE_QTHELP TRUE)
 set(QT_USE_QTMAIN TRUE)
 set(QT_USE_QTXML TRUE)
 include(${QT_USE_FILE})
@@ -27,6 +28,7 @@ SET(CHECK_HEADERS
   common.h
   csvreport.h
   fileviewdialog.h
+  helpwindow.h
   mainwindow.h
   projectfile.h
   report.h
@@ -48,6 +50,7 @@ SET(CHECKGUI_SRCS
   checkthread.cpp
   csvreport.cpp
   fileviewdialog.cpp
+  helpwindow.cpp
   main.cpp
   mainwindow.cpp
   projectfile.cpp
@@ -67,6 +70,7 @@ SET(CHECK_UIS
   about.ui
   application.ui
   file.ui
+  helpwindow.ui
   main.ui
   resultsview.ui
   settings.ui
