@@ -194,6 +194,7 @@ private:
         TEST_CASE(varidclass8);
         TEST_CASE(varidclass9);
         TEST_CASE(varidclass10);  // variable declaration below usage
+        TEST_CASE(varidclass11);  // variable declaration below usage
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -3262,7 +3263,7 @@ private:
                                    "8:\n"
                                    "9: void A :: f ( )\n"
                                    "10: {\n"
-                                   "11: i@1 = 0 ;\n"
+                                   "11: i = 0 ;\n"
                                    "12: }\n");
 
         ASSERT_EQUALS(expected, actual);
@@ -3423,7 +3424,7 @@ private:
                                "        a = 3;\n"
                                "    }\n"
                                "    int a;\n"
-                               "};\n;");
+                               "};\n");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: class A {\n"
@@ -3435,6 +3436,33 @@ private:
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
+    void varidclass11()
+    {
+        const std::string code("class Fred {\n"
+                               "    int a;\n"
+                               "    void f();\n"
+                               "};\n"
+                               "class Wilma {\n"
+                               "    int a;\n"
+                               "    void f();\n"
+                               "};\n"
+                               "void Fred::f() { a = 0; }\n"
+                               "void Wilma::f() { a = 0; }\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class Fred {\n"
+                                   "2: int a@1 ;\n"
+                                   "3: void f ( ) ;\n"
+                                   "4: } ;\n"
+                                   "5: class Wilma {\n"
+                                   "6: int a@2 ;\n"
+                                   "7: void f ( ) ;\n"
+                                   "8: } ;\n"
+                                   "9: void Fred :: f ( ) { a@1 = 0 ; }\n"
+                                   "10: void Wilma :: f ( ) { a@2 = 0 ; }\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
 
     void file1()
     {

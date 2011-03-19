@@ -3601,8 +3601,13 @@ void Tokenizer::setVarId()
                 }
             }
 
-            // Start token
-            if (!Token::Match(tok2, "class|struct"))
+            // Set start token
+            if (Token::Match(tok2, "class|struct"))
+            {
+                while (tok2->str() != "{")
+                    tok2 = tok2->next();
+            }
+            else
                 tok2 = tok;
 
             ++_varId;
@@ -3642,29 +3647,6 @@ void Tokenizer::setVarId()
                 }
                 else if (parlevel < 0 && c == ';')
                     break;
-            }
-        }
-    }
-
-    // Struct/Class members
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        // str.clear is a variable
-        // str.clear() is a member function
-        if (tok->varId() != 0 &&
-            Token::Match(tok->next(), ". %var% !!(") &&
-            tok->tokAt(2)->varId() == 0)
-        {
-            ++_varId;
-
-            const std::string pattern(std::string(". ") + tok->strAt(2));
-            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-            {
-                if (tok2->varId() == tok->varId())
-                {
-                    if (Token::Match(tok2->next(), pattern.c_str()))
-                        tok2->tokAt(2)->varId(_varId);
-                }
             }
         }
     }
@@ -3781,6 +3763,29 @@ void Tokenizer::setVarId()
                 }
             }
 
+        }
+    }
+
+    // Struct/Class members
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        // str.clear is a variable
+        // str.clear() is a member function
+        if (tok->varId() != 0 &&
+            Token::Match(tok->next(), ". %var% !!(") &&
+            tok->tokAt(2)->varId() == 0)
+        {
+            ++_varId;
+
+            const std::string pattern(std::string(". ") + tok->strAt(2));
+            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->varId() == tok->varId())
+                {
+                    if (Token::Match(tok2->next(), pattern.c_str()))
+                        tok2->tokAt(2)->varId(_varId);
+                }
+            }
         }
     }
 }
