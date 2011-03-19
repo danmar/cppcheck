@@ -289,6 +289,7 @@ private:
         TEST_CASE(bitfields4); // ticket #1956
         TEST_CASE(bitfields5); // ticket #1956
         TEST_CASE(bitfields6); // ticket #2595
+        TEST_CASE(bitfields7); // ticket #1987
 
         TEST_CASE(microsoftMFC);
 
@@ -5271,6 +5272,18 @@ private:
 
         const char code5[] = "void f(int a) { switch (a) { default: break; } }";
         ASSERT_EQUALS("void f ( int a ) { switch ( a ) { default : ; break ; } }", tokenizeAndStringify(code5,true));
+    }
+
+    void bitfields7() // ticket #1987
+    {
+        const char code[] = "typedef struct Descriptor {"
+                            "    unsigned element_size: 8* sizeof( unsigned );"
+                            "} Descriptor;";
+        const char expected[] = "struct Descriptor { "
+                                "unsigned int element_size ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,false));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void microsoftMFC()
