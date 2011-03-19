@@ -1235,15 +1235,24 @@ void Tokenizer::simplifyTypedef()
 
         // function: typedef ... ( .... type )( ... );
         //           typedef ... (( .... type )( ... ));
+        //           typedef ... ( * ( .... type )( ... ));
         else if ((tok->tokAt(offset)->str() == "(" &&
                   Token::Match(tok->tokAt(offset)->link()->previous(), "%type% ) (") &&
                   Token::Match(tok->tokAt(offset)->link()->next()->link(), ") const|volatile|;")) ||
                  (Token::simpleMatch(tok->tokAt(offset), "( (") &&
                   Token::Match(tok->tokAt(offset + 1)->link()->previous(), "%type% ) (") &&
-                  Token::Match(tok->tokAt(offset + 1)->link()->next()->link(), ") const|volatile| )")))
+                  Token::Match(tok->tokAt(offset + 1)->link()->next()->link(), ") const|volatile| ) ;|,")) ||
+                 (Token::simpleMatch(tok->tokAt(offset), "( * (") &&
+                  Token::Match(tok->tokAt(offset + 2)->link()->previous(), "%type% ) (") &&
+                  Token::Match(tok->tokAt(offset + 2)->link()->next()->link(), ") const|volatile| ) ;|,")))
         {
             if (tok->strAt(offset + 1) == "(")
                 offset++;
+            else if (Token::simpleMatch(tok->tokAt(offset), "( * ("))
+            {
+                pointers.push_back("*");
+                offset += 2;
+            }
 
             if (tok->tokAt(offset)->link()->strAt(-2) == "*")
                 functionPtr = true;
@@ -1289,7 +1298,9 @@ void Tokenizer::simplifyTypedef()
         }
 
         // pointer to function returning pointer to function
-        else if (Token::Match(tok->tokAt(offset), "( * ( * %type% ) ("))
+        else if (Token::Match(tok->tokAt(offset), "( * ( * %type% ) (") &&
+                 Token::Match(tok->tokAt(offset + 6)->link(), ") ) (") &&
+                 Token::Match(tok->tokAt(offset + 6)->link()->tokAt(2)->link(), ") ;|,"))
         {
             functionPtrRetFuncPtr = true;
 
@@ -1305,7 +1316,8 @@ void Tokenizer::simplifyTypedef()
 
         // function returning pointer to function
         else if (Token::Match(tok->tokAt(offset), "( * %type% (") &&
-                 Token::simpleMatch(tok->tokAt(offset + 3)->link(), ") ) ("))
+                 Token::simpleMatch(tok->tokAt(offset + 3)->link(), ") ) (") &&
+                 Token::Match(tok->tokAt(offset + 3)->link()->tokAt(2)->link(), ") ;|,"))
         {
             functionRetFuncPtr = true;
 
@@ -2911,6 +2923,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         if (Token::Match(tok, "%var% ,|>"))
             type.push_back(tok);
     }
+
     // bail out if the end of the file was reached
     if (!tok)
         return;
@@ -3006,6 +3019,12 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         std::string s1(name + " < ");
         for (const Token *tok3 = tok2->tokAt(2); tok3 && tok3->str() != ">"; tok3 = tok3->next())
         {
+            // #2648 - unhandled paranthesis => bail out
+            if (tok3->str() == "(")
+            {
+                s.clear();
+                break;
+            }
             if (!tok3->next())
             {
                 s.clear();
@@ -3430,7 +3449,7 @@ void Tokenizer::setVarId()
             {
                 again = false;
 
-                if (tok2->str() == "const")
+                if (tok2 && tok2->str() == "const")
                     tok2 = tok2->next();
 
                 while (Token::Match(tok2, "%var% ::"))
@@ -3465,7 +3484,7 @@ void Tokenizer::setVarId()
                 {
                     while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->str() == "*" || tok2->str() == "&" || tok2->str() == ","))
                         tok2 = tok2->next();
-                    if (tok2->str() == "(")
+                    if (tok2 && tok2->str() == "(")
                     {
                         tok2 = tok2->link()->next();
                         if (tok2->str() == "(")
@@ -3561,11 +3580,41 @@ void Tokenizer::setVarId()
         // Variable declaration found => Set variable ids
         if (Token::Match(tok2, "[,();[=]") && !varname.empty())
         {
+            // Are we in a class declaration?
+            // Then start at the start of the class declaration..
+            while (NULL != (tok2 = tok2->previous()))
+            {
+                if (tok2->str() == "}" || tok2->str() == ")")
+                    tok2 = tok2->link();
+                else if (tok2->str() == "(")
+                    break;
+                else if (tok2->str() == "{")
+                {
+                    while (NULL != (tok2 = tok2->previous()))
+                    {
+                        if (Token::Match(tok2, "[,;{})]"))
+                            break;
+                        if (Token::Match(tok2, "class|struct"))
+                            break;
+                    }
+                    break;
+                }
+            }
+
+            // Set start token
+            if (Token::Match(tok2, "class|struct"))
+            {
+                while (tok2->str() != "{")
+                    tok2 = tok2->next();
+            }
+            else
+                tok2 = tok;
+
             ++_varId;
             int indentlevel = 0;
             int parlevel = 0;
             bool funcDeclaration = false;
-            for (tok2 = tok->next(); tok2; tok2 = tok2->next())
+            while (NULL != (tok2 = tok2->next()))
             {
                 const char c = tok2->str()[0];
                 if (c == varname[0])
@@ -3598,29 +3647,6 @@ void Tokenizer::setVarId()
                 }
                 else if (parlevel < 0 && c == ';')
                     break;
-            }
-        }
-    }
-
-    // Struct/Class members
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        // str.clear is a variable
-        // str.clear() is a member function
-        if (tok->varId() != 0 &&
-            Token::Match(tok->next(), ". %var% !!(") &&
-            tok->tokAt(2)->varId() == 0)
-        {
-            ++_varId;
-
-            const std::string pattern(std::string(". ") + tok->strAt(2));
-            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-            {
-                if (tok2->varId() == tok->varId())
-                {
-                    if (Token::Match(tok2->next(), pattern.c_str()))
-                        tok2->tokAt(2)->varId(_varId);
-                }
             }
         }
     }
@@ -3737,6 +3763,29 @@ void Tokenizer::setVarId()
                 }
             }
 
+        }
+    }
+
+    // Struct/Class members
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        // str.clear is a variable
+        // str.clear() is a member function
+        if (tok->varId() != 0 &&
+            Token::Match(tok->next(), ". %var% !!(") &&
+            tok->tokAt(2)->varId() == 0)
+        {
+            ++_varId;
+
+            const std::string pattern(std::string(". ") + tok->strAt(2));
+            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->varId() == tok->varId())
+                {
+                    if (Token::Match(tok2->next(), pattern.c_str()))
+                        tok2->tokAt(2)->varId(_varId);
+                }
+            }
         }
     }
 }

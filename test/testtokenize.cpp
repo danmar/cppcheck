@@ -170,6 +170,7 @@ private:
         TEST_CASE(varid25);
         TEST_CASE(varid26);   // ticket #1967 (list of function pointers)
         TEST_CASE(varid27);	// Ticket #2280 (same name for namespace and variable)
+        TEST_CASE(varid28);   // ticket #2630
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -192,6 +193,8 @@ private:
         TEST_CASE(varidclass7);
         TEST_CASE(varidclass8);
         TEST_CASE(varidclass9);
+        TEST_CASE(varidclass10);  // variable declaration below usage
+        TEST_CASE(varidclass11);  // variable declaration below usage
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -2818,6 +2821,12 @@ private:
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
+    void varid28() // ticket #2630 (segmentation fault)
+    {
+        tokenizeDebugListing("template <typedef A>\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void varidFunctionCall1()
     {
         const std::string code("void f() {\n"
@@ -3083,7 +3092,7 @@ private:
                                    "10:\n"
                                    "11: void Bar :: f ( )\n"
                                    "12: {\n"
-                                   "13: foo@2 . x = x@3 ;\n"    // TODO: it would be even better if the ". x" was ". x@4" instead
+                                   "13: foo@2 . x@4 = x@3 ;\n"
                                    "14: }\n");
         ASSERT_EQUALS(expected, actual);
     }
@@ -3374,7 +3383,7 @@ private:
                                    "1: class Fred {\n"
                                    "2: public:\n"
                                    "3: void foo ( int d@1 ) {\n"
-                                   "4: int i@2 ; i@2 = bar ( x * d@1 ) ;\n"
+                                   "4: int i@2 ; i@2 = bar ( x@3 * d@1 ) ;\n"
                                    "5: }\n"
                                    "6: int x@3 ;\n"
                                    "7: }\n");
@@ -3408,6 +3417,52 @@ private:
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
+    void varidclass10()
+    {
+        const std::string code("class A {\n"
+                               "    void f() {\n"
+                               "        a = 3;\n"
+                               "    }\n"
+                               "    int a;\n"
+                               "};\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class A {\n"
+                                   "2: void f ( ) {\n"
+                                   "3: a@1 = 3 ;\n"
+                                   "4: }\n"
+                                   "5: int a@1 ;\n"
+                                   "6: } ;\n");
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varidclass11()
+    {
+        const std::string code("class Fred {\n"
+                               "    int a;\n"
+                               "    void f();\n"
+                               "};\n"
+                               "class Wilma {\n"
+                               "    int a;\n"
+                               "    void f();\n"
+                               "};\n"
+                               "void Fred::f() { a = 0; }\n"
+                               "void Wilma::f() { a = 0; }\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class Fred {\n"
+                                   "2: int a@1 ;\n"
+                                   "3: void f ( ) ;\n"
+                                   "4: } ;\n"
+                                   "5: class Wilma {\n"
+                                   "6: int a@2 ;\n"
+                                   "7: void f ( ) ;\n"
+                                   "8: } ;\n"
+                                   "9: void Fred :: f ( ) { a@1 = 0 ; }\n"
+                                   "10: void Wilma :: f ( ) { a@2 = 0 ; }\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
 
     void file1()
     {

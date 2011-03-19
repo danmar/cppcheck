@@ -127,13 +127,13 @@ public:
     { }
 
 private:
-    void check(const char code[], bool showAll = false)
+    void check(const char code[], bool inconclusive = false)
     {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.inconclusive = showAll;
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -4235,8 +4235,7 @@ private:
               "private:\n"
               "    char *s;\n"
               "};\n");
-        TODO_ASSERT_EQUALS("publicAllocation",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
     }
 
     void func2()

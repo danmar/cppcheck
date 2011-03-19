@@ -197,6 +197,7 @@ private:
         TEST_CASE(symboldatabase14); // ticket #2589
         TEST_CASE(symboldatabase15); // ticket #2591
         TEST_CASE(symboldatabase16); // ticket #2637
+        TEST_CASE(symboldatabase17); // ticket #2657
     }
 
     // Check the operator Equal
@@ -5801,6 +5802,14 @@ private:
     {
         // ticket #2637 - segmentation fault
         checkConst("{} const const\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase17()
+    {
+        // ticket #2657 - segmentation fault
+        checkConst("return f(){}\n");
 
         ASSERT_EQUALS("", errout.str());
     }
