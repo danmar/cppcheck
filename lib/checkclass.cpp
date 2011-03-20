@@ -1546,7 +1546,17 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
         // increment/decrement (member variable?)..
         else if (Token::Match(tok1, "++|--"))
         {
-            isconst = false;
+            if (Token::Match(tok1->previous(), "%var%") &&
+                tok1->previous()->str() != "return")
+            {
+                if (isMemberVar(scope, tok1->previous()))
+                    isconst = false;
+            }
+            else if (Token::Match(tok1->next(), "%var%"))
+            {
+                if (isMemberVar(scope, tok1->next()))
+                    isconst = false;
+            }
             break;
         }
 

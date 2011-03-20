@@ -166,6 +166,7 @@ private:
         TEST_CASE(const43); // ticket #2377
         TEST_CASE(const44); // ticket #2595
         TEST_CASE(const45); // ticket #2664
+        TEST_CASE(const46); // ticket #2636
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5208,6 +5209,23 @@ private:
                    "}\n");
 
         ASSERT_EQUALS("[test.cpp:8]: (information) Technically the member function 'tools::WorkspaceControl::toGrid' can be const.\n", errout.str());
+    }
+
+    void const46() // ticket 2663
+    {
+        checkConst("class Altren {\n"
+                   "public:\n"
+                   "    int fun1() {\n"
+                   "        int a;\n"
+                   "        a++;\n"
+                   "    }\n"
+                   "    int fun2() {\n"
+                   "        b++;\n"
+                   "    }\n"
+                   "}\n");
+
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Altren::fun1' can be const.\n"
+                      "[test.cpp:7]: (information) Technically the member function 'Altren::fun2' can be const.\n", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation()
