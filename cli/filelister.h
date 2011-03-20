@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FileListerH
-#define FileListerH
+#ifndef filelisterH
+#define filelisterH
 
 #include <vector>
 #include <string>
@@ -25,19 +25,10 @@
 /// @addtogroup CLI
 /// @{
 
-/**
- * @brief Base class for Cppcheck filelisters.
- * Used to recursively search for source files. This class defines a platform
- * independant interface and subclasses will provide platform dependant
- * implementation. */
+/** @brief Cross-platform FileLister */
 class FileLister
 {
 public:
-    /**
-     * @brief destructor of class filelister
-     */
-    virtual ~FileLister() {}
-
     /**
      * @brief Recursively add source files to a vector.
      * Add source files from given directory and all subdirectries to the
@@ -46,8 +37,8 @@ public:
      * @param filenames output vector that filenames are written to
      * @param path root path
      */
-    virtual void recursiveAddFiles(std::vector<std::string> &filenames,
-                                   const std::string &path) = 0;
+    static void recursiveAddFiles(std::vector<std::string> &filenames,
+                                  const std::string &path);
 
     /**
      * @brief Check if the file extension indicates that it's a source file.
@@ -61,12 +52,15 @@ public:
      * @brief Is given path a directory?
      * @return returns true if the path is a directory
      */
-    virtual bool isDirectory(const std::string &path) = 0;
-};
+    static bool isDirectory(const std::string &path);
 
-/** @brief get filelister (platform dependent implementation) */
-FileLister * getFileLister();
+#ifndef _WIN32
+    static void recursiveAddFiles2(std::vector<std::string> &relative,
+                                   std::vector<std::string> &absolute,
+                                   const std::string &path);
+#endif
+};
 
 /// @}
 
-#endif // #ifndef FileListerH
+#endif // #ifndef filelisterH

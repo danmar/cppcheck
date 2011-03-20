@@ -71,7 +71,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
              ++iter)
         {
             const std::string path(Path::toNativeSeparators(*iter));
-            if (!getFileLister()->isDirectory(path.c_str()))
+            if (!FileLister::isDirectory(path))
             {
                 std::cout << "cppcheck: error: Couldn't find path given by -I '" + path + "'" << std::endl;
                 return false;
@@ -87,7 +87,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // Execute recursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
         for (iter = pathnames.begin(); iter != pathnames.end(); ++iter)
-            getFileLister()->recursiveAddFiles(filenames, Path::toNativeSeparators(iter->c_str()));
+            FileLister::recursiveAddFiles(filenames, Path::toNativeSeparators(*iter));
     }
 
     if (!filenames.empty())

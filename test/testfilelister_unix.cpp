@@ -18,9 +18,7 @@
 
 #include "testsuite.h"
 
-#define private public
-
-#include "filelister_unix.h"
+#include "filelister.h"
 
 class TestFileLister: public TestFixture
 {
@@ -32,14 +30,16 @@ public:
 private:
     void run()
     {
+#ifndef _WIN32
         TEST_CASE(test_recursiveAddFiles2);
+#endif
     }
 
+#ifndef _WIN32
     void test_recursiveAddFiles2()
     {
         std::vector<std::string> relative, absolute;
-        FileListerUnix ful;
-        ful.recursiveAddFiles2(relative, absolute, ".");
+        FileLister::recursiveAddFiles2(relative, absolute, ".");
 
         ASSERT(relative.size() != 0);
         ASSERT_EQUALS((int)relative.size(), (int)absolute.size());
@@ -56,6 +56,7 @@ private:
             ASSERT_EQUALS(r->substr(start_at_relative), a->substr(start_at_absolute));
         }
     }
+#endif
 };
 
 REGISTER_TEST(TestFileLister)
