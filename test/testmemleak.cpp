@@ -228,6 +228,7 @@ private:
         TEST_CASE(func18);
         TEST_CASE(func19);      // Ticket #2056 - if (!f(p)) return 0;
         TEST_CASE(func20);		// Ticket #2182 - exit is not handled
+        TEST_CASE(func21);      // Ticket #2569 
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -575,7 +576,7 @@ private:
             , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "strcasecmp"
             , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
             , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
-            , "sync_file_range", "telldir", "typeid", "while", "write", "writev"
+            , "sync_file_range", "telldir", "typeid", "while", "write", "writev", "lstat"
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
@@ -1731,8 +1732,51 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    //# Ticket 2569
+    void func21()
+    {
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if (lstat (cpFile, &CFileAttr) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile\n", errout.str());
 
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if (lstat (cpFile, &CFileAttr) != 0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
 
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if (lstat (cpFile, &CFileAttr) != 0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void allocfunc1()
     {
