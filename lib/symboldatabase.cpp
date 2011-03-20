@@ -555,28 +555,20 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         // finish filling in base class info
         for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i)
         {
-            std::list<Scope>::iterator it1;
+            std::list<Scope>::const_iterator it1;
 
+            // check all scopes for match
             for (it1 = scopeList.begin(); it1 != scopeList.end(); ++it1)
             {
-                Scope *scope1 = &(*it1);
+                // check scope for match
+                const Scope *scope1 = it1->findQualifiedScope(scope->derivedFrom[i].name);
 
-                /** @todo handle derived base classes and namespaces */
-                if (scope1->type == Scope::eClass || scope1->type == Scope::eStruct)
+                // found match?
+                if (scope1)
                 {
-                    // do class names match?
-                    if (scope1->className == scope->derivedFrom[i].name)
-                    {
-                        // are they in the same namespace or different namespaces with same name?
-                        if ((scope1->nestedIn == scope->nestedIn) ||
-                            ((scope1->nestedIn && scope1->nestedIn->type == Scope::eNamespace) &&
-                             (scope->nestedIn && scope->nestedIn->type == Scope::eNamespace) &&
-                             (scope1->nestedIn->className == scope->nestedIn->className)))
-                        {
-                            scope->derivedFrom[i].scope = scope1;
-                            break;
-                        }
-                    }
+                    // set found scope
+                    scope->derivedFrom[i].scope = const_cast<Scope *>(scope1);
+                    break;
                 }
             }
         }
@@ -1754,6 +1746,34 @@ Scope * Scope::findInNestedListRecursive(const std::string & name)
         Scope *child = (*it)->findInNestedListRecursive(name);
         if (child)
             return child;
+    }
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
+const Scope * Scope::findQualifiedScope(const std::string & name) const
+{
+    if (type == Scope::eClass || type == Scope::eStruct || type == Scope::eNamespace)
+    {
+        if (name.compare(0, className.size(), className) == 0)
+        {
+            std::string path = name;
+            path.erase(0, className.size());
+            if (path.compare(0, 4, " :: ") == 0)
+                path.erase(0, 4);
+            else if (path.empty())
+                return this;
+
+            std::list<Scope *>::const_iterator it;
+
+            for (it = nestedList.begin() ; it != nestedList.end(); ++it)
+            {
+                const Scope *scope1 = (*it)->findQualifiedScope(path);
+                if (scope1)
+                    return scope1;
+            }
+        }
     }
     return 0;
 }

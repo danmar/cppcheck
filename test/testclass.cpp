@@ -165,6 +165,7 @@ private:
         TEST_CASE(const42); // ticket #2282
         TEST_CASE(const43); // ticket #2377
         TEST_CASE(const44); // ticket #2595
+        TEST_CASE(const45); // ticket #2664
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5189,6 +5190,24 @@ private:
                    "};\n");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const45() // ticket 2664
+    {
+        checkConst("namespace wraps {\n"
+                   "    class BaseLayout {};\n"
+                   "}\n"
+                   "namespace tools {\n"
+                   "    class WorkspaceControl :\n"
+                   "        public wraps::BaseLayout\n"
+                   "    {\n"
+                   "        int toGrid(int _value)\n"
+                   "        {\n"
+                   "        }\n"
+                   "    };\n"
+                   "}\n");
+
+        ASSERT_EQUALS("[test.cpp:8]: (information) Technically the member function 'tools::WorkspaceControl::toGrid' can be const.\n", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation()

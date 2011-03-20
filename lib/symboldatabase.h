@@ -430,6 +430,8 @@ public:
      */
     Scope * findInNestedListRecursive(const std::string & name);
 
+    const Scope * findQualifiedScope(const std::string & name) const;
+
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, bool mutable_,
                      bool static_, bool const_, bool class_, const Scope *type_,
