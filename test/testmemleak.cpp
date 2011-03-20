@@ -565,8 +565,8 @@ private:
 
         static const char * const call_func_white_list[] =
         {
-            "access", "asprintf", "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
-            , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
+            "access", "asprintf", "atof", "atoi", "atol", "chdir", "chmod", "clearerr", "chown", "delete"
+            , "fchmod", "fcntl", "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
             , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fscanf", "fseek"
             , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
             , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
@@ -1866,6 +1866,140 @@ private:
               "        return;\n"
               "    }\n"
               "    delete [] cpFile;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
+        // checking for chdir function
+        // http://home.fhtw-berlin.de/~junghans/cref/MAN/chdir.htm
+        // --------------------------------------------------------
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chdir (cpDir) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chdir (cpDir) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chdir (cpDir) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // checking for chmod function
+        // http://publib.boulder.ibm.com/infocenter/zos/v1r10/index.jsp?topic=/com.ibm.zos.r10.bpxbd00/rtchm.htm
+        // ------------------------------------------------------------------------------------------------------
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chmod(cpDir, S_IRWXU|S_IRWXG) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chmod(cpDir, S_IRWXU|S_IRWXG) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chmod(cpDir, S_IRWXU|S_IRWXG) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
+        // checking for chown function
+        // http://publib.boulder.ibm.com/infocenter/zos/v1r10/index.jsp?topic=/com.ibm.zos.r10.bpxbd00/rtchm.htm
+        // ------------------------------------------------------------------------------------------------------
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chown(cpDir, 25, 0) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chown(cpDir, 25, 0) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chown(cpDir, 25, 0) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
               "    return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
