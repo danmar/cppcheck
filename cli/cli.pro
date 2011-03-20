@@ -16,16 +16,12 @@ SOURCES += main.cpp \
            cppcheckexecutor.cpp \
            cmdlineparser.cpp \
            filelister.cpp \
-           filelister_unix.cpp \
-           filelister_win32.cpp \
            pathmatch.cpp \
            threadexecutor.cpp
 
 HEADERS += cppcheckexecutor.h \
            cmdlineparser.h \
            filelister.h \
-           filelister_unix.h \
-           filelister_win32.h \
            pathmatch.h \
            threadexecutor.h
 

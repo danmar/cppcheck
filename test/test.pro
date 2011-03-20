@@ -19,16 +19,12 @@ include(../lib/lib.pri)
 SOURCES += ../cli/cmdlineparser.cpp \
            ../cli/cppcheckexecutor.cpp \
            ../cli/filelister.cpp \
-           ../cli/filelister_unix.cpp \
-           ../cli/filelister_win32.cpp \
            ../cli/pathmatch.cpp \
            ../cli/threadexecutor.cpp \
     testpathmatch.cpp
 HEADERS += ../cli/cmdlineparser.h \
            ../cli/cppcheckexecutor.h \
            ../cli/filelister.h \
-           ../cli/filelister_unix.h \
-           ../cli/filelister_win32.h \
            ../cli/pathmatch.h \
            ../cli/threadexecutor.h
 
