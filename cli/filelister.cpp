@@ -20,6 +20,7 @@
 #include <string>
 #include <cctype>
 #include <algorithm>
+#include <sstream>
 #include "filelister.h"
 #include "path.h"
 
@@ -205,7 +206,7 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const st
         else
         {
             // Directory
-            getFileLister()->recursiveAddFiles(filenames, fname.str());
+            FileLister::recursiveAddFiles(filenames, fname.str());
         }
 #if defined(UNICODE)
         delete [] ansiFfd;
@@ -238,7 +239,6 @@ bool FileLister::isDirectory(const std::string &path)
 #include <unistd.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <sstream>
 
 void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
                                std::vector<std::string> &absolute,
