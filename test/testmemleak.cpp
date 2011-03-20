@@ -565,7 +565,7 @@ private:
 
         static const char * const call_func_white_list[] =
         {
-            "asprintf", "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
+            "access", "asprintf", "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
             , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
             , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fscanf", "fseek"
             , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
@@ -1815,6 +1815,52 @@ private:
               "    char *cpFile = new char [13];\n"
               "    strcpy (cpFile, \"testfile.txt\");\n"
               "    if ( stat (cpFile, &CFileAttr) != 0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // checking for access function
+        // http://www.gnu.org/s/libc/manual/html_node/Testing-File-Access.html
+        // --------------------------------------------------------------------
+
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if ( access (cpFile, R_OK) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if (access (cpFile, R_OK) != 0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if (access (cpFile, R_OK) != 0)\n"
               "    {\n"
               "        delete [] cpFile;\n"
               "        return;\n"

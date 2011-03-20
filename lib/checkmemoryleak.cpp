@@ -45,7 +45,7 @@ CheckMemoryLeakNoVar instance4;
 // This list needs to be alphabetically sorted so we can run bsearch on it
 static const char * const call_func_white_list[] =
 {
-    "asctime", "asctime_r", "asprintf", "assert", "atof", "atoi", "atol", "clearerr"
+    "access", "asctime", "asctime_r", "asprintf", "assert", "atof", "atoi", "atol", "clearerr"
     , "ctime", "ctime_r", "delete", "fchmod", "fclose", "fcntl"
     , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
     , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fscanf", "fseek"
