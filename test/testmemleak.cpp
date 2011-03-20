@@ -229,6 +229,7 @@ private:
         TEST_CASE(func19);      // Ticket #2056 - if (!f(p)) return 0;
         TEST_CASE(func20);		// Ticket #2182 - exit is not handled
         TEST_CASE(func21);      // Ticket #2569 
+        TEST_CASE(func22);      // Ticket #2667
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -1820,6 +1821,63 @@ private:
               "        return;\n"
               "    }\n"
               "    delete [] cpFile;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // Ticket #2667
+    void func22()
+    {
+
+        check("void  foo()\n"
+              "{\n"
+              "    char * cpFile;\n"
+              "    cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=0;\n"
+              "    if((file=open(cpFile,O_RDONLY)) < -1)\n"
+              "    {\n"
+              "        close(file);\n"
+              "        return ;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    close(file);\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void  foo()\n"
+              "{\n"
+              "    char * cpFile;\n"
+              "    cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=0;\n"
+              "    if((file=open(cpFile,O_RDONLY)) < -1)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        close(file);\n"
+              "        return ;\n"
+              "    }\n"
+              "    close(file);\n"
+              "    return;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("","[test.cpp:14]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void  foo()\n"
+              "{\n"
+              "    char * cpFile;\n"
+              "    cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=0;\n"
+              "    if((file=open(cpFile,O_RDONLY)) < -1)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        close(file);\n"
+              "        return ;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    close(file);\n"
               "    return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
