@@ -26,7 +26,7 @@ General Public License version 3</translation>
         <translation>Visitez le site Cppcheck : %1</translation>
     </message>
     <message utf8="true">
-        <source>Copyright © 2007-2010 Daniel Marjamäki and cppcheck team.</source>
+        <source>Copyright © 2007-2011 Daniel Marjamäki and cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -631,6 +631,10 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <source>Include directories:</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Ignore</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProjectFileDialog</name>
@@ -645,6 +649,10 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <source>Select directory to check</source>
         <translation type="unfinished">Sélectionner le répertoire à vérifier</translation>
+    </message>
+    <message>
+        <source>Select directory to ignore</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -756,6 +764,10 @@ Please select the directory where file is located.</source>
     </message>
     <message>
         <source>information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>debug</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
