@@ -48,7 +48,7 @@
             <File Id='cppcheck_nl.qm' Name='cppcheck_nl.qm' Source='$(var.TranslationsDir)\cppcheck_nl.qm' />
             <File Id='cppcheck_pl.qm' Name='cppcheck_pl.qm' Source='$(var.TranslationsDir)\cppcheck_pl.qm' />
             <File Id='cppcheck_ru.qm' Name='cppcheck_ru.qm' Source='$(var.TranslationsDir)\cppcheck_ru.qm' />
-            <File Id='cppcheck_se.qm' Name='cppcheck_se.qm' Source='$(var.TranslationsDir)\cppcheck_se.qm' />
+            <File Id='cppcheck_sv.qm' Name='cppcheck_sv.qm' Source='$(var.TranslationsDir)\cppcheck_sv.qm' />
             <File Id='cppcheck_sr.qm' Name='cppcheck_sr.qm' Source='$(var.TranslationsDir)\cppcheck_sr.qm' />
           </Component>
           <Component Id='BaseDocs' Guid='$(var.basedocsGUID)'>
