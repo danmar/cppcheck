@@ -82,7 +82,8 @@ private:
         TEST_CASE(testScanf2);
 
         TEST_CASE(trac1132);
-        TEST_CASE(testMisusedScopeObjectDoesNotPickFunction);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickFunction1);
+        TEST_CASE(testMisusedScopeObjectDoesNotPickFunction2);
         TEST_CASE(testMisusedScopeObjectPicksClass);
         TEST_CASE(testMisusedScopeObjectPicksStruct);
         TEST_CASE(testMisusedScopeObjectDoesNotPickIf);
@@ -1647,13 +1648,31 @@ private:
         ASSERT_EQUALS("[trac1132.cpp:16]: (error) instance of \"Lock\" object destroyed immediately\n", errout.str());
     }
 
-    void testMisusedScopeObjectDoesNotPickFunction()
+    void testMisusedScopeObjectDoesNotPickFunction1()
     {
         check("int main ( )\n"
               "{\n"
               "    CouldBeFunction ( 123 ) ;\n"
               "    return 0 ;\n"
               "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectDoesNotPickFunction2()
+    {
+        check("struct error {\n"
+              "    error() {}\n"
+              "};\n"
+              "\n"
+              "class parser {\n"
+              "public:\n"
+              "    void error() const {}\n"
+              "\n"
+              "    void foo() const {\n"
+              "        error();\n"
+              "    }\n"
+              "};\n"
              );
         ASSERT_EQUALS("", errout.str());
     }
@@ -1803,7 +1822,7 @@ private:
                             "}\n";
 
         check(code, "test.cpp");
-        TODO_ASSERT_EQUALS("", "[test.cpp:13]: (error) instance of \"Init\" object destroyed immediately\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac2084()
