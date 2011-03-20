@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{597BA843-2D03-3F45-AB51-2E1DF1EA5136}</ProjectGuid>
+    <ProjectGuid>{B0719A50-6567-3359-B337-92D9F9DDE38A}</ProjectGuid>
     <RootNamespace>test</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
@@ -50,7 +50,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">
     <ClCompile>
-      <AdditionalIncludeDirectories>".";"..\cli";"..\lib";"..\externals";"..\externals\tinyxml";c:\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>".";"..\cli";"..\lib";"..\externals";"..\externals\tinyxml";..\..\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zm200 -w34100 -w34189 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -84,7 +84,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">
     <ClCompile>
-      <AdditionalIncludeDirectories>".";"..\cli";"..\lib";"..\externals";"..\externals\tinyxml";c:\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>".";"..\cli";"..\lib";"..\externals";"..\externals\tinyxml";..\..\Qt\VS4.7.0\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zm200 -w34100 -w34189 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -135,8 +135,6 @@
     <ClCompile Include="..\lib\errorlogger.cpp" />
     <ClCompile Include="..\lib\executionpath.cpp" />
     <ClCompile Include="..\cli\filelister.cpp" />
-    <ClCompile Include="..\cli\filelister_unix.cpp" />
-    <ClCompile Include="..\cli\filelister_win32.cpp" />
     <ClCompile Include="..\lib\mathlib.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="..\lib\path.cpp" />
@@ -207,8 +205,6 @@
     <ClInclude Include="..\lib\errorlogger.h" />
     <ClInclude Include="..\lib\executionpath.h" />
     <ClInclude Include="..\cli\filelister.h" />
-    <ClInclude Include="..\cli\filelister_unix.h" />
-    <ClInclude Include="..\cli\filelister_win32.h" />
     <ClInclude Include="..\lib\mathlib.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="..\lib\path.h" />
