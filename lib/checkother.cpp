@@ -2951,11 +2951,18 @@ static bool isFunction(const std::string &name, const Token *startToken)
     for (const Token *tok = startToken; tok; tok = tok->next())
     {
         // skip executable scopes etc
-        if (tok->str() == "(" || tok->str() == "{")
+        if (tok->str() == "(")
+        {
             tok = tok->link();
+            if (Token::simpleMatch(tok, ") {"))
+                tok = tok->next()->link();
+            else if (Token::simpleMatch(tok, ") const {"))
+                tok = tok->tokAt(2)->link();
+        }
 
         // function declaration/implementation found
-        if (Token::simpleMatch(tok, pattern1.c_str()))
+        if ((tok->str() == "*" || (tok->isName() && tok->str().find(":") ==std::string::npos))
+            && Token::simpleMatch(tok->next(), pattern1.c_str()))
             return true;
     }
     return false;

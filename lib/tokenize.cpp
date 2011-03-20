@@ -5563,7 +5563,7 @@ void Tokenizer:: simplifyFunctionPointers()
             tok = tok->next();
 
         // check that the declaration ends
-        if (!Token::Match(tok->tokAt(5)->link(), ") ;|,|)|="))
+        if (!Token::Match(tok->tokAt(5)->link(), ") ;|,|)|=|["))
             continue;
 
         // ok simplify this function pointer to an ordinary pointer
@@ -9315,15 +9315,22 @@ void Tokenizer::simplifyBitfields()
     {
         Token *last = 0;
 
-        if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% %var% : %any% ;|,") &&
-            tok->next()->str() != "case")
+        if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% %var% :") &&
+            !Token::Match(tok->next(), "case|public|protected|private"))
         {
             int offset = 0;
             if (tok->next()->str() == "const")
                 offset = 1;
 
-            last = tok->tokAt(5 + offset);
-            Token::eraseTokens(tok->tokAt(2 + offset), tok->tokAt(5 + offset));
+            Token *tok1 = tok->tokAt(2 + offset);
+            if (tok1->tokAt(2)->isBoolean() || Token::Match(tok1->tokAt(2), "%num%") ||
+                !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;"))
+            {
+                while (tok1->next() && !Token::Match(tok1->next(), ";|,"))
+                    tok1->deleteNext();
+
+                last = tok1->next();
+            }
         }
         else if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% : %any% ;") &&
                  tok->next()->str() != "default")

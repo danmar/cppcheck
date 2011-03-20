@@ -267,7 +267,8 @@ private:
         TEST_CASE(simplifyConst);
         TEST_CASE(switchCase);
 
-        TEST_CASE(functionpointer);
+        TEST_CASE(functionpointer1);
+        TEST_CASE(functionpointer2);
 
         TEST_CASE(removeRedundantAssignment);
 
@@ -289,6 +290,7 @@ private:
         TEST_CASE(bitfields4); // ticket #1956
         TEST_CASE(bitfields5); // ticket #1956
         TEST_CASE(bitfields6); // ticket #2595
+        TEST_CASE(bitfields7); // ticket #1987
 
         TEST_CASE(microsoftMFC);
 
@@ -4737,12 +4739,25 @@ private:
         return ostr.str();
     }
 
-    void functionpointer()
+    void functionpointer1()
     {
         ASSERT_EQUALS(" void* f;", simplifyFunctionPointers("void (*f)();"));
         ASSERT_EQUALS(" void** f;", simplifyFunctionPointers("void *(*f)();"));
         ASSERT_EQUALS(" unsigned int* f;", simplifyFunctionPointers("unsigned int (*f)();"));
         ASSERT_EQUALS(" unsigned int** f;", simplifyFunctionPointers("unsigned int * (*f)();"));
+    }
+
+    void functionpointer2()
+    {
+        const char code[] = "typedef void (* PF)();"
+                            "void f1 ( ) { }"
+                            "PF pf = &f1;"
+                            "PF pfs[] = { &f1, &f1 };";
+        const char expected[] = "; "
+                                "void f1(){} "
+                                "void* pf; pf=& f1; "
+                                "void* pfs[]={& f1,& f1};";
+        ASSERT_EQUALS(expected, simplifyFunctionPointers(code));
     }
 
     void removeRedundantAssignment()
@@ -5271,6 +5286,18 @@ private:
 
         const char code5[] = "void f(int a) { switch (a) { default: break; } }";
         ASSERT_EQUALS("void f ( int a ) { switch ( a ) { default : ; break ; } }", tokenizeAndStringify(code5,true));
+    }
+
+    void bitfields7() // ticket #1987
+    {
+        const char code[] = "typedef struct Descriptor {"
+                            "    unsigned element_size: 8* sizeof( unsigned );"
+                            "} Descriptor;";
+        const char expected[] = "struct Descriptor { "
+                                "unsigned int element_size ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,false));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void microsoftMFC()

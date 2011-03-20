@@ -376,8 +376,12 @@ void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &calls
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok) const
 {
-    // Locate the start of the function..
-    unsigned int parlevel = 0;
+    if (!tok)
+        return No;
+
+    const std::string functionName = tok->str();
+
+    // Locate start of function
     while (tok)
     {
         if (tok->str() == "{" || tok->str() == "}")
@@ -385,15 +389,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
 
         if (tok->str() == "(")
         {
-            if (parlevel != 0)
-                return No;
-            ++parlevel;
-        }
-
-        else if (tok->str() == ")")
-        {
-            if (parlevel != 1)
-                return No;
+            tok = tok->link();
             break;
         }
 
@@ -429,6 +425,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
         }
         else if (tok2->str() == "return")
         {
+            // recursion => bail out
+            if (tok2->strAt(1) == functionName)
+                return No;
+
             AllocType allocType = getAllocationType(tok2->next(), 0);
             if (allocType != No)
                 return allocType;
@@ -445,11 +445,11 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
     {
         if (Token::Match(tok, "%varid% =", varid))
         {
+            // recursion => bail out
+            if (tok->strAt(2) == functionName)
+                return No;
+
             allocType = getAllocationType(tok->tokAt(2), varid);
-            if (allocType == No)
-            {
-                allocType = getReallocationType(tok->tokAt(2), varid);
-            }
         }
         if (Token::Match(tok, "= %varid% ;", varid))
         {
