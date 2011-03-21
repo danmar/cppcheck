@@ -241,8 +241,8 @@ bool FileLister::isDirectory(const std::string &path)
 #include <limits.h>
 
 void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
-                               std::vector<std::string> &absolute,
-                               const std::string &path)
+                                    std::vector<std::string> &absolute,
+                                    const std::string &path)
 {
     std::ostringstream oss;
     oss << path;

@@ -47,7 +47,7 @@ CheckMemoryLeakNoVar instance4;
 // Reference: http://www.aquaphoenix.com/ref/gnu_c_library/libc_492.html#SEC492
 static const char * const call_func_white_list[] =
 {
-      "_open", "_wopen", "access", "asctime", "asctime_r", "asprintf", "assert"
+    "_open", "_wopen", "access", "asctime", "asctime_r", "asprintf", "assert"
     , "atof", "atoi", "atol", "chdir", "chmod", "chown"
     , "clearerr", "ctime", "ctime_r", "delete", "fchmod", "fclose", "fcntl"
     , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"

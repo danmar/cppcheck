@@ -228,9 +228,9 @@ private:
         TEST_CASE(func18);
         TEST_CASE(func19);      // Ticket #2056 - if (!f(p)) return 0;
         TEST_CASE(func20);		// Ticket #2182 - exit is not handled
-        TEST_CASE(func21);      // Ticket #2569 
-        TEST_CASE(func22);      // Ticket #2668 
-        TEST_CASE(func23);      // Ticket #2667 
+        TEST_CASE(func21);      // Ticket #2569
+        TEST_CASE(func22);      // Ticket #2668
+        TEST_CASE(func23);      // Ticket #2667
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -2081,7 +2081,7 @@ private:
     // # 2667
     void func23()
     {
-    
+
         // check open() function
         // ----------------------
         check("int * foo()\n"
