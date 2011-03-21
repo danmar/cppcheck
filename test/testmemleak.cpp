@@ -229,6 +229,7 @@ private:
         TEST_CASE(func19);      // Ticket #2056 - if (!f(p)) return 0;
         TEST_CASE(func20);		// Ticket #2182 - exit is not handled
         TEST_CASE(func21);      // Ticket #2569 
+        TEST_CASE(func22);      // Ticket #2668 
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -567,7 +568,7 @@ private:
         {
             "access", "asprintf", "atof", "atoi", "atol", "chdir", "chmod", "clearerr", "chown", "delete"
             , "fchmod", "fcntl", "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
-            , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fscanf", "fseek"
+            , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "freopen", "fscanf", "fseek"
             , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
             , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
             , "memmove", "memset", "posix_fadvise", "posix_fallocate", "pread"
@@ -2001,6 +2002,53 @@ private:
               "    }\n"
               "    delete [] cpDir;\n"
               "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // # 2668
+    void func22()
+    {
+        check("void  foo()\n"
+              "{\n"
+              "    char * cpFile;\n"
+              "    cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if(freopen(cpFile,\"w\",stdout)==0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    fclose (stdout);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void  foo()\n"
+              "{\n"
+              "    char * cpFile;\n"
+              "    cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if(freopen(cpFile,\"w\",stdout)==0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    fclose (stdout);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void  foo()\n"
+              "{\n"
+              "    char * cpFile;\n"
+              "    cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if(freopen(cpFile,\"w\",stdout)==0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    fclose (stdout);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

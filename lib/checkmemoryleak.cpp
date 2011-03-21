@@ -48,7 +48,7 @@ static const char * const call_func_white_list[] =
     "access", "asctime", "asctime_r", "asprintf", "assert", "atof", "atoi", "atol", "chdir", "chmod", "chown"
     , "clearerr", "ctime", "ctime_r", "delete", "fchmod", "fclose", "fcntl"
     , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
-    , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fscanf", "fseek"
+    , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "freopen", "fscanf", "fseek"
     , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
     , "fwrite", "getc", "gets", "gmtime", "gmtime_r", "if", "ioctl"
     , "localtime", "localtime_r"
