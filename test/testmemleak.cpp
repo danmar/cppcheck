@@ -571,7 +571,7 @@ private:
             , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "freopen", "fscanf", "fseek"
             , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
             , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
-            , "memmove", "memset", "posix_fadvise", "posix_fallocate", "pread"
+            , "memmove", "memset", "perror", "posix_fadvise", "posix_fallocate", "pread"
             , "printf", "puts", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
             , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
             , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "strcasecmp"
@@ -2004,6 +2004,27 @@ private:
               "    return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // checking perror
+        //http://www.cplusplus.com/reference/clibrary/cstdio/perror/
+        // ---------------------------------------------------------
+
+        check("void foo()\n"
+              "{\n"
+              "    char *cBuf = new char[11];\n"
+              "    sprintf(cBuf,\"%s\",\"testtest..\");\n"
+              "    perror (cBuf);\n"
+              "    delete [] cBuf;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *cBuf = new char[11];\n"
+              "    sprintf(cBuf,\"%s\",\"testtest..\");\n"
+              "    perror (cBuf);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: cBuf\n", errout.str());
     }
 
     // # 2668
