@@ -45,14 +45,15 @@ CheckMemoryLeakNoVar instance4;
 // This list needs to be alphabetically sorted so we can run bsearch on it
 static const char * const call_func_white_list[] =
 {
-    "access", "asctime", "asctime_r", "asprintf", "assert", "atof", "atoi", "atol", "chdir", "chmod", "chown"
+      "_open", "_wopen", "access", "asctime", "asctime_r", "asprintf", "assert"
+    , "atof", "atoi", "atol", "chdir", "chmod", "chown"
     , "clearerr", "ctime", "ctime_r", "delete", "fchmod", "fclose", "fcntl"
     , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
     , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "freopen", "fscanf", "fseek"
     , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
     , "fwrite", "getc", "gets", "gmtime", "gmtime_r", "if", "ioctl"
     , "localtime", "localtime_r"
-    , "lockf", "lseek", "lstat", "memchr", "memcmp", "memcpy", "memmove", "memset"
+    , "lockf", "lseek", "lstat", "memchr", "memcmp", "memcpy", "memmove", "memset", "open"
     , "perror", "posix_fadvise", "posix_fallocate", "pread"
     , "printf", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r", "readv"
     , "realloc", "return", "rewind", "rewinddir", "scandir", "scanf", "seekdir"

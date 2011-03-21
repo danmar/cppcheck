@@ -230,6 +230,7 @@ private:
         TEST_CASE(func20);		// Ticket #2182 - exit is not handled
         TEST_CASE(func21);      // Ticket #2569 
         TEST_CASE(func22);      // Ticket #2668 
+        TEST_CASE(func23);      // Ticket #2667 
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -570,7 +571,7 @@ private:
             , "fchmod", "fcntl", "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
             , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "freopen", "fscanf", "fseek"
             , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
-            , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
+            , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "open", "memchr", "memcpy"
             , "memmove", "memset", "perror", "posix_fadvise", "posix_fallocate", "pread"
             , "printf", "puts", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
             , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
@@ -578,6 +579,7 @@ private:
             , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
             , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
             , "sync_file_range", "telldir", "typeid", "while", "write", "writev", "lstat", "stat"
+            , "_open", "_wopen"
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
@@ -2070,6 +2072,102 @@ private:
               "    }\n"
               "    delete [] cpFile;\n"
               "    fclose (stdout);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // # 2667
+    void func23()
+    {
+    
+        // check open() function
+        // ----------------------
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=open(cpFile,O_RDONLY);\n"
+              "    if(file < -1)\n"
+              "    {\n"
+              "        return file;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=open(cpFile,O_RDONLY);\n"
+              "    if(file < -1)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return file;\n"
+              "    }\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=open(cpFile,O_RDONLY);\n"
+              "    if(file < -1)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return file;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // check for _open, _wopen
+        // http://msdn.microsoft.com/en-us/library/z0kc8e3z(VS.80).aspx
+        // -------------------------------------------------------------
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=_open(cpFile,_O_RDONLY);\n"
+              "    if(file == -1)\n"
+              "    {\n"
+              "        return file;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=_open(cpFile,_O_RDONLY);\n"
+              "    if(file == -1)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return file;\n"
+              "    }\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=_open(cpFile,_O_RDONLY);\n"
+              "    if(file == -1)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return file;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return file;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
