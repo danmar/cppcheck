@@ -42,7 +42,9 @@ CheckMemoryLeakNoVar instance4;
 }
 
 
-// This list needs to be alphabetically sorted so we can run bsearch on it
+// This list needs to be alphabetically sorted so we can run bsearch on it.
+// This list contains function names whith const parameters e.g.: atof(const char *)
+// Reference: http://www.aquaphoenix.com/ref/gnu_c_library/libc_492.html#SEC492
 static const char * const call_func_white_list[] =
 {
       "_open", "_wopen", "access", "asctime", "asctime_r", "asprintf", "assert"
@@ -56,12 +58,14 @@ static const char * const call_func_white_list[] =
     , "lockf", "lseek", "lstat", "memchr", "memcmp", "memcpy", "memmove", "memset", "open"
     , "perror", "posix_fadvise", "posix_fallocate", "pread"
     , "printf", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r", "readv"
-    , "realloc", "return", "rewind", "rewinddir", "scandir", "scanf", "seekdir"
-    , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "sscanf", "stat", "strcasecmp"
-    , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
-    , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
-    , "sync_file_range", "telldir", "time", "typeid", "vfprintf", "vprintf"
-    , "vsnprintf", "vsprintf", "while", "write", "writev"
+    , "realloc", "remove", "rename", "return", "rewind", "rewinddir", "rindex" ,"rmdir" ,"scandir", "scanf", "seekdir"
+    , "setbuf", "setbuffer", "sethostname", "setlinebuf", "setlocale" ,"setvbuf", "snprintf", "sprintf", "sscanf"
+    , "stat", "stpcpy", "strcasecmp", "strcat", "strchr", "strcmp", "strcoll"
+    , "strcpy", "strcspn", "strdup", "stricmp", "strlen", "strncasecmp", "strncat", "strncmp"
+    , "strncpy", "strpbrk","strrchr", "strspn", "strstr", "strtod", "strtol", "strtoul", "switch"
+    , "symlink", "sync_file_range", "system", "telldir", "tempnam","time", "typeid", "unlink"
+    , "utime", "utimes" ,"vasprintf", "vfprintf", "vfscanf", "vprintf"
+    , "vscanf", "vsnprintf", "vsprintf", "vsscanf", "while", "write", "writev"
 };
 
 static int call_func_white_list_compare(const void *a, const void *b)

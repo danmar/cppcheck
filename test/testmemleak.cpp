@@ -575,11 +575,13 @@ private:
             , "memmove", "memset", "perror", "posix_fadvise", "posix_fallocate", "pread"
             , "printf", "puts", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
             , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
-            , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "strcasecmp"
+            , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "stpcpy", "strcasecmp"
             , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
-            , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
+            , "strncpy", "strrchr", "strspn" ,"strstr", "strtod", "strtol", "strtoul", "switch"
             , "sync_file_range", "telldir", "typeid", "while", "write", "writev", "lstat", "stat"
-            , "_open", "_wopen"
+            , "_open", "_wopen", "vscanf", "vsscanf", "vfscanf", "vasprintf", "utime", "utimes", "unlink"
+            , "tempnam", "system", "symlink", "strpbrk", "strncasecmp", "strdup", "strcspn", "strcoll"
+            , "setlocale", "sethostname", "rmdir", "rindex", "rename", "remove"
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
