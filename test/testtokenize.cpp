@@ -171,6 +171,7 @@ private:
         TEST_CASE(varid26);   // ticket #1967 (list of function pointers)
         TEST_CASE(varid27);	// Ticket #2280 (same name for namespace and variable)
         TEST_CASE(varid28);   // ticket #2630
+        TEST_CASE(varid29);   // ticket #1974
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -2828,6 +2829,18 @@ private:
     {
         tokenizeDebugListing("template <typedef A>\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varid29()
+    {
+        const std::string code("class A {\n"
+                               "    B<C<1>,1> b;\n"
+                               "};\n");
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class A {\n"
+                                   "2: B < C < 1 > , 1 > b@1 ;\n"
+                                   "3: } ;\n");
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
     void varidFunctionCall1()

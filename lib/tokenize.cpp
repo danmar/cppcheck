@@ -3468,7 +3468,8 @@ void Tokenizer::setVarId()
                         tok2 = tok2->next();
                     again = true;
                 }
-                else if (level > 1 && Token::Match(tok2, "%type% *|&| >"))
+                else if (level > 1 && (Token::Match(tok2, "%type% *|&| >") ||
+                                       Token::Match(tok2, "%num% >")))
                 {
                     --level;
                     while (tok2->str() != ">")
