@@ -41,7 +41,7 @@ private:
         std::vector<std::string> relative, absolute;
         FileLister::recursiveAddFiles2(relative, absolute, ".");
 
-        ASSERT(relative.size() != 0);
+        ASSERT(!relative.empty());
         ASSERT_EQUALS((int)relative.size(), (int)absolute.size());
 
         for (std::vector<std::string>::const_iterator r = relative.begin(), r_end = relative.end(),
