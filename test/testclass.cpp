@@ -167,6 +167,7 @@ private:
         TEST_CASE(const44); // ticket #2595
         TEST_CASE(const45); // ticket #2664
         TEST_CASE(const46); // ticket #2636
+        TEST_CASE(const47); // ticket #2670
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5226,6 +5227,27 @@ private:
 
         ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Altren::fun1' can be const.\n"
                       "[test.cpp:7]: (information) Technically the member function 'Altren::fun2' can be const.\n", errout.str());
+    }
+
+    void const47() // ticket 2670
+    {
+        checkConst("class Altren {\n"
+                   "public:\n"
+                   "  void foo() { delete this; }\n"
+                   "  void foo(int i) const { }\n"
+                   "  void bar() { foo(); }\n"
+                   "}\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Altren {\n"
+                   "public:\n"
+                   "  void foo() { delete this; }\n"
+                   "  void foo(int i) const { }\n"
+                   "  void bar() { foo(1); }\n"
+                   "}\n");
+
+        ASSERT_EQUALS("[test.cpp:5]: (information) Technically the member function 'Altren::bar' can be const.\n", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation()

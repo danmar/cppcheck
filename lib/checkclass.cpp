@@ -1446,13 +1446,45 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
     return false;
 }
 
+static int countParameters(const Token *tok)
+{
+    if (Token::Match(tok->tokAt(2), "void| )"))
+        return 0;
+
+    int numpar = 1;
+    int parlevel = 0;
+    for (; tok; tok = tok->next())
+    {
+        if (tok->str() == "(")
+            ++parlevel;
+
+        else if (tok->str() == ")")
+        {
+            if (parlevel <= 1)
+                break;
+            --parlevel;
+        }
+
+        else if (parlevel == 1 && tok->str() == ",")
+        {
+            ++numpar;
+        }
+    }
+
+    return numpar;
+}
+
 bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
 {
+    unsigned int args = countParameters(tok);
+
     std::list<Function>::const_iterator    func;
 
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
     {
-        if (func->tokenDef->str() == tok->str() && func->isConst)
+        /** @todo we need to look at the argument types when there are overloaded functions
+          * with the same number of arguments */
+        if (func->tokenDef->str() == tok->str() && func->argCount() == args && func->isConst)
             return true;
     }
 
