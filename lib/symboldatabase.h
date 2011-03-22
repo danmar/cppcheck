@@ -369,6 +369,7 @@ public:
     struct BaseInfo
     {
         AccessControl access;  // public/protected/private
+        bool isVirtual;
         std::string name;
         Scope *scope;
     };

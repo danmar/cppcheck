@@ -1052,11 +1052,19 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
         {
             Scope::BaseInfo base;
 
+            base.isVirtual = false;
+
             tok2 = tok2->next();
 
             // check for invalid code
             if (!tok2 || !tok2->next())
                 return NULL;
+
+            if (tok2->str() == "virtual")
+            {
+                base.isVirtual = true;
+                tok2 = tok2->next();
+            }
 
             if (tok2->str() == "public")
             {
@@ -1079,6 +1087,12 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
                     base.access = Private;
                 else if (tok->str() == "struct")
                     base.access = Public;
+            }
+
+            if (tok2->str() == "virtual")
+            {
+                base.isVirtual = true;
+                tok2 = tok2->next();
             }
 
             // handle derived base classes
