@@ -291,6 +291,7 @@ private:
         TEST_CASE(bitfields5); // ticket #1956
         TEST_CASE(bitfields6); // ticket #2595
         TEST_CASE(bitfields7); // ticket #1987
+        TEST_CASE(bitfields8);
 
         TEST_CASE(microsoftMFC);
 
@@ -5295,6 +5296,22 @@ private:
                             "} Descriptor;";
         const char expected[] = "struct Descriptor { "
                                 "unsigned int element_size ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void bitfields8()
+    {
+        const char code[] = "struct A;"
+                            "class B : virtual public C"
+                            "{"
+                            "    int f();"
+                            "};";
+        const char expected[] = "struct A ; "
+                                "class B : virtual public C "
+                                "{ "
+                                "int f ( ) ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,false));
         ASSERT_EQUALS("", errout.str());
