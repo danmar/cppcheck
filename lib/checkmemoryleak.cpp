@@ -64,7 +64,7 @@ static const char * const call_func_white_list[] =
     , "perror", "popen" ,"posix_fadvise", "posix_fallocate", "pread"
     , "printf", "psignal", "putenv", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r"
     , "readlink", "readv"
-    , "realloc", "regcomp", "remove", "rename", "return", "rewind", "rewinddir", "rindex" 
+    , "realloc", "regcomp", "remove", "rename", "return", "rewind", "rewinddir", "rindex"
     , "rmdir" ,"scandir", "scanf", "seekdir"
     , "setbuf", "setbuffer", "sethostname", "setlinebuf", "setlocale" ,"setvbuf", "snprintf", "sprintf", "sscanf"
     , "stat", "stpcpy", "strcasecmp", "strcat", "strchr", "strcmp", "strcoll"
