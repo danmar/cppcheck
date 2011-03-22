@@ -581,7 +581,13 @@ private:
             , "sync_file_range", "telldir", "typeid", "while", "write", "writev", "lstat", "stat"
             , "_open", "_wopen", "vscanf", "vsscanf", "vfscanf", "vasprintf", "utime", "utimes", "unlink"
             , "tempnam", "system", "symlink", "strpbrk", "strncasecmp", "strdup", "strcspn", "strcoll"
-            , "setlocale", "sethostname", "rmdir", "rindex", "rename", "remove"
+            , "setlocale", "sethostname", "rmdir", "rindex", "rename", "remove", "adjtime", "creat", "execle"
+            , "execl", "execlp", "execve", "execv", "fdopen", "fmemopen", "fnmatch", "fopencookie", "fopen"
+            , "getgrnam", "gethostbyaddr", "getnetbyname", "getopt", "getopt_long", "getprotobyname", "getpwnam"
+            , "getservbyname", "getservbyport", "glob", "index", "inet_addr", "inet_aton", "inet_network"
+            , "initgroups", "link", "mblen", "mbstowcs", "mbtowc", "mkdir", "mkfifo", "mknod", "obstack_printf"
+            , "obstack_vprintf", "opendir", "parse_printf_format", "pathconf", "popen", "psignal", "putenv"
+            , "readlink", "regcomp", "strxfrm", "wordexp"
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
