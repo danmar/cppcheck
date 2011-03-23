@@ -4115,8 +4115,7 @@ private:
     void vardecl_stl_2()
     {
         const char code1[] = "{ std::string x = \"abc\"; }";
-        TODO_ASSERT_EQUALS("{ std :: string x ; x = \"abc\" ; }",
-                           "{ std :: string x = \"abc\" ; }", tokenizeAndStringify(code1));
+        ASSERT_EQUALS("{ std :: string x ; x = \"abc\" ; }", tokenizeAndStringify(code1));
 
         const char code2[] = "{ std::vector<int> x = y; }";
         TODO_ASSERT_EQUALS("{ std :: vector < int > x ; x = y ; }",

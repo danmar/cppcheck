@@ -5715,6 +5715,17 @@ void Tokenizer::simplifyVarDecl()
             }
         }
 
+        else if (Token::Match(tok2, "%type% :: %type% %var% ,|="))
+        {
+            if (tok2->tokAt(3)->str() != "operator")
+            {
+                tok2 = tok2->tokAt(4);    // The ',' token
+                typelen = 3;
+            }
+            else
+                tok2 = NULL;
+        }
+
         else if (Token::Match(tok2, "%type% %var% [ %num% ] ,|=|[") ||
                  Token::Match(tok2, "%type% %var% [ %var% ] ,|=|["))
         {
