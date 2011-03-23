@@ -3631,6 +3631,18 @@ private:
               "    char *s = foo();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int shl()\n"
+              "{\n"
+              "    int a = shr();\n"
+              "    return a;\n"
+              "}\n"
+              "\n"
+              "int shr()\n"
+              "{\n"
+              "    return shl();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
