@@ -25,11 +25,7 @@
 #include <vector>
 #include <sstream>
 
-#if defined(_WIN32)
-#include "../cli/filelister_win32.h"
-#else // POSIX-style system
-#include "../cli/filelister_unix.h"
-#endif
+#include "../cli/filelister.h"
 
 std::string objfile(std::string cppfile)
 {
@@ -88,7 +84,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 
 static void getCppFiles(std::vector<std::string> &files, const std::string &path)
 {
-    getFileLister()->recursiveAddFiles(files, path);
+    FileLister::recursiveAddFiles(files, path);
     // only get *.cpp files..
     for (std::vector<std::string>::iterator it = files.begin(); it != files.end();)
     {
@@ -280,14 +276,14 @@ int main(int argc, char **argv)
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre $(LDFLAGS)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
-    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/filelister_unix.o cli/pathmatch.o\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/filelister.o cli/filelister_unix.o cli/pathmatch.o $(LDFLAGS)\n\n";
+    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/pathmatch.o\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) -lpcre cli/threadexecutor.o cli/cmdlineparser.o cli/filelister.o cli/pathmatch.o $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
     fout << "\t./testrunner -g -q\n\n";
     fout << "dmake:\ttools/dmake.cpp\n";
-    fout << "\t$(CXX) -o dmake tools/dmake.cpp cli/filelister*.cpp lib/path.cpp -Ilib\n\n";
+    fout << "\t$(CXX) -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib\n\n";
     fout << "clean:\n";
 #ifdef _WIN32
     fout << "\tdel lib\*.o\n\tdel cli\*.o\n\tdel test\*.o\n\tdel *.exe\n";

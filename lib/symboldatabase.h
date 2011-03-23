@@ -369,6 +369,7 @@ public:
     struct BaseInfo
     {
         AccessControl access;  // public/protected/private
+        bool isVirtual;
         std::string name;
         Scope *scope;
     };
@@ -429,6 +430,8 @@ public:
      * @param name name of nested scope
      */
     Scope * findInNestedListRecursive(const std::string & name);
+
+    const Scope * findQualifiedScope(const std::string & name) const;
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, bool mutable_,

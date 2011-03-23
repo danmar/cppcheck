@@ -38,7 +38,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Polish"), "cppcheck_pl");
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Russian"), "cppcheck_ru");
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Serbian"), "cppcheck_sr");
-    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Swedish"), "cppcheck_se");
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Swedish"), "cppcheck_sv");
 
     //Load English as a fallback language
     QTranslator *english = new QTranslator();

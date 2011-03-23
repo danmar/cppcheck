@@ -228,6 +228,9 @@ private:
         TEST_CASE(func18);
         TEST_CASE(func19);      // Ticket #2056 - if (!f(p)) return 0;
         TEST_CASE(func20);		// Ticket #2182 - exit is not handled
+        TEST_CASE(func21);      // Ticket #2569
+        TEST_CASE(func22);      // Ticket #2668
+        TEST_CASE(func23);      // Ticket #2667
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -564,18 +567,27 @@ private:
 
         static const char * const call_func_white_list[] =
         {
-            "asprintf", "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
-            , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
-            , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fscanf", "fseek"
+            "access", "asprintf", "atof", "atoi", "atol", "chdir", "chmod", "clearerr", "chown", "delete"
+            , "fchmod", "fcntl", "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
+            , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "freopen", "fscanf", "fseek"
             , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
-            , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
-            , "memmove", "memset", "posix_fadvise", "posix_fallocate", "pread"
+            , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "open", "memchr", "memcpy"
+            , "memmove", "memset", "perror", "posix_fadvise", "posix_fallocate", "pread"
             , "printf", "puts", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
             , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
-            , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "strcasecmp"
+            , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "stpcpy", "strcasecmp"
             , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
-            , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
-            , "sync_file_range", "telldir", "typeid", "while", "write", "writev"
+            , "strncpy", "strrchr", "strspn" ,"strstr", "strtod", "strtol", "strtoul", "switch"
+            , "sync_file_range", "telldir", "typeid", "while", "write", "writev", "lstat", "stat"
+            , "_open", "_wopen", "vscanf", "vsscanf", "vfscanf", "vasprintf", "utime", "utimes", "unlink"
+            , "tempnam", "system", "symlink", "strpbrk", "strncasecmp", "strdup", "strcspn", "strcoll"
+            , "setlocale", "sethostname", "rmdir", "rindex", "rename", "remove", "adjtime", "creat", "execle"
+            , "execl", "execlp", "execve", "execv", "fdopen", "fmemopen", "fnmatch", "fopencookie", "fopen"
+            , "getgrnam", "gethostbyaddr", "getnetbyname", "getopt", "getopt_long", "getprotobyname", "getpwnam"
+            , "getservbyname", "getservbyport", "glob", "index", "inet_addr", "inet_aton", "inet_network"
+            , "initgroups", "link", "mblen", "mbstowcs", "mbtowc", "mkdir", "mkfifo", "mknod", "obstack_printf"
+            , "obstack_vprintf", "opendir", "parse_printf_format", "pathconf", "popen", "psignal", "putenv"
+            , "readlink", "regcomp", "strxfrm", "wordexp"
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
@@ -1731,8 +1743,442 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    //# Ticket 2569
+    void func21()
+    {
+        // checking for lstat function:
+        // ----------------------------
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if (lstat (cpFile, &CFileAttr) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if (lstat (cpFile, &CFileAttr) != 0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if (lstat (cpFile, &CFileAttr) != 0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
 
+        /// checking for stat function:
+        // ----------------------------
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if ( stat (cpFile, &CFileAttr) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if ( stat (cpFile, &CFileAttr) != 0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if ( stat (cpFile, &CFileAttr) != 0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // checking for access function
+        // http://www.gnu.org/s/libc/manual/html_node/Testing-File-Access.html
+        // --------------------------------------------------------------------
+
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if ( access (cpFile, R_OK) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if (access (cpFile, R_OK) != 0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void foo ()\n"
+              "{\n"
+              "    struct stat CFileAttr;\n"
+              "    char *cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if (access (cpFile, R_OK) != 0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
+        // checking for chdir function
+        // http://home.fhtw-berlin.de/~junghans/cref/MAN/chdir.htm
+        // --------------------------------------------------------
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chdir (cpDir) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chdir (cpDir) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chdir (cpDir) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // checking for chmod function
+        // http://publib.boulder.ibm.com/infocenter/zos/v1r10/index.jsp?topic=/com.ibm.zos.r10.bpxbd00/rtchm.htm
+        // ------------------------------------------------------------------------------------------------------
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chmod(cpDir, S_IRWXU|S_IRWXG) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chmod(cpDir, S_IRWXU|S_IRWXG) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chmod(cpDir, S_IRWXU|S_IRWXG) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
+        // checking for chown function
+        // http://publib.boulder.ibm.com/infocenter/zos/v1r10/index.jsp?topic=/com.ibm.zos.r10.bpxbd00/rtchm.htm
+        // ------------------------------------------------------------------------------------------------------
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chown(cpDir, 25, 0) != 0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chown(cpDir, 25, 0) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char * cpDir = new char [7];\n"
+              "    strcpy (cpDir, \"/home/\");\n"
+              "    if (chown(cpDir, 25, 0) != 0)\n"
+              "    {\n"
+              "        delete [] cpDir;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpDir;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // checking perror
+        //http://www.cplusplus.com/reference/clibrary/cstdio/perror/
+        // ---------------------------------------------------------
+
+        check("void foo()\n"
+              "{\n"
+              "    char *cBuf = new char[11];\n"
+              "    sprintf(cBuf,\"%s\",\"testtest..\");\n"
+              "    perror (cBuf);\n"
+              "    delete [] cBuf;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *cBuf = new char[11];\n"
+              "    sprintf(cBuf,\"%s\",\"testtest..\");\n"
+              "    perror (cBuf);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: cBuf\n", errout.str());
+    }
+
+    // # 2668
+    void func22()
+    {
+        check("void  foo()\n"
+              "{\n"
+              "    char * cpFile;\n"
+              "    cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if(freopen(cpFile,\"w\",stdout)==0)\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    fclose (stdout);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void  foo()\n"
+              "{\n"
+              "    char * cpFile;\n"
+              "    cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if(freopen(cpFile,\"w\",stdout)==0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    fclose (stdout);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("void  foo()\n"
+              "{\n"
+              "    char * cpFile;\n"
+              "    cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    if(freopen(cpFile,\"w\",stdout)==0)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    fclose (stdout);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // # 2667
+    void func23()
+    {
+
+        // check open() function
+        // ----------------------
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=open(cpFile,O_RDONLY);\n"
+              "    if(file < -1)\n"
+              "    {\n"
+              "        return file;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=open(cpFile,O_RDONLY);\n"
+              "    if(file < -1)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return file;\n"
+              "    }\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=open(cpFile,O_RDONLY);\n"
+              "    if(file < -1)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return file;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // check for _open, _wopen
+        // http://msdn.microsoft.com/en-us/library/z0kc8e3z(VS.80).aspx
+        // -------------------------------------------------------------
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=_open(cpFile,_O_RDONLY);\n"
+              "    if(file == -1)\n"
+              "    {\n"
+              "        return file;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=_open(cpFile,_O_RDONLY);\n"
+              "    if(file == -1)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return file;\n"
+              "    }\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
+
+        check("int * foo()\n"
+              "{\n"
+              "    char * cpFile = new char [13];\n"
+              "    strcpy (cpFile, \"testfile.txt\");\n"
+              "    int file=_open(cpFile,_O_RDONLY);\n"
+              "    if(file == -1)\n"
+              "    {\n"
+              "        delete [] cpFile;\n"
+              "        return file;\n"
+              "    }\n"
+              "    delete [] cpFile;\n"
+              "    return file;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void allocfunc1()
     {

@@ -122,7 +122,7 @@ unsigned int CppCheck::check()
             std::list<std::string> configurations;
             std::string filedata = "";
 
-            if (_fileContents.size() > 0 && _fileContents.find(_filenames[c]) != _fileContents.end())
+            if ((!_fileContents.empty()) && (_fileContents.find(_filenames[c]) != _fileContents.end()))
             {
                 // File content was given as a string
                 std::istringstream iss(_fileContents[ _filenames[c] ]);

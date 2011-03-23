@@ -3468,7 +3468,8 @@ void Tokenizer::setVarId()
                         tok2 = tok2->next();
                     again = true;
                 }
-                else if (level > 1 && Token::Match(tok2, "%type% *|&| >"))
+                else if (level > 1 && (Token::Match(tok2, "%type% *|&| >") ||
+                                       Token::Match(tok2, "%num% >")))
                 {
                     --level;
                     while (tok2->str() != ">")
@@ -9316,7 +9317,7 @@ void Tokenizer::simplifyBitfields()
         Token *last = 0;
 
         if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% %var% :") &&
-            !Token::Match(tok->next(), "case|public|protected|private"))
+            !Token::Match(tok->next(), "case|public|protected|private|class|struct"))
         {
             int offset = 0;
             if (tok->next()->str() == "const")

@@ -171,6 +171,7 @@ private:
         TEST_CASE(varid26);   // ticket #1967 (list of function pointers)
         TEST_CASE(varid27);	// Ticket #2280 (same name for namespace and variable)
         TEST_CASE(varid28);   // ticket #2630
+        TEST_CASE(varid29);   // ticket #1974
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -291,6 +292,7 @@ private:
         TEST_CASE(bitfields5); // ticket #1956
         TEST_CASE(bitfields6); // ticket #2595
         TEST_CASE(bitfields7); // ticket #1987
+        TEST_CASE(bitfields8);
 
         TEST_CASE(microsoftMFC);
 
@@ -2829,6 +2831,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void varid29()
+    {
+        const std::string code("class A {\n"
+                               "    B<C<1>,1> b;\n"
+                               "};\n");
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class A {\n"
+                                   "2: B < C < 1 > , 1 > b@1 ;\n"
+                                   "3: } ;\n");
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
     void varidFunctionCall1()
     {
         const std::string code("void f() {\n"
@@ -5295,6 +5309,22 @@ private:
                             "} Descriptor;";
         const char expected[] = "struct Descriptor { "
                                 "unsigned int element_size ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void bitfields8()
+    {
+        const char code[] = "struct A;"
+                            "class B : virtual public C"
+                            "{"
+                            "    int f();"
+                            "};";
+        const char expected[] = "struct A ; "
+                                "class B : virtual public C "
+                                "{ "
+                                "int f ( ) ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,false));
         ASSERT_EQUALS("", errout.str());

@@ -69,12 +69,6 @@
     <ClCompile Include="filelister.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="filelister_unix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="filelister_win32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -177,12 +171,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="filelister.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="filelister_unix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="filelister_win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\mathlib.h">

@@ -42,25 +42,37 @@ CheckMemoryLeakNoVar instance4;
 }
 
 
-// This list needs to be alphabetically sorted so we can run bsearch on it
+// This list needs to be alphabetically sorted so we can run bsearch on it.
+// This list contains function names whith const parameters e.g.: atof(const char *)
+// Reference: http://www.aquaphoenix.com/ref/gnu_c_library/libc_492.html#SEC492
 static const char * const call_func_white_list[] =
 {
-    "asctime", "asctime_r", "asprintf", "assert", "atof", "atoi", "atol", "clearerr"
-    , "ctime", "ctime_r", "delete", "fchmod", "fclose", "fcntl"
-    , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
-    , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fscanf", "fseek"
-    , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
-    , "fwrite", "getc", "gets", "gmtime", "gmtime_r", "if", "ioctl"
-    , "localtime", "localtime_r"
-    , "lockf", "lseek", "memchr", "memcmp", "memcpy", "memmove", "memset"
-    , "posix_fadvise", "posix_fallocate", "pread"
-    , "printf", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r", "readv"
-    , "realloc", "return", "rewind", "rewinddir", "scandir", "scanf", "seekdir"
-    , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "sscanf", "strcasecmp"
-    , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
-    , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
-    , "sync_file_range", "telldir", "time", "typeid", "vfprintf", "vprintf"
-    , "vsnprintf", "vsprintf", "while", "write", "writev"
+    "_open", "_wopen", "access", "adjtime", "asctime", "asctime_r", "asprintf", "assert"
+    , "atof", "atoi", "atol", "chdir", "chmod", "chown"
+    , "clearerr", "creat", "ctime", "ctime_r", "delete", "execl", "execle"
+    , "execlp", "execv", "execve", "fchmod", "fclose", "fcntl"
+    , "fdatasync", "fdopen", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
+    , "flock", "fmemopen", "fnmatch", "fopen", "fopencookie", "for", "fprintf", "fputc", "fputs", "fread", "free"
+    , "freopen", "fscanf", "fseek", "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello"
+    , "ftruncate", "fwrite", "getc", "getenv","getgrnam", "gethostbyaddr", "gethostbyname", "getnetbyname"
+    , "getopt", "getopt_long", "getprotobyname", "getpwnam", "gets", "getservbyname", "getservbyport"
+    , "glob", "gmtime", "gmtime_r", "if", "index", "inet_addr", "inet_aton", "inet_network", "initgroups", "ioctl"
+    , "link", "localtime", "localtime_r"
+    , "lockf", "lseek", "lstat", "mblen", "mbstowcs", "mbtowc", "memchr", "memcmp", "memcpy", "memmove", "memset"
+    , "mkdir", "mkfifo", "mknod"
+    , "obstack_printf", "obstack_vprintf", "open", "opendir", "parse_printf_format", "pathconf"
+    , "perror", "popen" ,"posix_fadvise", "posix_fallocate", "pread"
+    , "printf", "psignal", "putenv", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r"
+    , "readlink", "readv"
+    , "realloc", "regcomp", "remove", "rename", "return", "rewind", "rewinddir", "rindex"
+    , "rmdir" ,"scandir", "scanf", "seekdir"
+    , "setbuf", "setbuffer", "sethostname", "setlinebuf", "setlocale" ,"setvbuf", "snprintf", "sprintf", "sscanf"
+    , "stat", "stpcpy", "strcasecmp", "strcat", "strchr", "strcmp", "strcoll"
+    , "strcpy", "strcspn", "strdup", "stricmp", "strlen", "strncasecmp", "strncat", "strncmp"
+    , "strncpy", "strpbrk","strrchr", "strspn", "strstr", "strtod", "strtol", "strtoul", "strxfrm", "switch"
+    , "symlink", "sync_file_range", "system", "telldir", "tempnam", "time", "typeid", "unlink"
+    , "utime", "utimes", "vasprintf", "vfprintf", "vfscanf", "vprintf"
+    , "vscanf", "vsnprintf", "vsprintf", "vsscanf", "while", "wordexp","write", "writev"
 };
 
 static int call_func_white_list_compare(const void *a, const void *b)

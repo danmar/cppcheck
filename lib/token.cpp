@@ -384,21 +384,44 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         // Compare the first character of the string for optimization reasons
         // before doing more detailed checks.
+        bool patternUnderstood = false;
         if (p[0] == '%')
         {
-            // TODO: %var% should match only for
-            // variables that have varId != 0, but that needs a lot of
-            // work, before that change can be made.
-            // Any symbolname..
-            if (firstWordEquals(p, "%var%") == 0)
+            switch (p[1])
             {
-                if (!tok->isName())
-                    return false;
-                p += 5;
-            }
+            case 'v':
+                // TODO: %var% should match only for
+                // variables that have varId != 0, but that needs a lot of
+                // work, before that change can be made.
+                // Any symbolname..
+                if (p[4] == '%') // %var%
+                {
+                    if (!tok->isName())
+                        return false;
+                    p += 5;
+                    patternUnderstood = true;
+                }
+                else // %varid%
+                {
+                    if (varid == 0)
+                    {
+                        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                        const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                               Severity::error,
+                                                               "Internal error. Token::Match called with varid 0.",
+                                                               "cppcheckError");
+                        Check::reportError(errmsg);
+                    }
 
-            // Type..
-            else if (firstWordEquals(p, "%type%") == 0)
+                    if (tok->varId() != varid)
+                        return false;
+
+                    p += 7;
+                    patternUnderstood = true;
+                }
+                break;
+            case 't':
+                // Type (%type%)
             {
                 if (!tok->isName())
                     return false;
@@ -410,73 +433,71 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                     return false;
 
                 p += 6;
+                patternUnderstood = true;
             }
-
-            // Accept any token
-            else if (firstWordEquals(p, "%any%") == 0)
+            break;
+            case 'a':
+                // Accept any token (%any%)
             {
                 p += 5;
+                patternUnderstood = true;
             }
-
-            else if (firstWordEquals(p, "%varid%") == 0)
-            {
-                if (varid == 0)
-                {
-                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                           Severity::error,
-                                                           "Internal error. Token::Match called with varid 0.",
-                                                           "cppcheckError");
-                    Check::reportError(errmsg);
-                }
-
-                if (tok->varId() != varid)
-                    return false;
-
-                p += 7;
-            }
-
-            else if (firstWordEquals(p, "%num%") == 0)
+            break;
+            case 'n':
+                // Number (%num)
             {
                 if (!tok->isNumber())
                     return false;
                 p += 5;
+                patternUnderstood = true;
             }
-
-            else if (firstWordEquals(p, "%bool%") == 0)
-            {
-                if (!tok->isBoolean())
-                    return false;
-                p += 6;
-            }
-
-            else if (firstWordEquals(p, "%str%") == 0)
+            break;
+            case 's':
+                // String (%str%)
             {
                 if (tok->_str[0] != '\"')
                     return false;
                 p += 5;
+                patternUnderstood = true;
             }
-
-            else if (firstWordEquals(p, "%or%") == 0)
+            break;
+            case 'b':
+                // Bool (%bool%)
             {
-                if (tok->str() != "|")
-                    return false;
-                p += 4;
-            }
-
-            else if (firstWordEquals(p, "%oror%") == 0)
-            {
-                if (tok->str() != "||")
+                if (!tok->isBoolean())
                     return false;
                 p += 6;
+                patternUnderstood = true;
+            }
+            break;
+            case 'o':
+                // Or (%or%)
+                if (p[3] == '%')
+                {
+                    if (tok->str() != "|")
+                        return false;
+                    p += 4;
+                    patternUnderstood = true;
+                }
+                // Oror (%oror%)
+                else
+                {
+                    if (tok->str() != "||")
+                        return false;
+                    p += 6;
+                    patternUnderstood = true;
+                }
+                break;
+            default:
+                if (firstWordEquals(p, tok->_str.c_str()))
+                {
+                    p += tok->_str.length();
+                    patternUnderstood = true;
+                }
+                break;
             }
 
-            else if (firstWordEquals(p, tok->_str.c_str()))
-            {
-                p += tok->_str.length();
-            }
-
-            else
+            if (!patternUnderstood)
             {
                 return false;
             }
