@@ -698,62 +698,34 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
             checkMemsetType(start, tok, type->derivedFrom[i].scope);
     }
 
-    // Warn if type is a class or struct that contains any std::* variables
-    const Token *tstruct = type->classDef;
-    const std::string &typeName = tstruct->str();
+    // Warn if type is a class that contains any virtual functions
+    std::list<Function>::const_iterator func;
 
-    for (; tstruct; tstruct = tstruct->next())
+    for (func = type->functionList.begin(); func != type->functionList.end(); ++func)
     {
-        if (tstruct->str() == "}")
-            break;
+        if (func->isVirtual)
+            memsetError(tok, tok->str(), "virtual method", type->classDef->str());
+    }
 
-        // struct with function? skip function body..
-        if (Token::simpleMatch(tstruct, ") {"))
+    // Warn if type is a class or struct that contains any std::* variables
+    std::list<Variable>::const_iterator var;
+
+    for (var = type->varlist.begin(); var != type->varlist.end(); ++var)
+    {
+        // don't warn if variable static or const
+        if (!var->isStatic() && !var->isConst())
         {
-            tstruct = tstruct->next()->link();
-            if (!tstruct)
-                break;
-        }
+            const Token *tok1 = var->typeStartToken();
 
-        // before a statement there must be either:
-        // * private:|protected:|public:
-        // * { } ;
-        if (Token::Match(tstruct, "[;{}]") ||
-            tstruct->str().find(":") != std::string::npos)
-        {
-            if (Token::Match(tstruct->next(), "std :: %type% %var% ;"))
-                memsetError(tok, tok->str(), "'std::" + tstruct->strAt(3) + "'", typeName);
+            // skip mutable token
+            if (var->isMutable())
+                tok1 = tok1->next();
 
-            else if (Token::Match(tstruct->next(), "std :: %type% <"))
-            {
-                // backup the type
-                const std::string typestr(tstruct->strAt(3));
+            // check for std:: type that is not a pointer or reference
+            if (Token::simpleMatch(tok1, "std ::") && !Token::Match(var->nameToken(), "*|&"))
+                memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
 
-                // check if it's a pointer variable..
-                unsigned int level = 0;
-                while (0 != (tstruct = tstruct->next()))
-                {
-                    if (tstruct->str() == "<")
-                        ++level;
-                    else if (tstruct->str() == ">")
-                    {
-                        if (level <= 1)
-                            break;
-                        --level;
-                    }
-                    else if (tstruct->str() == "(")
-                        tstruct = tstruct->link();
-                }
-
-                if (!tstruct)
-                    break;
-
-                // found error => report
-                if (Token::Match(tstruct, "> %var% ;"))
-                    memsetError(tok, tok->str(), "'std::" + typestr + "'", typeName);
-            }
-            else if (Token::simpleMatch(tstruct->next(), "virtual"))
-                memsetError(tok, tok->str(), "virtual method", typeName);
+            /** @todo warn if type is class/struct that doesn't require initialization */
         }
     }
 }
