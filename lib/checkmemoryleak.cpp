@@ -104,7 +104,7 @@ bool CheckMemoryLeak::isclass(const Tokenizer *_tokenizer, const Token *tok) con
 }
 //---------------------------------------------------------------------------
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2, unsigned int varid) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2, unsigned int varid, std::list<const Token *> *callstack) const
 {
     // What we may have...
     //     * var = (char *)malloc(10);
@@ -190,7 +190,19 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
 
     // User function
     const Token *ftok = tokenizer->getFunctionTokenByName(tok2->str().c_str());
-    return functionReturnType(ftok);
+    if (ftok == NULL)
+        return No;
+
+    // Prevent recursion
+    if (callstack && std::find(callstack->begin(), callstack->end(), ftok) != callstack->end())
+        return No;
+
+    std::list<const Token *> cs;
+    if (!callstack)
+        callstack = &cs;
+
+    callstack->push_back(ftok);
+    return functionReturnType(ftok, callstack);
 }
 
 
@@ -386,12 +398,10 @@ void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &calls
     reportErr(callstack, Severity::error, "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname);
 }
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok, std::list<const Token *> *callstack) const
 {
     if (!tok)
         return No;
-
-    const std::string functionName = tok->str();
 
     // Locate start of function
     while (tok)
@@ -437,11 +447,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
         }
         else if (tok2->str() == "return")
         {
-            // recursion => bail out
-            if (tok2->strAt(1) == functionName)
-                return No;
-
-            AllocType allocType = getAllocationType(tok2->next(), 0);
+            AllocType allocType = getAllocationType(tok2->next(), 0, callstack);
             if (allocType != No)
                 return allocType;
         }
@@ -457,11 +463,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
     {
         if (Token::Match(tok, "%varid% =", varid))
         {
-            // recursion => bail out
-            if (tok->strAt(2) == functionName)
-                return No;
-
-            allocType = getAllocationType(tok->tokAt(2), varid);
+            allocType = getAllocationType(tok->tokAt(2), varid, callstack);
         }
         if (Token::Match(tok, "= %varid% ;", varid))
         {

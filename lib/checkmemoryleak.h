@@ -114,7 +114,7 @@ public:
     /**
      * @brief Get type of allocation at given position
      */
-    AllocType getAllocationType(const Token *tok2, unsigned int varid) const;
+    AllocType getAllocationType(const Token *tok2, unsigned int varid, std::list<const Token *> *callstack = NULL) const;
 
     /**
      * @brief Get type of reallocation at given position
@@ -144,7 +144,7 @@ public:
     void memleakUponReallocFailureError(const Token *tok, const std::string &varname);
 
     /** What type of allocated memory does the given function return? */
-    AllocType functionReturnType(const Token *tok) const;
+    AllocType functionReturnType(const Token *tok, std::list<const Token *> *callstack = NULL) const;
 
     /** Function allocates pointed-to argument (a la asprintf)? */
     const char *functionArgAlloc(const Token *tok, unsigned int targetpar, AllocType &allocType) const;

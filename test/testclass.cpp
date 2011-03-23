@@ -2935,7 +2935,40 @@ private:
 
         checkNoMemset("class Fred\n"
                       "{\n"
+                      "    static std::string b;\n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(Fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("class Fred\n"
+                      "{\n"
+                      "    std::string * b; \n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(Fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("class Fred\n"
+                      "{\n"
                       "    std::string b; \n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      "    Fred fred;\n"
+                      "    memset(&fred, 0, sizeof(Fred));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+
+        checkNoMemset("class Fred\n"
+                      "{\n"
+                      "    mutable std::string b; \n"
                       "};\n"
                       "void f()\n"
                       "{\n"
