@@ -689,34 +689,18 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
 
-void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Token *typeTok)
+void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type)
 {
-    // Warn if type is a class or struct that contains any std::* variables
-    const Scope *scope = symbolDatabase->findVariableType(start, typeTok);
-    if (!scope)
-        return;
-
-    const Token *tstruct = scope->classDef;
-    const std::string &typeName = tstruct->str();
-
-    if (tstruct->tokAt(2)->str() == ":")
+    // recursively check all parent classes
+    for (size_t i = 0; i < type->derivedFrom.size(); i++)
     {
-        tstruct = tstruct->tokAt(3);
-        for (; tstruct; tstruct = tstruct->next())
-        {
-            while (Token::Match(tstruct, "public|private|protected|virtual"))
-            {
-                tstruct = tstruct->next();
-            }
-
-            // recursively check all parent classes
-            checkMemsetType(start, tok, tstruct);
-
-            tstruct = tstruct->next();
-            if (tstruct->str() != ",")
-                break;
-        }
+        if (type->derivedFrom[i].scope)
+            checkMemsetType(start, tok, type->derivedFrom[i].scope);
     }
+
+    // Warn if type is a class or struct that contains any std::* variables
+    const Token *tstruct = type->classDef;
+    const std::string &typeName = tstruct->str();
 
     for (; tstruct; tstruct = tstruct->next())
     {
@@ -823,7 +807,10 @@ void CheckClass::noMemset()
                 if (!typeTok)
                     continue;
 
-                checkMemsetType(&(*scope), tok, typeTok);
+                const Scope *type = symbolDatabase->findVariableType(&(*scope), typeTok);
+
+                if (type)
+                    checkMemsetType(&(*scope), tok, type);
             }
         }
     }
