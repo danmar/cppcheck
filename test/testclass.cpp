@@ -168,6 +168,7 @@ private:
         TEST_CASE(const45); // ticket #2664
         TEST_CASE(const46); // ticket #2636
         TEST_CASE(const47); // ticket #2670
+        TEST_CASE(const48); // ticket #2672
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5281,6 +5282,29 @@ private:
                    "}\n");
 
         ASSERT_EQUALS("[test.cpp:5]: (information) Technically the member function 'Altren::bar' can be const.\n", errout.str());
+    }
+
+    void const48() // ticket 2672
+    {
+        checkConst("class S0 {\n"
+                   "    class S1 {\n"
+                   "        class S2 {\n"
+                   "            class S3 {\n"
+                   "                class S4 { };\n"
+                   "            };\n"
+                   "        };\n"
+                   "    };\n"
+                   "};\n"
+                   "class TextIterator {\n"
+                   "    S0::S1::S2::S3::S4 mCurrent, mSave;\n"
+                   "public:\n"
+                   "    bool setTagColour();\n"
+                   "};\n"
+                   "bool TextIterator::setTagColour() {\n"
+                   "    mSave = mCurrent;\n"
+                   "}\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation()

@@ -831,7 +831,7 @@ private:
               "  std::string * x = 0;\n"
               "  *x = \"test\";\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
     }
 
     // Check if pointer is null and the dereference it

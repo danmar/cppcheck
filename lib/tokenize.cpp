@@ -5673,6 +5673,16 @@ void Tokenizer::simplifyVarDecl()
         if (Token::Match(tok2, "%type% *| %var% , %type% *| %var%"))
             continue;
 
+        // check for qualification..
+        if (Token::Match(tok2, "%type% :: %type%"))
+        {
+            while (tok2 && Token::Match(tok2, "%type% ::"))
+            {
+                typelen += 2;
+                tok2 = tok2->tokAt(2);
+            }
+        }
+
         if (Token::Match(tok2, "%type% *| %var% ,|="))
         {
             const bool isPointer = (tok2->next()->str() == "*");
@@ -5715,17 +5725,6 @@ void Tokenizer::simplifyVarDecl()
             }
         }
 
-        else if (Token::Match(tok2, "%type% :: %type% %var% ,|="))
-        {
-            if (tok2->tokAt(3)->str() != "operator")
-            {
-                tok2 = tok2->tokAt(4);    // The ',' token
-                typelen = 3;
-            }
-            else
-                tok2 = NULL;
-        }
-
         else if (Token::Match(tok2, "%type% %var% [ %num% ] ,|=|[") ||
                  Token::Match(tok2, "%type% %var% [ %var% ] ,|=|["))
         {
@@ -5758,17 +5757,8 @@ void Tokenizer::simplifyVarDecl()
             tok2 = tok2->tokAt(6);    // The ',' token
         }
 
-        else if (Token::Match(tok2, "std :: %type% <") || Token::Match(tok2, "%type% <"))
+        else if (Token::Match(tok2, "%type% <"))
         {
-            //
-            // Deal with templates and standart types
-            //
-            if (Token::simpleMatch(tok2, "std ::"))
-            {
-                typelen += 2;
-                tok2 = tok2->tokAt(2);
-            }
-
             typelen += 2;
             tok2 = tok2->tokAt(2);
             size_t indentlevel = 1;
@@ -5826,7 +5816,6 @@ void Tokenizer::simplifyVarDecl()
             tok2 = NULL;
             typelen = 0;
         }
-
 
         if (tok2)
         {
