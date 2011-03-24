@@ -3142,6 +3142,19 @@ private:
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
+
+        checkNoMemset("struct Stringy {\n"
+                      "    std::string inner;\n"
+                      "};\n"
+                      "struct Foo {\n"
+                      "    Stringy s;\n"
+                      "}\n"
+                      "int main() {\n"
+                      "    Foo foo;\n"
+                      "    memset(&foo, 0, sizeof(Foo));\n"
+                      "}\n");
+
+        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
     }
 
     void memsetVector()

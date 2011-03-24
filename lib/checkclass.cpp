@@ -725,7 +725,9 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
             if (Token::simpleMatch(tok1, "std ::") && !Token::Match(var->nameToken()->previous(), "*|&"))
                 memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
 
-            /** @todo warn if type is class/struct that doesn't require initialization */
+            // check for known type that is not a pointer or reference
+            else if (var->type() && !Token::Match(var->nameToken()->previous(), "*|&"))
+                checkMemsetType(start, tok, var->type());
         }
     }
 }
