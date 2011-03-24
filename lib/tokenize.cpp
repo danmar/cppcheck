@@ -5795,12 +5795,12 @@ void Tokenizer::simplifyVarDecl()
                 tok2 = tok2->tokAt(2);
             }
 
-            if (tok2->str() == "*" || tok2->str() == "&")
+            if (tok2->str() == "*")
             {
                 tok2 = tok2->next();
             }
 
-            if (Token::Match(tok2, "%var% ,"))
+            if (Token::Match(tok2, "%var% ,|="))
             {
                 tok2 = tok2->next();    // The ',' token
                 typelen--;
@@ -5868,7 +5868,7 @@ void Tokenizer::simplifyVarDecl()
                     {
                         // "type var ="   =>   "type var; var ="
                         Token *VarTok = type0->tokAt((int)typelen);
-                        while (Token::Match(VarTok, "*|const"))
+                        while (Token::Match(VarTok, "*|&|const"))
                             VarTok = VarTok->next();
                         insertTokens(eq, VarTok, 2);
                         eq->str(";");

@@ -3015,7 +3015,7 @@ private:
                                    "2: {\n"
                                    "3: std :: vector < int > b@1 ;\n"
                                    "4: std :: vector < int > & a@2 = b@1 ;\n"
-                                   "5: std :: vector < int > * c@3 = & b@1 ;\n"
+                                   "5: std :: vector < int > * c@3 ; c@3 = & b@1 ;\n"
                                    "6: }\n");
 
         ASSERT_EQUALS(expected, actual);
@@ -4118,8 +4118,7 @@ private:
         ASSERT_EQUALS("{ std :: string x ; x = \"abc\" ; }", tokenizeAndStringify(code1));
 
         const char code2[] = "{ std::vector<int> x = y; }";
-        TODO_ASSERT_EQUALS("{ std :: vector < int > x ; x = y ; }",
-                           "{ std :: vector < int > x = y ; }", tokenizeAndStringify(code2));
+        ASSERT_EQUALS("{ std :: vector < int > x ; x = y ; }", tokenizeAndStringify(code2));
     }
 
     void vardecl_template()
