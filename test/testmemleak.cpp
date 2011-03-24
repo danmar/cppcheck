@@ -240,6 +240,7 @@ private:
         TEST_CASE(allocfunc6);
         TEST_CASE(allocfunc7);
         TEST_CASE(allocfunc8);
+        TEST_CASE(allocfunc9);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -2438,6 +2439,21 @@ private:
               "    fclose(f);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Resource leak: f\n", errout.str());
+    }
+
+    void allocfunc9()
+    {
+        // Ticket #2673 - address is taken in alloc func
+        check("char *addstring(const char *s) {\n"
+              "    char *ret = strdup(s);\n"
+              "    strings.push_back(ret);"
+              "    return ret;\n"
+              "}\n"
+              "\n"
+              "void foo() {\n"
+              "    char *s = addstring(\"abc\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
