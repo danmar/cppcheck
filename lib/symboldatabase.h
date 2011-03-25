@@ -332,7 +332,8 @@ public:
           isExplicit(false),
           isOperator(false),
           retFuncPtr(false),
-          type(eFunction)
+          type(eFunction),
+          functionScope(NULL)
     {
     }
 
@@ -357,6 +358,7 @@ public:
     bool isOperator;       // is operator
     bool retFuncPtr;       // returns function pointer
     Type type;             // constructor, destructor, ...
+    Scope *functionScope;  // scope of function body
     std::list<Variable> argumentList; // argument list
 };
 

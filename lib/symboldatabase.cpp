@@ -287,6 +287,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         {
                             scope->functionOf = functionOf;
                             scope->function = &functionOf->functionList.back();
+                            scope->function->functionScope = scope;
                         }
 
                         tok = tok2;
@@ -980,7 +981,8 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                         if (*scope)
                         {
                             (*scope)->functionOf = scope1;
-                            (*scope)->function = &scope1->functionList.back();
+                            (*scope)->function = &*func;
+                            (*scope)->function->functionScope = *scope;
 
                             added = true;
                         }
@@ -1253,7 +1255,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             bool isClassVar = startTok == endTok && !startTok->isStandardType();
 
-            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, scope, isArrayVar));
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, functionScope, isArrayVar));
 
             if (tok->str() == ")")
                 break;
