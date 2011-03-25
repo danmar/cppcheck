@@ -32,7 +32,11 @@
 #include <stdexcept>
 
 // use tinyxml with STL
+<<<<<<< HEAD:test/testcppcheck.cpp
 #include <tinyxml.h>
+=======
+#include "tinyxml.h"
+>>>>>>> 8e379f65ec6b29de134be4013536fafe4d760a1c:test/testcppcheck.cpp
 
 extern std::ostringstream errout;
 extern std::ostringstream output;
