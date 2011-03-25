@@ -2575,7 +2575,7 @@ private:
                        "    int *i;\n"
                        "public:\n"
                        "    Fred() { }\n"
-                       "}\n");
+                       "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2586,7 +2586,7 @@ private:
                        "public:\n"
                        "    Fred() { }\n"
                        "    int *operator [] (int index) { return 0; }\n"
-                       "}\n");
+                       "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2601,7 +2601,7 @@ private:
                        "    { f.d = 0; }\n"
                        "\n"
                        "    double d;\n"
-                       "}\n");
+                       "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2616,7 +2616,7 @@ private:
                        "    { f.d = 0; return true; }\n"
                        "\n"
                        "    double d;\n"
-                       "}\n");
+                       "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2631,7 +2631,7 @@ private:
                        "    { d = 0; return true; }\n"
                        "\n"
                        "    double d;\n"
-                       "}\n");
+                       "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3148,7 +3148,7 @@ private:
                       "};\n"
                       "struct Foo {\n"
                       "    Stringy s;\n"
-                      "}\n"
+                      "};\n"
                       "int main() {\n"
                       "    Foo foo;\n"
                       "    memset(&foo, 0, sizeof(Foo));\n"
@@ -3160,7 +3160,7 @@ private:
     void memsetVector()
     {
         checkNoMemset("class A\n"
-                      "{ std::vector<int> ints; }\n"
+                      "{ std::vector<int> ints; };\n"
                       "\n"
                       "void f()\n"
                       "{\n"
@@ -3170,7 +3170,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on class that contains a 'std::vector'\n", errout.str());
 
         checkNoMemset("struct A\n"
-                      "{ std::vector<int> ints; }\n"
+                      "{ std::vector<int> ints; };\n"
                       "\n"
                       "void f()\n"
                       "{\n"
@@ -3180,7 +3180,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
 
         checkNoMemset("struct A\n"
-                      "{ std::vector<int> ints; }\n"
+                      "{ std::vector<int> ints; };\n"
                       "\n"
                       "void f()\n"
                       "{\n"
@@ -3190,7 +3190,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
 
         checkNoMemset("struct A\n"
-                      "{ std::vector<int> ints; }\n"
+                      "{ std::vector<int> ints; };\n"
                       "\n"
                       "void f()\n"
                       "{\n"
@@ -3200,7 +3200,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
 
         checkNoMemset("class A\n"
-                      "{ std::vector< std::vector<int> > ints; }\n"
+                      "{ std::vector< std::vector<int> > ints; };\n"
                       "\n"
                       "void f()\n"
                       "{\n"
@@ -3210,7 +3210,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on class that contains a 'std::vector'\n", errout.str());
 
         checkNoMemset("struct A\n"
-                      "{ std::vector< std::vector<int> > ints; }\n"
+                      "{ std::vector< std::vector<int> > ints; };\n"
                       "\n"
                       "void f()\n"
                       "{\n"
@@ -3220,7 +3220,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
 
         checkNoMemset("struct A\n"
-                      "{ std::vector< std::vector<int> > ints; }\n"
+                      "{ std::vector< std::vector<int> > ints; };\n"
                       "\n"
                       "void f()\n"
                       "{\n"
@@ -3230,7 +3230,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
 
         checkNoMemset("struct A\n"
-                      "{ std::vector<int *> ints; }\n"
+                      "{ std::vector<int *> ints; };\n"
                       "\n"
                       "void f()\n"
                       "{\n"
@@ -3866,7 +3866,7 @@ private:
                    "    std::string strGetString() { return m_strValue; }\n"
                    "private:\n"
                    "    std::string m_strValue;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetString' can be const.\n", errout.str());
     }
 
@@ -3878,7 +3878,7 @@ private:
                    "    void SetExitCode(wxThread::ExitCode exitcode) { m_exitcode = exitcode; }\n"
                    "private:\n"
                    "    wxThread::ExitCode m_exitcode;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3890,7 +3890,7 @@ private:
                    "    int foo() { return x = 0; }\n"
                    "private:\n"
                    "    int x;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
         checkConst("class A {\n"
@@ -3898,7 +3898,7 @@ private:
                    "    int foo() { return (x ? x : x = 0); }\n"
                    "private:\n"
                    "    int x;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
         checkConst("class A {\n"
@@ -3906,7 +3906,7 @@ private:
                    "    int foo() { return (x ? x = 0 : x); }\n"
                    "private:\n"
                    "    int x;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3918,7 +3918,7 @@ private:
                    "    void set(struct tm time) { m_time = time; }\n"
                    "private:\n"
                    "    struct tm m_time;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3930,7 +3930,7 @@ private:
                    "    int foo() { x = 0; }\n"
                    "private:\n"
                    "    mutable int x;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'A::foo' can be const.\n", errout.str());
     }
 
@@ -3945,7 +3945,7 @@ private:
                    "private:\n"
                    "    std::vector<int> m_vec;\n"
                    "    std::pair<int,double> m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetVec' can be const.\n"
                       "[test.cpp:5]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
@@ -3957,7 +3957,7 @@ private:
                    "private:\n"
                    "    std::vector<int> m_vec;\n"
                    "    std::pair<int,double> m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetVec' can be const.\n"
                       "[test.cpp:5]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
     }
@@ -3971,7 +3971,7 @@ private:
                    "    std::pair<std::vector<int>,double> GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair<std::vector<int>,double> m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -3980,7 +3980,7 @@ private:
                    "    const std::pair<std::vector<int>,double>& GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair<std::vector<int>,double> m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -3989,7 +3989,7 @@ private:
                    "    std::pair<std::vector<int>,double>& GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair<std::vector<int>,double> m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -4000,7 +4000,7 @@ private:
                    "    pair<int ,double> GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair<int ,double> m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4010,7 +4010,7 @@ private:
                    "    const pair<int ,double> & GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair<int ,double> m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4020,7 +4020,7 @@ private:
                    "    pair<int ,double> & GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair<int ,double> m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -4030,7 +4030,7 @@ private:
                    "    std::pair< int,std::vector<int> >  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< int,std::vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -4039,7 +4039,7 @@ private:
                    "    const std::pair< int,std::vector<int> >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< int,std::vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -4048,7 +4048,7 @@ private:
                    "    std::pair< int,std::vector<int> >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< int,std::vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -4059,7 +4059,7 @@ private:
                    "    pair< int,vector<int> >  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< int,vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4069,7 +4069,7 @@ private:
                    "    const pair< int,vector<int> >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< int,vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4079,7 +4079,7 @@ private:
                    "    pair< int,vector<int> >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< int,vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -4090,7 +4090,7 @@ private:
                    "    pair< vector<int>, int >  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< vector<int>, int >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4100,7 +4100,7 @@ private:
                    "    const pair< vector<int>, int >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< vector<int>, int >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4110,7 +4110,7 @@ private:
                    "    pair< vector<int>, int >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< vector<int>, int >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
         checkConst("class A {\n"
@@ -4119,7 +4119,7 @@ private:
                    "    std::pair< std::vector<int>,std::vector<int> >  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< std::vector<int>,std::vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -4128,7 +4128,7 @@ private:
                    "    const std::pair< std::vector<int>,std::vector<int> >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< std::vector<int>,std::vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -4137,7 +4137,7 @@ private:
                    "    std::pair< std::vector<int>,std::vector<int> >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< std::vector<int>,std::vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -4148,7 +4148,7 @@ private:
                    "    pair< vector<int>, vector<int> >  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< vector<int>, vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4158,7 +4158,7 @@ private:
                    "    const pair< vector<int>, vector<int> >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< vector<int>, vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4168,7 +4168,7 @@ private:
                    "    pair< vector<int>, vector<int> >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< vector<int>, vector<int> >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -4179,7 +4179,7 @@ private:
                    "    std::pair< std::pair < int, char > , int >  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< std::pair < int, char > , int >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -4188,7 +4188,7 @@ private:
                    "    const std::pair< std::pair < int, char > , int > & GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< std::pair < int, char > , int >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -4197,7 +4197,7 @@ private:
                    "    std::pair< std::pair < int, char > , int > & GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< std::pair < int, char > , int >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
         checkConst("using namespace std;"
@@ -4207,7 +4207,7 @@ private:
                    "    pair< pair < int, char > , int >  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< pair < int, char > , int >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4217,7 +4217,7 @@ private:
                    "    const pair< pair < int, char > , int > & GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< pair < int, char > , int >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4227,7 +4227,7 @@ private:
                    "    pair< pair < int, char > , int > & GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< pair < int, char > , int >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -4238,7 +4238,7 @@ private:
                    "    pair< int , pair < int, char > >  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< int , pair < int, char > >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4248,7 +4248,7 @@ private:
                    "    const pair< int , pair < int, char > > & GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< int , pair < int, char > >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
 
@@ -4259,7 +4259,7 @@ private:
                    "    pair< int , pair < int, char > > & GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< int , pair < int, char > >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
         checkConst("class A {\n"
@@ -4268,7 +4268,7 @@ private:
                    "    std::pair< int , std::pair < int, char > >  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< int , std::pair < int, char > >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -4277,7 +4277,7 @@ private:
                    "    const std::pair< int , std::pair < int, char > >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< int , std::pair < int, char > >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetPair' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -4286,7 +4286,7 @@ private:
                    "    std::pair< int , std::pair < int, char > >&  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    std::pair< int , std::pair < int, char > >  m_pair;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -4297,7 +4297,7 @@ private:
                    "    vector<int>  GetVec() {return m_Vec;}\n"
                    "private:\n"
                    "    vector<int>  m_Vec;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetVec' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4307,7 +4307,7 @@ private:
                    "    const vector<int>&  GetVec() {return m_Vec;}\n"
                    "private:\n"
                    "    vector<int>  m_Vec;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::GetVec' can be const.\n", errout.str());
 
         checkConst("using namespace std;"
@@ -4317,7 +4317,7 @@ private:
                    "    vector<int>&  GetVec() {return m_Vec;}\n"
                    "private:\n"
                    "    vector<int>  m_Vec;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -4326,7 +4326,7 @@ private:
                    "    int * const * foo() { return &x; }\n"
                    "private:\n"
                    "    const int * x;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
 
         checkConst("class A {\n"
@@ -4334,7 +4334,7 @@ private:
                    "    const int ** foo() { return &x; }\n"
                    "private:\n"
                    "    const int * x;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'A::foo' can be const.\n", errout.str());
 
         checkConst("class A {\n"
@@ -4342,7 +4342,7 @@ private:
                    "    const int * const * foo() { return &x; }\n"
                    "private:\n"
                    "    const int * x;\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'A::foo' can be const.\n", errout.str());
     }
 
@@ -4922,7 +4922,7 @@ private:
                    "    {\n"
                    "        m_MaxQueueSize = a_MaxQueueSize;\n"
                    "    }\n"
-                   "}\n");
+                   "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4938,7 +4938,7 @@ private:
                    "    }\n"
                    "private:\n"
                    "    std::string m_str;\n"
-                   "}\n");
+                   "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (information) Technically the member function 'A::operator+' can be const.\n", errout.str());
 
         checkConst("class Fred\n"
@@ -4952,7 +4952,7 @@ private:
                    "    bool isValid() {\n"
                    "        return bool(x == 0x11224488);\n"
                    "    }\n"
-                   "}\n");
+                   "};\n");
         ASSERT_EQUALS("[test.cpp:9]: (information) Technically the member function 'Fred::isValid' can be const.\n", errout.str());
     }
 
@@ -5008,7 +5008,7 @@ private:
                    "   {\n"
                    "      pView = aView;\n"
                    "   }\n"
-                   "}\n");
+                   "};\n");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -5270,7 +5270,7 @@ private:
                    "    int fun2() {\n"
                    "        b++;\n"
                    "    }\n"
-                   "}\n");
+                   "};\n");
 
         ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Altren::fun1' can be const.\n"
                       "[test.cpp:7]: (information) Technically the member function 'Altren::fun2' can be const.\n", errout.str());
@@ -5283,7 +5283,7 @@ private:
                    "  void foo() { delete this; }\n"
                    "  void foo(int i) const { }\n"
                    "  void bar() { foo(); }\n"
-                   "}\n");
+                   "};\n");
 
         ASSERT_EQUALS("", errout.str());
 
@@ -5292,7 +5292,7 @@ private:
                    "  void foo() { delete this; }\n"
                    "  void foo(int i) const { }\n"
                    "  void bar() { foo(1); }\n"
-                   "}\n");
+                   "};\n");
 
         ASSERT_EQUALS("[test.cpp:5]: (information) Technically the member function 'Altren::bar' can be const.\n", errout.str());
     }
@@ -5453,7 +5453,7 @@ private:
                    "public:\n"
                    "   A(){}\n"
                    "   unsigned int GetVecSize()  {return m_v.size();}\n"
-                   "}");
+                   "};");
         TODO_ASSERT_EQUALS("[test.cpp:7]: (information) Technically the member function 'A::GetVecSize' can be const.\n",
                            "", errout.str());
     }
@@ -5724,7 +5724,7 @@ private:
                    "    void setf(float x) {\n"
                    "        d.f = x;\n"
                    "    }\n"
-                   "}");
+                   "};");
         ASSERT_EQUALS("", errout.str());
     }
 
