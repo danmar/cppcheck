@@ -5644,7 +5644,7 @@ void Tokenizer::simplifyVarDecl()
             continue;
 
         Token *type0 = tok;
-        if (!Token::Match(type0, "%type%"))
+        if (!Token::Match(type0, "::| %type%"))
             continue;
         if (Token::Match(type0, "else|return|public:|protected:|private:"))
             continue;
@@ -5675,6 +5675,12 @@ void Tokenizer::simplifyVarDecl()
             continue;
 
         // check for qualification..
+        if (Token::Match(tok2,  ":: %type%"))
+        {
+            typelen++;
+            tok2 = tok2->next();
+        }
+
         if (Token::Match(tok2, "%type% :: %type%"))
         {
             while (tok2 && Token::Match(tok2, "%type% ::"))

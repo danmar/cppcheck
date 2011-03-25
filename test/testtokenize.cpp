@@ -239,6 +239,7 @@ private:
         TEST_CASE(vardecl11);
         TEST_CASE(vardecl12);
         TEST_CASE(vardecl13);
+        TEST_CASE(vardecl14);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template);
@@ -4249,6 +4250,12 @@ private:
                             "    int a = (x < y) ? 1 : 0;\n"
                             "}";
         ASSERT_EQUALS("void f ( ) {\nint a ; a = ( x < y ) ? 1 : 0 ;\n}", tokenizeAndStringify(code));
+    }
+
+    void vardecl14()
+    {
+        const char code[] = "::std::tr1::shared_ptr<int> pNum1, pNum2;\n";
+        ASSERT_EQUALS(":: std :: tr1 :: shared_ptr < int > pNum1 ; :: std :: tr1 :: shared_ptr < int > pNum2 ;", tokenizeAndStringify(code));
     }
 
     void volatile_variables()
