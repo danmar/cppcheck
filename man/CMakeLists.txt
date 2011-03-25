@@ -11,6 +11,7 @@ endif()
 
 if(UNIX OR CYGWIN)
    # Build manual in Linux/Cygwin - xmlto is not available in Windows
-   find_package(XmlTo REQUIRED)
-   xmlto("" "manual.docbook" MODES ${DOC_TARGETS})
+   # daniel: I don't want to have extra dependencies for Cppcheck
+   # find_package(XmlTo REQUIRED)
+   # xmlto("" "manual.docbook" MODES ${DOC_TARGETS})
 endif()
