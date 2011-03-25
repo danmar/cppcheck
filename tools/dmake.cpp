@@ -301,9 +301,9 @@ int main(int argc, char **argv)
 
     fout << "\n###### Build\n\n";
 
-    compilefiles(fout, libfiles, "-Ilib");
-    compilefiles(fout, clifiles, "-Ilib -Iexternals/tinyxml -Iexternals");
-    compilefiles(fout, testfiles, "-Ilib -Icli -Iexternals/tinyxml -Iexternals");
+    compilefiles(fout, libfiles, "${INCLUDE_FOR_LIB}");
+    compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
+    compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
 
     return 0;
 }

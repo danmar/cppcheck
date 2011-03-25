@@ -19,7 +19,7 @@
 			UseOfMfc="0">
 			<Tool
 				Name="VCCLCompilerTool"
-			AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\lib&quot;,&quot;..\externals\tinyxml&quot;,c:\Qt\VS4.7.0\mkspecs\win32-msvc2008"
+				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\Qt\VS4.7.0\mkspecs\win32-msvc2008"
 				AdditionalOptions="-Zm200 -w34100 -w34189"
 				AssemblerListingLocation="temp\"
 				BufferSecurityCheck="false"
