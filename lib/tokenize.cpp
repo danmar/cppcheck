@@ -6095,7 +6095,6 @@ void Tokenizer::simplifyVariableMultipleAssign()
         if (Token::Match(tok, "%var% = %var% = %num% ;") ||
             Token::Match(tok, "%var% = %var% = %var% ;"))
         {
-
             // skip intermediate assignments
             Token *tok2 = tok->previous();
             while (tok2 &&
@@ -6105,7 +6104,7 @@ void Tokenizer::simplifyVariableMultipleAssign()
                 tok2 = tok2->tokAt(-2);
             }
 
-            if (tok2->str() != ";")
+            if (!tok2 || tok2->str() != ";")
             {
                 continue;
             }

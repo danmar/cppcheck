@@ -326,6 +326,9 @@ private:
 
         // Some simple cleanups of unhandled macros in the global scope
         TEST_CASE(removeMacrosInGlobalScope);
+
+        // a = b = 0;
+        TEST_CASE(multipleAssignment);
     }
 
 
@@ -5617,6 +5620,11 @@ private:
     {
         // remove some unhandled macros in the global scope.
         ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() NOTHROW { }"));
+    }
+
+    void multipleAssignment()
+    {
+        ASSERT_EQUALS("a = b = 0 ;", tokenizeAndStringify("a=b=0;"));
     }
 };
 
