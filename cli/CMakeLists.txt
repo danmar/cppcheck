@@ -9,6 +9,7 @@ SET(CHECKCLI_SRCS
   filelister.cpp
   main.cpp
   threadexecutor.cpp
+  pathmatch.cpp
   "${TINYXML_INCLUDE_DIR}tinystr.cpp"
   "${TINYXML_INCLUDE_DIR}tinyxml.cpp"
   "${TINYXML_INCLUDE_DIR}tinyxmlerror.cpp"
@@ -19,15 +20,12 @@ include("${CPPCHECK_LIB_DIR}library_sources.cmake")
 
 if(WIN32)
    # Add Windows resource file
-   set(CHECKCLI_SRCS ${CHECKCLI_SRCS} filelister_win32.cpp
-       cppcheck.rc)
+   set(CHECKCLI_SRCS ${CHECKCLI_SRCS} cppcheck.rc)
 
    if(NOT CYGWIN)
       # Windows needs additional shlwapi library.
       set(CHECK_LIBS ${CHECK_LIBS} shlwapi)
    endif()
-else()
-   set(CHECKCLI_SRCS ${CHECKCLI_SRCS} filelister_unix.cpp)
 endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX)

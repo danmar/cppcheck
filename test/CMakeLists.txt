@@ -8,6 +8,7 @@ SET(CHECKTEST_SRCS
   "${CPPCHECK_SOURCE_DIR}/cli/cppcheckexecutor.cpp"
   "${CPPCHECK_SOURCE_DIR}/cli/filelister.cpp"
   "${CPPCHECK_SOURCE_DIR}/cli/threadexecutor.cpp"
+  "${CPPCHECK_SOURCE_DIR}/cli/pathmatch.cpp"
   options.cpp
   testautovariables.cpp
   testbufferoverrun.cpp
@@ -51,16 +52,12 @@ set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
 include("${CPPCHECK_LIB_DIR}library_sources.cmake")
 
 if(WIN32)
-   set(CHECKTEST_SRCS ${CHECKTEST_SRCS}
-       "${CPPCHECK_SOURCE_DIR}/cli/filelister_win32.cpp")
-
    if(NOT CYGWIN)
       # Windows needs additional shlwapi library.
       set(CHECK_LIBS ${CHECK_LIBS} shlwapi)
    endif()
 else()
-   set(CHECKTEST_SRCS ${CHECKTEST_SRCS} testfilelister_unix.cpp
-       "${CPPCHECK_SOURCE_DIR}/cli/filelister_unix.cpp")
+   set(CHECKTEST_SRCS ${CHECKTEST_SRCS} testfilelister_unix.cpp)
 endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX)

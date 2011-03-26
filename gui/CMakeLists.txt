@@ -47,6 +47,8 @@ SET(CHECK_HEADERS
   translationhandler.h
   txtreport.h
   xmlreport.h
+  xmlreportv1.h
+  xmlreportv2.h
 )
 
 # Source files
@@ -77,6 +79,8 @@ SET(CHECKGUI_SRCS
   translationhandler.cpp
   txtreport.cpp
   xmlreport.cpp
+  xmlreportv1.cpp
+  xmlreportv2.cpp
 )
 
 # UI files
