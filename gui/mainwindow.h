@@ -336,7 +336,7 @@ protected:
     /**
     * @brief Show help contents
     */
-    void OpenHtmlHelpContents();
+    void OpenOnlineHelp();
 
     /**
     * @brief Enable or disable project file actions.
@@ -399,11 +399,6 @@ protected:
     * @brief Log view.
     */
     LogView *mLogView;
-
-    /**
-     * @brief Help window..
-     */
-    HelpWindow *mHelpWindow;
 
     /**
     * @brief Project (file).

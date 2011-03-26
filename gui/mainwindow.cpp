@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mainwindow.h"
 #include <QApplication>
 #include <QDebug>
 #include <QMenu>
@@ -27,6 +26,9 @@
 #include <QKeySequence>
 #include <QFileInfo>
 #include <QDir>
+#include <QDesktopServices>
+#include <QUrl>
+#include "mainwindow.h"
 #include "aboutdialog.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
@@ -36,14 +38,14 @@
 #include "statsdialog.h"
 #include "logview.h"
 #include "filelist.h"
-#include "helpwindow.h"
+
+static const QString OnlineHelpURL("http://cppcheck.sf.net/manual.pdf");
 
 MainWindow::MainWindow() :
     mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
     mApplications(new ApplicationList(this)),
     mTranslation(new TranslationHandler(this)),
     mLogView(NULL),
-    mHelpWindow(NULL),
     mProject(NULL),
     mExiting(false)
 {
@@ -122,7 +124,6 @@ MainWindow::MainWindow() :
 MainWindow::~MainWindow()
 {
     delete mLogView;
-    delete mHelpWindow;
     delete mProject;
 }
 
@@ -514,9 +515,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     // Check that we aren't checking files
     if (!mThread->IsChecking())
     {
-        delete mHelpWindow;
-        mHelpWindow = NULL;
-
         SaveSettings();
         event->accept();
     }
@@ -695,33 +693,12 @@ void MainWindow::StopChecking()
 
 void MainWindow::OpenHelpContents()
 {
-    OpenHtmlHelpContents();
+    OpenOnlineHelp();
 }
 
-void MainWindow::OpenHtmlHelpContents()
+void MainWindow::OpenOnlineHelp()
 {
-    if (mHelpWindow == NULL)
-    {
-        const QString fname = qApp->applicationDirPath() + "/online-help.qhc";
-        if (!QFileInfo(fname).exists())
-        {
-            QMessageBox::warning(this, tr("Cppcheck Help"), tr("Failed to load help file (not found)"));
-            return;
-        }
-
-        mHelpWindow = new HelpWindow;
-        if (!mHelpWindow->load(fname))
-        {
-            delete mHelpWindow;
-            mHelpWindow = NULL;
-            QMessageBox::warning(this, tr("Cppcheck Help"), tr("Failed to load help file"));
-            return;
-        }
-    }
-
-    mHelpWindow->show();
-    if (!mHelpWindow->isActiveWindow())
-        mHelpWindow->activateWindow();
+    QDesktopServices::openUrl(QUrl(OnlineHelpURL));
 }
 
 void MainWindow::OpenProjectFile()

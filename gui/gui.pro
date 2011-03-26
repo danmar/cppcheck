@@ -31,7 +31,6 @@ FORMS = main.ui \
     projectfile.ui \
     about.ui \
     logview.ui \
-    helpwindow.ui \
     stats.ui
 
 TRANSLATIONS =  cppcheck_fi.ts \
@@ -76,7 +75,6 @@ HEADERS += mainwindow.h \
            csvreport.h \
            logview.h \
            filelist.h \
-           helpwindow.h \
            statsdialog.h \
            checkstatistics.h
 
@@ -105,7 +103,6 @@ SOURCES += main.cpp \
            csvreport.cpp \
            logview.cpp \
            filelist.cpp \
-           helpwindow.cpp \
            statsdialog.cpp \
            checkstatistics.cpp
 
@@ -115,4 +112,3 @@ win32 {
     HEADERS += ../cli/resource.h
     LIBS += -lshlwapi
 }
-
