@@ -102,8 +102,8 @@ SET(CHECK_TRANS
   cppcheck_nl.ts
   cppcheck_pl.ts
   cppcheck_ru.ts
-  cppcheck_se.ts
   cppcheck_sr.ts
+  cppcheck_sv.ts
 )
 
 SET(CHECK_RCCS gui.qrc)
