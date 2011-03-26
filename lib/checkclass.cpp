@@ -689,49 +689,6 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
 
-void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type)
-{
-    // recursively check all parent classes
-    for (size_t i = 0; i < type->derivedFrom.size(); i++)
-    {
-        if (type->derivedFrom[i].scope)
-            checkMemsetType(start, tok, type->derivedFrom[i].scope);
-    }
-
-    // Warn if type is a class that contains any virtual functions
-    std::list<Function>::const_iterator func;
-
-    for (func = type->functionList.begin(); func != type->functionList.end(); ++func)
-    {
-        if (func->isVirtual)
-            memsetError(tok, tok->str(), "virtual method", type->classDef->str());
-    }
-
-    // Warn if type is a class or struct that contains any std::* variables
-    std::list<Variable>::const_iterator var;
-
-    for (var = type->varlist.begin(); var != type->varlist.end(); ++var)
-    {
-        // don't warn if variable static or const
-        if (!var->isStatic() && !var->isConst())
-        {
-            const Token *tok1 = var->typeStartToken();
-
-            // skip mutable token
-            if (var->isMutable())
-                tok1 = tok1->next();
-
-            // check for std:: type that is not a pointer or reference
-            if (Token::simpleMatch(tok1, "std ::") && !Token::Match(var->nameToken()->previous(), "*|&"))
-                memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
-
-            // check for known type that is not a pointer or reference
-            else if (var->type() && !Token::Match(var->nameToken()->previous(), "*|&"))
-                checkMemsetType(start, tok, var->type());
-        }
-    }
-}
-
 void CheckClass::noMemset()
 {
     createSymbolDatabase();
@@ -790,6 +747,49 @@ void CheckClass::noMemset()
     }
 }
 
+void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type)
+{
+    // recursively check all parent classes
+    for (size_t i = 0; i < type->derivedFrom.size(); i++)
+    {
+        if (type->derivedFrom[i].scope)
+            checkMemsetType(start, tok, type->derivedFrom[i].scope);
+    }
+
+    // Warn if type is a class that contains any virtual functions
+    std::list<Function>::const_iterator func;
+
+    for (func = type->functionList.begin(); func != type->functionList.end(); ++func)
+    {
+        if (func->isVirtual)
+            memsetError(tok, tok->str(), "virtual method", type->classDef->str());
+    }
+
+    // Warn if type is a class or struct that contains any std::* variables
+    std::list<Variable>::const_iterator var;
+
+    for (var = type->varlist.begin(); var != type->varlist.end(); ++var)
+    {
+        // don't warn if variable static or const
+        if (!var->isStatic() && !var->isConst())
+        {
+            const Token *tok1 = var->typeStartToken();
+
+            // skip mutable token
+            if (var->isMutable())
+                tok1 = tok1->next();
+
+            // check for std:: type that is not a pointer or reference
+            if (Token::simpleMatch(tok1, "std ::") && !Token::Match(var->nameToken()->previous(), "*|&"))
+                memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
+
+            // check for known type that is not a pointer or reference
+            else if (var->type() && !Token::Match(var->nameToken()->previous(), "*|&"))
+                checkMemsetType(start, tok, var->type());
+        }
+    }
+}
+
 void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
 {
     reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a " + classname);
@@ -832,6 +832,41 @@ void CheckClass::operatorEqReturnError(const Token *tok)
 // ClassCheck: "C& operator=(const C&) { ... return *this; }"
 // operator= should return a reference to *this
 //---------------------------------------------------------------------------
+
+void CheckClass::operatorEqRetRefThis()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    createSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
+    {
+        // only check classes and structures
+        if (scope->isClassOrStruct())
+        {
+            std::list<Function>::const_iterator func;
+
+            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
+            {
+                if (func->type == Function::eOperatorEqual && func->hasBody)
+                {
+                    // make sure return signature is correct
+                    if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
+                        func->tokenDef->strAt(-2) == scope->className)
+                    {
+                        // find the ')'
+                        const Token *tok = func->token->next()->link();
+
+                        checkReturnPtrThis(&(*scope), &(*func), tok->tokAt(2), tok->next()->link());
+                    }
+                }
+            }
+        }
+    }
+}
 
 void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last)
 {
@@ -893,41 +928,6 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
     }
     if (!foundReturn)
         operatorEqRetRefThisError(func->token);
-}
-
-void CheckClass::operatorEqRetRefThis()
-{
-    if (!_settings->_checkCodingStyle)
-        return;
-
-    createSymbolDatabase();
-
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
-    {
-        // only check classes and structures
-        if (scope->isClassOrStruct())
-        {
-            std::list<Function>::const_iterator func;
-
-            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
-            {
-                if (func->type == Function::eOperatorEqual && func->hasBody)
-                {
-                    // make sure return signature is correct
-                    if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
-                        func->tokenDef->strAt(-2) == scope->className)
-                    {
-                        // find the ')'
-                        const Token *tok = func->token->next()->link();
-
-                        checkReturnPtrThis(&(*scope), &(*func), tok->tokAt(2), tok->next()->link());
-                    }
-                }
-            }
-        }
-    }
 }
 
 void CheckClass::operatorEqRetRefThisError(const Token *tok)
@@ -1579,8 +1579,6 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
 
     return isconst;
 }
-
-//---------------------------------------------------------------------------
 
 // check if this function is defined virtual in the base classes
 bool CheckClass::isVirtualFunc(const Scope *scope, const Token *functionToken) const
