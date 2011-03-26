@@ -28,6 +28,7 @@ SET(CHECKTEST_SRCS
   testoptions.cpp
   testother.cpp
   testpath.cpp
+  testpathmatch.cpp
   testpostfixoperator.cpp
   testpreprocessor.cpp
   testrunner.cpp
