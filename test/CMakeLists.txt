@@ -1,5 +1,4 @@
 # Minimal CMake build file to build cppcheck test suite
-find_package(PCRE REQUIRED)
 
 set(TINYXML_INCLUDE_DIR "${CPPCHECK_SOURCE_DIR}/externals/tinyxml/")
 
@@ -66,10 +65,9 @@ endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories("${CPPCHECK_SOURCE_DIR}/lib"
                     "${CPPCHECK_SOURCE_DIR}/cli"
-                    "${PCRE_INCLUDE_DIR}"
                     "${TINYXML_INCLUDE_DIR}")
 add_executable(test ${CHECKTEST_SRCS} ${CPPCHECK_LIB_SOURCES})
-TARGET_LINK_LIBRARIES(test ${CHECK_LIBS} ${PCRE_LIBRARIES})
+TARGET_LINK_LIBRARIES(test ${CHECK_LIBS})
 
 # Add custom 'make check' -target
 # It compiles and runs tests

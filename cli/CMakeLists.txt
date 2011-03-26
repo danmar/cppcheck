@@ -1,5 +1,4 @@
 # Minimal CMake build file to build cppcheck command line executable
-find_package(PCRE REQUIRED)
 
 set(TINYXML_INCLUDE_DIR "${CPPCHECK_SOURCE_DIR}/externals/tinyxml/")
 
@@ -33,7 +32,6 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories("${CPPCHECK_SOURCE_DIR}/lib"
-                    "${PCRE_INCLUDE_DIR}"
                     "${TINYXML_INCLUDE_DIR}")
 add_executable(cppcheck ${CHECKCLI_SRCS} ${CPPCHECK_LIB_SOURCES})
-TARGET_LINK_LIBRARIES(cppcheck ${CHECK_LIBS} ${PCRE_LIBRARIES})
+TARGET_LINK_LIBRARIES(cppcheck ${CHECK_LIBS})

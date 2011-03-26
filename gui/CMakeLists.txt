@@ -1,5 +1,4 @@
 # Minimal CMake build file to build cppcheck Qt GUI
-find_package(PCRE REQUIRED)
 
 # find and setup Qt4 for this project
 find_package(Qt4)
@@ -16,8 +15,7 @@ include_directories("${CPPCHECK_SOURCE_DIR}/lib"
 # Generated files (in build directory) need to know gui directory
                     "${CPPCHECK_SOURCE_DIR}/gui"
 # Include binary directory where code from UI files gets created
-                    "${CMAKE_CURRENT_BINARY_DIR}"
-                    "${PCRE_INCLUDE_DIR}")
+                    "${CMAKE_CURRENT_BINARY_DIR}")
 
 # Header files - listed for mocking
 SET(CHECK_HEADERS
@@ -146,7 +144,7 @@ SOURCE_GROUP("Moc Files" "moc_.*cxx$")
 
 ADD_EXECUTABLE(gui WIN32 ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_HEADERS} 
                ${CHECK_UIS_H} ${CHECK_RCC_SRCS} ${CPPCHECK_LIB_SOURCES})
-TARGET_LINK_LIBRARIES(gui ${CHECK_LIBS} ${PCRE_LIBRARIES} ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(gui ${CHECK_LIBS} ${QT_LIBRARIES})
 
 ELSE(QT4_FOUND)
 message("GUI not built since QT4 not found.")
