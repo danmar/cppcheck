@@ -176,6 +176,7 @@ private:
         TEST_CASE(constoperator3);
         TEST_CASE(constoperator4);
         TEST_CASE(constincdec);     // increment/decrement => non-const
+        TEST_CASE(constincdecarray);     // increment/decrement array element => non-const
         TEST_CASE(constReturnReference);
         TEST_CASE(constDelete);     // delete member variable => not const
         TEST_CASE(constLPVOID);     // a function that returns LPVOID can't be const
@@ -5396,6 +5397,34 @@ private:
         checkConst("class Fred {\n"
                    "    int a;\n"
                    "    void nextA() { return a/=-2; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // increment/decrement array element => not const
+    void constincdecarray()
+    {
+        checkConst("class Fred {\n"
+                   "    int a[2];\n"
+                   "    void nextA() { return ++a[0]; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a[2];\n"
+                   "    void nextA() { return --a[0]; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a[2];\n"
+                   "    void nextA() { return a[0]++; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a[2];\n"
+                   "    void nextA() { return a[0]--; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
