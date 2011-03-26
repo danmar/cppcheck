@@ -1545,23 +1545,31 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
                 tok1->previous()->str() != "return")
             {
                 if (isMemberVar(scope, tok1->previous()))
+                {
                     isconst = false;
+                    break;
+                }
             }
 
             // var[...]++ and var[...]--
             else if (tok1->previous()->str() == "]")
             {
                 if (isMemberVar(scope, tok1->previous()->link()->previous()))
+                {
                     isconst = false;
+                    break;
+                }
             }
 
             // ++var and --var
             else if (Token::Match(tok1->next(), "%var%"))
             {
                 if (isMemberVar(scope, tok1->next()))
+                {
                     isconst = false;
+                    break;
+                }
             }
-            break;
         }
 
         // function call..
