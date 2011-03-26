@@ -3603,6 +3603,11 @@ void Tokenizer::setVarId()
                 }
             }
 
+            /** @todo better handling when classes in different scopes have the same name */
+            std::string className;
+            if (Token::Match(tok2, "class|struct %type% [:{]"))
+                className = tok2->strAt(1);
+
             // Set start token
             if (Token::Match(tok2, "class|struct"))
             {
@@ -3621,9 +3626,17 @@ void Tokenizer::setVarId()
                 const char c = tok2->str()[0];
                 if (c == varname[0])
                 {
-                    const std::string &prev = tok2->strAt(-1);
-                    if (tok2->str() == varname && prev != "struct" && prev != "union" && prev != "::" && prev != "." && tok2->strAt(1) != "::")
-                        tok2->varId(_varId);
+                    if (tok2->str() == varname)
+                    {
+                        const std::string &prev = tok2->previous()->str();
+
+                        /** @todo better handling when classes in different scopes have the same name */
+                        if (!className.empty() && Token::simpleMatch(tok2->tokAt(-2), className.c_str()) && prev == "::")
+                            tok2->varId(_varId);
+
+                        else if (tok2->str() == varname && prev != "struct" && prev != "union" && prev != "::" && prev != "." && tok2->strAt(1) != "::")
+                            tok2->varId(_varId);
+                    }
                 }
                 else if (c == '{')
                     ++indentlevel;
