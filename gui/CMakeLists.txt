@@ -31,7 +31,6 @@ SET(CHECK_HEADERS
   erroritem.h
   filelist.h
   fileviewdialog.h
-  helpwindow.h
   logview.h
   mainwindow.h
   project.h
@@ -62,7 +61,6 @@ SET(CHECKGUI_SRCS
   erroritem.cpp
   filelist.cpp
   fileviewdialog.cpp
-  helpwindow.cpp
   logview.cpp
   main.cpp
   mainwindow.cpp
@@ -88,7 +86,6 @@ SET(CHECK_UIS
   about.ui
   application.ui
   file.ui
-  helpwindow.ui
   logview.ui
   main.ui
   projectfile.ui
