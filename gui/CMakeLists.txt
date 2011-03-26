@@ -102,8 +102,8 @@ SET(CHECK_TRANS
   cppcheck_nl.ts
   cppcheck_pl.ts
   cppcheck_ru.ts
-  cppcheck_se.ts
   cppcheck_sr.ts
+  cppcheck_sv.ts
 )
 
 SET(CHECK_RCCS gui.qrc)
@@ -142,9 +142,9 @@ SOURCE_GROUP("Header Files" FILES ${CHECK_HEADERS})
 SOURCE_GROUP("Ui Files" ".ui$")
 SOURCE_GROUP("Moc Files" "moc_.*cxx$")
 
-ADD_EXECUTABLE(gui WIN32 ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_HEADERS} 
+ADD_EXECUTABLE(cppcheck-gui WIN32 ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_HEADERS} 
                ${CHECK_UIS_H} ${CHECK_RCC_SRCS} ${CPPCHECK_LIB_SOURCES})
-TARGET_LINK_LIBRARIES(gui ${CHECK_LIBS} ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(cppcheck-gui ${CHECK_LIBS} ${QT_LIBRARIES})
 
 ELSE(QT4_FOUND)
 message("GUI not built since QT4 not found.")
