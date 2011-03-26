@@ -39,7 +39,7 @@
 #include "logview.h"
 #include "filelist.h"
 
-static const QString OnlineHelpURL("http://cppcheck.sf.net/manual.pdf");
+static const QString OnlineHelpURL("http://cppcheck.sourceforge.net/manual.html");
 
 MainWindow::MainWindow() :
     mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
