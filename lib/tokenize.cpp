@@ -3631,7 +3631,7 @@ void Tokenizer::setVarId()
                         const std::string &prev = tok2->previous()->str();
 
                         /** @todo better handling when classes in different scopes have the same name */
-                        if (!className.empty() && Token::simpleMatch(tok2->tokAt(-2), className.c_str()) && prev == "::")
+                        if (!className.empty() && Token::Match(tok2->tokAt(-3), ("!!:: " + className + " ::").c_str()))
                             tok2->varId(_varId);
 
                         else if (tok2->str() == varname && prev != "struct" && prev != "union" && prev != "::" && prev != "." && tok2->strAt(1) != "::")

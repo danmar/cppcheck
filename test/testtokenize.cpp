@@ -197,6 +197,7 @@ private:
         TEST_CASE(varidclass10);  // variable declaration below usage
         TEST_CASE(varidclass11);  // variable declaration below usage
         TEST_CASE(varidclass12);
+        TEST_CASE(varidclass13);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -3493,6 +3494,22 @@ private:
                                    "1: class Fred {\n"
                                    "2: int a@1 ;\n"
                                    "3: void f ( ) { Fred :: a@1 = 0 ; }\n"
+                                   "4: } ;\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varidclass13()
+    {
+        const std::string code("class Fred {\n"
+                               "    int a;\n"
+                               "    void f() { Foo::Fred::a = 0; }\n"
+                               "};\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class Fred {\n"
+                                   "2: int a@1 ;\n"
+                                   "3: void f ( ) { Foo :: Fred :: a = 0 ; }\n"
                                    "4: } ;\n");
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
