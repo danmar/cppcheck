@@ -38,10 +38,11 @@
 # ./dmake
 # git commit -a -m "Makefile: Set debug mode"
 #
-# Generate the manual.pdf and version.txt
+# Generate the manual.pdf, manual.html and version.txt
 # make
 # ./cppcheck --version > version.txt
 # docbook2pdf man/manual.docbook
+# xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl manual.docbook
 #
 # Upload manual.pdf and version.txt...
 # sftp hyd_danmar,cppcheck@web.sourceforge.net
