@@ -1504,10 +1504,11 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
             }
             else if (tok1->previous()->str() == "]")
             {
-                // TODO: I assume that the assigned variable is a member variable
-                //       don't assume it
-                isconst = false;
-                break;
+                if (isMemberVar(scope, tok1->previous()->link()->previous()))
+                {
+                    isconst = false;
+                    break;
+                }
             }
             else if (tok1->next()->str() == "this")
             {

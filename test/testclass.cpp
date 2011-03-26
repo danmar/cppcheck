@@ -176,7 +176,9 @@ private:
         TEST_CASE(constoperator3);
         TEST_CASE(constoperator4);
         TEST_CASE(constincdec);     // increment/decrement => non-const
+        TEST_CASE(constassign);
         TEST_CASE(constincdecarray);     // increment/decrement array element => non-const
+        TEST_CASE(constassignarray);
         TEST_CASE(constReturnReference);
         TEST_CASE(constDelete);     // delete member variable => not const
         TEST_CASE(constLPVOID);     // a function that returns LPVOID can't be const
@@ -5376,6 +5378,39 @@ private:
                    "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkConst("int a;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return ++a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return --a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a++; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a--; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+    }
+
+    void constassign()
+    {
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    void nextA() { return a=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkConst("class Fred {\n"
                    "    int a;\n"
                    "    void nextA() { return a-=1; }\n"
@@ -5399,6 +5434,36 @@ private:
                    "    void nextA() { return a/=-2; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("int a;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a-=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a+=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a*=-1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a/=-2; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
     }
 
     // increment/decrement array element => not const
@@ -5427,6 +5492,93 @@ private:
                    "    void nextA() { return a[0]--; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("int a[2];\n"
+                   "class Fred {\n"
+                   "    void nextA() { return ++a[0]; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a[2];\n"
+                   "class Fred {\n"
+                   "    void nextA() { return --a[0]; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a[2];\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a[0]++; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a[2];\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a[0]--; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+    }
+
+    void constassignarray()
+    {
+        checkConst("class Fred {\n"
+                   "    int a[2];\n"
+                   "    void nextA() { return a[0]=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a[2];\n"
+                   "    void nextA() { return a[0]-=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a[2];\n"
+                   "    void nextA() { return a[0]+=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a[2];\n"
+                   "    void nextA() { return a[0]*=-1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    int a[2];\n"
+                   "    void nextA() { return a[0]/=-2; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("int a[2];\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a[0]=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a[2];\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a[0]-=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a[2];\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a[0]+=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a[2];\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a[0]*=-1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("int a[2];\n"
+                   "class Fred {\n"
+                   "    void nextA() { return a[0]/=-2; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
     }
 
     // return pointer/reference => not const
