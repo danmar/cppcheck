@@ -1391,6 +1391,9 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
     {
         if (var->name() == tok->str())
         {
+            if (tok->varId() == 0)
+                symbolDatabase->debugMessage(tok, "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
+
             return !var->isMutable();
         }
     }
