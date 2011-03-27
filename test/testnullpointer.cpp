@@ -1001,6 +1001,15 @@ private:
               "    wilma->Reload();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void test(int *i) {\n"
+              "  if(i == NULL) {\n"
+              "    int b = 1;\n"
+              "  } else {\n"
+              "    int b = *i;\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference

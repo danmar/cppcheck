@@ -660,6 +660,14 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     if (indentlevel == 0)
                         break;
                     --indentlevel;
+
+                    if (null && indentlevel == 0)
+                    {
+                        // skip all "else" blocks because they are not executed in this execution path
+                        while (Token::simpleMatch(tok2, "} else {"))
+                            tok2 = tok2->tokAt(2)->link();
+                        null = false;
+                    }
                 }
 
                 if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch"))
