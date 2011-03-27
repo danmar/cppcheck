@@ -73,6 +73,7 @@ private:
         TEST_CASE(initvar_2constructors);       // BUG 2270353
         TEST_CASE(initvar_constvar);
         TEST_CASE(initvar_staticvar);
+        TEST_CASE(initvar_union);
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
         TEST_CASE(initvar_copy_constructor); // ticket #1611
@@ -794,6 +795,38 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+
+    void initvar_union()
+    {
+        check("class Fred\n"
+              "{\n"
+              "    union\n"
+              "    {\n"
+              "        int a;\n"
+              "        char b[4];\n"
+              "    } U;\n"
+              "public:\n"
+              "    Fred()\n"
+              "    {\n"
+              "        U.a = 0;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "    union\n"
+              "    {\n"
+              "        int a;\n"
+              "        char b[4];\n"
+              "    } U;\n"
+              "public:\n"
+              "    Fred()\n"
+              "    {\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Fred::U' is not initialised in the constructor.\n", errout.str());
+    }
 
 
     void initvar_private_constructor()

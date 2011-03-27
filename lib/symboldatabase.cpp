@@ -1447,6 +1447,11 @@ void Scope::getVariableList()
             else
                 break;
         }
+        else if (Token::Match(tok, "union {") && Token::Match(tok->next()->link(), "} %var% ;"))
+        {
+            tok = tok->next()->link()->next()->next();
+            continue;
+        }
 
         // Borland C++: Skip all variables in the __published section.
         // These are automatically initialized.
