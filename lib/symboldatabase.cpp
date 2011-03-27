@@ -110,6 +110,35 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             tok = tok->tokAt(3);
         }
 
+        // anonymous union
+        else if (Token::Match(tok, "union {") &&
+                 Token::Match(tok->next()->link(), "} %var% ;"))
+        {
+            scopeList.push_back(Scope(this, tok, scope));
+
+            Scope *new_scope = &scopeList.back();
+
+            scope->addVariable(tok->next()->link()->next(), tok, tok, scope->access, false, false, false, true, new_scope, scope, false);
+
+            const Token *tok2 = tok->next();
+
+            new_scope->classStart = tok2;
+            new_scope->classEnd = tok2->link();
+
+            // make sure we have valid code
+            if (!new_scope->classEnd)
+            {
+                scopeList.pop_back();
+                break;
+            }
+
+            // make the new scope the current scope
+            scope = &scopeList.back();
+            scope->nestedIn->nestedList.push_back(scope);
+
+            tok = tok2;
+        }
+
         else
         {
             // check for end of space
@@ -679,6 +708,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         unknowns++;
                 }
             }
+            else if (scope->type == Scope::eUnion && scope->needInitialization == Scope::Unknown)
+                scope->needInitialization = Scope::True;
         }
 
         retry++;
@@ -1313,7 +1344,9 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
     else if (classDef->str() == "union")
     {
         type = Scope::eUnion;
-        className = classDef->next()->str();
+        // anonymous unions don't have a name
+        if (classDef->next()->str() != "{")
+            className = classDef->next()->str();
         access = Public;
     }
     else if (classDef->str() == "namespace")
