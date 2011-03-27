@@ -629,6 +629,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             // start token = inside the if-body
             const Token *tok1 = tok->next()->link()->tokAt(2);
 
+            // indentlevel inside the if-body is 1
+            unsigned int indentlevel = 1;
+
             if (Token::Match(tok, "if|while ( %var% )|&&"))
             {
                 // pointer might be null
@@ -639,13 +642,15 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 tok1 = tok1 ? tok1->next() : NULL;
                 if (!tok1)
                     continue;
+
+                // indentlevel at the base level is 0
+                indentlevel = 0;
             }
 
             // Name of the pointer
             const std::string &pointerName = vartok->str();
 
             // Count { and } for tok2
-            unsigned int indentlevel = 1;
             for (const Token *tok2 = tok1; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "{")
@@ -655,13 +660,6 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     if (indentlevel == 0)
                         break;
                     --indentlevel;
-                    if (null && indentlevel == 0)
-                    {
-                        // skip all "else" blocks because they are not executed in this execution path
-                        while (Token::simpleMatch(tok2, "} else {"))
-                            tok2 = tok2->tokAt(2)->link();
-                        null = false;
-                    }
                 }
 
                 if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch"))

@@ -984,6 +984,23 @@ private:
 
         // #2582 - segmentation fault
         check("if()");
+
+        // #2674 - different functions
+        check("class Fred {\n"
+              "public:\n"
+              "    Wilma *wilma;\n"
+              "    void a();\n"
+              "    void b();\n"
+              "};\n"
+              "\n"
+              "void Fred::a() {\n"
+              "    if ( wilma ) { }\n"
+              "}\n"
+              "\n"
+              "void Fred::b() {\n"
+              "    wilma->Reload();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
