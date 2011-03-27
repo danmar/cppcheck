@@ -176,7 +176,8 @@ private:
         TEST_CASE(constoperator3);
         TEST_CASE(constoperator4);
         TEST_CASE(constincdec);     // increment/decrement => non-const
-        TEST_CASE(constassign);
+        TEST_CASE(constassign1);
+        TEST_CASE(constassign2);
         TEST_CASE(constincdecarray);     // increment/decrement array element => non-const
         TEST_CASE(constassignarray);
         TEST_CASE(constReturnReference);
@@ -5403,7 +5404,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
     }
 
-    void constassign()
+    void constassign1()
     {
         checkConst("class Fred {\n"
                    "    int a;\n"
@@ -5464,6 +5465,98 @@ private:
                    "    void nextA() { return a/=-2; }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+    }
+
+    void constassign2()
+    {
+        checkConst("class Fred {\n"
+                   "    struct A { int a; } s;\n"
+                   "    void nextA() { return s.a=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    struct A { int a; } s;\n"
+                   "    void nextA() { return s.a-=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    struct A { int a; } s;\n"
+                   "    void nextA() { return s.a+=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    struct A { int a; } s;\n"
+                   "    void nextA() { return s.a*=-1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A { int a; } s;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return s.a=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("struct A { int a; } s;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return s.a-=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("struct A { int a; } s;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return s.a+=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("struct A { int a; } s;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return s.a*=-1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("struct A { int a; } s;\n"
+                   "class Fred {\n"
+                   "    void nextA() { return s.a/=-2; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+
+        checkConst("struct A { int a; };\n"
+                   "class Fred {\n"
+                   "    A s;\n"
+                   "    void nextA() { return s.a=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A { int a; };\n"
+                   "class Fred {\n"
+                   "    A s;\n"
+                   "    void nextA() { return s.a-=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A { int a; };\n"
+                   "class Fred {\n"
+                   "    A s;\n"
+                   "    void nextA() { return s.a+=1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A { int a; };\n"
+                   "class Fred {\n"
+                   "    A s;\n"
+                   "    void nextA() { return s.a*=-1; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A { int a; };\n"
+                   "class Fred {\n"
+                   "    A s;\n"
+                   "    void nextA() { return s.a/=-2; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement array element => not const

@@ -1357,25 +1357,34 @@ void CheckClass::checkConst()
 
 bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
 {
-    const Token *tok1 = tok;
+    bool again = false;
 
-    while (tok->previous() && !Token::Match(tok->previous(), "}|{|;(||public:|protected:|private:|return|:|?"))
+    // try to find the member variable
+    do
     {
-        if (Token::simpleMatch(tok->previous(),  "* this"))
+        again = false;
+
+        if (tok->str() == "this")
+        {
             return true;
-
-        tok = tok->previous();
+        }
+        else if (Token::Match(tok->tokAt(-2), "%var% . %var%"))
+        {
+            tok = tok->tokAt(-2);
+            again = true;
+        }
+        else if (Token::Match(tok->tokAt(-2), "] . %var%"))
+        {
+            tok = tok->tokAt(-2)->link()->previous();
+            again = true;
+        }
+        else if (tok->str() == "]")
+        {
+            tok = tok->link()->previous();
+            again = true;
+        }
     }
-
-    if (tok->str() == "this")
-        return true;
-
-    if (Token::Match(tok, "( * %var% ) [") || (Token::Match(tok, "( * %var% ) <<") && tok1->next()->str() == "<<"))
-        tok = tok->tokAt(2);
-
-    // ignore class namespace
-    if (tok->str() == scope->className && tok->next()->str() == "::")
-        tok = tok->tokAt(2);
+    while (again);
 
     std::list<Variable>::const_iterator var;
     for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
@@ -1492,32 +1501,12 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
                  (tok1->str().find("=") == 1 &&
                   tok1->str().find_first_of("<!>") == std::string::npos))
         {
-            if (tok1->previous()->varId() == 0 && !scope->derivedFrom.empty())
+            if (tok1->next()->str() == "this")
             {
                 isconst = false;
                 break;
             }
             else if (isMemberVar(scope, tok1->previous()))
-            {
-                isconst = false;
-                break;
-            }
-            else if (tok1->previous()->str() == "]")
-            {
-                if (isMemberVar(scope, tok1->previous()->link()->previous()))
-                {
-                    isconst = false;
-                    break;
-                }
-            }
-            else if (tok1->next()->str() == "this")
-            {
-                isconst = false;
-                break;
-            }
-
-            // FIXME: I assume that a member union/struct variable is assigned.
-            else if (Token::Match(tok1->tokAt(-2), ". %var%"))
             {
                 isconst = false;
                 break;
