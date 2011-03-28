@@ -35,6 +35,7 @@ private:
 
     void simplify_path()
     {
+        // Path::simplifyPath()
         ASSERT_EQUALS("index.h", Path::simplifyPath("index.h"));
         ASSERT_EQUALS("/index.h", Path::simplifyPath("/index.h"));
         ASSERT_EQUALS("/path/", Path::simplifyPath("/path/"));
@@ -49,6 +50,16 @@ private:
         ASSERT_EQUALS("a/..", Path::simplifyPath("a/.."));
         ASSERT_EQUALS("../../src/test.cpp", Path::simplifyPath("../../src/test.cpp"));
         ASSERT_EQUALS("../../../src/test.cpp", Path::simplifyPath("../../../src/test.cpp"));
+
+        // Path::removeQuotationMarks()
+        ASSERT_EQUALS("index.cpp", Path::removeQuotationMarks("index.cpp"));
+        ASSERT_EQUALS("index.cpp", Path::removeQuotationMarks("\"index.cpp"));
+        ASSERT_EQUALS("index.cpp", Path::removeQuotationMarks("index.cpp\""));
+        ASSERT_EQUALS("index.cpp", Path::removeQuotationMarks("\"index.cpp\""));
+        ASSERT_EQUALS("path to/index.cpp", Path::removeQuotationMarks("\"path to\"/index.cpp"));
+        ASSERT_EQUALS("path to/index.cpp", Path::removeQuotationMarks("\"path to/index.cpp\""));
+        ASSERT_EQUALS("the/path to/index.cpp", Path::removeQuotationMarks("the/\"path to\"/index.cpp"));
+        ASSERT_EQUALS("the/path to/index.cpp", Path::removeQuotationMarks("\"the/path to/index.cpp\""));
     }
 };
 

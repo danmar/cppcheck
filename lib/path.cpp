@@ -114,3 +114,19 @@ bool Path::sameFileName(const std::string &fname1, const std::string &fname2)
     return bool(_stricmp(fname1.c_str(), fname2.c_str()) == 0);
 #endif
 }
+
+std::string Path::removeQuotationMarks(const std::string &path)
+{
+    size_t pos = path.length() - 1;
+    std::string editPath(path);
+    while (pos != std::string::npos)
+    {
+        pos = editPath.rfind('\"', pos);
+        if (pos != std::string::npos)
+        {
+            editPath.erase(pos, 1);
+            --pos;
+        }
+    }
+    return editPath;
+}
