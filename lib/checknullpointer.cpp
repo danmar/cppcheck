@@ -460,8 +460,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             else if (tok2->str() == "do")
                 break;
 
-            // return at base level => stop checking
-            else if (indentlevel2 == 0 && tok2->str() == "return")
+            // return/break at base level => stop checking
+            else if (indentlevel2 == 0 && (tok2->str() == "return" || tok2->str() == "break"))
                 break;
 
             // Function call: If the pointer is not a local variable it

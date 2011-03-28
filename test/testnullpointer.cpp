@@ -360,6 +360,19 @@ private:
               "    if (abc) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 4\n",errout.str());
+
+        // #2691 - switch/break
+        check("void f(ABC *abc) {\n"
+              "    switch ( x ) {\n"
+              "        case 14:\n"
+              "            sprintf(buf, \"%d\", abc->a);\n"
+              "            break;\n"
+              "        case 15:\n"
+              "            if ( abc ) {}\n"
+              "            break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing a pointer and then checking if it is null
