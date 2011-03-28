@@ -80,6 +80,17 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
 
+        // #2681
+        check("void foo(const Token *tok)\n"
+              "{\n"
+              "    while (tok && tok->str() == \"=\")\n"
+              "        tok = tok->tokAt(-2);\n"
+              "\n"
+              "    if (tok->str() != \";\")\n"
+              "        ;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", "", errout.str());
+
         check("void foo()\n"
               "{\n"
               "    for (const Token *tok = tokens; tok; tok = tok->next())\n"
