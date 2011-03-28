@@ -621,6 +621,8 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             if (varid == 0)
                 continue;
 
+            const unsigned int linenr = vartok->linenr();
+
             // Check if variable is a pointer. TODO: Use isPointer?
             if (pointerVariables.find(varid) == pointerVariables.end())
                 continue;
@@ -675,7 +677,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch"))
                 {
                     if (Token::Match(tok2, "return * %varid%", varid))
-                        nullPointerError(tok2, tok->strAt(3));
+                        nullPointerError(tok2, tok->strAt(3), linenr);
                     break;
                 }
 
@@ -705,7 +707,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                         ;
 
                     else if (CheckNullPointer::isPointerDeRef(tok2, unknown))
-                        nullPointerError(tok2, pointerName);
+                        nullPointerError(tok2, pointerName, linenr);
 
                     else
                         break;
