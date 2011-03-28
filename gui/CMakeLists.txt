@@ -117,7 +117,7 @@ if(WIN32)
 
    if(NOT CYGWIN)
       # Windows needs additional shlwapi library.
-      set(CHECK_LIBS ${CHECK_LIBS} shlwapi htmlhelp)
+      set(CHECK_LIBS ${CHECK_LIBS} shlwapi)
    endif()
 endif()
 
