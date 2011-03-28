@@ -207,6 +207,10 @@ void CheckNullPointer::nullPointerAfterLoop()
         if (varid == 0)
             continue;
 
+        // Is variable a pointer?
+        if (!isPointer(varid))
+            continue;
+
         // Get variable name for the loop variable
         const std::string varname(tok->strAt(2));
 
@@ -229,9 +233,7 @@ void CheckNullPointer::nullPointerAfterLoop()
                 // Is the loop variable dereferenced?
                 if (CheckNullPointer::isPointerDeRef(tok2, unknown))
                 {
-                    // Is loop variable a pointer?
-                    if (isPointer(varid))
-                        nullPointerError(tok2, varname);
+                    nullPointerError(tok2, varname, tok->linenr());
                 }
                 break;
             }

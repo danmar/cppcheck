@@ -78,7 +78,7 @@ private:
               "    while (tok);\n"
               "    tok = tok->next();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: tok\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
 
         check("void foo()\n"
               "{\n"
