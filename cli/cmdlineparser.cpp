@@ -344,6 +344,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 path = 2 + argv[i];
             }
             path = Path::fromNativeSeparators(path);
+            path = Path::removeQuotationMarks(path);
 
             // If path doesn't end with / or \, add it
             if (path[path.length()-1] != '/')
@@ -385,6 +386,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             if (!path.empty())
             {
                 path = Path::fromNativeSeparators(path);
+                path = Path::removeQuotationMarks(path);
 
                 // If not "known" filename extension then assume it is path
                 if (!FileLister::acceptFile(path))
@@ -585,7 +587,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         else
-            _pathnames.push_back(Path::fromNativeSeparators(argv[i]));
+        {
+            std::string path = Path::fromNativeSeparators(argv[i]);
+            path = Path::removeQuotationMarks(path);
+            _pathnames.push_back(path);
+        }
     }
 
     if (_settings->isEnabled("unusedFunctions") && _settings->_jobs > 1)
