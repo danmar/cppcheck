@@ -192,7 +192,7 @@ private:
                "* common mistakes when using string::c_str()";
     }
 
-    bool isStlContainer(const Token *tok);
+    bool isStlContainer(unsigned int varid);
 };
 /// @}
 //---------------------------------------------------------------------------

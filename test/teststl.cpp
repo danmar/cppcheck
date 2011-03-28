@@ -90,6 +90,7 @@ private:
         TEST_CASE(if_str_find);
 
         TEST_CASE(size1);
+        TEST_CASE(size2);
 
         // Redundant conditions..
         // if (ints.find(123) != ints.end()) ints.remove(123);
@@ -1160,6 +1161,22 @@ private:
               "        haystack.remove(needle);"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant checking of STL container element.\n", errout.str());
+    }
+
+    void size2()
+    {
+        check("struct Fred {\n"
+              "    std::list<int> x;\n"
+              "};\n"
+              "struct Wilma {\n"
+              "    Fred f;\n"
+              "    void foo();\n"
+              "};\n"
+              "void Wilma::foo()\n"
+              "{\n"
+              "    if (f.x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
     }
 
     void redundantCondition2()
