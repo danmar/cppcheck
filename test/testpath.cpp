@@ -37,10 +37,10 @@ private:
     {
         // Path::simplifyPath()
         ASSERT_EQUALS("index.h", Path::simplifyPath("index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath("./index.h"));
         ASSERT_EQUALS("/index.h", Path::simplifyPath("/index.h"));
         ASSERT_EQUALS("/path/", Path::simplifyPath("/path/"));
         ASSERT_EQUALS("/", Path::simplifyPath("/"));
-        ASSERT_EQUALS("./index.h", Path::simplifyPath("./index.h"));
         ASSERT_EQUALS("../index.h", Path::simplifyPath("../index.h"));
         ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../index.h"));
         ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../other/../index.h"));

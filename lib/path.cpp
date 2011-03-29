@@ -47,6 +47,13 @@ std::string Path::fromNativeSeparators(const std::string &path)
 
 std::string Path::simplifyPath(const char *originalPath)
 {
+    // Skip ./ at the beginning
+    if (strlen(originalPath) > 2 && originalPath[0] == '.' &&
+        originalPath[1] == '/')
+    {
+        originalPath += 2;
+    }
+
     std::string subPath = "";
     std::vector<std::string> pathParts;
     for (; *originalPath; ++originalPath)
