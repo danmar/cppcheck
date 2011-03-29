@@ -9578,7 +9578,7 @@ void Tokenizer::simplifyOperatorName()
                     par = par->next();
                     done = false;
                 }
-                if (Token::Match(par, "[<>+-*&/=.!]") || Token::Match(par, "==|!=|<=|>="))
+                if (Token::Match(par, "[<>+-*&/=.!]") || Token::Match(par, "==|!=|<=|>=|>>|<<"))
                 {
                     op += par->str();
                     par = par->next();

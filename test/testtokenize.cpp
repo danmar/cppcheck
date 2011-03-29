@@ -323,6 +323,7 @@ private:
         TEST_CASE(simplifyOperatorName2);
         TEST_CASE(simplifyOperatorName3);
         TEST_CASE(simplifyOperatorName4);
+        TEST_CASE(simplifyOperatorName5);
 
         // Some simple cleanups of unhandled macros in the global scope
         TEST_CASE(removeMacrosInGlobalScope);
@@ -5615,6 +5616,17 @@ private:
         const char code[] = "void operator==() { }";
         const char result[] = "void operator== ( ) { }";
         ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
+    }
+
+    void simplifyOperatorName5()
+    {
+        const char code1[] = "std::istream & operator >> (std::istream & s, Fred &f);";
+        const char result1[] = "std :: istream & operator>> ( std :: istream & s , Fred & f ) ;";
+        ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
+
+        const char code2[] = "std::ostream & operator << (std::ostream & s, const Fred &f);";
+        const char result2[] = "std :: ostream & operator<< ( std :: ostream & s , const Fred & f ) ;";
+        ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
     }
 
     void removeMacrosInGlobalScope()
