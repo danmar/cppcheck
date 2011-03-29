@@ -444,8 +444,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
                 --indentlevel2;
             }
 
-            // label. goto destination..
-            else if (tok2->isName() && Token::simpleMatch(tok2->next(), ":"))
+            // label / ?:
+            else if (tok2->str() == ":")
                 break;
 
             // Reassignment of the struct

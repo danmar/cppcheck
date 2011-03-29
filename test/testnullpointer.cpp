@@ -493,6 +493,19 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int f(Item *item) {\n"
+              "    x = item ? ab(item->x) : 0;\n"
+              "    if (item) { }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(Item *item) {\n"
+              "    item->x = 0;\n"
+              "    a = b ? c : d;\n"
+              "    if (item) { }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
         check("BOOL GotoFlyAnchor()\n"  // #2243
               "{\n"
               "    const SwFrm* pFrm = GetCurrFrm();\n"
