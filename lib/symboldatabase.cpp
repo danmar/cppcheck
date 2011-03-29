@@ -110,8 +110,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             tok = tok->tokAt(3);
         }
 
-        // anonymous union
-        else if (Token::Match(tok, "union {") &&
+        // anonymous struct and union
+        else if (Token::Match(tok, "struct|union {") &&
                  Token::Match(tok->next()->link(), "} %var% ;"))
         {
             scopeList.push_back(Scope(this, tok, scope));
@@ -1338,7 +1338,9 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
     else if (classDef->str() == "struct")
     {
         type = Scope::eStruct;
-        className = classDef->next()->str();
+        // anonymous structs don't have a name
+        if (classDef->next()->str() != "{")
+            className = classDef->next()->str();
         access = Public;
     }
     else if (classDef->str() == "union")
