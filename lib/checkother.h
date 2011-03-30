@@ -313,7 +313,7 @@ public:
                "* assignment of a variable to itself\n"
                "* mutual exclusion over || always evaluating to true\n"
                "* exception caught by value instead of by reference\n"
-               "* Clarify calculation with parantheses\n"
+               "* Clarify calculation with parentheses\n"
                "* using increment on boolean\n"
                "* comparison of a boolean with a non-zero integer\n"
                "* suspicious condition (assignment+comparison)"

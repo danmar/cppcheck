@@ -118,7 +118,7 @@ void CheckOther::clarifyCalculationError(const Token *tok)
                 Severity::style,
                 "clarifyCalculation",
                 "Please clarify precedence: 'a*b?..'\n"
-                "Found a suspicious multiplication of condition. Please use parantheses to clarify the code. "
+                "Found a suspicious multiplication of condition. Please use parentheses to clarify the code. "
                 "The code 'a*b?1:2' should be written as either '(a*b)?1:2' or 'a*(b?1:2)'.");
 }
 
@@ -156,7 +156,7 @@ void CheckOther::clarifyConditionError(const Token *tok)
     reportError(tok,
                 Severity::style,
                 "clarifyCondition",
-                "Suspicious condition (assignment+comparison), it can be clarified with parantheses");
+                "Suspicious condition (assignment+comparison), it can be clarified with parentheses");
 }
 
 

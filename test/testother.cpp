@@ -2294,7 +2294,7 @@ private:
         check("void f() {\n"
               "    if (x = b() < 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment+comparison), it can be clarified with parantheses\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment+comparison), it can be clarified with parentheses\n", errout.str());
     }
 
     void incorrectStringCompare()
