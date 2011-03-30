@@ -2063,9 +2063,6 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
-    // remove some unhandled macros in global scope
-    removeMacrosInGlobalScope();
-
     // specify array size..
     arraySize();
 
@@ -2315,6 +2312,9 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // Remove __declspec()
     simplifyDeclspec();
+
+    // remove some unhandled macros in global scope
+    removeMacrosInGlobalScope();
 
     // remove calling conventions __cdecl, __stdcall..
     simplifyCallingConvention();
