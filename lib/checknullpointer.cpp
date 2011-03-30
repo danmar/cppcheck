@@ -256,7 +256,7 @@ void CheckNullPointer::nullPointerLinkedList()
             continue;
 
         // is there any dereferencing occurring in the for statement
-        // parlevel2 counts the parantheses when using tok2.
+        // parlevel2 counts the parentheses when using tok2.
         unsigned int parlevel2 = 1;
         for (const Token *tok2 = tok1->tokAt(2); tok2; tok2 = tok2->next())
         {
@@ -594,7 +594,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
             // If the if-body ends with a unknown macro then bailout
             {
-                // goto the end paranthesis
+                // goto the end parenthesis
                 const Token *endpar = tok->next()->link();
                 const Token *endbody = Token::simpleMatch(endpar, ") {") ? endpar->next()->link() : 0;
                 if (endbody &&

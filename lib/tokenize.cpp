@@ -2425,7 +2425,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyVariableMultipleAssign();
 
     // Remove redundant parentheses
-    simplifyRedundantParanthesis();
+    simplifyRedundantParenthesis();
 
     // Handle templates..
     simplifyTemplates();
@@ -3020,7 +3020,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         std::string s1(name + " < ");
         for (const Token *tok3 = tok2->tokAt(2); tok3 && tok3->str() != ">"; tok3 = tok3->next())
         {
-            // #2648 - unhandled paranthesis => bail out
+            // #2648 - unhandled parenthesis => bail out
             if (tok3->str() == "(")
             {
                 s.clear();
@@ -3705,7 +3705,7 @@ void Tokenizer::setVarId()
                         --indentlevel;
                     }
 
-                    // skip parantheses..
+                    // skip parentheses..
                     else if (tok2->str() == "(")
                         tok2 = tok2->link();
 
@@ -4462,7 +4462,7 @@ bool Tokenizer::simplifyTokenList()
     elseif();
     simplifyErrNoInWhile();
     simplifyIfAssign();
-    simplifyRedundantParanthesis();
+    simplifyRedundantParenthesis();
     simplifyIfNot();
     simplifyIfNotNull();
     simplifyIfSameInnerCondition();
@@ -4492,7 +4492,7 @@ bool Tokenizer::simplifyTokenList()
         modified |= simplifyFunctionReturn();
         modified |= simplifyKnownVariables();
         modified |= removeReduntantConditions();
-        modified |= simplifyRedundantParanthesis();
+        modified |= simplifyRedundantParenthesis();
         modified |= simplifyQuestionMark();
         modified |= simplifyCalculations();
     }
@@ -7093,7 +7093,7 @@ void Tokenizer::elseif()
 }
 
 
-bool Tokenizer::simplifyRedundantParanthesis()
+bool Tokenizer::simplifyRedundantParenthesis()
 {
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -9378,7 +9378,7 @@ void Tokenizer::simplifyBuiltinExpect()
     {
         if (Token::simpleMatch(tok->next(), "__builtin_expect ("))
         {
-            // Count parantheses for tok2
+            // Count parentheses for tok2
             unsigned int parlevel = 0;
             for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
             {

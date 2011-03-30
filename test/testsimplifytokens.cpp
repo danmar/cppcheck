@@ -50,8 +50,8 @@ private:
         TEST_CASE(combine_strings);
         TEST_CASE(double_plus);
         TEST_CASE(redundant_plus);
-        TEST_CASE(parantheses1);
-        TEST_CASE(paranthesesVar);      // Remove redundant parentheses around variable .. "( %var% )"
+        TEST_CASE(parentheses1);
+        TEST_CASE(parenthesesVar);      // Remove redundant parentheses around variable .. "( %var% )"
         TEST_CASE(declareVar);
 
         TEST_CASE(declareArray);
@@ -642,13 +642,13 @@ private:
     }
 
 
-    void parantheses1()
+    void parentheses1()
     {
         ASSERT_EQUALS("<= 110 ;", tok("<= (10+100);"));
         ASSERT_EQUALS("while ( x ( ) == -1 ) { }", tok("while((x()) == -1){ }"));
     }
 
-    void paranthesesVar()
+    void parenthesesVar()
     {
         // remove parentheses..
         ASSERT_EQUALS("= p ;", tok("= (p);"));

@@ -156,7 +156,7 @@ protected:
      * @param str Code processed by read().
      * @return code with reduced parentheses
      */
-    static std::string removeParantheses(const std::string &str);
+    static std::string removeParentheses(const std::string &str);
 
     /**
      * clean up #-preprocessor lines (only)

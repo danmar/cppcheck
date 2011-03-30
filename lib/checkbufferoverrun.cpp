@@ -1684,7 +1684,7 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigin
                 // and skip to next token.
                 parameters.push_back(0);
 
-                // count parantheses for tok3
+                // count parentheses for tok3
                 int ind = 0;
                 for (const Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())
                 {

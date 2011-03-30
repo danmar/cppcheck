@@ -209,17 +209,17 @@ private:
 
         TEST_CASE(simplify_function_parameters);
 
-        TEST_CASE(removeParantheses1);       // Ticket #61
-        TEST_CASE(removeParantheses2);
-        TEST_CASE(removeParantheses3);
-        TEST_CASE(removeParantheses4);       // Ticket #390
-        TEST_CASE(removeParantheses5);       // Ticket #392
-        TEST_CASE(removeParantheses6);
-        TEST_CASE(removeParantheses7);
-        TEST_CASE(removeParantheses8);       // Ticket #1865
-        TEST_CASE(removeParantheses9);       // Ticket #1962
-        TEST_CASE(removeParantheses10);      // Ticket #2320
-        TEST_CASE(removeParantheses11);      // Ticket #2505
+        TEST_CASE(removeParentheses1);       // Ticket #61
+        TEST_CASE(removeParentheses2);
+        TEST_CASE(removeParentheses3);
+        TEST_CASE(removeParentheses4);       // Ticket #390
+        TEST_CASE(removeParentheses5);       // Ticket #392
+        TEST_CASE(removeParentheses6);
+        TEST_CASE(removeParentheses7);
+        TEST_CASE(removeParentheses8);       // Ticket #1865
+        TEST_CASE(removeParentheses9);       // Ticket #1962
+        TEST_CASE(removeParentheses10);      // Ticket #2320
+        TEST_CASE(removeParentheses11);      // Ticket #2505
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -3678,7 +3678,7 @@ private:
 
 
     // Simplify "((..))" into "(..)"
-    void removeParantheses1()
+    void removeParentheses1()
     {
         const char code[] = "void foo()\n"
                             "{\n"
@@ -3702,7 +3702,7 @@ private:
         ASSERT_EQUALS(" void foo ( ) { free ( p ) ; }", ostr.str());
     }
 
-    void removeParantheses2()
+    void removeParentheses2()
     {
         const char code[] = "void foo()\n"
                             "{\n"
@@ -3727,7 +3727,7 @@ private:
         ASSERT_EQUALS(" void foo ( ) { if ( ! s ) { return ; } }", ostr.str());
     }
 
-    void removeParantheses3()
+    void removeParentheses3()
     {
         {
             const char code[] = "void foo()\n"
@@ -3800,7 +3800,7 @@ private:
     }
 
     // Simplify "( function (..))" into "function (..)"
-    void removeParantheses4()
+    void removeParentheses4()
     {
         const char code[] = "void foo()\n"
                             "{\n"
@@ -3824,7 +3824,7 @@ private:
         ASSERT_EQUALS(" void foo ( ) { free ( p ) ; }", ostr.str());
     }
 
-    void removeParantheses5()
+    void removeParentheses5()
     {
         // Simplify "( delete x )" into "delete x"
         {
@@ -3876,7 +3876,7 @@ private:
     }
 
     // "!(abc.a)" => "!abc.a"
-    void removeParantheses6()
+    void removeParentheses6()
     {
         const char code[] = "(!(abc.a))";
 
@@ -3897,7 +3897,7 @@ private:
         ASSERT_EQUALS(" ( ! abc . a )", ostr.str());
     }
 
-    void removeParantheses7()
+    void removeParentheses7()
     {
         const char code[] = ";char *p; (delete(p), (p)=0);";
 
@@ -3918,7 +3918,7 @@ private:
         ASSERT_EQUALS(" ; char * p ; delete p ; ( p ) = 0 ;", ostr.str());
     }
 
-    void removeParantheses8()
+    void removeParentheses8()
     {
         const char code[] = "struct foo {\n"
                             "    void operator delete(void *obj, size_t sz);\n"
@@ -3932,17 +3932,17 @@ private:
         ASSERT_EQUALS(expected, actual);
     }
 
-    void removeParantheses9()
+    void removeParentheses9()
     {
         ASSERT_EQUALS("void delete ( double num ) ;", tokenizeAndStringify("void delete(double num);", false));
     }
 
-    void removeParantheses10()
+    void removeParentheses10()
     {
         ASSERT_EQUALS("p = buf + 8 ;", tokenizeAndStringify("p = (buf + 8);", false));
     }
 
-    void removeParantheses11()
+    void removeParentheses11()
     {
         // #2502
         ASSERT_EQUALS("{ } x ( ) ;", tokenizeAndStringify("{}(x());", false));

@@ -185,8 +185,8 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
 
     // ------------------------------------------------------------------------------------------
     //
-    // Clean up preprocessor #if statements with Parantheses
-    result = removeParantheses(result);
+    // Clean up preprocessor #if statements with Parentheses
+    result = removeParentheses(result);
 
     // Remove '#if 0' blocks
     if (result.find("#if 0\n") != std::string::npos)
@@ -654,7 +654,7 @@ std::string Preprocessor::removeIf0(const std::string &code)
 }
 
 
-std::string Preprocessor::removeParantheses(const std::string &str)
+std::string Preprocessor::removeParentheses(const std::string &str)
 {
     if (str.find("\n#if") == std::string::npos && str.compare(0, 3, "#if") != 0)
         return str;
@@ -680,7 +680,7 @@ std::string Preprocessor::removeParantheses(const std::string &str)
             while ((pos = line.find(") ", pos)) != std::string::npos)
                 line.erase(pos + 1, 1);
 
-            // Remove inner paranthesis "((..))"..
+            // Remove inner parenthesis "((..))"..
             pos = 0;
             while ((pos = line.find("((", pos)) != std::string::npos)
             {

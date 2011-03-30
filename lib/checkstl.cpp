@@ -500,7 +500,7 @@ void CheckStl::pushback()
             if (pointerId == 0 || containerId == 0)
                 continue;
 
-            // Count { , } and parantheses for tok2
+            // Count { , } and parentheses for tok2
             int indent = 0;
             bool invalidPointer = false;
             for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next())
@@ -566,7 +566,7 @@ void CheckStl::pushback()
         // the variable id for the vector
         unsigned int vectorid = 0;
 
-        // count { , } and parantheses for tok2
+        // count { , } and parentheses for tok2
         int indent = 0;
 
         std::string invalidIterator;
