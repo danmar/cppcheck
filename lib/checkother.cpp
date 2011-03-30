@@ -2767,7 +2767,11 @@ void CheckOther::checkIncompleteStatement()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "(")
+        {
             tok = tok->link();
+            if (Token::simpleMatch(tok, ") {") && Token::simpleMatch(tok->next()->link(), "} ;"))
+                tok = tok->next()->link();
+        }
 
         else if (Token::simpleMatch(tok, "= {"))
             tok = tok->next()->link();
