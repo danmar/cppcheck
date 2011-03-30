@@ -1229,7 +1229,7 @@ unsigned int Function::initializedArgCount() const
 void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
 {
     // check for non-empty argument list "( ... )"
-    if (arg->link() != arg->next())
+    if (arg->link() != arg->next() && !Token::simpleMatch(arg, "( void )"))
     {
         unsigned int count = 0;
         const Token *startTok;
@@ -1246,7 +1246,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             isConstVar = bool(tok->str() == "const");
             isArrayVar = false;
 
-            while (tok->str() != "," && tok->str() != ")")
+            while (tok->str() != "," && tok->str() != ")" && tok->str() != "=")
             {
                 if (tok->varId() != 0)
                 {
@@ -1271,6 +1271,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
                         symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
                     }
+                    else
+                        endTok = startTok;
                 }
                 else
                     endTok = tok->previous();
@@ -1287,6 +1289,13 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             bool isClassVar = startTok == endTok && !startTok->isStandardType();
 
             argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, functionScope, isArrayVar));
+
+            // skip default values
+            if (tok->str() == "=")
+            {
+                while (tok->str() != "," && tok->str() != ")")
+                    tok = tok->next();
+            }
 
             if (tok->str() == ")")
                 break;
