@@ -651,7 +651,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     if (func->type == Function::eConstructor)
                     {
                         // check for no arguments: func ( )
-                        if (func->argDef->next() == func->argDef->link())
+                        if (func->argCount() == 0)
                         {
                             hasDefaultConstructor = true;
                             break;
@@ -1195,14 +1195,12 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
 unsigned int Function::initializedArgCount() const
 {
     unsigned int count = 0;
+    std::list<Variable>::const_iterator var;
 
-    if (argDef->link() != argDef->next())
+    for (var = argumentList.begin(); var != argumentList.end(); ++var)
     {
-        for (const Token *tok = argDef->next(); tok && tok->next() && tok->next() != argDef->link(); tok = tok->next())
-        {
-            if (tok->str() == "=")
-                count++;
-        }
+        if (var->hasDefault())
+            ++count;
     }
 
     return count;
@@ -1219,6 +1217,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         const Token *nameTok;
         bool isConstVar;
         bool isArrayVar;
+        bool hasDefault;
         const Token *tok = arg->next();
         for (;;)
         {
@@ -1227,6 +1226,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             nameTok = NULL;
             isConstVar = bool(tok->str() == "const");
             isArrayVar = false;
+            hasDefault = false;
 
             while (tok->str() != "," && tok->str() != ")" && tok->str() != "=")
             {
@@ -1270,14 +1270,16 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             bool isClassVar = startTok == endTok && !startTok->isStandardType();
 
-            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, functionScope, isArrayVar));
-
             // skip default values
             if (tok->str() == "=")
             {
+                hasDefault = true;
+
                 while (tok->str() != "," && tok->str() != ")")
                     tok = tok->next();
             }
+
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, functionScope, isArrayVar, hasDefault));
 
             if (tok->str() == ")")
                 break;
@@ -1365,8 +1367,7 @@ Scope::hasDefaultConstructor() const
 
         for (func = functionList.begin(); func != functionList.end(); ++func)
         {
-            if (func->type == Function::eConstructor &&
-                func->argDef->link() == func->argDef->next())
+            if (func->type == Function::eConstructor && func->argCount() == 0)
                 return true;
         }
     }

@@ -46,11 +46,12 @@ class Variable
     /** @brief flags mask used to access specific bit. */
     enum
     {
-        fIsMutable = (1 << 0), /** @brief mutable variable */
-        fIsStatic  = (1 << 1), /** @brief static variable */
-        fIsConst   = (1 << 2), /** @brief const variable */
-        fIsClass   = (1 << 3), /** @brief user defined type */
-        fIsArray   = (1 << 4)  /** @brief array variable */
+        fIsMutable  = (1 << 0), /** @brief mutable variable */
+        fIsStatic   = (1 << 1), /** @brief static variable */
+        fIsConst    = (1 << 2), /** @brief const variable */
+        fIsClass    = (1 << 3), /** @brief user defined type */
+        fIsArray    = (1 << 4), /** @brief array variable */
+        fHasDefault = (1 << 5)  /** @brief function argument with default value */
     };
 
     /**
@@ -77,7 +78,7 @@ public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
              std::size_t index_, AccessControl access_, bool mutable_,
              bool static_, bool const_, bool class_, const Scope *type_,
-             const Scope *scope_, bool array_)
+             const Scope *scope_, bool array_, bool default_)
         : _name(name_),
           _start(start_),
           _end(end_),
@@ -92,6 +93,7 @@ public:
         setFlag(fIsConst, const_);
         setFlag(fIsClass, class_);
         setFlag(fIsArray, array_);
+        setFlag(fHasDefault, default_);
     }
 
     /**
@@ -264,6 +266,15 @@ public:
     bool isArray() const
     {
         return getFlag(fIsArray);
+    }
+
+    /**
+     * Does variable have a default value.
+     * @return true if has a default falue, false if not
+     */
+    bool hasDefault() const
+    {
+        return getFlag(fHasDefault);
     }
 
     /**
@@ -445,7 +456,7 @@ public:
     {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
                                    access_, mutable_, static_, const_, class_,
-                                   type_, scope_, array_));
+                                   type_, scope_, array_, false));
     }
 
     /** @brief initialize varlist */
