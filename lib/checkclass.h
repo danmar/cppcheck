@@ -165,8 +165,8 @@ private:
     void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last);
 
     // operatorEqToSelf helper functions
-    bool hasDeallocation(const Token *first, const Token *last);
-    bool hasAssignSelf(const Token *first, const Token *last, const Token *rhs);
+    bool hasDeallocation(const Function *func);
+    bool hasAssignSelf(const Function *func, const Token *rhs);
 
     // checkConst helper functions
     bool isMemberVar(const Scope *scope, const Token *tok);

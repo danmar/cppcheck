@@ -965,6 +965,9 @@ void CheckClass::operatorEqToSelf()
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
+        if (!scope->isClassOrStruct())
+            continue;
+
         std::list<Function>::const_iterator func;
 
         // skip classes with multiple inheritance
@@ -979,32 +982,13 @@ void CheckClass::operatorEqToSelf()
                 if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
                     func->tokenDef->strAt(-2) == scope->className)
                 {
-                    // check for proper function parameter signature
-                    if ((Token::Match(func->tokenDef->next(), "( const %var% & )") ||
-                         Token::Match(func->tokenDef->next(), "( const %var% & %var% )")) &&
-                        func->tokenDef->strAt(3) == scope->className)
+                    // find the parameter name
+                    const Token *rhs = func->argumentList.begin()->nameToken();
+
+                    if (!hasAssignSelf(&(*func), rhs))
                     {
-                        // find the parameter name
-                        const Token *rhs = func->token;
-                        while (rhs->str() != "&")
-                            rhs = rhs->next();
-                        rhs = rhs->next();
-
-                        // find the ')'
-                        const Token *tok = func->token->next()->link();
-                        const Token *tok1 = tok;
-
-                        if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
-                        {
-                            const Token *first = tok1->tokAt(1);
-                            const Token *last = first->link();
-
-                            if (!hasAssignSelf(first, last, rhs))
-                            {
-                                if (hasDeallocation(first, last))
-                                    operatorEqToSelfError(tok);
-                            }
-                        }
+                        if (hasDeallocation(&(*func)))
+                            operatorEqToSelfError(func->token);
                     }
                 }
             }
@@ -1012,7 +996,7 @@ void CheckClass::operatorEqToSelf()
     }
 }
 
-bool CheckClass::hasDeallocation(const Token *first, const Token *last)
+bool CheckClass::hasDeallocation(const Function *func)
 {
     // This function is called when no simple check was found for assignment
     // to self.  We are currently looking for a specific sequence of:
@@ -1021,7 +1005,8 @@ bool CheckClass::hasDeallocation(const Token *first, const Token *last)
     // Unfortunately, this is necessary to prevent false positives.
     // This check needs to do careful analysis someday to get this
     // correct with a high degree of certainty.
-    for (const Token *tok = first; tok && (tok != last); tok = tok->next())
+    const Token *last = func->start->link();
+    for (const Token *tok = func->start; tok && (tok != last); tok = tok->next())
     {
         // check for deallocating memory
         if (Token::Match(tok, "{|;|, free ( %var%"))
@@ -1086,9 +1071,10 @@ bool CheckClass::hasDeallocation(const Token *first, const Token *last)
     return false;
 }
 
-bool CheckClass::hasAssignSelf(const Token *first, const Token *last, const Token *rhs)
+bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
 {
-    for (const Token *tok = first; tok && tok != last; tok = tok->next())
+    const Token *last = func->start->link();
+    for (const Token *tok = func->start; tok && tok != last; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "if ("))
         {
