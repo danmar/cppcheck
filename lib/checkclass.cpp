@@ -810,22 +810,27 @@ void CheckClass::operatorEq()
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
+        if (!scope->isClassOrStruct())
+            continue;
+
         std::list<Function>::const_iterator func;
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
             if (func->type == Function::eOperatorEqual && func->access != Private)
             {
-                if (func->token->strAt(-1) == "void")
-                    operatorEqReturnError(func->token->tokAt(-1));
+                // use definition for check so we don't have to deal with qualification
+                if (!(Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
+                      func->tokenDef->strAt(-2) == scope->className))
+                    operatorEqReturnError(func->tokenDef->tokAt(-1), scope->className);
             }
         }
     }
 }
 
-void CheckClass::operatorEqReturnError(const Token *tok)
+void CheckClass::operatorEqReturnError(const Token *tok, const std::string &className)
 {
-    reportError(tok, Severity::style, "operatorEq", "'operator=' should return something");
+    reportError(tok, Severity::style, "operatorEq", "\'" + className + "::operator=' should return \'" + className + " &\'");
 }
 
 //---------------------------------------------------------------------------

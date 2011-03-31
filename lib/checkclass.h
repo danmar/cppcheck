@@ -119,7 +119,7 @@ private:
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
-    void operatorEqReturnError(const Token *tok);
+    void operatorEqReturnError(const Token *tok, const std::string &className);
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
     void thisSubtractionError(const Token *tok);
     void operatorEqRetRefThisError(const Token *tok);
@@ -135,7 +135,7 @@ private:
         c.operatorEqVarError(0, "classname", "");
         c.unusedPrivateFunctionError(0, "classname", "funcname");
         c.memsetError(0, "memfunc", "classname", "class");
-        c.operatorEqReturnError(0);
+        c.operatorEqReturnError(0, "class");
         //c.virtualDestructorError(0, "Base", "Derived");
         c.thisSubtractionError(0);
         c.operatorEqRetRefThisError(0);

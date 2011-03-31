@@ -99,6 +99,7 @@ private:
         TEST_CASE(noConstructor5);
 
         TEST_CASE(operatorEq1);
+        TEST_CASE(operatorEq2);
         TEST_CASE(operatorEqRetRefThis1);
         TEST_CASE(operatorEqRetRefThis2); // ticket #1323
         TEST_CASE(operatorEqRetRefThis3); // ticket #1405
@@ -236,7 +237,7 @@ private:
                        "    void goo() {}"
                        "    void operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return something\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
@@ -270,14 +271,45 @@ private:
                        "public:\n"
                        "    void operator=(const B&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return something\n"
-                      "[test.cpp:9]: (style) 'operator=' should return something\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n"
+                      "[test.cpp:9]: (style) 'B::operator=' should return 'B &'\n", errout.str());
 
         checkOpertorEq("struct A\n"
                        "{\n"
                        "    void operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return something\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+    }
+
+    void operatorEq2()
+    {
+        checkOpertorEq("class A\n"
+                       "{\n"
+                       "public:\n"
+                       "    void * operator=(const A&);\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+
+        checkOpertorEq("class A\n"
+                       "{\n"
+                       "public:\n"
+                       "    A * operator=(const A&);\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+
+        checkOpertorEq("class A\n"
+                       "{\n"
+                       "public:\n"
+                       "    const A & operator=(const A&);\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+
+        checkOpertorEq("class A\n"
+                       "{\n"
+                       "public:\n"
+                       "    B & operator=(const A&);\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
     }
 
     // Check that operator Equal returns reference to this
