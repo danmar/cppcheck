@@ -164,7 +164,7 @@ public:
 
             /**
              * @brief Returns true if the file name matches a previously added file or glob pattern.
-             * @param name File name to check
+             * @param file File name to check
              * @param line Line number
              * @return true if this filename/line matches
              */
@@ -172,7 +172,7 @@ public:
 
             /**
              * @brief Returns true if the file name matches a previously added file (only, not glob pattern).
-             * @param name File name to check
+             * @param file File name to check
              * @param line Line number
              * @return true if this filename/line matches
              */
@@ -191,7 +191,7 @@ public:
 
         /**
          * @brief Don't show the given error.
-         * @param str Description of error to suppress (in id:file:line format).
+         * @param line Description of error to suppress (in id:file:line format).
          * @return error message. empty upon success
          */
         std::string addSuppressionLine(const std::string &line);

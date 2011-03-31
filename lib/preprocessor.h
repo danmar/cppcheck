@@ -146,7 +146,7 @@ protected:
 
     /**
      * Cleanup 'if 0' from the code
-     * @param str Code processed by read().
+     * @param code Code processed by read().
      * @return code without 'if 0'
      */
     static std::string removeIf0(const std::string &code);
