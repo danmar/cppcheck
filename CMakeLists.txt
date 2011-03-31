@@ -16,6 +16,13 @@ PROJECT(CPPCHECK)
 
 set(CMAKE_MODULE_PATH "${CPPCHECK_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
+option(CPPCHECK_BUILD_USE_RULES "Would you like to use customised check rules?
+See also:
+http://sourceforge.net/projects/cppcheck/files/Articles/writing-rules-1.pdf/download
+(Software components which support the processing of Perl-compatible regular
+expressions will be required for the build system if this feature is enabled.)"
+       ON)
+
 # Building lib as static library is disabled due to bug
 # #1299 CMake: The CheckClass is not used
 # https://sourceforge.net/apps/trac/cppcheck/ticket/1299
