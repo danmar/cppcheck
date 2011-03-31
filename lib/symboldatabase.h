@@ -337,7 +337,10 @@ public:
     {
     }
 
-    unsigned int argCount() const;
+    unsigned int argCount() const
+    {
+        return argumentList.size();
+    }
     unsigned int initializedArgCount() const;
     void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
 

@@ -1192,24 +1192,6 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
 
 //---------------------------------------------------------------------------
 
-unsigned int Function::argCount() const
-{
-    unsigned int count = 0;
-
-    if (argDef->link() != argDef->next())
-    {
-        count++;
-
-        for (const Token *tok = argDef->next(); tok && tok->next() && tok->next() != argDef->link(); tok = tok->next())
-        {
-            if (tok->str() == ",")
-                count++;
-        }
-    }
-
-    return count;
-}
-
 unsigned int Function::initializedArgCount() const
 {
     unsigned int count = 0;
