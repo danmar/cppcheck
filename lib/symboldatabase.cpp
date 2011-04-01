@@ -139,9 +139,36 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             tok = tok2;
         }
 
+        // anonymous struct and union
+        else if (Token::Match(tok, "struct|union {") &&
+                 Token::simpleMatch(tok->next()->link(), "} ;"))
+        {
+            scopeList.push_back(Scope(this, tok, scope));
+
+            Scope *new_scope = &scopeList.back();
+
+            const Token *tok2 = tok->next();
+
+            new_scope->classStart = tok2;
+            new_scope->classEnd = tok2->link();
+
+            // make sure we have valid code
+            if (!new_scope->classEnd)
+            {
+                scopeList.pop_back();
+                break;
+            }
+
+            // make the new scope the current scope
+            scope = &scopeList.back();
+            scope->nestedIn->nestedList.push_back(scope);
+
+            tok = tok2;
+        }
+
         else
         {
-            // check for end of space
+            // check for end of scope
             if (tok == scope->classEnd)
             {
                 scope = scope->nestedIn;
@@ -925,7 +952,7 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
         bool match = false;
         if (scope1->className == tok1->str() && (scope1->type != Scope::eFunction))
         {
-            // do the spaces match (same space) or do their names match (multiple namespaces)
+            // do the scopes match (same scope) or do their names match (multiple namespaces)
             if ((*scope == scope1->nestedIn) || (*scope && scope1 &&
                                                  (*scope)->className == scope1->nestedIn->className &&
                                                  !(*scope)->className.empty() &&
@@ -1331,7 +1358,7 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
     else if (classDef->str() == "struct")
     {
         type = Scope::eStruct;
-        // unnamed structs don't have a name
+        // anonymous and unnamed structs don't have a name
         if (classDef->next()->str() != "{")
             className = classDef->next()->str();
         access = Public;
@@ -1339,7 +1366,7 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
     else if (classDef->str() == "union")
     {
         type = Scope::eUnion;
-        // unnamed unions don't have a name
+        // anonymous and unnamed unions don't have a name
         if (classDef->next()->str() != "{")
             className = classDef->next()->str();
         access = Public;
@@ -1400,6 +1427,7 @@ void Scope::getVariableList()
 {
     AccessControl varaccess = defaultAccess();
     const Token *start;
+    int level = 1;
 
     if (classStart)
         start = classStart->next();
@@ -1408,9 +1436,13 @@ void Scope::getVariableList()
 
     for (const Token *tok = start; tok; tok = tok->next())
     {
-        // end of space?
+        // end of scope?
         if (tok->str() == "}")
-            break;
+        {
+            level--;
+            if (level == 0)
+                break;
+        }
 
         // syntax error?
         else if (tok->next() == NULL)
@@ -1444,6 +1476,12 @@ void Scope::getVariableList()
         else if (Token::Match(tok, "struct|union {") && Token::Match(tok->next()->link(), "} %var% ;|["))
         {
             tok = tok->next()->link()->next()->next();
+            continue;
+        }
+        else if (Token::Match(tok, "struct|union {") && Token::Match(tok->next()->link(), "} ;"))
+        {
+            level++;
+            tok = tok->next();
             continue;
         }
 
