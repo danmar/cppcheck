@@ -44,7 +44,7 @@ kate -l(line) (file)</string>
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Application's name:</string>
+          <string>&amp;Application's name:</string>
          </property>
          <property name="buddy">
           <cstring>mName</cstring>
@@ -54,7 +54,7 @@ kate -l(line) (file)</string>
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Executable:</string>
+          <string>&amp;Executable:</string>
          </property>
          <property name="buddy">
           <cstring>mPath</cstring>
@@ -64,7 +64,7 @@ kate -l(line) (file)</string>
        <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Parameters:</string>
+          <string>&amp;Parameters:</string>
          </property>
          <property name="buddy">
           <cstring>mParameters</cstring>
@@ -128,8 +128,8 @@ kate -l(line) (file)</string>
   <tabstop>mName</tabstop>
   <tabstop>mPath</tabstop>
   <tabstop>mParameters</tabstop>
-  <tabstop>mButtons</tabstop>
   <tabstop>mButtonBrowse</tabstop>
+  <tabstop>mButtons</tabstop>
  </tabstops>
  <resources/>
  <connections>
