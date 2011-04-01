@@ -198,11 +198,12 @@ void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
 
 void SettingsDialog::AddApplication()
 {
-    ApplicationDialog dialog("", "", tr("Add a new application"), this);
+    ApplicationDialog dialog("", "", "", tr("Add a new application"), this);
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        mTempApplications->AddApplication(dialog.GetName(), dialog.GetPath());
+        mTempApplications->AddApplication(dialog.GetName(), dialog.GetPath(),
+                                          dialog.GetParams());
         mUI.mListWidget->addItem(dialog.GetName());
     }
 }
@@ -236,11 +237,14 @@ void SettingsDialog::EditApplication()
 
         ApplicationDialog dialog(mTempApplications->GetApplicationName(row),
                                  mTempApplications->GetApplicationPath(row),
+                                 mTempApplications->GetApplicationParameters(row),
                                  tr("Modify an application"), this);
 
         if (dialog.exec() == QDialog::Accepted)
         {
-            mTempApplications->SetApplication(row, dialog.GetName(), dialog.GetPath());
+            mTempApplications->SetApplication(row, dialog.GetName(),
+                                              dialog.GetPath(),
+                                              dialog.GetParams());
             item->setText(dialog.GetName());
         }
     }

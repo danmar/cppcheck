@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>569</width>
-    <height>300</height>
+    <height>303</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,10 +54,20 @@ kate -l(line) (file)</string>
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Command to execute:</string>
+          <string>Executable:</string>
          </property>
          <property name="buddy">
           <cstring>mPath</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Parameters:</string>
+         </property>
+         <property name="buddy">
+          <cstring>mParameters</cstring>
          </property>
         </widget>
        </item>
@@ -70,6 +80,9 @@ kate -l(line) (file)</string>
        </item>
        <item>
         <widget class="QLineEdit" name="mPath"/>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="mParameters"/>
        </item>
       </layout>
      </item>
@@ -114,8 +127,9 @@ kate -l(line) (file)</string>
  <tabstops>
   <tabstop>mName</tabstop>
   <tabstop>mPath</tabstop>
-  <tabstop>mButtonBrowse</tabstop>
+  <tabstop>mParameters</tabstop>
   <tabstop>mButtons</tabstop>
+  <tabstop>mButtonBrowse</tabstop>
  </tabstops>
  <resources/>
  <connections>

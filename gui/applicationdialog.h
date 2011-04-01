@@ -44,11 +44,13 @@ public:
     *
     * @param name Default name for the application to start
     * @param path Path for the application
+    * @param params Params for the application
     * @param title Title for the dialog
     * @param parent Parent widget
     */
     ApplicationDialog(const QString &name,
                       const QString &path,
+                      const QString &params,
                       const QString &title,
                       QWidget *parent = 0);
     virtual ~ApplicationDialog();
@@ -64,10 +66,18 @@ public:
 
     /**
     * @brief Get modified path
-    * This also contains all parameters user wants to specify.
+    * This contains the full path to the application executable.
     * @return Modified path
     */
     QString GetPath();
+
+    /**
+    * @brief Get modified parameters
+    * This contains the parameters given to the application.
+    * @return Modified path
+    */
+    QString GetParams();
+
 protected slots:
     void Ok();
 

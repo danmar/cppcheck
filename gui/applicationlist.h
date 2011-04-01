@@ -62,10 +62,16 @@ public:
         QString Name;
 
         /**
-        * @brief Application's path and commandline arguments
+        * @brief Application's path
         *
         */
         QString Path;
+
+        /**
+        * @brief Application's parameters
+        *
+        */
+        QString Parameters;
     } ApplicationType;
 
     ApplicationList(QObject *parent = 0);
@@ -75,8 +81,11 @@ public:
     * @brief Load all applications
     *
     * @param programSettings QSettings to load application list from
+    * @return true if loading succeeded, false if there is problem with
+    *  application list. Most probably because of older version settings need
+    *  to be upgraded.
     */
-    void LoadSettings(QSettings *programSettings);
+    bool LoadSettings(QSettings *programSettings);
 
     /**
     * @brief Save all applications
@@ -107,6 +116,14 @@ public:
     QString GetApplicationPath(const int index) const;
 
     /**
+    * @brief Get Application's parameters
+    *
+    * @param index of the application whose parameters to get
+    * @return Application's parameters
+    */
+    QString GetApplicationParameters(const int index) const;
+
+    /**
     * @brief Return the default application.
     * @return Index of the default application.
     */
@@ -121,17 +138,20 @@ public:
     * @param index Index of the application to modify
     * @param name New name for the application
     * @param path New path for the application
+    * @param parameters New parameters for the application
     */
     void SetApplication(const int index, const QString &name,
-                        const QString &path);
+                        const QString &path, const QString &parameters);
 
     /**
     * @brief Add a new application
     *
     * @param name Name of the application
     * @param path Path to the application
+    * @param parameters Parameters for the application
     */
-    void AddApplication(const QString &name, const QString &path);
+    void AddApplication(const QString &name, const QString &path,
+                        const QString &parameters);
 
     /**
     * @brief Remove an application from the list

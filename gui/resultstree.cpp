@@ -659,7 +659,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
 
         QVariantMap data = target->data().toMap();
 
-        QString program = mApplications->GetApplicationPath(application);
+        QString params = mApplications->GetApplicationParameters(application);
 
         //Replace (file) with filename
         QString file = data["file"].toString();
@@ -697,19 +697,21 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
             file.append("\"");
         }
 
-        program.replace("(file)", file, Qt::CaseInsensitive);
+        params.replace("(file)", file, Qt::CaseInsensitive);
 
         QVariant line = data["line"];
-        program.replace("(line)", QString("%1").arg(line.toInt()), Qt::CaseInsensitive);
+        params.replace("(line)", QString("%1").arg(line.toInt()), Qt::CaseInsensitive);
 
-        program.replace("(message)", data["message"].toString(), Qt::CaseInsensitive);
-        program.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
+        params.replace("(message)", data["message"].toString(), Qt::CaseInsensitive);
+        params.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
 
-        bool success = QProcess::startDetached(program);
+        const QString program = mApplications->GetApplicationPath(application);
+        const QString cmdLine = QString("%1 %2").arg(program).arg(params);
+
+        bool success = QProcess::startDetached(cmdLine);
         if (!success)
         {
-            QString app = mApplications->GetApplicationName(application);
-            QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(app);
+            QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(program);
 
             QMessageBox msgbox(this);
             msgbox.setWindowTitle("Cppcheck");

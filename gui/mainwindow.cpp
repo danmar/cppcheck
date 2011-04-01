@@ -153,9 +153,24 @@ void MainWindow::LoadSettings()
     mUI.mToolBarMain->setVisible(mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool());
     mUI.mToolBarView->setVisible(mSettings->value(SETTINGS_TOOLBARS_VIEW_SHOW, true).toBool());
 
-    mApplications->LoadSettings(mSettings);
-
     SetLanguage(mSettings->value(SETTINGS_LANGUAGE, mTranslation->SuggestLanguage()).toString());
+
+    bool succeeded = mApplications->LoadSettings(mSettings);
+    if (!succeeded)
+    {
+        QString msg = tr("There was a problem with loading the editor application settings.\n\n"
+                         "This is probably because the settings were changed between the Cppcheck versions. "
+                         "Please check (and fix) the editor application settings, otherwise the editor "
+                         "program might not start correctly.");
+        QMessageBox msgBox(QMessageBox::Warning,
+                           tr("Cppcheck"),
+                           msg,
+                           QMessageBox::Ok,
+                           this);
+        msgBox.exec();
+
+    }
+
 }
 
 void MainWindow::SaveSettings()

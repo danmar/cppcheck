@@ -27,6 +27,7 @@
 
 ApplicationDialog::ApplicationDialog(const QString &name,
                                      const QString &path,
+                                     const QString &params,
                                      const QString &title,
                                      QWidget *parent) :
     QDialog(parent)
@@ -38,6 +39,7 @@ ApplicationDialog::ApplicationDialog(const QString &name,
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
     mUI.mPath->setText(path);
     mUI.mName->setText(name);
+    mUI.mParameters->setText(params);
     setWindowTitle(title);
 }
 
@@ -88,13 +90,19 @@ QString ApplicationDialog::GetPath()
     return mUI.mPath->text();
 }
 
+QString ApplicationDialog::GetParams()
+{
+    return mUI.mParameters->text();
+}
+
 void ApplicationDialog::Ok()
 {
-    if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty())
+    if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty() ||
+        mUI.mParameters->text().isEmpty())
     {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
-                        tr("You must specify a name and a path for the application!"),
+                        tr("You must specify a name, a path and parameters for the application!"),
                         QMessageBox::Ok,
                         this);
 
