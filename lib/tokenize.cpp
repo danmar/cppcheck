@@ -7377,14 +7377,13 @@ bool Tokenizer::simplifyCalculations()
 
         else if (tok->next() && tok->next()->isNumber())
         {
-
             // (1-2)
             while (Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% [],);=<>+-*/|&^]") ||
                    Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/|&^]") ||
                    Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% <<|>>") ||
                    Token::Match(tok, "<< %num% [+-*/] %num% <<") ||
                    Token::Match(tok, "[(,[] %num% [|&^] %num% [];,);]") ||
-                   Token::Match(tok, "(|==|!=|<=|>=|<|>|+ %num% [+-*/] %num% ==|!=|<=|>=|<|>|)"))
+                   Token::Match(tok, "(|==|!=|<=|>=|<|>|+|-|* %num% [+-*/] %num% ==|!=|<=|>=|<|>|)"))
             {
                 tok = tok->next();
 
@@ -7415,8 +7414,14 @@ bool Tokenizer::simplifyCalculations()
                     }
                 }
 
+                // Division where result is a whole number
+                if (Token::Match(tok->previous(), "* %num% /") &&
+                    tok->str() == MathLib::multiply(tok->strAt(2), MathLib::divide(tok->str(), tok->strAt(2))))
+                {
+                }
+
                 // + and - are calculated after * and /
-                if (Token::Match(tok->next(), "[+-/]"))
+                else if (Token::Match(tok->next(), "[+-/]"))
                 {
                     if (tok->previous()->str() == "*")
                         continue;
