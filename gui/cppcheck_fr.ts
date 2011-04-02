@@ -37,31 +37,6 @@ General Public License version 3</translation>
         <translation>Ajouter une application</translation>
     </message>
     <message>
-        <source>Here you can add applications that can open error files.
-Specify a name for the application and the application to execute.
-
-The following texts are replaced with appropriate values when application is executed:
-(file) - Filename containing the error
-(line) - Line number containing the error
-(message) - Error message
-(severity) - Error severity
-
-Example opening a file with Kate and make Kate scroll to the correct line:
-kate -l(line) (file)</source>
-        <translation type="unfinished">Ici vous pouvez ajouter des applications pour ouvir les rapports d&apos;erreur
-Spécifiez le nom de l&apos;application et l&apos;application à exécuter.
-
-Les textes suivants sont remplacés avec les valeurs appropriées lorsque l&apos;application est lancée :
-(file) - Nom du fichier contenant l&apos;erreur
-(line) - Numéro de ligne où est l&apos;erreur
-(message) - Message d&apos;erreur
-(severity) - Séverité de l&apos;erreur
-
-
-Example : ouvrir un fichier avec kate et position l&apos;affichage sur la bonne ligne:
-kate -l(ligne) (fichier)</translation>
-    </message>
-    <message>
         <source>Browse</source>
         <translation>Parcourir</translation>
     </message>
@@ -78,15 +53,33 @@ kate -l(ligne) (fichier)</translation>
         <translation></translation>
     </message>
     <message>
-        <source>You must specify a name and a path for the application!</source>
-        <translation>Vous devez spécifier un nom et un chemin d&apos;accès pour l&apos;application !</translation>
-    </message>
-    <message>
-        <source>Application&apos;s name:</source>
+        <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
+
+The following texts in parameters are replaced with appropriate values when application is executed:
+(file) - Filename containing the error
+(line) - Line number containing the error
+(message) - Error message
+(severity) - Error severity
+
+Example opening a file with Kate and make Kate scroll to the correct line:
+executable: kate
+parameters: -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Command to execute:</source>
+        <source>&amp;Application&apos;s name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Executable:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Parameters:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must specify a name, a path and parameters for the application!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -103,37 +96,6 @@ kate -l(ligne) (fichier)</translation>
     <message>
         <source>Could not read the file: %1</source>
         <translation type="unfinished">Ne peut pas lire le fichier : %1</translation>
-    </message>
-</context>
-<context>
-    <name>HelpWindow</name>
-    <message>
-        <source>Cppcheck Help</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Go back</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Back</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Go forward</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Forward</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Home</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -334,18 +296,6 @@ kate -l(ligne) (fichier)</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Failed to change the language:
-
-%1
-
-</source>
-        <translation type="obsolete">Erreur lors du chargement de la langue :
-
-%1
-
-</translation>
-    </message>
-    <message>
         <source>English</source>
         <translation type="unfinished">Anglais</translation>
     </message>
@@ -528,18 +478,6 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cppcheck Help</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to load help file (not found)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to load help file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -571,6 +509,12 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     </message>
     <message>
         <source>French</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There was a problem with loading the editor application settings.
+
+This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -657,10 +601,6 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 </context>
 <context>
     <name>QObject</name>
-    <message>
-        <source>Incorrect language specified!</source>
-        <translation type="obsolete">Langue incorrecte !</translation>
-    </message>
     <message>
         <source>Language file %1 not found!</source>
         <translation type="unfinished">Fichier de langue %1 non trouvé !</translation>
@@ -837,22 +777,6 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     <message>
         <source>Applications</source>
         <translation type="unfinished">Applications</translation>
-    </message>
-    <message>
-        <source>Add application</source>
-        <translation type="obsolete">Ajouter une application</translation>
-    </message>
-    <message>
-        <source>Delete application</source>
-        <translation type="obsolete">Supprimer l&apos;application</translation>
-    </message>
-    <message>
-        <source>Modify application</source>
-        <translation type="obsolete">Modifier l&apos;application</translation>
-    </message>
-    <message>
-        <source>Set as default application</source>
-        <translation type="obsolete">Définir comme application par défaut</translation>
     </message>
     <message>
         <source>Reports</source>
