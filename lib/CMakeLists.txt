@@ -4,6 +4,11 @@
 # - tests
 # - Qt GUI
 
+if(PCRE_FOUND)
+   add_definitions(-DHAVE_RULES)
+   include_directories("${PCRE_INCLUDE_DIR}")
+endif()
+
 set(CPPCHECK_LIB_DIR "")
 include("library_sources.cmake")
 
@@ -12,3 +17,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 add_library(checklib STATIC ${CPPCHECK_LIB_SOURCES})
+
+if(PCRE_FOUND)
+   target_link_libraries(checklib ${PCRE_LIBRARIES})
+endif()

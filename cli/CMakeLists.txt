@@ -1,5 +1,11 @@
 # Minimal CMake build file to build cppcheck command line executable
 
+if(PCRE_FOUND)
+   add_definitions(-DHAVE_RULES)
+   include_directories("${PCRE_INCLUDE_DIR}")
+   set(CHECK_LIBS ${PCRE_LIBRARIES})
+endif()
+
 set(TINYXML_INCLUDE_DIR "${CPPCHECK_SOURCE_DIR}/externals/tinyxml/")
 
 SET(CHECKCLI_SRCS
