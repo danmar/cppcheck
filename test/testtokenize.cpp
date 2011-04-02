@@ -1498,7 +1498,7 @@ private:
                 "{"
                 " int i ;"
                 " for ( i = 0 ; i < 10 ; ++ i ) {"
-                " if ( * str == 0 ) { goto label ; }"
+                " if ( ! * str ) { goto label ; }"
                 " }"
                 " return ;"
                 " label : ;"

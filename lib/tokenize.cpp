@@ -2399,6 +2399,10 @@ bool Tokenizer::tokenize(std::istream &code,
     // Use "<" comparison instead of ">"
     simplifyComparisonOrder();
 
+    // Simplify '(p == 0)' to '(!p)'
+    simplifyIfNot();
+    simplifyIfNotNull();
+
     /**
      * @todo simplify "for"
      * - move out start-statement "for (a;b;c);" => "{ a; for(;b;c); }"
@@ -6163,16 +6167,18 @@ void Tokenizer::simplifyIfNot()
 
         else if (tok->link() && Token::Match(tok, ") == 0|false"))
         {
-            Token::eraseTokens(tok, tok->tokAt(3));
-            if (Token::Match(tok->link()->previous(), "%var%"))
+            // if( foo(x) == 0 )
+            if (Token::Match(tok->link()->tokAt(-2), "( %var%"))
             {
-                // if( foo(x) == 0 )
+                Token::eraseTokens(tok, tok->tokAt(3));
                 tok->link()->previous()->insertToken(tok->link()->previous()->str().c_str());
                 tok->link()->previous()->previous()->str("!");
             }
-            else
+
+            // if( (x) == 0 )
+            else if (Token::simpleMatch(tok->link()->previous(), "("))
             {
-                // if( (x) == 0 )
+                Token::eraseTokens(tok, tok->tokAt(3));
                 tok->link()->insertToken("(");
                 tok->link()->str("!");
                 Token *temp = tok->link();
