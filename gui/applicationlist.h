@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include <QSettings>
+#include "application.h"
 
 /// @addtogroup GUI
 /// @{
@@ -48,31 +49,6 @@ class ApplicationList : public QObject
 {
     Q_OBJECT
 public:
-
-    /**
-    * @brief Struct containing information of the application
-    *
-    */
-    typedef struct
-    {
-        /**
-        * @brief Application's name
-        *
-        */
-        QString Name;
-
-        /**
-        * @brief Application's path
-        *
-        */
-        QString Path;
-
-        /**
-        * @brief Application's parameters
-        *
-        */
-        QString Parameters;
-    } ApplicationType;
 
     ApplicationList(QObject *parent = 0);
     virtual ~ApplicationList();
@@ -193,7 +169,7 @@ private:
     * @brief List of applications
     *
     */
-    QList<ApplicationType> mApplications;
+    QList<Application> mApplications;
 
     /**
     * @brief Index of the default application.

@@ -76,7 +76,8 @@ HEADERS += mainwindow.h \
            logview.h \
            filelist.h \
            statsdialog.h \
-           checkstatistics.h
+           checkstatistics.h \
+           application.h
 
 SOURCES += main.cpp \
            mainwindow.cpp\

@@ -175,11 +175,11 @@ void ApplicationList::AddApplication(const QString &name,
         return;
     }
 
-    ApplicationType type;
-    type.Name = name;
-    type.Path = path;
-    type.Parameters = parameters;
-    mApplications << type;
+    Application app;
+    app.Name = name;
+    app.Path = path;
+    app.Parameters = parameters;
+    mApplications << app;
 }
 
 void ApplicationList::RemoveApplication(const int index)
