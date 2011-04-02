@@ -65,16 +65,6 @@ void ApplicationDialog::Browse()
     if (!selectedFile.isEmpty())
     {
         QString path(QDir::toNativeSeparators(selectedFile));
-
-        // In Windows we must surround paths including spaces with quotation marks.
-#ifdef Q_WS_WIN
-        if (path.indexOf(" ") > -1)
-        {
-            path.insert(0, "\"");
-            path.append("\"");
-        }
-#endif // Q_WS_WIN
-
         mUI.mPath->setText(path);
     }
 }

@@ -705,7 +705,20 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         params.replace("(message)", data["message"].toString(), Qt::CaseInsensitive);
         params.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
 
-        const QString program = mApplications->GetApplicationPath(application);
+        QString program = mApplications->GetApplicationPath(application);
+
+        // In Windows we must surround paths including spaces with quotation marks.
+#ifdef Q_WS_WIN
+        if (program.indexOf(" ") > -1)
+        {
+            if (!program.startsWith('"') && !program.endsWith('"'))
+            {
+                program.insert(0, "\"");
+                program.append("\"");
+            }
+        }
+#endif // Q_WS_WIN
+
         const QString cmdLine = QString("%1 %2").arg(program).arg(params);
 
         bool success = QProcess::startDetached(cmdLine);
