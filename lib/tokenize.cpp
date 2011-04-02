@@ -7383,7 +7383,8 @@ bool Tokenizer::simplifyCalculations()
                    Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/|&^]") ||
                    Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% <<|>>") ||
                    Token::Match(tok, "<< %num% [+-*/] %num% <<") ||
-                   Token::Match(tok, "[(,[] %num% [|&^] %num% [];,);]"))
+                   Token::Match(tok, "[(,[] %num% [|&^] %num% [];,);]") ||
+                   Token::Match(tok, "(|==|!=|<=|>=|<|>|+ %num% [+-*/] %num% ==|!=|<=|>=|<|>|)"))
             {
                 tok = tok->next();
 
