@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>569</width>
-    <height>303</height>
+    <height>328</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,20 +20,23 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Here you can add applications that can open error files.
-Specify a name for the application and the application to execute.
+      <string>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
 
-The following texts are replaced with appropriate values when application is executed:
+The following texts in parameters are replaced with appropriate values when application is executed:
 (file) - Filename containing the error
 (line) - Line number containing the error
 (message) - Error message
 (severity) - Error severity
 
 Example opening a file with Kate and make Kate scroll to the correct line:
-kate -l(line) (file)</string>
+executable: kate
+parameters: -l(line) (file)</string>
      </property>
      <property name="textFormat">
       <enum>Qt::AutoText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
