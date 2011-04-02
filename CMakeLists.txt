@@ -18,8 +18,8 @@ set(CMAKE_MODULE_PATH "${CPPCHECK_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH
 find_package(PCRE)
 
 if(NOT PCRE_FOUND)
-   message("User-defined rules are disabled since required PCRE libraries were not found.
-If you want to enable the rules, then configure the PCRE paths for CMake.")
+   message("User-defined rules are disabled since PCRE libraries were not found.
+The PCRE paths can be configured by 'cmake-gui'.")
 endif()
 
 # Building lib as static library is disabled due to bug
