@@ -23,12 +23,11 @@
 #include <QDebug>
 #include <QMessageBox>
 #include "applicationdialog.h"
+#include "application.h"
 
 
-ApplicationDialog::ApplicationDialog(const QString &name,
-                                     const QString &path,
-                                     const QString &params,
-                                     const QString &title,
+ApplicationDialog::ApplicationDialog(const QString &title,
+                                     const Application &app,
                                      QWidget *parent) :
     QDialog(parent)
 {
@@ -37,9 +36,9 @@ ApplicationDialog::ApplicationDialog(const QString &name,
     connect(mUI.mButtonBrowse, SIGNAL(clicked()), this, SLOT(Browse()));
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
-    mUI.mPath->setText(path);
-    mUI.mName->setText(name);
-    mUI.mParameters->setText(params);
+    mUI.mPath->setText(app.getPath());
+    mUI.mName->setText(app.getPath());
+    mUI.mParameters->setText(app.getParameters());
     setWindowTitle(title);
 }
 
@@ -69,20 +68,13 @@ void ApplicationDialog::Browse()
     }
 }
 
-QString ApplicationDialog::GetName()
+Application ApplicationDialog::GetApplication() const
 {
-    return mUI.mName->text();
-}
-
-
-QString ApplicationDialog::GetPath()
-{
-    return mUI.mPath->text();
-}
-
-QString ApplicationDialog::GetParams()
-{
-    return mUI.mParameters->text();
+    Application app;
+    app.setName(mUI.mName->text());
+    app.setPath(mUI.mPath->text());
+    app.setParameters(mUI.mParameters->text());
+    return app;
 }
 
 void ApplicationDialog::Ok()
