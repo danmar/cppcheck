@@ -2274,12 +2274,12 @@ private:
         check("int f(char c) {\n"
               "    return 10 * (c == 0) ? 1 : 2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious calculation, 'a*b?c:d' can be clarified as either '(a*b)?c:d' or 'a*(b?c:d)'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for * and ?\n", errout.str());
 
         check("void f(char c) {\n"
               "    printf(\"%i\", 10 * (c == 0) ? 1 : 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious calculation, 'a*b?c:d' can be clarified as either '(a*b)?c:d' or 'a*(b?c:d)'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for * and ?\n", errout.str());
 
         // Ticket #2585 - segmentation fault for invalid code
         check("abcdef?" "?<"
@@ -2290,7 +2290,7 @@ private:
         check("void f(char c) {\n"
               "    printf(\"%i\", 1 + 1 ? 1 : 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious calculation, 'a+b?c:d' can be clarified as either '(a+b)?c:d' or 'a+(b?c:d)'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for + and ?\n", errout.str());
     }
 
     // clarify conditions with = and comparison

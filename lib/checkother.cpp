@@ -127,7 +127,7 @@ void CheckOther::clarifyCalculationError(const Token *tok, char op)
     reportError(tok,
                 Severity::style,
                 "clarifyCalculation",
-                "Suspicious calculation, " + calc + " can be clarified as either " + s1 + " or " + s2 + "\n" +
+                std::string("Clarify calculation precedence for ") + op + " and ?\n" +
                 "Suspicious calculation. Please use parentheses to clarify the code. "
                 "The code " + calc + " should be written as either " + s1 + " or " + s2 + ".");
 }
