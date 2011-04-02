@@ -97,7 +97,7 @@ public:
 
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
-    void clarifyCalculationError(const Token *tok);
+    void clarifyCalculationError(const Token *tok, char op);
 
     /** @brief Suspicious condition (assignment+comparison) */
     void clarifyCondition();
@@ -269,7 +269,7 @@ public:
         c.unassignedVariableError(0, "varname");
         c.catchExceptionByValueError(0);
         c.memsetZeroBytesError(0, "varname");
-        c.clarifyCalculationError(0);
+        c.clarifyCalculationError(0, '+');
         c.clarifyConditionError(0);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
         c.incrementBooleanError(0);

@@ -85,11 +85,12 @@ void CheckOther::clarifyCalculation()
             else
                 continue;
 
-            // multiplication
-            if (cond && cond->str() == "*")
-                cond = cond->previous();
-            else
+            // calculation
+            if (!Token::Match(cond, "[+-*/]"))
                 continue;
+
+            const char op = cond->str()[0];
+            cond = cond->previous();
 
             // skip previous multiplications..
             while (cond && cond->strAt(-1) == "*" && (cond->isName() || cond->isNumber()))
@@ -101,25 +102,34 @@ void CheckOther::clarifyCalculation()
             // first multiplication operand
             if (cond->str() == ")")
             {
-                clarifyCalculationError(cond);
+                clarifyCalculationError(cond, op);
             }
             else if (cond->isName() || cond->isNumber())
             {
                 if (Token::Match(cond->previous(),"return|+|-|,|("))
-                    clarifyCalculationError(cond);
+                    clarifyCalculationError(cond, op);
             }
         }
     }
 }
 
-void CheckOther::clarifyCalculationError(const Token *tok)
+void CheckOther::clarifyCalculationError(const Token *tok, char op)
 {
+    // suspicious calculation
+    const std::string calc(std::string("'a") + op + "b?c:d'");
+
+    // recommended calculation #1
+    const std::string s1(std::string("'(a") + op + "b)?c:d'");
+
+    // recommended calculation #2
+    const std::string s2(std::string("'a") + op + "(b?c:d)'");
+
     reportError(tok,
                 Severity::style,
                 "clarifyCalculation",
-                "Please clarify precedence: 'a*b?..'\n"
-                "Found a suspicious multiplication of condition. Please use parentheses to clarify the code. "
-                "The code 'a*b?1:2' should be written as either '(a*b)?1:2' or 'a*(b?1:2)'.");
+                "Suspicious calculation, " + calc + " can be clarified as either " + s1 + " or " + s2 + "\n" +
+                "Suspicious calculation. Please use parentheses to clarify the code. "
+                "The code " + calc + " should be written as either " + s1 + " or " + s2 + ".");
 }
 
 
