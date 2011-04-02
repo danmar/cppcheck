@@ -15,6 +15,12 @@ cmake_minimum_required (VERSION 2.6)
 PROJECT(CPPCHECK)
 
 set(CMAKE_MODULE_PATH "${CPPCHECK_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
+find_package(PCRE)
+
+if(NOT PCRE_FOUND)
+   message("User-defined rules are disabled since required PCRE libraries were not found.
+If you want to enable the rules, then configure the PCRE paths for CMake.")
+endif()
 
 # Building lib as static library is disabled due to bug
 # #1299 CMake: The CheckClass is not used
