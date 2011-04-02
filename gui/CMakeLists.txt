@@ -20,6 +20,7 @@ include_directories("${CPPCHECK_SOURCE_DIR}/lib"
 # Header files - listed for mocking
 SET(CHECK_HEADERS
   aboutdialog.h
+  application.h
   applicationdialog.h
   applicationlist.h
   checkstatistics.h
@@ -51,6 +52,7 @@ SET(CHECK_HEADERS
 # Source files
 SET(CHECKGUI_SRCS
   aboutdialog.cpp
+  application.cpp
   applicationdialog.cpp
   applicationlist.cpp
   checkstatistics.cpp
