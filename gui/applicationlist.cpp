@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include "common.h"
 #include "applicationlist.h"
+#include "application.h"
 
 
 ApplicationList::ApplicationList(QObject *parent) :
@@ -63,14 +64,22 @@ bool ApplicationList::LoadSettings(QSettings *programSettings)
             // use as default for gnome environments
             if (QFileInfo("/usr/bin/gedit").isExecutable())
             {
-                AddApplication("gedit", "/usr/bin/gedit", "+(line) (file)");
+                Application app;
+                app.setName("gedit");
+                app.setPath("/usr/bin/gedit");
+                app.setParameters("+(line) (file)");
+                AddApplication(app);
                 defapp = 0;
                 break;
             }
             // use as default for kde environments
             if (QFileInfo("/usr/bin/kate").isExecutable())
             {
-                AddApplication("kate", "/usr/bin/kate", "-l(line) (file)");
+                Application app;
+                app.setName("kate");
+                app.setPath("/usr/bin/kate");
+                app.setParameters("-l(line) (file)");
+                AddApplication(app);
                 defapp = 0;
                 break;
             }
@@ -86,7 +95,10 @@ bool ApplicationList::LoadSettings(QSettings *programSettings)
     if (names.size() > 0 && (names.size() == paths.size()))
     {
         for (int i = 0; i < names.size(); i++)
-            AddApplication(names[i], paths[i], params[i]);
+        {
+            const Application app(names[i], paths[i], params[i]);
+            AddApplication(app);
+        }
 
         if (defapp == -1)
             mDefaultApplicationIndex = 0;
@@ -106,9 +118,10 @@ void ApplicationList::SaveSettings(QSettings *programSettings)
 
     for (int i = 0; i < GetApplicationCount(); i++)
     {
-        names << GetApplicationName(i);
-        paths << GetApplicationPath(i);
-        params << GetApplicationParameters(i);
+        Application app = GetApplication(i);
+        names << app.getName();
+        paths << app.getPath();
+        params << app.getParameters();
     }
 
     programSettings->setValue(SETTINGS_APPLICATION_NAMES, names);
@@ -123,58 +136,30 @@ int ApplicationList::GetApplicationCount() const
     return mApplications.size();
 }
 
-QString ApplicationList::GetApplicationName(const int index) const
+Application ApplicationList::GetApplication(const int index) const
 {
     if (index >= 0 && index < mApplications.size())
     {
-        return mApplications[index].getName();
+        return mApplications[index];
     }
 
-    return QString();
+    return Application(QString(), QString(), QString());
 }
 
-QString ApplicationList::GetApplicationPath(const int index) const
+void ApplicationList::SetApplication(int index, const Application &app)
 {
     if (index >= 0 && index < mApplications.size())
     {
-        return mApplications[index].getPath();
-    }
-
-    return QString();
-}
-
-QString ApplicationList::GetApplicationParameters(const int index) const
-{
-    if (index >= 0 && index < mApplications.size())
-    {
-        return mApplications[index].getParameters();
-    }
-
-    return QString();
-}
-
-void ApplicationList::SetApplication(const int index,
-                                     const QString &name,
-                                     const QString &path,
-                                     const QString &parameters)
-{
-    if (index >= 0 && index < mApplications.size())
-    {
-        Application app(name, path, parameters);
         mApplications.replace(index, app);
     }
 }
 
-void ApplicationList::AddApplication(const QString &name,
-                                     const QString &path,
-                                     const QString &parameters)
+void ApplicationList::AddApplication(const Application &app)
 {
-    if (name.isEmpty() || path.isEmpty())
+    if (app.getName().isEmpty() || app.getPath().isEmpty())
     {
         return;
     }
-
-    Application app(name, path, parameters);
     mApplications << app;
 }
 
@@ -201,8 +186,8 @@ void ApplicationList::Copy(const ApplicationList *list)
     Clear();
     for (int i = 0; i < list->GetApplicationCount(); i++)
     {
-        AddApplication(list->GetApplicationName(i), list->GetApplicationPath(i),
-                       list->GetApplicationParameters(i));
+        const Application app = list->GetApplication(i);
+        AddApplication(app);
     }
     mDefaultApplicationIndex = list->GetDefaultApplication();
 }
@@ -219,7 +204,11 @@ bool ApplicationList::FindDefaultWindowsEditor()
     const QString notepadppPath = appPath + "\\Notepad++\\notepad++.exe";
     if (QFileInfo(notepadppPath).isExecutable())
     {
-        AddApplication("Notepad++", "\"" + notepadppPath + "\"", "-n(line) (file)");
+        Application app;
+        app.setName("Notepad++");
+        app.setPath("\"" + notepadppPath + "\"");
+        app.setParameters("-n(line) (file)");
+        AddApplication(app);
         return true;
     }
 
@@ -227,7 +216,11 @@ bool ApplicationList::FindDefaultWindowsEditor()
     const QString notepadPath = windowsPath + "\\system32\\notepad.exe";
     if (QFileInfo(notepadPath).isExecutable())
     {
-        AddApplication("Notepad", notepadPath, "(file)");
+        Application app;
+        app.setName("Notepad");
+        app.setPath(notepadPath);
+        app.setParameters("(file)");
+        AddApplication(app);
         return true;
     }
     return false;

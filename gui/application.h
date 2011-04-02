@@ -24,10 +24,26 @@
 /**
 * @brief A class containing information of the application to execute.
 *
+* Each application has a name and a path. Name is displayed to the user
+* and has no other meaning. It isn't used to start the application.
+* Path contains the full path to the application containing the executable name.
+* Parameters contains the command line arguments for the executable.
+*
+* User can also specify certain predefined strings to parameters. These strings
+* will be replaced with appropriate values concerning the error. Strings are:
+* (file) - Filename containing the error
+* (line) - Line number containing the error
+* (message) - Error message
+* (severity) - Error severity
+*
+* Example opening a file with Kate and make Kate scroll to the correct line.
+* Executable: kate
+* Parameters: -l(line) (file)
 */
 class Application
 {
 public:
+    Application() { }
     Application(const QString &name, const QString &path, const QString &params);
 
     /**

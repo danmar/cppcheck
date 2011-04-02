@@ -202,8 +202,9 @@ void SettingsDialog::AddApplication()
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        mTempApplications->AddApplication(dialog.GetName(), dialog.GetPath(),
-                                          dialog.GetParams());
+        const Application app(dialog.GetName(), dialog.GetPath(),
+                              dialog.GetParams());
+        mTempApplications->AddApplication(app);
         mUI.mListWidget->addItem(dialog.GetName());
     }
 }
@@ -234,17 +235,17 @@ void SettingsDialog::EditApplication()
     foreach(item, selected)
     {
         int row = mUI.mListWidget->row(item);
-
-        ApplicationDialog dialog(mTempApplications->GetApplicationName(row),
-                                 mTempApplications->GetApplicationPath(row),
-                                 mTempApplications->GetApplicationParameters(row),
+        const Application app = mTempApplications->GetApplication(row);
+        ApplicationDialog dialog(app.getName(), app.getPath(),
+                                 app.getParameters(),
                                  tr("Modify an application"), this);
 
         if (dialog.exec() == QDialog::Accepted)
         {
-            mTempApplications->SetApplication(row, dialog.GetName(),
-                                              dialog.GetPath(),
-                                              dialog.GetParams());
+            const Application app2(dialog.GetName(),
+                                  dialog.GetPath(),
+                                  dialog.GetParams());
+            mTempApplications->SetApplication(row, app2);
             item->setText(dialog.GetName());
         }
     }
@@ -267,7 +268,8 @@ void SettingsDialog::PopulateApplicationList()
     const int defapp = mTempApplications->GetDefaultApplication();
     for (int i = 0; i < mTempApplications->GetApplicationCount(); i++)
     {
-        QString name = mTempApplications->GetApplicationName(i);
+        Application app = mTempApplications->GetApplication(i);
+        QString name = app.getName();
         if (i == defapp)
         {
             name += " ";

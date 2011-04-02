@@ -44,6 +44,7 @@
 #include "resultstree.h"
 #include "report.h"
 #include "xmlreport.h"
+#include "application.h"
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
@@ -560,7 +561,8 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             for (int i = 0; i < mApplications->GetApplicationCount(); i++)
             {
                 //Create an action for the application
-                QAction *start = new QAction(mApplications->GetApplicationName(i), &menu);
+                const Application app = mApplications->GetApplication(i);
+                QAction *start = new QAction(app.getName(), &menu);
                 if (multipleSelection)
                     start->setDisabled(true);
 
@@ -659,8 +661,6 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
 
         QVariantMap data = target->data().toMap();
 
-        QString params = mApplications->GetApplicationParameters(application);
-
         //Replace (file) with filename
         QString file = data["file"].toString();
 
@@ -697,6 +697,8 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
             file.append("\"");
         }
 
+        const Application app = mApplications->GetApplication(application);
+        QString params = app.getParameters();
         params.replace("(file)", file, Qt::CaseInsensitive);
 
         QVariant line = data["line"];
@@ -705,7 +707,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         params.replace("(message)", data["message"].toString(), Qt::CaseInsensitive);
         params.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
 
-        QString program = mApplications->GetApplicationPath(application);
+        QString program = app.getPath();
 
         // In Windows we must surround paths including spaces with quotation marks.
 #ifdef Q_WS_WIN
