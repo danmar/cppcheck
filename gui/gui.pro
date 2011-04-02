@@ -105,7 +105,8 @@ SOURCES += main.cpp \
            logview.cpp \
            filelist.cpp \
            statsdialog.cpp \
-           checkstatistics.cpp
+           checkstatistics.cpp \
+           application.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS

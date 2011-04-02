@@ -127,7 +127,7 @@ QString ApplicationList::GetApplicationName(const int index) const
 {
     if (index >= 0 && index < mApplications.size())
     {
-        return mApplications[index].Name;
+        return mApplications[index].getName();
     }
 
     return QString();
@@ -137,7 +137,7 @@ QString ApplicationList::GetApplicationPath(const int index) const
 {
     if (index >= 0 && index < mApplications.size())
     {
-        return mApplications[index].Path;
+        return mApplications[index].getPath();
     }
 
     return QString();
@@ -147,7 +147,7 @@ QString ApplicationList::GetApplicationParameters(const int index) const
 {
     if (index >= 0 && index < mApplications.size())
     {
-        return mApplications[index].Parameters;
+        return mApplications[index].getParameters();
     }
 
     return QString();
@@ -160,9 +160,8 @@ void ApplicationList::SetApplication(const int index,
 {
     if (index >= 0 && index < mApplications.size())
     {
-        mApplications[index].Name = name;
-        mApplications[index].Path = path;
-        mApplications[index].Parameters = parameters;
+        Application app(name, path, parameters);
+        mApplications.replace(index, app);
     }
 }
 
@@ -175,10 +174,7 @@ void ApplicationList::AddApplication(const QString &name,
         return;
     }
 
-    Application app;
-    app.Name = name;
-    app.Path = path;
-    app.Parameters = parameters;
+    Application app(name, path, parameters);
     mApplications << app;
 }
 
