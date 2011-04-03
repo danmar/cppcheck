@@ -86,10 +86,10 @@ void CheckOther::clarifyCalculation()
                 continue;
 
             // calculation
-            if (!Token::Match(cond, "[+-*/]"))
+            if (!Token::Match(cond, "[+-*/]") && !Token::Match(cond, "<<|>>"))
                 continue;
 
-            const char op = cond->str()[0];
+            const std::string &op = cond->str();
             cond = cond->previous();
 
             // skip previous multiplications..
@@ -106,28 +106,28 @@ void CheckOther::clarifyCalculation()
             }
             else if (cond->isName() || cond->isNumber())
             {
-                if (Token::Match(cond->previous(),"return|+|-|,|("))
+                if (Token::Match(cond->previous(),("return|+|-|,|(|"+op).c_str()))
                     clarifyCalculationError(cond, op);
             }
         }
     }
 }
 
-void CheckOther::clarifyCalculationError(const Token *tok, char op)
+void CheckOther::clarifyCalculationError(const Token *tok, const std::string &op)
 {
     // suspicious calculation
-    const std::string calc(std::string("'a") + op + "b?c:d'");
+    const std::string calc("'a" + op + "b?c:d'");
 
     // recommended calculation #1
-    const std::string s1(std::string("'(a") + op + "b)?c:d'");
+    const std::string s1("'(a" + op + "b)?c:d'");
 
     // recommended calculation #2
-    const std::string s2(std::string("'a") + op + "(b?c:d)'");
+    const std::string s2("'a" + op + "(b?c:d)'");
 
     reportError(tok,
                 Severity::style,
                 "clarifyCalculation",
-                std::string("Clarify calculation precedence for ") + op + " and ?\n" +
+                "Clarify calculation precedence for " + op + " and ?\n"
                 "Suspicious calculation. Please use parentheses to clarify the code. "
                 "The code " + calc + " should be written as either " + s1 + " or " + s2 + ".");
 }

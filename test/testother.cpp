@@ -2291,6 +2291,11 @@ private:
               "    printf(\"%i\", 1 + 1 ? 1 : 2);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for + and ?\n", errout.str());
+
+        check("void f() {\n"
+              "    std::cout << x << 1 ? 2 : 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for << and ?\n", errout.str());
     }
 
     // clarify conditions with = and comparison
