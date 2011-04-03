@@ -133,10 +133,10 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     unknown = false;
 
     // Dereferencing pointer..
-    if (Token::Match(tok->tokAt(-3), "!!sizeof [;{}=+-/(,] * %var%"))
+    if (Token::Match(tok->tokAt(-3), "!!sizeof [;{}=+-/(,] * %var%") && Token::Match(tok->tokAt(-3), "!!decltype [;{}=+-/(,] * %var%"))
         return true;
 
-    if (!Token::simpleMatch(tok->tokAt(-2), "& (") && tok->strAt(-1) != "&"  && tok->strAt(-1) != "&&" && Token::Match(tok->next(), ". %var%"))
+    if (!Token::simpleMatch(tok->tokAt(-2), "& (") && !Token::Match(tok->tokAt(-2), "sizeof|decltype (") && tok->strAt(-1) != "&"  && tok->strAt(-1) != "&&" && Token::Match(tok->next(), ". %var%"))
         return true;
 
     if (Token::Match(tok->previous(), "[;{}=+-/(,] %var% ["))
@@ -376,8 +376,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             tok1 = tok1->tokAt(3);
         }
 
-        // dereference in function call
-        else if (Token::Match(tok1->tokAt(-2), "%var% ( %var% . %var%") ||
+        // dereference in function call (but not sizeof|decltype)
+        else if ((Token::Match(tok1->tokAt(-2), "%var% ( %var% . %var%") && !Token::Match(tok1->tokAt(-2), "sizeof|decltype ( %var% . %var%")) ||
                  Token::Match(tok1->previous(), ", %var% . %var%"))
         {
             // Is the function return value taken by the pointer?

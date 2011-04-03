@@ -1047,6 +1047,45 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #2696 - false positives nr 1
+        check("void f()\n"
+              "{\n"
+              "   struct foo *pFoo = NULL;\n"
+              "   size_t len;\n"
+              "\n"
+              "   len = sizeof(*pFoo) - sizeof(pFoo->data);\n"
+              "\n"
+              "   if (pFoo)\n"
+              "      bar();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #2696 - false positives nr 2
+        check("void f()\n"
+              "{\n"
+              "   struct foo *pFoo = NULL;\n"
+              "   size_t len;\n"
+              "\n"
+              "   while (pFoo)\n"
+              "      pFoo = pFoo->next;\n"
+              "\n"
+              "   len = sizeof(pFoo->data);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #2696 - false positives nr 3
+        check("void f()\n"
+              "{\n"
+              "   struct foo *pFoo = NULL;\n"
+              "   size_t len;\n"
+              "\n"
+              "   while (pFoo)\n"
+              "      pFoo = pFoo->next;\n"
+              "\n"
+              "   len = decltype(*pFoo);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
