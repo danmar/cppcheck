@@ -607,10 +607,6 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             const Token *vartok = 0;
             if (Token::Match(tok, "if ( ! %var% )|&&"))
                 vartok = tok->tokAt(3);
-            else if (Token::Match(tok, "if ( NULL|0 == %var% )|&&"))
-                vartok = tok->tokAt(4);
-            else if (Token::Match(tok, "if ( %var% == NULL|0 )|&&"))
-                vartok = tok->tokAt(2);
             else if (Token::Match(tok, "if|while ( %var% )|&&"))
                 vartok = tok->tokAt(2);
             else
