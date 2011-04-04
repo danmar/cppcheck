@@ -678,13 +678,17 @@ void MainWindow::SetLanguage(const QString &code)
     QString error;
     if (!mTranslation->SetLanguage(code, error))
     {
-        QMessageBox msg(QMessageBox::Critical,
-                        tr("Cppcheck"),
-                        QString(tr("Failed to change the language:\n\n%1")).arg(error),
-                        QMessageBox::Ok,
-                        this);
-
-        msg.exec();
+        const QString msg(tr("Failed to change the user interface language:"
+                             "\n\n%1\n\n"
+                             "The user interface language has been reset to English. Open "
+                             "the Preferences-dialog to select any of the available "
+                             "languages.").arg(error));
+        QMessageBox msgBox(QMessageBox::Warning,
+                           tr("Cppcheck"),
+                           msg,
+                           QMessageBox::Ok,
+                           this);
+        msgBox.exec();
     }
     else
     {
