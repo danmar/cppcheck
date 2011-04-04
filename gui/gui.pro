@@ -6,7 +6,7 @@ DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
     ../lib
-LIBS+=-L../externals
+LIBS += -L../externals
 
 DESTDIR = .
 RCC_DIR = temp
@@ -23,15 +23,15 @@ win32 {
 }
 
 RESOURCES = gui.qrc
-FORMS = main.ui \
-    resultsview.ui \
-    application.ui \
-    settings.ui \
-    file.ui \
-    projectfile.ui \
-    about.ui \
-    logview.ui \
-    stats.ui
+FORMS = about.ui \
+        application.ui \
+        file.ui \
+        logview.ui \
+        main.ui \
+        projectfile.ui \
+        resultsview.ui \
+        settings.ui \
+        stats.ui
 
 TRANSLATIONS =  cppcheck_fi.ts \
                 cppcheck_fr.ts \
@@ -50,63 +50,63 @@ CONFIG += embed_manifest_exe
 BASEPATH = ../lib/
 include($$PWD/../lib/lib.pri)
 
-HEADERS += mainwindow.h \
-           checkthread.h \
-           resultsview.h \
-           resultstree.h \
-           settingsdialog.h \
-           threadresult.h \
-           threadhandler.h \
-           applicationlist.h \
+HEADERS += aboutdialog.h \
+           application.h \
            applicationdialog.h \
-           aboutdialog.h \
+           applicationlist.h \
+           checkstatistics.h \
+           checkthread.h \
            common.h \
+           csvreport.h \
            erroritem.h \
+           filelist.h \
            fileviewdialog.h \
+           logview.h \
+           mainwindow.h \
            project.h \
            projectfile.h \
            projectfiledialog.h \
            report.h \
+           resultstree.h \
+           resultsview.h \
+           settingsdialog.h \
+           statsdialog.h \
+           threadhandler.h \
+           threadresult.h \
+           translationhandler.h \
            txtreport.h \
            xmlreport.h \
            xmlreportv1.h \
-           xmlreportv2.h \
-           translationhandler.h \
-           csvreport.h \
-           logview.h \
-           filelist.h \
-           statsdialog.h \
-           checkstatistics.h \
-           application.h
+           xmlreportv2.h
 
-SOURCES += main.cpp \
-           mainwindow.cpp\
-           checkthread.cpp \
-           resultsview.cpp \
-           resultstree.cpp \
-           threadresult.cpp \
-           threadhandler.cpp \
-           settingsdialog.cpp \
-           applicationlist.cpp \
+SOURCES += aboutdialog.cpp \
+           application.cpp \
            applicationdialog.cpp \
-           aboutdialog.cpp \
+           applicationlist.cpp \
+           checkstatistics.cpp \
+           checkthread.cpp \
+           csvreport.cpp \
+           erroritem.cpp \
+           filelist.cpp \
            fileviewdialog.cpp \
+           logview.cpp \
+           main.cpp \
+           mainwindow.cpp\
            project.cpp \
            projectfile.cpp \
            projectfiledialog.cpp \
-           erroritem.cpp \
            report.cpp \
+           resultstree.cpp \
+           resultsview.cpp \
+           settingsdialog.cpp \
+           statsdialog.cpp \
+           threadhandler.cpp \
+           threadresult.cpp \
+           translationhandler.cpp \
            txtreport.cpp \
            xmlreport.cpp \
            xmlreportv1.cpp \
-           xmlreportv2.cpp \
-           translationhandler.cpp \
-           csvreport.cpp \
-           logview.cpp \
-           filelist.cpp \
-           statsdialog.cpp \
-           checkstatistics.cpp \
-           application.cpp
+           xmlreportv2.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS
