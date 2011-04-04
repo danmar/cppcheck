@@ -330,6 +330,31 @@ static bool for_condition(const Token * const tok2, unsigned int varid, std::str
 
 
 /**
+ * calculate maximum value of loop variable
+ * @param stepvalue token that contains the step value
+ * @param min_value the minimum value of loop variable
+ * @param max_value maximum value of the loop variable
+ */
+static bool for_maxvalue(const Token * const stepvalue, const std::string &min_value, std::string &max_value)
+{
+    if (!MathLib::isInt(stepvalue->str()))
+        return false;
+
+    // We have for example code: "for(i=2;i<22;i+=6)
+    // We can calculate that max value for i is 20, not 21
+    // 21-2 = 19
+    // 19/6 = 3
+    // 6*3+2 = 20
+    const MathLib::bigint num = MathLib::toLongNumber(stepvalue->str());
+    MathLib::bigint max = MathLib::toLongNumber(max_value);
+    const MathLib::bigint min = MathLib::toLongNumber(min_value);
+    max = ((max - min) / num) * num + min;
+    max_value = MathLib::toString<MathLib::bigint>(max);
+    return true;
+}
+
+
+/**
  * Parse the third sub-statement in for head
  * \param tok first token
  * \param varid variable id of counter
@@ -347,55 +372,24 @@ static bool for3(const Token * const tok,
     if (Token::Match(tok, "%varid% += %num% )", varid) ||
         Token::Match(tok, "%varid%  = %num% + %varid% )", varid))
     {
-        if (!MathLib::isInt(tok->strAt(2)))
+        if (!for_maxvalue(tok->tokAt(2), min_value, max_value))
             return false;
-
-        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(2));
-
-        // We have for example code: "for(i=2;i<22;i+=6)
-        // We can calculate that max value for i is 20, not 21
-        // 21-2 = 19
-        // 19/6 = 3
-        // 6*3+2 = 20
-        MathLib::bigint max = MathLib::toLongNumber(max_value);
-        MathLib::bigint min = MathLib::toLongNumber(min_value);
-        max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "%varid% = %varid% + %num% )", varid))
     {
-        if (!MathLib::isInt(tok->strAt(4)))
+        if (!for_maxvalue(tok->tokAt(4), min_value, max_value))
             return false;
-
-        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(4));
-        MathLib::bigint max = MathLib::toLongNumber(max_value);
-        MathLib::bigint min = MathLib::toLongNumber(min_value);
-        max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "%varid% -= %num% )", varid) ||
              Token::Match(tok, "%varid%  = %num% - %varid% )", varid))
     {
-        if (!MathLib::isInt(tok->strAt(2)))
+        if (!for_maxvalue(tok->tokAt(2), min_value, max_value))
             return false;
-
-        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(2));
-
-        MathLib::bigint max = MathLib::toLongNumber(max_value);
-        MathLib::bigint min = MathLib::toLongNumber(min_value);
-        max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "%varid% = %varid% - %num% )", varid))
     {
-        if (!MathLib::isInt(tok->strAt(4)))
+        if (!for_maxvalue(tok->tokAt(4), min_value, max_value))
             return false;
-
-        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(4));
-        MathLib::bigint max = MathLib::toLongNumber(max_value);
-        MathLib::bigint min = MathLib::toLongNumber(min_value);
-        max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "--| %varid% --| )", varid))
     {
