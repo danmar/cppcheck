@@ -231,6 +231,7 @@ private:
         TEST_CASE(func21);      // Ticket #2569
         TEST_CASE(func22);      // Ticket #2668
         TEST_CASE(func23);      // Ticket #2667
+        TEST_CASE(func24);      // Ticket #2705
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -2179,6 +2180,23 @@ private:
               "    return file;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // #2705
+    void func24()
+    {
+        check("void f(void) \n"
+              "{\n"
+              "  std::string *x = new std::string;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x\n","", errout.str());  
+
+        check("void f(void) \n"
+              "{\n"
+              "  std::string *x = new std::string;\n"
+              "  delete x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());       
     }
 
     void allocfunc1()
