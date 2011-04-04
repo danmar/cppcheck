@@ -106,7 +106,7 @@ void CheckOther::clarifyCalculation()
             }
             else if (cond->isName() || cond->isNumber())
             {
-                if (Token::Match(cond->previous(),("return|+|-|,|(|"+op).c_str()))
+                if (Token::Match(cond->previous(),("return|=|+|-|,|(|"+op).c_str()))
                     clarifyCalculationError(cond, op);
             }
         }
