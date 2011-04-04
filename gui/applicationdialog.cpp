@@ -40,6 +40,7 @@ ApplicationDialog::ApplicationDialog(const QString &title,
     mUI.mName->setText(app.getName());
     mUI.mParameters->setText(app.getParameters());
     setWindowTitle(title);
+    adjustSize();
 }
 
 
