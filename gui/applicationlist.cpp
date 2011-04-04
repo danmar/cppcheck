@@ -50,7 +50,7 @@ bool ApplicationList::LoadSettings(QSettings *programSettings)
     // Params will be empty first time starting with the new setting.
     // Return false and inform user about problem with application settings.
     bool succeeded = true;
-    if (params.empty())
+    if (!names.empty() && !paths.empty() && params.empty())
     {
         for (int i = 0; i < paths.length(); i++)
             params << "";
