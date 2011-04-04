@@ -37,7 +37,7 @@ ApplicationDialog::ApplicationDialog(const QString &title,
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
     mUI.mPath->setText(app.getPath());
-    mUI.mName->setText(app.getPath());
+    mUI.mName->setText(app.getName());
     mUI.mParameters->setText(app.getParameters());
     setWindowTitle(title);
 }
