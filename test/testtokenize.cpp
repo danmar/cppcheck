@@ -296,6 +296,7 @@ private:
         TEST_CASE(bitfields6); // ticket #2595
         TEST_CASE(bitfields7); // ticket #1987
         TEST_CASE(bitfields8);
+        TEST_CASE(bitfields9); // ticket #2706
 
         TEST_CASE(microsoftMFC);
 
@@ -5370,6 +5371,19 @@ private:
                                 "int f ( ) ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void bitfields9() // ticket #2706
+    {
+        const char code[] = "void f() {\n"
+                            "    goto half;\n"
+                            "half:\n"
+                            "    {\n"
+                            "        ;\n"
+                            "    }\n"
+                            "};";
+        tokenizeAndStringify(code,false);
         ASSERT_EQUALS("", errout.str());
     }
 

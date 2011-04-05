@@ -9363,8 +9363,11 @@ void Tokenizer::simplifyBitfields()
             if (tok->next()->str() == "const")
                 offset = 1;
 
-            Token::eraseTokens(tok->tokAt(0), tok->tokAt(5 + offset));
-            tok = tok->previous();
+            if (tok->strAt(3 + offset) != "{")
+            {
+                Token::eraseTokens(tok->tokAt(0), tok->tokAt(5 + offset));
+                tok = tok->previous();
+            }
         }
 
         if (last && last->str() == ",")
