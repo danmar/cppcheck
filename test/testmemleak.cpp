@@ -2189,14 +2189,14 @@ private:
               "{\n"
               "  std::string *x = new std::string;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x\n","", errout.str());  
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x\n","", errout.str());
 
         check("void f(void) \n"
               "{\n"
               "  std::string *x = new std::string;\n"
               "  delete x;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());       
+        ASSERT_EQUALS("", errout.str());
     }
 
     void allocfunc1()
