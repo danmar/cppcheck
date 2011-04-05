@@ -45,44 +45,6 @@ of the GNU General Public License version 3</translation>
         <translation>Lägg till program</translation>
     </message>
     <message>
-        <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
-
-The following texts in parameters are replaced with appropriate values when application is executed:
-(file) - Filename containing the error
-(line) - Line number containing the error
-(message) - Error message
-(severity) - Error severity
-
-Example opening a file with Kate and make Kate scroll to the correct line:
-executable: kate
-parameters: -l(line) (file)</source>
-        <oldsource>Here you can add applications that can open error files.
-Specify a name for the application and the application to execute.
-
-The following texts are replaced with appropriate values when application is executed:
-(file) - Filename containing the error
-(line) - Line number containing the error
-(message) - Error message
-(severity) - Error severity
-
-Example opening a file with Kate and make Kate scroll to the correct line:
-kate -l(line) (file)</oldsource>
-        <translation type="obsolete">Här kan du lägga till ett program som visar fel. Ange programmets namn, exekverbara fil samt kommandorads parametrarna för programmet.
-
-Följande parametrar kan användas i kommandoraden:
-(file) - Filnamnet
-(line) - Radnummer
-(message) - Felmeddelande
-(severity) - Svårighetsgrad
-
-Exempel för att öppna filen och scrolla till rätt rad med programmet Kate:
-kate -l(line) (file)</translation>
-    </message>
-    <message>
-        <source>&amp;Application&apos;s name:</source>
-        <translation type="obsolete">Programmets namn:</translation>
-    </message>
-    <message>
         <location filename="application.ui" line="41"/>
         <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
 
@@ -647,14 +609,6 @@ The user interface language has been reset to English. Open the Preferences-dial
 %1
 
 Språket har nollställts till Engelska. Öppna Preferences och välj något av de tillgängliga språken.</translation>
-    </message>
-    <message>
-        <source>Failed to change the language:
-
-%1</source>
-        <translation type="obsolete">Misslyckades att ändra språk:
-
-%1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="725"/>
