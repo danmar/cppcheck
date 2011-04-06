@@ -53,24 +53,6 @@ General Public License version 3</translation>
         <translation></translation>
     </message>
     <message>
-        <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
-
-The following texts in parameters are replaced with appropriate values when application is executed:
-(file) - Filename containing the error
-(line) - Line number containing the error
-(message) - Error message
-(severity) - Error severity
-
-Example opening a file with Kate and make Kate scroll to the correct line:
-executable: kate
-parameters: -l(line) (file)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Application&apos;s name:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>&amp;Executable:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -80,6 +62,24 @@ parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>You must specify a name, a path and parameters for the application!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
+
+The following texts in parameters are replaced with appropriate values when application is executed:
+(file) - Filename containing the error
+(line) - Line number containing the error
+(message) - Error message
+(severity) - Error severity
+
+Example opening a file with Kate and make Kate scroll to the correct line:
+Executable: kate
+Parameters: -l(line) (file)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Name:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -502,12 +502,6 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Failed to change the language:
-
-%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>French</source>
         <translation type="unfinished"></translation>
     </message>
@@ -515,6 +509,14 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to change the user interface language:
+
+%1
+
+The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

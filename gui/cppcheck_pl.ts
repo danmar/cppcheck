@@ -39,12 +39,12 @@ of the GNU General Public License version 3</source>
 <context>
     <name>ApplicationDialog</name>
     <message>
-        <location filename="application.ui" line="17"/>
+        <location filename="application.ui" line="23"/>
         <source>Add an application</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="application.ui" line="23"/>
+        <location filename="application.ui" line="41"/>
         <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
 
 The following texts in parameters are replaced with appropriate values when application is executed:
@@ -54,38 +54,27 @@ The following texts in parameters are replaced with appropriate values when appl
 (severity) - Error severity
 
 Example opening a file with Kate and make Kate scroll to the correct line:
-executable: kate
-parameters: -l(line) (file)</source>
-        <oldsource>Here you can add applications that can open error files.
-Specify a name for the application and the application to execute.
-
-The following texts are replaced with appropriate values when application is executed:
-(file) - Filename containing the error
-(line) - Line number containing the error
-(message) - Error message
-(severity) - Error severity
-
-Example opening a file with Kate and make Kate scroll to the correct line:
-kate -l(line) (file)</oldsource>
+Executable: kate
+Parameters: -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="application.ui" line="50"/>
-        <source>&amp;Application&apos;s name:</source>
+        <location filename="application.ui" line="76"/>
+        <source>&amp;Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="application.ui" line="60"/>
+        <location filename="application.ui" line="86"/>
         <source>&amp;Executable:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="application.ui" line="70"/>
+        <location filename="application.ui" line="96"/>
         <source>&amp;Parameters:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="application.ui" line="112"/>
+        <location filename="application.ui" line="138"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
@@ -100,12 +89,12 @@ kate -l(line) (file)</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="94"/>
+        <location filename="applicationdialog.cpp" line="87"/>
         <source>Cppcheck</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="95"/>
+        <location filename="applicationdialog.cpp" line="88"/>
         <source>You must specify a name, a path and parameters for the application!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -181,8 +170,8 @@ kate -l(line) (file)</oldsource>
         <location filename="mainwindow.cpp" line="247"/>
         <location filename="mainwindow.cpp" line="542"/>
         <location filename="mainwindow.cpp" line="666"/>
-        <location filename="mainwindow.cpp" line="682"/>
-        <location filename="mainwindow.cpp" line="801"/>
+        <location filename="mainwindow.cpp" line="687"/>
+        <location filename="mainwindow.cpp" line="805"/>
         <source>Cppcheck</source>
         <translation type="unfinished"></translation>
     </message>
@@ -515,8 +504,8 @@ kate -l(line) (file)</oldsource>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="320"/>
-        <location filename="mainwindow.cpp" line="731"/>
-        <location filename="mainwindow.cpp" line="778"/>
+        <location filename="mainwindow.cpp" line="735"/>
+        <location filename="mainwindow.cpp" line="782"/>
         <source>Project: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -557,19 +546,12 @@ kate -l(line) (file)</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="683"/>
-        <source>Failed to change the language:
-
-%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="769"/>
+        <location filename="mainwindow.cpp" line="773"/>
         <source>Select Project Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="802"/>
+        <location filename="mainwindow.cpp" line="806"/>
         <source>No project file loaded</source>
         <translation type="unfinished"></translation>
     </message>
@@ -608,13 +590,22 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="721"/>
-        <location filename="mainwindow.cpp" line="767"/>
+        <location filename="mainwindow.cpp" line="681"/>
+        <source>Failed to change the user interface language:
+
+%1
+
+The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="725"/>
+        <location filename="mainwindow.cpp" line="771"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="723"/>
+        <location filename="mainwindow.cpp" line="727"/>
         <source>Select Project File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -798,66 +789,66 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="59"/>
-        <location filename="resultstree.cpp" line="1049"/>
+        <location filename="resultstree.cpp" line="60"/>
+        <location filename="resultstree.cpp" line="1051"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="59"/>
-        <location filename="resultstree.cpp" line="1049"/>
+        <location filename="resultstree.cpp" line="60"/>
+        <location filename="resultstree.cpp" line="1051"/>
         <source>Severity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="59"/>
-        <location filename="resultstree.cpp" line="1049"/>
+        <location filename="resultstree.cpp" line="60"/>
+        <location filename="resultstree.cpp" line="1051"/>
         <source>Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="59"/>
-        <location filename="resultstree.cpp" line="1049"/>
+        <location filename="resultstree.cpp" line="60"/>
+        <location filename="resultstree.cpp" line="1051"/>
         <source>Summary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="109"/>
+        <location filename="resultstree.cpp" line="110"/>
         <source>Undefined file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="345"/>
+        <location filename="resultstree.cpp" line="346"/>
         <source>debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="593"/>
+        <location filename="resultstree.cpp" line="595"/>
         <source>Copy filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="594"/>
+        <location filename="resultstree.cpp" line="596"/>
         <source>Copy full path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="595"/>
+        <location filename="resultstree.cpp" line="597"/>
         <source>Copy message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="596"/>
+        <location filename="resultstree.cpp" line="598"/>
         <source>Hide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="643"/>
+        <location filename="resultstree.cpp" line="645"/>
         <source>Cppcheck</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="644"/>
+        <location filename="resultstree.cpp" line="646"/>
         <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -867,51 +858,51 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="727"/>
+        <location filename="resultstree.cpp" line="729"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="741"/>
+        <location filename="resultstree.cpp" line="743"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="748"/>
+        <location filename="resultstree.cpp" line="750"/>
         <source>Select Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="321"/>
+        <location filename="resultstree.cpp" line="322"/>
         <source>style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="325"/>
+        <location filename="resultstree.cpp" line="326"/>
         <source>error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="329"/>
+        <location filename="resultstree.cpp" line="330"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="333"/>
+        <location filename="resultstree.cpp" line="334"/>
         <source>performance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="337"/>
+        <location filename="resultstree.cpp" line="338"/>
         <source>portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="341"/>
+        <location filename="resultstree.cpp" line="342"/>
         <source>information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1093,22 +1084,22 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="201"/>
+        <location filename="settingsdialog.cpp" line="202"/>
         <source>Add a new application</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="241"/>
+        <location filename="settingsdialog.cpp" line="239"/>
         <source>Modify an application</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="274"/>
+        <location filename="settingsdialog.cpp" line="272"/>
         <source>[Default]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="321"/>
+        <location filename="settingsdialog.cpp" line="319"/>
         <source>Select include directory</source>
         <translation type="unfinished"></translation>
     </message>
