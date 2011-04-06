@@ -33,17 +33,17 @@ FORMS = about.ui \
         settings.ui \
         stats.ui
 
-TRANSLATIONS =  cppcheck_es.ts \
+TRANSLATIONS =  cppcheck_de.ts \
+                cppcheck_en.ts \
+                cppcheck_es.ts \
                 cppcheck_fi.ts \
                 cppcheck_fr.ts \
+                cppcheck_ja.ts \
                 cppcheck_nl.ts \
-                cppcheck_en.ts \
-                cppcheck_sv.ts \
-                cppcheck_de.ts \
                 cppcheck_pl.ts \
                 cppcheck_ru.ts \
-                cppcheck_ja.ts \
-                cppcheck_sr.ts
+                cppcheck_sr.ts \
+                cppcheck_sv.ts
 
 # Windows-specific options
 CONFIG += embed_manifest_exe
