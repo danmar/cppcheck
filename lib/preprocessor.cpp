@@ -1910,7 +1910,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         }
         else if (!fileOpened)
         {
-            if (_errorLogger && _settings && ((headerType == UserHeader) && _settings->isEnabled("missingInclude") || _settings->debugwarnings))
+            if (_errorLogger && _settings && ((headerType == UserHeader && _settings->isEnabled("missingInclude")) || _settings->debugwarnings))
             {
                 std::string f = filePath;
 
