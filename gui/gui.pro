@@ -33,7 +33,8 @@ FORMS = about.ui \
         settings.ui \
         stats.ui
 
-TRANSLATIONS =  cppcheck_fi.ts \
+TRANSLATIONS =  cppcheck_es.ts \
+                cppcheck_fi.ts \
                 cppcheck_fr.ts \
                 cppcheck_nl.ts \
                 cppcheck_en.ts \
