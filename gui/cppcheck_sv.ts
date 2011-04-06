@@ -653,6 +653,11 @@ Språket har nollställts till Engelska. Öppna Preferences och välj något av 
     </message>
     <message>
         <location filename="translationhandler.cpp" line="41"/>
+        <source>Spanish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="42"/>
         <source>Swedish</source>
         <translation>Svenska</translation>
     </message>
@@ -793,18 +798,18 @@ Språket har nollställts till Engelska. Öppna Preferences och välj något av 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="89"/>
+        <location filename="translationhandler.cpp" line="90"/>
         <source>Unknown language specified!</source>
         <translation>Okänt språk valt!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="99"/>
+        <location filename="translationhandler.cpp" line="100"/>
         <source>Language file %1 not found!</source>
         <oldsource>Language file %1.qm not found!</oldsource>
         <translation>Språk filen %1 hittades ej!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="105"/>
+        <location filename="translationhandler.cpp" line="106"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
         <translation>Misslyckades med att ladda översättningen för %1 från filen %2</translation>

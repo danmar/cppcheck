@@ -519,6 +519,10 @@ This is probably because the settings were changed between the Cppcheck versions
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Spanish</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Project</name>

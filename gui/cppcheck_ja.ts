@@ -633,6 +633,11 @@ The user interface language has been reset to English. Open the Preferences-dial
     </message>
     <message>
         <location filename="translationhandler.cpp" line="41"/>
+        <source>Spanish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="42"/>
         <source>Swedish</source>
         <translation></translation>
     </message>
@@ -773,17 +778,17 @@ The user interface language has been reset to English. Open the Preferences-dial
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="89"/>
+        <location filename="translationhandler.cpp" line="90"/>
         <source>Unknown language specified!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="99"/>
+        <location filename="translationhandler.cpp" line="100"/>
         <source>Language file %1 not found!</source>
         <translation>言語ファイル %1 が見つかりません!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="105"/>
+        <location filename="translationhandler.cpp" line="106"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation type="unfinished"></translation>
     </message>
