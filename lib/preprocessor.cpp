@@ -1910,13 +1910,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         }
         else if (!fileOpened)
         {
-            // TODO: Fix the handling of system includes and then
-            // remove the "headerType == UserHeader"
-#ifdef NDEBUG
-            if (headerType == UserHeader && _errorLogger && _settings && _settings->isEnabled("missingInclude"))
-#else
-            if (_errorLogger && _settings && _settings->isEnabled("missingInclude"))
-#endif
+            if (_errorLogger && _settings && ((headerType == UserHeader) && _settings->isEnabled("missingInclude") || _settings->debugwarnings))
             {
                 std::string f = filePath;
 
