@@ -98,6 +98,7 @@ SET(CHECK_UIS
 SET(CHECK_TRANS
   cppcheck_de.ts
   cppcheck_en.ts
+  cppcheck_es.ts
   cppcheck_fi.ts
   cppcheck_fr.ts
   cppcheck_ja.ts
