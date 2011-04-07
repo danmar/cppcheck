@@ -48,6 +48,7 @@ SOURCES += options.cpp \
            testdivision.cpp \
            testerrorlogger.cpp \
            testexceptionsafety.cpp \
+           testfilelister.cpp \
            testincompletestatement.cpp \
            testmathlib.cpp \
            testmemleak.cpp \

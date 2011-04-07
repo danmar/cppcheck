@@ -19,6 +19,7 @@ SET(CHECKTEST_SRCS
   testdivision.cpp
   testerrorlogger.cpp
   testexceptionsafety.cpp
+  testfilelister.cpp
   testincompletestatement.cpp
   testmathlib.cpp
   testmemleak.cpp
@@ -56,8 +57,6 @@ if(WIN32)
       # Windows needs additional shlwapi library.
       set(CHECK_LIBS ${CHECK_LIBS} shlwapi)
    endif()
-else()
-   set(CHECKTEST_SRCS ${CHECKTEST_SRCS} testfilelister_unix.cpp)
 endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX)

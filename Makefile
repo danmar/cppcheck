@@ -76,7 +76,7 @@ TESTOBJ =     test/options.o \
               test/testdivision.o \
               test/testerrorlogger.o \
               test/testexceptionsafety.o \
-              test/testfilelister_unix.o \
+              test/testfilelister.o \
               test/testincompletestatement.o \
               test/testmathlib.o \
               test/testmemleak.o \
@@ -271,8 +271,8 @@ test/testerrorlogger.o: test/testerrorlogger.cpp lib/cppcheck.h lib/settings.h l
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/tokenize.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
 
-test/testfilelister_unix.o: test/testfilelister_unix.cpp test/testsuite.h lib/errorlogger.h lib/settings.h test/redirect.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testfilelister_unix.o test/testfilelister_unix.cpp
+test/testfilelister.o: test/testfilelister.cpp test/testsuite.h lib/errorlogger.h lib/settings.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testfilelister.o test/testfilelister.cpp
 
 test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h lib/errorlogger.h lib/settings.h test/redirect.h lib/tokenize.h lib/checkother.h lib/check.h lib/token.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testincompletestatement.o test/testincompletestatement.cpp
