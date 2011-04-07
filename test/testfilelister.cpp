@@ -53,18 +53,26 @@ private:
         // Recursively add add files..
         std::vector<std::string> filenames;
         FileLister::recursiveAddFiles(filenames, ".");
+
+        // In case there are leading "./"..
+        for (unsigned int i = 0; i < filenames.size(); ++i) {
+            if (filenames[i].compare(0,2,"./") == 0)
+                filenames[i].erase(0,2);
+        }
+        
 /*
         for (unsigned int i = 0; i < filenames.size(); ++i)
             std::cout << filenames[i] << std::endl;
 */
+
         // Make sure source files are added..
-        ASSERT(std::find(filenames.begin(), filenames.end(), "./cli/main.cpp") != filenames.end());
-        ASSERT(std::find(filenames.begin(), filenames.end(), "./lib/token.cpp") != filenames.end());
-        ASSERT(std::find(filenames.begin(), filenames.end(), "./lib/tokenize.cpp") != filenames.end());
-        ASSERT(std::find(filenames.begin(), filenames.end(), "./test/testfilelister.cpp") != filenames.end());
+        ASSERT(std::find(filenames.begin(), filenames.end(), "cli/main.cpp") != filenames.end());
+        ASSERT(std::find(filenames.begin(), filenames.end(), "lib/token.cpp") != filenames.end());
+        ASSERT(std::find(filenames.begin(), filenames.end(), "lib/tokenize.cpp") != filenames.end());
+        ASSERT(std::find(filenames.begin(), filenames.end(), "test/testfilelister.cpp") != filenames.end());
 
         // Make sure headers are not added..
-        ASSERT(std::find(filenames.begin(), filenames.end(), "./lib/tokenize.h") == filenames.end());
+        ASSERT(std::find(filenames.begin(), filenames.end(), "lib/tokenize.h") == filenames.end());
     }
 };
 
