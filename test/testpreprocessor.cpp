@@ -159,7 +159,8 @@ private:
         TEST_CASE(macro_simple13);
         TEST_CASE(macro_simple14);
         TEST_CASE(macro_simple15);
-        TEST_CASE(macroInMacro);
+        TEST_CASE(macroInMacro1);
+        TEST_CASE(macroInMacro2);
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
         TEST_CASE(macro_nopar);
@@ -1692,7 +1693,7 @@ private:
         ASSERT_EQUALS("\n\"foo\"\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macroInMacro()
+    void macroInMacro1()
     {
         {
             const char filedata[] = "#define A(m) long n = m; n++;\n"
@@ -1791,6 +1792,14 @@ private:
                 "PTR1 PTR1\n";
             ASSERT_EQUALS("\n( (\n", OurPreprocessor::expandMacros(filedata));
         }
+    }
+
+    void macroInMacro2()
+    {
+        const char filedata[] = "#define A(x) a##x\n"
+                                "#define B 0\n"
+                                "A(B)\n";
+        ASSERT_EQUALS("\n\naB\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_mismatch()

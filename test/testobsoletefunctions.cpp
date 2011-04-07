@@ -103,7 +103,7 @@ private:
               "        exit(1);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getnameinfo' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getaddrinfo' function\n", errout.str());
     }
 
     void testgethostbyaddr()
@@ -116,7 +116,7 @@ private:
               "        exit(1);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getaddrinfo' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getnameinfo' function\n", errout.str());
     }
 
     void testusleep()

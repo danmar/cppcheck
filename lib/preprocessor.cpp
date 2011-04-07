@@ -1910,13 +1910,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         }
         else if (!fileOpened)
         {
-            // TODO: Fix the handling of system includes and then
-            // remove the "headerType == UserHeader"
-#ifdef NDEBUG
-            if (headerType == UserHeader && _errorLogger && _settings && _settings->isEnabled("missingInclude"))
-#else
-            if (_errorLogger && _settings && _settings->isEnabled("missingInclude"))
-#endif
+            if (_errorLogger && _settings && ((headerType == UserHeader && _settings->isEnabled("missingInclude")) || _settings->debugwarnings))
             {
                 std::string f = filePath;
 
@@ -2384,14 +2378,17 @@ public:
                         }
 
                         // expand nopar macro
-                        const std::map<std::string, PreprocessorMacro *>::const_iterator it = macros.find(str);
-                        if (it != macros.end() && it->second->_macro.find("(") == std::string::npos)
+                        if (tok->strAt(-1) != "##")
                         {
-                            str = it->second->_macro;
-                            if (str.find(" ") != std::string::npos)
-                                str.erase(0, str.find(" "));
-                            else
-                                str = "";
+                            const std::map<std::string, PreprocessorMacro *>::const_iterator it = macros.find(str);
+                            if (it != macros.end() && it->second->_macro.find("(") == std::string::npos)
+                            {
+                                str = it->second->_macro;
+                                if (str.find(" ") != std::string::npos)
+                                    str.erase(0, str.find(" "));
+                                else
+                                    str = "";
+                            }
                         }
                     }
                     if (_variadic && tok->str() == "," && tok->next() && tok->next()->str() == "##")

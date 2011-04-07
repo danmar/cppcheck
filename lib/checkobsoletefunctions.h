@@ -68,8 +68,8 @@ private:
     {
         _obsoleteFunctions.push_back(std::make_pair("bsd_signal","Found obsolete function 'bsd_signal'. It is recommended that new applications use the 'sigaction' function"));
 
-        _obsoleteFunctions.push_back(std::make_pair("gethostbyaddr","Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getaddrinfo' function"));
-        _obsoleteFunctions.push_back(std::make_pair("gethostbyname","Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getnameinfo' function"));
+        _obsoleteFunctions.push_back(std::make_pair("gethostbyaddr","Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getnameinfo' function"));
+        _obsoleteFunctions.push_back(std::make_pair("gethostbyname","Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getaddrinfo' function"));
 
         _obsoleteFunctions.push_back(std::make_pair("usleep","Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function\n"
                                      "Found obsolete function 'usleep'. POSIX.1-2001 declares usleep() function obsolete and POSIX.1-2008 removes it. It is recommended that new applications use the 'nanosleep' or 'setitimer' function."));
