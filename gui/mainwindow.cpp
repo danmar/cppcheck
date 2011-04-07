@@ -117,7 +117,7 @@ MainWindow::MainWindow() :
     args.removeFirst();
     if (!args.isEmpty())
     {
-        DoCheckFiles(args);
+        HandleCLIParams(args);
     }
 }
 
@@ -125,6 +125,21 @@ MainWindow::~MainWindow()
 {
     delete mLogView;
     delete mProject;
+}
+
+void MainWindow::HandleCLIParams(const QStringList &params)
+{
+    if (params.contains("-p"))
+    {
+        QString projFile;
+        const int ind = params.indexOf("-p");
+        if ((ind + 1) < params.length())
+            projFile = params[ind + 1];
+
+        LoadProjectFile(projFile);
+    }
+    else
+        DoCheckFiles(params);
 }
 
 void MainWindow::LoadSettings()
@@ -730,39 +745,43 @@ void MainWindow::OpenProjectFile()
 
     if (!filepath.isEmpty())
     {
-        QFileInfo inf(filepath);
-        const QString filename = inf.fileName();
-        FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
+        LoadProjectFile(filepath);
+    }
+}
 
-        mUI.mActionCloseProjectFile->setEnabled(true);
-        mUI.mActionEditProjectFile->setEnabled(true);
-        delete mProject;
-        mProject = new Project(filepath, this);
-        mProject->Open();
-        QString rootpath = mProject->GetProjectFile()->GetRootPath();
+void MainWindow::LoadProjectFile(const QString &filePath)
+{
+    QFileInfo inf(filePath);
+    const QString filename = inf.fileName();
+    FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
 
-        // If root path not give or "current dir" then use project file's directory
-        // as check path
-        if (rootpath.isEmpty() || rootpath == ".")
-            mCurrentDirectory = inf.canonicalPath();
-        else
-            mCurrentDirectory = rootpath;
+    mUI.mActionCloseProjectFile->setEnabled(true);
+    mUI.mActionEditProjectFile->setEnabled(true);
+    delete mProject;
+    mProject = new Project(filePath, this);
+    mProject->Open();
+    QString rootpath = mProject->GetProjectFile()->GetRootPath();
 
-        QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
-        if (!paths.isEmpty())
+    // If root path not give or "current dir" then use project file's directory
+    // as check path
+    if (rootpath.isEmpty() || rootpath == ".")
+        mCurrentDirectory = inf.canonicalPath();
+    else
+        mCurrentDirectory = rootpath;
+
+    QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
+    if (!paths.isEmpty())
+    {
+        for (int i = 0; i < paths.size(); i++)
         {
-            for (int i = 0; i < paths.size(); i++)
+            if (!QDir::isAbsolutePath(paths[i]))
             {
-                if (!QDir::isAbsolutePath(paths[i]))
-                {
-                    QString path = mCurrentDirectory + "/";
-                    path += paths[i];
-                    paths[i] = QDir::cleanPath(path);
-                }
+                QString path = mCurrentDirectory + "/";
+                path += paths[i];
+                paths[i] = QDir::cleanPath(path);
             }
-
-            DoCheckFiles(paths);
         }
+        DoCheckFiles(paths);
     }
 }
 

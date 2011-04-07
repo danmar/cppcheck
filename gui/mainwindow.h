@@ -361,6 +361,18 @@ protected:
     void AddIncludeDirs(const QStringList &includeDirs, Settings &result);
 
     /**
+    * @brief Handle command line parameters given to GUI.
+    * @param params List of string given to command line.
+    */
+    void HandleCLIParams(const QStringList &params);
+
+    /**
+    * @brief Load project file to the GUI.
+    * @param filePath Filename (inc. path) of project file to load.
+    */
+    void LoadProjectFile(const QString &filePath);
+
+    /**
     * @brief Program settings
     *
     */
