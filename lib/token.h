@@ -153,6 +153,27 @@ public:
     {
         _isNumber = number;
     }
+    bool isOp() const
+    {
+        if (!this)
+            return false;
+
+        return (_str == "&&" ||
+                _str == "||" ||
+                _str == "==" ||
+                _str == "!=" ||
+                _str == "<"  ||
+                _str == "<=" ||
+                _str == ">"  ||
+                _str == ">=" ||
+                _str == "<<" ||
+                _str == ">>" ||
+                Token::Match(this, "[+-*/%&|^~!]"));
+    }
+    bool isExtendedOp() const
+    {
+        return isOp() || Token::Match(this, "[,[]()?:]");
+    }
     bool isBoolean() const
     {
         return _isBoolean;

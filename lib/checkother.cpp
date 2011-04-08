@@ -962,21 +962,6 @@ void CheckOther::checkMemsetZeroBytes()
 // Usage of function variables
 //---------------------------------------------------------------------------
 
-static bool isOp(const Token *tok)
-{
-    return bool(tok &&
-                (tok->str() == "&&" ||
-                 tok->str() == "||" ||
-                 tok->str() == "==" ||
-                 tok->str() == "!=" ||
-                 tok->str() == "<" ||
-                 tok->str() == "<=" ||
-                 tok->str() == ">" ||
-                 tok->str() == ">=" ||
-                 tok->str() == "<<" ||
-                 Token::Match(tok, "[+-*/%&!~|^,[])?:]")));
-}
-
 /**
  * @brief This class is used to capture the control flow within a function.
  */
@@ -2223,11 +2208,11 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "%var% ."))
                 variables.use(tok->varId());   // use = read + write
 
-            else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) &&
+            else if ((Token::Match(tok, "[(=&!]") || tok->isExtendedOp()) &&
                      (Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false|new")))
                 variables.readAll(tok->next()->varId());
 
-            else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
+            else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || tok->next()->isExtendedOp()))
                 variables.readAll(tok->varId());
 
             else if (Token::Match(tok, "; %var% ;"))

@@ -6363,22 +6363,6 @@ void Tokenizer::simplifyInitVar()
     }
 }
 
-static bool isOp(const Token *tok)
-{
-    return bool(tok &&
-                (tok->str() == "&&" ||
-                 tok->str() == "||" ||
-                 tok->str() == "==" ||
-                 tok->str() == "!=" ||
-                 tok->str() == "<" ||
-                 tok->str() == "<=" ||
-                 tok->str() == ">" ||
-                 tok->str() == ">=" ||
-                 tok->str() == "<<" ||
-                 tok->str() == ">>" ||
-                 Token::Match(tok, "[;+-*/%&|^]")));
-}
-
 Token * Tokenizer::initVar(Token * tok)
 {
     // call constructor of class => no simplification
@@ -7052,7 +7036,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 
         // return variable..
         if (Token::Match(tok3, "return %varid% %any%", varid) &&
-            isOp(tok3->tokAt(2)) &&
+            (tok3->tokAt(2)->isExtendedOp() || tok3->strAt(2) == ";") &&
             value[0] != '\"')
         {
             tok3->next()->str(value);
