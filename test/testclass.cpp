@@ -87,6 +87,7 @@ private:
         TEST_CASE(uninitFunction1);			// No FP when initialized in function
         TEST_CASE(uninitFunction2);			// No FP when initialized in function
         TEST_CASE(uninitFunction3);			// No FP when initialized in function
+        TEST_CASE(uninitFunction4);
         TEST_CASE(uninitSameClassName);		// No FP when two classes have the same name
         TEST_CASE(uninitFunctionOverload); 	// No FP when there are overloaded functions
         TEST_CASE(uninitJava);              // Java: no FP when variable is initialized in declaration
@@ -2639,6 +2640,18 @@ private:
                        "    double d;\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { init(*this); }\n"
+                       "\n"
+                       "    static void init(Fred &f)\n"
+                       "    { }\n"
+                       "\n"
+                       "    double d;\n"
+                       "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::d' is not initialised in the constructor.\n", "", errout.str());
     }
 
     void uninitFunction2()
@@ -2654,6 +2667,18 @@ private:
                        "    double d;\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { if (!init(*this)); }\n"
+                       "\n"
+                       "    static bool init(Fred &f)\n"
+                       "    { return true; }\n"
+                       "\n"
+                       "    double d;\n"
+                       "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::d' is not initialised in the constructor.\n", "",  errout.str());
     }
 
     void uninitFunction3()
@@ -2669,6 +2694,45 @@ private:
                        "    double d;\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { if (!init()); }\n"
+                       "\n"
+                       "    bool init()\n"
+                       "    { return true; }\n"
+                       "\n"
+                       "    double d;\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::d' is not initialised in the constructor.\n", errout.str());
+    }
+
+    void uninitFunction4()
+    {
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { init(this); }\n"
+                       "\n"
+                       "    init(Fred *f)\n"
+                       "    { f.d = 0; }\n"
+                       "\n"
+                       "    double d;\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { init(this); }\n"
+                       "\n"
+                       "    init(Fred *f)\n"
+                       "    { }\n"
+                       "\n"
+                       "    double d;\n"
+                       "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::d' is not initialised in the constructor.\n", "", errout.str());
     }
 
     void uninitSameClassName()
@@ -2808,6 +2872,24 @@ private:
                        "    { i = value; }\n"
                        "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class A\n"
+                       "{\n"
+                       "private:\n"
+                       "    int i;\n"
+                       "\n"
+                       "public:\n"
+                       "    A()\n"
+                       "    {\n"
+                       "        init();\n"
+                       "    }\n"
+                       "\n"
+                       "    void init() { init(0); }\n"
+                       "\n"
+                       "    void init(int value)\n"
+                       "    { }\n"
+                       "};");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'A::i' is not initialised in the constructor.\n", "", errout.str());
     }
 
     void checkUninitVarJava(const char code[])
