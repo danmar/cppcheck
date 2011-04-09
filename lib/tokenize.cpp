@@ -7266,7 +7266,7 @@ bool Tokenizer::simplifyCalculations()
                     tok->deleteThis();
                     ret = true;
                 }
-                else if (Token::Match(tok->previous(), "[=[(,] 0 * %any% [+-*/,]);]"))
+                else if (Token::Match(tok->previous(), "[=[(,] 0 * %any% ,|]|)|;|%op%"))
                 {
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
