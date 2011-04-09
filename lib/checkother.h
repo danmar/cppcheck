@@ -64,6 +64,7 @@ public:
         checkOther.checkSizeofForArrayParameter();
         checkOther.checkSelfAssignment();
         checkOther.checkDuplicateIf();
+        checkOther.checkDuplicateBranch();
 
         // information checks
         checkOther.checkVariableScope();
@@ -208,6 +209,9 @@ public:
     /** @brief %Check for suspicious code where multiple if have the same expression (e.g "if (a) { } else if (a) { }") */
     void checkDuplicateIf();
 
+    /** @brief %Check for suspicious code where if and else branch are the same (e.g "if (a) b = true; else b = true;") */
+    void checkDuplicateBranch();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -237,6 +241,7 @@ public:
     void incrementBooleanError(const Token *tok);
     void comparisonOfBoolWithIntError(const Token *tok, const std::string &varname);
     void duplicateIfError(const Token *tok1, const Token *tok2);
+    void duplicateBranchError(const Token *tok1, const Token *tok2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -282,6 +287,7 @@ public:
         c.incrementBooleanError(0);
         c.comparisonOfBoolWithIntError(0, "varname");
         c.duplicateIfError(0, 0);
+        c.duplicateBranchError(0, 0);
     }
 
     std::string myName() const

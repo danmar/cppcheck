@@ -114,6 +114,7 @@ private:
         TEST_CASE(comparisonOfBoolWithInt);
 
         TEST_CASE(duplicateIf);
+        TEST_CASE(duplicateBranch);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -138,6 +139,7 @@ private:
         checkOther.checkSizeofForArrayParameter();
         checkOther.clarifyCondition();
         checkOther.checkDuplicateIf();
+        checkOther.checkDuplicateBranch();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -2452,6 +2454,28 @@ private:
               "   else if ((x = x / 2) < 100) { b = 2; }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateBranch()
+    {
+        check("void f(int a, int &b) {\n"
+              "    if (a)\n"
+              "        b = 1;\n"
+              "    else\n"
+              "        b = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Found duplicate branches for if and else.\n", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (a) {\n"
+              "        if (a == 1)\n"
+              "            b = 2;\n"
+              "        else\n"
+              "            b = 2;\n"
+              "    } else\n"
+              "        b = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for if and else.\n", errout.str());
     }
 };
 

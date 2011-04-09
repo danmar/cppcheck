@@ -3158,6 +3158,64 @@ void CheckOther::duplicateIfError(const Token *tok1, const Token *tok2)
 }
 
 //-----------------------------------------------------------------------------
+// check for duplicate code in if and else branches
+// if (a) { b = true; } else { b = true; }
+//-----------------------------------------------------------------------------
+
+void CheckOther::checkDuplicateBranch()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
+    {
+        // only check functions
+        if (scope->type != Scope::eFunction)
+            continue;
+
+        // check all the code in the function for if (..) else
+        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next())
+        {
+            if (Token::Match(tok, "if (") && tok->strAt(-1) != "else" &&
+                Token::Match(tok->next()->link(), ") {") &&
+                Token::Match(tok->next()->link()->next()->link(), "} else {"))
+            {
+                // save if branch code
+                std::string branch1 = stringifyTokens(tok->next()->link()->tokAt(2), tok->next()->link()->next()->link()->previous());
+
+                // find else branch
+                const Token *tok1 = tok->next()->link()->next()->link();
+
+                // save else branch code
+                std::string branch2 = stringifyTokens(tok1->tokAt(3), tok1->tokAt(2)->link()->previous());
+
+                // check for duplicates
+                if (branch1 == branch2)
+                    duplicateBranchError(tok, tok1->tokAt(2));
+
+                tok = tok->next()->link()->next();
+            }
+        }
+    }
+}
+
+void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok2);
+    toks.push_back(tok1);
+
+    reportError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for if and else.\n"
+                "Finding the same code for an if branch and an else branch is suspicious and "
+                "might indicate a cut and paste or logic error. Please examine this code "
+                "carefully to determine if it is correct.");
+}
+
+//-----------------------------------------------------------------------------
 
 void CheckOther::cstyleCastError(const Token *tok)
 {
