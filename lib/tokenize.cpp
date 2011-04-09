@@ -2075,15 +2075,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // Combine "- %num%" ..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[([+-*/=,] - %num%") && tok->strAt(2)[0] != '-')
+        if (Token::Match(tok, "%any% - %num%") && (tok->isOp() || Token::Match(tok, "?|:|,|(|[|=|return|case")))
         {
-            tok->next()->str(std::string("-") + tok->strAt(2));
-            tok->next()->deleteNext();
-        }
-
-        if (Token::Match(tok, "return|case - %num%") && tok->strAt(2)[0] != '-')
-        {
-            tok->next()->str(std::string("-") + tok->strAt(2));
+            tok->next()->str("-" + tok->strAt(2));
             tok->next()->deleteNext();
         }
     }

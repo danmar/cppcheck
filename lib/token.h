@@ -153,12 +153,17 @@ public:
     {
         _isNumber = number;
     }
+    bool isArithmeticalOp() const
+    {
+        return (this && (_str=="<<" || _str==">>" || (_str.size()==1 && _str.find_first_of("+-*/%") != std::string::npos)));
+    }
     bool isOp() const
     {
         if (!this)
             return false;
 
-        return (_str == "&&" ||
+        return (isArithmeticalOp() ||
+                _str == "&&" ||
                 _str == "||" ||
                 _str == "==" ||
                 _str == "!=" ||
@@ -166,13 +171,12 @@ public:
                 _str == "<=" ||
                 _str == ">"  ||
                 _str == ">=" ||
-                _str == "<<" ||
-                _str == ">>" ||
-                Token::Match(this, "[+-*/%&|^~!]"));
+                (_str.size() == 1 && _str.find_first_of("&|^~!") != std::string::npos));
     }
     bool isExtendedOp() const
     {
-        return isOp() || Match(this, "[,[]()?:]");
+        return isOp() || 
+               (this && _str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos);
     }
     bool isBoolean() const
     {

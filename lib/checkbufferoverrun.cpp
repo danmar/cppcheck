@@ -707,7 +707,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                         Token::Match(ftok, "%var% --"))
                         break;
 
-                    if (Token::Match(ftok->previous(), "[=+-*/;{}] %var% [ %num% ]"))
+                    if ((Token::Match(ftok->previous(), "[=;{}]") || ftok->previous()->isOp()) && Token::Match(ftok, "%var% [ %num% ]"))
                     {
                         const MathLib::bigint index = MathLib::toLongNumber(ftok->strAt(2));
                         if (index >= 0 && arrayInfo.num[0] > 0 && index >= arrayInfo.num[0])

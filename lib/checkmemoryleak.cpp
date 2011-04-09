@@ -1492,7 +1492,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             {
                 addtoken(&rettail, tok, "use");
             }
-            else if (Token::Match(tok->previous(), "[;{}=(,+-*/] %varid% [", varid))
+            else if ((Token::Match(tok->previous(), "[;{}=(,]") || tok->previous()->isOp()) && Token::Match(tok, "%varid% [", varid))
             {
                 // warning is written for "dealloc ; use_ ;".
                 // but this use doesn't affect the leak-checking

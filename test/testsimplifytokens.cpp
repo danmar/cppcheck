@@ -3772,7 +3772,7 @@ private:
 
         const char expected[] =
             "; "
-            "int a [ ice_or < is_int < int > :: value , is_int < UDT > :: value > :: value ? 1 : - 1 ] ; "
+            "int a [ ice_or < is_int < int > :: value , is_int < UDT > :: value > :: value ? 1 : -1 ] ; "
             "int a1 [ N ] ; "
             "int a2 [ N ] [ M ] ; "
             "int t ; "
