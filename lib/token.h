@@ -172,7 +172,7 @@ public:
     }
     bool isExtendedOp() const
     {
-        return isOp() || Token::Match(this, "[,[]()?:]");
+        return isOp() || Match(this, "[,[]()?:]");
     }
     bool isBoolean() const
     {
