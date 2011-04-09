@@ -2404,6 +2404,12 @@ private:
     void duplicateIf()
     {
         check("void f(int a, int &b) {\n"
+              "    if (a) { b = 1; }\n"
+              "    else if (a) { b = 2; }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Found duplicate if expressions.\n", errout.str());
+
+        check("void f(int a, int &b) {\n"
               "    if (a == 1) { b = 1; }\n"
               "    else if (a == 2) { b = 2; }\n"
               "    else if (a == 1) { b = 3; }\n"

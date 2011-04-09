@@ -3047,9 +3047,6 @@ void CheckOther::checkIncorrectStringCompare()
 
 static const std::string stringifyTokens(const Token *start, const Token *end)
 {
-    if (start == end)
-        return "";
-
     const Token *tok = start;
     std::string stringified = tok->str();
 
