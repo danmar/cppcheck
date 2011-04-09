@@ -200,8 +200,37 @@ std::string Token::strAt(int index) const
     return tok ? tok->_str.c_str() : "";
 }
 
+static bool strisop(const char str[])
+{
+    if (str[1] == 0)
+    {
+        if (strchr("+-*/%&|^~!<>", *str))
+            return true;
+    }
+    else if (str[2] == 0)
+    {
+        if (strcmp(str, "&&")==0 ||
+            strcmp(str, "||")==0 ||
+            strcmp(str, "==")==0 ||
+            strcmp(str, "!=")==0 ||
+            strcmp(str, ">=")==0 ||
+            strcmp(str, "<=")==0 ||
+            strcmp(str, ">>")==0 ||
+            strcmp(str, "<<")==0)
+            return true;
+    }
+    return false;
+}
+
 int Token::multiCompare(const char *haystack, const char *needle)
 {
+    if (strncmp(haystack, "%op%|", 5) == 0)
+    {
+        haystack = haystack + 5;
+        if (strisop(needle))
+            return 1;
+    }
+
     bool emptyStringFound = false;
     const char *needlePointer = needle;
     while (true)
@@ -254,6 +283,19 @@ int Token::multiCompare(const char *haystack, const char *needle)
             }
 
             ++haystack;
+
+            if (strncmp(haystack, "%op%", 4) == 0)
+            {
+                if (strisop(needle))
+                    return 1;
+                haystack = haystack + 4;
+                if (*haystack == '|')
+                    haystack++;
+                else if (*haystack == ' ' || *haystack == '\0')
+                    return emptyStringFound ? 0 : -1;
+                else
+                    return -1;
+            }
         }
     }
 

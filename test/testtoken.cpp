@@ -89,6 +89,12 @@ private:
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("abc|def", "a")));
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("abc|def", "abcd")));
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("abc|def", "default")));
+
+        // %op%
+        ASSERT_EQUALS(1, Token::multiCompare("one|%op%", "+"));
+        ASSERT_EQUALS(1, Token::multiCompare("%op%|two", "+"));
+        ASSERT_EQUALS(-1, Token::multiCompare("one|%op%", "x"));
+        ASSERT_EQUALS(-1, Token::multiCompare("%op%|two", "x"));
     }
 
     void getStrLength()

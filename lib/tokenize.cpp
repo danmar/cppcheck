@@ -2075,7 +2075,7 @@ bool Tokenizer::tokenize(std::istream &code,
     // Combine "- %num%" ..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "%any% - %num%") && (tok->isOp() || Token::Match(tok, "?|:|,|(|[|=|return|case")))
+        if (Token::Match(tok, "?|:|,|(|[|=|return|case|%op% - %num%"))
         {
             tok->next()->str("-" + tok->strAt(2));
             tok->next()->deleteNext();
@@ -5594,12 +5594,10 @@ bool Tokenizer::simplifyFunctionReturn()
 
         else if (indentlevel == 0 && Token::Match(tok, "%var% ( ) { return %num% ; }") && tok->str() != ")")
         {
-            const std::string pattern("%any% " + tok->str() + " ( ) %any%");
+            const std::string pattern("(|[|=|%op% " + tok->str() + " ( ) ;|]|)|%op%");
             for (Token *tok2 = _tokens; tok2; tok2 = tok2->next())
             {
-                if (Token::Match(tok2, pattern.c_str()) &&
-                    (tok2->isOp() || Token::Match(tok2, "(|[|=")) &&
-                    (tok2->tokAt(4)->isOp() || Token::Match(tok2->tokAt(4), ";|]|)")))
+                if (Token::Match(tok2, pattern.c_str()))
                 {
                     tok2 = tok2->next();
                     tok2->str(tok->strAt(5));
