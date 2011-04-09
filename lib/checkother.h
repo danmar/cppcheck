@@ -55,7 +55,6 @@ public:
         checkOther.checkUnsignedDivision();
         checkOther.checkCharVariable();
         checkOther.functionVariableUsage();
-        checkOther.checkVariableScope();
         checkOther.checkStructMemberUsage();
         checkOther.strPlusChar();
         checkOther.sizeofsizeof();
@@ -64,6 +63,10 @@ public:
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
         checkOther.checkSelfAssignment();
+        checkOther.checkDuplicateIf();
+
+        // information checks
+        checkOther.checkVariableScope();
 
         checkOther.clarifyCondition();   // not simplified because ifAssign
     }
@@ -202,6 +205,9 @@ public:
     /** @brief %Check for suspicious comparison of a bool and a non-zero (and non-one) value (e.g. "if (!x==4)") */
     void checkComparisonOfBoolWithInt();
 
+    /** @brief %Check for suspicious code where multiple if have the same expression (e.g "if (a) { } else if (a) { }") */
+    void checkDuplicateIf();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -230,6 +236,7 @@ public:
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
     void incrementBooleanError(const Token *tok);
     void comparisonOfBoolWithIntError(const Token *tok, const std::string &varname);
+    void duplicateIfError(const Token *tok1, const Token *tok2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -274,6 +281,7 @@ public:
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
         c.incrementBooleanError(0);
         c.comparisonOfBoolWithIntError(0, "varname");
+        c.duplicateIfError(0, 0);
     }
 
     std::string myName() const

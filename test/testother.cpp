@@ -112,6 +112,8 @@ private:
 
         TEST_CASE(incrementBoolean);
         TEST_CASE(comparisonOfBoolWithInt);
+
+        TEST_CASE(duplicateIf);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -135,6 +137,7 @@ private:
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
         checkOther.clarifyCondition();
+        checkOther.checkDuplicateIf();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -2394,6 +2397,53 @@ private:
               "    if (10 != x) {\n"
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateIf()
+    {
+        check("void f(int a, int &b) {\n"
+              "    if (a == 1) { b = 1; }\n"
+              "    else if (a == 2) { b = 2; }\n"
+              "    else if (a == 1) { b = 3; }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Found duplicate if expressions.\n", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (a == 1) { b = 1; }\n"
+              "    else if (a == 2) { b = 2; }\n"
+              "    else if (a == 2) { b = 3; }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Found duplicate if expressions.\n", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (a == 1) {\n"
+              "        b = 1;\n"
+              "        if (b == 1) { }\n"
+              "        else if (b == 1) { }\n"
+              "    } else if (a == 2) { b = 2; }\n"
+              "    else if (a == 2) { b = 3; }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (style) Found duplicate if expressions.\n"
+                      "[test.cpp:5] -> [test.cpp:4]: (style) Found duplicate if expressions.\n", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (a++) { b = 1; }\n"
+              "    else if (a++) { b = 2; }\n"
+              "    else if (a++) { b = 3; }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (!strtok(NULL," ")) { b = 1; }\n"
+              "    else if (!strtok(NULL," ")) { b = 2; }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "   if ((x = x / 2) < 100) { b = 1; }\n"
+              "   else if ((x = x / 2) < 100) { b = 2; }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

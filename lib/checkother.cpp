@@ -3040,6 +3040,128 @@ void CheckOther::checkIncorrectStringCompare()
     }
 }
 
+//-----------------------------------------------------------------------------
+// check for duplicate expressions in if statements
+// if (a) { } else if (a) { }
+//-----------------------------------------------------------------------------
+
+static const std::string stringifyTokens(const Token *start, const Token *end)
+{
+    if (start == end)
+        return "";
+
+    const Token *tok = start;
+    std::string stringified = tok->str();
+
+    while (tok && tok->next() && tok != end)
+    {
+        tok = tok->next();
+        stringified.append(" ");
+        stringified.append(tok->str());
+    }
+
+    return stringified;
+}
+
+static bool expressionHasSideEffects(const Token *first, const Token *last)
+{
+    for (const Token *tok = first; tok != last->next(); tok = tok->next())
+    {
+        // check for assignment
+        if (tok->isAssignmentOp())
+            return true;
+
+        // check for inc/dec
+        else if (Token::Match(tok, "++|--"))
+            return true;
+
+        // check for function call
+        else if (Token::Match(tok, "%var% (") &&
+                 !(Token::Match(tok, "c_str|string") || tok->isStandardType()))
+            return true;
+    }
+
+    return false;
+}
+
+void CheckOther::checkDuplicateIf()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
+    {
+        // only check functions
+        if (scope->type != Scope::eFunction)
+            continue;
+
+        // check all the code in the function for if (...) and else if (...) statements
+        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next())
+        {
+            if (Token::Match(tok, "if (") && tok->strAt(-1) != "else" &&
+                Token::Match(tok->next()->link(), ") {"))
+            {
+                std::map<std::string, const Token*> expressionMap;
+
+                // get the expression from the token stream
+                std::string expression = stringifyTokens(tok->tokAt(2), tok->next()->link()->previous());
+
+                // save the expression and its location
+                expressionMap.insert(std::make_pair(expression, tok));
+
+                // find the next else if (...) statement
+                const Token *tok1 = tok->next()->link()->next()->link();
+
+                // check all the else if (...) statements
+                while (Token::Match(tok1, "} else if (") &&
+                       Token::Match(tok1->tokAt(3)->link(), ") {"))
+                {
+                    // get the expression from the token stream
+                    expression = stringifyTokens(tok1->tokAt(4), tok1->tokAt(3)->link()->previous());
+
+                    // try to look up the expression to check for duplicates
+                    std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
+
+                    // found a duplicate
+                    if (it != expressionMap.end())
+                    {
+                        // check for expressions that have side effects and ignore them
+                        if (!expressionHasSideEffects(tok1->tokAt(4), tok1->tokAt(3)->link()->previous()))
+                            duplicateIfError(it->second, tok1->next());
+                    }
+
+                    // not a duplicate expression so save it and its location
+                    else
+                        expressionMap.insert(std::make_pair(expression, tok1->next()));
+
+                    // find the next else if (...) statement
+                    tok1 = tok1->tokAt(3)->link()->next()->link();
+                }
+
+                tok = tok->next()->link()->next();
+            }
+        }
+    }
+}
+
+void CheckOther::duplicateIfError(const Token *tok1, const Token *tok2)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok2);
+    toks.push_back(tok1);
+
+    reportError(toks, Severity::style, "duplicateIf", "Found duplicate if expressions.\n"
+                "Finding the same expression more than once is suspicious and might indicate "
+                "a cut and paste or logic error. Please examine this code carefully to determine "
+                "if it is correct.");
+}
+
+//-----------------------------------------------------------------------------
+
 void CheckOther::cstyleCastError(const Token *tok)
 {
     reportError(tok, Severity::style, "cstyleCast", "C-style pointer casting");
