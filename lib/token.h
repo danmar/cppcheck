@@ -175,7 +175,7 @@ public:
     }
     bool isExtendedOp() const
     {
-        return isOp() || 
+        return isOp() ||
                (this && _str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos);
     }
     bool isBoolean() const

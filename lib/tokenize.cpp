@@ -5594,11 +5594,12 @@ bool Tokenizer::simplifyFunctionReturn()
 
         else if (indentlevel == 0 && Token::Match(tok, "%var% ( ) { return %num% ; }") && tok->str() != ")")
         {
-            std::ostringstream pattern;
-            pattern << "[(=+-*/] " << tok->str() << " ( ) [;)+-*/]";
+            const std::string pattern("%any% " + tok->str() + " ( ) %any%");
             for (Token *tok2 = _tokens; tok2; tok2 = tok2->next())
             {
-                if (Token::Match(tok2, pattern.str().c_str()))
+                if (Token::Match(tok2, pattern.c_str()) &&
+                    (tok2->isOp() || Token::Match(tok2, "(|[|=")) &&
+                    (tok2->tokAt(4)->isOp() || Token::Match(tok2->tokAt(4), ";|]|)")))
                 {
                     tok2 = tok2->next();
                     tok2->str(tok->strAt(5));
