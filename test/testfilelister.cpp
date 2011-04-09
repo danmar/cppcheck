@@ -55,15 +55,11 @@ private:
         FileLister::recursiveAddFiles(filenames, ".");
 
         // In case there are leading "./"..
-        for (unsigned int i = 0; i < filenames.size(); ++i) {
+        for (unsigned int i = 0; i < filenames.size(); ++i)
+        {
             if (filenames[i].compare(0,2,"./") == 0)
                 filenames[i].erase(0,2);
         }
-        
-/*
-        for (unsigned int i = 0; i < filenames.size(); ++i)
-            std::cout << filenames[i] << std::endl;
-*/
 
         // Make sure source files are added..
         ASSERT(std::find(filenames.begin(), filenames.end(), "cli/main.cpp") != filenames.end());
