@@ -381,7 +381,7 @@ private:
     void simplifyTokenList1()
     {
         // #1717 : The simplifyErrNoInWhile needs to be used before simplifyIfAssign..
-        ASSERT_EQUALS("; x = f ( ) ; while ( ( x ) == -1 ) { x = f ( ) ; }",
+        ASSERT_EQUALS("; x = f ( ) ; while ( x == -1 ) { x = f ( ) ; }",
                       tok(";while((x=f())==-1 && errno==EINTR){}",true));
     }
 
