@@ -86,7 +86,7 @@ void CheckOther::clarifyCalculation()
                 continue;
 
             // calculation
-            if (!Token::Match(cond, "[+-*/]") && !Token::Match(cond, "<<|>>"))
+            if (!cond->isArithmeticalOp())
                 continue;
 
             const std::string &op = cond->str();
