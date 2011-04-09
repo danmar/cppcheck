@@ -178,6 +178,23 @@ public:
         return isOp() ||
                (this && _str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos);
     }
+    bool isAssignmentOp() const
+    {
+        if (!this)
+            return false;
+
+        return (_str == "="   ||
+                _str == "+="  ||
+                _str == "-="  ||
+                _str == "*="  ||
+                _str == "/="  ||
+                _str == "%="  ||
+                _str == "&="  ||
+                _str == "^="  ||
+                _str == "|="  ||
+                _str == "<<=" ||
+                _str == ">>=");
+    }
     bool isBoolean() const
     {
         return _isBoolean;

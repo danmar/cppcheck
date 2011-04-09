@@ -1491,9 +1491,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
         }
 
         // assignment.. = += |= ..
-        else if (tok1->str() == "=" ||
-                 (tok1->str().find("=") == 1 &&
-                  tok1->str().find_first_of("<!>") == std::string::npos))
+        else if (tok1->isAssignmentOp())
         {
             if (tok1->next()->str() == "this")
             {
