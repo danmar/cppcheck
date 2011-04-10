@@ -354,7 +354,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 
 void CheckOther::checkSwitchCaseFallThrough()
 {
-    if (!(_settings->_checkCodingStyle && _settings->stupid))
+    if (!(_settings->_checkCodingStyle && _settings->experimental))
         return;
 
     const char switchPattern[] = "switch (";

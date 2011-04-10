@@ -1382,7 +1382,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.stupid = true;
+        settings.experimental = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

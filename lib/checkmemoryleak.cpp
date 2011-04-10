@@ -774,7 +774,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             --parlevel;
             if (parlevel < 1)
             {
-                return (eq || _settings->stupid) ? 0 : "callfunc";
+                return (eq || _settings->experimental) ? 0 : "callfunc";
             }
         }
 
@@ -2024,7 +2024,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             }
 
             // Remove the "if break|continue ;" that follows "dealloc ; alloc ;"
-            if (! _settings->stupid && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
+            if (! _settings->experimental && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
             {
                 tok2 = tok2->tokAt(3);
                 Token::eraseTokens(tok2, tok2->tokAt(3));
@@ -2290,7 +2290,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
         }
 
         // If "--all" is given, remove all "callfunc"..
-        if (done && _settings->stupid)
+        if (done && _settings->experimental)
         {
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {

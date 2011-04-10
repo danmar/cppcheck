@@ -1118,7 +1118,7 @@ void CheckClass::virtualDestructor()
     // * base class doesn't have virtual destructor
     // * derived class has non-empty destructor
     // * base class is deleted
-    if (!_settings->stupid)
+    if (!_settings->experimental)
         return;
 
     createSymbolDatabase();
