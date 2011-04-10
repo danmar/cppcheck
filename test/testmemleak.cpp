@@ -127,13 +127,13 @@ public:
     { }
 
 private:
-    void check(const char code[], bool inconclusive = false)
+    void check(const char code[], bool stupid = false)
     {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.inconclusive = inconclusive;
+        settings.stupid = stupid;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2994,7 +2994,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.inconclusive = true;
+        settings.stupid = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -3707,7 +3707,6 @@ private:
     /**
      * Tokenize and execute leak check for given code
      * @param code Source code
-     * @param inconclusive inconclusive checking
      */
     void check(const char code[])
     {

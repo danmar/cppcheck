@@ -477,7 +477,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
                 // First check for a "fall through" comment match, but only
                 // add a suppression if the next token is 'case' or 'default'
-                if (_settings->_checkCodingStyle && _settings->inconclusive && fallThroughComment)
+                if (_settings->_checkCodingStyle && _settings->stupid && fallThroughComment)
                 {
                     std::string::size_type j = str.find_first_not_of("abcdefghijklmnopqrstuvwxyz", i);
                     std::string tok = str.substr(i, j - i);

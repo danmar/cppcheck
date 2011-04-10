@@ -43,6 +43,7 @@ Settings::Settings()
     _append = "";
     _terminate = false;
     inconclusive = false;
+    stupid = false;
     test_2_pass = false;
     reportProgress = false;
     ifcfg = false;

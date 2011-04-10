@@ -1122,8 +1122,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                         {
                             if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
                             {
-                                // this is currently inconclusive. See TestBufferOverrun::terminateStrncpy3
-                                if (_settings->inconclusive)
+                                // this is currently 'stupid'. See TestBufferOverrun::terminateStrncpy3
+                                if (_settings->stupid)
                                     terminateStrncpyError(tok);
                             }
 
