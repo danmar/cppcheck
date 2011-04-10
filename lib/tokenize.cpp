@@ -7349,12 +7349,12 @@ bool Tokenizer::simplifyCalculations()
         else if (tok->next() && tok->next()->isNumber())
         {
             // (1-2)
-            while (Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% [],);=<>+-*/|&^]") ||
-                   Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/|&^]") ||
+            while (Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% ]|,|)|;|=|%op%") ||
+                   Token::Match(tok, "<< %num% [+-*/] %num% ]|,|)|;|=|%op%") ||
                    Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% <<|>>") ||
                    Token::Match(tok, "<< %num% [+-*/] %num% <<") ||
                    Token::Match(tok, "[(,[] %num% [|&^] %num% [];,);]") ||
-                   Token::Match(tok, "(|==|!=|<=|>=|<|>|+|-|* %num% [+-*/] %num% ==|!=|<=|>=|<|>|)"))
+                   Token::Match(tok, "(|%op% %num% [+-*/] %num% )|%op%"))
             {
                 tok = tok->next();
 
