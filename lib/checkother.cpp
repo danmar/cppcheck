@@ -3230,6 +3230,56 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
                 "carefully to determine if it is correct.");
 }
 
+//---------------------------------------------------------------------------
+// check for the same expression on both sides of an operator
+// (x == x), (x && x), (x || x)
+// (x.y == x.y), (x.y && x.y), (x.y || x.y)
+//---------------------------------------------------------------------------
+
+void CheckOther::checkDuplicateExpression()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    // Parse all executing scopes..
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
+    {
+        // only check functions
+        if (scope->type != Scope::eFunction)
+            continue;
+
+        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next())
+        {
+            if (Token::Match(tok, "(|&&|%oror% %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% )|&&|%oror%") &&
+                tok->strAt(1) == tok->strAt(3))
+            {
+                duplicateExpressionError(tok->next(), tok->tokAt(3), tok->strAt(2));
+            }
+            else if (Token::Match(tok, "(|&&|%oror% %var% . %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% . %var% )|&&|%oror%") &&
+                     tok->strAt(1) == tok->strAt(5) && tok->strAt(3) == tok->strAt(7))
+            {
+                duplicateExpressionError(tok->next(), tok->tokAt(6), tok->strAt(4));
+            }
+        }
+    }
+}
+
+void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok2);
+    toks.push_back(tok1);
+
+    reportError(toks, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'.\n"
+                "Finding the same expression on both sides of an operator is suspicious and might "
+                "indicate a cut and paste or logic error. Please examine this code carefully to "
+                "determine if it is correct.");
+}
+
 //-----------------------------------------------------------------------------
 
 void CheckOther::cstyleCastError(const Token *tok)

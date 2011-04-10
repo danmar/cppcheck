@@ -65,6 +65,7 @@ public:
         checkOther.checkSelfAssignment();
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
+        checkOther.checkDuplicateExpression();
 
         // information checks
         checkOther.checkVariableScope();
@@ -212,6 +213,9 @@ public:
     /** @brief %Check for suspicious code where if and else branch are the same (e.g "if (a) b = true; else b = true;") */
     void checkDuplicateBranch();
 
+    /** @brief %Check for suspicious code with the same expression on both sides of operator (e.g "if (a && a)") */
+    void checkDuplicateExpression();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -242,6 +246,7 @@ public:
     void comparisonOfBoolWithIntError(const Token *tok, const std::string &varname);
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
+    void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -288,6 +293,7 @@ public:
         c.comparisonOfBoolWithIntError(0, "varname");
         c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
+        c.duplicateExpressionError(0, 0, "&&");
     }
 
     std::string myName() const

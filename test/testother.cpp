@@ -115,6 +115,7 @@ private:
 
         TEST_CASE(duplicateIf);
         TEST_CASE(duplicateBranch);
+        TEST_CASE(duplicateExpression);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -140,6 +141,7 @@ private:
         checkOther.clarifyCondition();
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
+        checkOther.checkDuplicateExpression();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -2486,6 +2488,28 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression()
+    {
+        check("voif foo() {\n"
+              "    if (a == a) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+
+        check("void fun() {\n"
+              "    return (a && a ||\n"
+              "            b == b &&\n"
+              "            c - c &&\n"
+              "            d > d &&\n"
+              "            e < e &&\n"
+              "            f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n"
+                      "[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '=='.\n"
+                      "[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n"
+                      "[test.cpp:5] -> [test.cpp:5]: (style) Same expression on both sides of '>'.\n"
+                      "[test.cpp:6] -> [test.cpp:6]: (style) Same expression on both sides of '<'.\n", errout.str());
     }
 };
 
