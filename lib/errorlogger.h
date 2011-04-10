@@ -88,7 +88,13 @@ public:
          * Debug message.
          * Debug-mode message useful for the developers.
          */
-        debug
+        debug,
+
+        /** inconclusive error */
+        inconclusive_error,
+        
+        /** inconclusive warning */
+        inconclusive_warning
     };
 
     static std::string toString(SeverityType severity)
@@ -111,6 +117,10 @@ public:
             return "information";
         case debug:
             return "debug";
+        case inconclusive_error:
+            return "inconclusive error";
+        case inconclusive_warning:
+            return "inconclusive warning";
         };
         return "???";
     }
@@ -134,6 +144,10 @@ public:
             return information;
         if (severity == "debug")
             return debug;
+        if (severity == "inconclusive error")
+            return inconclusive_error;
+        if (severity == "inconclusive warning")
+            return inconclusive_warning;
         return none;
     }
 };
