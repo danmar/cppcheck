@@ -5139,13 +5139,10 @@ bool Tokenizer::simplifyConditions()
         }
 
         // Reduce "(%num% == %num%)" => "(true)"/"(false)"
-        const Token *tok4 = tok->tokAt(4);
-        if (! tok4)
-            break;
         if (Token::Match(tok, "&&|%oror%|(") &&
             (Token::Match(tok->tokAt(1), "%num% %any% %num%") ||
              Token::Match(tok->tokAt(1), "%bool% %any% %bool%")) &&
-            Token::Match(tok4, "&&|%oror%|)|?"))
+            Token::Match(tok->tokAt(4), "&&|%oror%|)|?"))
         {
             std::string cmp = tok->strAt(2);
             bool result = false;
