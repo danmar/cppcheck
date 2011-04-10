@@ -396,7 +396,9 @@ Settings &CppCheck::settings()
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    std::string errmsg = msg.toString(_settings._verbose);
+    const std::string errmsg = msg.toString(_settings._verbose);
+    if (errmsg.empty())
+        return;
 
     // Alert only about unique errors
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())

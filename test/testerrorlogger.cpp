@@ -40,6 +40,9 @@ private:
         TEST_CASE(ToXml);
         TEST_CASE(ToVerboseXml);
         TEST_CASE(ToXmlV2);
+
+        // Inconclusive results in xml reports..
+        TEST_CASE(InconclusiveXml);
     }
 
     void FileLocationDefaults()
@@ -161,6 +164,25 @@ private:
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
         message += "    <location file=\"foo.cpp\" line=\"5\"/>\n  </error>";
         ASSERT_EQUALS(message, msg.toXML(false,2));
+    }
+    
+    void InconclusiveXml()
+    {
+        // Location
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.setfile("foo.cpp");
+        loc.line = 5;
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+        locs.push_back(loc);
+
+        // Error message
+        ErrorMessage msg(locs, Severity::inconclusive_error, "Programming error", "errorId");
+
+        // Don't save inconclusive messages if the xml version is 1
+        ASSERT_EQUALS("", msg.toXML(false, 1));
+
+        // TODO: how should inconclusive messages be saved when the xml version is 2?
+        ASSERT_EQUALS("", msg.toXML(false, 2));
     }
 };
 REGISTER_TEST(TestErrorLogger)

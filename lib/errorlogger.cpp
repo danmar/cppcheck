@@ -204,6 +204,10 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
     // The default xml format
     if (version == 1)
     {
+        // No inconclusive messages in the xml version 1
+        if (Severity::toString(_severity).compare(0,12,"inconclusive")==0)
+            return "";
+
         xml << "<error";
         if (!_callStack.empty())
         {
@@ -219,6 +223,10 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
     // The xml format you get when you use --xml-version=2
     else if (version == 2)
     {
+        // TODO: How should inconclusive messages be saved in the xml version 2?
+        if (Severity::toString(_severity).compare(0,12,"inconclusive")==0)
+            return "";
+
         xml << "  <error";
         xml << " id=\"" << _id << "\"";
         xml << " severity=\"" << Severity::toString(_severity) << "\"";
