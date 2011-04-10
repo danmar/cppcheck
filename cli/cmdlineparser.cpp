@@ -95,6 +95,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0)
             ;
 
+        // Inconclusive checking (still in testing phase)
+        else if (strcmp(argv[i], "--inconclusive") == 0)
+            _settings->inconclusive = true;
+
         // Checking coding style
         else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--style") == 0)
         {

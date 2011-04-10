@@ -55,7 +55,7 @@ public:
     /** @brief Is --debug-warnings given? */
     bool debugwarnings;
 
-    /** @brief Inconclusive checks - for debugging of Cppcheck */
+    /** @brief Inconclusive checks */
     bool inconclusive;
 
     /** @brief Is --style given? */
