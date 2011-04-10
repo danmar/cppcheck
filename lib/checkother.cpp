@@ -928,7 +928,7 @@ void CheckOther::checkUnsignedDivision()
             }
         }
 
-        else if (Token::Match(tok, "[([=*/+-,] %num% / %var%"))
+        else if (Token::Match(tok, "(|[|=|%op% %num% / %var%"))
         {
             if (tok->strAt(1)[0] == '-')
             {
