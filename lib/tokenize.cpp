@@ -5132,8 +5132,7 @@ bool Tokenizer::simplifyConditions()
             tok->tokAt(2)->str((tok->tokAt(2)->str() != "0") ? "true" : "false");
             ret = true;
         }
-        Token *tok2 = tok->tokAt(2);
-        if (Token::Match(tok2, "&&|%oror% %num% )|%oror%|&&"))
+        if (Token::Match(tok, "&&|%oror% %num% )|%oror%|&&"))
         {
             tok->next()->str((tok->next()->str() != "0") ? "true" : "false");
             ret = true;
