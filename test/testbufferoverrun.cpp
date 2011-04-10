@@ -36,13 +36,13 @@ private:
 
 
 
-    void check(const char code[], bool stupid = true)
+    void check(const char code[], bool experimental = true)
     {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.stupid = stupid;
+        settings.experimental = experimental;
         settings._checkCodingStyle = true;
 
         // Tokenize..

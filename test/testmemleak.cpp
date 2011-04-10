@@ -127,13 +127,13 @@ public:
     { }
 
 private:
-    void check(const char code[], bool stupid = false)
+    void check(const char code[], bool experimental = false)
     {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.stupid = stupid;
+        settings.experimental = experimental;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2994,7 +2994,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.stupid = true;
+        settings.experimental = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

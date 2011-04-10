@@ -59,11 +59,12 @@ public:
     bool inconclusive;
 
     /**
-     * @brief enables stupid checks that generates false positives because they are not clever enough.
-     * This flag should only be used temporarily by the check until it is fixed.
-     * There is no way to enable this flag from the command line.
+     * When this flag is false (default) then experimental
+     * heuristics and checks are disabled.
+     *
+     * It should not be possible to enable this from any client.
      */
-    bool stupid;
+    bool experimental;
 
     /** @brief Is --style given? */
     bool _checkCodingStyle;

@@ -193,7 +193,7 @@ private:
 
         Settings settings;
         settings._checkCodingStyle = true;
-        settings.stupid = true;
+        settings.experimental = true;
 
         // Preprocess file..
         Preprocessor preprocessor(&settings, this);
