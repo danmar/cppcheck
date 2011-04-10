@@ -5127,17 +5127,13 @@ bool Tokenizer::simplifyConditions()
         }
 
         // Change numeric constant in condition to "true" or "false"
-        if (Token::Match(tok, "if|while ( %num%") &&
-            (tok->tokAt(3)->str() == ")" || tok->tokAt(3)->str() == "||" || tok->tokAt(3)->str() == "&&"))
+        if (Token::Match(tok, "if|while ( %num% )|%oror%|&&"))
         {
             tok->tokAt(2)->str((tok->tokAt(2)->str() != "0") ? "true" : "false");
             ret = true;
         }
         Token *tok2 = tok->tokAt(2);
-        if (tok2                                        &&
-            (tok->str() == "&&" || tok->str() == "||")  &&
-            Token::Match(tok->next(), "%num%")          &&
-            (tok2->str() == ")" || tok2->str() == "&&" || tok2->str() == "||"))
+        if (Token::Match(tok2, "&&|%oror% %num% )|%oror%|&&"))
         {
             tok->next()->str((tok->next()->str() != "0") ? "true" : "false");
             ret = true;
@@ -5147,10 +5143,10 @@ bool Tokenizer::simplifyConditions()
         const Token *tok4 = tok->tokAt(4);
         if (! tok4)
             break;
-        if ((tok->str() == "&&" || tok->str() == "||" || tok->str() == "(") &&
+        if (Token::Match(tok, "&&|%oror%|(") &&
             (Token::Match(tok->tokAt(1), "%num% %any% %num%") ||
              Token::Match(tok->tokAt(1), "%bool% %any% %bool%")) &&
-            (tok4->str() == "&&" || tok4->str() == "||" || tok4->str() == ")" || tok4->str() == "?"))
+            Token::Match(tok4, "&&|%oror%|)|?"))
         {
             std::string cmp = tok->strAt(2);
             bool result = false;
@@ -6739,9 +6735,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 
         // condition "(|&&|%OROR% %varid% )|&&|%OROR%
         if (!Token::Match(tok3->previous(), "( %var% )") &&
-            (Token::Match(tok3->previous(), "&&|(") || tok3->strAt(-1) == "||") &&
-            tok3->varId() == varid &&
-            (Token::Match(tok3->next(), "&&|)") || tok3->strAt(1) == "||"))
+            Token::Match(tok3->previous(), "&&|(|%oror% %varid% &&|%oror%|)", varid))
         {
             tok3->str(value);
             ret = true;
@@ -7309,9 +7303,7 @@ bool Tokenizer::simplifyCalculations()
                 MathLib::isInt(tok->str()) &&
                 MathLib::isInt(tok->tokAt(2)->str()))
             {
-                const std::string prev(tok->previous() ? tok->strAt(-1).c_str() : "");
-                const std::string after(tok->tokAt(3) ? tok->strAt(3).c_str() : "");
-                if ((prev == "(" || prev == "&&" || prev == "||") && (after == ")" || after == "&&" || after == "||"))
+                if (Token::Match(tok->previous(), "(|&&|%oror%") && Token::Match(tok->tokAt(3), ")|&&|%oror%"))
                 {
                     const MathLib::bigint op1(MathLib::toLongNumber(tok->str()));
                     const std::string &cmp(tok->next()->str());
