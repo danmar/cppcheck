@@ -6898,7 +6898,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (((tok3->previous()->varId() > 0) && Token::Match(tok3, ("& " + structname + " %varid%").c_str(), varid)) ||
             Token::Match(tok3, ("[=+-*/%^|[] " + structname + " %varid% [=?+-*/%^|;])]").c_str(), varid) ||
             Token::Match(tok3, ("[(=+-*/%^|[] " + structname + " %varid% <<|>>").c_str(), varid) ||
-            Token::Match(tok3, ("<<|>> " + structname + " %varid% [+-*/%^|;])]").c_str(), varid) ||
+            Token::Match(tok3, ("<<|>> " + structname + " %varid% %op%|;|]|)").c_str(), varid) ||
             Token::Match(tok3->previous(), ("[=+-*/%^|[] ( " + structname + " %varid%").c_str(), varid))
         {
             if (value[0] == '\"')
