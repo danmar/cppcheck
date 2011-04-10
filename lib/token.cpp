@@ -224,11 +224,26 @@ static bool strisop(const char str[])
 
 int Token::multiCompare(const char *haystack, const char *needle)
 {
-    if (strncmp(haystack, "%op%|", 5) == 0)
+    if (haystack[0] == '%' && haystack[1] != '|')
     {
-        haystack = haystack + 5;
-        if (strisop(needle))
-            return 1;
+        if (strncmp(haystack, "%op%|", 5) == 0)
+        {
+            haystack = haystack + 5;
+            if (strisop(needle))
+                return 1;
+        }
+        else if (strncmp(haystack, "%or%|", 5) == 0)
+        {
+            haystack = haystack + 5;
+            if (*needle == '|')
+                return 1;
+        }
+        else if (strncmp(haystack, "%oror%|", 7) == 0)
+        {
+            haystack = haystack + 7;
+            if (needle[0] == '|' && needle[1] == '|')
+                return 1;
+        }
     }
 
     bool emptyStringFound = false;
@@ -284,11 +299,27 @@ int Token::multiCompare(const char *haystack, const char *needle)
 
             ++haystack;
 
-            if (strncmp(haystack, "%op%", 4) == 0)
+            if (haystack[0] == '%' && haystack[1] != '|')
             {
-                if (strisop(needle))
-                    return 1;
-                haystack = haystack + 4;
+                if (strncmp(haystack, "%op%", 4) == 0)
+                {
+                    if (strisop(needle))
+                        return 1;
+                    haystack = haystack + 4;
+                }
+                else if (strncmp(haystack, "%or%", 4) == 0)
+                {
+                    if (*needle == '|')
+                        return 1;
+                    haystack = haystack + 4;
+                }
+                else if (strncmp(haystack, "%oror%", 6) == 0)
+                {
+                    if (needle[0] == '|' && needle[1] == '|')
+                        return 1;
+                    haystack = haystack + 6;
+                }
+
                 if (*haystack == '|')
                     haystack++;
                 else if (*haystack == ' ' || *haystack == '\0')
@@ -513,21 +544,56 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             }
             break;
             case 'o':
-                // Or (%or%)
+                // Or (%or%) and Op (%op%)
                 if (p[3] == '%')
                 {
-                    if (tok->str() != "|")
-                        return false;
-                    p += 4;
                     patternUnderstood = true;
+
+                    // multicompare..
+                    if (p[4] == '|')
+                    {
+                        int result = multiCompare(p, tok->str().c_str());
+                        if (result == -1)
+                            return false;   // No match
+                    }
+
+                    // single compare..
+                    else if (p[2] == 'r')
+                    {
+                        if (tok->str() != "|")
+                            return false;
+                    }
+                    else if (p[3] == 'p')
+                    {
+                        if (!tok->isOp())
+                            return false;
+                    }
+                    else
+                        patternUnderstood = false;
                 }
+
                 // Oror (%oror%)
                 else
                 {
+                    // multicompare..
+                    if (p[5] == '|')
+                    {
+                        int result = multiCompare(p, tok->str().c_str());
+                        if (result == -1)
+                            return false;   // No match
+                    }
+
+                    // single compare..
                     if (tok->str() != "||")
                         return false;
-                    p += 6;
+
                     patternUnderstood = true;
+                }
+
+                if (patternUnderstood)
+                {
+                    while (*p && *p != ' ')
+                        p++;
                 }
                 break;
             default:

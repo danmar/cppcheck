@@ -227,6 +227,8 @@ private:
         ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "%oror%"));
         ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "%or%"));
         ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%oror%"));
+        ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "&&|%oror%"));
+        ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "%oror%|&&"));
     }
 };
 
