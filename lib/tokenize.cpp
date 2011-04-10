@@ -7394,9 +7394,9 @@ bool Tokenizer::simplifyCalculations()
                 // + and - are calculated after * and /
                 else if (Token::Match(tok->next(), "[+-/]"))
                 {
-                    if (tok->previous()->str() == "*")
+                    if (Token::Match(tok->previous(), "[*/%]"))
                         continue;
-                    if (Token::Match(tok->tokAt(3), "[*/]"))
+                    if (Token::Match(tok->tokAt(3), "[*/%]"))
                         continue;
                 }
 
