@@ -230,6 +230,12 @@ private:
         ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "&&|%oror%"));
         ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "%oror%|&&"));
     }
+
+    void matchOp()
+    {
+        givenACodeSampleToTokenize op("+");
+        ASSERT_EQUALS(true, Token::Match(op.tokens(), "%op%"));
+    }
 };
 
 REGISTER_TEST(TestToken)
