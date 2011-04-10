@@ -6110,7 +6110,7 @@ void Tokenizer::simplifyIfNot()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok->str() == "(" || tok->str() == "||" || tok->str() == "&&")
+        if (Token::Match(tok, "(|&&|%oror%"))
         {
             tok = tok->next();
             while (tok && tok->str() == "(")
@@ -6181,7 +6181,7 @@ void Tokenizer::simplifyIfNotNull()
     {
         Token *deleteFrom = NULL;
 
-        if (tok->str() == "(" || tok->str() == "||" || tok->str() == "&&")
+        if (Token::Match(tok, "(|&&|%oror%"))
         {
             tok = tok->next();
 
