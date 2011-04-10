@@ -146,10 +146,7 @@ void CheckOther::clarifyCondition()
             {
                 if (tok2->str() == "(" || tok2->str() == "[")
                     tok2 = tok2->link();
-                else if (tok2->str() == "||" ||
-                         tok2->str() == "&&" ||
-                         tok2->str() == "?" ||
-                         tok2->str() == ")")
+                else if (Token::Match(tok2, "&&|%oror%|?|)"))
                     break;
                 else if (Token::Match(tok2, "<|<=|==|!=|>|>= %num% )"))
                 {
