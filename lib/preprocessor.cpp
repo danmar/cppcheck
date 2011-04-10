@@ -1478,8 +1478,8 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
                     }
                 }
             }
-            else if ((!tok->previous() || tok->strAt(-1) == "||" || tok->strAt(-1) == "&&" || tok->strAt(-1) == "(") &&
-                     (!tok->next() || tok->strAt(1) == "||" || tok->strAt(1) == "&&" || tok->strAt(1) == ")"))
+            else if ((!tok->previous() || Token::Match(tok->previous(), "&&|%oror%|(")) &&
+                     (!tok->next() || Token::Match(tok->next(), "&&|%oror%|)")))
                 tok->str("1");
             else
                 tok->deleteThis();
