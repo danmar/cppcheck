@@ -3045,10 +3045,28 @@ void CheckOther::checkIncorrectStringCompare()
 static const std::string stringifyTokens(const Token *start, const Token *end)
 {
     const Token *tok = start;
-    std::string stringified = tok->str();
+    std::string stringified;
+
+    if (tok->isUnsigned())
+        stringified.append("unsigned ");
+    else if (tok->isSigned())
+        stringified.append("signed ");
+
+    if (tok->isLong())
+        stringified.append("long ");
+
+    stringified.append(tok->str());
 
     while (tok && tok->next() && tok != end)
     {
+        if (tok->isUnsigned())
+            stringified.append("unsigned ");
+        else if (tok->isSigned())
+            stringified.append("signed ");
+
+        if (tok->isLong())
+            stringified.append("long ");
+
         tok = tok->next();
         stringified.append(" ");
         stringified.append(tok->str());

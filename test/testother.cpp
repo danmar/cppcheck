@@ -2476,6 +2476,16 @@ private:
               "        b = 1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for if and else.\n", errout.str());
+
+        check("int f(int signed, unsigned char value) {\n"
+              "    int ret;\n"
+              "    if (signed)\n"
+              "        ret = (signed char)value;\n"
+              "    else\n"
+              "        ret = (unsigned char)value;\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
