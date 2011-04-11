@@ -124,7 +124,7 @@ static void makeExtObj(std::ostream &fout, const std::vector<std::string> &exter
         if (start)
         {
             libName = getLibName(externalfiles[i]);
-            fout << "#ifndef " << libName << std::endl;
+            fout << "ifndef " << libName << std::endl;
             fout << "    " << libName << " = " << objfile(externalfiles[i]);
             libNames << "EXTOBJ += $(" << libName << ")" << std::endl;
             start = false;
@@ -137,7 +137,7 @@ static void makeExtObj(std::ostream &fout, const std::vector<std::string> &exter
         if (i+1 >= externalfiles.size() || libName != getLibName(externalfiles[i+1]))
         {
             // This was the last file for this library
-            fout << std::endl << "#endif" << std::endl;
+            fout << std::endl << "endif" << std::endl;
             fout << "\n\n";
             start = true;
         }

@@ -103,12 +103,12 @@ TESTOBJ =     test/options.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o
 
-#ifndef TINYXML
+ifndef TINYXML
     TINYXML = externals/tinyxml/tinystr.o \
               externals/tinyxml/tinyxml.o \
               externals/tinyxml/tinyxmlerror.o \
               externals/tinyxml/tinyxmlparser.o
-#endif
+endif
 
 
 EXTOBJ += $(TINYXML)
