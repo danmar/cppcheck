@@ -164,7 +164,8 @@ unsigned int CppCheck::check()
                     ErrorLogger::ErrorMessage errmsg(loclist,
                                                      Severity::information,
                                                      msg,
-                                                     "toomanyconfigs");
+                                                     "toomanyconfigs",
+                                                     false);
                     _errorLogger.reportErr(errmsg);
                     break;
                 }
@@ -333,7 +334,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
                 ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
                                                  Severity::error,
                                                  error,
-                                                 "pcre_compile");
+                                                 "pcre_compile",
+                                                 false);
 
                 reportErr(errmsg);
             }
@@ -375,7 +377,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
                     summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
                 else
                     summary = rule.summary;
-                ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id);
+                const ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id, false);
 
                 // Report error
                 reportErr(errmsg);

@@ -482,7 +482,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                         const ErrorLogger::ErrorMessage errmsg(locationList,
                                                                Severity::error,
                                                                "Internal error. Token::Match called with varid 0.",
-                                                               "cppcheckError");
+                                                               "cppcheckError",
+                                                               false);
                         Check::reportError(errmsg);
                     }
 

@@ -53,7 +53,8 @@ void Preprocessor::writeError(const std::string &fileName, const unsigned int li
     errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
                            Severity::error,
                            errorText,
-                           errorType));
+                           errorType,
+                           false));
 }
 
 static unsigned char readChar(std::istream &istr)
@@ -1370,7 +1371,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             if (_errorLogger && _settings && _settings->debugwarnings)
             {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                const ErrorLogger::ErrorMessage errmsg(locationList, Severity::debug, "unhandled configuration: " + *it, "debug");
+                const ErrorLogger::ErrorMessage errmsg(locationList, Severity::debug, "unhandled configuration: " + *it, "debug", false);
                 _errorLogger->reportErr(errmsg);
             }
 
@@ -1765,7 +1766,8 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
     _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
                             Severity::error,
                             msg,
-                            "preprocessorErrorDirective"));
+                            "preprocessorErrorDirective",
+                            false));
 }
 
 Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
@@ -1963,7 +1965,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     // currently a debug-message.
     const Severity::SeverityType severity = userheader ? Severity::information : Severity::debug;
     const std::string id = userheader ? "missingInclude" : "debug";
-    ErrorLogger::ErrorMessage errmsg(locationList, severity, "Include file: \"" + header + "\" not found.", id);
+    ErrorLogger::ErrorMessage errmsg(locationList, severity, "Include file: \"" + header + "\" not found.", id, false);
     errmsg.file0 = file0;
     _errorLogger->reportErr(errmsg);
 }

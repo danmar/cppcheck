@@ -129,6 +129,32 @@ protected:
     /** report an error */
     void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg)
     {
+        reportError(callstack, severity, id, msg, false);
+    }
+
+    /** report an inconclusive error */
+    void reportInconclusiveError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg)
+    {
+        std::list<const Token *> callstack;
+        if (tok)
+            callstack.push_back(tok);
+        reportInconclusiveError(callstack, severity, id, msg);
+    }
+
+    /** report an inconclusive error */
+    void reportInconclusiveError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg)
+    {
+        reportError(callstack, severity, id, msg, true);
+    }
+
+
+private:
+    /** disabled assignment operator */
+    void operator=(const Check &);
+
+    /** report an error */
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg, bool inconclusive)
+    {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
         {
@@ -142,7 +168,7 @@ protected:
             locationList.push_back(loc);
         }
 
-        ErrorLogger::ErrorMessage errmsg(locationList, severity, msg, id);
+        ErrorLogger::ErrorMessage errmsg(locationList, severity, msg, id, inconclusive);
         if (_tokenizer && _tokenizer->getFiles() && !_tokenizer->getFiles()->empty())
             errmsg.file0 = _tokenizer->getFiles()->at(0);
         if (_errorLogger)
@@ -150,12 +176,6 @@ protected:
         else
             reportError(errmsg);
     }
-
-
-
-private:
-    /** disabled assignment operator */
-    void operator=(const Check &);
 
 };
 

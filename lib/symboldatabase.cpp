@@ -1209,7 +1209,8 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
         const ErrorLogger::ErrorMessage errmsg(locationList,
                                                Severity::debug,
                                                msg,
-                                               "debug");
+                                               "debug",
+                                               false);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else

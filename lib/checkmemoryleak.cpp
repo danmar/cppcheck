@@ -352,7 +352,7 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
         locations.push_back(loc);
     }
 
-    const ErrorLogger::ErrorMessage errmsg(locations, severity, msg, id);
+    const ErrorLogger::ErrorMessage errmsg(locations, severity, msg, id, false);
 
     if (errorLogger)
         errorLogger->reportErr(errmsg);

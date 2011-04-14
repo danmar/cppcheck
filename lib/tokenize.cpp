@@ -489,7 +489,8 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
                                            Severity::style,
                                            std::string(type + " '" + tok2->str() +
                                                    "' hides typedef with same name"),
-                                           "variableHidingTypedef");
+                                           "variableHidingTypedef",
+                                           false);
 
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
@@ -515,7 +516,8 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
                                            Severity::style,
                                            std::string(type + " '" + tok2->str() +
                                                    "' forward declaration unnecessary, already declared"),
-                                           "unnecessaryForwardDeclaration");
+                                           "unnecessaryForwardDeclaration",
+                                           false);
 
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
@@ -751,7 +753,8 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            Severity::debug,
                                            "Failed to parse \'" + str.str() + "\'. The checking continues anyway.",
-                                           "debug");
+                                           "debug",
+                                           false);
 
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
@@ -2950,7 +2953,8 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
             const ErrorLogger::ErrorMessage errmsg(locationList,
                                                    Severity::debug,
                                                    "simplifyTemplates: bailing out",
-                                                   "debug");
+                                                   "debug",
+                                                   false);
 
             if (_errorLogger)
                 _errorLogger->reportErr(errmsg);
@@ -3059,7 +3063,8 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                 const ErrorLogger::ErrorMessage errmsg(locationList,
                                                        Severity::debug,
                                                        "Failed to instantiate template. The checking continues anyway.",
-                                                       "debug");
+                                                       "debug",
+                                                       false);
 
                 _errorLogger->reportErr(errmsg);
             }
@@ -6807,7 +6812,8 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                 const ErrorLogger::ErrorMessage errmsg(locationList,
                                                        Severity::debug,
                                                        "simplifyKnownVariables: bailing out (variable="+tok3->str()+", value="+value+")",
-                                                       "debug");
+                                                       "debug",
+                                                       false);
 
                 if (_errorLogger)
                     _errorLogger->reportErr(errmsg);
@@ -7698,7 +7704,8 @@ void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const
                                            Severity::style,
                                            std::string(type + " '" + tok2->str() +
                                                    "' hides enumerator with same name"),
-                                           "variableHidingEnum");
+                                           "variableHidingEnum",
+                                           false);
 
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
@@ -8337,7 +8344,8 @@ void Tokenizer::syntaxError(const Token *tok)
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            Severity::error,
                                            "syntax error",
-                                           "syntaxError");
+                                           "syntaxError",
+                                           false);
 
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
@@ -8364,7 +8372,8 @@ void Tokenizer::syntaxError(const Token *tok, char c)
                                            "when these macros are defined: '" +
                                            _configuration +
                                            "'.",
-                                           "syntaxError");
+                                           "syntaxError",
+                                           false);
 
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
@@ -8386,7 +8395,8 @@ void Tokenizer::cppcheckError(const Token *tok) const
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            Severity::error,
                                            "Analysis failed. If the code is valid then please report this failure.",
-                                           "cppcheckError");
+                                           "cppcheckError",
+                                           false);
 
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
@@ -9667,7 +9677,8 @@ void Tokenizer::removeUnnecessaryQualification()
                 const ErrorLogger::ErrorMessage errmsg(locationList,
                                                        Severity::portability,
                                                        "Extra qualification \'" + tok->str() + "::\' unnecessary and considered an error by many compilers.",
-                                                       "portability");
+                                                       "portability",
+                                                       false);
 
                 if (_errorLogger)
                     _errorLogger->reportErr(errmsg);

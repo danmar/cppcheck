@@ -88,13 +88,7 @@ public:
          * Debug message.
          * Debug-mode message useful for the developers.
          */
-        debug,
-
-        /** inconclusive error */
-        inconclusive_error,
-
-        /** inconclusive warning */
-        inconclusive_warning
+        debug
     };
 
     static std::string toString(SeverityType severity)
@@ -117,10 +111,6 @@ public:
             return "information";
         case debug:
             return "debug";
-        case inconclusive_error:
-            return "inconclusive error";
-        case inconclusive_warning:
-            return "inconclusive warning";
         };
         return "???";
     }
@@ -144,10 +134,6 @@ public:
             return information;
         if (severity == "debug")
             return debug;
-        if (severity == "inconclusive error")
-            return inconclusive_error;
-        if (severity == "inconclusive warning")
-            return inconclusive_warning;
         return none;
     }
 };
@@ -202,7 +188,7 @@ public:
 
         };
 
-        ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id);
+        ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
         ErrorMessage();
 
         /**
@@ -229,6 +215,7 @@ public:
         std::list<FileLocation> _callStack;
         Severity::SeverityType _severity;
         std::string _id;
+        bool _inconclusive;
 
         /** source file (not header) */
         std::string file0;

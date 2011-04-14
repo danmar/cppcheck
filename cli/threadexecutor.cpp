@@ -254,7 +254,8 @@ unsigned int ThreadExecutor::check()
                     const ErrorLogger::ErrorMessage errmsg(locations,
                                                            Severity::error,
                                                            oss.str(),
-                                                           "cppcheckError");
+                                                           "cppcheckError",
+                                                           false);
                     _errorLogger.reportErr(errmsg);
                 }
             }

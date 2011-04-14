@@ -26,10 +26,10 @@
 ErrorLogger::ErrorMessage::ErrorMessage()
     :_severity(Severity::none)
 {
-
+    _inconclusive = false;
 }
 
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id)
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive)
 {
     // locations for this error message
     _callStack = callStack;
@@ -42,6 +42,8 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
 
     // set the message id
     _id = id;
+
+    _inconclusive = inconclusive;
 }
 
 void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
@@ -68,6 +70,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     std::ostringstream oss;
     oss << _id.length() << " " << _id;
     oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
+    oss << (_inconclusive ? "12 inconclusive" : "");
     oss << _shortMessage.length() << " " << _shortMessage;
     oss << _verboseMessage.length() << " " << _verboseMessage;
     oss << _callStack.size() << " ";
@@ -84,6 +87,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
 
 bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
 {
+    _inconclusive = false;
     _callStack.clear();
     std::istringstream iss(data);
     std::vector<std::string> results;
@@ -99,6 +103,12 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         {
             char c = static_cast<char>(iss.get());
             temp.append(1, c);
+        }
+
+        if (temp == "inconclusive")
+        {
+            _inconclusive = true;
+            break;
         }
 
         results.push_back(temp);
@@ -205,7 +215,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
     if (version == 1)
     {
         // No inconclusive messages in the xml version 1
-        if (Severity::toString(_severity).compare(0,12,"inconclusive")==0)
+        if (_inconclusive)
             return "";
 
         xml << "<error";
@@ -224,7 +234,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
     else if (version == 2)
     {
         // TODO: How should inconclusive messages be saved in the xml version 2?
-        if (Severity::toString(_severity).compare(0,12,"inconclusive")==0)
+        if (_inconclusive)
             return "";
 
         xml << "  <error";
@@ -305,7 +315,7 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Settings::Suppress
     {
         std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
         callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(i->file, i->line));
-        reportErr(ErrorLogger::ErrorMessage(callStack, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression"));
+        reportErr(ErrorLogger::ErrorMessage(callStack, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression", false));
     }
 }
 

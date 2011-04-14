@@ -67,7 +67,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Programming error.", msg.verboseMessage());
@@ -82,7 +82,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -97,7 +97,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -112,7 +112,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -127,7 +127,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
         ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
         ASSERT_EQUALS("<error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Programming error.\"/>", msg.toXML(false,1));
@@ -140,7 +140,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
         ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
         ASSERT_EQUALS("<error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Verbose error\"/>", msg.toXML(true,1));
@@ -153,7 +153,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
         header += "  <cppcheck version=\"";
         header += CppCheck::version();
@@ -175,8 +175,8 @@ private:
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
 
-        // Error message
-        ErrorMessage msg(locs, Severity::inconclusive_error, "Programming error", "errorId");
+        // Inconclusive error message
+        ErrorMessage msg(locs, Severity::error, "Programming error", "errorId", true);
 
         // Don't save inconclusive messages if the xml version is 1
         ASSERT_EQUALS("", msg.toXML(false, 1));
