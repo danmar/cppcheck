@@ -1202,16 +1202,23 @@ void Tokenizer::simplifyTypedef()
                     tok = deleteInvalidTypedef(typeDef);
                     continue;
                 }
-                else if (!Token::Match(tok->tokAt(offset)->link(), ") ;|,"))
+                else if (!Token::Match(tok->tokAt(offset)->link(), ") const| ;|,"))
                 {
                     syntaxError(tok);
                     return;
                 }
 
                 function = true;
+                if (tok->tokAt(offset)->link()->next()->str() == "const")
+                {
+                    specStart = tok->tokAt(offset)->link()->next();
+                    specEnd = specStart;
+                }
                 argStart = tok->tokAt(offset);
                 argEnd = tok->tokAt(offset)->link();
                 tok = argEnd->next();
+                if (specStart)
+                    tok = tok->next();
             }
 
             // unhandled typedef, skip it and continue

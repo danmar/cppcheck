@@ -252,6 +252,7 @@ private:
         TEST_CASE(simplifyTypedef86); // ticket #2581
         TEST_CASE(simplifyTypedef87); // ticket #2651
         TEST_CASE(simplifyTypedef88); // ticket #2675
+        TEST_CASE(simplifyTypedef89); // ticket #2717
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5082,6 +5083,18 @@ private:
     {
         const char code[] = "typedef short int (*x)(...);\n";
         const char expected[] = ";";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef89() // ticket #2717
+    {
+        const char code[] = "class Fred {\n"
+                            "    typedef void f(int) const;\n"
+                            "    f func;\n"
+                            "};\n";
+        const char expected[] = "class Fred { ; void func ( int ) const ; } ;";
         checkSimplifyTypedef(code);
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
