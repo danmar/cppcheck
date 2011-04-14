@@ -5542,6 +5542,10 @@ private:
 
         // #2368
         ASSERT_EQUALS("if ( false ) { } else { j = j - i ; }", tokenizeAndStringify("if (false) {} else { j -= i; }"));
+
+        // #2714 - wrong simplification of "a += b?c:d;"
+        ASSERT_EQUALS("; a = a + ( b ? c : d ) ;", tokenizeAndStringify("; a+=b?c:d;"));
+        ASSERT_EQUALS("; a = a * ( b + 1 ) ;", tokenizeAndStringify("; a*=b+1;"));
     }
 
     void simplifyAssignmentInFunctionCall()

@@ -5015,9 +5015,35 @@ void Tokenizer::simplifyCompoundAssignment()
             }
             else
             {
+                // Enclose the rhs in parantheses..
+                if (!Token::Match(tok->next(), "%any% [;)]"))
+                {
+                    // Only enclose rhs in parantheses if there is some operator
+                    bool someOperator = false;
+                    for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+                    {
+                        if (tok2->str() == "(")
+                            tok2 = tok2->link();
+
+                        if (Token::Match(tok2->next(), "[;)]"))
+                        {
+                            if (someOperator)
+                            {
+                                tok->insertToken("(");
+                                tok2->insertToken(")");
+                                Token::createMutualLinks(tok->next(), tok2->next());
+                            }
+                            break;
+                        }
+
+                        someOperator |= bool(tok2->isArithmeticalOp() || (tok2->str() == "?"));
+                    }
+                }
+
                 // simplify the compound assignment..
                 tok->str("=");
                 tok->insertToken(op);
+
                 std::stack<Token *> tokend;
                 for (const Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous())
                 {
