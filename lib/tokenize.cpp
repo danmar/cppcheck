@@ -1040,8 +1040,6 @@ void Tokenizer::simplifyTypedef()
         Token *typeDef = tok;
         Token *argFuncRetStart = 0;
         Token *argFuncRetEnd = 0;
-        Token *const1 = 0;
-        Token *const2 = 0;
         Token *funcStart = 0;
         Token *funcEnd = 0;
         int offset = 1;
@@ -1681,17 +1679,6 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
                         }
 
-                        if (const1)
-                        {
-                            tok2->insertToken(const1->str());
-                            tok2 = tok2->next();
-                            if (const2)
-                            {
-                                tok2->insertToken(const2->str());
-                                tok2 = tok2->next();
-                            }
-                        }
-
                         if (!inCast)
                             tok2 = processFunc(tok2, inOperator);
 
@@ -1851,10 +1838,17 @@ void Tokenizer::simplifyTypedef()
                             {
                                 tok2 = tok2->previous();
                                 tok2->insertToken("(");
-                                tok2 = tok2->tokAt(3);
+                                Token *tok3 = tok2->next();
+
+                                // handle missing variable name
+                                if (tok2->strAt(3) == ")" || tok2->strAt(3) == ",")
+                                    tok2 = tok2->tokAt(2);
+                                else
+                                    tok2 = tok2->tokAt(3);
+
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
-                                Token::createMutualLinks(tok2, tok2->tokAt(-3));
+                                Token::createMutualLinks(tok2, tok3);
                             }
 
                             tok2 = copyTokens(tok2, arrayStart, arrayEnd);
