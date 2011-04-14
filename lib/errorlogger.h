@@ -92,7 +92,7 @@ public:
 
         /** inconclusive error */
         inconclusive_error,
-        
+
         /** inconclusive warning */
         inconclusive_warning
     };

@@ -2725,7 +2725,7 @@ private:
         ASSERT_EQUALS("if ( 4 < a )", tok("if (14-2*5<a*4/(2*2))"));
 
         ASSERT_EQUALS("( y / 2 - 2 )", tok("(y / 2 - 2)"));
-        ASSERT_EQUALS("( y % 2 - 2 )", tok("(y % 2 - 2)"));        
+        ASSERT_EQUALS("( y % 2 - 2 )", tok("(y % 2 - 2)"));
     }
 
 

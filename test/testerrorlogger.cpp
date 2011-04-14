@@ -165,7 +165,7 @@ private:
         message += "    <location file=\"foo.cpp\" line=\"5\"/>\n  </error>";
         ASSERT_EQUALS(message, msg.toXML(false,2));
     }
-    
+
     void InconclusiveXml()
     {
         // Location
