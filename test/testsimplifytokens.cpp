@@ -300,6 +300,7 @@ private:
         TEST_CASE(enum18); // #2466 (array with same name as enum constant)
         TEST_CASE(enum19); // ticket #2536
         TEST_CASE(enum20); // ticket #2600
+        TEST_CASE(enum21); // ticket #2720
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6380,6 +6381,13 @@ private:
     {
         const char code[] = "enum { const }\n";
         ASSERT_EQUALS(";", tok(code, false));
+    }
+
+    void enum21() // ticket #2720 syntax error
+    {
+        const char code[] = "enum E2 : signed const short { };\n";
+        ASSERT_EQUALS(";", tok(code, false));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void removestd()

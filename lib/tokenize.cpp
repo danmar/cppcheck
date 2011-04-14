@@ -7871,7 +7871,7 @@ void Tokenizer::simplifyEnum()
 
                 typeTokenStart = tok->tokAt(offset);
                 typeTokenEnd = typeTokenStart;
-                while (Token::Match(typeTokenEnd->next(), "signed|unsigned|char|short|int|long"))
+                while (Token::Match(typeTokenEnd->next(), "signed|unsigned|char|short|int|long|const"))
                     typeTokenEnd = typeTokenEnd->next();
 
                 if (!Token::Match(typeTokenEnd->next(), "{|;"))
