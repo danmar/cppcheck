@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -328,6 +328,33 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tab_6">
+      <attribute name="title">
+       <string>Advanced</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <widget class="QCheckBox" name="mEnableInconclusive">
+         <property name="text">
+          <string>&amp;Show inconclusive errors</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>
@@ -349,12 +376,20 @@
   <tabstop>mShowFullPath</tabstop>
   <tabstop>mShowNoErrorsMessage</tabstop>
   <tabstop>mShowDebugWarnings</tabstop>
+  <tabstop>mInlineSuppressions</tabstop>
+  <tabstop>mListIncludePaths</tabstop>
+  <tabstop>mBtnAddIncludePath</tabstop>
+  <tabstop>mBtnEditIncludePath</tabstop>
+  <tabstop>mBtnRemoveIncludePath</tabstop>
   <tabstop>mListWidget</tabstop>
   <tabstop>mBtnAddApplication</tabstop>
   <tabstop>mBtnEditApplication</tabstop>
+  <tabstop>mBtnRemoveApplication</tabstop>
   <tabstop>mBtnDefaultApplication</tabstop>
   <tabstop>mSaveAllErrors</tabstop>
   <tabstop>mSaveFullPath</tabstop>
+  <tabstop>mListLanguages</tabstop>
+  <tabstop>mEnableInconclusive</tabstop>
   <tabstop>mButtons</tabstop>
  </tabstops>
  <resources/>

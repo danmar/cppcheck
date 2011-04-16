@@ -20,6 +20,7 @@
 
 ErrorItem::ErrorItem()
     : severity(Severity::none)
+    , inconclusive(false)
 {
 }
 

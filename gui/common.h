@@ -82,6 +82,7 @@ ShowTypes;
 #define SETTINGS_LANGUAGE               "Application language"
 #define SETTINGS_GLOBAL_INCLUDE_PATHS   "Global include paths"
 #define SETTINGS_INLINE_SUPPRESSIONS    "Inline suppressions"
+#define SETTINGS_INCONCLUSIVE_ERRORS    "Inconclusive errors"
 
 /// @}
 #endif
