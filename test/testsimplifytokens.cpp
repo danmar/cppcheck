@@ -254,6 +254,7 @@ private:
         TEST_CASE(simplifyTypedef88); // ticket #2675
         TEST_CASE(simplifyTypedef89); // ticket #2717
         TEST_CASE(simplifyTypedef90); // ticket #2718
+        TEST_CASE(simplifyTypedef91); // ticket #2716
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5107,6 +5108,32 @@ private:
         const char code[] = "typedef int IA[2];\n"
                             "void f(const IA&) {};\n";
         const char expected[] = "; void f ( const int ( & ) [ 2 ] ) { } ;";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef91() // ticket #2716
+    {
+        const char code[] = "namespace NS {\n"
+                            "    typedef int (*T)();\n"
+                            "    class A {\n"
+                            "        T f();\n"
+                            "    };\n"
+                            "}\n"
+                            "namespace NS {\n"
+                            "    T A::f() {}\n"
+                            "}\n";
+        const char expected[] = "namespace NS { "
+                                "; "
+                                "class A { "
+                                "int ( * f ( ) ) ( ) ; "
+                                "} ; "
+                                "} "
+                                "namespace NS { "
+                                "int ( * A :: f ( ) ) ( ) { } "
+                                "}";
+
         checkSimplifyTypedef(code);
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
