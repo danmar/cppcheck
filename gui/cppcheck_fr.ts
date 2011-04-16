@@ -716,6 +716,10 @@ Please select the directory where file is located.</source>
         <source>debug</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>[Inconclusive]</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -846,6 +850,14 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Set as default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Show inconclusive errors</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1029,6 +1041,13 @@ Statistics
  &lt;tr&gt;&lt;th&gt;Information messages:&lt;/th&gt;&lt;td&gt;%13&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TxtReport</name>
+    <message>
+        <source>inconclusive</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
