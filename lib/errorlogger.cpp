@@ -70,7 +70,11 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     std::ostringstream oss;
     oss << _id.length() << " " << _id;
     oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
-    oss << (_inconclusive ? "12 inconclusive" : "");
+    if (_inconclusive)
+    {
+        const std::string inconclusive("inconclusive");
+        oss << inconclusive.length() << " " << inconclusive;
+    }
     oss << _shortMessage.length() << " " << _shortMessage;
     oss << _verboseMessage.length() << " " << _verboseMessage;
     oss << _callStack.size() << " ";
@@ -108,7 +112,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         if (temp == "inconclusive")
         {
             _inconclusive = true;
-            break;
+            continue;
         }
 
         results.push_back(temp);

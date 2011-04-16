@@ -43,6 +43,9 @@ private:
 
         // Inconclusive results in xml reports..
         TEST_CASE(InconclusiveXml);
+
+        // Serialize / Deserialize inconclusive message
+        TEST_CASE(SerializeInconclusiveMessage);
     }
 
     void FileLocationDefaults()
@@ -183,6 +186,27 @@ private:
 
         // TODO: how should inconclusive messages be saved when the xml version is 2?
         ASSERT_EQUALS("", msg.toXML(false, 2));
+    }
+
+    void SerializeInconclusiveMessage()
+    {
+        // Inconclusive error message
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+        ErrorMessage msg(locs, Severity::error, "Programming error", "errorId", true);
+        ASSERT_EQUALS("7 errorId"
+                      "5 error"
+                      "12 inconclusive"
+                      "17 Programming error"
+                      "17 Programming error"
+                      "0 ", msg.serialize());
+
+        ErrorMessage msg2;
+        msg2.deserialize(msg.serialize());
+        ASSERT_EQUALS("errorId", msg2._id);
+        ASSERT_EQUALS(Severity::error, msg2._severity);
+        ASSERT_EQUALS(true, msg2._inconclusive);
+        ASSERT_EQUALS("Programming error", msg2.shortMessage());
+        ASSERT_EQUALS("Programming error", msg2.verboseMessage());
     }
 };
 REGISTER_TEST(TestErrorLogger)
