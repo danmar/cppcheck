@@ -6727,11 +6727,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyIfNotNull() // ticket # 2601 segmentation fault
+    void simplifyIfNotNull()
     {
-        const char code[] = "|| #if #define <=";
-        tok(code, false);
-        ASSERT_EQUALS("", errout.str());
+        {
+            // ticket # 2601 segmentation fault
+            const char code[] = "|| #if #define <=";
+            tok(code, false);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "void f(int x) {\n"
+                                "    x = (x != 0);\n"
+                                "}";
+            ASSERT_EQUALS("void f ( int x ) { }", tok(code, false));
+        }
+
     }
 };
 

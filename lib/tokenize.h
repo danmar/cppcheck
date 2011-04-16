@@ -253,7 +253,8 @@ public:
 
     /**
      * simplify if-not NULL
-     * - "if(0!=x);" => "if(x);"
+     * Example: "if(0!=x);" => "if(x);"
+     * Special case: 'x = (0 != x);' is removed.
      */
     void simplifyIfNotNull();
 

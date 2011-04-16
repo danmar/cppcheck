@@ -6213,6 +6213,22 @@ void Tokenizer::simplifyIfNotNull()
     {
         Token *deleteFrom = NULL;
 
+        // Remove 'x = (x != 0)'
+        if (Token::simpleMatch(tok, "= ("))
+        {
+            if (Token::Match(tok->tokAt(-2), "[;{}] %var%"))
+            {
+                const unsigned int varid = tok->previous()->varId();
+                if (Token::Match(tok, "= ( %varid% != 0 ) ;", varid) ||
+                    Token::Match(tok, "= ( 0 != %varid% ) ;", varid))
+                {
+                    tok = tok->tokAt(-2);
+                    Token::eraseTokens(tok, tok->tokAt(9));
+                }
+            }
+            continue;
+        }
+
         if (Token::Match(tok, "(|&&|%oror%"))
         {
             tok = tok->next();

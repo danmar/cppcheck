@@ -1582,6 +1582,18 @@ private:
               "        Fred fred; fred = fred;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    x = (x == 0);"
+              "    func(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    x = (x != 0);"
+              "    func(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testScanf1()
