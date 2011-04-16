@@ -72,6 +72,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
     item.summary = QString::fromStdString(msg.shortMessage());
     item.message = QString::fromStdString(msg.verboseMessage());
     item.severity = msg._severity;
+    item.inconclusive = msg._inconclusive;
 
     if (msg._severity != Severity::debug)
         emit Error(item);

@@ -113,6 +113,7 @@ public:
     QList<unsigned int> lines;
     QString id;
     Severity::SeverityType severity;
+    bool inconclusive;
     QString summary;
     QString message;
 };
@@ -128,6 +129,7 @@ public:
     QString file;
     unsigned int line;
     QString id;
+    bool inconclusive;
     Severity::SeverityType severity;
     QString summary;
     QString message;

@@ -121,6 +121,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     ErrorLine line;
     line.file = realfile;
     line.id = item.id;
+    line.inconclusive = item.inconclusive;
     line.line = item.lines[0];
     line.summary = item.summary;
     line.message = item.message;
@@ -144,6 +145,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     data["file"]  = item.files[0];
     data["line"]  = item.lines[0];
     data["id"]  = item.id;
+    data["inconclusive"] = item.inconclusive;
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
@@ -165,6 +167,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
         child_data["file"]  = item.files[i];
         child_data["line"]  = line.line;
         child_data["id"]  = line.id;
+        child_data["inconclusive"] = line.inconclusive;
         child_item->setData(QVariant(child_data));
     }
 
@@ -196,7 +199,14 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     list << CreateLineNumberItem(QString("%1").arg(item.line));
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
-    list << CreateNormalItem(tr(item.summary.toLatin1()));
+    QString summary;
+    if (item.inconclusive)
+    {
+        summary = tr("[Inconclusive]");
+        summary += " ";
+    }
+    summary += item.summary.toLatin1();
+    list << CreateNormalItem(summary);
 
     // Check for duplicate rows and don't add them if found
     for (int i = 0; i < parent->rowCount(); i++)
@@ -774,7 +784,13 @@ void ResultsTree::CopyMessage()
 
         QVariantMap data = mContextItem->data().toMap();
 
-        QString message = data["message"].toString();
+        QString message;
+        if (data["inconclusive"].toBool())
+        {
+            message = tr("[Inconclusive]");
+            message += " ";
+        }
+        message += data["message"].toString();
 
         QClipboard *clipboard = QApplication::clipboard();
         clipboard->setText(message);
@@ -903,6 +919,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         item.summary = data["summary"].toString();
         item.message = data["message"].toString();
         item.id = data["id"].toString();
+        item.inconclusive = data["inconclusive"].toBool();
         QString file = StripPath(data["file"].toString(), true);
         unsigned int line = data["line"].toUInt();
 

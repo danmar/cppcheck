@@ -93,6 +93,10 @@ void XmlReportV1::WriteError(const ErrorItem &error)
     The callstack seems to be ignored here as well, instead last item of the stack is used
     */
 
+    // Don't write inconclusive errors to XML V1
+    if (error.inconclusive)
+        return;
+
     mXmlWriter->writeStartElement(ErrorElementName);
     QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
     file = XmlReport::quoteMessage(file);
