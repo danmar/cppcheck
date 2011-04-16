@@ -6234,9 +6234,10 @@ void Tokenizer::simplifyIfNotNull()
         {
             if (Token::Match(tok->tokAt(-2), "[;{}] %var%"))
             {
-                const unsigned int varid = tok->previous()->varId();
-                if (Token::Match(tok, "= ( %varid% != 0 ) ;", varid) ||
-                    Token::Match(tok, "= ( 0 != %varid% ) ;", varid))
+                const std::string varname(tok->previous()->str());
+
+                if (Token::Match(tok->tokAt(2), (varname + " != 0 ) ;").c_str()) ||
+                    Token::Match(tok->tokAt(2), ("0 != " + varname + " ) ;").c_str()))
                 {
                     tok = tok->tokAt(-2);
                     Token::eraseTokens(tok, tok->tokAt(9));
