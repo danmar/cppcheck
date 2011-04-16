@@ -68,7 +68,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::list<std::string>::iterator iter;
         for (iter = _settings._includePaths.begin();
              iter != _settings._includePaths.end();
-             )
+            )
         {
             const std::string path(Path::toNativeSeparators(*iter));
             if (FileLister::isDirectory(path))
