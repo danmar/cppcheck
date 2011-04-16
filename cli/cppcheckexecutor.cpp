@@ -65,21 +65,20 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     // Check that all include paths exist
     {
-        std::list<std::string>::reverse_iterator iter;
-        for (iter = _settings._includePaths.rbegin();
-             iter != _settings._includePaths.rend();
-             ++iter)
+        std::list<std::string>::iterator iter;
+        for (iter = _settings._includePaths.begin();
+             iter != _settings._includePaths.end();
+             )
         {
             const std::string path(Path::toNativeSeparators(*iter));
-            if (!FileLister::isDirectory(path))
+            if (FileLister::isDirectory(path))
+                ++iter;
+            else
             {
                 // If the include path is not found, warn user and remove the
                 // non-existing path from the list.
                 std::cout << "cppcheck: warning: Couldn't find path given by -I '" + path + "'" << std::endl;
-                std::list<std::string>::iterator del_iter(iter.base());
-                --del_iter;
-                ++iter;
-                _settings._includePaths.erase(del_iter);
+                iter = _settings._includePaths.erase(iter);
             }
         }
     }
