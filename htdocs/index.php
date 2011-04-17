@@ -50,6 +50,7 @@ as plugin for your favorite IDE:</p>
   <li><strong>CodeLite</strong> - <em>integrated</em></li>
   <li><strong>Eclipse</strong> - <a href="http://cppcheclipse.googlecode.com/">Cppcheclipse</a></li>
   <li><strong>Hudson</strong> - <a href="http://wiki.hudson-ci.org/display/HUDSON/Cppcheck+Plugin">Cppcheck Plugin</a></li>
+  <li><strong>Jenkins</strong> - <a href="http://wiki.jenkins-ci.org/display/JENKINS/Cppcheck+Plugin">Cppcheck Plugin</a></li>
 </ul>
 <p>No plugin exists for <strong>Visual Studio</strong>, but it's possible to add
 Cppcheck as an external tool.</p>
