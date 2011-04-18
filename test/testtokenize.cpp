@@ -2849,7 +2849,7 @@ private:
                                    "1: class A {\n"
                                    "2: B < C < 1 > , 1 > b@1 ;\n"
                                    "3: } ;\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
     void varid30() // ticket #2614
