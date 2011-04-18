@@ -88,6 +88,9 @@ private:
         // return c_str()..
         TEST_CASE(returncstr1);
         TEST_CASE(returncstr2);
+
+        // global namespace
+        TEST_CASE(testglobalnamespace);
     }
 
 
@@ -427,6 +430,22 @@ private:
               "    return hello().c_str();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:11]: (error) Returning pointer to temporary\n", errout.str());
+    }
+
+
+    void testglobalnamespace()
+    {
+        check("class SharedPtrHolder\n"
+              "{\n"
+              "   ::std::tr1::shared_ptr<int> pNum;\n"
+              "public:\n"
+              "   void SetNum(const ::std::tr1::shared_ptr<int> & apNum)\n"
+              "   {\n"
+              "      pNum = apNum;\n"
+              "   }\n"
+              "}");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

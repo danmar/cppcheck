@@ -3398,7 +3398,7 @@ void Tokenizer::setVarId()
     _varId = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok != _tokens && !Token::Match(tok, "[;{}(,] %type%"))
+        if (tok != _tokens && !Token::Match(tok, "[;{}(,] %type%") && !Token::Match(tok, "[;{}(,] ::"))
             continue;
 
         if (_errorLogger)
@@ -3416,7 +3416,7 @@ void Tokenizer::setVarId()
                 continue;
         }
 
-        if (Token::Match(tok, "[,;{}(] %type%"))
+        if (Token::Match(tok, "[,;{}(] %type%") || Token::Match(tok, "[;{}(,] ::"))
         {
             // not function declaration?
             // TODO: Better checking
@@ -3454,6 +3454,10 @@ void Tokenizer::setVarId()
             continue;
 
         while (Token::Match(tok, "const|static|extern|public:|private:|protected:|;|mutable"))
+            tok = tok->next();
+
+        // skip global namespace prefix
+        if (Token::Match(tok, "::"))
             tok = tok->next();
 
         while (Token::Match(tok, "%var% ::"))

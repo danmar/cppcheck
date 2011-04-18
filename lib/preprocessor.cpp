@@ -1058,7 +1058,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         if (!line.empty() && line.compare(0, 3, "#if") != 0)
             includeguard = false;
 
-        if (line[0] != '#')
+        if (line.empty() || line[0] != '#')
             continue;
 
         if (includeguard)
