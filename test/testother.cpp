@@ -115,7 +115,8 @@ private:
 
         TEST_CASE(duplicateIf);
         TEST_CASE(duplicateBranch);
-        TEST_CASE(duplicateExpression);
+        TEST_CASE(duplicateExpression1);
+        TEST_CASE(duplicateExpression2); // ticket #2730
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -2502,7 +2503,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void duplicateExpression()
+    void duplicateExpression1()
     {
         check("voif foo() {\n"
               "    if (a == a) { }\n"
@@ -2522,6 +2523,27 @@ private:
                       "[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n"
                       "[test.cpp:5] -> [test.cpp:5]: (style) Same expression on both sides of '>'.\n"
                       "[test.cpp:6] -> [test.cpp:6]: (style) Same expression on both sides of '<'.\n", errout.str());
+    }
+
+    void duplicateExpression2() // ticket #2730
+    {
+        check("int main()\n"
+              "{\n"
+              "    long double ldbl;\n"
+              "    double dbl, in;\n"
+              "    float  flt;\n"
+              "    int have_nan = 0;\n"
+              "    ldbl = sqrtl(-1.0);\n"
+              "    dbl = sqrt(-1.0);\n"
+              "    flt = sqrtf(-1.0);\n"
+              "    if (ldbl != ldbl) have_nan = 1;\n"
+              "    if (!(dbl == dbl)) have_nan = 1;\n"
+              "    if (flt != flt) have_nan = 1;\n"
+              "    return have_nan;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Passing value -1.0 to sqrtl() leads to undefined result\n"
+                      "[test.cpp:8]: (error) Passing value -1.0 to sqrt() leads to undefined result\n"
+                      "[test.cpp:9]: (error) Passing value -1.0 to sqrtf() leads to undefined result\n", errout.str());
     }
 };
 

@@ -2908,7 +2908,7 @@ void CheckOther::checkMathFunctions()
         }
         // sqrt( x ): if x is negative the result is undefined
         else if (tok->varId() == 0 &&
-                 Token::Match(tok, "sqrt ( %num% )") &&
+                 Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )") &&
                  MathLib::isNegative(tok->tokAt(2)->str()))
         {
             mathfunctionCallError(tok);
@@ -3257,6 +3257,17 @@ void CheckOther::checkDuplicateExpression()
             if (Token::Match(tok, "(|&&|%oror% %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% )|&&|%oror%") &&
                 tok->strAt(1) == tok->strAt(3))
             {
+                // float == float and float != float are valid NaN checks
+                if (Token::Match(tok->tokAt(2), "==|!=") && tok->next()->varId())
+                {
+                    const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                    if (var && var->typeStartToken() == var->typeEndToken())
+                    {
+                        if (Token::Match(var->typeStartToken(), "float|double"))
+                            continue;
+                    }
+                }
+
                 duplicateExpressionError(tok->next(), tok->tokAt(3), tok->strAt(2));
             }
             else if (Token::Match(tok, "(|&&|%oror% %var% . %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% . %var% )|&&|%oror%") &&
