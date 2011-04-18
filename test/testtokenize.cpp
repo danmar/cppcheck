@@ -172,6 +172,7 @@ private:
         TEST_CASE(varid27);	// Ticket #2280 (same name for namespace and variable)
         TEST_CASE(varid28);   // ticket #2630
         TEST_CASE(varid29);   // ticket #1974
+        TEST_CASE(varid30);   // ticket #2614
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -2848,7 +2849,42 @@ private:
                                    "1: class A {\n"
                                    "2: B < C < 1 > , 1 > b@1 ;\n"
                                    "3: } ;\n");
-        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varid30() // ticket #2614
+    {
+        const std::string code1("void f(EventPtr *eventP, ActionPtr **actionsP)\n"
+                                "{\n"
+                                "    EventPtr event = *eventP;\n"
+                                "    *actionsP = &event->actions;\n"
+                                "}\n");
+        const std::string expected1("\n\n##file 0\n"
+                                    "1: void f ( EventPtr * eventP@1 , ActionPtr * * actionsP@2 )\n"
+                                    "2: {\n"
+                                    "3: EventPtr event@3 ; event@3 = * eventP@1 ;\n"
+                                    "4: * actionsP@2 = & event@3 . actions@4 ;\n"
+                                    "5: }\n");
+        const std::string actual1("\n\n##file 0\n"
+                                  "1: void f ( EventPtr * eventP , ActionPtr * * actionsP@1 )\n"
+                                  "2: {\n"
+                                  "3: EventPtr event@2 ; event@2 = * eventP ;\n"
+                                  "4: * actionsP@1 = & event@2 . actions@3 ;\n"
+                                  "5: }\n");
+        TODO_ASSERT_EQUALS(expected1, actual1, tokenizeDebugListing(code1));
+
+        const std::string code2("void f(int b, int c) {\n"
+                                "    x(a*b*c,10);\n"
+                                "}\n");
+        const std::string expected2("\n\n##file 0\n"
+                                    "1: void f ( int b@1 , int c@2 ) {\n"
+                                    "2: x ( a@3 * b@1 * c@2 , 10 ) ;\n"
+                                    "3: }\n");
+        const std::string actual2("\n\n##file 0\n"
+                                  "1: void f ( int b@1 , int c@2 ) {\n"
+                                  "2: x ( a * b@1 * c@3 , 10 ) ;\n"
+                                  "3: }\n");
+        TODO_ASSERT_EQUALS(expected2, actual2, tokenizeDebugListing(code2));
     }
 
     void varidFunctionCall1()
