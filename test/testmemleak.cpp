@@ -2203,25 +2203,25 @@ private:
     // #2733
     void func25()
     {
-       check("int* GetDeviceName(int a, int b)\n"
-             "{\n"
-             " int *p = new int[255];\n"
-             " memset(p, 0, 255 * sizeof(int));\n"
-             " if(a)\n"
-             "  if(b)\n"
-             "    return p;\n"
-             " return NULL;  \n"
-             "}\n");
+        check("int* GetDeviceName(int a, int b)\n"
+              "{\n"
+              " int *p = new int[255];\n"
+              " memset(p, 0, 255 * sizeof(int));\n"
+              " if(a)\n"
+              "  if(b)\n"
+              "    return p;\n"
+              " return NULL;  \n"
+              "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n","", errout.str());
 
-       check("int* GetDeviceName(int a)\n"
-             "{\n"
-             " int *p = new int[255];\n"
-             " memset(p, 0, 255 * sizeof(int));\n"
-             "  if(a)\n"
-             "    return p;\n"
-             " return NULL;  \n"
-             "}\n");
+        check("int* GetDeviceName(int a)\n"
+              "{\n"
+              " int *p = new int[255];\n"
+              " memset(p, 0, 255 * sizeof(int));\n"
+              "  if(a)\n"
+              "    return p;\n"
+              " return NULL;  \n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: p\n", errout.str());
     }
 
