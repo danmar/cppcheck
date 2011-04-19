@@ -232,6 +232,7 @@ private:
         TEST_CASE(func22);      // Ticket #2668
         TEST_CASE(func23);      // Ticket #2667
         TEST_CASE(func24);      // Ticket #2705
+        TEST_CASE(func25);      // Ticket #2733
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -589,7 +590,7 @@ private:
             , "getservbyname", "getservbyport", "glob", "index", "inet_addr", "inet_aton", "inet_network"
             , "initgroups", "link", "mblen", "mbstowcs", "mbtowc", "mkdir", "mkfifo", "mknod", "obstack_printf"
             , "obstack_vprintf", "opendir", "parse_printf_format", "pathconf", "popen", "psignal", "putenv"
-            , "readlink", "regcomp", "strxfrm", "wordexp"
+            , "readlink", "regcomp", "strxfrm", "wordexp", "sizeof"
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
@@ -2197,6 +2198,31 @@ private:
               "  delete x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // #2733
+    void func25()
+    {
+       check("int* GetDeviceName(int a, int b)\n"
+             "{\n"
+             " int *p = new int[255];\n"
+             " memset(p, 0, 255 * sizeof(int));\n"
+             " if(a)\n"
+             "  if(b)\n"
+             "    return p;\n"
+             " return NULL;  \n"
+             "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n","", errout.str());
+
+       check("int* GetDeviceName(int a)\n"
+             "{\n"
+             " int *p = new int[255];\n"
+             " memset(p, 0, 255 * sizeof(int));\n"
+             "  if(a)\n"
+             "    return p;\n"
+             " return NULL;  \n"
+             "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: p\n", errout.str());
     }
 
     void allocfunc1()
