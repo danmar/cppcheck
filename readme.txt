@@ -51,7 +51,7 @@ Compiling
             make
 
         To build Cppcheck without rules (no dependencies):
-            make CXXFLAGS="-O2"
+            make HAVE_RULES=no
 
     g++ (for experts)
     =================
