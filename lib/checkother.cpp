@@ -2517,7 +2517,7 @@ void CheckOther::checkConstantFunctionParameter()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[,(] const std :: %type% %var% [,)]"))
+        if (Token::Match(tok, "[,(] const std :: string %var% [,)]"))
         {
             passedByValueError(tok, tok->strAt(5));
         }
