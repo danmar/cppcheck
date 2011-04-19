@@ -99,7 +99,7 @@ public:
      */
     static const char * version();
 
-    virtual void reportStatus(unsigned int index, unsigned int max);
+    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal);
 
     /**
      * @brief Terminate checking. The checking will be terminated as soon as possible.

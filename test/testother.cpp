@@ -179,9 +179,9 @@ private:
             if (!msg._callStack.empty() && !_settings.nomsg.isSuppressed(msg._id, msg._callStack.begin()->getfile(), msg._callStack.begin()->line))
                 _next->reportErr(msg);
         }
-        virtual void reportStatus(unsigned int index, unsigned int max)
+        virtual void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal)
         {
-            _next->reportStatus(index, max);
+            _next->reportStatus(fileindex, filecount, sizedone, sizetotal);
         }
     private:
         Settings &_settings;

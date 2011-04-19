@@ -52,7 +52,15 @@ private:
     {
         // Recursively add add files..
         std::vector<std::string> filenames;
-        FileLister::recursiveAddFiles(filenames, ".");
+        std::map<std::string, long> filesizes;
+        FileLister::recursiveAddFiles(filenames, filesizes, ".");
+
+        // Ensure a nonzero size is present for each listed file
+        for (std::vector<std::string>::const_iterator i = filenames.begin(); i != filenames.end(); ++i)
+        {
+            ASSERT(filesizes.find(*i) != filesizes.end());
+            ASSERT(filesizes[*i] > 0);
+        }
 
         // In case there are leading "./"..
         for (unsigned int i = 0; i < filenames.size(); ++i)

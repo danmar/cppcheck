@@ -85,13 +85,14 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     std::vector<std::string> pathnames = parser.GetPathNames();
     std::vector<std::string> filenames;
+    std::map<std::string, long> filesizes;
 
     if (!pathnames.empty())
     {
         // Execute recursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
         for (iter = pathnames.begin(); iter != pathnames.end(); ++iter)
-            FileLister::recursiveAddFiles(filenames, Path::toNativeSeparators(*iter));
+            FileLister::recursiveAddFiles(filenames, filesizes, Path::toNativeSeparators(*iter));
     }
 
     if (!filenames.empty())
@@ -114,7 +115,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     {
         std::vector<std::string>::iterator iter;
         for (iter = filenames.begin(); iter != filenames.end(); ++iter)
+        {
             _filenames.push_back(*iter);
+            _filesizes[*iter] = filesizes[*iter];
+        }
 
         return true;
     }
@@ -146,10 +150,22 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     if (_settings._jobs == 1)
     {
         // Single process
+
+        long totalfilesize = 0;
+        for (std::map<std::string, long>::const_iterator i = _filesizes.begin(); i != _filesizes.end(); ++i)
+        {
+            totalfilesize += i->second;
+        }
+
+        long processedsize = 0;
         for (unsigned int c = 0; c < _filenames.size(); c++)
         {
             returnValue += cppCheck.check(_filenames[c]);
-            reportStatus(c + 1, _filenames.size());
+            if (_filesizes.find(_filenames[c]) != _filesizes.end())
+            {
+                processedsize += _filesizes[_filenames[c]];
+            }
+            reportStatus(c + 1, _filenames.size(), processedsize, totalfilesize);
         }
     }
     else if (!ThreadExecutor::isEnabled())
@@ -160,7 +176,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     {
         // Multiple processes
         Settings &settings = cppCheck.settings();
-        ThreadExecutor executor(_filenames, settings, *this);
+        ThreadExecutor executor(_filenames, _filesizes, settings, *this);
         returnValue = executor.check();
     }
 
@@ -216,14 +232,14 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportStatus(unsigned int index, unsigned int max)
+void CppCheckExecutor::reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal)
 {
-    if (max > 1 && !_settings._errorsOnly)
+    if (filecount > 1 && !_settings._errorsOnly)
     {
         std::ostringstream oss;
-        oss << index << "/" << max
+        oss << fileindex << "/" << filecount
             << " files checked " <<
-            static_cast<int>(static_cast<double>(index) / max*100)
+            (sizetotal > 0 ? static_cast<long>(static_cast<double>(sizedone) / sizetotal*100) : 0)
             << "% done";
         std::cout << oss.str() << std::endl;
     }

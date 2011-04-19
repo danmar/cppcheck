@@ -71,6 +71,7 @@ private:
         }
 
         std::vector<std::string> filenames;
+        std::map<std::string, long> filesizes;
         filenames.push_back("test.cpp");
 
         Settings settings;
@@ -81,7 +82,7 @@ private:
             std::string r = settings.nomsg.addSuppressionLine(suppression);
             ASSERT_EQUALS("", r);
         }
-        ThreadExecutor executor(filenames, settings, *this);
+        ThreadExecutor executor(filenames, filesizes, settings, *this);
         for (unsigned int i = 0; i < filenames.size(); ++i)
             executor.addFileContent(filenames[i], code);
 

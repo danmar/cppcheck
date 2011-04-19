@@ -72,7 +72,7 @@ public:
 
     void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
 
-    virtual void reportStatus(unsigned int index, unsigned int max);
+    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal);
 
 protected:
 
@@ -113,6 +113,11 @@ private:
      * List of files to check.
      */
     std::vector<std::string> _filenames;
+
+    /**
+     * Sizes of files in _filenames.
+     */
+    std::map<std::string, long> _filesizes;
 };
 
 #endif // CPPCHECKEXECUTOR_H

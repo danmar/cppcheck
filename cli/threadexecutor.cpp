@@ -31,8 +31,8 @@
 #include <time.h>
 #endif
 
-ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, Settings &settings, ErrorLogger &errorLogger)
-    : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
+ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const std::map<std::string, long> &filesizes, Settings &settings, ErrorLogger &errorLogger)
+    : _filenames(filenames), _filesizes(filesizes), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
 #ifdef THREADING_MODEL_FORK
     _wpipe = 0;
@@ -116,12 +116,10 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     }
     else if (type == '3')
     {
-        _fileCount++;
         std::istringstream iss(buf);
         unsigned int fileResult = 0;
         iss >> fileResult;
         result += fileResult;
-        _errorLogger.reportStatus(_fileCount, _filenames.size());
         delete [] buf;
         return -1;
     }
@@ -135,8 +133,16 @@ unsigned int ThreadExecutor::check()
     _fileCount = 0;
     unsigned int result = 0;
 
+    long totalfilesize = 0;
+    for (std::map<std::string, long>::const_iterator i = _filesizes.begin(); i != _filesizes.end(); ++i)
+    {
+        totalfilesize += i->second;
+    }
+
     std::list<int> rpipes;
     std::map<pid_t, std::string> childFile;
+    std::map<int, std::string> pipeFile;
+    long processedsize = 0;
     unsigned int i = 0;
     while (true)
     {
@@ -199,6 +205,7 @@ unsigned int ThreadExecutor::check()
             close(pipes[1]);
             rpipes.push_back(pipes[0]);
             childFile[pid] = _filenames[i];
+            pipeFile[pipes[0]] = _filenames[i];
 
             ++i;
         }
@@ -221,6 +228,23 @@ unsigned int ThreadExecutor::check()
                         int readRes = handleRead(*rp, result);
                         if (readRes == -1)
                         {
+                            long size = 0;
+                            std::map<int, std::string>::iterator p = pipeFile.find(*rp);
+                            if (p != pipeFile.end())
+                            {
+                                std::string name = p->second;
+                                pipeFile.erase(p);
+                                std::map<std::string, long>::const_iterator fs = _filesizes.find(name);
+                                if (fs != _filesizes.end())
+                                {
+                                    size = fs->second;
+                                }
+                            }
+
+                            _fileCount++;
+                            processedsize += size;
+                            _errorLogger.reportStatus(_fileCount, _filenames.size(), processedsize, totalfilesize);
+
                             close(*rp);
                             rp = rpipes.erase(rp);
                         }
@@ -299,7 +323,7 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     writeToPipe('2', msg.serialize());
 }
 
-void ThreadExecutor::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
+void ThreadExecutor::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/)
 {
     // Not used
 }
@@ -319,7 +343,7 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &/*msg*/)
 
 }
 
-void ThreadExecutor::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
+void ThreadExecutor::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/)
 {
 
 }

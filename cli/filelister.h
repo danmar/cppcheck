@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 /// @addtogroup CLI
 /// @{
@@ -35,9 +36,11 @@ public:
      * given vector. Only files with accepted extensions
      * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
      * @param filenames output vector that filenames are written to
+     * @param filesizes output map that contains the size of each file
      * @param path root path
      */
     static void recursiveAddFiles(std::vector<std::string> &filenames,
+                                  std::map<std::string, long> &filesizes,
                                   const std::string &path);
 
     /**
@@ -57,6 +60,7 @@ public:
 #ifndef _WIN32
     static void recursiveAddFiles2(std::vector<std::string> &relative,
                                    std::vector<std::string> &absolute,
+                                   std::map<std::string, long> &filesizes,
                                    const std::string &path);
 #endif
 };

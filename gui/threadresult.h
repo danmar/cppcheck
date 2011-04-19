@@ -71,7 +71,7 @@ public:
     */
     void reportOut(const std::string &outmsg);
     void reportErr(const ErrorLogger::ErrorMessage &msg);
-    void reportStatus(unsigned int index, unsigned int max);
+    void reportStatus(unsigned int fileindex, unsigned int filecount, FileLister::filesize_t sizedone, FileLister::filesize_t sizetotal);
 public slots:
 
     /**

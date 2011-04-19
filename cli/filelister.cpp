@@ -129,7 +129,7 @@ static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
 
 #endif // defined(UNICODE)
 
-void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path)
+void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map<std::string, long> &filesizes, const std::string &path)
 {
     // oss is the search string passed into FindFirst and FindNext.
     // bdir is the base directory which is used to form pathnames.
@@ -201,12 +201,14 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const st
             {
                 const std::string nativename = Path::fromNativeSeparators(fname.str());
                 filenames.push_back(nativename);
+                // Limitation: file sizes are assumed to fit in a 'long'
+                filesizes[nativename] = ffd.nFileSizeLow;
             }
         }
         else
         {
             // Directory
-            FileLister::recursiveAddFiles(filenames, fname.str());
+            FileLister::recursiveAddFiles(filenames, filesizes, fname.str());
         }
 #if defined(UNICODE)
         delete [] ansiFfd;
@@ -239,9 +241,11 @@ bool FileLister::isDirectory(const std::string &path)
 #include <unistd.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <sys/stat.h>
 
 void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
                                     std::vector<std::string> &absolute,
+                                    std::map<std::string, long> &filesizes,
                                     const std::string &path)
 {
     std::ostringstream oss;
@@ -284,6 +288,14 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
             {
                 relative.push_back(filename);
                 absolute.push_back(fname);
+                struct stat sb;
+                off_t size = 0;
+                if (stat(fname, &sb) == 0)
+                {
+                    size = sb.st_size;
+                }
+                // Limitation: file sizes are assumed to fit in a 'long'
+                filesizes[filename] = static_cast<long>(size);
             }
 
 #ifndef PATH_MAX
@@ -293,17 +305,17 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
         else
         {
             // Directory
-            recursiveAddFiles2(relative, absolute, filename);
+            recursiveAddFiles2(relative, absolute, filesizes, filename);
         }
     }
     globfree(&glob_results);
 }
 
 
-void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path)
+void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map<std::string, long> &filesizes, const std::string &path)
 {
     std::vector<std::string> abs;
-    recursiveAddFiles2(filenames, abs, path);
+    recursiveAddFiles2(filenames, abs, filesizes, path);
 }
 
 bool FileLister::isDirectory(const std::string &path)
