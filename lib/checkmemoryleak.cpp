@@ -1902,6 +1902,14 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                     done = false;
                 }
 
+                // Remove outer condition..
+                else if (Token::Match(tok2->next(), "if { if return use ; }"))
+                {
+                    tok2->tokAt(6)->deleteNext();
+                    Token::eraseTokens(tok2, tok2->tokAt(3));
+                    done = false;
+                }
+
                 continue;
             }
 

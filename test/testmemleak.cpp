@@ -232,7 +232,6 @@ private:
         TEST_CASE(func22);      // Ticket #2668
         TEST_CASE(func23);      // Ticket #2667
         TEST_CASE(func24);      // Ticket #2705
-        TEST_CASE(func25);      // Ticket #2733
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -666,6 +665,13 @@ private:
         ASSERT_EQUALS("; if alloc ; else assign ; return use ;", simplifycode("; callfunc ; if callfunc { alloc ; } else { assign ; } return use ;"));
 
         ASSERT_EQUALS("; dealloc ; return ;", simplifycode("; while1 { if callfunc { dealloc ; return ; } else { continue ; } }"));
+
+        // remove outer if (#2733)
+        ASSERT_EQUALS("alloc ; return ; }", simplifycode("alloc ; if { if return use ; } return ; }"));
+        ASSERT_EQUALS("alloc ; return ; }", simplifycode("alloc ; if { if(var) return use ; } return ; }"));
+        TODO_ASSERT_EQUALS("alloc ; return ; }", 
+                           "alloc ; if(var) { if return use ; } return ; }",
+                           simplifycode("alloc ; if(var) { if return use ; } return ; }"));
 
         // "if ; .."
         ASSERT_EQUALS("; if xxx ;", simplifycode("; if ; else xxx ;"));
@@ -2198,31 +2204,6 @@ private:
               "  delete x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    // #2733
-    void func25()
-    {
-        check("int* GetDeviceName(int a, int b)\n"
-              "{\n"
-              " int *p = new int[255];\n"
-              " memset(p, 0, 255 * sizeof(int));\n"
-              " if(a)\n"
-              "  if(b)\n"
-              "    return p;\n"
-              " return NULL;  \n"
-              "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n","", errout.str());
-
-        check("int* GetDeviceName(int a)\n"
-              "{\n"
-              " int *p = new int[255];\n"
-              " memset(p, 0, 255 * sizeof(int));\n"
-              "  if(a)\n"
-              "    return p;\n"
-              " return NULL;  \n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: p\n", errout.str());
     }
 
     void allocfunc1()
