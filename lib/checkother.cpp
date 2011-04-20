@@ -2517,11 +2517,11 @@ void CheckOther::checkConstantFunctionParameter()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-		// TODO: False negatives. This pattern only checks for string.
-		//       Investigate if there are other classes in the std
-		//       namespace and add them to the pattern. There are
-		//       streams for example (however it seems strange with
-		//       const stream parameter).
+        // TODO: False negatives. This pattern only checks for string.
+        //       Investigate if there are other classes in the std
+        //       namespace and add them to the pattern. There are
+        //       streams for example (however it seems strange with
+        //       const stream parameter).
         if (Token::Match(tok, "[,(] const std :: string %var% [,)]"))
         {
             passedByValueError(tok, tok->strAt(5));

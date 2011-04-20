@@ -669,7 +669,7 @@ private:
         // remove outer if (#2733)
         ASSERT_EQUALS("alloc ; return ; }", simplifycode("alloc ; if { if return use ; } return ; }"));
         ASSERT_EQUALS("alloc ; return ; }", simplifycode("alloc ; if { if(var) return use ; } return ; }"));
-        TODO_ASSERT_EQUALS("alloc ; return ; }", 
+        TODO_ASSERT_EQUALS("alloc ; return ; }",
                            "alloc ; if(var) { if return use ; } return ; }",
                            simplifycode("alloc ; if(var) { if return use ; } return ; }"));
 
