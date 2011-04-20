@@ -40,6 +40,7 @@ private:
         TEST_CASE(virtualDestructor3);      // Base class has a destructor, but it's not virtual
         TEST_CASE(virtualDestructor4);      // Derived class doesn't have a destructor => no error
         TEST_CASE(virtualDestructor5);      // Derived class has empty destructor => no error
+        TEST_CASE(virtualDestructor6);      // only report error if base class pointer that points at derived class is deleted
         TEST_CASE(virtualDestructorProtected);
         TEST_CASE(virtualDestructorInherited);
         TEST_CASE(virtualDestructorTemplate);
@@ -1382,7 +1383,6 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.experimental = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -1399,10 +1399,14 @@ private:
     {
         // Base class not found
 
-        checkVirtualDestructor("class Derived : public Base { };");
+        checkVirtualDestructor("class Derived : public Base { };\n"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("", errout.str());
 
-        checkVirtualDestructor("class Derived : Base { };");
+        checkVirtualDestructor("class Derived : Base { };\n"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1411,19 +1415,27 @@ private:
         // Base class doesn't have a destructor
 
         checkVirtualDestructor("class Base { };\n"
-                               "class Derived : public Base { public: ~Derived() { (void)11; } };");
+                               "class Derived : public Base { public: ~Derived() { (void)11; } };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
 
         checkVirtualDestructor("class Base { };\n"
-                               "class Derived : protected Base { public: ~Derived() { (void)11; } };");
+                               "class Derived : protected Base { public: ~Derived() { (void)11; } };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
 
         checkVirtualDestructor("class Base { };\n"
-                               "class Derived : private Base { public: ~Derived() { (void)11; } };");
+                               "class Derived : private Base { public: ~Derived() { (void)11; } };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Base { };\n"
-                               "class Derived : Base { public: ~Derived() { (void)11; } };");
+                               "class Derived : Base { public: ~Derived() { (void)11; } };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1432,15 +1444,21 @@ private:
         // Base class has a destructor, but it's not virtual
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : public Base { public: ~Derived() { (void)11; } };");
+                               "class Derived : public Base { public: ~Derived() { (void)11; } };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : protected Base { public: ~Derived() { (void)11; } };");
+                               "class Derived : protected Base { public: ~Derived() { (void)11; } };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : private Fred, public Base { public: ~Derived() { (void)11; } };");
+                               "class Derived : private Fred, public Base { public: ~Derived() { (void)11; } };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
     }
 
@@ -1449,11 +1467,15 @@ private:
         // Derived class doesn't have a destructor => no error
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : public Base { };");
+                               "class Derived : public Base { };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : private Fred, public Base { };");
+                               "class Derived : private Fred, public Base { };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1462,11 +1484,31 @@ private:
         // Derived class has empty destructor => no error
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : public Base { public: ~Derived() {} };");
+                               "class Derived : public Base { public: ~Derived() {} };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
         ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}");
+                               "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void virtualDestructor6()
+    {
+        // Only report error if base class pointer is deleted that
+        // points at derived class
+
+        checkVirtualDestructor("class Base { public: ~Base(); };\n"
+                               "class Derived : public Base { public: ~Derived() { (void)11; } };"
+                               "Base *base = new Derived;\n"
+                               "delete base;");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
+
+        checkVirtualDestructor("class Base { public: ~Base(); };\n"
+                               "class Derived : public Base { public: ~Derived() { (void)11; } };");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1599,7 +1641,9 @@ private:
                                "{\n"
                                " public:\n"
                                " ~B(){int a;}\n"
-                               "};\n");
+                               "};\n"
+                               "\n"
+                               "AA<double> *p = new B; delete p;");
         ASSERT_EQUALS("[test.cpp:9]: (error) Class AA<double> which is inherited by class B does not have a virtual destructor\n", errout.str());
     }
 

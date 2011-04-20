@@ -1118,8 +1118,6 @@ void CheckClass::virtualDestructor()
     // * base class doesn't have virtual destructor
     // * derived class has non-empty destructor
     // * base class is deleted
-    if (!_settings->experimental)
-        return;
 
     createSymbolDatabase();
 
@@ -1155,6 +1153,57 @@ void CheckClass::virtualDestructor()
 
                 // Name of base class..
                 const std::string baseName = derivedFrom->className;
+
+                // Check for this pattern:
+                // 1. Base class pointer is given the address of derived class instance
+                // 2. Base class pointer is deleted
+                //
+                // If this pattern is not seen then bailout the checking of these base/derived classes
+                {
+                    // pointer variables of type 'Base *'
+                    std::set<unsigned int> basepointer;
+
+                    // pointer variables of type 'Base *' that should not be deleted
+                    std::set<unsigned int> dontDelete;
+
+                    // No deletion of derived class instance through base class pointer found => the code is ok
+                    bool ok = true;
+                    
+                    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+                    {
+                        // Declaring base class pointer
+                        if (Token::simpleMatch(tok, baseName.c_str()))
+                        {
+                            if (Token::Match(tok->previous(), ("[;{}] " + baseName + " * %var% ;").c_str()))
+                                basepointer.insert(tok->tokAt(2)->varId());
+                        }
+
+                        // Assign base class pointer with pointer to derived class instance
+                        if (Token::Match(tok, "[;{}] %var% =") &&
+                            tok->next()->varId() > 0 &&
+                            basepointer.find(tok->next()->varId()) != basepointer.end())
+                        {
+                            // new derived class..
+                            if (Token::simpleMatch(tok->tokAt(3), ("new " + derivedClass->str()).c_str()))
+                            {
+                                dontDelete.insert(tok->next()->varId());
+                            }
+                        }
+
+                        // Delete base class pointer that might point at derived class
+                        if (Token::Match(tok, "delete %var% ;") &&
+                            tok->next()->varId() &&
+                            dontDelete.find(tok->next()->varId()) != dontDelete.end())
+                        {
+                            ok = false;
+                            break;
+                        }
+                    }
+
+                    // No base class pointer that points at a derived class is deleted
+                    if (ok)
+                        continue;
+                }
 
                 // Find the destructor declaration for the base class.
                 const Function *base_destructor = derivedFrom->getDestructor();
