@@ -256,6 +256,7 @@ private:
         TEST_CASE(simplifyTypedef90); // ticket #2718
         TEST_CASE(simplifyTypedef91); // ticket #2716
         TEST_CASE(simplifyTypedef92); // ticket #2736
+        TEST_CASE(simplifyTypedef93); // ticket #2738
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5221,6 +5222,17 @@ private:
         const char expected[] = "; "
                                 "namespace NS { "
                                 "}";
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef93() // ticket #2738 (syntax error)
+    {
+        const char code[] = "struct s { double x; };\n"
+                            "typedef struct s (*binop) (struct s, struct s);\n";
+        const char expected[] = "struct s { double x ; } ;";
 
         checkSimplifyTypedef(code);
         ASSERT_EQUALS(expected, sizeof_(code));
