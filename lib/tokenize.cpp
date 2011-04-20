@@ -1479,7 +1479,8 @@ void Tokenizer::simplifyTypedef()
                 // check for entering a new namespace
                 else if (Token::Match(tok2, "namespace %any% {"))
                 {
-                    if (spaceInfo[classLevel].isNamespace &&
+                    if (classLevel < spaceInfo.size() &&
+                        spaceInfo[classLevel].isNamespace &&
                         spaceInfo[classLevel].className == tok2->next()->str())
                     {
                         classLevel++;

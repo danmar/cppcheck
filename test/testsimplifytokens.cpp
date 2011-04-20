@@ -255,6 +255,7 @@ private:
         TEST_CASE(simplifyTypedef89); // ticket #2717
         TEST_CASE(simplifyTypedef90); // ticket #2718
         TEST_CASE(simplifyTypedef91); // ticket #2716
+        TEST_CASE(simplifyTypedef92); // ticket #2736
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5115,23 +5116,110 @@ private:
 
     void simplifyTypedef91() // ticket #2716
     {
-        const char code[] = "namespace NS {\n"
-                            "    typedef int (*T)();\n"
-                            "    class A {\n"
-                            "        T f();\n"
-                            "    };\n"
-                            "}\n"
+        const char code1[] = "namespace NS {\n"
+                             "    typedef int (*T)();\n"
+                             "    class A {\n"
+                             "        T f();\n"
+                             "    };\n"
+                             "}\n"
+                             "namespace NS {\n"
+                             "    T A::f() {}\n"
+                             "}\n";
+        const char expected1[] = "namespace NS { "
+                                 "; "
+                                 "class A { "
+                                 "int ( * f ( ) ) ( ) ; "
+                                 "} ; "
+                                 "} "
+                                 "namespace NS { "
+                                 "int ( * A :: f ( ) ) ( ) { } "
+                                 "}";
+        checkSimplifyTypedef(code1);
+        ASSERT_EQUALS(expected1, sizeof_(code1));
+        ASSERT_EQUALS("", errout.str());
+
+        const char code2[] = "namespace NS {\n"
+                             "    typedef int (*T)();\n"
+                             "    class A {\n"
+                             "        T f();\n"
+                             "    };\n"
+                             "}\n"
+                             "NS::T NS::A::f() {}\n";
+        const char expected2[] = "namespace NS { "
+                                 "; "
+                                 "class A { "
+                                 "int ( * f ( ) ) ( ) ; "
+                                 "} ; "
+                                 "} "
+                                 "int ( * NS :: A :: f ( ) ) ( ) { }";
+        checkSimplifyTypedef(code2);
+        ASSERT_EQUALS(expected2, sizeof_(code2));
+        ASSERT_EQUALS("", errout.str());
+
+        const char code3[] = "namespace NS1 {\n"
+                             "    namespace NS2 {\n"
+                             "        typedef int (*T)();\n"
+                             "        class A {\n"
+                             "            T f();\n"
+                             "        };\n"
+                             "    }\n"
+                             "}\n"
+                             "namespace NS1 {\n"
+                             "    namespace NS2 {\n"
+                             "        T A::f() {}\n"
+                             "    }\n"
+                             "}\n";
+        const char expected3[] = "namespace NS1 { "
+                                 "namespace NS2 { "
+                                 "; "
+                                 "class A { "
+                                 "int ( * f ( ) ) ( ) ; "
+                                 "} ; "
+                                 "} "
+                                 "} "
+                                 "namespace NS1 { "
+                                 "namespace NS2 { "
+                                 "int ( * A :: f ( ) ) ( ) { } "
+                                 "} "
+                                 "}";
+        checkSimplifyTypedef(code3);
+        ASSERT_EQUALS(expected3, sizeof_(code3));
+        ASSERT_EQUALS("", errout.str());
+
+        const char code4[] = "namespace NS1 {\n"
+                             "    namespace NS2 {\n"
+                             "        typedef int (*T)();\n"
+                             "        class A {\n"
+                             "            T f();\n"
+                             "        };\n"
+                             "    }\n"
+                             "}\n"
+                             "namespace NS1 {\n"
+                             "    NS2::T NS2::A::f() {}\n"
+                             "}\n";
+        const char expected4[] = "namespace NS1 { "
+                                 "namespace NS2 { "
+                                 "; "
+                                 "class A { "
+                                 "int ( * f ( ) ) ( ) ; "
+                                 "} ; "
+                                 "} "
+                                 "} "
+                                 "namespace NS1 { "
+                                 "int ( * NS2 :: A :: f ( ) ) ( ) { } "
+                                 "}";
+        checkSimplifyTypedef(code4);
+        ASSERT_EQUALS(expected4, sizeof_(code4));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef92() // ticket #2736 (segmentation fault)
+    {
+        const char code[] = "typedef long Long;\n"
                             "namespace NS {\n"
-                            "    T A::f() {}\n"
                             "}\n";
-        const char expected[] = "namespace NS { "
-                                "; "
-                                "class A { "
-                                "int ( * f ( ) ) ( ) ; "
-                                "} ; "
-                                "} "
+        const char expected[] = "; "
                                 "namespace NS { "
-                                "int ( * A :: f ( ) ) ( ) { } "
                                 "}";
 
         checkSimplifyTypedef(code);
