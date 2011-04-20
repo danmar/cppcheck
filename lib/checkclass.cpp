@@ -1168,7 +1168,7 @@ void CheckClass::virtualDestructor()
 
                     // No deletion of derived class instance through base class pointer found => the code is ok
                     bool ok = true;
-                    
+
                     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
                     {
                         // Declaring base class pointer
