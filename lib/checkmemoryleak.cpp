@@ -1812,6 +1812,14 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
+            // outer/inner if blocks. Remove outer condition..
+            else if (Token::Match(tok2->next(), "if|if(var) { if return use ; }"))
+            {
+                tok2->tokAt(6)->deleteNext();
+                Token::eraseTokens(tok2, tok2->tokAt(3));
+                done = false;
+            }
+
             else if (tok2->next() && tok2->next()->str() == "if")
             {
                 // Delete empty if that is not followed by an else
@@ -1899,14 +1907,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 else if (Token::Match(tok2->next(), "if { dealloc|assign ; callfunc ; } !!else"))
                 {
                     Token::eraseTokens(tok2, tok2->tokAt(8));
-                    done = false;
-                }
-
-                // Remove outer condition..
-                else if (Token::Match(tok2->next(), "if { if return use ; }"))
-                {
-                    tok2->tokAt(6)->deleteNext();
-                    Token::eraseTokens(tok2, tok2->tokAt(3));
                     done = false;
                 }
 
