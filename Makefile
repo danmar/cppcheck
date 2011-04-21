@@ -9,7 +9,9 @@ endif
 
 ifeq ($(HAVE_RULES),yes)
     CXXFLAGS += -DHAVE_RULES
-    ifndef LDFLAGS
+    ifdef LDFLAGS
+        LDFLAGS += -lpcre
+    else
         LDFLAGS=-lpcre
     endif
 endif
