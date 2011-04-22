@@ -248,7 +248,9 @@ int main(int argc, char **argv)
 
     fout << "ifeq ($(HAVE_RULES),yes)\n"
          << "    CXXFLAGS += -DHAVE_RULES\n"
-         << "    ifndef LDFLAGS\n"
+         << "    ifdef LDFLAGS\n"
+         << "        LDFLAGS += -lpcre\n"
+         << "    else\n"
          << "        LDFLAGS=-lpcre\n"
          << "    endif\n"
          << "endif\n\n";
