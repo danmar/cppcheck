@@ -468,6 +468,24 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             code << ch;
             previous = ch;
             inPreprocessorLine = true;
+
+            // Add any pending inline suppressions that have accumulated.
+            if (!suppressionIDs.empty())
+            {
+                if (settings != NULL)
+                {
+                    // Add the suppressions.
+                    for (size_t j(0); j < suppressionIDs.size(); ++j)
+                    {
+                        const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
+                        if (!errmsg.empty())
+                        {
+                            writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
+                        }
+                    }
+                }
+                suppressionIDs.clear();
+            }
         }
         else
         {
@@ -1917,7 +1935,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
                 std::string f = filePath;
 
                 // Determine line number of include
-                unsigned int linenr = 0;
+                unsigned int linenr = 1;
                 unsigned int level = 0;
                 for (std::string::size_type p = 1; p <= pos; ++p)
                 {
@@ -1931,6 +1949,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
                     {
                         if (level == 0)
                         {
+                            linenr--;
                             const std::string::size_type pos1 = pos - p + 7;
                             const std::string::size_type pos2 = code.find_first_of("\"\n", pos1);
                             f = code.substr(pos1, (pos2 == std::string::npos) ? pos2 : (pos2 - pos1));
@@ -1940,10 +1959,13 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
                     }
                 }
 
-                missingInclude(Path::toNativeSeparators(f),
-                               linenr,
-                               filename,
-                               headerType == UserHeader);
+                if (!_settings->nomsg.isSuppressed("missingInclude", f, linenr))
+                {
+                    missingInclude(Path::toNativeSeparators(f),
+                                   linenr,
+                                   filename,
+                                   headerType == UserHeader);
+                }
             }
         }
     }
