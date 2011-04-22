@@ -775,10 +775,6 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
         {
             const Token *tok1 = var->typeStartToken();
 
-            // skip mutable token
-            if (var->isMutable())
-                tok1 = tok1->next();
-
             // check for std:: type that is not a pointer or reference
             if (Token::simpleMatch(tok1, "std ::") && !Token::Match(var->nameToken()->previous(), "*|&"))
                 memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());

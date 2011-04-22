@@ -1557,7 +1557,6 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     // This is the start of a statement
     const Token *vartok = NULL;
     const Token *typetok = NULL;
-    const Token *typestart = tok;
 
     // Is it const..?
     bool isConst = false;
@@ -1587,6 +1586,9 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
         tok = tok->next();
         isConst = true;
     }
+
+    // the start of the type tokens does not include the above modifiers
+    const Token *typestart = tok;
 
     bool isClass = false;
 
