@@ -353,7 +353,7 @@ public:
         return argumentList.size();
     }
     unsigned int initializedArgCount() const;
-    void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
+    void addArguments(const SymbolDatabase *symbolDatabase, const Function *func, const Scope *scope);
 
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition

@@ -650,7 +650,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
             // add arguments
-            func->addArguments(this, scope);
+            func->addArguments(this, &*func, scope);
         }
     }
 
@@ -1234,7 +1234,7 @@ unsigned int Function::initializedArgCount() const
     return count;
 }
 
-void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
+void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function *func, const Scope *scope)
 {
     // check for non-empty argument list "( ... )"
     if (arg->link() != arg->next() && !Token::simpleMatch(arg, "( void )"))
@@ -1279,7 +1279,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                         nameTok = tok->previous();
                         endTok = nameTok->previous();
 
-                        symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
+                        if (func->hasBody)
+                            symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
                     }
                     else
                         endTok = startTok;
