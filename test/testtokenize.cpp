@@ -2865,13 +2865,7 @@ private:
                                     "3: EventPtr event@3 ; event@3 = * eventP@1 ;\n"
                                     "4: * actionsP@2 = & event@3 . actions@4 ;\n"
                                     "5: }\n");
-        const std::string actual1("\n\n##file 0\n"
-                                  "1: void f ( EventPtr * eventP , ActionPtr * * actionsP@1 )\n"
-                                  "2: {\n"
-                                  "3: EventPtr event@2 ; event@2 = * eventP ;\n"
-                                  "4: * actionsP@1 = & event@2 . actions@3 ;\n"
-                                  "5: }\n");
-        TODO_ASSERT_EQUALS(expected1, actual1, tokenizeDebugListing(code1));
+        ASSERT_EQUALS(expected1, tokenizeDebugListing(code1));
 
         const std::string code2("void f(int b, int c) {\n"
                                 "    x(a*b*c,10);\n"

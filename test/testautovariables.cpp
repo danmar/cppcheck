@@ -219,7 +219,7 @@ private:
               "    EventPtr event = *eventP;\n"
               "    *actionsP = &event->actions;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:1]: (debug) Function::addArguments found argument 'eventP' with varid 0.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnLocalVariable1()
