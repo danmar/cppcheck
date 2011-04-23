@@ -37,99 +37,34 @@ static CheckAutoVariables instance;
 }
 
 
-// _callStack used when parsing into subfunctions.
-
-
 bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
 {
-    if (fp_list.find(left->str()) == fp_list.end())
-    {
+    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(left->varId());
+
+    if (!var || !var->isArgument())
         return false;
-    }
 
     return isAutoVar(right->varId());
 }
 
 bool CheckAutoVariables::isAutoVar(unsigned int varId)
 {
-    if (varId == 0)
-    {
-        return false;
-    }
+    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
 
-    return (vd_list.find(varId) != vd_list.end());
+    if (!var || !var->isLocal() || var->isStatic() || var->isArray())
+        return false;
+
+    return true;
 }
 
 bool CheckAutoVariables::isAutoVarArray(unsigned int varId)
 {
-    if (varId == 0)
-    {
+    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
+
+    if (!var || !var->isLocal() || var->isStatic() || !var->isArray())
         return false;
-    }
 
-    return (vda_list.find(varId) != vda_list.end());
-}
-
-void print(const Token *tok, int num)
-{
-    const Token *t = tok;
-    std::cout << tok->linenr() << " PRINT ";
-    for (int i = 0; i < num; i++)
-    {
-        std::cout << " [" << t->str() << "] ";
-        t = t->next();
-    }
-    std::cout << std::endl;
-}
-
-bool isTypeName(const Token *tok)
-{
-    bool ret = false;
-    const std::string _str(tok->str());
-    static const char * const type[] = {"case", "return", "delete", 0};
-    for (int i = 0; type[i]; i++)
-    {
-        ret |= (_str == type[i]);
-    }
-    return !ret;
-}
-
-bool isExternOrStatic(const Token *tok)
-{
-    bool res = false;
-
-    if (Token::Match(tok->tokAt(-1), "extern|static"))
-    {
-        res = true;
-    }
-    else if (Token::Match(tok->tokAt(-2), "extern|static"))
-    {
-        res = true;
-    }
-    else if (Token::Match(tok->tokAt(-3), "extern|static"))
-    {
-        res = true;
-    }
-
-    //std::cout << __PRETTY_FUNCTION__ << " " << tok->str() << " " << res << std::endl;
-    return res;
-
-}
-
-void CheckAutoVariables::addVD(unsigned int varId)
-{
-    if (varId > 0)
-    {
-        vd_list.insert(varId);
-    }
-}
-
-void CheckAutoVariables::addVDA(unsigned int varId)
-{
-    if (varId > 0)
-    {
-        vda_list.insert(varId);
-    }
+    return true;
 }
 
 void CheckAutoVariables::autoVariables()
@@ -144,28 +79,10 @@ void CheckAutoVariables::autoVariables()
         if (scope->type != Scope::eFunction)
             continue;
 
-        fp_list.clear();
-        vd_list.clear();
-        vda_list.clear();
-
-        const Token *tok = scope->classDef->next();
-
-        for (; tok && tok != scope->classDef->next()->link(); tok = tok->next())
-        {
-            if (Token::Match(tok, "%type% * * %var%"))
-            {
-                fp_list.insert(tok->tokAt(3)->str());
-            }
-            else if (Token::Match(tok, "%type% * %var% ["))
-            {
-                fp_list.insert(tok->tokAt(2)->str());
-            }
-        }
-
         unsigned int indentlevel = 0;
         // Which variables have an unknown type?
         std::set<unsigned int> unknown_type;
-        for (tok = scope->classDef->next()->link(); tok; tok = tok->next())
+        for (const Token *tok = scope->classDef->next()->link(); tok; tok = tok->next())
         {
             // indentlevel..
             if (tok->str() == "{")
@@ -177,31 +94,8 @@ void CheckAutoVariables::autoVariables()
                 --indentlevel;
             }
 
-            // Inside a function body
-            if (Token::Match(tok, "%type% :: %any%") && !isExternOrStatic(tok))
-            {
-                addVD(tok->tokAt(2)->varId());
-            }
-            else if (Token::Match(tok, "%type% %var% ["))
-            {
-                addVDA(tok->next()->varId());
-            }
-            else if (Token::Match(tok, "%var% %var% ;") && !isExternOrStatic(tok) && isTypeName(tok))
-            {
-                addVD(tok->next()->varId());
-                if (!tok->isStandardType() &&
-                    !symbolDatabase->isClassOrStruct(tok->str()))
-                {
-                    unknown_type.insert(tok->next()->varId());
-                }
-            }
-            else if (Token::Match(tok, "const %var% %var% ;") && !isExternOrStatic(tok) && isTypeName(tok->next()))
-            {
-                addVD(tok->tokAt(2)->varId());
-            }
-
             //Critical assignment
-            else if (Token::Match(tok, "[;{}] %var% = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(4)))
+            if (Token::Match(tok, "[;{}] %var% = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(4)))
             {
                 errorAutoVariableAssignment(tok);
             }
@@ -225,10 +119,6 @@ void CheckAutoVariables::autoVariables()
                 reportError(tok, Severity::error, "autoVariables", "Invalid deallocation");
             }
         }
-
-        vd_list.clear();
-        vda_list.clear();
-        fp_list.clear();
     }
 }
 
