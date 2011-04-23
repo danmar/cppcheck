@@ -2885,6 +2885,23 @@ private:
                                   "2: x ( a * b@1 * c@3 , 10 ) ;\n"
                                   "3: }\n");
         TODO_ASSERT_EQUALS(expected2, actual2, tokenizeDebugListing(code2));
+
+        const std::string code3("class Nullpointer : public ExecutionPath\n"
+                                " {\n"
+                                "    Nullpointer(Check *c, const unsigned int id, const std::string &name)\n"
+                                "        : ExecutionPath(c, id)\n"
+                                "    {\n"
+                                "    }\n"
+                                "}\n");
+        const std::string expected3("\n\n##file 0\n"
+                                    "1: class Nullpointer : public ExecutionPath\n"
+                                    "2: {\n"
+                                    "3: Nullpointer ( Check * c@1 , const int id@2 , const std :: string & name@3 )\n"
+                                    "4: : ExecutionPath ( c@1 , id@2 )\n"
+                                    "5: {\n"
+                                    "6: }\n"
+                                    "7: }\n");
+        ASSERT_EQUALS(expected3, tokenizeDebugListing(code3));
     }
 
     void varidFunctionCall1()
