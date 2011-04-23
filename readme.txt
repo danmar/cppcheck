@@ -18,8 +18,8 @@ Compiling
 
     To build the GUI, you need Qt.
 
-    To build the command line tool, no dependencies are required. However for
-    the handling of rules, PCRE is needed.
+    When building the command line tool, PCRE is normally used.
+    PCRE is optional.
 
     There are multiple compilation choices:
       * qmake - cross platform build tool
@@ -37,8 +37,15 @@ Compiling
 
     Visual Studio
     =============
-        Use the cppcheck.sln file. The pcre dll is needed, it can be downloaded from:
-            http://cppcheck.sf.net/pcre-8.10-vs.zip
+        Use the cppcheck.sln file. The rules are normally enabled.
+
+        To compile with rules (pcre dependency):
+            * the pcre dll is needed. it can be downloaded from:
+                http://cppcheck.sf.net/pcre-8.10-vs.zip
+
+        To compile without rules (no dependencies):
+            * remove the preprocessor define HAVE_RULES from the project
+            * remove the pcre.lib from the project
 
     Qt Creator + mingw
     ==================
