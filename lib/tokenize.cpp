@@ -9265,6 +9265,7 @@ void Tokenizer::simplifyAttribute()
 
             Token::eraseTokens(tok, tok->next()->link()->next());
             tok->deleteThis();
+            tok = tok->previous();
         }
     }
 }
