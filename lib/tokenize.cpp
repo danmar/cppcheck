@@ -7800,7 +7800,8 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
                 // look backwards
                 if (tok->previous()->str() == "enum" ||
                     (Token::Match(tok->previous(), "%type%") &&
-                     tok->previous()->str() != "return"))
+                     tok->previous()->str() != "return") ||
+                    Token::Match(tok->tokAt(-2), "%type% &|*"))
                 {
                     duplicateEnumError(*tokPtr, name, "Function parameter");
                     // duplicate definition so skip entire function
@@ -8052,6 +8053,7 @@ void Tokenizer::simplifyEnum()
                     int exitScope = 0;
                     bool simplify = false;
                     bool hasClass = false;
+                    const Token *endScope = 0;
                     for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next())
                     {
                         if (tok2->str() == "}")
@@ -8088,6 +8090,7 @@ void Tokenizer::simplifyEnum()
                                 // Not a duplicate enum..
                                 ++level;
                             }
+                            endScope = tok2->link();
                         }
                         else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()))
                         {
@@ -8112,6 +8115,8 @@ void Tokenizer::simplifyEnum()
                             {
                                 // something with the same name.
                                 exitScope = level;
+                                if (endScope)
+                                    tok2 = endScope->previous();
                             }
                         }
 

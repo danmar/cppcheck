@@ -304,6 +304,7 @@ private:
         TEST_CASE(enum19); // ticket #2536
         TEST_CASE(enum20); // ticket #2600
         TEST_CASE(enum21); // ticket #2720
+        TEST_CASE(enum22); // ticket #2745
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6515,6 +6516,21 @@ private:
         const char code[] = "enum E2 : signed const short { };\n";
         ASSERT_EQUALS(";", tok(code, false));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum22() // ticket #2745
+    {
+        const char code[] = "enum en { x = 0 };\n"
+                            "void f() {\n"
+                            "    int x = 0;\n"
+                            "    g(x);\n"
+                            "}\n"
+                            "void f2(int &x) {\n"
+                            "    x+=1;\n"
+                            "}\n";
+        checkSimplifyEnum(code);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n"
+                      "[test.cpp:6] -> [test.cpp:1]: (style) Function parameter 'x' hides enumerator with same name\n", errout.str());
     }
 
     void removestd()
