@@ -30,12 +30,6 @@ HEADERS += ../cli/cmdlineparser.h \
 
 # test/*
 
-# Note:
-# testfilelister_unix.cpp omitted since there is test fail when run in QtCreator
-# Test assumes the test (executable) is built from the test directory (or
-# directory containing source files). But QtCreator builds to separate build
-# directory. Hence the test does not find the source files.
-
 HEADERS += options.h redirect.h testsuite.h
 SOURCES += options.cpp \
            testautovariables.cpp \
