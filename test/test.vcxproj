@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B0719A50-6567-3359-B337-92D9F9DDE38A}</ProjectGuid>
+    <ProjectGuid>{D0001948-3B19-3314-8BEE-3B92350BC5B5}</ProjectGuid>
     <RootNamespace>test</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
@@ -152,6 +152,7 @@
     <ClCompile Include="testdivision.cpp" />
     <ClCompile Include="testerrorlogger.cpp" />
     <ClCompile Include="testexceptionsafety.cpp" />
+    <ClCompile Include="testfilelister.cpp" />
     <ClCompile Include="testincompletestatement.cpp" />
     <ClCompile Include="testmathlib.cpp" />
     <ClCompile Include="testmemleak.cpp" />
@@ -168,6 +169,7 @@
     <ClCompile Include="testsimplifytokens.cpp" />
     <ClCompile Include="teststl.cpp" />
     <ClCompile Include="testsuite.cpp" />
+    <ClCompile Include="testsuppressions.cpp" />
     <ClCompile Include="testsymboldatabase.cpp" />
     <ClCompile Include="testthreadexecutor.cpp" />
     <ClCompile Include="testtoken.cpp" />
