@@ -55,8 +55,7 @@ private:
 
         CppCheck cppCheck(*this, true);
         cppCheck.settings(settings);
-        cppCheck.addFile("test.cpp", code);
-        cppCheck.check();
+        cppCheck.check("test.cpp", code);
 
         reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
     }
@@ -105,8 +104,7 @@ private:
         CppCheck cppCheck(*this, true);
         cppCheck.settings(settings);
         for (int i = 0; names[i] != NULL; ++i)
-            cppCheck.addFile(names[i], codes[i]);
-        cppCheck.check();
+            cppCheck.check(names[i], codes[i]);
 
         reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
     }

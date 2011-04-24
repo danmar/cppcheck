@@ -50,9 +50,7 @@ void CheckThread::run()
     while (!file.isEmpty() && mState == Running)
     {
         qDebug() << "Checking file" << file;
-        mCppcheck.addFile(file.toStdString());
-        mCppcheck.check();
-        mCppcheck.clearFiles();
+        mCppcheck.check(file.toStdString());
         emit FileChecked(file);
 
         if (mState == Running)

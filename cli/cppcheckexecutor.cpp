@@ -148,10 +148,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         // Single process
         for (unsigned int c = 0; c < _filenames.size(); c++)
         {
-            cppCheck.addFile(_filenames[c]);
-            returnValue += cppCheck.check();
-            cppCheck.clearFiles();
-
+            returnValue += cppCheck.check(_filenames[c]);
             reportStatus(c + 1, _filenames.size());
         }
     }
