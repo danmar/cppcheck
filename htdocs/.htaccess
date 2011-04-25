@@ -1,3 +1,6 @@
+#Add mime type for *.ico files...
+AddType image/vnd.microsoft.icon .ico
+
 #Compression...
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/plain text/html text/css application/javascript application/x-javascript
