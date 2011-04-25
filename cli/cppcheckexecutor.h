@@ -22,6 +22,7 @@
 #include "errorlogger.h"
 #include "settings.h"
 #include <ctime>
+#include <vector>
 
 class CppCheck;
 
@@ -107,6 +108,11 @@ private:
      * Has --errorlist been given?
      */
     bool errorlist;
+
+    /**
+     * List of files to check.
+     */
+    std::vector<std::string> _filenames;
 };
 
 #endif // CPPCHECKEXECUTOR_H

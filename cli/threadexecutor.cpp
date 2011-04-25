@@ -177,19 +177,19 @@ unsigned int ThreadExecutor::check()
 
                 CppCheck fileChecker(*this, false);
                 fileChecker.settings(_settings);
+                unsigned int resultOfCheck = 0;
 
                 if (_fileContents.size() > 0 && _fileContents.find(_filenames[i]) != _fileContents.end())
                 {
                     // File content was given as a string
-                    fileChecker.addFile(_filenames[i], _fileContents[ _filenames[i] ]);
+                    resultOfCheck = fileChecker.check(_filenames[i], _fileContents[ _filenames[i] ]);
                 }
                 else
                 {
                     // Read file from a file
-                    fileChecker.addFile(_filenames[i]);
+                    resultOfCheck = fileChecker.check(_filenames[i]);
                 }
 
-                unsigned int resultOfCheck = fileChecker.check();
                 std::ostringstream oss;
                 oss << resultOfCheck;
                 writeToPipe('3', oss.str());

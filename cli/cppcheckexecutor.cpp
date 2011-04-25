@@ -114,7 +114,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     {
         std::vector<std::string>::iterator iter;
         for (iter = filenames.begin(); iter != filenames.end(); ++iter)
-            cppcheck->addFile(*iter);
+            _filenames.push_back(*iter);
 
         return true;
     }
@@ -146,7 +146,11 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     if (_settings._jobs == 1)
     {
         // Single process
-        returnValue = cppCheck.check();
+        for (unsigned int c = 0; c < _filenames.size(); c++)
+        {
+            returnValue += cppCheck.check(_filenames[c]);
+            reportStatus(c + 1, _filenames.size());
+        }
     }
     else if (!ThreadExecutor::isEnabled())
     {
@@ -155,9 +159,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     else
     {
         // Multiple processes
-        const std::vector<std::string> &filenames = cppCheck.filenames();
         Settings &settings = cppCheck.settings();
-        ThreadExecutor executor(filenames, settings, *this);
+        ThreadExecutor executor(_filenames, settings, *this);
         returnValue = executor.check();
     }
 
