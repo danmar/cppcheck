@@ -507,6 +507,11 @@ private:
                     const Token *tok2 = tok.next();
                     if (tok2->str() == "[" && Token::simpleMatch(tok2->link(), "] ="))
                     {
+                        if (use_dead_pointer(checks, &tok))
+                        {
+                            return &tok;
+                        }
+
                         parserhs(tok2, checks);
                         tok2 = tok2->link()->next();
                     }

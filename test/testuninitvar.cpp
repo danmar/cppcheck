@@ -129,6 +129,13 @@ private:
 
         checkUninitVar("static void foo()\n"
                        "{\n"
+                       "    int *p;\n"
+                       "    p[0] = 135;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+
+        checkUninitVar("static void foo()\n"
+                       "{\n"
                        "    int *x;\n"
                        "    int y = *x;\n"
                        "}\n");
