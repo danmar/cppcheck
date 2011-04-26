@@ -289,13 +289,11 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
                 relative.push_back(filename);
                 absolute.push_back(fname);
                 struct stat sb;
-                off_t size = 0;
                 if (stat(fname, &sb) == 0)
                 {
-                    size = sb.st_size;
+                    // Limitation: file sizes are assumed to fit in a 'long'
+                    filesizes[filename] = static_cast<long>(sb.st_size);
                 }
-                // Limitation: file sizes are assumed to fit in a 'long'
-                filesizes[filename] = static_cast<long>(size);
             }
 
 #ifndef PATH_MAX
