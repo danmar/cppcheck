@@ -117,6 +117,8 @@ private:
         TEST_CASE(duplicateBranch);
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
+
+        TEST_CASE(alwaysTrueFalseStringCompare);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -216,6 +218,7 @@ private:
         // Check..
         CheckOther checkOther(&tokenizer, &settings, &logger);
         checkOther.checkSwitchCaseFallThrough();
+        checkOther.checkAlwaysTrueOrFalseStringCompare();
 
         logger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(filename));
     }
@@ -2548,6 +2551,51 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Passing value -1.0 to sqrtl() leads to undefined result\n"
                       "[test.cpp:8]: (error) Passing value -1.0 to sqrt() leads to undefined result\n"
                       "[test.cpp:9]: (error) Passing value -1.0 to sqrtf() leads to undefined result\n", errout.str());
+    }
+
+    void alwaysTrueFalseStringCompare()
+    {
+        check_preprocess_suppress(
+            "#define MACRO \"00FF00\"\n"
+            "int main()\n"
+            "{\n"
+            "  if (strcmp(MACRO,\"00FF00\") == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Comparison of always identical static strings.\n", errout.str());
+
+        check_preprocess_suppress(
+            "int main()\n"
+            "{\n"
+            "  if (stricmp(\"hotdog\",\"HOTdog\") == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Unnecessary comparison of static strings.\n", errout.str());
+
+        check_preprocess_suppress(
+            "#define MACRO \"Hotdog\"\n"
+            "int main()\n"
+            "{\n"
+            "  if (QString::compare(\"Hamburger\", MACRO) == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Unnecessary comparison of static strings.\n", errout.str());
+
+        check_preprocess_suppress(
+            "int main()\n"
+            "{\n"
+            "  if (QString::compare(argv[2], \"hotdog\") == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

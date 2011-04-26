@@ -98,6 +98,7 @@ public:
         checkOther.checkIncrementBoolean();
         checkOther.checkComparisonOfBoolWithInt();
         checkOther.checkSwitchCaseFallThrough();
+        checkOther.checkAlwaysTrueOrFalseStringCompare();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -216,6 +217,9 @@ public:
     /** @brief %Check for suspicious code with the same expression on both sides of operator (e.g "if (a && a)") */
     void checkDuplicateExpression();
 
+    /** @brief %Check for suspicious code that compares string literals for equality */
+    void checkAlwaysTrueOrFalseStringCompare();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -247,6 +251,7 @@ public:
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
+    void alwaysTrueFalseStringCompare(const Token *tok, const std::string& str1, const std::string& str2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -294,6 +299,7 @@ public:
         c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
+        c.alwaysTrueFalseStringCompare(0, "str1", "str2");
     }
 
     std::string myName() const
@@ -336,7 +342,8 @@ public:
                "* Clarify calculation with parentheses\n"
                "* using increment on boolean\n"
                "* comparison of a boolean with a non-zero integer\n"
-               "* suspicious condition (assignment+comparison)"
+               "* suspicious condition (assignment+comparison)\n"
+               "* suspicious condition (runtime comparison of string literals)\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";

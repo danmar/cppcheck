@@ -3296,6 +3296,58 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
                 "determine if it is correct.");
 }
 
+
+//---------------------------------------------------------------------------
+// Check for string comparison involving two static strings.
+// if(strcmp("00FF00","00FF00")==0) // <- statement is always true
+//---------------------------------------------------------------------------
+
+void CheckOther::checkAlwaysTrueOrFalseStringCompare()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const char pattern1[] = "strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% )";
+    const char pattern2[] = "QString :: compare ( %str% , %str% )";
+
+    const Token *tok = _tokenizer->tokens();
+    while (tok && (tok = Token::findmatch(tok, pattern1)) != NULL)
+    {
+        alwaysTrueFalseStringCompare(tok, tok->strAt(2), tok->strAt(4));
+        tok = tok->tokAt(5);
+    }
+
+    tok = _tokenizer->tokens();
+    while (tok && (tok = Token::findmatch(tok, pattern2)) != NULL)
+    {
+        alwaysTrueFalseStringCompare(tok, tok->strAt(4), tok->strAt(6));
+        tok = tok->tokAt(7);
+    }
+}
+
+void CheckOther::alwaysTrueFalseStringCompare(const Token *tok, const std::string& str1, const std::string& str2)
+{
+    const size_t stringLen = 10;
+    const std::string string1 = (str1.size() < stringLen) ? str1 : (str1.substr(0, stringLen-2) + "..");
+    const std::string string2 = (str2.size() < stringLen) ? str2 : (str2.substr(0, stringLen-2) + "..");
+
+    if (str1 == str2)
+    {
+        reportError(tok, Severity::warning, "staticStringCompare",
+                    "Comparison of always identical static strings.\n"
+                    "The compared strings, '" + string1 + "' and '" + string2 + "', are always identical. "
+                    "If the purpose is to compare these two strings, the comparison is unnecessary. "
+                    "If the strings are supposed to be different, then there is a bug somewhere.");
+    }
+    else
+    {
+        reportError(tok, Severity::performance, "staticStringCompare",
+                    "Unnecessary comparison of static strings.\n"
+                    "The compared strings, '" + string1 + "' and '" + string2 + "', are static and always different. "
+                    "If the purpose is to compare these two strings, the comparison is unnecessary.");
+    }
+}
+
 //-----------------------------------------------------------------------------
 
 void CheckOther::cstyleCastError(const Token *tok)
