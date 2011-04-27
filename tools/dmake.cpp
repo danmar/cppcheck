@@ -84,7 +84,8 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 
 static void getCppFiles(std::vector<std::string> &files, const std::string &path)
 {
-    FileLister::recursiveAddFiles(files, path);
+    std::map<std::string,long> filesizes;
+    FileLister::recursiveAddFiles(files, filesizes, path);
     // only get *.cpp files..
     for (std::vector<std::string>::iterator it = files.begin(); it != files.end();)
     {
