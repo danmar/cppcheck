@@ -304,10 +304,18 @@ static bool hasbom(const std::string &str)
 }
 
 
+// This wrapper exists because Sun's CC does not allow a static_cast
+// from extern "C" int(*)(int) to int(*)(int).
+static int tolowerWrapper(int c)
+{
+    return std::tolower(c);
+}
+
+
 static bool isFallThroughComment(std::string comment)
 {
     // convert comment to lower case without whitespace
-    std::transform(comment.begin(), comment.end(), comment.begin(), ::tolower);
+    std::transform(comment.begin(), comment.end(), comment.begin(), tolowerWrapper);
     for (std::string::iterator i = comment.begin(); i != comment.end();)
     {
         if (::isspace(static_cast<unsigned char>(*i)))
@@ -1818,14 +1826,6 @@ Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
         return UserHeader;
     else
         return SystemHeader;
-}
-
-
-// This wrapper exists because Sun's CC does not allow a static_cast
-// from extern "C" int(*)(int) to int(*)(int).
-static int tolowerWrapper(int c)
-{
-    return std::tolower(c);
 }
 
 
