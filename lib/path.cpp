@@ -117,7 +117,7 @@ bool Path::sameFileName(const std::string &fname1, const std::string &fname2)
 #elif defined(_MSC_VER)
     return bool(_stricmp(fname1.c_str(), fname2.c_str()) == 0);
 #else
-    #error Platform filename compare function needed
+#error Platform filename compare function needed
 #endif
 }
 
