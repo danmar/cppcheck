@@ -19,6 +19,7 @@
 #include "cppcheck.h"
 #include "settings.h"
 #include "testsuite.h"
+#include "cppcheckexecutor.h"
 #include "threadexecutor.h"
 
 #include <sstream>

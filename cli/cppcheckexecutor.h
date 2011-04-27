@@ -72,7 +72,15 @@ public:
 
     void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
 
-    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal);
+    /**
+     * Information about how many files have been checked
+     *
+     * @param fileindex This many files have been checked.
+     * @param filecount This many files there are in total.
+     * @param sizedone The sum of sizes of the files checked.
+     * @param sizetotal The total sizes of the files.
+     */
+    static void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal);
 
 protected:
 

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cppcheckexecutor.h"
 #include "threadexecutor.h"
 #include "cppcheck.h"
 #include <iostream>
@@ -243,7 +244,8 @@ unsigned int ThreadExecutor::check()
 
                             _fileCount++;
                             processedsize += size;
-                            _errorLogger.reportStatus(_fileCount, _filenames.size(), processedsize, totalfilesize);
+                            if (!_settings._errorsOnly)
+                                CppCheckExecutor::reportStatus(_fileCount, _filenames.size(), processedsize, totalfilesize);
 
                             close(*rp);
                             rp = rpipes.erase(rp);
@@ -323,11 +325,6 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     writeToPipe('2', msg.serialize());
 }
 
-void ThreadExecutor::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/)
-{
-    // Not used
-}
-
 #else
 unsigned int ThreadExecutor::check()
 {
@@ -343,8 +340,4 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &/*msg*/)
 
 }
 
-void ThreadExecutor::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/)
-{
-
-}
 #endif

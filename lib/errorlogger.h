@@ -273,16 +273,6 @@ public:
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg) = 0;
 
     /**
-     * Information about how many files have been checked
-     *
-     * @param fileindex This many files have been checked.
-     * @param filecount This many files there are in total.
-     * @param sizedone The sum of sizes of the files checked.
-     * @param sizetotal The total sizes of the files.
-     */
-    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal) = 0;
-
-    /**
      * Report progress to client
      * @param filename main file that is checked
      * @param stage for example preprocess / tokenize / simplify / check

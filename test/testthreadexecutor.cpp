@@ -24,6 +24,7 @@
 #include "cppcheck.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
+#include "cppcheckexecutor.h"
 
 #include <algorithm>
 #include <map>

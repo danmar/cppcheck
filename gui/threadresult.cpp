@@ -91,15 +91,6 @@ QString ThreadResult::GetNextFile()
     return mFiles.takeFirst();
 }
 
-
-void ThreadResult::reportStatus(unsigned int fileindex, unsigned int filecount, FileLister::filesize_t sizedone, FileLister::filesize_t sizetotal)
-{
-    Q_UNUSED(fileindex);
-    Q_UNUSED(filecount);
-    Q_UNUSED(sizedone);
-    Q_UNUSED(sizetotal);
-}
-
 void ThreadResult::SetFiles(const QStringList &files)
 {
     QMutexLocker locker(&mutex);

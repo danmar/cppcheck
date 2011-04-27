@@ -44,7 +44,7 @@ public:
     unsigned int check();
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
-    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal);
+
     /**
      * @brief Add content to a file, to be used in unit testing.
      *

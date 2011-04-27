@@ -165,7 +165,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
             {
                 processedsize += _filesizes[_filenames[c]];
             }
-            reportStatus(c + 1, _filenames.size(), processedsize, totalfilesize);
+            if (!_settings._errorsOnly)
+                reportStatus(c + 1, _filenames.size(), processedsize, totalfilesize);
         }
     }
     else if (!ThreadExecutor::isEnabled())
@@ -234,7 +235,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 
 void CppCheckExecutor::reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal)
 {
-    if (filecount > 1 && !_settings._errorsOnly)
+    if (filecount > 1)
     {
         std::ostringstream oss;
         oss << fileindex << "/" << filecount
