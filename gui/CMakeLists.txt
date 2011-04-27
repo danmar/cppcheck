@@ -6,9 +6,7 @@ find_package(Qt4)
 IF(QT4_FOUND)
 
 # Add needed Qt modules
-set(QT_USE_QTHELP TRUE)
 set(QT_USE_QTMAIN TRUE)
-set(QT_USE_QTXML TRUE)
 include(${QT_USE_FILE})
 
 include_directories("${CPPCHECK_SOURCE_DIR}/lib"
