@@ -41,7 +41,9 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
 {
     const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(left->varId());
 
-    if (!var || !var->isArgument())
+    if (!var || !var->isArgument() ||
+        (!var->isArray() && !Token::Match(var->nameToken()->tokAt(-3), "%type% * *")) ||
+        (var->isArray() && !Token::Match(var->nameToken()->tokAt(-2), "%type% *")))
         return false;
 
     return isAutoVar(right->varId());
@@ -80,8 +82,6 @@ void CheckAutoVariables::autoVariables()
             continue;
 
         unsigned int indentlevel = 0;
-        // Which variables have an unknown type?
-        std::set<unsigned int> unknown_type;
         for (const Token *tok = scope->classDef->next()->link(); tok; tok = tok->next())
         {
             // indentlevel..
@@ -95,12 +95,7 @@ void CheckAutoVariables::autoVariables()
             }
 
             //Critical assignment
-            if (Token::Match(tok, "[;{}] %var% = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(4)))
-            {
-                errorAutoVariableAssignment(tok);
-            }
-            else if (Token::Match(tok, "[;{}] * %var% = & %var%") && errorAv(tok->tokAt(2), tok->tokAt(5)) &&
-                     unknown_type.find(tok->tokAt(5)->varId()) == unknown_type.end())
+            if (Token::Match(tok, "[;{}] * %var% = & %var%") && errorAv(tok->tokAt(2), tok->tokAt(5)))
             {
                 errorAutoVariableAssignment(tok);
             }

@@ -107,6 +107,13 @@ private:
         check("void func1(int **res)\n"
               "{\n"
               "    int num = 2;\n"
+              "    res = &num;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void func1(int **res)\n"
+              "{\n"
+              "    int num = 2;\n"
               "    foo.res = &num;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -123,6 +130,16 @@ private:
               "    *res = &num;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+
+        check("class Fred {\n"
+              "    void func1(int **res);\n"
+              "}\n"
+              "void Fred::func1(int **res)\n"
+              "{\n"
+              "    int num = 2;\n"
+              "    res = &num;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("class Fred {\n"
               "    void func1(int **res);\n"
