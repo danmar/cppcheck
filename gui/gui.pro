@@ -1,6 +1,5 @@
 TEMPLATE = app
 TARGET = cppcheck-gui
-QT += xml
 CONFIG += warn_on help
 DEPENDPATH += . \
     ../lib
