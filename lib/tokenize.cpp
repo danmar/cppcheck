@@ -8691,7 +8691,7 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
 
         else if (Token::Match(tok, "class|namespace|struct %type%"))
         {
-            while (tok && !Token::Match(tok, "[;{]"))
+            while (tok && !Token::Match(tok, "[;{=]"))
                 tok = tok->next();
             if (tok && tok->str() == "{")
             {
