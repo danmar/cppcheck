@@ -100,6 +100,8 @@ private:
         TEST_CASE(hasGlobalVariables1);
         TEST_CASE(hasGlobalVariables2);
         TEST_CASE(hasGlobalVariables3);
+
+        TEST_CASE(functionArgs1);
     }
 
     void test_isVariableDeclarationCanHandleNull()
@@ -604,6 +606,37 @@ private:
             }
         }
     }
+
+    void check(const char code[])
+    {
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        settings.debugwarnings = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // force symbol database creation
+        tokenizer.getSymbolDatabase();
+    }
+
+    void functionArgs1()
+    {
+        check("void f(std::vector<std::string s>, const std::vector<int> & v) { }\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::map<std::string, std::vector<int> > m) { }\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+ 
 };
 
 REGISTER_TEST(TestSymbolDatabase)

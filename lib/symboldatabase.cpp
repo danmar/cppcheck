@@ -1265,8 +1265,27 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
                 }
                 else if (tok->str() == "[")
                     isArrayVar = true;
+                else if (tok->str() == "<")
+                {
+                    int level = 1;
+                    while (tok && tok->next())
+                    {
+                        tok = tok->next();
+                        if (tok->str() == ">")
+                        {
+                            --level;
+                            if (level == 0)
+                                break;
+                        }
+                        else if (tok->str() == "<")
+                            level++;
+                    }
+                }
 
                 tok = tok->next();
+
+                if (!tok) // something is wrong so just bail
+                    return;
             }
 
             // check for argument with no name or missing varid
