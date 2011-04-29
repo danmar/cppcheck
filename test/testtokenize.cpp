@@ -50,6 +50,7 @@ private:
         TEST_CASE(tokenize14);  // tokenize "0X10" => 16
         TEST_CASE(tokenize15);  // tokenize ".123"
         TEST_CASE(tokenize16);  // #2612 - segfault for "<><<"
+        TEST_CASE(tokenize17);  // #2759
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -539,6 +540,11 @@ private:
     void tokenize16()
     {
         tokenizeAndStringify("<><<");
+    }
+
+    void tokenize17() // #2759
+    {
+        ASSERT_EQUALS("class B : private :: A { } ;", tokenizeAndStringify("class B : private ::A { };"));
     }
 
     void wrong_syntax()

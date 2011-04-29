@@ -2148,7 +2148,7 @@ bool Tokenizer::tokenize(std::istream &code,
             tok->deleteNext();
         }
 
-        else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":")
+        else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":" && tok->strAt(2) != ":")
         {
             if (tok->str() == "private" || tok->str() == "protected" || tok->str() == "public" || tok->str() == "__published")
             {
