@@ -59,7 +59,6 @@ SOURCES += options.cpp \
            testsimplifytokens.cpp \
            teststl.cpp \
            testsuite.cpp \
-           testsuppressions.cpp \
            testsymboldatabase.cpp \
            testthreadexecutor.cpp \
            testtoken.cpp \
