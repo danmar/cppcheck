@@ -2487,6 +2487,58 @@ bool Tokenizer::tokenize(std::istream &code,
         simplifyInitVar();
     }
 
+    // Convert e.g. atol("0") into 0
+    simplifyMathFunctions();
+
+    // Convert + + into + and + - into -
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        while (tok->next())
+        {
+            if (tok->str() == "+")
+            {
+                if (tok->next()->str() == "+")
+                {
+                    tok->deleteNext();
+                    continue;
+                }
+                else if (tok->next()->str() == "-")
+                {
+                    tok->str("-");
+                    tok->deleteNext();
+                    continue;
+                }
+            }
+            else if (tok->str() == "-")
+            {
+                if (tok->next()->str() == "-")
+                {
+                    tok->str("+");
+                    tok->deleteNext();
+                    continue;
+                }
+                else if (tok->next()->str() == "+")
+                {
+                    tok->deleteNext();
+                    continue;
+                }
+            }
+
+            break;
+        }
+    }
+
+    // 0[a] -> a[0]
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%num% [ %var% ]"))
+        {
+            const std::string temp = tok->str();
+            tok->str(tok->tokAt(2)->str());
+            tok->tokAt(2)->str(temp);
+        }
+    }
+
     _tokens->assignProgressValues();
 
     removeRedundantSemicolons();
@@ -4276,58 +4328,6 @@ bool Tokenizer::simplifyTokenList()
             // Two strings after each other, combine them
             tok->concatStr(tok->next()->str());
             tok->deleteNext();
-        }
-    }
-
-    // Convert e.g. atol("0") into 0
-    simplifyMathFunctions();
-
-    // Convert + + into + and + - into -
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        while (tok->next())
-        {
-            if (tok->str() == "+")
-            {
-                if (tok->next()->str() == "+")
-                {
-                    tok->deleteNext();
-                    continue;
-                }
-                else if (tok->next()->str() == "-")
-                {
-                    tok->str("-");
-                    tok->deleteNext();
-                    continue;
-                }
-            }
-            else if (tok->str() == "-")
-            {
-                if (tok->next()->str() == "-")
-                {
-                    tok->str("+");
-                    tok->deleteNext();
-                    continue;
-                }
-                else if (tok->next()->str() == "+")
-                {
-                    tok->deleteNext();
-                    continue;
-                }
-            }
-
-            break;
-        }
-    }
-
-    // 0[a] -> a[0]
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "%num% [ %var% ]"))
-        {
-            const std::string temp = tok->str();
-            tok->str(tok->tokAt(2)->str());
-            tok->tokAt(2)->str(temp);
         }
     }
 
