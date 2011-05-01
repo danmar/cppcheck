@@ -7231,6 +7231,14 @@ bool Tokenizer::simplifyRedundantParenthesis()
             tok->deleteNext();
             ret = true;
         }
+
+        if (Token::simpleMatch(tok->previous(), ", (") &&
+            Token::simpleMatch(tok->link(), ") ="))
+        {
+            tok->link()->deleteThis();
+            tok->deleteThis();
+            ret = true;
+        }
     }
     return ret;
 }
@@ -8540,7 +8548,7 @@ void Tokenizer::simplifyComma()
 
         if (tok->previous() && tok->previous()->previous())
         {
-            if (Token::simpleMatch(tok->previous()->previous(), "delete") &&
+            if (Token::Match(tok->previous()->previous(), "delete %var% , %var% ;") &&
                 tok->next()->varId() != 0)
             {
                 // Handle "delete a, b;"

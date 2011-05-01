@@ -222,6 +222,7 @@ private:
         TEST_CASE(removeParentheses9);       // Ticket #1962
         TEST_CASE(removeParentheses10);      // Ticket #2320
         TEST_CASE(removeParentheses11);      // Ticket #2505
+        TEST_CASE(removeParentheses12);      // Ticket #2760 ',(b)='
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -3820,7 +3821,7 @@ private:
     void removeParentheses7()
     {
         const char code[] = ";char *p; (delete(p), (p)=0);";
-        ASSERT_EQUALS("; char * p ; delete p ; ( p ) = 0 ;", tokenizeAndStringify(code,true));
+        ASSERT_EQUALS("; char * p ; delete p ; p = 0 ;", tokenizeAndStringify(code,true));
     }
 
     void removeParentheses8()
@@ -3851,6 +3852,12 @@ private:
     {
         // #2502
         ASSERT_EQUALS("{ } x ( ) ;", tokenizeAndStringify("{}(x());", false));
+    }
+
+    void removeParentheses12()
+    {
+        // #2760
+        ASSERT_EQUALS(", x = 0 ;", tokenizeAndStringify(",(x)=0;", false));
     }
 
     void tokenize_double()
