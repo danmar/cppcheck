@@ -116,6 +116,7 @@ private:
         TEST_CASE(template23);
         TEST_CASE(template24);  // #2648 - using sizeof in template parameter
         TEST_CASE(template25);  // #2648 - another test for sizeof template parameter
+        TEST_CASE(template26);  // #2721 - passing 'char[2]' as template parameter
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2092,6 +2093,20 @@ private:
 
         TODO_ASSERT_EQUALS(expected, actual, sizeof_(code));
 
+    }
+
+    void template26()
+    {
+        // #2721
+        const char code[] = "template<class T>\n"
+                            "class A { public: T x; };\n"
+                            "\n"
+                            "template<class M>\n"
+                            "class C: public A<char[M]> {};\n"
+                            "\n"
+                            "C<2> a;\n";
+        // TODO: expand A also
+        ASSERT_EQUALS("; C<2> a ; class C<2> : public A < char [ 2 ] > { }", sizeof_(code));
     }
 
     void template_unhandled()

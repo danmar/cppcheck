@@ -3093,7 +3093,8 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         for (const Token *tok3 = tok2->tokAt(2); tok3 && tok3->str() != ">"; tok3 = tok3->next())
         {
             // #2648 - unhandled parenthesis => bail out
-            if (tok3->str() == "(")
+            // #2721 - unhandled [ => bail out
+            if (tok3->str() == "(" || tok3->str() == "[")
             {
                 s.clear();
                 break;
