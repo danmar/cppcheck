@@ -3730,202 +3730,83 @@ private:
         }
     }
 
-
     // Simplify "((..))" into "(..)"
     void removeParentheses1()
     {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    free(((void*)p));\n"
+        const char code[] = "void foo()"
+                            "{"
+                            "    free(((void*)p));"
                             "}";
 
-        errout.str("");
-
-        Settings settings;
-
-        // tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void foo ( ) { free ( p ) ; }", ostr.str());
+        ASSERT_EQUALS("void foo ( ) { free ( p ) ; }", tokenizeAndStringify(code, true));
     }
 
     void removeParentheses2()
     {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    if (__builtin_expect((s == NULL), 0))\n"
-                            "        return;\n"
+        const char code[] = "void foo()"
+                            "{"
+                            "    if (__builtin_expect((s == NULL), 0))"
+                            "        return;"
                             "}";
 
-        errout.str("");
-
-        Settings settings;
-
-        // tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void foo ( ) { if ( ! s ) { return ; } }", ostr.str());
+        ASSERT_EQUALS("void foo ( ) { if ( ! s ) { return ; } }", tokenizeAndStringify(code));
     }
 
     void removeParentheses3()
     {
         {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    if (( true )==(true)){}\n"
+            const char code[] = "void foo()"
+                                "{"
+                                "    if (( true )==(true)){}"
                                 "}";
-
-            errout.str("");
-
-            Settings settings;
-
-            // tokenize..
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            tokenizer.simplifyTokenList();
-
-            std::ostringstream ostr;
-            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-                ostr << " " << tok->str();
-            ASSERT_EQUALS(" void foo ( ) { { } }", ostr.str());
+            ASSERT_EQUALS("void foo ( ) { { } }", tokenizeAndStringify(code, true));
         }
 
         {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    if (( 2 )==(2)){}\n"
+            const char code[] = "void foo()"
+                                "{"
+                                "    if (( 2 )==(2)){}"
                                 "}";
-
-            errout.str("");
-
-            Settings settings;
-
-            // tokenize..
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            tokenizer.simplifyTokenList();
-
-            std::ostringstream ostr;
-            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-                ostr << " " << tok->str();
-            ASSERT_EQUALS(" void foo ( ) { { } }", ostr.str());
+            ASSERT_EQUALS("void foo ( ) { { } }", tokenizeAndStringify(code, true));
         }
 
         {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    if( g(10)){}\n"
+            const char code[] = "void foo()"
+                                "{"
+                                "    if( g(10)){}"
                                 "}";
-
-            errout.str("");
-
-            Settings settings;
-
-            // tokenize..
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            tokenizer.simplifyTokenList();
-
-            std::ostringstream ostr;
-            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-                ostr << " " << tok->str();
-            ASSERT_EQUALS(" void foo ( ) { if ( g ( 10 ) ) { } }", ostr.str());
+            ASSERT_EQUALS("void foo ( ) { if ( g ( 10 ) ) { } }", tokenizeAndStringify(code));
         }
     }
 
     // Simplify "( function (..))" into "function (..)"
     void removeParentheses4()
     {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    (free(p));\n"
+        const char code[] = "void foo()"
+                            "{"
+                            "    (free(p));"
                             "}";
-
-        errout.str("");
-
-        Settings settings;
-
-        // tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void foo ( ) { free ( p ) ; }", ostr.str());
+        ASSERT_EQUALS("void foo ( ) { free ( p ) ; }", tokenizeAndStringify(code));
     }
 
     void removeParentheses5()
     {
         // Simplify "( delete x )" into "delete x"
         {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    (delete p);\n"
+            const char code[] = "void foo()"
+                                "{"
+                                "    (delete p);"
                                 "}";
-
-            errout.str("");
-
-            Settings settings;
-
-            // tokenize..
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            tokenizer.simplifyTokenList();
-
-            std::ostringstream ostr;
-            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-                ostr << " " << tok->str();
-            ASSERT_EQUALS(" void foo ( ) { delete p ; }", ostr.str());
+            ASSERT_EQUALS("void foo ( ) { delete p ; }", tokenizeAndStringify(code));
         }
 
         // Simplify "( delete [] x )" into "delete [] x"
         {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    (delete [] p);\n"
+            const char code[] = "void foo()"
+                                "{"
+                                "    (delete [] p);"
                                 "}";
-
-            errout.str("");
-
-            Settings settings;
-
-            // tokenize..
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            tokenizer.simplifyTokenList();
-
-            std::ostringstream ostr;
-            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-                ostr << " " << tok->str();
-            ASSERT_EQUALS(" void foo ( ) { delete [ ] p ; }", ostr.str());
+            ASSERT_EQUALS("void foo ( ) { delete [ ] p ; }", tokenizeAndStringify(code));
         }
     }
 
@@ -3933,43 +3814,13 @@ private:
     void removeParentheses6()
     {
         const char code[] = "(!(abc.a))";
-
-        errout.str("");
-
-        Settings settings;
-
-        // tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" ( ! abc . a )", ostr.str());
+        ASSERT_EQUALS("( ! abc . a )", tokenizeAndStringify(code));
     }
 
     void removeParentheses7()
     {
         const char code[] = ";char *p; (delete(p), (p)=0);";
-
-        errout.str("");
-
-        Settings settings;
-
-        // tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" ; char * p ; delete p ; ( p ) = 0 ;", ostr.str());
+        ASSERT_EQUALS("; char * p ; delete p ; ( p ) = 0 ;", tokenizeAndStringify(code,true));
     }
 
     void removeParentheses8()
