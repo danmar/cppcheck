@@ -35,6 +35,8 @@
 #include <set>
 #include <stack>
 
+bool Preprocessor::missingIncludeFlag;
+
 Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
 {
 
@@ -1930,7 +1932,12 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         }
         else if (!fileOpened)
         {
-            if (_errorLogger && _settings && ((headerType == UserHeader && _settings->isEnabled("missingInclude")) || _settings->debugwarnings))
+            missingIncludeFlag = true;
+
+            if (_errorLogger &&
+                _settings &&
+                _settings->checkIncludes &&
+                (headerType == UserHeader || _settings->debugwarnings))
             {
                 std::string f = filePath;
 

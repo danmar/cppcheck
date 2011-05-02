@@ -53,6 +53,8 @@ public:
 
     Preprocessor(Settings *settings = 0, ErrorLogger *errorLogger = 0);
 
+    static bool missingIncludeFlag;
+
     /**
      * Extract the code for each configuration
      * @param istr The (file/string) stream to read from.

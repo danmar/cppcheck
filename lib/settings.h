@@ -300,6 +300,15 @@ public:
      * @brief Extra rules
      */
     std::list<Rule> rules;
+
+    /** Is the 'configuration checking' wanted? */
+    bool checkConfiguration() const
+    {
+        return checkIncludes;
+    }
+
+    /** Check configuration: includes */
+    bool checkIncludes;
 };
 
 /// @}

@@ -573,6 +573,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 #endif
 
+        // Check configuration
+        else if (strcmp(argv[i], "--check-includes") == 0)
+        {
+            _settings->checkIncludes = true;
+        }
+
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {

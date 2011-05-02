@@ -19,6 +19,8 @@
 #include "cppcheckexecutor.h"
 #include "cppcheck.h"
 #include "threadexecutor.h"
+#include "preprocessor.h"
+#include "errorlogger.h"
 #include <fstream>
 #include <iostream>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
@@ -131,6 +133,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
+    Preprocessor::missingIncludeFlag = false;
+
     CppCheck cppCheck(*this, true);
     if (!parseFromArgs(&cppCheck, argc, argv))
     {
@@ -181,7 +185,26 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         returnValue = executor.check();
     }
 
-    reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
+    if (!cppCheck.settings().checkConfiguration())
+    {
+        reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
+
+        if (Preprocessor::missingIncludeFlag)
+        {
+            const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
+            ErrorLogger::ErrorMessage msg(callStack,
+                                          Severity::information,
+                                          "Cppcheck cannot find all the include files (--check-includes)\n"
+                                          "Cppcheck cannot find all the include files. Cpppcheck can check the code without the "
+                                          "include files found. But the results will probably be more accurate if all the include "
+                                          "files are found. Please check your project's include directories and add all of them "
+                                          "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
+                                          "--check-includes.",
+                                          "missingInclude",
+                                          false);
+            reportErr(msg);
+        }
+    }
 
     if (_settings._xml)
     {
