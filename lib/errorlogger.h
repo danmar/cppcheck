@@ -188,7 +188,7 @@ public:
 
         };
 
-        ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id);
+        ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
         ErrorMessage();
 
         /**
@@ -215,6 +215,7 @@ public:
         std::list<FileLocation> _callStack;
         Severity::SeverityType _severity;
         std::string _id;
+        bool _inconclusive;
 
         /** source file (not header) */
         std::string file0;
@@ -270,14 +271,6 @@ public:
      * error
      */
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg) = 0;
-
-    /**
-     * Information about how many files have been checked
-     *
-     * @param index This many files have been checked.
-     * @param max This many files there are in total.
-     */
-    virtual void reportStatus(unsigned int index, unsigned int max) = 0;
 
     /**
      * Report progress to client

@@ -47,6 +47,13 @@ std::string Path::fromNativeSeparators(const std::string &path)
 
 std::string Path::simplifyPath(const char *originalPath)
 {
+    // Skip ./ at the beginning
+    if (strlen(originalPath) > 2 && originalPath[0] == '.' &&
+        originalPath[1] == '/')
+    {
+        originalPath += 2;
+    }
+
     std::string subPath = "";
     std::vector<std::string> pathParts;
     for (; *originalPath; ++originalPath)
@@ -103,14 +110,20 @@ bool Path::sameFileName(const std::string &fname1, const std::string &fname2)
 {
 #if defined(__linux__) || defined(__sun)
     return bool(fname1 == fname2);
-#endif
-#ifdef __GNUC__
+#elif defined(__GNUC__)
     return bool(strcasecmp(fname1.c_str(), fname2.c_str()) == 0);
-#endif
-#ifdef __BORLANDC__
+#elif defined(__BORLANDC__)
     return bool(stricmp(fname1.c_str(), fname2.c_str()) == 0);
-#endif
-#ifdef _MSC_VER
+#elif defined(_MSC_VER)
     return bool(_stricmp(fname1.c_str(), fname2.c_str()) == 0);
+#else
+#error Platform filename compare function needed
 #endif
+}
+
+std::string Path::removeQuotationMarks(const std::string &path)
+{
+    std::string editPath(path);
+    editPath.erase(std::remove(editPath.begin(), editPath.end(), '\"'), editPath.end());
+    return editPath;
 }

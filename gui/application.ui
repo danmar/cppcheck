@@ -10,92 +10,136 @@
     <x>0</x>
     <y>0</y>
     <width>569</width>
-    <height>300</height>
+    <height>471</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Add an application</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
     <widget class="QLabel" name="label">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="text">
-      <string>Here you can add applications that can open error files.
-Specify a name for the application and the application to execute.
+      <string>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
 
-The following texts are replaced with appropriate values when application is executed:
+The following texts in parameters are replaced with appropriate values when application is executed:
 (file) - Filename containing the error
 (line) - Line number containing the error
 (message) - Error message
 (severity) - Error severity
 
 Example opening a file with Kate and make Kate scroll to the correct line:
-kate -l(line) (file)</string>
+Executable: kate
+Parameters: -l(line) (file)</string>
      </property>
      <property name="textFormat">
       <enum>Qt::AutoText</enum>
      </property>
+     <property name="scaledContents">
+      <bool>false</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Application's name:</string>
-         </property>
-         <property name="buddy">
-          <cstring>mName</cstring>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>&amp;Name:</string>
+           </property>
+           <property name="buddy">
+            <cstring>mName</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>&amp;Executable:</string>
+           </property>
+           <property name="buddy">
+            <cstring>mPath</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>&amp;Parameters:</string>
+           </property>
+           <property name="buddy">
+            <cstring>mParameters</cstring>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Command to execute:</string>
-         </property>
-         <property name="buddy">
-          <cstring>mPath</cstring>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QLineEdit" name="mName"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mPath"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mParameters"/>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLineEdit" name="mName"/>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
-        <widget class="QLineEdit" name="mPath"/>
+        <widget class="QPushButton" name="mButtonBrowse">
+         <property name="text">
+          <string>Browse</string>
+         </property>
+        </widget>
        </item>
       </layout>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="mButtonBrowse">
-       <property name="text">
-        <string>Browse</string>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>
@@ -114,6 +158,7 @@ kate -l(line) (file)</string>
  <tabstops>
   <tabstop>mName</tabstop>
   <tabstop>mPath</tabstop>
+  <tabstop>mParameters</tabstop>
   <tabstop>mButtonBrowse</tabstop>
   <tabstop>mButtons</tabstop>
  </tabstops>

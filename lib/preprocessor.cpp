@@ -35,6 +35,8 @@
 #include <set>
 #include <stack>
 
+bool Preprocessor::missingIncludeFlag;
+
 Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
 {
 
@@ -53,7 +55,8 @@ void Preprocessor::writeError(const std::string &fileName, const unsigned int li
     errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
                            Severity::error,
                            errorText,
-                           errorType));
+                           errorType,
+                           false));
 }
 
 static unsigned char readChar(std::istream &istr)
@@ -185,8 +188,8 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
 
     // ------------------------------------------------------------------------------------------
     //
-    // Clean up preprocessor #if statements with Parantheses
-    result = removeParantheses(result);
+    // Clean up preprocessor #if statements with Parentheses
+    result = removeParentheses(result);
 
     // Remove '#if 0' blocks
     if (result.find("#if 0\n") != std::string::npos)
@@ -303,10 +306,18 @@ static bool hasbom(const std::string &str)
 }
 
 
+// This wrapper exists because Sun's CC does not allow a static_cast
+// from extern "C" int(*)(int) to int(*)(int).
+static int tolowerWrapper(int c)
+{
+    return std::tolower(c);
+}
+
+
 static bool isFallThroughComment(std::string comment)
 {
     // convert comment to lower case without whitespace
-    std::transform(comment.begin(), comment.end(), comment.begin(), ::tolower);
+    std::transform(comment.begin(), comment.end(), comment.begin(), tolowerWrapper);
     for (std::string::iterator i = comment.begin(); i != comment.end();)
     {
         if (::isspace(static_cast<unsigned char>(*i)))
@@ -467,6 +478,24 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             code << ch;
             previous = ch;
             inPreprocessorLine = true;
+
+            // Add any pending inline suppressions that have accumulated.
+            if (!suppressionIDs.empty())
+            {
+                if (settings != NULL)
+                {
+                    // Add the suppressions.
+                    for (size_t j(0); j < suppressionIDs.size(); ++j)
+                    {
+                        const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
+                        if (!errmsg.empty())
+                        {
+                            writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
+                        }
+                    }
+                }
+                suppressionIDs.clear();
+            }
         }
         else
         {
@@ -477,7 +506,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
                 // First check for a "fall through" comment match, but only
                 // add a suppression if the next token is 'case' or 'default'
-                if (_settings->_checkCodingStyle && _settings->inconclusive && fallThroughComment)
+                if (_settings->_checkCodingStyle && _settings->experimental && fallThroughComment)
                 {
                     std::string::size_type j = str.find_first_not_of("abcdefghijklmnopqrstuvwxyz", i);
                     std::string tok = str.substr(i, j - i);
@@ -654,7 +683,7 @@ std::string Preprocessor::removeIf0(const std::string &code)
 }
 
 
-std::string Preprocessor::removeParantheses(const std::string &str)
+std::string Preprocessor::removeParentheses(const std::string &str)
 {
     if (str.find("\n#if") == std::string::npos && str.compare(0, 3, "#if") != 0)
         return str;
@@ -680,7 +709,7 @@ std::string Preprocessor::removeParantheses(const std::string &str)
             while ((pos = line.find(") ", pos)) != std::string::npos)
                 line.erase(pos + 1, 1);
 
-            // Remove inner paranthesis "((..))"..
+            // Remove inner parenthesis "((..))"..
             pos = 0;
             while ((pos = line.find("((", pos)) != std::string::npos)
             {
@@ -1057,7 +1086,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         if (!line.empty() && line.compare(0, 3, "#if") != 0)
             includeguard = false;
 
-        if (line[0] != '#')
+        if (line.empty() || line[0] != '#')
             continue;
 
         if (includeguard)
@@ -1370,7 +1399,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             if (_errorLogger && _settings && _settings->debugwarnings)
             {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                const ErrorLogger::ErrorMessage errmsg(locationList, Severity::debug, "unhandled configuration: " + *it, "debug");
+                const ErrorLogger::ErrorMessage errmsg(locationList, Severity::debug, "unhandled configuration: " + *it, "debug", false);
                 _errorLogger->reportErr(errmsg);
             }
 
@@ -1478,8 +1507,8 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
                     }
                 }
             }
-            else if ((!tok->previous() || tok->strAt(-1) == "||" || tok->strAt(-1) == "&&" || tok->strAt(-1) == "(") &&
-                     (!tok->next() || tok->strAt(1) == "||" || tok->strAt(1) == "&&" || tok->strAt(1) == ")"))
+            else if ((!tok->previous() || Token::Match(tok->previous(), "&&|%oror%|(")) &&
+                     (!tok->next() || Token::Match(tok->next(), "&&|%oror%|)")))
                 tok->str("1");
             else
                 tok->deleteThis();
@@ -1505,7 +1534,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
     for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
     {
-        while ((tok->str() == "(" || tok->str() == "||") && (Token::simpleMatch(tok->tokAt(2), "|| 1")))
+        while (Token::Match(tok, "(|%oror% %any% %oror% 1"))
         {
             tok->deleteNext();
             tok->deleteNext();
@@ -1765,7 +1794,8 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
     _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
                             Severity::error,
                             msg,
-                            "preprocessorErrorDirective"));
+                            "preprocessorErrorDirective",
+                            false));
 }
 
 Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
@@ -1798,14 +1828,6 @@ Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
         return UserHeader;
     else
         return SystemHeader;
-}
-
-
-// This wrapper exists because Sun's CC does not allow a static_cast
-// from extern "C" int(*)(int) to int(*)(int).
-static int tolowerWrapper(int c)
-{
-    return std::tolower(c);
 }
 
 
@@ -1910,18 +1932,17 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         }
         else if (!fileOpened)
         {
-            // TODO: Fix the handling of system includes and then
-            // remove the "headerType == UserHeader"
-#ifdef NDEBUG
-            if (headerType == UserHeader && _errorLogger && _settings && _settings->isEnabled("missingInclude"))
-#else
-            if (_errorLogger && _settings && _settings->isEnabled("missingInclude"))
-#endif
+            missingIncludeFlag = true;
+
+            if (_errorLogger &&
+                _settings &&
+                _settings->checkIncludes &&
+                (headerType == UserHeader || _settings->debugwarnings))
             {
                 std::string f = filePath;
 
                 // Determine line number of include
-                unsigned int linenr = 0;
+                unsigned int linenr = 1;
                 unsigned int level = 0;
                 for (std::string::size_type p = 1; p <= pos; ++p)
                 {
@@ -1935,6 +1956,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
                     {
                         if (level == 0)
                         {
+                            linenr--;
                             const std::string::size_type pos1 = pos - p + 7;
                             const std::string::size_type pos2 = code.find_first_of("\"\n", pos1);
                             f = code.substr(pos1, (pos2 == std::string::npos) ? pos2 : (pos2 - pos1));
@@ -1944,10 +1966,13 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
                     }
                 }
 
-                missingInclude(Path::toNativeSeparators(f),
-                               linenr,
-                               filename,
-                               headerType == UserHeader);
+                if (!_settings->nomsg.isSuppressed("missingInclude", f, linenr))
+                {
+                    missingInclude(Path::toNativeSeparators(f),
+                                   linenr,
+                                   filename,
+                                   headerType == UserHeader);
+                }
             }
         }
     }
@@ -1969,7 +1994,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     // currently a debug-message.
     const Severity::SeverityType severity = userheader ? Severity::information : Severity::debug;
     const std::string id = userheader ? "missingInclude" : "debug";
-    ErrorLogger::ErrorMessage errmsg(locationList, severity, "Include file: \"" + header + "\" not found.", id);
+    ErrorLogger::ErrorMessage errmsg(locationList, severity, "Include file: \"" + header + "\" not found.", id, false);
     errmsg.file0 = file0;
     _errorLogger->reportErr(errmsg);
 }
@@ -2384,14 +2409,17 @@ public:
                         }
 
                         // expand nopar macro
-                        const std::map<std::string, PreprocessorMacro *>::const_iterator it = macros.find(str);
-                        if (it != macros.end() && it->second->_macro.find("(") == std::string::npos)
+                        if (tok->strAt(-1) != "##")
                         {
-                            str = it->second->_macro;
-                            if (str.find(" ") != std::string::npos)
-                                str.erase(0, str.find(" "));
-                            else
-                                str = "";
+                            const std::map<std::string, PreprocessorMacro *>::const_iterator it = macros.find(str);
+                            if (it != macros.end() && it->second->_macro.find("(") == std::string::npos)
+                            {
+                                str = it->second->_macro;
+                                if (str.find(" ") != std::string::npos)
+                                    str.erase(0, str.find(" "));
+                                else
+                                    str = "";
+                            }
                         }
                     }
                     if (_variadic && tok->str() == "," && tok->next() && tok->next()->str() == "##")

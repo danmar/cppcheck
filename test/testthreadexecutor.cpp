@@ -24,6 +24,7 @@
 #include "cppcheck.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
+#include "cppcheckexecutor.h"
 
 #include <algorithm>
 #include <map>
@@ -56,6 +57,7 @@ private:
         }
 
         std::vector<std::string> filenames;
+        std::map<std::string, long> filesizes;
         for (int i = 1; i <= files; ++i)
         {
             std::ostringstream oss;
@@ -65,7 +67,7 @@ private:
 
         Settings settings;
         settings._jobs = jobs;
-        ThreadExecutor executor(filenames, settings, *this);
+        ThreadExecutor executor(filenames, filesizes, settings, *this);
         for (unsigned int i = 0; i < filenames.size(); ++i)
             executor.addFileContent(filenames[i], data);
 

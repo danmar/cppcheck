@@ -100,6 +100,26 @@ private:
         TEST_CASE(hasGlobalVariables1);
         TEST_CASE(hasGlobalVariables2);
         TEST_CASE(hasGlobalVariables3);
+
+        TEST_CASE(functionArgs1);
+
+        TEST_CASE(symboldatabase1);
+        TEST_CASE(symboldatabase2);
+        TEST_CASE(symboldatabase3); // ticket #2000
+        TEST_CASE(symboldatabase4);
+        TEST_CASE(symboldatabase5); // ticket #2178
+        TEST_CASE(symboldatabase6); // ticket #2221
+        TEST_CASE(symboldatabase7); // ticket #2230
+        TEST_CASE(symboldatabase8); // ticket #2252
+        TEST_CASE(symboldatabase9); // ticket #2525
+        TEST_CASE(symboldatabase10); // ticket #2537
+        TEST_CASE(symboldatabase11); // ticket #2539
+        TEST_CASE(symboldatabase12); // ticket #2547
+        TEST_CASE(symboldatabase13); // ticket #2577
+        TEST_CASE(symboldatabase14); // ticket #2589
+        TEST_CASE(symboldatabase15); // ticket #2591
+        TEST_CASE(symboldatabase16); // ticket #2637
+        TEST_CASE(symboldatabase17); // ticket #2657
     }
 
     void test_isVariableDeclarationCanHandleNull()
@@ -604,6 +624,251 @@ private:
             }
         }
     }
+
+    void check(const char code[])
+    {
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        settings.debugwarnings = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // force symbol database creation
+        tokenizer.getSymbolDatabase();
+    }
+
+    void functionArgs1()
+    {
+        check("void f(std::vector<std::string s>, const std::vector<int> & v) { }\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::map<std::string, std::vector<int> > m) { }\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase1()
+    {
+        check("namespace foo {\n"
+              "    class bar;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class foo : public bar < int, int> {\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase2()
+    {
+        check("class foo {\n"
+              "public slots :\n"
+              "foo() { }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class foo {\n"
+              "class bar;\n"
+              "foo() { }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase3()
+    {
+        check("typedef void (func_type)();\n"
+              "struct A {\n"
+              "    friend func_type f : 2;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase4()
+    {
+        check("static void function_declaration_before(void) __attribute__((__used__));\n"
+              "static void function_declaration_before(void) {}\n"
+              "static void function_declaration_after(void) {}\n"
+              "static void function_declaration_after(void) __attribute__((__used__));\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("main(int argc, char *argv[]) { }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("namespace boost {\n"
+              "    std::locale generate_locale()\n"
+              "    {\n"
+              "        return std::locale();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("namespace X {\n"
+              "    static void function_declaration_before(void) __attribute__((__used__));\n"
+              "    static void function_declaration_before(void) {}\n"
+              "    static void function_declaration_after(void) {}\n"
+              "    static void function_declaration_after(void) __attribute__((__used__));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("testing::testing()\n"
+              "{\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase5()
+    {
+        // ticket #2178 - segmentation fault
+        check("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
+              "    return (sign ? cl_I() : 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase6()
+    {
+        // ticket #2221 - segmentation fault
+        check("template<int i> class X { };\n"
+              "X< 1>2 > x1;\n"
+              "X<(1>2)> x2;\n"
+              "template<class T> class Y { };\n"
+              "Y<X<1>> x3;\n"
+              "Y<X<6>>1>> x4;\n"
+              "Y<X<(6>>1)>> x5;\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase7()
+    {
+        // ticket #2230 - segmentation fault
+        check("template<template<class> class E,class D> class C : E<D>\n"
+              "{\n"
+              "public:\n"
+              "    int f();\n"
+              "};\n"
+              "class E : C<D,int>\n"
+              "{\n"
+              "public:\n"
+              "    int f() { return C< ::D,int>::f(); }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase8()
+    {
+        // ticket #2252 - segmentation fault
+        check("struct PaletteColorSpaceHolder: public rtl::StaticWithInit<uno::Reference<rendering::XColorSpace>,\n"
+              "                                                           PaletteColorSpaceHolder>\n"
+              "{\n"
+              "    uno::Reference<rendering::XColorSpace> operator()()\n"
+              "    {\n"
+              "        return vcl::unotools::createStandardColorSpace();\n"
+              "    }\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase9()
+    {
+        // ticket #2425 - segmentation fault
+        check("class CHyperlink : public CString\n"
+              "{\n"
+              "public:\n"
+              "    const CHyperlink& operator=(LPCTSTR lpsz) {\n"
+              "        CString::operator=(lpsz);\n"
+              "        return *this;\n"
+              "    }\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase10()
+    {
+        // ticket #2537 - segmentation fault
+        check("class A {\n"
+              "private:\n"
+              "  void f();\n"
+              "};\n"
+              "class B {\n"
+              "  friend void A::f();\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase11()
+    {
+        // ticket #2539 - segmentation fault
+        check("int g ();\n"
+              "struct S {\n"
+              "  int i : (false ? g () : 1);\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase12()
+    {
+        // ticket #2547 - segmentation fault
+        check("class foo {\n"
+              "    void bar2 () = __null;\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase13()
+    {
+        // ticket #2577 - segmentation fault
+        check("class foo {\n"
+              "    void bar2 () = A::f;\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase14()
+    {
+        // ticket #2589 - segmentation fault
+        check("struct B : A\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase15()
+    {
+        // ticket #2591 - segmentation fault
+        check("struct A :\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase16()
+    {
+        // ticket #2637 - segmentation fault
+        check("{} const const\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase17()
+    {
+        // ticket #2657 - segmentation fault
+        check("return f(){}\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestSymbolDatabase)

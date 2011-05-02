@@ -21,6 +21,7 @@ a:active { color:#369; text-decoration:none; }
 #header h1 {
   margin: 0;
   padding: 0;
+  font-family: Orbitron,Calibri,Verdana,sans-serif;
 }
 #header p {
   margin: 0;

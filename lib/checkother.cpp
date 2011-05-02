@@ -85,11 +85,12 @@ void CheckOther::clarifyCalculation()
             else
                 continue;
 
-            // multiplication
-            if (cond && cond->str() == "*")
-                cond = cond->previous();
-            else
+            // calculation
+            if (!cond->isArithmeticalOp())
                 continue;
+
+            const std::string &op = cond->str();
+            cond = cond->previous();
 
             // skip previous multiplications..
             while (cond && cond->strAt(-1) == "*" && (cond->isName() || cond->isNumber()))
@@ -101,25 +102,34 @@ void CheckOther::clarifyCalculation()
             // first multiplication operand
             if (cond->str() == ")")
             {
-                clarifyCalculationError(cond);
+                clarifyCalculationError(cond, op);
             }
             else if (cond->isName() || cond->isNumber())
             {
-                if (Token::Match(cond->previous(),"return|+|-|,|("))
-                    clarifyCalculationError(cond);
+                if (Token::Match(cond->previous(),("return|=|+|-|,|(|"+op).c_str()))
+                    clarifyCalculationError(cond, op);
             }
         }
     }
 }
 
-void CheckOther::clarifyCalculationError(const Token *tok)
+void CheckOther::clarifyCalculationError(const Token *tok, const std::string &op)
 {
+    // suspicious calculation
+    const std::string calc("'a" + op + "b?c:d'");
+
+    // recommended calculation #1
+    const std::string s1("'(a" + op + "b)?c:d'");
+
+    // recommended calculation #2
+    const std::string s2("'a" + op + "(b?c:d)'");
+
     reportError(tok,
                 Severity::style,
                 "clarifyCalculation",
-                "Please clarify precedence: 'a*b?..'\n"
-                "Found a suspicious multiplication of condition. Please use parantheses to clarify the code. "
-                "The code 'a*b?1:2' should be written as either '(a*b)?1:2' or 'a*(b?1:2)'.");
+                "Clarify calculation precedence for " + op + " and ?\n"
+                "Suspicious calculation. Please use parentheses to clarify the code. "
+                "The code " + calc + " should be written as either " + s1 + " or " + s2 + ".");
 }
 
 
@@ -136,10 +146,7 @@ void CheckOther::clarifyCondition()
             {
                 if (tok2->str() == "(" || tok2->str() == "[")
                     tok2 = tok2->link();
-                else if (tok2->str() == "||" ||
-                         tok2->str() == "&&" ||
-                         tok2->str() == "?" ||
-                         tok2->str() == ")")
+                else if (Token::Match(tok2, "&&|%oror%|?|)"))
                     break;
                 else if (Token::Match(tok2, "<|<=|==|!=|>|>= %num% )"))
                 {
@@ -156,7 +163,7 @@ void CheckOther::clarifyConditionError(const Token *tok)
     reportError(tok,
                 Severity::style,
                 "clarifyCondition",
-                "Suspicious condition (assignment+comparison), it can be clarified with parantheses");
+                "Suspicious condition (assignment+comparison), it can be clarified with parentheses");
 }
 
 
@@ -347,7 +354,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 
 void CheckOther::checkSwitchCaseFallThrough()
 {
-    if (!(_settings->_checkCodingStyle && _settings->inconclusive))
+    if (!(_settings->_checkCodingStyle && _settings->experimental))
         return;
 
     const char switchPattern[] = "switch (";
@@ -918,7 +925,7 @@ void CheckOther::checkUnsignedDivision()
             }
         }
 
-        else if (Token::Match(tok, "[([=*/+-,] %num% / %var%"))
+        else if (Token::Match(tok, "(|[|=|%op% %num% / %var%"))
         {
             if (tok->strAt(1)[0] == '-')
             {
@@ -951,21 +958,6 @@ void CheckOther::checkMemsetZeroBytes()
 //---------------------------------------------------------------------------
 // Usage of function variables
 //---------------------------------------------------------------------------
-
-static bool isOp(const Token *tok)
-{
-    return bool(tok &&
-                (tok->str() == "&&" ||
-                 tok->str() == "||" ||
-                 tok->str() == "==" ||
-                 tok->str() == "!=" ||
-                 tok->str() == "<" ||
-                 tok->str() == "<=" ||
-                 tok->str() == ">" ||
-                 tok->str() == ">=" ||
-                 tok->str() == "<<" ||
-                 Token::Match(tok, "[+-*/%&!~|^,[])?:]")));
-}
 
 /**
  * @brief This class is used to capture the control flow within a function.
@@ -2213,11 +2205,11 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "%var% ."))
                 variables.use(tok->varId());   // use = read + write
 
-            else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) &&
+            else if ((Token::Match(tok, "[(=&!]") || tok->isExtendedOp()) &&
                      (Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false|new")))
                 variables.readAll(tok->next()->varId());
 
-            else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
+            else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || tok->next()->isExtendedOp()))
                 variables.readAll(tok->varId());
 
             else if (Token::Match(tok, "; %var% ;"))
@@ -2525,7 +2517,12 @@ void CheckOther::checkConstantFunctionParameter()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[,(] const std :: %type% %var% [,)]"))
+        // TODO: False negatives. This pattern only checks for string.
+        //       Investigate if there are other classes in the std
+        //       namespace and add them to the pattern. There are
+        //       streams for example (however it seems strange with
+        //       const stream parameter).
+        if (Token::Match(tok, "[,(] const std :: string %var% [,)]"))
         {
             passedByValueError(tok, tok->strAt(5));
         }
@@ -2767,7 +2764,11 @@ void CheckOther::checkIncompleteStatement()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "(")
+        {
             tok = tok->link();
+            if (Token::simpleMatch(tok, ") {") && Token::simpleMatch(tok->next()->link(), "} ;"))
+                tok = tok->next()->link();
+        }
 
         else if (Token::simpleMatch(tok, "= {"))
             tok = tok->next()->link();
@@ -2912,7 +2913,7 @@ void CheckOther::checkMathFunctions()
         }
         // sqrt( x ): if x is negative the result is undefined
         else if (tok->varId() == 0 &&
-                 Token::Match(tok, "sqrt ( %num% )") &&
+                 Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )") &&
                  MathLib::isNegative(tok->tokAt(2)->str()))
         {
             mathfunctionCallError(tok);
@@ -3040,6 +3041,314 @@ void CheckOther::checkIncorrectStringCompare()
         }
     }
 }
+
+//-----------------------------------------------------------------------------
+// check for duplicate expressions in if statements
+// if (a) { } else if (a) { }
+//-----------------------------------------------------------------------------
+
+static const std::string stringifyTokens(const Token *start, const Token *end)
+{
+    const Token *tok = start;
+    std::string stringified;
+
+    if (tok->isUnsigned())
+        stringified.append("unsigned ");
+    else if (tok->isSigned())
+        stringified.append("signed ");
+
+    if (tok->isLong())
+        stringified.append("long ");
+
+    stringified.append(tok->str());
+
+    while (tok && tok->next() && tok != end)
+    {
+        if (tok->isUnsigned())
+            stringified.append("unsigned ");
+        else if (tok->isSigned())
+            stringified.append("signed ");
+
+        if (tok->isLong())
+            stringified.append("long ");
+
+        tok = tok->next();
+        stringified.append(" ");
+        stringified.append(tok->str());
+    }
+
+    return stringified;
+}
+
+static bool expressionHasSideEffects(const Token *first, const Token *last)
+{
+    for (const Token *tok = first; tok != last->next(); tok = tok->next())
+    {
+        // check for assignment
+        if (tok->isAssignmentOp())
+            return true;
+
+        // check for inc/dec
+        else if (Token::Match(tok, "++|--"))
+            return true;
+
+        // check for function call
+        else if (Token::Match(tok, "%var% (") &&
+                 !(Token::Match(tok, "c_str|string") || tok->isStandardType()))
+            return true;
+    }
+
+    return false;
+}
+
+void CheckOther::checkDuplicateIf()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
+    {
+        // only check functions
+        if (scope->type != Scope::eFunction)
+            continue;
+
+        // check all the code in the function for if (...) and else if (...) statements
+        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next())
+        {
+            if (Token::Match(tok, "if (") && tok->strAt(-1) != "else" &&
+                Token::Match(tok->next()->link(), ") {"))
+            {
+                std::map<std::string, const Token*> expressionMap;
+
+                // get the expression from the token stream
+                std::string expression = stringifyTokens(tok->tokAt(2), tok->next()->link()->previous());
+
+                // save the expression and its location
+                expressionMap.insert(std::make_pair(expression, tok));
+
+                // find the next else if (...) statement
+                const Token *tok1 = tok->next()->link()->next()->link();
+
+                // check all the else if (...) statements
+                while (Token::Match(tok1, "} else if (") &&
+                       Token::Match(tok1->tokAt(3)->link(), ") {"))
+                {
+                    // get the expression from the token stream
+                    expression = stringifyTokens(tok1->tokAt(4), tok1->tokAt(3)->link()->previous());
+
+                    // try to look up the expression to check for duplicates
+                    std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
+
+                    // found a duplicate
+                    if (it != expressionMap.end())
+                    {
+                        // check for expressions that have side effects and ignore them
+                        if (!expressionHasSideEffects(tok1->tokAt(4), tok1->tokAt(3)->link()->previous()))
+                            duplicateIfError(it->second, tok1->next());
+                    }
+
+                    // not a duplicate expression so save it and its location
+                    else
+                        expressionMap.insert(std::make_pair(expression, tok1->next()));
+
+                    // find the next else if (...) statement
+                    tok1 = tok1->tokAt(3)->link()->next()->link();
+                }
+
+                tok = tok->next()->link()->next();
+            }
+        }
+    }
+}
+
+void CheckOther::duplicateIfError(const Token *tok1, const Token *tok2)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok2);
+    toks.push_back(tok1);
+
+    reportError(toks, Severity::style, "duplicateIf", "Found duplicate if expressions.\n"
+                "Finding the same expression more than once is suspicious and might indicate "
+                "a cut and paste or logic error. Please examine this code carefully to determine "
+                "if it is correct.");
+}
+
+//-----------------------------------------------------------------------------
+// check for duplicate code in if and else branches
+// if (a) { b = true; } else { b = true; }
+//-----------------------------------------------------------------------------
+
+void CheckOther::checkDuplicateBranch()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
+    {
+        // only check functions
+        if (scope->type != Scope::eFunction)
+            continue;
+
+        // check all the code in the function for if (..) else
+        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next())
+        {
+            if (Token::Match(tok, "if (") && tok->strAt(-1) != "else" &&
+                Token::Match(tok->next()->link(), ") {") &&
+                Token::Match(tok->next()->link()->next()->link(), "} else {"))
+            {
+                // save if branch code
+                std::string branch1 = stringifyTokens(tok->next()->link()->tokAt(2), tok->next()->link()->next()->link()->previous());
+
+                // find else branch
+                const Token *tok1 = tok->next()->link()->next()->link();
+
+                // save else branch code
+                std::string branch2 = stringifyTokens(tok1->tokAt(3), tok1->tokAt(2)->link()->previous());
+
+                // check for duplicates
+                if (branch1 == branch2)
+                    duplicateBranchError(tok, tok1->tokAt(2));
+
+                tok = tok->next()->link()->next();
+            }
+        }
+    }
+}
+
+void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok2);
+    toks.push_back(tok1);
+
+    reportError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for if and else.\n"
+                "Finding the same code for an if branch and an else branch is suspicious and "
+                "might indicate a cut and paste or logic error. Please examine this code "
+                "carefully to determine if it is correct.");
+}
+
+//---------------------------------------------------------------------------
+// check for the same expression on both sides of an operator
+// (x == x), (x && x), (x || x)
+// (x.y == x.y), (x.y && x.y), (x.y || x.y)
+//---------------------------------------------------------------------------
+
+void CheckOther::checkDuplicateExpression()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    // Parse all executing scopes..
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
+    {
+        // only check functions
+        if (scope->type != Scope::eFunction)
+            continue;
+
+        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next())
+        {
+            if (Token::Match(tok, "(|&&|%oror% %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% )|&&|%oror%") &&
+                tok->strAt(1) == tok->strAt(3))
+            {
+                // float == float and float != float are valid NaN checks
+                if (Token::Match(tok->tokAt(2), "==|!=") && tok->next()->varId())
+                {
+                    const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                    if (var && var->typeStartToken() == var->typeEndToken())
+                    {
+                        if (Token::Match(var->typeStartToken(), "float|double"))
+                            continue;
+                    }
+                }
+
+                duplicateExpressionError(tok->next(), tok->tokAt(3), tok->strAt(2));
+            }
+            else if (Token::Match(tok, "(|&&|%oror% %var% . %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% . %var% )|&&|%oror%") &&
+                     tok->strAt(1) == tok->strAt(5) && tok->strAt(3) == tok->strAt(7))
+            {
+                duplicateExpressionError(tok->next(), tok->tokAt(6), tok->strAt(4));
+            }
+        }
+    }
+}
+
+void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok2);
+    toks.push_back(tok1);
+
+    reportError(toks, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'.\n"
+                "Finding the same expression on both sides of an operator is suspicious and might "
+                "indicate a cut and paste or logic error. Please examine this code carefully to "
+                "determine if it is correct.");
+}
+
+
+//---------------------------------------------------------------------------
+// Check for string comparison involving two static strings.
+// if(strcmp("00FF00","00FF00")==0) // <- statement is always true
+//---------------------------------------------------------------------------
+
+void CheckOther::checkAlwaysTrueOrFalseStringCompare()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const char pattern1[] = "strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% )";
+    const char pattern2[] = "QString :: compare ( %str% , %str% )";
+
+    const Token *tok = _tokenizer->tokens();
+    while (tok && (tok = Token::findmatch(tok, pattern1)) != NULL)
+    {
+        alwaysTrueFalseStringCompare(tok, tok->strAt(2), tok->strAt(4));
+        tok = tok->tokAt(5);
+    }
+
+    tok = _tokenizer->tokens();
+    while (tok && (tok = Token::findmatch(tok, pattern2)) != NULL)
+    {
+        alwaysTrueFalseStringCompare(tok, tok->strAt(4), tok->strAt(6));
+        tok = tok->tokAt(7);
+    }
+}
+
+void CheckOther::alwaysTrueFalseStringCompare(const Token *tok, const std::string& str1, const std::string& str2)
+{
+    const size_t stringLen = 10;
+    const std::string string1 = (str1.size() < stringLen) ? str1 : (str1.substr(0, stringLen-2) + "..");
+    const std::string string2 = (str2.size() < stringLen) ? str2 : (str2.substr(0, stringLen-2) + "..");
+
+    if (str1 == str2)
+    {
+        reportError(tok, Severity::warning, "staticStringCompare",
+                    "Comparison of always identical static strings.\n"
+                    "The compared strings, '" + string1 + "' and '" + string2 + "', are always identical. "
+                    "If the purpose is to compare these two strings, the comparison is unnecessary. "
+                    "If the strings are supposed to be different, then there is a bug somewhere.");
+    }
+    else
+    {
+        reportError(tok, Severity::performance, "staticStringCompare",
+                    "Unnecessary comparison of static strings.\n"
+                    "The compared strings, '" + string1 + "' and '" + string2 + "', are static and always different. "
+                    "If the purpose is to compare these two strings, the comparison is unnecessary.");
+    }
+}
+
+//-----------------------------------------------------------------------------
 
 void CheckOther::cstyleCastError(const Token *tok)
 {

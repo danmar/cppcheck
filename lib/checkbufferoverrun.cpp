@@ -330,6 +330,31 @@ static bool for_condition(const Token * const tok2, unsigned int varid, std::str
 
 
 /**
+ * calculate maximum value of loop variable
+ * @param stepvalue token that contains the step value
+ * @param min_value the minimum value of loop variable
+ * @param max_value maximum value of the loop variable
+ */
+static bool for_maxvalue(const Token * const stepvalue, const std::string &min_value, std::string &max_value)
+{
+    if (!MathLib::isInt(stepvalue->str()))
+        return false;
+
+    // We have for example code: "for(i=2;i<22;i+=6)
+    // We can calculate that max value for i is 20, not 21
+    // 21-2 = 19
+    // 19/6 = 3
+    // 6*3+2 = 20
+    const MathLib::bigint num = MathLib::toLongNumber(stepvalue->str());
+    MathLib::bigint max = MathLib::toLongNumber(max_value);
+    const MathLib::bigint min = MathLib::toLongNumber(min_value);
+    max = ((max - min) / num) * num + min;
+    max_value = MathLib::toString<MathLib::bigint>(max);
+    return true;
+}
+
+
+/**
  * Parse the third sub-statement in for head
  * \param tok first token
  * \param varid variable id of counter
@@ -347,55 +372,24 @@ static bool for3(const Token * const tok,
     if (Token::Match(tok, "%varid% += %num% )", varid) ||
         Token::Match(tok, "%varid%  = %num% + %varid% )", varid))
     {
-        if (!MathLib::isInt(tok->strAt(2)))
+        if (!for_maxvalue(tok->tokAt(2), min_value, max_value))
             return false;
-
-        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(2));
-
-        // We have for example code: "for(i=2;i<22;i+=6)
-        // We can calculate that max value for i is 20, not 21
-        // 21-2 = 19
-        // 19/6 = 3
-        // 6*3+2 = 20
-        MathLib::bigint max = MathLib::toLongNumber(max_value);
-        MathLib::bigint min = MathLib::toLongNumber(min_value);
-        max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "%varid% = %varid% + %num% )", varid))
     {
-        if (!MathLib::isInt(tok->strAt(4)))
+        if (!for_maxvalue(tok->tokAt(4), min_value, max_value))
             return false;
-
-        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(4));
-        MathLib::bigint max = MathLib::toLongNumber(max_value);
-        MathLib::bigint min = MathLib::toLongNumber(min_value);
-        max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "%varid% -= %num% )", varid) ||
              Token::Match(tok, "%varid%  = %num% - %varid% )", varid))
     {
-        if (!MathLib::isInt(tok->strAt(2)))
+        if (!for_maxvalue(tok->tokAt(2), min_value, max_value))
             return false;
-
-        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(2));
-
-        MathLib::bigint max = MathLib::toLongNumber(max_value);
-        MathLib::bigint min = MathLib::toLongNumber(min_value);
-        max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "%varid% = %varid% - %num% )", varid))
     {
-        if (!MathLib::isInt(tok->strAt(4)))
+        if (!for_maxvalue(tok->tokAt(4), min_value, max_value))
             return false;
-
-        const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(4));
-        MathLib::bigint max = MathLib::toLongNumber(max_value);
-        MathLib::bigint min = MathLib::toLongNumber(min_value);
-        max = ((max - min) / num) * num + min;
-        max_value = MathLib::toString<MathLib::bigint>(max);
     }
     else if (Token::Match(tok, "--| %varid% --| )", varid))
     {
@@ -713,7 +707,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                         Token::Match(ftok, "%var% --"))
                         break;
 
-                    if (Token::Match(ftok->previous(), "[=+-*/;{}] %var% [ %num% ]"))
+                    if (Token::Match(ftok->previous(), "=|;|{|}|%op% %var% [ %num% ]"))
                     {
                         const MathLib::bigint index = MathLib::toLongNumber(ftok->strAt(2));
                         if (index >= 0 && arrayInfo.num[0] > 0 && index >= arrayInfo.num[0])
@@ -1128,8 +1122,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                         {
                             if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
                             {
-                                // this is currently inconclusive. See TestBufferOverrun::terminateStrncpy3
-                                if (_settings->inconclusive)
+                                // this is currently 'experimental'. See TestBufferOverrun::terminateStrncpy3
+                                if (_settings->experimental)
                                     terminateStrncpyError(tok);
                             }
 
@@ -1684,7 +1678,7 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigin
                 // and skip to next token.
                 parameters.push_back(0);
 
-                // count parantheses for tok3
+                // count parentheses for tok3
                 int ind = 0;
                 for (const Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())
                 {

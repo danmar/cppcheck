@@ -68,6 +68,7 @@ private:
         TEST_CASE(structarray);
         TEST_CASE(conditionalcall);     // ; 0==x ? X() : Y();
         TEST_CASE(structinit);          // #2462 : ABC abc{1,2,3};
+        TEST_CASE(returnstruct);
     }
 
     void test1()
@@ -190,6 +191,14 @@ private:
 
         // #2482 - false positive for empty struct
         check("struct A {};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnstruct()
+    {
+        check("struct s foo() {\n"
+              "    return (struct s){0,0};\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

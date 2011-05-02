@@ -269,7 +269,10 @@ if __name__ == '__main__':
             htmlFormatter.errors = errors
             stream = file(os.path.join(options.report_dir, htmlfile), "w")
             stream.write(HTML_HEAD % (options.title, htmlFormatter.get_style_defs(".highlight"), options.title))
-            stream.write(highlight(content, guess_lexer_for_filename(source_file, ""), htmlFormatter))
+            lexer = guess_lexer_for_filename(source_file, "")
+            if options.source_encoding:
+                lexer.encoding = options.source_encoding
+            stream.write(highlight(content, lexer, htmlFormatter))
             stream.write(HTML_FOOTER)
             stream.close()
 

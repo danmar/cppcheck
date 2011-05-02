@@ -551,7 +551,7 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "uninitVar", "Member variable '" + classname + "::" + varname + "' is not initialised in the constructor.");
+    reportError(tok, Severity::warning, "uninitVar", "Member variable '" + classname + "::" + varname + "' is not initialized in the constructor.");
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
@@ -689,47 +689,6 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
 
-void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type)
-{
-    // recursively check all parent classes
-    for (size_t i = 0; i < type->derivedFrom.size(); i++)
-    {
-        if (type->derivedFrom[i].scope)
-            checkMemsetType(start, tok, type->derivedFrom[i].scope);
-    }
-
-    // Warn if type is a class that contains any virtual functions
-    std::list<Function>::const_iterator func;
-
-    for (func = type->functionList.begin(); func != type->functionList.end(); ++func)
-    {
-        if (func->isVirtual)
-            memsetError(tok, tok->str(), "virtual method", type->classDef->str());
-    }
-
-    // Warn if type is a class or struct that contains any std::* variables
-    std::list<Variable>::const_iterator var;
-
-    for (var = type->varlist.begin(); var != type->varlist.end(); ++var)
-    {
-        // don't warn if variable static or const
-        if (!var->isStatic() && !var->isConst())
-        {
-            const Token *tok1 = var->typeStartToken();
-
-            // skip mutable token
-            if (var->isMutable())
-                tok1 = tok1->next();
-
-            // check for std:: type that is not a pointer or reference
-            if (Token::simpleMatch(tok1, "std ::") && !Token::Match(var->nameToken()->previous(), "*|&"))
-                memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
-
-            /** @todo warn if type is class/struct that doesn't require initialization */
-        }
-    }
-}
-
 void CheckClass::noMemset()
 {
     createSymbolDatabase();
@@ -788,6 +747,45 @@ void CheckClass::noMemset()
     }
 }
 
+void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type)
+{
+    // recursively check all parent classes
+    for (size_t i = 0; i < type->derivedFrom.size(); i++)
+    {
+        if (type->derivedFrom[i].scope)
+            checkMemsetType(start, tok, type->derivedFrom[i].scope);
+    }
+
+    // Warn if type is a class that contains any virtual functions
+    std::list<Function>::const_iterator func;
+
+    for (func = type->functionList.begin(); func != type->functionList.end(); ++func)
+    {
+        if (func->isVirtual)
+            memsetError(tok, tok->str(), "virtual method", type->classDef->str());
+    }
+
+    // Warn if type is a class or struct that contains any std::* variables
+    std::list<Variable>::const_iterator var;
+
+    for (var = type->varlist.begin(); var != type->varlist.end(); ++var)
+    {
+        // don't warn if variable static or const
+        if (!var->isStatic() && !var->isConst())
+        {
+            const Token *tok1 = var->typeStartToken();
+
+            // check for std:: type that is not a pointer or reference
+            if (Token::simpleMatch(tok1, "std ::") && !Token::Match(var->nameToken()->previous(), "*|&"))
+                memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
+
+            // check for known type that is not a pointer or reference
+            else if (var->type() && !Token::Match(var->nameToken()->previous(), "*|&"))
+                checkMemsetType(start, tok, var->type());
+        }
+    }
+}
+
 void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
 {
     reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a " + classname);
@@ -808,28 +806,68 @@ void CheckClass::operatorEq()
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
+        if (!scope->isClassOrStruct())
+            continue;
+
         std::list<Function>::const_iterator func;
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
             if (func->type == Function::eOperatorEqual && func->access != Private)
             {
-                if (func->token->strAt(-1) == "void")
-                    operatorEqReturnError(func->token->tokAt(-1));
+                // use definition for check so we don't have to deal with qualification
+                if (!(Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
+                      func->tokenDef->strAt(-2) == scope->className))
+                    operatorEqReturnError(func->tokenDef->tokAt(-1), scope->className);
             }
         }
     }
 }
 
-void CheckClass::operatorEqReturnError(const Token *tok)
+void CheckClass::operatorEqReturnError(const Token *tok, const std::string &className)
 {
-    reportError(tok, Severity::style, "operatorEq", "'operator=' should return something");
+    reportError(tok, Severity::style, "operatorEq", "\'" + className + "::operator=' should return \'" + className + " &\'");
 }
 
 //---------------------------------------------------------------------------
 // ClassCheck: "C& operator=(const C&) { ... return *this; }"
 // operator= should return a reference to *this
 //---------------------------------------------------------------------------
+
+void CheckClass::operatorEqRetRefThis()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    createSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
+    {
+        // only check classes and structures
+        if (scope->isClassOrStruct())
+        {
+            std::list<Function>::const_iterator func;
+
+            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
+            {
+                if (func->type == Function::eOperatorEqual && func->hasBody)
+                {
+                    // make sure return signature is correct
+                    if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
+                        func->tokenDef->strAt(-2) == scope->className)
+                    {
+                        // find the ')'
+                        const Token *tok = func->token->next()->link();
+
+                        checkReturnPtrThis(&(*scope), &(*func), tok->tokAt(2), tok->next()->link());
+                    }
+                }
+            }
+        }
+    }
+}
 
 void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last)
 {
@@ -893,41 +931,6 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         operatorEqRetRefThisError(func->token);
 }
 
-void CheckClass::operatorEqRetRefThis()
-{
-    if (!_settings->_checkCodingStyle)
-        return;
-
-    createSymbolDatabase();
-
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
-    {
-        // only check classes and structures
-        if (scope->isClassOrStruct())
-        {
-            std::list<Function>::const_iterator func;
-
-            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
-            {
-                if (func->type == Function::eOperatorEqual && func->hasBody)
-                {
-                    // make sure return signature is correct
-                    if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
-                        func->tokenDef->strAt(-2) == scope->className)
-                    {
-                        // find the ')'
-                        const Token *tok = func->token->next()->link();
-
-                        checkReturnPtrThis(&(*scope), &(*func), tok->tokAt(2), tok->next()->link());
-                    }
-                }
-            }
-        }
-    }
-}
-
 void CheckClass::operatorEqRetRefThisError(const Token *tok)
 {
     reportError(tok, Severity::style, "operatorEqRetRefThis", "'operator=' should return reference to self");
@@ -958,6 +961,9 @@ void CheckClass::operatorEqToSelf()
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
     {
+        if (!scope->isClassOrStruct())
+            continue;
+
         std::list<Function>::const_iterator func;
 
         // skip classes with multiple inheritance
@@ -972,32 +978,13 @@ void CheckClass::operatorEqToSelf()
                 if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
                     func->tokenDef->strAt(-2) == scope->className)
                 {
-                    // check for proper function parameter signature
-                    if ((Token::Match(func->tokenDef->next(), "( const %var% & )") ||
-                         Token::Match(func->tokenDef->next(), "( const %var% & %var% )")) &&
-                        func->tokenDef->strAt(3) == scope->className)
+                    // find the parameter name
+                    const Token *rhs = func->argumentList.begin()->nameToken();
+
+                    if (!hasAssignSelf(&(*func), rhs))
                     {
-                        // find the parameter name
-                        const Token *rhs = func->token;
-                        while (rhs->str() != "&")
-                            rhs = rhs->next();
-                        rhs = rhs->next();
-
-                        // find the ')'
-                        const Token *tok = func->token->next()->link();
-                        const Token *tok1 = tok;
-
-                        if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
-                        {
-                            const Token *first = tok1->tokAt(1);
-                            const Token *last = first->link();
-
-                            if (!hasAssignSelf(first, last, rhs))
-                            {
-                                if (hasDeallocation(first, last))
-                                    operatorEqToSelfError(tok);
-                            }
-                        }
+                        if (hasDeallocation(&(*func)))
+                            operatorEqToSelfError(func->token);
                     }
                 }
             }
@@ -1005,7 +992,7 @@ void CheckClass::operatorEqToSelf()
     }
 }
 
-bool CheckClass::hasDeallocation(const Token *first, const Token *last)
+bool CheckClass::hasDeallocation(const Function *func)
 {
     // This function is called when no simple check was found for assignment
     // to self.  We are currently looking for a specific sequence of:
@@ -1014,7 +1001,8 @@ bool CheckClass::hasDeallocation(const Token *first, const Token *last)
     // Unfortunately, this is necessary to prevent false positives.
     // This check needs to do careful analysis someday to get this
     // correct with a high degree of certainty.
-    for (const Token *tok = first; tok && (tok != last); tok = tok->next())
+    const Token *last = func->start->link();
+    for (const Token *tok = func->start; tok && (tok != last); tok = tok->next())
     {
         // check for deallocating memory
         if (Token::Match(tok, "{|;|, free ( %var%"))
@@ -1079,9 +1067,10 @@ bool CheckClass::hasDeallocation(const Token *first, const Token *last)
     return false;
 }
 
-bool CheckClass::hasAssignSelf(const Token *first, const Token *last, const Token *rhs)
+bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
 {
-    for (const Token *tok = first; tok && tok != last; tok = tok->next())
+    const Token *last = func->start->link();
+    for (const Token *tok = func->start; tok && tok != last; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "if ("))
         {
@@ -1125,8 +1114,6 @@ void CheckClass::virtualDestructor()
     // * base class doesn't have virtual destructor
     // * derived class has non-empty destructor
     // * base class is deleted
-    if (!_settings->inconclusive)
-        return;
 
     createSymbolDatabase();
 
@@ -1162,6 +1149,57 @@ void CheckClass::virtualDestructor()
 
                 // Name of base class..
                 const std::string baseName = derivedFrom->className;
+
+                // Check for this pattern:
+                // 1. Base class pointer is given the address of derived class instance
+                // 2. Base class pointer is deleted
+                //
+                // If this pattern is not seen then bailout the checking of these base/derived classes
+                {
+                    // pointer variables of type 'Base *'
+                    std::set<unsigned int> basepointer;
+
+                    // pointer variables of type 'Base *' that should not be deleted
+                    std::set<unsigned int> dontDelete;
+
+                    // No deletion of derived class instance through base class pointer found => the code is ok
+                    bool ok = true;
+
+                    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+                    {
+                        // Declaring base class pointer
+                        if (Token::simpleMatch(tok, baseName.c_str()))
+                        {
+                            if (Token::Match(tok->previous(), ("[;{}] " + baseName + " * %var% ;").c_str()))
+                                basepointer.insert(tok->tokAt(2)->varId());
+                        }
+
+                        // Assign base class pointer with pointer to derived class instance
+                        if (Token::Match(tok, "[;{}] %var% =") &&
+                            tok->next()->varId() > 0 &&
+                            basepointer.find(tok->next()->varId()) != basepointer.end())
+                        {
+                            // new derived class..
+                            if (Token::simpleMatch(tok->tokAt(3), ("new " + derivedClass->str()).c_str()))
+                            {
+                                dontDelete.insert(tok->next()->varId());
+                            }
+                        }
+
+                        // Delete base class pointer that might point at derived class
+                        if (Token::Match(tok, "delete %var% ;") &&
+                            tok->next()->varId() &&
+                            dontDelete.find(tok->next()->varId()) != dontDelete.end())
+                        {
+                            ok = false;
+                            break;
+                        }
+                    }
+
+                    // No base class pointer that points at a derived class is deleted
+                    if (ok)
+                        continue;
+                }
 
                 // Find the destructor declaration for the base class.
                 const Function *base_destructor = derivedFrom->getDestructor();
@@ -1355,31 +1393,43 @@ void CheckClass::checkConst()
 
 bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
 {
-    const Token *tok1 = tok;
+    bool again = false;
 
-    while (tok->previous() && !Token::Match(tok->previous(), "}|{|;(||public:|protected:|private:|return|:|?"))
+    // try to find the member variable
+    do
     {
-        if (Token::simpleMatch(tok->previous(),  "* this"))
+        again = false;
+
+        if (tok->str() == "this")
+        {
             return true;
-
-        tok = tok->previous();
+        }
+        else if (Token::Match(tok->tokAt(-2), "%var% . %var%"))
+        {
+            tok = tok->tokAt(-2);
+            again = true;
+        }
+        else if (Token::Match(tok->tokAt(-2), "] . %var%"))
+        {
+            tok = tok->tokAt(-2)->link()->previous();
+            again = true;
+        }
+        else if (tok->str() == "]")
+        {
+            tok = tok->link()->previous();
+            again = true;
+        }
     }
-
-    if (tok->str() == "this")
-        return true;
-
-    if (Token::Match(tok, "( * %var% ) [") || (Token::Match(tok, "( * %var% ) <<") && tok1->next()->str() == "<<"))
-        tok = tok->tokAt(2);
-
-    // ignore class namespace
-    if (tok->str() == scope->className && tok->next()->str() == "::")
-        tok = tok->tokAt(2);
+    while (again);
 
     std::list<Variable>::const_iterator var;
     for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
     {
         if (var->name() == tok->str())
         {
+            if (tok->varId() == 0)
+                symbolDatabase->debugMessage(tok, "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
+
             return !var->isMutable();
         }
     }
@@ -1486,35 +1536,14 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
         }
 
         // assignment.. = += |= ..
-        else if (tok1->str() == "=" ||
-                 (tok1->str().find("=") == 1 &&
-                  tok1->str().find_first_of("<!>") == std::string::npos))
+        else if (tok1->isAssignmentOp())
         {
-            if (tok1->previous()->varId() == 0 && !scope->derivedFrom.empty())
+            if (tok1->next()->str() == "this")
             {
                 isconst = false;
                 break;
             }
             else if (isMemberVar(scope, tok1->previous()))
-            {
-                isconst = false;
-                break;
-            }
-            else if (tok1->previous()->str() == "]")
-            {
-                // TODO: I assume that the assigned variable is a member variable
-                //       don't assume it
-                isconst = false;
-                break;
-            }
-            else if (tok1->next()->str() == "this")
-            {
-                isconst = false;
-                break;
-            }
-
-            // FIXME: I assume that a member union/struct variable is assigned.
-            else if (Token::Match(tok1->tokAt(-2), ". %var%"))
             {
                 isconst = false;
                 break;
@@ -1537,18 +1566,36 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
         // increment/decrement (member variable?)..
         else if (Token::Match(tok1, "++|--"))
         {
+            // var++ and var--
             if (Token::Match(tok1->previous(), "%var%") &&
                 tok1->previous()->str() != "return")
             {
                 if (isMemberVar(scope, tok1->previous()))
+                {
                     isconst = false;
+                    break;
+                }
             }
+
+            // var[...]++ and var[...]--
+            else if (tok1->previous()->str() == "]")
+            {
+                if (isMemberVar(scope, tok1->previous()->link()->previous()))
+                {
+                    isconst = false;
+                    break;
+                }
+            }
+
+            // ++var and --var
             else if (Token::Match(tok1->next(), "%var%"))
             {
                 if (isMemberVar(scope, tok1->next()))
+                {
                     isconst = false;
+                    break;
+                }
             }
-            break;
         }
 
         // function call..
@@ -1577,8 +1624,6 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
 
     return isconst;
 }
-
-//---------------------------------------------------------------------------
 
 // check if this function is defined virtual in the base classes
 bool CheckClass::isVirtualFunc(const Scope *scope, const Token *functionToken) const

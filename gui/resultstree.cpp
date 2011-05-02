@@ -44,6 +44,7 @@
 #include "resultstree.h"
 #include "report.h"
 #include "xmlreport.h"
+#include "application.h"
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
@@ -120,6 +121,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     ErrorLine line;
     line.file = realfile;
     line.id = item.id;
+    line.inconclusive = item.inconclusive;
     line.line = item.lines[0];
     line.summary = item.summary;
     line.message = item.message;
@@ -143,6 +145,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     data["file"]  = item.files[0];
     data["line"]  = item.lines[0];
     data["id"]  = item.id;
+    data["inconclusive"] = item.inconclusive;
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
@@ -164,6 +167,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
         child_data["file"]  = item.files[i];
         child_data["line"]  = line.line;
         child_data["id"]  = line.id;
+        child_data["inconclusive"] = line.inconclusive;
         child_item->setData(QVariant(child_data));
     }
 
@@ -195,7 +199,14 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     list << CreateLineNumberItem(QString("%1").arg(item.line));
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
-    list << CreateNormalItem(tr(item.summary.toLatin1()));
+    QString summary;
+    if (item.inconclusive)
+    {
+        summary = tr("[Inconclusive]");
+        summary += " ";
+    }
+    summary += item.summary.toLatin1();
+    list << CreateNormalItem(summary);
 
     // Check for duplicate rows and don't add them if found
     for (int i = 0; i < parent->rowCount(); i++)
@@ -560,7 +571,8 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             for (int i = 0; i < mApplications->GetApplicationCount(); i++)
             {
                 //Create an action for the application
-                QAction *start = new QAction(mApplications->GetApplicationName(i), &menu);
+                const Application app = mApplications->GetApplication(i);
+                QAction *start = new QAction(app.getName(), &menu);
                 if (multipleSelection)
                     start->setDisabled(true);
 
@@ -659,8 +671,6 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
 
         QVariantMap data = target->data().toMap();
 
-        QString program = mApplications->GetApplicationPath(application);
-
         //Replace (file) with filename
         QString file = data["file"].toString();
 
@@ -697,19 +707,36 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
             file.append("\"");
         }
 
-        program.replace("(file)", file, Qt::CaseInsensitive);
+        const Application app = mApplications->GetApplication(application);
+        QString params = app.getParameters();
+        params.replace("(file)", file, Qt::CaseInsensitive);
 
         QVariant line = data["line"];
-        program.replace("(line)", QString("%1").arg(line.toInt()), Qt::CaseInsensitive);
+        params.replace("(line)", QString("%1").arg(line.toInt()), Qt::CaseInsensitive);
 
-        program.replace("(message)", data["message"].toString(), Qt::CaseInsensitive);
-        program.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
+        params.replace("(message)", data["message"].toString(), Qt::CaseInsensitive);
+        params.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
 
-        bool success = QProcess::startDetached(program);
+        QString program = app.getPath();
+
+        // In Windows we must surround paths including spaces with quotation marks.
+#ifdef Q_WS_WIN
+        if (program.indexOf(" ") > -1)
+        {
+            if (!program.startsWith('"') && !program.endsWith('"'))
+            {
+                program.insert(0, "\"");
+                program.append("\"");
+            }
+        }
+#endif // Q_WS_WIN
+
+        const QString cmdLine = QString("%1 %2").arg(program).arg(params);
+
+        bool success = QProcess::startDetached(cmdLine);
         if (!success)
         {
-            QString app = mApplications->GetApplicationName(application);
-            QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(app);
+            QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(program);
 
             QMessageBox msgbox(this);
             msgbox.setWindowTitle("Cppcheck");
@@ -757,7 +784,13 @@ void ResultsTree::CopyMessage()
 
         QVariantMap data = mContextItem->data().toMap();
 
-        QString message = data["message"].toString();
+        QString message;
+        if (data["inconclusive"].toBool())
+        {
+            message = tr("[Inconclusive]");
+            message += " ";
+        }
+        message += data["message"].toString();
 
         QClipboard *clipboard = QApplication::clipboard();
         clipboard->setText(message);
@@ -886,6 +919,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         item.summary = data["summary"].toString();
         item.message = data["message"].toString();
         item.id = data["id"].toString();
+        item.inconclusive = data["inconclusive"].toBool();
         QString file = StripPath(data["file"].toString(), true);
         unsigned int line = data["line"].toUInt();
 

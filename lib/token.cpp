@@ -57,19 +57,22 @@ void Token::str(const std::string &s)
 {
     _str = s;
 
-    _isName = bool(_str[0] == '_' || std::isalpha(_str[0]));
+    if (!_str.empty())
+    {
+        _isName = bool(_str[0] == '_' || std::isalpha(_str[0]));
 
-    if (std::isdigit(_str[0]))
-        _isNumber = true;
-    else if (_str.length() > 1 && _str[0] == '-' && std::isdigit(_str[1]))
-        _isNumber = true;
-    else
-        _isNumber = false;
+        if (std::isdigit(_str[0]))
+            _isNumber = true;
+        else if (_str.length() > 1 && _str[0] == '-' && std::isdigit(_str[1]))
+            _isNumber = true;
+        else
+            _isNumber = false;
 
-    if (_str == "true" || _str == "false")
-        _isBoolean = true;
-    else
-        _isBoolean = false;
+        if (_str == "true" || _str == "false")
+            _isBoolean = true;
+        else
+            _isBoolean = false;
+    }
 
     _varId = 0;
 }
@@ -200,8 +203,52 @@ std::string Token::strAt(int index) const
     return tok ? tok->_str.c_str() : "";
 }
 
+static bool strisop(const char str[])
+{
+    if (str[1] == 0)
+    {
+        if (strchr("+-*/%&|^~!<>", *str))
+            return true;
+    }
+    else if (str[2] == 0)
+    {
+        if (strcmp(str, "&&")==0 ||
+            strcmp(str, "||")==0 ||
+            strcmp(str, "==")==0 ||
+            strcmp(str, "!=")==0 ||
+            strcmp(str, ">=")==0 ||
+            strcmp(str, "<=")==0 ||
+            strcmp(str, ">>")==0 ||
+            strcmp(str, "<<")==0)
+            return true;
+    }
+    return false;
+}
+
 int Token::multiCompare(const char *haystack, const char *needle)
 {
+    if (haystack[0] == '%' && haystack[1] != '|')
+    {
+        if (strncmp(haystack, "%op%|", 5) == 0)
+        {
+            haystack = haystack + 5;
+            if (strisop(needle))
+                return 1;
+        }
+        else if (strncmp(haystack, "%or%|", 5) == 0)
+        {
+            haystack = haystack + 5;
+            if (*needle == '|')
+                return 1;
+        }
+        else if (strncmp(haystack, "%oror%|", 7) == 0)
+        {
+            haystack = haystack + 7;
+            if (needle[0] == '|' && needle[1] == '|')
+                return 1;
+        }
+    }
+
     bool emptyStringFound = false;
     const char *needlePointer = needle;
     while (true)
@@ -254,6 +301,35 @@ int Token::multiCompare(const char *haystack, const char *needle)
             }
 
             ++haystack;
+
+            if (haystack[0] == '%' && haystack[1] != '|')
+            {
+                if (strncmp(haystack, "%op%", 4) == 0)
+                {
+                    if (strisop(needle))
+                        return 1;
+                    haystack = haystack + 4;
+                }
+                else if (strncmp(haystack, "%or%", 4) == 0)
+                {
+                    if (*needle == '|')
+                        return 1;
+                    haystack = haystack + 4;
+                }
+                else if (strncmp(haystack, "%oror%", 6) == 0)
+                {
+                    if (needle[0] == '|' && needle[1] == '|')
+                        return 1;
+                    haystack = haystack + 6;
+                }
+
+                if (*haystack == '|')
+                    haystack++;
+                else if (*haystack == ' ' || *haystack == '\0')
+                    return emptyStringFound ? 0 : -1;
+                else
+                    return -1;
+            }
         }
     }
 
@@ -409,7 +485,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                         const ErrorLogger::ErrorMessage errmsg(locationList,
                                                                Severity::error,
                                                                "Internal error. Token::Match called with varid 0.",
-                                                               "cppcheckError");
+                                                               "cppcheckError",
+                                                               false);
                         Check::reportError(errmsg);
                     }
 
@@ -471,21 +548,56 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             }
             break;
             case 'o':
-                // Or (%or%)
+                // Or (%or%) and Op (%op%)
                 if (p[3] == '%')
                 {
-                    if (tok->str() != "|")
-                        return false;
-                    p += 4;
                     patternUnderstood = true;
+
+                    // multicompare..
+                    if (p[4] == '|')
+                    {
+                        int result = multiCompare(p, tok->str().c_str());
+                        if (result == -1)
+                            return false;   // No match
+                    }
+
+                    // single compare..
+                    else if (p[2] == 'r')
+                    {
+                        if (tok->str() != "|")
+                            return false;
+                    }
+                    else if (p[3] == 'p')
+                    {
+                        if (!tok->isOp())
+                            return false;
+                    }
+                    else
+                        patternUnderstood = false;
                 }
+
                 // Oror (%oror%)
                 else
                 {
+                    // multicompare..
+                    if (p[5] == '|')
+                    {
+                        int result = multiCompare(p, tok->str().c_str());
+                        if (result == -1)
+                            return false;   // No match
+                    }
+
+                    // single compare..
                     if (tok->str() != "||")
                         return false;
-                    p += 6;
+
                     patternUnderstood = true;
+                }
+
+                if (patternUnderstood)
+                {
+                    while (*p && *p != ' ')
+                        p++;
                 }
                 break;
             default:

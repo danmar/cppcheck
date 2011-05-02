@@ -108,6 +108,10 @@ void XmlReportV2::WriteError(const ErrorItem &error)
     </error>
     */
 
+    // Don't write inconclusive errors to XML V2 until we decide the format
+    if (error.inconclusive)
+        return;
+
     mXmlWriter->writeStartElement(ErrorElementName);
     mXmlWriter->writeAttribute(IdAttribute, error.id);
 

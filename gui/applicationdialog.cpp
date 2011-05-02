@@ -23,11 +23,11 @@
 #include <QDebug>
 #include <QMessageBox>
 #include "applicationdialog.h"
+#include "application.h"
 
 
-ApplicationDialog::ApplicationDialog(const QString &name,
-                                     const QString &path,
-                                     const QString &title,
+ApplicationDialog::ApplicationDialog(const QString &title,
+                                     const Application &app,
                                      QWidget *parent) :
     QDialog(parent)
 {
@@ -36,9 +36,11 @@ ApplicationDialog::ApplicationDialog(const QString &name,
     connect(mUI.mButtonBrowse, SIGNAL(clicked()), this, SLOT(Browse()));
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
-    mUI.mPath->setText(path);
-    mUI.mName->setText(name);
+    mUI.mPath->setText(app.getPath());
+    mUI.mName->setText(app.getName());
+    mUI.mParameters->setText(app.getParameters());
     setWindowTitle(title);
+    adjustSize();
 }
 
 
@@ -63,38 +65,27 @@ void ApplicationDialog::Browse()
     if (!selectedFile.isEmpty())
     {
         QString path(QDir::toNativeSeparators(selectedFile));
-
-        // In Windows we must surround paths including spaces with quotation marks.
-#ifdef Q_WS_WIN
-        if (path.indexOf(" ") > -1)
-        {
-            path.insert(0, "\"");
-            path.append("\"");
-        }
-#endif // Q_WS_WIN
-
         mUI.mPath->setText(path);
     }
 }
 
-QString ApplicationDialog::GetName()
+Application ApplicationDialog::GetApplication() const
 {
-    return mUI.mName->text();
-}
-
-
-QString ApplicationDialog::GetPath()
-{
-    return mUI.mPath->text();
+    Application app;
+    app.setName(mUI.mName->text());
+    app.setPath(mUI.mPath->text());
+    app.setParameters(mUI.mParameters->text());
+    return app;
 }
 
 void ApplicationDialog::Ok()
 {
-    if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty())
+    if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty() ||
+        mUI.mParameters->text().isEmpty())
     {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
-                        tr("You must specify a name and a path for the application!"),
+                        tr("You must specify a name, a path and parameters for the application!"),
                         QMessageBox::Ok,
                         this);
 

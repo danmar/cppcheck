@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="test"
-	ProjectGUID="{4B6CBD22-5689-3C50-A5A4-1204D4D28E54}"
+	ProjectGUID="{26089205-888A-3B36-A3DF-6911F2B15F7F}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -193,6 +193,8 @@
 				RelativePath="testerrorlogger.cpp" />
 			<File
 				RelativePath="testexceptionsafety.cpp" />
+			<File
+				RelativePath="testfilelister.cpp" />
 			<File
 				RelativePath="testincompletestatement.cpp" />
 			<File

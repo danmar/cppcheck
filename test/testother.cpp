@@ -112,6 +112,13 @@ private:
 
         TEST_CASE(incrementBoolean);
         TEST_CASE(comparisonOfBoolWithInt);
+
+        TEST_CASE(duplicateIf);
+        TEST_CASE(duplicateBranch);
+        TEST_CASE(duplicateExpression1);
+        TEST_CASE(duplicateExpression2); // ticket #2730
+
+        TEST_CASE(alwaysTrueFalseStringCompare);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -135,6 +142,9 @@ private:
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
         checkOther.clarifyCondition();
+        checkOther.checkDuplicateIf();
+        checkOther.checkDuplicateBranch();
+        checkOther.checkDuplicateExpression();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -169,10 +179,6 @@ private:
             if (!msg._callStack.empty() && !_settings.nomsg.isSuppressed(msg._id, msg._callStack.begin()->getfile(), msg._callStack.begin()->line))
                 _next->reportErr(msg);
         }
-        virtual void reportStatus(unsigned int index, unsigned int max)
-        {
-            _next->reportStatus(index, max);
-        }
     private:
         Settings &_settings;
         ErrorLogger *_next;
@@ -188,7 +194,7 @@ private:
 
         Settings settings;
         settings._checkCodingStyle = true;
-        settings.inconclusive = true;
+        settings.experimental = true;
 
         // Preprocess file..
         Preprocessor preprocessor(&settings, this);
@@ -208,6 +214,7 @@ private:
         // Check..
         CheckOther checkOther(&tokenizer, &settings, &logger);
         checkOther.checkSwitchCaseFallThrough();
+        checkOther.checkAlwaysTrueOrFalseStringCompare();
 
         logger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(filename));
     }
@@ -829,6 +836,10 @@ private:
 
         testPassedByValue("void f(const std::map<std::string,int> v) {}");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by reference.\n", errout.str());
+
+        testPassedByValue("void f(const std::streamoff pos) {}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void mathfunctionCall1()
@@ -1575,6 +1586,18 @@ private:
               "        Fred fred; fred = fred;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    x = (x == 0);"
+              "    func(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    x = (x != 0);"
+              "    func(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testScanf1()
@@ -2274,18 +2297,33 @@ private:
         check("int f(char c) {\n"
               "    return 10 * (c == 0) ? 1 : 2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Please clarify precedence: 'a*b?..'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for * and ?\n", errout.str());
 
         check("void f(char c) {\n"
               "    printf(\"%i\", 10 * (c == 0) ? 1 : 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Please clarify precedence: 'a*b?..'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for * and ?\n", errout.str());
 
         // Ticket #2585 - segmentation fault for invalid code
         check("abcdef?" "?<"
               "123456?" "?>"
               "+?" "?=");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(char c) {\n"
+              "    printf(\"%i\", 1 + 1 ? 1 : 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for + and ?\n", errout.str());
+
+        check("void f() {\n"
+              "    std::cout << x << 1 ? 2 : 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for << and ?\n", errout.str());
+
+        check("void f() {\n"
+              "    int ab = a - b ? 2 : 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for - and ?\n", errout.str());
     }
 
     // clarify conditions with = and comparison
@@ -2294,7 +2332,7 @@ private:
         check("void f() {\n"
               "    if (x = b() < 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment+comparison), it can be clarified with parantheses\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment+comparison), it can be clarified with parentheses\n", errout.str());
     }
 
     void incorrectStringCompare()
@@ -2380,6 +2418,179 @@ private:
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateIf()
+    {
+        check("void f(int a, int &b) {\n"
+              "    if (a) { b = 1; }\n"
+              "    else if (a) { b = 2; }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Found duplicate if expressions.\n", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (a == 1) { b = 1; }\n"
+              "    else if (a == 2) { b = 2; }\n"
+              "    else if (a == 1) { b = 3; }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Found duplicate if expressions.\n", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (a == 1) { b = 1; }\n"
+              "    else if (a == 2) { b = 2; }\n"
+              "    else if (a == 2) { b = 3; }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Found duplicate if expressions.\n", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (a == 1) {\n"
+              "        b = 1;\n"
+              "        if (b == 1) { }\n"
+              "        else if (b == 1) { }\n"
+              "    } else if (a == 2) { b = 2; }\n"
+              "    else if (a == 2) { b = 3; }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (style) Found duplicate if expressions.\n"
+                      "[test.cpp:5] -> [test.cpp:4]: (style) Found duplicate if expressions.\n", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (a++) { b = 1; }\n"
+              "    else if (a++) { b = 2; }\n"
+              "    else if (a++) { b = 3; }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (!strtok(NULL," ")) { b = 1; }\n"
+              "    else if (!strtok(NULL," ")) { b = 2; }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "   if ((x = x / 2) < 100) { b = 1; }\n"
+              "   else if ((x = x / 2) < 100) { b = 2; }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateBranch()
+    {
+        check("void f(int a, int &b) {\n"
+              "    if (a)\n"
+              "        b = 1;\n"
+              "    else\n"
+              "        b = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Found duplicate branches for if and else.\n", errout.str());
+
+        check("void f(int a, int &b) {\n"
+              "    if (a) {\n"
+              "        if (a == 1)\n"
+              "            b = 2;\n"
+              "        else\n"
+              "            b = 2;\n"
+              "    } else\n"
+              "        b = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for if and else.\n", errout.str());
+
+        check("int f(int signed, unsigned char value) {\n"
+              "    int ret;\n"
+              "    if (signed)\n"
+              "        ret = (signed char)value;\n"
+              "    else\n"
+              "        ret = (unsigned char)value;\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression1()
+    {
+        check("voif foo() {\n"
+              "    if (a == a) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+
+        check("void fun() {\n"
+              "    return (a && a ||\n"
+              "            b == b &&\n"
+              "            c - c &&\n"
+              "            d > d &&\n"
+              "            e < e &&\n"
+              "            f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n"
+                      "[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '=='.\n"
+                      "[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n"
+                      "[test.cpp:5] -> [test.cpp:5]: (style) Same expression on both sides of '>'.\n"
+                      "[test.cpp:6] -> [test.cpp:6]: (style) Same expression on both sides of '<'.\n", errout.str());
+    }
+
+    void duplicateExpression2() // ticket #2730
+    {
+        check("int main()\n"
+              "{\n"
+              "    long double ldbl;\n"
+              "    double dbl, in;\n"
+              "    float  flt;\n"
+              "    int have_nan = 0;\n"
+              "    ldbl = sqrtl(-1.0);\n"
+              "    dbl = sqrt(-1.0);\n"
+              "    flt = sqrtf(-1.0);\n"
+              "    if (ldbl != ldbl) have_nan = 1;\n"
+              "    if (!(dbl == dbl)) have_nan = 1;\n"
+              "    if (flt != flt) have_nan = 1;\n"
+              "    return have_nan;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Passing value -1.0 to sqrtl() leads to undefined result\n"
+                      "[test.cpp:8]: (error) Passing value -1.0 to sqrt() leads to undefined result\n"
+                      "[test.cpp:9]: (error) Passing value -1.0 to sqrtf() leads to undefined result\n", errout.str());
+    }
+
+    void alwaysTrueFalseStringCompare()
+    {
+        check_preprocess_suppress(
+            "#define MACRO \"00FF00\"\n"
+            "int main()\n"
+            "{\n"
+            "  if (strcmp(MACRO,\"00FF00\") == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Comparison of always identical static strings.\n", errout.str());
+
+        check_preprocess_suppress(
+            "int main()\n"
+            "{\n"
+            "  if (stricmp(\"hotdog\",\"HOTdog\") == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Unnecessary comparison of static strings.\n", errout.str());
+
+        check_preprocess_suppress(
+            "#define MACRO \"Hotdog\"\n"
+            "int main()\n"
+            "{\n"
+            "  if (QString::compare(\"Hamburger\", MACRO) == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Unnecessary comparison of static strings.\n", errout.str());
+
+        check_preprocess_suppress(
+            "int main()\n"
+            "{\n"
+            "  if (QString::compare(argv[2], \"hotdog\") == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

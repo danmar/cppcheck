@@ -39,12 +39,12 @@
 class ThreadExecutor : public ErrorLogger
 {
 public:
-    ThreadExecutor(const std::vector<std::string> &filenames, Settings &settings, ErrorLogger &_errorLogger);
+    ThreadExecutor(const std::vector<std::string> &filenames, const std::map<std::string, long> &filesizes, Settings &settings, ErrorLogger &_errorLogger);
     virtual ~ThreadExecutor();
     unsigned int check();
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
-    virtual void reportStatus(unsigned int index, unsigned int max);
+
     /**
      * @brief Add content to a file, to be used in unit testing.
      *
@@ -56,6 +56,7 @@ public:
 
 private:
     const std::vector<std::string> &_filenames;
+    const std::map<std::string, long> &_filesizes;
     Settings &_settings;
     ErrorLogger &_errorLogger;
     unsigned int _fileCount;

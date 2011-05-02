@@ -159,7 +159,8 @@ private:
         TEST_CASE(macro_simple13);
         TEST_CASE(macro_simple14);
         TEST_CASE(macro_simple15);
-        TEST_CASE(macroInMacro);
+        TEST_CASE(macroInMacro1);
+        TEST_CASE(macroInMacro2);
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
         TEST_CASE(macro_nopar);
@@ -217,6 +218,9 @@ private:
         TEST_CASE(testPreprocessorRead4);
 
         TEST_CASE(invalid_define);	// #2605 - hang for: '#define ='
+
+        // inline suppression, missingInclude
+        TEST_CASE(inline_suppression_for_missing_include);
     }
 
 
@@ -1692,7 +1696,7 @@ private:
         ASSERT_EQUALS("\n\"foo\"\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macroInMacro()
+    void macroInMacro1()
     {
         {
             const char filedata[] = "#define A(m) long n = m; n++;\n"
@@ -1791,6 +1795,14 @@ private:
                 "PTR1 PTR1\n";
             ASSERT_EQUALS("\n( (\n", OurPreprocessor::expandMacros(filedata));
         }
+    }
+
+    void macroInMacro2()
+    {
+        const char filedata[] = "#define A(x) a##x\n"
+                                "#define B 0\n"
+                                "A(B)\n";
+        ASSERT_EQUALS("\n\naB\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_mismatch()
@@ -2812,6 +2824,26 @@ private:
         std::list<std::string> cfg;
         std::list<std::string> paths;
         preprocessor.preprocess(src, processedFile, cfg, "", paths);		// don't hang
+    }
+
+    void inline_suppression_for_missing_include()
+    {
+        Settings settings;
+        settings._inlineSuppressions = true;
+        settings.addEnabled("all");
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream src("// cppcheck-suppress missingInclude\n"
+                               "#include \"missing.h\"\n"
+                               "int x;");
+        std::string processedFile;
+        std::list<std::string> cfg;
+        std::list<std::string> paths;
+
+        // Don't report that the include is missing
+        errout.str("");
+        preprocessor.preprocess(src, processedFile, cfg, "test.c", paths);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

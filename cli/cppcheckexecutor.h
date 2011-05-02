@@ -22,6 +22,7 @@
 #include "errorlogger.h"
 #include "settings.h"
 #include <ctime>
+#include <vector>
 
 class CppCheck;
 
@@ -71,7 +72,15 @@ public:
 
     void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
 
-    virtual void reportStatus(unsigned int index, unsigned int max);
+    /**
+     * Information about how many files have been checked
+     *
+     * @param fileindex This many files have been checked.
+     * @param filecount This many files there are in total.
+     * @param sizedone The sum of sizes of the files checked.
+     * @param sizetotal The total sizes of the files.
+     */
+    static void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal);
 
 protected:
 
@@ -107,6 +116,16 @@ private:
      * Has --errorlist been given?
      */
     bool errorlist;
+
+    /**
+     * List of files to check.
+     */
+    std::vector<std::string> _filenames;
+
+    /**
+     * Sizes of files in _filenames.
+     */
+    std::map<std::string, long> _filesizes;
 };
 
 #endif // CPPCHECKEXECUTOR_H

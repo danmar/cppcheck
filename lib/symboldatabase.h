@@ -46,11 +46,12 @@ class Variable
     /** @brief flags mask used to access specific bit. */
     enum
     {
-        fIsMutable = (1 << 0), /** @brief mutable variable */
-        fIsStatic  = (1 << 1), /** @brief static variable */
-        fIsConst   = (1 << 2), /** @brief const variable */
-        fIsClass   = (1 << 3), /** @brief user defined type */
-        fIsArray   = (1 << 4)  /** @brief array variable */
+        fIsMutable  = (1 << 0), /** @brief mutable variable */
+        fIsStatic   = (1 << 1), /** @brief static variable */
+        fIsConst    = (1 << 2), /** @brief const variable */
+        fIsClass    = (1 << 3), /** @brief user defined type */
+        fIsArray    = (1 << 4), /** @brief array variable */
+        fHasDefault = (1 << 5)  /** @brief function argument with default value */
     };
 
     /**
@@ -77,7 +78,7 @@ public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
              std::size_t index_, AccessControl access_, bool mutable_,
              bool static_, bool const_, bool class_, const Scope *type_,
-             const Scope *scope_, bool array_)
+             const Scope *scope_, bool array_, bool default_)
         : _name(name_),
           _start(start_),
           _end(end_),
@@ -92,6 +93,7 @@ public:
         setFlag(fIsConst, const_);
         setFlag(fIsClass, class_);
         setFlag(fIsArray, array_);
+        setFlag(fHasDefault, default_);
     }
 
     /**
@@ -267,6 +269,15 @@ public:
     }
 
     /**
+     * Does variable have a default value.
+     * @return true if has a default falue, false if not
+     */
+    bool hasDefault() const
+    {
+        return getFlag(fHasDefault);
+    }
+
+    /**
      * Get Scope pointer of known type.
      * @return pointer to type if known, NULL if not known
      */
@@ -332,13 +343,17 @@ public:
           isExplicit(false),
           isOperator(false),
           retFuncPtr(false),
-          type(eFunction)
+          type(eFunction),
+          functionScope(NULL)
     {
     }
 
-    unsigned int argCount() const;
+    unsigned int argCount() const
+    {
+        return argumentList.size();
+    }
     unsigned int initializedArgCount() const;
-    void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
+    void addArguments(const SymbolDatabase *symbolDatabase, const Function *func, const Scope *scope);
 
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition
@@ -357,6 +372,7 @@ public:
     bool isOperator;       // is operator
     bool retFuncPtr;       // returns function pointer
     Type type;             // constructor, destructor, ...
+    Scope *functionScope;  // scope of function body
     std::list<Variable> argumentList; // argument list
 };
 
@@ -440,7 +456,7 @@ public:
     {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
                                    access_, mutable_, static_, const_, class_,
-                                   type_, scope_, array_));
+                                   type_, scope_, array_, false));
     }
 
     /** @brief initialize varlist */

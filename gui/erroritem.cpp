@@ -20,6 +20,7 @@
 
 ErrorItem::ErrorItem()
     : severity(Severity::none)
+    , inconclusive(false)
 {
 }
 
@@ -29,6 +30,7 @@ ErrorItem::ErrorItem(const ErrorItem &item)
     files = item.files;
     lines = item.lines;
     id = item.id;
+    inconclusive = item.inconclusive;
     severity = item.severity;
     summary = item.summary;
     message = item.message;
@@ -40,6 +42,7 @@ ErrorItem::ErrorItem(const ErrorLine &line)
     files.append(line.file);
     lines.append(line.line);
     id = line.id;
+    inconclusive = line.inconclusive;
     severity = line.severity;
     summary = line.summary;
     message = line.message;
@@ -47,7 +50,10 @@ ErrorItem::ErrorItem(const ErrorLine &line)
 
 QString ErrorItem::ToString() const
 {
-    QString str = file + " - " + id + " - " + GuiSeverity::toString(severity) +"\n";
+    QString str = file + " - " + id + " - ";
+    if (inconclusive)
+        str += "inconclusive ";
+    str += GuiSeverity::toString(severity) +"\n";
     str += summary + "\n";
     str += message + "\n";
     for (int i = 0; i < files.size(); i++)

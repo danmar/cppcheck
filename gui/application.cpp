@@ -16,41 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HELPWINDOW_H
-#define HELPWINDOW_H
+#include "application.h"
 
-#include <QtGui/QWidget>
-
-namespace Ui
+Application::Application(const QString &name, const QString &path,
+                         const QString &params)
+    : mName(name)
+    , mPath(path)
+    , mParameters(params)
 {
-class HelpWindow;
 }
-
-class QHelpEngine;
-
-/// @addtogroup GUI
-/// @{
-
-/**
- * @brief Help Window
- */
-class HelpWindow : public QWidget
-{
-    Q_OBJECT
-public:
-    HelpWindow(QWidget *parent = 0);
-    ~HelpWindow();
-
-    /**
-     * load a *.qhc file and setup GUI. the file must exist.
-     * @return false if loading failed
-     */
-    bool load(const QString &helpFile);
-
-private:
-    Ui::HelpWindow *m_ui;
-
-    QHelpEngine *helpEngine;
-};
-
-#endif // HELPWINDOW_H

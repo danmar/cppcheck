@@ -77,10 +77,12 @@ ShowTypes;
 #define SETTINGS_SAVE_FULL_PATH         "Save full path"
 #define SETTINGS_APPLICATION_NAMES      "Application names"
 #define SETTINGS_APPLICATION_PATHS      "Application paths"
+#define SETTINGS_APPLICATION_PARAMS     "Application parameters"
 #define SETTINGS_APPLICATION_DEFAULT    "Default Application"
 #define SETTINGS_LANGUAGE               "Application language"
 #define SETTINGS_GLOBAL_INCLUDE_PATHS   "Global include paths"
 #define SETTINGS_INLINE_SUPPRESSIONS    "Inline suppressions"
+#define SETTINGS_INCONCLUSIVE_ERRORS    "Inconclusive errors"
 
 /// @}
 #endif

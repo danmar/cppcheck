@@ -36,13 +36,13 @@ private:
 
 
 
-    void check(const char code[], bool inconclusive = true)
+    void check(const char code[], bool experimental = true)
     {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.inconclusive = inconclusive;
+        settings.experimental = experimental;
         settings._checkCodingStyle = true;
 
         // Tokenize..

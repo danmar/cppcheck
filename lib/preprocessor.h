@@ -53,6 +53,8 @@ public:
 
     Preprocessor(Settings *settings = 0, ErrorLogger *errorLogger = 0);
 
+    static bool missingIncludeFlag;
+
     /**
      * Extract the code for each configuration
      * @param istr The (file/string) stream to read from.
@@ -146,7 +148,7 @@ protected:
 
     /**
      * Cleanup 'if 0' from the code
-     * @param str Code processed by read().
+     * @param code Code processed by read().
      * @return code without 'if 0'
      */
     static std::string removeIf0(const std::string &code);
@@ -156,7 +158,7 @@ protected:
      * @param str Code processed by read().
      * @return code with reduced parentheses
      */
-    static std::string removeParantheses(const std::string &str);
+    static std::string removeParentheses(const std::string &str);
 
     /**
      * clean up #-preprocessor lines (only)

@@ -66,7 +66,7 @@ static const char * const call_func_white_list[] =
     , "readlink", "readv"
     , "realloc", "regcomp", "remove", "rename", "return", "rewind", "rewinddir", "rindex"
     , "rmdir" ,"scandir", "scanf", "seekdir"
-    , "setbuf", "setbuffer", "sethostname", "setlinebuf", "setlocale" ,"setvbuf", "snprintf", "sprintf", "sscanf"
+    , "setbuf", "setbuffer", "sethostname", "setlinebuf", "setlocale" ,"setvbuf", "sizeof" ,"snprintf", "sprintf", "sscanf"
     , "stat", "stpcpy", "strcasecmp", "strcat", "strchr", "strcmp", "strcoll"
     , "strcpy", "strcspn", "strdup", "stricmp", "strlen", "strncasecmp", "strncat", "strncmp"
     , "strncpy", "strpbrk","strrchr", "strspn", "strstr", "strtod", "strtol", "strtoul", "strxfrm", "switch"
@@ -352,7 +352,7 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
         locations.push_back(loc);
     }
 
-    const ErrorLogger::ErrorMessage errmsg(locations, severity, msg, id);
+    const ErrorLogger::ErrorMessage errmsg(locations, severity, msg, id, false);
 
     if (errorLogger)
         errorLogger->reportErr(errmsg);
@@ -466,6 +466,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok,
             allocType = getAllocationType(tok->tokAt(2), varid, callstack);
         }
         if (Token::Match(tok, "= %varid% ;", varid))
+        {
+            return No;
+        }
+        if (Token::Match(tok, "[(,] %varid% [,)]", varid))
         {
             return No;
         }
@@ -770,7 +774,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             --parlevel;
             if (parlevel < 1)
             {
-                return (eq || _settings->inconclusive) ? 0 : "callfunc";
+                return (eq || _settings->experimental) ? 0 : "callfunc";
             }
         }
 
@@ -1488,7 +1492,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             {
                 addtoken(&rettail, tok, "use");
             }
-            else if (Token::Match(tok->previous(), "[;{}=(,+-*/] %varid% [", varid))
+            else if (Token::Match(tok->previous(), ";|{|}|=|(|,|%op% %varid% [", varid))
             {
                 // warning is written for "dealloc ; use_ ;".
                 // but this use doesn't affect the leak-checking
@@ -1808,6 +1812,14 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
+            // outer/inner if blocks. Remove outer condition..
+            else if (Token::Match(tok2->next(), "if|if(var) { if return use ; }"))
+            {
+                tok2->tokAt(6)->deleteNext();
+                Token::eraseTokens(tok2, tok2->tokAt(3));
+                done = false;
+            }
+
             else if (tok2->next() && tok2->next()->str() == "if")
             {
                 // Delete empty if that is not followed by an else
@@ -2020,7 +2032,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             }
 
             // Remove the "if break|continue ;" that follows "dealloc ; alloc ;"
-            if (! _settings->inconclusive && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
+            if (! _settings->experimental && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
             {
                 tok2 = tok2->tokAt(3);
                 Token::eraseTokens(tok2, tok2->tokAt(3));
@@ -2286,7 +2298,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
         }
 
         // If "--all" is given, remove all "callfunc"..
-        if (done && _settings->inconclusive)
+        if (done && _settings->experimental)
         {
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {

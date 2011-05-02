@@ -95,6 +95,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0)
             ;
 
+        // Inconclusive checking (still in testing phase)
+        else if (strcmp(argv[i], "--inconclusive") == 0)
+            _settings->inconclusive = true;
+
         // Checking coding style
         else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--style") == 0)
         {
@@ -344,6 +348,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 path = 2 + argv[i];
             }
             path = Path::fromNativeSeparators(path);
+            path = Path::removeQuotationMarks(path);
 
             // If path doesn't end with / or \, add it
             if (path[path.length()-1] != '/')
@@ -385,6 +390,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             if (!path.empty())
             {
                 path = Path::fromNativeSeparators(path);
+                path = Path::simplifyPath(path.c_str());
+                path = Path::removeQuotationMarks(path);
 
                 // If not "known" filename extension then assume it is path
                 if (!FileLister::acceptFile(path))
@@ -566,6 +573,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 #endif
 
+        // Check configuration
+        else if (strcmp(argv[i], "--check-includes") == 0)
+        {
+            _settings->checkIncludes = true;
+        }
+
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
@@ -585,7 +598,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         else
-            _pathnames.push_back(Path::fromNativeSeparators(argv[i]));
+        {
+            std::string path = Path::fromNativeSeparators(argv[i]);
+            path = Path::removeQuotationMarks(path);
+            _pathnames.push_back(path);
+        }
     }
 
     if (_settings->isEnabled("unusedFunctions") && _settings->_jobs > 1)
@@ -625,25 +642,34 @@ void CmdLineParser::PrintHelp()
               "Syntax:\n"
               "    cppcheck [OPTIONS] [files or paths]\n"
               "\n"
-              "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
-              "are checked recursively from given directory.\n\n"
+              "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++, *.c, *.tpp,\n"
+              "and *.txx are checked recursively from given directory.\n\n"
               "Options:\n"
               "    --append=<file>      This allows you to provide information about\n"
               "                         functions by providing an implementation for these.\n"
+              "    --check-includes     Check for missing includes. This option is used to\n"
+              "                         determine if the cppcheck configuration is ok. No\n"
+              "                         code analysis is done during this check.\n"
               "    -D<ID>               By default Cppcheck checks all configurations.\n"
               "                         Use -D to limit the checking. When -D is used the\n"
               "                         checking is limited to the given configuration.\n"
               "                         Example: -DDEBUG=1 -D__cplusplus\n"
               "    --enable=<id>        Enable additional checks. The available ids are:\n"
-              "                          * all - enable all checks\n"
-              "                          * style - Check coding style\n"
-              "                          * information - Enable information messages\n"
-              "                          * unusedFunction - check for unused functions\n"
-              "                          * missingInclude - check for missing includes\n"
+              "                          * all\n"
+              "                                  Enable all checks\n"
+              "                          * style\n"
+              "                                  Check coding style\n"
+              "                          * information\n"
+              "                                  Enable information messages\n"
+              "                          * unusedFunction\n"
+              "                                  Check for unused functions\n"
+              "                          * missingInclude\n"
+              "                                  Warn if there are missing includes.\n"
+              "                                  See also: --check-includes\n"
               "                         Several ids can be given if you separate them with\n"
               "                         commas.\n"
               "    --error-exitcode=<n> If errors are found, integer [n] is returned instead\n"
-              "                         of default 0. EXIT_FAILURE is returned\n"
+              "                         of default 0. " << EXIT_FAILURE << " is returned\n"
               "                         if arguments are not valid or if no input files are\n"
               "                         provided. Note that your operating system can\n"
               "                         modify this value, e.g. 256 can become 0.\n"
@@ -669,9 +695,11 @@ void CmdLineParser::PrintHelp()
               "    -j <jobs>            Start [jobs] threads to do the checking simultaneously.\n"
               "    -q, --quiet          Only print error messages.\n"
               "    --report-progress    Report progress messages while checking a file.\n"
+#ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"
               "    --rule-file=<file>   Use given rule file. For more information, see: \n"
               "                         https://sourceforge.net/projects/cppcheck/files/Articles/\n"
+#endif
               "    -s, --style          Deprecated, use --enable=style\n"
               "    --suppress=<spec>    Suppress a specific warning. The format of <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"

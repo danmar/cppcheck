@@ -55,7 +55,29 @@ public:
      * parseFromArgs() or settings() and addFile() before calling this.
      * @return amount of errors found or 0 if none were found.
      */
-    unsigned int check();
+
+    /**
+      * @brief Check the file.
+      * This function checks one given file for errors.
+      * @param path Path to the file to check.
+      * @return amount of errors found or 0 if none were found.
+      * @note You must set settings before calling this function (by calling
+      *  settings()).
+      */
+    unsigned int check(const std::string &path);
+
+    /**
+      * @brief Check the file.
+      * This function checks one "virtual" file. The file is not read from
+      * the disk but the content is given in @p content. In errors the @p path
+      * is used as a filename.
+      * @param path Path to the file to check.
+      * @param content File content as a string.
+      * @return amount of errors found or 0 if none were found.
+      * @note You must set settings before calling this function (by calling
+      *  settings()).
+      */
+    unsigned int check(const std::string &path, const std::string &content);
 
     /**
      * @brief Adjust the settings before doing the check. E.g. show only
@@ -72,37 +94,12 @@ public:
     Settings &settings();
 
     /**
-     * @brief Add new file to be checked.
-     *
-     * @param filepath Relative or absolute path to the file to be checked,
-     * e.g. "cppcheck.cpp". Note that only source files (.c, .cc or .cpp)
-     * should be added to the list. Include files are gathered automatically.
-     */
-    void addFile(const std::string &filepath);
-
-    /**
-     * @brief Add new unreal file to be checked.
-     *
-     * @param path File name (used for error reporting).
-     * @param content If the file would be a real file, this should be
-     * the content of the file.
-     */
-    void addFile(const std::string &path, const std::string &content);
-
-    /**
-     * @brief Remove all files added with addFile() and parseFromArgs().
-     */
-    void clearFiles();
-
-    /**
      * @brief Returns current version number as a string.
      * @return version, e.g. "1.38"
      */
     static const char * version();
 
-    const std::vector<std::string> &filenames() const;
-
-    virtual void reportStatus(unsigned int index, unsigned int max);
+    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal);
 
     /**
      * @brief Terminate checking. The checking will be terminated as soon as possible.
@@ -124,6 +121,10 @@ public:
     void analyseFile(std::istream &f, const std::string &filename);
 
 private:
+
+    /** @brief Process one file. */
+    unsigned int processFile();
+
     /** @brief Check file */
     void checkFile(const std::string &code, const char FileName[]);
 
@@ -148,12 +149,10 @@ private:
     std::ostringstream _errout;
     Settings _settings;
     bool _useGlobalSuppressions;
-    std::vector<std::string> _filenames;
+    std::string _filename;
+    std::string _fileContent;
 
     void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
-
-    /** @brief Key is file name, and value is the content of the file */
-    std::map<std::string, std::string> _fileContents;
 
     CheckUnusedFunctions _checkUnusedFunctions;
     ErrorLogger &_errorLogger;

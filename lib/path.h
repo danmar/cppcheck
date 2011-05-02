@@ -63,6 +63,13 @@ public:
      * @return true if the filenames match on the current platform
      */
     static bool sameFileName(const std::string &fname1, const std::string &fname2);
+
+    /**
+     * @brief Remove quotation marks (") from the path.
+     * @param originalPath path to be cleaned.
+     * @return Cleaned path without quotation marks.
+     */
+    static std::string removeQuotationMarks(const std::string &path);
 };
 
 /// @}

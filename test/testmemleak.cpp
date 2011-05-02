@@ -127,13 +127,13 @@ public:
     { }
 
 private:
-    void check(const char code[], bool inconclusive = false)
+    void check(const char code[], bool experimental = false)
     {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.inconclusive = inconclusive;
+        settings.experimental = experimental;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -231,6 +231,7 @@ private:
         TEST_CASE(func21);      // Ticket #2569
         TEST_CASE(func22);      // Ticket #2668
         TEST_CASE(func23);      // Ticket #2667
+        TEST_CASE(func24);      // Ticket #2705
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -240,6 +241,7 @@ private:
         TEST_CASE(allocfunc6);
         TEST_CASE(allocfunc7);
         TEST_CASE(allocfunc8);
+        TEST_CASE(allocfunc9);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -587,7 +589,7 @@ private:
             , "getservbyname", "getservbyport", "glob", "index", "inet_addr", "inet_aton", "inet_network"
             , "initgroups", "link", "mblen", "mbstowcs", "mbtowc", "mkdir", "mkfifo", "mknod", "obstack_printf"
             , "obstack_vprintf", "opendir", "parse_printf_format", "pathconf", "popen", "psignal", "putenv"
-            , "readlink", "regcomp", "strxfrm", "wordexp"
+            , "readlink", "regcomp", "strxfrm", "wordexp", "sizeof"
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
@@ -663,6 +665,11 @@ private:
         ASSERT_EQUALS("; if alloc ; else assign ; return use ;", simplifycode("; callfunc ; if callfunc { alloc ; } else { assign ; } return use ;"));
 
         ASSERT_EQUALS("; dealloc ; return ;", simplifycode("; while1 { if callfunc { dealloc ; return ; } else { continue ; } }"));
+
+        // remove outer if (#2733)
+        ASSERT_EQUALS("alloc ; return ; }", simplifycode("alloc ; if { if return use ; } return ; }"));
+        ASSERT_EQUALS("alloc ; return ; }", simplifycode("alloc ; if { if(var) return use ; } return ; }"));
+        ASSERT_EQUALS("alloc ; return ; }", simplifycode("alloc ; if(var) { if return use ; } return ; }"));
 
         // "if ; .."
         ASSERT_EQUALS("; if xxx ;", simplifycode("; if ; else xxx ;"));
@@ -2180,6 +2187,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    // #2705
+    void func24()
+    {
+        check("void f(void) \n"
+              "{\n"
+              "  std::string *x = new std::string;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x\n","", errout.str());
+
+        check("void f(void) \n"
+              "{\n"
+              "  std::string *x = new std::string;\n"
+              "  delete x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void allocfunc1()
     {
         check("static char *a()\n"
@@ -2438,6 +2462,21 @@ private:
               "    fclose(f);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Resource leak: f\n", errout.str());
+    }
+
+    void allocfunc9()
+    {
+        // Ticket #2673 - address is taken in alloc func
+        check("char *addstring(const char *s) {\n"
+              "    char *ret = strdup(s);\n"
+              "    strings.push_back(ret);"
+              "    return ret;\n"
+              "}\n"
+              "\n"
+              "void foo() {\n"
+              "    char *s = addstring(\"abc\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -2960,7 +2999,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.inconclusive = true;
+        settings.experimental = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -3673,7 +3712,6 @@ private:
     /**
      * Tokenize and execute leak check for given code
      * @param code Source code
-     * @param inconclusive inconclusive checking
      */
     void check(const char code[])
     {

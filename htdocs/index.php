@@ -9,6 +9,7 @@ goal is no false positives." />
 code, errors, bugs, compilers, bounds checking, memory leaks, obsolete functions,
 uninitialized variables, unused functions" />
   <title>Cppcheck - A tool for static C/C++ code analysis</title>
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Orbitron" />
   <link rel="stylesheet" type="text/css" href="/site/css/all.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="alternate" type="application/rss+xml" title="Project News"
@@ -41,7 +42,7 @@ only detects the types of bugs that the compilers normally fail to detect. The
 goal is no false positives.</p>
 
 <h2>Download</h2>
-<p><a class="downloadnow" href="http://downloads.sourceforge.net/cppcheck/cppcheck-1.47-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.47 for Windows</em></a></p>
+<p><a class="downloadnow" href="http://downloads.sourceforge.net/cppcheck/cppcheck-1.48-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.48 for Windows</em></a></p>
 <p>You can download the standalone tool from our
 <a href="http://sourceforge.net/projects/cppcheck/">project page</a> or try it 
 as plugin for your favorite IDE:</p>
@@ -50,6 +51,7 @@ as plugin for your favorite IDE:</p>
   <li><strong>CodeLite</strong> - <em>integrated</em></li>
   <li><strong>Eclipse</strong> - <a href="http://cppcheclipse.googlecode.com/">Cppcheclipse</a></li>
   <li><strong>Hudson</strong> - <a href="http://wiki.hudson-ci.org/display/HUDSON/Cppcheck+Plugin">Cppcheck Plugin</a></li>
+  <li><strong>Jenkins</strong> - <a href="http://wiki.jenkins-ci.org/display/JENKINS/Cppcheck+Plugin">Cppcheck Plugin</a></li>
 </ul>
 <p>No plugin exists for <strong>Visual Studio</strong>, but it's possible to add
 Cppcheck as an external tool.</p>

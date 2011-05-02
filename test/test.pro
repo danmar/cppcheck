@@ -20,8 +20,8 @@ SOURCES += ../cli/cmdlineparser.cpp \
            ../cli/cppcheckexecutor.cpp \
            ../cli/filelister.cpp \
            ../cli/pathmatch.cpp \
-           ../cli/threadexecutor.cpp \
-    testpathmatch.cpp
+           ../cli/threadexecutor.cpp
+
 HEADERS += ../cli/cmdlineparser.h \
            ../cli/cppcheckexecutor.h \
            ../cli/filelister.h \
@@ -29,12 +29,6 @@ HEADERS += ../cli/cmdlineparser.h \
            ../cli/threadexecutor.h
 
 # test/*
-
-# Note:
-# testfilelister_unix.cpp omitted since there is test fail when run in QtCreator
-# Test assumes the test (executable) is built from the test directory (or
-# directory containing source files). But QtCreator builds to separate build
-# directory. Hence the test does not find the source files.
 
 HEADERS += options.h redirect.h testsuite.h
 SOURCES += options.cpp \
@@ -48,6 +42,7 @@ SOURCES += options.cpp \
            testdivision.cpp \
            testerrorlogger.cpp \
            testexceptionsafety.cpp \
+           testfilelister.cpp \
            testincompletestatement.cpp \
            testmathlib.cpp \
            testmemleak.cpp \

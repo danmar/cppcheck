@@ -90,6 +90,9 @@ private:
         TEST_CASE(if_str_find);
 
         TEST_CASE(size1);
+        TEST_CASE(size2);
+        TEST_CASE(size3); // ticket #2757
+        TEST_CASE(size4); // ticket #2757
 
         // Redundant conditions..
         // if (ints.find(123) != ints.end()) ints.remove(123);
@@ -1160,6 +1163,202 @@ private:
               "        haystack.remove(needle);"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant checking of STL container element.\n", errout.str());
+    }
+
+    void size2()
+    {
+        check("struct Fred {\n"
+              "    std::list<int> x;\n"
+              "};\n"
+              "struct Wilma {\n"
+              "    Fred f;\n"
+              "    void foo();\n"
+              "};\n"
+              "void Wilma::foo()\n"
+              "{\n"
+              "    if (f.x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+    }
+
+    void size3() // ticket #2757
+    {
+        check("struct Fred {\n"
+              "    void foo();\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "};\n"
+              "void Fred::foo()\n"
+              "{\n"
+              "    if (x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("std::basic_string<TCHAR> x;\n"
+              "void f()\n"
+              "{\n"
+              "    if (x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "    if (x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "    if (0 == x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "    if (x.size() != 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "    if (0 != x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "    if (x.size() > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "    if (0 < x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "    if (x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "    if (!x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "    fun(x.size());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::basic_string<TCHAR> x;\n"
+              "    fun(!x.size());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void size4() // ticket #2757
+    {
+        check("struct Fred {\n"
+              "    void foo();\n"
+              "    std::string x;\n"
+              "};\n"
+              "void Fred::foo()\n"
+              "{\n"
+              "    if (x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("std::string x;\n"
+              "void f()\n"
+              "{\n"
+              "    if (x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string x;\n"
+              "    if (x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string x;\n"
+              "    if (0 == x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string x;\n"
+              "    if (x.size() != 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string x;\n"
+              "    if (0 != x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string x;\n"
+              "    if (x.size() > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string x;\n"
+              "    if (0 < x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string x;\n"
+              "    if (x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string x;\n"
+              "    if (!x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string x;\n"
+              "    fun(x.size());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string x;\n"
+              "    fun(!x.size());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantCondition2()

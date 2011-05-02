@@ -54,153 +54,142 @@ void CppCheck::settings(const Settings &currentSettings)
     _settings = currentSettings;
 }
 
-void CppCheck::addFile(const std::string &filepath)
-{
-    _filenames.push_back(Path::fromNativeSeparators(filepath));
-}
-
-void CppCheck::addFile(const std::string &path, const std::string &content)
-{
-    _filenames.push_back(Path::fromNativeSeparators(path));
-    _fileContents[ path ] = content;
-}
-
-void CppCheck::clearFiles()
-{
-    _filenames.clear();
-    _fileContents.clear();
-}
-
 const char * CppCheck::version()
 {
-    return "1.47";
+    return "1.48";
 }
 
-unsigned int CppCheck::check()
+unsigned int CppCheck::check(const std::string &path)
+{
+    _filename = path;
+    return processFile();
+}
+
+unsigned int CppCheck::check(const std::string &path, const std::string &content)
+{
+    _filename = path;
+    _fileContent = content;
+    const unsigned int retval = processFile();
+    _fileContent.clear();
+    return retval;
+}
+
+unsigned int CppCheck::processFile()
 {
     exitcode = 0;
-
-    std::sort(_filenames.begin(), _filenames.end());
 
     // TODO: Should this be moved out to its own function so all the files can be
     // analysed before any files are checked?
     if (_settings.test_2_pass && _settings._jobs == 1)
     {
-        for (unsigned int c = 0; c < _filenames.size(); c++)
-        {
-            const std::string fname = _filenames[c];
-            if (_settings.terminated())
-                break;
+        const std::string printname = Path::toNativeSeparators(_filename);
+        reportOut("Analysing " + printname + "...");
 
-            std::string fixedname = Path::toNativeSeparators(fname);
-            reportOut("Analysing " + fixedname + "..");
-
-            std::ifstream f(fname.c_str());
-            analyseFile(f, fname);
-        }
+        std::ifstream f(_filename.c_str());
+        analyseFile(f, _filename);
     }
 
-    for (unsigned int c = 0; c < _filenames.size(); c++)
+    _errout.str("");
+
+    if (_settings.terminated())
+        return exitcode;
+
+    if (_settings._errorsOnly == false)
     {
-        _errout.str("");
-        const std::string fname = _filenames[c];
-
-        if (_settings.terminated())
-            break;
-
-        if (_settings._errorsOnly == false)
-        {
-            std::string fixedpath(fname);
-            fixedpath = Path::simplifyPath(fixedpath.c_str());
-            fixedpath = Path::toNativeSeparators(fixedpath);
-            _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string("..."));
-        }
-
-        try
-        {
-            Preprocessor preprocessor(&_settings, this);
-            std::list<std::string> configurations;
-            std::string filedata = "";
-
-            if ((!_fileContents.empty()) && (_fileContents.find(_filenames[c]) != _fileContents.end()))
-            {
-                // File content was given as a string
-                std::istringstream iss(_fileContents[ _filenames[c] ]);
-                preprocessor.preprocess(iss, filedata, configurations, fname, _settings._includePaths);
-            }
-            else
-            {
-                // Only file name was given, read the content from file
-                std::ifstream fin(fname.c_str());
-                Timer t("Preprocessor::preprocess", _settings._showtime, &S_timerResults);
-                preprocessor.preprocess(fin, filedata, configurations, fname, _settings._includePaths);
-            }
-
-            _settings.ifcfg = bool(configurations.size() > 1);
-
-            if (!_settings.userDefines.empty())
-            {
-                configurations.clear();
-                configurations.push_back(_settings.userDefines);
-            }
-
-            int checkCount = 0;
-            for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it)
-            {
-                // Check only 12 first configurations, after that bail out, unless --force
-                // was used.
-                if (!_settings._force && checkCount > 11)
-                {
-                    const std::string fixedpath = Path::toNativeSeparators(fname);
-                    ErrorLogger::ErrorMessage::FileLocation location;
-                    location.setfile(fixedpath);
-                    std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
-                    loclist.push_back(location);
-                    const std::string msg("Interrupted checking because of too many #ifdef configurations.\n"
-                                          "The checking of the file was interrupted because there were too many "
-                                          "#ifdef configurations. Checking of all #ifdef configurations can be forced "
-                                          "by --force command line option or from GUI preferences. However that may "
-                                          "increase the checking time.");
-                    ErrorLogger::ErrorMessage errmsg(loclist,
-                                                     Severity::information,
-                                                     msg,
-                                                     "toomanyconfigs");
-                    _errorLogger.reportErr(errmsg);
-                    break;
-                }
-
-                cfg = *it;
-                Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
-                const std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, &_settings, &_errorLogger);
-                t.Stop();
-
-                // If only errors are printed, print filename after the check
-                if (_settings._errorsOnly == false && it != configurations.begin())
-                {
-                    std::string fixedpath = Path::simplifyPath(fname.c_str());
-                    fixedpath = Path::toNativeSeparators(fixedpath);
-                    _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
-                }
-
-                std::string appendCode = _settings.append();
-                if (!appendCode.empty())
-                    Preprocessor::preprocessWhitespaces(appendCode);
-
-                checkFile(codeWithoutCfg + appendCode, _filenames[c].c_str());
-                ++checkCount;
-            }
-        }
-        catch (std::runtime_error &e)
-        {
-            // Exception was thrown when checking this file..
-            const std::string fixedpath = Path::toNativeSeparators(fname);
-            _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
-        }
-
-        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(fname));
-
-        _errorLogger.reportStatus(c + 1, (unsigned int)_filenames.size());
+        std::string fixedpath(_filename);
+        fixedpath = Path::simplifyPath(fixedpath.c_str());
+        fixedpath = Path::toNativeSeparators(fixedpath);
+        _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string("..."));
     }
+
+    try
+    {
+        Preprocessor preprocessor(&_settings, this);
+        std::list<std::string> configurations;
+        std::string filedata = "";
+
+        if (!_fileContent.empty())
+        {
+            // File content was given as a string
+            std::istringstream iss(_fileContent);
+            preprocessor.preprocess(iss, filedata, configurations, _filename, _settings._includePaths);
+        }
+        else
+        {
+            // Only file name was given, read the content from file
+            std::ifstream fin(_filename.c_str());
+            Timer t("Preprocessor::preprocess", _settings._showtime, &S_timerResults);
+            preprocessor.preprocess(fin, filedata, configurations, _filename, _settings._includePaths);
+        }
+
+        if (_settings.checkConfiguration())
+        {
+            return 0;
+        }
+
+        _settings.ifcfg = bool(configurations.size() > 1);
+
+        if (!_settings.userDefines.empty())
+        {
+            configurations.clear();
+            configurations.push_back(_settings.userDefines);
+        }
+
+        int checkCount = 0;
+        for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it)
+        {
+            // Check only 12 first configurations, after that bail out, unless --force
+            // was used.
+            if (!_settings._force && checkCount > 11)
+            {
+                const std::string fixedpath = Path::toNativeSeparators(_filename);
+                ErrorLogger::ErrorMessage::FileLocation location;
+                location.setfile(fixedpath);
+                std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
+                loclist.push_back(location);
+                const std::string msg("Interrupted checking because of too many #ifdef configurations.\n"
+                                      "The checking of the file was interrupted because there were too many "
+                                      "#ifdef configurations. Checking of all #ifdef configurations can be forced "
+                                      "by --force command line option or from GUI preferences. However that may "
+                                      "increase the checking time.");
+                ErrorLogger::ErrorMessage errmsg(loclist,
+                                                 Severity::information,
+                                                 msg,
+                                                 "toomanyconfigs",
+                                                 false);
+                _errorLogger.reportErr(errmsg);
+                break;
+            }
+
+            cfg = *it;
+            Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
+            const std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, _filename, &_settings, &_errorLogger);
+            t.Stop();
+
+            // If only errors are printed, print filename after the check
+            if (_settings._errorsOnly == false && it != configurations.begin())
+            {
+                std::string fixedpath = Path::simplifyPath(_filename.c_str());
+                fixedpath = Path::toNativeSeparators(fixedpath);
+                _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
+            }
+
+            std::string appendCode = _settings.append();
+            if (!appendCode.empty())
+                Preprocessor::preprocessWhitespaces(appendCode);
+
+            checkFile(codeWithoutCfg + appendCode, _filename.c_str());
+            ++checkCount;
+        }
+    }
+    catch (std::runtime_error &e)
+    {
+        // Exception was thrown when checking this file..
+        const std::string fixedpath = Path::toNativeSeparators(_filename);
+        _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
+    }
+
+    reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(_filename));
 
     // This generates false positives - especially for libraries
     const bool verbose_orig = _settings._verbose;
@@ -227,6 +216,11 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
     std::string filedata = "";
     preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
     const std::string code = Preprocessor::getcode(filedata, "", filename, &_settings, &_errorLogger);
+
+    if (_settings.checkConfiguration())
+    {
+        return;
+    }
 
     // Tokenize..
     Tokenizer tokenizer(&_settings, this);
@@ -256,7 +250,7 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
 
 void CppCheck::checkFile(const std::string &code, const char FileName[])
 {
-    if (_settings.terminated())
+    if (_settings.terminated() || _settings.checkConfiguration())
         return;
 
     Tokenizer _tokenizer(&_settings, this);
@@ -333,7 +327,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
                 ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
                                                  Severity::error,
                                                  error,
-                                                 "pcre_compile");
+                                                 "pcre_compile",
+                                                 false);
 
                 reportErr(errmsg);
             }
@@ -375,7 +370,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
                     summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
                 else
                     summary = rule.summary;
-                ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id);
+                const ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id, false);
 
                 // Report error
                 reportErr(errmsg);
@@ -396,7 +391,9 @@ Settings &CppCheck::settings()
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    std::string errmsg = msg.toString(_settings._verbose);
+    const std::string errmsg = msg.toString(_settings._verbose);
+    if (errmsg.empty())
+        return;
 
     // Alert only about unique errors
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
@@ -441,17 +438,12 @@ void CppCheck::reportOut(const std::string &outmsg)
     _errorLogger.reportOut(outmsg);
 }
 
-const std::vector<std::string> &CppCheck::filenames() const
-{
-    return _filenames;
-}
-
 void CppCheck::reportProgress(const std::string &filename, const char stage[], const unsigned int value)
 {
     _errorLogger.reportProgress(filename, stage, value);
 }
 
-void CppCheck::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
+void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/)
 {
 
 }

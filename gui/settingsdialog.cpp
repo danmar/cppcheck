@@ -54,6 +54,7 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
     mUI.mSaveAllErrors->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_ALL_ERRORS, false).toBool()));
     mUI.mSaveFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
     mUI.mInlineSuppressions->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool()));
+    mUI.mEnableInconclusive->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
@@ -175,6 +176,7 @@ void SettingsDialog::SaveSettingValues()
     SaveCheckboxValue(mUI.mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
     SaveCheckboxValue(mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
     SaveCheckboxValue(mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
+    SaveCheckboxValue(mUI.mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
 
     QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
     const QString langcode = currentLang->data(LangCodeRole).toString();
@@ -198,12 +200,14 @@ void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
 
 void SettingsDialog::AddApplication()
 {
-    ApplicationDialog dialog("", "", tr("Add a new application"), this);
+    Application app;
+    ApplicationDialog dialog(tr("Add a new application"), app, this);
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        mTempApplications->AddApplication(dialog.GetName(), dialog.GetPath());
-        mUI.mListWidget->addItem(dialog.GetName());
+        const Application app = dialog.GetApplication();
+        mTempApplications->AddApplication(app);
+        mUI.mListWidget->addItem(app.getName());
     }
 }
 
@@ -233,15 +237,14 @@ void SettingsDialog::EditApplication()
     foreach(item, selected)
     {
         int row = mUI.mListWidget->row(item);
-
-        ApplicationDialog dialog(mTempApplications->GetApplicationName(row),
-                                 mTempApplications->GetApplicationPath(row),
-                                 tr("Modify an application"), this);
+        const Application app = mTempApplications->GetApplication(row);
+        ApplicationDialog dialog(tr("Modify an application"), app, this);
 
         if (dialog.exec() == QDialog::Accepted)
         {
-            mTempApplications->SetApplication(row, dialog.GetName(), dialog.GetPath());
-            item->setText(dialog.GetName());
+            const Application app2 = dialog.GetApplication();
+            mTempApplications->SetApplication(row, app2);
+            item->setText(app2.getName());
         }
     }
 }
@@ -263,7 +266,8 @@ void SettingsDialog::PopulateApplicationList()
     const int defapp = mTempApplications->GetDefaultApplication();
     for (int i = 0; i < mTempApplications->GetApplicationCount(); i++)
     {
-        QString name = mTempApplications->GetApplicationName(i);
+        Application app = mTempApplications->GetApplication(i);
+        QString name = app.getName();
         if (i == defapp)
         {
             name += " ";

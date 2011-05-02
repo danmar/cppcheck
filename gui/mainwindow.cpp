@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mainwindow.h"
 #include <QApplication>
 #include <QDebug>
 #include <QMenu>
@@ -27,6 +26,9 @@
 #include <QKeySequence>
 #include <QFileInfo>
 #include <QDir>
+#include <QDesktopServices>
+#include <QUrl>
+#include "mainwindow.h"
 #include "aboutdialog.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
@@ -36,14 +38,14 @@
 #include "statsdialog.h"
 #include "logview.h"
 #include "filelist.h"
-#include "helpwindow.h"
+
+static const QString OnlineHelpURL("http://cppcheck.sourceforge.net/manual.html");
 
 MainWindow::MainWindow() :
     mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
     mApplications(new ApplicationList(this)),
     mTranslation(new TranslationHandler(this)),
     mLogView(NULL),
-    mHelpWindow(NULL),
     mProject(NULL),
     mExiting(false)
 {
@@ -115,15 +117,29 @@ MainWindow::MainWindow() :
     args.removeFirst();
     if (!args.isEmpty())
     {
-        DoCheckFiles(args);
+        HandleCLIParams(args);
     }
 }
 
 MainWindow::~MainWindow()
 {
     delete mLogView;
-    delete mHelpWindow;
     delete mProject;
+}
+
+void MainWindow::HandleCLIParams(const QStringList &params)
+{
+    if (params.contains("-p"))
+    {
+        QString projFile;
+        const int ind = params.indexOf("-p");
+        if ((ind + 1) < params.length())
+            projFile = params[ind + 1];
+
+        LoadProjectFile(projFile);
+    }
+    else
+        DoCheckFiles(params);
 }
 
 void MainWindow::LoadSettings()
@@ -152,9 +168,24 @@ void MainWindow::LoadSettings()
     mUI.mToolBarMain->setVisible(mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool());
     mUI.mToolBarView->setVisible(mSettings->value(SETTINGS_TOOLBARS_VIEW_SHOW, true).toBool());
 
-    mApplications->LoadSettings(mSettings);
-
     SetLanguage(mSettings->value(SETTINGS_LANGUAGE, mTranslation->SuggestLanguage()).toString());
+
+    bool succeeded = mApplications->LoadSettings(mSettings);
+    if (!succeeded)
+    {
+        QString msg = tr("There was a problem with loading the editor application settings.\n\n"
+                         "This is probably because the settings were changed between the Cppcheck versions. "
+                         "Please check (and fix) the editor application settings, otherwise the editor "
+                         "program might not start correctly.");
+        QMessageBox msgBox(QMessageBox::Warning,
+                           tr("Cppcheck"),
+                           msg,
+                           QMessageBox::Ok,
+                           this);
+        msgBox.exec();
+
+    }
+
 }
 
 void MainWindow::SaveSettings()
@@ -365,6 +396,7 @@ Settings MainWindow::GetCppcheckSettings()
     result._xml = false;
     result._jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result._inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
+    result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
 
     if (result._jobs <= 0)
     {
@@ -514,9 +546,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     // Check that we aren't checking files
     if (!mThread->IsChecking())
     {
-        delete mHelpWindow;
-        mHelpWindow = NULL;
-
         SaveSettings();
         event->accept();
     }
@@ -665,13 +694,17 @@ void MainWindow::SetLanguage(const QString &code)
     QString error;
     if (!mTranslation->SetLanguage(code, error))
     {
-        QMessageBox msg(QMessageBox::Critical,
-                        tr("Cppcheck"),
-                        QString(tr("Failed to change the language:\n\n%1")).arg(error),
-                        QMessageBox::Ok,
-                        this);
-
-        msg.exec();
+        const QString msg(tr("Failed to change the user interface language:"
+                             "\n\n%1\n\n"
+                             "The user interface language has been reset to English. Open "
+                             "the Preferences-dialog to select any of the available "
+                             "languages.").arg(error));
+        QMessageBox msgBox(QMessageBox::Warning,
+                           tr("Cppcheck"),
+                           msg,
+                           QMessageBox::Ok,
+                           this);
+        msgBox.exec();
     }
     else
     {
@@ -695,33 +728,12 @@ void MainWindow::StopChecking()
 
 void MainWindow::OpenHelpContents()
 {
-    OpenHtmlHelpContents();
+    OpenOnlineHelp();
 }
 
-void MainWindow::OpenHtmlHelpContents()
+void MainWindow::OpenOnlineHelp()
 {
-    if (mHelpWindow == NULL)
-    {
-        const QString fname = qApp->applicationDirPath() + "/online-help.qhc";
-        if (!QFileInfo(fname).exists())
-        {
-            QMessageBox::warning(this, tr("Cppcheck Help"), tr("Failed to load help file (not found)"));
-            return;
-        }
-
-        mHelpWindow = new HelpWindow;
-        if (!mHelpWindow->load(fname))
-        {
-            delete mHelpWindow;
-            mHelpWindow = NULL;
-            QMessageBox::warning(this, tr("Cppcheck Help"), tr("Failed to load help file"));
-            return;
-        }
-    }
-
-    mHelpWindow->show();
-    if (!mHelpWindow->isActiveWindow())
-        mHelpWindow->activateWindow();
+    QDesktopServices::openUrl(QUrl(OnlineHelpURL));
 }
 
 void MainWindow::OpenProjectFile()
@@ -734,39 +746,43 @@ void MainWindow::OpenProjectFile()
 
     if (!filepath.isEmpty())
     {
-        QFileInfo inf(filepath);
-        const QString filename = inf.fileName();
-        FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
+        LoadProjectFile(filepath);
+    }
+}
 
-        mUI.mActionCloseProjectFile->setEnabled(true);
-        mUI.mActionEditProjectFile->setEnabled(true);
-        delete mProject;
-        mProject = new Project(filepath, this);
-        mProject->Open();
-        QString rootpath = mProject->GetProjectFile()->GetRootPath();
+void MainWindow::LoadProjectFile(const QString &filePath)
+{
+    QFileInfo inf(filePath);
+    const QString filename = inf.fileName();
+    FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
 
-        // If root path not give or "current dir" then use project file's directory
-        // as check path
-        if (rootpath.isEmpty() || rootpath == ".")
-            mCurrentDirectory = inf.canonicalPath();
-        else
-            mCurrentDirectory = rootpath;
+    mUI.mActionCloseProjectFile->setEnabled(true);
+    mUI.mActionEditProjectFile->setEnabled(true);
+    delete mProject;
+    mProject = new Project(filePath, this);
+    mProject->Open();
+    QString rootpath = mProject->GetProjectFile()->GetRootPath();
 
-        QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
-        if (!paths.isEmpty())
+    // If root path not give or "current dir" then use project file's directory
+    // as check path
+    if (rootpath.isEmpty() || rootpath == ".")
+        mCurrentDirectory = inf.canonicalPath();
+    else
+        mCurrentDirectory = rootpath;
+
+    QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
+    if (!paths.isEmpty())
+    {
+        for (int i = 0; i < paths.size(); i++)
         {
-            for (int i = 0; i < paths.size(); i++)
+            if (!QDir::isAbsolutePath(paths[i]))
             {
-                if (!QDir::isAbsolutePath(paths[i]))
-                {
-                    QString path = mCurrentDirectory + "/";
-                    path += paths[i];
-                    paths[i] = QDir::cleanPath(path);
-                }
+                QString path = mCurrentDirectory + "/";
+                path += paths[i];
+                paths[i] = QDir::cleanPath(path);
             }
-
-            DoCheckFiles(paths);
         }
+        DoCheckFiles(paths);
     }
 }
 

@@ -110,9 +110,65 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             tok = tok->tokAt(3);
         }
 
+        // unnamed struct and union
+        else if (Token::Match(tok, "struct|union {") &&
+                 Token::Match(tok->next()->link(), "} %var% ;|["))
+        {
+            scopeList.push_back(Scope(this, tok, scope));
+
+            Scope *new_scope = &scopeList.back();
+
+            scope->addVariable(tok->next()->link()->next(), tok, tok, scope->access, false, false, false, true, new_scope, scope, tok->next()->link()->strAt(2) == "[");
+
+            const Token *tok2 = tok->next();
+
+            new_scope->classStart = tok2;
+            new_scope->classEnd = tok2->link();
+
+            // make sure we have valid code
+            if (!new_scope->classEnd)
+            {
+                scopeList.pop_back();
+                break;
+            }
+
+            // make the new scope the current scope
+            scope = &scopeList.back();
+            scope->nestedIn->nestedList.push_back(scope);
+
+            tok = tok2;
+        }
+
+        // anonymous struct and union
+        else if (Token::Match(tok, "struct|union {") &&
+                 Token::simpleMatch(tok->next()->link(), "} ;"))
+        {
+            scopeList.push_back(Scope(this, tok, scope));
+
+            Scope *new_scope = &scopeList.back();
+
+            const Token *tok2 = tok->next();
+
+            new_scope->classStart = tok2;
+            new_scope->classEnd = tok2->link();
+
+            // make sure we have valid code
+            if (!new_scope->classEnd)
+            {
+                scopeList.pop_back();
+                break;
+            }
+
+            // make the new scope the current scope
+            scope = &scopeList.back();
+            scope->nestedIn->nestedList.push_back(scope);
+
+            tok = tok2;
+        }
+
         else
         {
-            // check for end of space
+            // check for end of scope
             if (tok == scope->classEnd)
             {
                 scope = scope->nestedIn;
@@ -287,6 +343,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         {
                             scope->functionOf = functionOf;
                             scope->function = &functionOf->functionList.back();
+                            scope->function->functionScope = scope;
                         }
 
                         tok = tok2;
@@ -593,7 +650,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
         {
             // add arguments
-            func->addArguments(this, scope);
+            func->addArguments(this, &*func, scope);
         }
     }
 
@@ -621,7 +678,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     if (func->type == Function::eConstructor)
                     {
                         // check for no arguments: func ( )
-                        if (func->argDef->next() == func->argDef->link())
+                        if (func->argCount() == 0)
                         {
                             hasDefaultConstructor = true;
                             break;
@@ -678,6 +735,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         unknowns++;
                 }
             }
+            else if (scope->type == Scope::eUnion && scope->needInitialization == Scope::Unknown)
+                scope->needInitialization = Scope::True;
         }
 
         retry++;
@@ -893,7 +952,7 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
         bool match = false;
         if (scope1->className == tok1->str() && (scope1->type != Scope::eFunction))
         {
-            // do the spaces match (same space) or do their names match (multiple namespaces)
+            // do the scopes match (same scope) or do their names match (multiple namespaces)
             if ((*scope == scope1->nestedIn) || (*scope && scope1 &&
                                                  (*scope)->className == scope1->nestedIn->className &&
                                                  !(*scope)->className.empty() &&
@@ -980,7 +1039,8 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                         if (*scope)
                         {
                             (*scope)->functionOf = scope1;
-                            (*scope)->function = &scope1->functionList.back();
+                            (*scope)->function = &*func;
+                            (*scope)->function->functionScope = *scope;
 
                             added = true;
                         }
@@ -1149,7 +1209,8 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
         const ErrorLogger::ErrorMessage errmsg(locationList,
                                                Severity::debug,
                                                msg,
-                                               "debug");
+                                               "debug",
+                                               false);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else
@@ -1159,44 +1220,24 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
 
 //---------------------------------------------------------------------------
 
-unsigned int Function::argCount() const
-{
-    unsigned int count = 0;
-
-    if (argDef->link() != argDef->next())
-    {
-        count++;
-
-        for (const Token *tok = argDef->next(); tok && tok->next() && tok->next() != argDef->link(); tok = tok->next())
-        {
-            if (tok->str() == ",")
-                count++;
-        }
-    }
-
-    return count;
-}
-
 unsigned int Function::initializedArgCount() const
 {
     unsigned int count = 0;
+    std::list<Variable>::const_iterator var;
 
-    if (argDef->link() != argDef->next())
+    for (var = argumentList.begin(); var != argumentList.end(); ++var)
     {
-        for (const Token *tok = argDef->next(); tok && tok->next() && tok->next() != argDef->link(); tok = tok->next())
-        {
-            if (tok->str() == "=")
-                count++;
-        }
+        if (var->hasDefault())
+            ++count;
     }
 
     return count;
 }
 
-void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
+void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function *func, const Scope *scope)
 {
     // check for non-empty argument list "( ... )"
-    if (arg->link() != arg->next())
+    if (arg->link() != arg->next() && !Token::simpleMatch(arg, "( void )"))
     {
         unsigned int count = 0;
         const Token *startTok;
@@ -1204,6 +1245,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         const Token *nameTok;
         bool isConstVar;
         bool isArrayVar;
+        bool hasDefault;
         const Token *tok = arg->next();
         for (;;)
         {
@@ -1212,8 +1254,9 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             nameTok = NULL;
             isConstVar = bool(tok->str() == "const");
             isArrayVar = false;
+            hasDefault = false;
 
-            while (tok->str() != "," && tok->str() != ")")
+            while (tok->str() != "," && tok->str() != ")" && tok->str() != "=")
             {
                 if (tok->varId() != 0)
                 {
@@ -1222,8 +1265,27 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                 }
                 else if (tok->str() == "[")
                     isArrayVar = true;
+                else if (tok->str() == "<")
+                {
+                    int level = 1;
+                    while (tok && tok->next())
+                    {
+                        tok = tok->next();
+                        if (tok->str() == ">")
+                        {
+                            --level;
+                            if (level == 0)
+                                break;
+                        }
+                        else if (tok->str() == "<")
+                            level++;
+                    }
+                }
 
                 tok = tok->next();
+
+                if (!tok) // something is wrong so just bail
+                    return;
             }
 
             // check for argument with no name or missing varid
@@ -1236,8 +1298,11 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                         nameTok = tok->previous();
                         endTok = nameTok->previous();
 
-                        symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
+                        if (func->hasBody)
+                            symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
                     }
+                    else
+                        endTok = startTok;
                 }
                 else
                     endTok = tok->previous();
@@ -1253,7 +1318,16 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             bool isClassVar = startTok == endTok && !startTok->isStandardType();
 
-            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, scope, isArrayVar));
+            // skip default values
+            if (tok->str() == "=")
+            {
+                hasDefault = true;
+
+                while (tok->str() != "," && tok->str() != ")")
+                    tok = tok->next();
+            }
+
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, functionScope, isArrayVar, hasDefault));
 
             if (tok->str() == ")")
                 break;
@@ -1305,13 +1379,17 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
     else if (classDef->str() == "struct")
     {
         type = Scope::eStruct;
-        className = classDef->next()->str();
+        // anonymous and unnamed structs don't have a name
+        if (classDef->next()->str() != "{")
+            className = classDef->next()->str();
         access = Public;
     }
     else if (classDef->str() == "union")
     {
         type = Scope::eUnion;
-        className = classDef->next()->str();
+        // anonymous and unnamed unions don't have a name
+        if (classDef->next()->str() != "{")
+            className = classDef->next()->str();
         access = Public;
     }
     else if (classDef->str() == "namespace")
@@ -1337,8 +1415,7 @@ Scope::hasDefaultConstructor() const
 
         for (func = functionList.begin(); func != functionList.end(); ++func)
         {
-            if (func->type == Function::eConstructor &&
-                func->argDef->link() == func->argDef->next())
+            if (func->type == Function::eConstructor && func->argCount() == 0)
                 return true;
         }
     }
@@ -1371,6 +1448,7 @@ void Scope::getVariableList()
 {
     AccessControl varaccess = defaultAccess();
     const Token *start;
+    int level = 1;
 
     if (classStart)
         start = classStart->next();
@@ -1379,9 +1457,13 @@ void Scope::getVariableList()
 
     for (const Token *tok = start; tok; tok = tok->next())
     {
-        // end of space?
+        // end of scope?
         if (tok->str() == "}")
-            break;
+        {
+            level--;
+            if (level == 0)
+                break;
+        }
 
         // syntax error?
         else if (tok->next() == NULL)
@@ -1411,6 +1493,17 @@ void Scope::getVariableList()
             }
             else
                 break;
+        }
+        else if (Token::Match(tok, "struct|union {") && Token::Match(tok->next()->link(), "} %var% ;|["))
+        {
+            tok = tok->next()->link()->next()->next();
+            continue;
+        }
+        else if (Token::Match(tok, "struct|union {") && Token::Match(tok->next()->link(), "} ;"))
+        {
+            level++;
+            tok = tok->next();
+            continue;
         }
 
         // Borland C++: Skip all variables in the __published section.
@@ -1484,7 +1577,6 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     // This is the start of a statement
     const Token *vartok = NULL;
     const Token *typetok = NULL;
-    const Token *typestart = tok;
 
     // Is it const..?
     bool isConst = false;
@@ -1514,6 +1606,9 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
         tok = tok->next();
         isConst = true;
     }
+
+    // the start of the type tokens does not include the above modifiers
+    const Token *typestart = tok;
 
     bool isClass = false;
 

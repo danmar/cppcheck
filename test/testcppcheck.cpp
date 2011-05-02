@@ -59,7 +59,7 @@ private:
             id.push_back(msg._id);
         }
 
-        void reportStatus(unsigned int /*index*/, unsigned int /*max*/)
+        void reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/)
         {
         }
     };

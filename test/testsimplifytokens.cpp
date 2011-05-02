@@ -50,8 +50,8 @@ private:
         TEST_CASE(combine_strings);
         TEST_CASE(double_plus);
         TEST_CASE(redundant_plus);
-        TEST_CASE(parantheses1);
-        TEST_CASE(paranthesesVar);      // Remove redundant parentheses around variable .. "( %var% )"
+        TEST_CASE(parentheses1);
+        TEST_CASE(parenthesesVar);      // Remove redundant parentheses around variable .. "( %var% )"
         TEST_CASE(declareVar);
 
         TEST_CASE(declareArray);
@@ -116,6 +116,7 @@ private:
         TEST_CASE(template23);
         TEST_CASE(template24);  // #2648 - using sizeof in template parameter
         TEST_CASE(template25);  // #2648 - another test for sizeof template parameter
+        TEST_CASE(template26);  // #2721 - passing 'char[2]' as template parameter
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -251,6 +252,12 @@ private:
         TEST_CASE(simplifyTypedef85); // ticket #2651
         TEST_CASE(simplifyTypedef86); // ticket #2581
         TEST_CASE(simplifyTypedef87); // ticket #2651
+        TEST_CASE(simplifyTypedef88); // ticket #2675
+        TEST_CASE(simplifyTypedef89); // ticket #2717
+        TEST_CASE(simplifyTypedef90); // ticket #2718
+        TEST_CASE(simplifyTypedef91); // ticket #2716
+        TEST_CASE(simplifyTypedef92); // ticket #2736
+        TEST_CASE(simplifyTypedef93); // ticket #2738
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -297,6 +304,8 @@ private:
         TEST_CASE(enum18); // #2466 (array with same name as enum constant)
         TEST_CASE(enum19); // ticket #2536
         TEST_CASE(enum20); // ticket #2600
+        TEST_CASE(enum21); // ticket #2720
+        TEST_CASE(enum22); // ticket #2745
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -380,7 +389,7 @@ private:
     void simplifyTokenList1()
     {
         // #1717 : The simplifyErrNoInWhile needs to be used before simplifyIfAssign..
-        ASSERT_EQUALS("; x = f ( ) ; while ( ( x ) == -1 ) { x = f ( ) ; }",
+        ASSERT_EQUALS("; x = f ( ) ; while ( x == -1 ) { x = f ( ) ; }",
                       tok(";while((x=f())==-1 && errno==EINTR){}",true));
     }
 
@@ -641,13 +650,13 @@ private:
     }
 
 
-    void parantheses1()
+    void parentheses1()
     {
         ASSERT_EQUALS("<= 110 ;", tok("<= (10+100);"));
         ASSERT_EQUALS("while ( x ( ) == -1 ) { }", tok("while((x()) == -1){ }"));
     }
 
-    void paranthesesVar()
+    void parenthesesVar()
     {
         // remove parentheses..
         ASSERT_EQUALS("= p ;", tok("= (p);"));
@@ -2086,6 +2095,20 @@ private:
 
     }
 
+    void template26()
+    {
+        // #2721
+        const char code[] = "template<class T>\n"
+                            "class A { public: T x; };\n"
+                            "\n"
+                            "template<class M>\n"
+                            "class C: public A<char[M]> {};\n"
+                            "\n"
+                            "C<2> a;\n";
+        // TODO: expand A also
+        ASSERT_EQUALS("; C<2> a ; class C<2> : public A < char [ 2 ] > { }", sizeof_(code));
+    }
+
     void template_unhandled()
     {
         // An unhandled template usage should be simplified..
@@ -2718,6 +2741,13 @@ private:
         ASSERT_EQUALS("; a [ 0 ] ;", tok(";a[0*(*p)];"));
 
         ASSERT_EQUALS(";", tok("; x = x + 0;"));
+
+        ASSERT_EQUALS("if ( a == 2 )", tok("if (a==1+1)"));
+        ASSERT_EQUALS("if ( a + 2 != 6 )", tok("if (a+1+1!=1+2+3)"));
+        ASSERT_EQUALS("if ( 4 < a )", tok("if (14-2*5<a*4/(2*2))"));
+
+        ASSERT_EQUALS("( y / 2 - 2 )", tok("(y / 2 - 2)"));
+        ASSERT_EQUALS("( y % 2 - 2 )", tok("(y % 2 - 2)"));
     }
 
 
@@ -3767,7 +3797,7 @@ private:
 
         const char expected[] =
             "; "
-            "int a [ ice_or < is_int < int > :: value , is_int < UDT > :: value > :: value ? 1 : - 1 ] ; "
+            "int a [ ice_or < is_int < int > :: value , is_int < UDT > :: value > :: value ? 1 : -1 ] ; "
             "int a1 [ N ] ; "
             "int a2 [ N ] [ M ] ; "
             "int t ; "
@@ -5070,6 +5100,161 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void simplifyTypedef88() // ticket #2675
+    {
+        const char code[] = "typedef short int (*x)(...);\n";
+        const char expected[] = ";";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef89() // ticket #2717
+    {
+        const char code[] = "class Fred {\n"
+                            "    typedef void f(int) const;\n"
+                            "    f func;\n"
+                            "};\n";
+        const char expected[] = "class Fred { ; void func ( int ) const ; } ;";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef90() // ticket #2718
+    {
+        const char code[] = "typedef int IA[2];\n"
+                            "void f(const IA&) {};\n";
+        const char expected[] = "; void f ( const int ( & ) [ 2 ] ) { } ;";
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef91() // ticket #2716
+    {
+        const char code1[] = "namespace NS {\n"
+                             "    typedef int (*T)();\n"
+                             "    class A {\n"
+                             "        T f();\n"
+                             "    };\n"
+                             "}\n"
+                             "namespace NS {\n"
+                             "    T A::f() {}\n"
+                             "}\n";
+        const char expected1[] = "namespace NS { "
+                                 "; "
+                                 "class A { "
+                                 "int ( * f ( ) ) ( ) ; "
+                                 "} ; "
+                                 "} "
+                                 "namespace NS { "
+                                 "int ( * A :: f ( ) ) ( ) { } "
+                                 "}";
+        checkSimplifyTypedef(code1);
+        ASSERT_EQUALS(expected1, sizeof_(code1));
+        ASSERT_EQUALS("", errout.str());
+
+        const char code2[] = "namespace NS {\n"
+                             "    typedef int (*T)();\n"
+                             "    class A {\n"
+                             "        T f();\n"
+                             "    };\n"
+                             "}\n"
+                             "NS::T NS::A::f() {}\n";
+        const char expected2[] = "namespace NS { "
+                                 "; "
+                                 "class A { "
+                                 "int ( * f ( ) ) ( ) ; "
+                                 "} ; "
+                                 "} "
+                                 "int ( * NS :: A :: f ( ) ) ( ) { }";
+        checkSimplifyTypedef(code2);
+        ASSERT_EQUALS(expected2, sizeof_(code2));
+        ASSERT_EQUALS("", errout.str());
+
+        const char code3[] = "namespace NS1 {\n"
+                             "    namespace NS2 {\n"
+                             "        typedef int (*T)();\n"
+                             "        class A {\n"
+                             "            T f();\n"
+                             "        };\n"
+                             "    }\n"
+                             "}\n"
+                             "namespace NS1 {\n"
+                             "    namespace NS2 {\n"
+                             "        T A::f() {}\n"
+                             "    }\n"
+                             "}\n";
+        const char expected3[] = "namespace NS1 { "
+                                 "namespace NS2 { "
+                                 "; "
+                                 "class A { "
+                                 "int ( * f ( ) ) ( ) ; "
+                                 "} ; "
+                                 "} "
+                                 "} "
+                                 "namespace NS1 { "
+                                 "namespace NS2 { "
+                                 "int ( * A :: f ( ) ) ( ) { } "
+                                 "} "
+                                 "}";
+        checkSimplifyTypedef(code3);
+        ASSERT_EQUALS(expected3, sizeof_(code3));
+        ASSERT_EQUALS("", errout.str());
+
+        const char code4[] = "namespace NS1 {\n"
+                             "    namespace NS2 {\n"
+                             "        typedef int (*T)();\n"
+                             "        class A {\n"
+                             "            T f();\n"
+                             "        };\n"
+                             "    }\n"
+                             "}\n"
+                             "namespace NS1 {\n"
+                             "    NS2::T NS2::A::f() {}\n"
+                             "}\n";
+        const char expected4[] = "namespace NS1 { "
+                                 "namespace NS2 { "
+                                 "; "
+                                 "class A { "
+                                 "int ( * f ( ) ) ( ) ; "
+                                 "} ; "
+                                 "} "
+                                 "} "
+                                 "namespace NS1 { "
+                                 "int ( * NS2 :: A :: f ( ) ) ( ) { } "
+                                 "}";
+        checkSimplifyTypedef(code4);
+        ASSERT_EQUALS(expected4, sizeof_(code4));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef92() // ticket #2736 (segmentation fault)
+    {
+        const char code[] = "typedef long Long;\n"
+                            "namespace NS {\n"
+                            "}\n";
+        const char expected[] = "; "
+                                "namespace NS { "
+                                "}";
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef93() // ticket #2738 (syntax error)
+    {
+        const char code[] = "struct s { double x; };\n"
+                            "typedef struct s (*binop) (struct s, struct s);\n";
+        const char expected[] = "struct s { double x ; } ;";
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void simplifyTypedefFunction1()
     {
         {
@@ -6341,6 +6526,28 @@ private:
         ASSERT_EQUALS(";", tok(code, false));
     }
 
+    void enum21() // ticket #2720 syntax error
+    {
+        const char code[] = "enum E2 : signed const short { };\n";
+        ASSERT_EQUALS(";", tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum22() // ticket #2745
+    {
+        const char code[] = "enum en { x = 0 };\n"
+                            "void f() {\n"
+                            "    int x = 0;\n"
+                            "    g(x);\n"
+                            "}\n"
+                            "void f2(int &x) {\n"
+                            "    x+=1;\n"
+                            "}\n";
+        checkSimplifyEnum(code);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n"
+                      "[test.cpp:6] -> [test.cpp:1]: (style) Function parameter 'x' hides enumerator with same name\n", errout.str());
+    }
+
     void removestd()
     {
         ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));
@@ -6678,11 +6885,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyIfNotNull() // ticket # 2601 segmentation fault
+    void simplifyIfNotNull()
     {
-        const char code[] = "|| #if #define <=";
-        tok(code, false);
-        ASSERT_EQUALS("", errout.str());
+        {
+            // ticket # 2601 segmentation fault
+            const char code[] = "|| #if #define <=";
+            tok(code, false);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "void f(int x) {\n"
+                                "    x = (x != 0);\n"
+                                "}";
+            ASSERT_EQUALS("void f ( int x ) { }", tok(code, false));
+        }
+
     }
 };
 

@@ -40,6 +40,12 @@ private:
         TEST_CASE(ToXml);
         TEST_CASE(ToVerboseXml);
         TEST_CASE(ToXmlV2);
+
+        // Inconclusive results in xml reports..
+        TEST_CASE(InconclusiveXml);
+
+        // Serialize / Deserialize inconclusive message
+        TEST_CASE(SerializeInconclusiveMessage);
     }
 
     void FileLocationDefaults()
@@ -64,7 +70,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Programming error.", msg.verboseMessage());
@@ -79,7 +85,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -94,7 +100,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -109,7 +115,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -124,7 +130,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
         ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
         ASSERT_EQUALS("<error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Programming error.\"/>", msg.toXML(false,1));
@@ -137,7 +143,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
         ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
         ASSERT_EQUALS("<error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Verbose error\"/>", msg.toXML(true,1));
@@ -150,7 +156,7 @@ private:
         loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         locs.push_back(loc);
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId");
+        ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
         header += "  <cppcheck version=\"";
         header += CppCheck::version();
@@ -161,6 +167,46 @@ private:
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
         message += "    <location file=\"foo.cpp\" line=\"5\"/>\n  </error>";
         ASSERT_EQUALS(message, msg.toXML(false,2));
+    }
+
+    void InconclusiveXml()
+    {
+        // Location
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.setfile("foo.cpp");
+        loc.line = 5;
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+        locs.push_back(loc);
+
+        // Inconclusive error message
+        ErrorMessage msg(locs, Severity::error, "Programming error", "errorId", true);
+
+        // Don't save inconclusive messages if the xml version is 1
+        ASSERT_EQUALS("", msg.toXML(false, 1));
+
+        // TODO: how should inconclusive messages be saved when the xml version is 2?
+        ASSERT_EQUALS("", msg.toXML(false, 2));
+    }
+
+    void SerializeInconclusiveMessage()
+    {
+        // Inconclusive error message
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+        ErrorMessage msg(locs, Severity::error, "Programming error", "errorId", true);
+        ASSERT_EQUALS("7 errorId"
+                      "5 error"
+                      "12 inconclusive"
+                      "17 Programming error"
+                      "17 Programming error"
+                      "0 ", msg.serialize());
+
+        ErrorMessage msg2;
+        msg2.deserialize(msg.serialize());
+        ASSERT_EQUALS("errorId", msg2._id);
+        ASSERT_EQUALS(Severity::error, msg2._severity);
+        ASSERT_EQUALS(true, msg2._inconclusive);
+        ASSERT_EQUALS("Programming error", msg2.shortMessage());
+        ASSERT_EQUALS("Programming error", msg2.verboseMessage());
     }
 };
 REGISTER_TEST(TestErrorLogger)

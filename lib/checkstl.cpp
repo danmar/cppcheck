@@ -500,7 +500,7 @@ void CheckStl::pushback()
             if (pointerId == 0 || containerId == 0)
                 continue;
 
-            // Count { , } and parantheses for tok2
+            // Count { , } and parentheses for tok2
             int indent = 0;
             bool invalidPointer = false;
             for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next())
@@ -566,7 +566,7 @@ void CheckStl::pushback()
         // the variable id for the vector
         unsigned int vectorid = 0;
 
-        // count { , } and parantheses for tok2
+        // count { , } and parentheses for tok2
         int indent = 0;
 
         std::string invalidIterator;
@@ -804,13 +804,13 @@ void CheckStl::if_findError(const Token *tok, bool str)
 
 
 
-bool CheckStl::isStlContainer(const Token *tok)
+bool CheckStl::isStlContainer(unsigned int varid)
 {
     // check if this token is defined
-    if (tok->varId())
+    if (varid)
     {
         // find where this token is defined
-        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->varId());
+        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
 
         if (!var)
             return false;
@@ -827,13 +827,16 @@ bool CheckStl::isStlContainer(const Token *tok)
             type = type->next()->next();
 
         // all possible stl containers
-        static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
+        static const char STL_CONTAINER_LIST[] = "basic_string|bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
 
         // container template string
         const std::string checkStr(std::string(STL_CONTAINER_LIST) + " <");
 
         // check if it's an stl template
         if (Token::Match(type, checkStr.c_str()))
+            return true;
+
+        if (Token::Match(type, "string|wstring"))
             return true;
     }
 
@@ -847,23 +850,60 @@ void CheckStl::size()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "%var% . size ( )"))
+        if (Token::Match(tok, "%var% . size ( )") ||
+            Token::Match(tok, "%var% . %var% . size ( )"))
         {
-            // check for comparison to zero
-            if (Token::Match(tok->tokAt(5), "==|!=|> 0") ||
-                Token::Match(tok->tokAt(-2), "0 ==|!=|<"))
-            {
-                if (isStlContainer(tok))
-                    sizeError(tok);
-            }
+            int offset = 5;
+            const Token *tok1 = tok;
+            unsigned int varid = 0;
 
-            // check for using as boolean expression
-            else if ((Token::Match(tok->tokAt(-2), "if|while (") ||
-                      Token::Match(tok->tokAt(-3), "if|while ( !")) &&
-                     tok->strAt(5) == ")")
+            // get the variable id
+            if (tok->strAt(2) != "size")
             {
-                if (isStlContainer(tok))
-                    sizeError(tok);
+                offset = 7;
+                tok1 = tok1->tokAt(2);
+
+                // found a.b.size(), lookup class/struct variable
+                const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->varId());
+                if (var && var->type())
+                {
+                    // get class/struct variable type
+                    const Scope *type = var->type();
+
+                    // lookup variable member
+                    std::list<Variable>::const_iterator it;
+                    for (it = type->varlist.begin(); it != type->varlist.end(); ++it)
+                    {
+                        if (it->name() == tok1->str())
+                        {
+                            // found member variable, save varid
+                            varid = it->varId();
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+                varid = tok1->varId();
+
+            if (varid)
+            {
+                // check for comparison to zero
+                if (Token::Match(tok->tokAt(offset), "==|!=|> 0") ||
+                    Token::Match(tok->tokAt(-2), "0 ==|!=|<"))
+                {
+                    if (isStlContainer(varid))
+                        sizeError(tok1);
+                }
+
+                // check for using as boolean expression
+                else if ((Token::Match(tok->tokAt(-2), "if|while (") ||
+                          Token::Match(tok->tokAt(-3), "if|while ( !")) &&
+                         tok->strAt(offset) == ")")
+                {
+                    if (isStlContainer(varid))
+                        sizeError(tok1);
+                }
             }
         }
     }

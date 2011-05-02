@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cppcheckexecutor.h"
 #include "threadexecutor.h"
 #include "cppcheck.h"
 #include <iostream>
@@ -31,8 +32,8 @@
 #include <time.h>
 #endif
 
-ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, Settings &settings, ErrorLogger &errorLogger)
-    : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
+ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const std::map<std::string, long> &filesizes, Settings &settings, ErrorLogger &errorLogger)
+    : _filenames(filenames), _filesizes(filesizes), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
 #ifdef THREADING_MODEL_FORK
     _wpipe = 0;
@@ -116,12 +117,10 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     }
     else if (type == '3')
     {
-        _fileCount++;
         std::istringstream iss(buf);
         unsigned int fileResult = 0;
         iss >> fileResult;
         result += fileResult;
-        _errorLogger.reportStatus(_fileCount, _filenames.size());
         delete [] buf;
         return -1;
     }
@@ -135,8 +134,16 @@ unsigned int ThreadExecutor::check()
     _fileCount = 0;
     unsigned int result = 0;
 
+    long totalfilesize = 0;
+    for (std::map<std::string, long>::const_iterator i = _filesizes.begin(); i != _filesizes.end(); ++i)
+    {
+        totalfilesize += i->second;
+    }
+
     std::list<int> rpipes;
     std::map<pid_t, std::string> childFile;
+    std::map<int, std::string> pipeFile;
+    long processedsize = 0;
     unsigned int i = 0;
     while (true)
     {
@@ -177,19 +184,19 @@ unsigned int ThreadExecutor::check()
 
                 CppCheck fileChecker(*this, false);
                 fileChecker.settings(_settings);
+                unsigned int resultOfCheck = 0;
 
                 if (_fileContents.size() > 0 && _fileContents.find(_filenames[i]) != _fileContents.end())
                 {
                     // File content was given as a string
-                    fileChecker.addFile(_filenames[i], _fileContents[ _filenames[i] ]);
+                    resultOfCheck = fileChecker.check(_filenames[i], _fileContents[ _filenames[i] ]);
                 }
                 else
                 {
                     // Read file from a file
-                    fileChecker.addFile(_filenames[i]);
+                    resultOfCheck = fileChecker.check(_filenames[i]);
                 }
 
-                unsigned int resultOfCheck = fileChecker.check();
                 std::ostringstream oss;
                 oss << resultOfCheck;
                 writeToPipe('3', oss.str());
@@ -199,6 +206,7 @@ unsigned int ThreadExecutor::check()
             close(pipes[1]);
             rpipes.push_back(pipes[0]);
             childFile[pid] = _filenames[i];
+            pipeFile[pipes[0]] = _filenames[i];
 
             ++i;
         }
@@ -221,6 +229,24 @@ unsigned int ThreadExecutor::check()
                         int readRes = handleRead(*rp, result);
                         if (readRes == -1)
                         {
+                            long size = 0;
+                            std::map<int, std::string>::iterator p = pipeFile.find(*rp);
+                            if (p != pipeFile.end())
+                            {
+                                std::string name = p->second;
+                                pipeFile.erase(p);
+                                std::map<std::string, long>::const_iterator fs = _filesizes.find(name);
+                                if (fs != _filesizes.end())
+                                {
+                                    size = fs->second;
+                                }
+                            }
+
+                            _fileCount++;
+                            processedsize += size;
+                            if (!_settings._errorsOnly)
+                                CppCheckExecutor::reportStatus(_fileCount, _filenames.size(), processedsize, totalfilesize);
+
                             close(*rp);
                             rp = rpipes.erase(rp);
                         }
@@ -254,7 +280,8 @@ unsigned int ThreadExecutor::check()
                     const ErrorLogger::ErrorMessage errmsg(locations,
                                                            Severity::error,
                                                            oss.str(),
-                                                           "cppcheckError");
+                                                           "cppcheckError",
+                                                           false);
                     _errorLogger.reportErr(errmsg);
                 }
             }
@@ -298,11 +325,6 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     writeToPipe('2', msg.serialize());
 }
 
-void ThreadExecutor::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
-{
-    // Not used
-}
-
 #else
 unsigned int ThreadExecutor::check()
 {
@@ -318,8 +340,4 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &/*msg*/)
 
 }
 
-void ThreadExecutor::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
-{
-
-}
 #endif

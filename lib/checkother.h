@@ -55,7 +55,6 @@ public:
         checkOther.checkUnsignedDivision();
         checkOther.checkCharVariable();
         checkOther.functionVariableUsage();
-        checkOther.checkVariableScope();
         checkOther.checkStructMemberUsage();
         checkOther.strPlusChar();
         checkOther.sizeofsizeof();
@@ -64,6 +63,12 @@ public:
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
         checkOther.checkSelfAssignment();
+        checkOther.checkDuplicateIf();
+        checkOther.checkDuplicateBranch();
+        checkOther.checkDuplicateExpression();
+
+        // information checks
+        checkOther.checkVariableScope();
 
         checkOther.clarifyCondition();   // not simplified because ifAssign
     }
@@ -93,11 +98,12 @@ public:
         checkOther.checkIncrementBoolean();
         checkOther.checkComparisonOfBoolWithInt();
         checkOther.checkSwitchCaseFallThrough();
+        checkOther.checkAlwaysTrueOrFalseStringCompare();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
-    void clarifyCalculationError(const Token *tok);
+    void clarifyCalculationError(const Token *tok, const std::string &op);
 
     /** @brief Suspicious condition (assignment+comparison) */
     void clarifyCondition();
@@ -202,6 +208,18 @@ public:
     /** @brief %Check for suspicious comparison of a bool and a non-zero (and non-one) value (e.g. "if (!x==4)") */
     void checkComparisonOfBoolWithInt();
 
+    /** @brief %Check for suspicious code where multiple if have the same expression (e.g "if (a) { } else if (a) { }") */
+    void checkDuplicateIf();
+
+    /** @brief %Check for suspicious code where if and else branch are the same (e.g "if (a) b = true; else b = true;") */
+    void checkDuplicateBranch();
+
+    /** @brief %Check for suspicious code with the same expression on both sides of operator (e.g "if (a && a)") */
+    void checkDuplicateExpression();
+
+    /** @brief %Check for suspicious code that compares string literals for equality */
+    void checkAlwaysTrueOrFalseStringCompare();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -230,6 +248,10 @@ public:
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
     void incrementBooleanError(const Token *tok);
     void comparisonOfBoolWithIntError(const Token *tok, const std::string &varname);
+    void duplicateIfError(const Token *tok1, const Token *tok2);
+    void duplicateBranchError(const Token *tok1, const Token *tok2);
+    void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
+    void alwaysTrueFalseStringCompare(const Token *tok, const std::string& str1, const std::string& str2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -269,11 +291,15 @@ public:
         c.unassignedVariableError(0, "varname");
         c.catchExceptionByValueError(0);
         c.memsetZeroBytesError(0, "varname");
-        c.clarifyCalculationError(0);
+        c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
         c.incrementBooleanError(0);
         c.comparisonOfBoolWithIntError(0, "varname");
+        c.duplicateIfError(0, 0);
+        c.duplicateBranchError(0, 0);
+        c.duplicateExpressionError(0, 0, "&&");
+        c.alwaysTrueFalseStringCompare(0, "str1", "str2");
     }
 
     std::string myName() const
@@ -313,10 +339,11 @@ public:
                "* assignment of a variable to itself\n"
                "* mutual exclusion over || always evaluating to true\n"
                "* exception caught by value instead of by reference\n"
-               "* Clarify calculation with parantheses\n"
+               "* Clarify calculation with parentheses\n"
                "* using increment on boolean\n"
                "* comparison of a boolean with a non-zero integer\n"
-               "* suspicious condition (assignment+comparison)"
+               "* suspicious condition (assignment+comparison)\n"
+               "* suspicious condition (runtime comparison of string literals)\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
