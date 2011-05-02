@@ -21,6 +21,7 @@
 #include <fstream>
 #include <string>
 #include <cstring>
+#include <stdlib.h> // EXIT_FAILURE
 #include "cppcheck.h"
 #include "timer.h"
 #include "settings.h"
