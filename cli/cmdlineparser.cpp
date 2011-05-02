@@ -575,9 +575,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 #endif
 
         // Check configuration
-        else if (strcmp(argv[i], "--check-includes") == 0)
+        else if (strcmp(argv[i], "--check-config") == 0)
         {
-            _settings->checkIncludes = true;
+            _settings->checkConfiguration = true;
         }
 
         // Print help
@@ -648,9 +648,8 @@ void CmdLineParser::PrintHelp()
               "Options:\n"
               "    --append=<file>      This allows you to provide information about\n"
               "                         functions by providing an implementation for these.\n"
-              "    --check-includes     Check for missing includes. This option is used to\n"
-              "                         determine if the cppcheck configuration is ok. No\n"
-              "                         code analysis is done during this check.\n"
+              "    --check-config       Check cppcheck configuration. The normal code\n"
+              "                         analysis is disabled by this flag.\n"
               "    -D<ID>               By default Cppcheck checks all configurations.\n"
               "                         Use -D to limit the checking. When -D is used the\n"
               "                         checking is limited to the given configuration.\n"
@@ -666,7 +665,7 @@ void CmdLineParser::PrintHelp()
               "                                  Check for unused functions\n"
               "                          * missingInclude\n"
               "                                  Warn if there are missing includes.\n"
-              "                                  See also: --check-includes\n"
+              "                                  For detailed information use --check-config\n"
               "                         Several ids can be given if you separate them with\n"
               "                         commas.\n"
               "    --error-exitcode=<n> If errors are found, integer [n] is returned instead\n"

@@ -47,7 +47,7 @@ Settings::Settings()
     test_2_pass = false;
     reportProgress = false;
     ifcfg = false;
-    checkIncludes = false;
+    checkConfiguration = false;
 }
 
 std::string Settings::Suppressions::parseFile(std::istream &istr)

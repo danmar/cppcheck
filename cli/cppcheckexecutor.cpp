@@ -185,7 +185,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         returnValue = executor.check();
     }
 
-    if (!cppCheck.settings().checkConfiguration())
+    if (!cppCheck.settings().checkConfiguration)
     {
         reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
 

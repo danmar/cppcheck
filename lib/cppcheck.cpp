@@ -122,7 +122,7 @@ unsigned int CppCheck::processFile()
             preprocessor.preprocess(fin, filedata, configurations, _filename, _settings._includePaths);
         }
 
-        if (_settings.checkConfiguration())
+        if (_settings.checkConfiguration)
         {
             return 0;
         }
@@ -217,7 +217,7 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
     preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
     const std::string code = Preprocessor::getcode(filedata, "", filename, &_settings, &_errorLogger);
 
-    if (_settings.checkConfiguration())
+    if (_settings.checkConfiguration)
     {
         return;
     }
@@ -250,7 +250,7 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
 
 void CppCheck::checkFile(const std::string &code, const char FileName[])
 {
-    if (_settings.terminated() || _settings.checkConfiguration())
+    if (_settings.terminated() || _settings.checkConfiguration)
         return;
 
     Tokenizer _tokenizer(&_settings, this);

@@ -1936,7 +1936,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
             if (_errorLogger &&
                 _settings &&
-                _settings->checkIncludes &&
+                _settings->checkConfiguration &&
                 (headerType == UserHeader || _settings->debugwarnings))
             {
                 std::string f = filePath;
