@@ -1971,28 +1971,9 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
     }
 }
 
-static bool missingIncludes[256];
-
 // Report that include is missing
 void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, bool userheader)
 {
-    // FIXME: we need to check if this is a duplicate error. has it
-    // been reported already that this header is missing? This is not
-    // a trivial task because it must be thread safe and the code in the
-    // lib must be plain C++.
-
-    // A simple solution is to calculate a sum of the header name,
-    // if the same sum has been used before then bailout
-    {
-        unsigned char sum = 0;
-        for (unsigned int i = 0; i < header.size(); ++i)
-            sum += header[i];
-
-        if (missingIncludes[sum])
-            return;
-        missingIncludes[sum] = 1;
-    }
-
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (!filename.empty())
     {
