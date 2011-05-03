@@ -167,6 +167,9 @@
     <ClCompile Include="testsuite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testsuppressions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="testsymboldatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
