@@ -105,6 +105,7 @@ TESTOBJ =     test/options.o \
               test/testsimplifytokens.o \
               test/teststl.o \
               test/testsuite.o \
+              test/testsuppressions.o \
               test/testsymboldatabase.o \
               test/testthreadexecutor.o \
               test/testtoken.o \
@@ -332,6 +333,9 @@ test/teststl.o: test/teststl.cpp lib/tokenize.h lib/checkstl.h lib/check.h lib/t
 
 test/testsuite.o: test/testsuite.cpp test/testsuite.h lib/errorlogger.h lib/settings.h test/redirect.h test/options.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testsuite.o test/testsuite.cpp
+
+test/testsuppressions.o: test/testsuppressions.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h test/testsuite.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testsuppressions.o test/testsuppressions.cpp
 
 test/testsymboldatabase.o: test/testsymboldatabase.cpp test/testsuite.h lib/errorlogger.h lib/settings.h test/redirect.h test/testutils.h lib/tokenize.h lib/token.h lib/symboldatabase.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testsymboldatabase.o test/testsymboldatabase.cpp
