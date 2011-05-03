@@ -258,6 +258,7 @@ private:
         TEST_CASE(simplifyTypedef91); // ticket #2716
         TEST_CASE(simplifyTypedef92); // ticket #2736
         TEST_CASE(simplifyTypedef93); // ticket #2738
+        TEST_CASE(simplifyTypedef94); // ticket #1982
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5252,6 +5253,66 @@ private:
 
         checkSimplifyTypedef(code);
         ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef94() // ticket #1982
+    {
+        const char code1[] = "class A {\n"
+                             "public:\n"
+                             "  typedef struct {\n"
+                             "    int a[4];\n"
+                             "  } data;\n"
+                             "};\n"
+                             "A::data d;\n";
+        const char expected1[] = "class A { "
+                                 "public: "
+                                 "struct data { "
+                                 "int a [ 4 ] ; "
+                                 "} ; "
+                                 "} ; "
+                                 "struct A :: data d ;";
+
+        checkSimplifyTypedef(code1);
+        ASSERT_EQUALS(expected1, sizeof_(code1));
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (debug) Scope::checkVariable found variable 'd' with varid 0.\n", "", errout.str());
+
+        const char code2[] = "class A {\n"
+                             "public:\n"
+                             "  typedef struct {\n"
+                             "    int a[4];\n"
+                             "  } data;\n"
+                             "};\n"
+                             "::A::data d;\n";
+        const char expected2[] = "class A { "
+                                 "public: "
+                                 "struct data { "
+                                 "int a [ 4 ] ; "
+                                 "} ; "
+                                 "} ; "
+                                 "struct :: A :: data d ;";
+
+        checkSimplifyTypedef(code2);
+        ASSERT_EQUALS(expected2, sizeof_(code2));
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (debug) Scope::checkVariable found variable 'd' with varid 0.\n", "", errout.str());
+
+        const char code3[] = "class A {\n"
+                             "public:\n"
+                             "  typedef struct {\n"
+                             "    int a[4];\n"
+                             "  } data;\n"
+                             "};\n"
+                             "class B : public ::A::data { };\n";
+        const char expected3[] = "class A { "
+                                 "public: "
+                                 "struct data { "
+                                 "int a [ 4 ] ; "
+                                 "} ; "
+                                 "} ; "
+                                 "class B : public :: A :: data { } ;";
+
+        checkSimplifyTypedef(code3);
+        ASSERT_EQUALS(expected3, sizeof_(code3));
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -1395,6 +1395,7 @@ void Tokenizer::simplifyTypedef()
             bool simplifyType = false;
             bool inMemberFunc = false;
             int memberScope = 0;
+            bool globalScope = false;
             std::size_t classLevel = spaceInfo.size();
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
@@ -1517,6 +1518,12 @@ void Tokenizer::simplifyTypedef()
 
                     if (pattern1.find("::") != std::string::npos) // has a "something ::"
                     {
+                        if (Token::simpleMatch(tok2->previous(), "::"))
+                        {
+                            tok2->previous()->previous()->deleteNext();
+                            globalScope = true;
+                        }
+
                         for (std::size_t i = classLevel; i < spaceInfo.size(); i++)
                         {
                             tok2->deleteNext();
@@ -1615,11 +1622,39 @@ void Tokenizer::simplifyTypedef()
                         inOperator = true;
 
                     // skip over class or struct in derived class declaration
+                    bool structRemoved = false;
                     if (isDerived && Token::Match(typeStart, "class|struct"))
+                    {
+                        if (typeStart->str() == "struct")
+                            structRemoved = true;
                         typeStart = typeStart->next();
+                    }
 
                     // start substituting at the typedef name by replacing it with the type
                     tok2->str(typeStart->str());
+
+                    // restore qualification if it was removed
+                    if (typeStart->str() == "struct" || structRemoved)
+                    {
+                        if (structRemoved)
+                            tok2 = tok2->previous();
+
+                        if (globalScope)
+                        {
+                            tok2->insertToken("::");
+                            tok2 = tok2->next();
+                        }
+
+                        for (std::size_t i = classLevel; i < spaceInfo.size(); i++)
+                        {
+                            tok2->insertToken(spaceInfo[i].className);
+                            tok2 = tok2->next();
+                            tok2->insertToken("::");
+                            tok2 = tok2->next();
+                        }
+                    }
+
+                    // add remainder of type
                     tok2 = copyTokens(tok2, typeStart->next(), typeEnd);
 
                     if (!pointers.empty())
