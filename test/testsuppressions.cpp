@@ -65,11 +65,6 @@ private:
     {
         errout.str("");
         output.str("");
-        if (!ThreadExecutor::isEnabled())
-        {
-            // Skip this check on systems which don't use this feature
-            return;
-        }
 
         std::vector<std::string> filenames;
         std::map<std::string, long> filesizes;
@@ -236,7 +231,8 @@ private:
     void suppressionsSettings()
     {
         runChecks(&TestSuppressions::checkSuppression);
-        runChecks(&TestSuppressions::checkSuppressionThreads);
+        if (ThreadExecutor::isEnabled())
+            runChecks(&TestSuppressions::checkSuppressionThreads);
     }
 
     void suppressionsMultiFile()
