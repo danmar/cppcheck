@@ -261,6 +261,7 @@ private:
         const char *argv[] = {"cppcheck", "-D"};
         Settings settings;
         CmdLineParser parser(&settings);
+        // Fails since -D has no param
         ASSERT_EQUALS(false, parser.ParseFromArgs(2, argv));
     }
 
@@ -270,6 +271,7 @@ private:
         const char *argv[] = {"cppcheck", "-D", "-v", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
+        // Fails since -D has no param
         ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
     }
 
@@ -279,6 +281,7 @@ private:
         const char *argv[] = {"cppcheck", "-D", "--quiet", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
+        // Fails since -D has no param
         ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
     }
 
@@ -318,6 +321,7 @@ private:
         const char *argv[] = {"cppcheck", "-I", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
+        // Fails since -I has no param
         ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
     }
 
@@ -431,7 +435,8 @@ private:
         const char *argv[] = {"cppcheck", "--error-exitcode=", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(3, argv));
+        // Fails since exit code not given
+        ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
     }
 
     void errorExitcodeStr()
@@ -440,7 +445,8 @@ private:
         const char *argv[] = {"cppcheck", "--error-exitcode=foo", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(3, argv));
+        // Fails since invalid exit code
+        ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
     }
 
     void exitcodeSuppressionsOld()
@@ -450,34 +456,37 @@ private:
         const char *argv[] = {"cppcheck", "--exitcode-suppressions", "suppr.txt", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(4, argv));
+        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(4, argv));
     }
 
     void exitcodeSuppressions()
     {
+        // TODO: Fails since cannot open the file
         REDIRECT;
         const char *argv[] = {"cppcheck", "--exitcode-suppressions=suppr.txt", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(3, argv));
+        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(3, argv));
     }
 
     void exitcodeSuppressionsNoFile()
     {
+        // TODO: Fails since cannot open the file
         REDIRECT;
         const char *argv[] = {"cppcheck", "--exitcode-suppressions", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(3, argv));
+        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(3, argv));
     }
 
     void fileList()
     {
+        // TODO: Fails since cannot open the file
         REDIRECT;
         const char *argv[] = {"cppcheck", "--file-list", "files.txt", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(4, argv));
+        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(4, argv));
     }
 
     void inlineSuppr()
@@ -505,7 +514,8 @@ private:
         const char *argv[] = {"cppcheck", "-j", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(3, argv));
+        // Fails since -j is missing thread count
+        ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
     }
 
     void jobsInvalid()
@@ -514,7 +524,8 @@ private:
         const char *argv[] = {"cppcheck", "-j", "e", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(4, argv));
+        // Fails since invalid count given for -j
+        ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
     }
 
     void reportProgress()
@@ -544,16 +555,17 @@ private:
         const char *argv[] = {"cppcheck", "--suppressions-list=suppr.txt", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(3, argv));
+        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(3, argv));
     }
 
     void suppressionsNoFile()
     {
+        // TODO: Fails because there is no suppr.txt file!
         REDIRECT;
         const char *argv[] = {"cppcheck", "--suppressions-list=", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(3, argv));
+        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(3, argv));
     }
 
     void suppressionSingle()
@@ -667,7 +679,8 @@ private:
         const char *argv[] = {"cppcheck", "--xml", "--xml-version=3", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(4, argv));
+        // FAils since unknown XML format version
+        ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
     }
 
     void xmlverinvalid()
@@ -676,7 +689,8 @@ private:
         const char *argv[] = {"cppcheck", "--xml", "--xml-version=a", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(4, argv));
+        // FAils since unknown XML format version
+        ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
     }
 
     void errorlist1()
@@ -714,7 +728,8 @@ private:
         const char *argv[] = {"cppcheck", "-i"};
         Settings settings;
         CmdLineParser parser(&settings);
-        ASSERT(!parser.ParseFromArgs(2, argv));
+        // Fails since no ignored path given
+        ASSERT_EQUALS(false, parser.ParseFromArgs(2, argv));
         ASSERT_EQUALS(0, parser.GetIgnoredPaths().size());
     }
 
