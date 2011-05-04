@@ -31,12 +31,8 @@
                   WorkingDirectory='INSTALLDIR' Icon="cppcheckgui.exe" IconIndex="0" Advertise="yes" />
             </File>
             <!-- <File Id='mingwm10dll' Name='mingwm10.dll' Source='mingwm10.dll' /> -->
-            <File Id='qtclucene4dll' Name='qtclucene4.dll' Source='$(var.QtDllDir)\qtclucene4.dll' />
             <File Id='qtcore4dll' Name='qtcore4.dll' Source='$(var.QtDllDir)\qtcore4.dll' />
             <File Id='qtgui4dll' Name='qtgui4.dll' Source='$(var.QtDllDir)\qtgui4.dll' />
-            <File Id='qthelp4dll' Name='qthelp4.dll' Source='$(var.QtDllDir)\qthelp4.dll' />
-            <File Id='qtnetwork4dll' Name='qtnetwork4.dll' Source='$(var.QtDllDir)\qtnetwork4.dll' />
-            <File Id='qtsql4dll' Name='qtsql4.dll' Source='$(var.QtDllDir)\qtsql4.dll' />
             <File Id='qtxml4dll' Name='qtxml4.dll' Source='$(var.QtDllDir)\qtxml4.dll' />
           </Component>
           <Component Id='GuiTranslations' Guid='$(var.guiTranslationsGUID)'>
@@ -61,6 +57,7 @@
                Also remove old gui.exe which is now cppcheck-gui.exe.
                Remove old Swedish translation file which was renamed.
                Remove locally installed help file that didn't work.
+               Remove Qt DLLs not needed anymore
           -->
           <Component Id='InnoSetupCleanup' Guid='4A3F299D-1EE1-468b-814B-D6577F0698CA'>
             <RemoveFile Id="msvcp90.dll" On="install" Name="msvcp90.dll" />
@@ -69,6 +66,10 @@
             <RemoveFile Id="gui.exe" On="install" Name="gui.exe" />
             <RemoveFile Id="cppcheck_se.qm" On="install" Name="cppcheck_se.qm" />
             <RemoveFile Id="onlinehelp.qhc" On="install" Name="onlinehelp.qhc" />
+            <RemoveFile Id="qtclucene4dll" On="install" Name="qtclucene4.dll" />
+            <RemoveFile Id="qthelp4dll" On="install" Name="qthelp4.dll" />
+            <RemoveFile Id="qtnetwork4dll" On="install" Name="qtnetwork4.dll" />
+            <RemoveFile Id="qtsql4dll" On="install" Name="qtsql4.dll" />
           </Component>
         </Directory>
         <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
