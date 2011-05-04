@@ -99,6 +99,7 @@ private:
         TEST_CASE(ignorepaths4)
         TEST_CASE(ignorefilepaths1)
         TEST_CASE(ignorefilepaths2)
+        TEST_CASE(checkconfig)
         TEST_CASE(unknownParam);
     }
 
@@ -799,6 +800,16 @@ private:
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
         ASSERT_EQUALS("src/foo.cpp", parser.GetIgnoredPaths()[0]);
+    }
+
+    void checkconfig()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--check-config", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings.checkConfiguration);
     }
 
     void unknownParam()
