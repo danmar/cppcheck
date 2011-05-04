@@ -55,6 +55,19 @@ MainWindow::MainWindow() :
     mThread = new ThreadHandler(this);
     mLogView = new LogView(mSettings);
 
+    // Filter timer to delay filtering results slightly while typing
+    mFilterTimer = new QTimer(this);
+    mFilterTimer->setInterval(500);
+    mFilterTimer->setSingleShot(true);
+    connect(mFilterTimer, SIGNAL(timeout()), this, SLOT(FilterResults()));
+
+    // "Filter" toolbar
+    mLineEditFilter = new QLineEdit(mUI.mToolBarFilter);
+    mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
+    mUI.mToolBarFilter->addWidget(mLineEditFilter);
+    connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
+    connect(mLineEditFilter, SIGNAL(returnPressed()), this, SLOT(FilterResults()));
+
     connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
     connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
     connect(mUI.mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
@@ -81,10 +94,14 @@ MainWindow::MainWindow() :
     connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(StopChecking()));
     connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
 
+    // About menu
     connect(mUI.mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
     connect(mUI.mActionLicense, SIGNAL(triggered()), this, SLOT(ShowLicense()));
+
+    // View > Toolbar menu
     connect(mUI.mActionToolBarMain, SIGNAL(toggled(bool)), this, SLOT(ToggleMainToolBar()));
     connect(mUI.mActionToolBarView, SIGNAL(toggled(bool)), this, SLOT(ToggleViewToolBar()));
+    connect(mUI.mActionToolBarFilter, SIGNAL(toggled(bool)), this, SLOT(ToggleFilterToolBar()));
 
     connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
     connect(mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
@@ -92,6 +109,7 @@ MainWindow::MainWindow() :
     connect(mUI.mResults, SIGNAL(ResultsHidden(bool)), mUI.mActionShowHidden, SLOT(setEnabled(bool)));
     connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
 
+    // File menu
     connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFile()));
     connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(OpenProjectFile()));
     connect(mUI.mActionCloseProjectFile, SIGNAL(triggered()), this, SLOT(CloseProjectFile()));
@@ -144,6 +162,7 @@ void MainWindow::HandleCLIParams(const QStringList &params)
 
 void MainWindow::LoadSettings()
 {
+    // Window/dialog sizes
     if (mSettings->value(SETTINGS_WINDOW_MAXIMIZED, false).toBool())
     {
         showMaximized();
@@ -154,6 +173,7 @@ void MainWindow::LoadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
+    // Show * states
     mUI.mActionShowStyle->setChecked(mSettings->value(SETTINGS_SHOW_STYLE, true).toBool());
     mUI.mActionShowErrors->setChecked(mSettings->value(SETTINGS_SHOW_ERRORS, true).toBool());
     mUI.mActionShowWarnings->setChecked(mSettings->value(SETTINGS_SHOW_WARNINGS, true).toBool());
@@ -164,9 +184,18 @@ void MainWindow::LoadSettings()
     mUI.mResults->ShowResults(SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
     mUI.mResults->ShowResults(SHOW_STYLE, mUI.mActionShowStyle->isChecked());
 
-    mUI.mActionToolBarMain->setChecked(mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool());
-    mUI.mToolBarMain->setVisible(mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool());
-    mUI.mToolBarView->setVisible(mSettings->value(SETTINGS_TOOLBARS_VIEW_SHOW, true).toBool());
+    // Main window settings
+    const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
+    mUI.mActionToolBarMain->setChecked(showMainToolbar);
+    mUI.mToolBarMain->setVisible(showMainToolbar);
+
+    const bool showViewToolbar = mSettings->value(SETTINGS_TOOLBARS_VIEW_SHOW, true).toBool();
+    mUI.mActionToolBarView->setChecked(showViewToolbar);
+    mUI.mToolBarView->setVisible(showViewToolbar);
+
+    const bool showFilterToolbar = mSettings->value(SETTINGS_TOOLBARS_FILTER_SHOW, true).toBool();
+    mUI.mActionToolBarFilter->setChecked(showFilterToolbar);
+    mUI.mToolBarFilter->setVisible(showFilterToolbar);
 
     SetLanguage(mSettings->value(SETTINGS_LANGUAGE, mTranslation->SuggestLanguage()).toString());
 
@@ -193,18 +222,23 @@ void MainWindow::SaveSettings()
     //Force toolbar checkbox value to be updated
     AboutToShowViewMenu();
 
+    // Window/dialog sizes
     mSettings->setValue(SETTINGS_WINDOW_WIDTH, size().width());
     mSettings->setValue(SETTINGS_WINDOW_HEIGHT, size().height());
     mSettings->setValue(SETTINGS_WINDOW_MAXIMIZED, isMaximized());
 
+    // Show * states
     mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
     mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
     mSettings->setValue(SETTINGS_SHOW_WARNINGS, mUI.mActionShowWarnings->isChecked());
     mSettings->setValue(SETTINGS_SHOW_PORTABILITY, mUI.mActionShowPortability->isChecked());
     mSettings->setValue(SETTINGS_SHOW_PERFORMANCE, mUI.mActionShowPerformance->isChecked());
     mSettings->setValue(SETTINGS_SHOW_INFORMATION, mUI.mActionShowInformation->isChecked());
+
+    // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI.mToolBarMain->isVisible());
     mSettings->setValue(SETTINGS_TOOLBARS_VIEW_SHOW, mUI.mToolBarView->isVisible());
+    mSettings->setValue(SETTINGS_TOOLBARS_FILTER_SHOW, mUI.mToolBarFilter->isVisible());
 
     mApplications->SaveSettings(mSettings);
 
@@ -675,6 +709,12 @@ void MainWindow::ToggleViewToolBar()
     mUI.mToolBarView->setVisible(mUI.mActionToolBarView->isChecked());
 }
 
+void MainWindow::ToggleFilterToolBar()
+{
+    mUI.mToolBarFilter->setVisible(mUI.mActionToolBarFilter->isChecked());
+    mLineEditFilter->clear(); // Clearing the filter also disables filtering
+}
+
 void MainWindow::FormatAndSetTitle(const QString &text)
 {
     QString title;
@@ -873,6 +913,11 @@ void MainWindow::DebugError(const ErrorItem &item)
     {
         mLogView->AppendLine(item.ToString());
     }
+}
+
+void MainWindow::FilterResults()
+{
+    mUI.mResults->FilterResults(mLineEditFilter->text());
 }
 
 void MainWindow::EnableProjectActions(bool enable)

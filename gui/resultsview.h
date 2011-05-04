@@ -194,6 +194,11 @@ public slots:
     void ExpandAllResults();
 
     /**
+    * @brief Filters the results in the result list.
+    */
+    void FilterResults(const QString& filter);
+
+    /**
     * @brief Show hidden results in the result list.
     */
     void ShowHiddenResults();

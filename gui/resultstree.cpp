@@ -112,6 +112,18 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
 
     bool hide = !mShowTypes[SeverityToShowType(item.severity)];
 
+    //If specified, filter on summary, message, filename, and id
+    if (!hide && !mFilter.isEmpty())
+    {
+        if (!item.summary.contains(mFilter, Qt::CaseInsensitive) &&
+            !item.message.contains(mFilter, Qt::CaseInsensitive) &&
+            !item.file.contains(mFilter, Qt::CaseInsensitive) &&
+            !item.id.contains(mFilter, Qt::CaseInsensitive))
+        {
+            hide = true;
+        }
+    }
+
     //if there is at least one error that is not hidden, we have a visible error
     if (!hide)
     {
@@ -411,6 +423,12 @@ void ResultsTree::ShowResults(ShowTypes type, bool show)
     }
 }
 
+void ResultsTree::FilterResults(const QString& filter)
+{
+    mFilter = filter;
+    RefreshTree();
+}
+
 void ResultsTree::ShowHiddenResults()
 {
     //Clear the "hide" flag for each item
@@ -479,6 +497,18 @@ void ResultsTree::RefreshTree()
 
             //Check if this error should be hidden
             bool hide = (data["hide"].toBool() || !mShowTypes[VariantToShowType(data["severity"])]);
+
+            //If specified, filter on summary, message, filename, and id
+            if (!hide && !mFilter.isEmpty())
+            {
+                if (!data["summary"].toString().contains(mFilter, Qt::CaseInsensitive) &&
+                    !data["message"].toString().contains(mFilter, Qt::CaseInsensitive) &&
+                    !data["file"].toString().contains(mFilter, Qt::CaseInsensitive) &&
+                    !data["id"].toString().contains(mFilter, Qt::CaseInsensitive))
+                {
+                    hide = true;
+                }
+            }
 
             if (!hide)
             {

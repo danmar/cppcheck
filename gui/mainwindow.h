@@ -24,6 +24,7 @@
 #include <QFileDialog>
 #include <QSignalMapper>
 #include <QActionGroup>
+#include <QTimer>
 #include <QToolBar>
 #include <QStringList>
 
@@ -229,6 +230,11 @@ protected slots:
     void ToggleViewToolBar();
 
     /**
+    * @brief Slot for showing/hiding Filter toolbar
+    */
+    void ToggleFilterToolBar();
+
+    /**
     * @brief Slot for updating View-menu before it is shown.
     */
     void AboutToShowViewMenu();
@@ -256,6 +262,12 @@ protected slots:
     *
     */
     void DebugError(const ErrorItem &item);
+
+    /**
+    * @brief Filters the results in the result list.
+    */
+    void FilterResults();
+
 
 protected:
 
@@ -416,6 +428,16 @@ protected:
     * @brief Project (file).
     */
     Project *mProject;
+
+    /**
+    * @brief Filter field in the Filter toolbar.
+    */
+    QLineEdit* mLineEditFilter;
+
+    /**
+    * @brief Timer to delay filtering while typing.
+    */
+    QTimer* mFilterTimer;
 
 private:
 

@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>21</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -93,6 +93,7 @@
      </property>
      <addaction name="mActionToolBarMain"/>
      <addaction name="mActionToolBarView"/>
+     <addaction name="mActionToolBarFilter"/>
     </widget>
     <addaction name="mMenuToolbars"/>
     <addaction name="separator"/>
@@ -180,6 +181,17 @@
    <addaction name="mActionShowPortability"/>
    <addaction name="mActionShowPerformance"/>
    <addaction name="mActionShowInformation"/>
+  </widget>
+  <widget class="QToolBar" name="mToolBarFilter">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
   </widget>
   <action name="mActionLicense">
    <property name="text">
@@ -515,6 +527,17 @@
    </property>
    <property name="toolTip">
     <string>Show portability warnings</string>
+   </property>
+  </action>
+  <action name="mActionToolBarFilter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Filter</string>
+   </property>
+   <property name="toolTip">
+    <string>Filter results</string>
    </property>
   </action>
  </widget>

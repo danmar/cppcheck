@@ -76,6 +76,14 @@ public:
     void ShowResults(ShowTypes type, bool show);
 
     /**
+    * @brief Function to filter the displayed list of errors.
+    * Refreshes the tree.
+    *
+    * @param filter String that must be found in the summary, description, file or id
+    */
+    void FilterResults(const QString& filter);
+
+    /**
     * @brief Function to show results that were previous hidden with HideResult()
     */
     void ShowHiddenResults();
@@ -377,6 +385,12 @@ protected:
     *
     */
     bool mShowTypes[SHOW_NONE];
+
+    /**
+    * @brief A string used to filter the results for display.
+    *
+    */
+    QString mFilter;
 
     /**
     * @brief List of applications to open errors with

@@ -111,6 +111,11 @@ void ResultsView::ShowHiddenResults()
     mUI.mTree->ShowHiddenResults();
 }
 
+void ResultsView::FilterResults(const QString& filter)
+{
+    mUI.mTree->FilterResults(filter);
+}
+
 void ResultsView::Save(const QString &filename, Report::Type type)
 {
     if (!mErrorsFound)
