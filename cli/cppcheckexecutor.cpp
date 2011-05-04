@@ -194,12 +194,12 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
             const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
             ErrorLogger::ErrorMessage msg(callStack,
                                           Severity::information,
-                                          "Cppcheck cannot find all the include files (--check-includes)\n"
+                                          "Cppcheck cannot find all the include files (use --check-config for details)\n"
                                           "Cppcheck cannot find all the include files. Cpppcheck can check the code without the "
                                           "include files found. But the results will probably be more accurate if all the include "
                                           "files are found. Please check your project's include directories and add all of them "
                                           "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
-                                          "--check-includes.",
+                                          "--check-config.",
                                           "missingInclude",
                                           false);
             reportErr(msg);
