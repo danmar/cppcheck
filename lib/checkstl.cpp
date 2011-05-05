@@ -827,16 +827,13 @@ bool CheckStl::isStlContainer(unsigned int varid)
             type = type->next()->next();
 
         // all possible stl containers
-        static const char STL_CONTAINER_LIST[] = "basic_string|bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
+        static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
 
         // container template string
         const std::string checkStr(std::string(STL_CONTAINER_LIST) + " <");
 
         // check if it's an stl template
         if (Token::Match(type, checkStr.c_str()))
-            return true;
-
-        if (Token::Match(type, "string|wstring"))
             return true;
     }
 
