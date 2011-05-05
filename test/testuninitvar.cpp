@@ -958,6 +958,12 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f() {\n"
+                       "    char a[10], *p;\n"
+                       "    p = &(a[10]);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char c[50] = \"\";\n"

@@ -384,6 +384,7 @@ private:
                 break;
             if (tok2->varId() &&
                 !Token::Match(tok2->previous(), "&|::") &&
+                !Token::simpleMatch(tok2->tokAt(-2), "& (") &&
                 !Token::simpleMatch(tok2->next(), "="))
             {
                 // Multiple assignments..
