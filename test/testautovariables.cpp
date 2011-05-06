@@ -75,7 +75,8 @@ private:
         TEST_CASE(testautovar_return2);
         TEST_CASE(testautovar_extern);
         TEST_CASE(testinvaliddealloc);
-        TEST_CASE(testassign);  // Ticket #1819
+        TEST_CASE(testassign1);  // Ticket #1819
+        TEST_CASE(testassign2);  // Ticket #2765
 
         TEST_CASE(returnLocalVariable1);
         TEST_CASE(returnLocalVariable2);
@@ -230,11 +231,20 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
-    void testassign()
+    void testassign1() // Ticket #1819
     {
         check("void f(EventPtr *eventP, ActionPtr **actionsP) {\n"
               "    EventPtr event = *eventP;\n"
               "    *actionsP = &event->actions;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testassign2() // Ticket #2765
+    {
+        check("static void function(unsigned long **datap) {\n"
+              "    struct my_s *mr = global_structure_pointer;\n"
+              "    *datap = &mr->value;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

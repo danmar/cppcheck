@@ -53,7 +53,7 @@ bool CheckAutoVariables::isAutoVar(unsigned int varId)
 {
     const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
 
-    if (!var || !var->isLocal() || var->isStatic() || var->isArray())
+    if (!var || !var->isLocal() || var->isStatic() || var->isArray() || var->typeEndToken()->str() == "*")
         return false;
 
     return true;
@@ -98,7 +98,7 @@ void CheckAutoVariables::autoVariables()
             if (Token::Match(tok, "[;{}] * %var% = & %var%") && errorAv(tok->tokAt(2), tok->tokAt(5)))
             {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId());
-                if (var && (!var->isClass() || var->type())) 
+                if (var && (!var->isClass() || var->type()))
                     errorAutoVariableAssignment(tok);
             }
             else if (Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(7)))
