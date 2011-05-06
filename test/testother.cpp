@@ -60,6 +60,7 @@ private:
         TEST_CASE(varScope9);		// classes may have extra side-effects
         TEST_CASE(varScope10);      // Undefined macro FOR
         TEST_CASE(varScope11);		// #2475 - struct initialization is not inner scope
+        TEST_CASE(varScope12);		// variable usage in inner loop
 
         TEST_CASE(oldStylePointerCast);
 
@@ -686,6 +687,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void varScope12()
+    {
+        // #2770
+        varScope("void f() {\n"
+                 "    int i = 0;\n"
+                 "    forever {\n"
+                 "        if (i++ == 42) { break; }\n"
+                 "    }\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void checkOldStylePointerCast(const char code[])
     {

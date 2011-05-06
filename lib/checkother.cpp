@@ -2230,6 +2230,15 @@ void CheckOther::functionVariableUsage()
                 else
                     variables.modified(tok->varId());
             }
+
+            else if (tok->isAssignmentOp())
+            {
+                for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next())
+                {
+                    if (tok2->varId())
+                        variables.read(tok2->varId());
+                }
+            }
         }
 
         // Check usage of all variables in the current scope..
@@ -2473,19 +2482,13 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
                     for_or_while = true;
             }
 
-            if (Token::simpleMatch(tok, "do {"))
+            else if (Token::simpleMatch(tok, "do {"))
                 for_or_while = true;
 
             // possible unexpanded macro hiding for/while..
-            if (Token::Match(tok->previous(), "[;{}] %type% {"))
+            else if (tok->str() != "else" && Token::Match(tok->previous(), "[;{}] %type% {"))
             {
-                bool upper = true;
-                for (unsigned int i = 0; i < tok->str().length(); ++i)
-                {
-                    if (!std::isupper(tok->str()[i]))
-                        upper = false;
-                }
-                for_or_while |= upper;
+                for_or_while = true;
             }
 
             if (parlevel == 0 && (tok->str() == ";"))

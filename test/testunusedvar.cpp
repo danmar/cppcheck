@@ -2394,6 +2394,12 @@ private:
                               "    a |= b;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo() {\n"
+                              "    int a = 1;\n"
+                              "    (b).x += a;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarFor()
