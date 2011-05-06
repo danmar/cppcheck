@@ -236,7 +236,7 @@ private:
               "    EventPtr event = *eventP;\n"
               "    *actionsP = &event->actions;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnLocalVariable1()

@@ -97,7 +97,9 @@ void CheckAutoVariables::autoVariables()
             //Critical assignment
             if (Token::Match(tok, "[;{}] * %var% = & %var%") && errorAv(tok->tokAt(2), tok->tokAt(5)))
             {
-                errorAutoVariableAssignment(tok);
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId());
+                if (var && (!var->isClass() || var->type())) 
+                    errorAutoVariableAssignment(tok);
             }
             else if (Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(7)))
             {
