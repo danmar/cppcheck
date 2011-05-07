@@ -2427,6 +2427,10 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyTypedef();
 
     // catch bad typedef canonicalization
+    //
+    // to reproduce bad typedef, download upx-ucl from:
+    // http://packages.debian.org/sid/upx-ucl
+    // analyse the file src/stub/src/i386-linux.elf.interp-main.c
     if (!validate())
     {
         // Source has syntax errors, can't proceed
