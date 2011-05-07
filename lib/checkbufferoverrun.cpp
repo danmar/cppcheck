@@ -1043,6 +1043,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             --indentlevel;
         }
 
+        // Skip array declarations
+        else if (Token::Match(tok, "[;{}] %type% *| %var% [") &&
+                 tok->strAt(1) != "return")
+        {
+            tok = tok->tokAt(3);
+            continue;
+        }
+
         else if (Token::Match(tok, "%varid% [ %num% ]", arrayInfo.varid))
         {
             std::vector<MathLib::bigint> indexes;

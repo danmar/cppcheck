@@ -117,6 +117,7 @@ private:
         TEST_CASE(array_index_for);        // FN: for,if
         TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
         TEST_CASE(array_index_for_question);	// #2561: for, ?:
+        TEST_CASE(array_index_extern);      // FP when using 'extern'. #1684
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -1378,6 +1379,14 @@ private:
               "        i == 0 ? 0 : a[i-1];\n"
               "    }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_extern()
+    {
+        // Ticket #1684. FP when using 'extern'.
+        check("extern char arr[15];\n"
+              "char arr[15] = \"abc\";");
         ASSERT_EQUALS("", errout.str());
     }
 
