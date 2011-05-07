@@ -236,10 +236,22 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
 
 void Tokenizer::insertTokens(Token *dest, const Token *src, unsigned int n)
 {
+    std::stack<Token *> link;
+
     while (n > 0)
     {
-        dest->insertToken(src->str().c_str());
+        dest->insertToken(src->str());
         dest = dest->next();
+
+        // Set links
+        if (Token::Match(dest, "(|[|{"))
+            link.push(dest);
+        else if (!link.empty() && Token::Match(dest, ")|]|}"))
+        {
+            Token::createMutualLinks(dest, link.top());
+            link.pop();
+        }
+
         dest->fileIndex(src->fileIndex());
         dest->linenr(src->linenr());
         dest->varId(src->varId());
