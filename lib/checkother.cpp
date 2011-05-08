@@ -3190,6 +3190,9 @@ void CheckOther::checkDuplicateBranch()
     if (!_settings->_checkCodingStyle)
         return;
 
+    if (!_settings->inconclusive)
+        return;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<Scope>::const_iterator scope;

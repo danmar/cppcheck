@@ -129,6 +129,7 @@ private:
 
         Settings settings;
         settings._checkCodingStyle = true;
+        settings.inconclusive = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
