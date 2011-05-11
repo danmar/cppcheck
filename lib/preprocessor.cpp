@@ -815,6 +815,37 @@ void Preprocessor::removeAsm(std::string &str)
     pos = 0;
     while ((pos = str.find("\nasm __volatile (", pos)) != std::string::npos)
         _removeAsm(str, pos);
+
+    pos = 0;
+    while ((pos = str.find("#asm\n", pos)) != std::string::npos)
+    {
+        const std::string::size_type pos1 = pos;
+        ++pos;
+
+        if (pos1 > 0 && str[pos1-1] != '\n')
+            continue;
+
+        const std::string::size_type endpos = str.find("\n#endasm", pos1);
+        if (endpos != std::string::npos)
+        {
+            if (endpos + 8U < str.size() && str[endpos+8U] != '\n')
+                break;
+
+            // Remove '#endasm'
+            str.erase(endpos+1, 7);
+
+            // Remove non-newline characters between pos1 and endpos
+            for (std::string::size_type p = endpos; p > pos1; --p)
+            {
+                if (str[p] != '\n')
+                    str.erase(p,1);
+            }
+            str.erase(pos1,1);
+
+            // Insert 'asm();' to make the checks bailout properly
+            str.insert(pos1, ";asm();");
+        }
+    }
 }
 
 

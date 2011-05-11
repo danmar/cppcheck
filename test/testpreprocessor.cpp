@@ -1553,6 +1553,14 @@ private:
         std::string str2("\nasm __volatile(\"\nlw iScale, 0x00(pScale)\n\", ());");
         Preprocessor::removeAsm(str2);
         ASSERT_EQUALS("\n\n\n;", str2);
+
+        std::string str3("#asm\nmov ax,bx\n#endasm");
+        Preprocessor::removeAsm(str3);
+        ASSERT_EQUALS(";asm();\n\n", str3);
+
+        std::string str4("\n#asm\nmov ax,bx\n#endasm\n");
+        Preprocessor::removeAsm(str4);
+        ASSERT_EQUALS("\n;asm();\n\n\n", str4);
     }
 
     void if_defined()
