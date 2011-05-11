@@ -96,6 +96,7 @@ private:
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvardynamic);
+        TEST_CASE(localvararray1);  // ticket #2780
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -2643,7 +2644,15 @@ private:
                               "    delete[] ptr;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
 
+    void localvararray1()
+    {
+        functionVariableUsage("void foo() {\n"
+                              "    int p[5];\n"
+                              "    *p = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

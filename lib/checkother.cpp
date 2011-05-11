@@ -2069,6 +2069,9 @@ void CheckOther::functionVariableUsage()
 
                 if (dereference)
                 {
+                    Variables::VariableUsage *var = variables.find(varid1);
+                    if (var && var->_type == Variables::array)
+                        variables.write(varid1);
                     variables.writeAliases(varid1);
                     variables.read(varid1);
                 }
