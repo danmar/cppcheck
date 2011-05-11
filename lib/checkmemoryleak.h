@@ -431,6 +431,11 @@ public:
 
 private:
 
+    /** Is local variable allocated with malloc? */
+    static bool isMalloc(const Token *vartok);
+
+    void checkStructVariable(const Token * const vartok);
+
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
     { }
 

@@ -2936,17 +2936,8 @@ void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::
 }
 
 
-
 void CheckMemoryLeakStructMember::check()
 {
-    // This should be in the CheckMemoryLeak base class
-    std::set<std::string> ignoredFunctions;
-    ignoredFunctions.insert("if");
-    ignoredFunctions.insert("for");
-    ignoredFunctions.insert("while");
-    ignoredFunctions.insert("malloc");
-
-
     unsigned int indentlevel1 = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -2955,210 +2946,243 @@ void CheckMemoryLeakStructMember::check()
         else if (tok->str() == "}")
             --indentlevel1;
 
-        // Locate struct variables..
-        if (indentlevel1 > 0 && Token::Match(tok, "struct|;|{|} %type% * %var% [=;]"))
+        if (indentlevel1 == 0)
+            continue;
+
+        // check struct variables..
+        if (Token::Match(tok, "struct|;|{|} %type% * %var% [=;]"))
         {
-            const Token * const vartok = tok->tokAt(3);
-            if (vartok->varId() == 0)
-                continue;
+            checkStructVariable(tok->tokAt(3));
+        }
+        else if (Token::Match(tok, "struct|;|{|} %type% %var% ;"))
+        {
+            checkStructVariable(tok->tokAt(2));
+        }
+    }
+}
 
-            // Check that struct is allocated..
+bool CheckMemoryLeakStructMember::isMalloc(const Token *vartok)
+{
+    const unsigned int varid(vartok->varId());
+    bool alloc = false;
+    unsigned int indentlevel2 = 0;
+    for (const Token *tok2 = vartok; tok2; tok2 = tok2->next())
+    {
+        if (tok2->str() == "{")
+            ++indentlevel2;
+        else if (tok2->str() == "}")
+        {
+            if (indentlevel2 == 0)
+                break;
+            --indentlevel2;
+        }
+        else if (Token::Match(tok2, "= %varid% [;=]", varid))
+        {
+            return false;
+        }
+        else if (Token::Match(tok2, "%varid% = malloc|kmalloc (", varid))
+        {
+            alloc = true;
+        }
+    }
+    return alloc;
+}
+
+
+void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok)
+{
+    // This should be in the CheckMemoryLeak base class
+    std::set<std::string> ignoredFunctions;
+    ignoredFunctions.insert("if");
+    ignoredFunctions.insert("for");
+    ignoredFunctions.insert("while");
+    ignoredFunctions.insert("malloc");
+
+    if (vartok->varId() == 0)
+        return;
+
+    // Is struct variable a pointer?
+    if (vartok->strAt(-1) == "*")
+    {
+        // Check that variable is allocated with malloc
+        if (!isMalloc(vartok))
+            return;
+    }
+    else
+    {
+        // If file extension is not .c then a destructor might cleanup
+        // members
+        const std::string &fname = _tokenizer->getFiles()->at(0);
+        if (fname.find(".c") != fname.size() - 2U)
+            return;
+    }
+
+    // Check struct..
+    unsigned int indentlevel2 = 0;
+    for (const Token *tok2 = vartok; tok2; tok2 = tok2->next())
+    {
+        if (tok2->str() == "{")
+            ++indentlevel2;
+
+        else if (tok2->str() == "}")
+        {
+            if (indentlevel2 == 0)
+                break;
+            --indentlevel2;
+        }
+
+        // Unknown usage of struct
+        /** @todo Check how the struct is used. Only bail out if necessary */
+        else if (Token::Match(tok2, "[(,] %varid% [,)]", vartok->varId()))
+            break;
+
+        // Struct member is allocated => check if it is also properly deallocated..
+        else if (Token::Match(tok2->previous(), "[;{}] %varid% . %var% = malloc|strdup|kmalloc (", vartok->varId()))
+        {
+            const unsigned int structid(vartok->varId());
+            const unsigned int structmemberid(tok2->tokAt(2)->varId());
+
+            // This struct member is allocated.. check that it is deallocated
+            unsigned int indentlevel3 = indentlevel2;
+            for (const Token *tok3 = tok2; tok3; tok3 = tok3->next())
             {
-                const unsigned int varid(vartok->varId());
-                bool alloc = false;
-                unsigned int indentlevel2 = 0;
-                for (const Token *tok2 = vartok; tok2; tok2 = tok2->next())
+                if (tok3->str() == "{")
+                    ++indentlevel3;
+
+                else if (tok3->str() == "}")
                 {
-                    if (tok2->str() == "{")
-                        ++indentlevel2;
-                    else if (tok2->str() == "}")
+                    if (indentlevel3 == 0)
                     {
-                        if (indentlevel2 == 0)
+                        memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                        break;
+                    }
+                    --indentlevel3;
+                }
+
+                // Deallocating the struct member..
+                else if (Token::Match(tok3, "free|kfree ( %var% . %varid% )", structmemberid))
+                {
+                    // If the deallocation happens at the base level, don't check this member anymore
+                    if (indentlevel3 == 0)
+                        break;
+
+                    // deallocating and then returning from function in a conditional block =>
+                    // skip ahead out of the block
+                    bool ret = false;
+                    while (tok3)
+                    {
+                        // debug info
+                        const std::string tok3str_(tok3->str());
+                        if (tok3->str() == "return")
+                            ret = true;
+                        else if (tok3->str() == "{" || tok3->str() == "}")
                             break;
-                        --indentlevel2;
+                        tok3 = tok3->next();
                     }
-                    else if (Token::Match(tok2, "= %varid% [;=]", varid))
-                    {
-                        alloc = false;
+                    if (!ret || !tok3 || tok3->str() != "}")
                         break;
-                    }
-                    else if (Token::Match(tok2, "%varid% = malloc|kmalloc (", varid))
-                    {
-                        alloc = true;
-                    }
-                }
-                if (!alloc)
+                    --indentlevel3;
                     continue;
-            }
-
-            // Check struct..
-            unsigned int indentlevel2 = 0;
-            for (const Token *tok2 = vartok; tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "{")
-                    ++indentlevel2;
-
-                else if (tok2->str() == "}")
-                {
-                    if (indentlevel2 == 0)
-                        break;
-                    --indentlevel2;
                 }
 
-                // Unknown usage of struct
-                /** @todo Check how the struct is used. Only bail out if necessary */
-                else if (Token::Match(tok2, "[(,] %varid% [,)]", vartok->varId()))
+                // Deallocating the struct..
+                else if (indentlevel2 == 0 && Token::Match(tok3, "free|kfree ( %varid% )", structid))
+                {
+                    memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                    break;
+                }
+
+                // failed allocation => skip code..
+                else if (Token::Match(tok3, "if ( ! %var% . %varid% )", structmemberid))
+                {
+                    // Goto the ")"
+                    tok3 = tok3->next()->link();
+
+                    // make sure we have ") {".. it should be
+                    if (!Token::simpleMatch(tok3, ") {"))
+                        break;
+
+                    // Goto the "}"
+                    tok3 = tok3->next()->link();
+                }
+
+                // succeeded allocation
+                else if (Token::Match(tok3, "if ( %var% . %varid% ) {", structmemberid))
+                {
+                    // goto the ")"
+                    tok3 = tok3->next()->link();
+
+                    // check if the variable is deallocated or returned..
+                    unsigned int indentlevel4 = 0;
+                    for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
+                    {
+                        if (tok4->str() == "{")
+                            ++indentlevel4;
+                        else if (tok4->str() == "}")
+                        {
+                            --indentlevel4;
+                            if (indentlevel4 == 0)
+                                break;
+                        }
+                        else if (Token::Match(tok4, "free|kfree ( %var% . %varid% )", structmemberid))
+                        {
+                            break;
+                        }
+                    }
+
+                    // was there a proper deallocation?
+                    if (indentlevel4 > 0)
+                        break;
+                }
+
+                // Returning from function..
+                else if (tok3->str() == "return")
+                {
+                    // Returning from function without deallocating struct member?
+                    if (!Token::Match(tok3, "return %varid% ;", structid) &&
+                        !Token::Match(tok3, "return & %varid% .", structid))
+                    {
+                        memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                    }
+                    break;
+                }
+
+                // goto isn't handled well.. bail out even though there might be leaks
+                else if (tok3->str() == "goto")
                     break;
 
-                // Struct member is allocated => check if it is also properly deallocated..
-                else if (Token::Match(tok2->previous(), "[;{}] %varid% . %var% = malloc|strdup|kmalloc (", vartok->varId()))
+                // using struct in a function call..
+                else if (Token::Match(tok3, "%var% ("))
                 {
-                    const unsigned int structid(vartok->varId());
-                    const unsigned int structmemberid(tok2->tokAt(2)->varId());
+                    // Calling non-function / function that doesn't deallocate?
+                    if (ignoredFunctions.find(tok3->str()) != ignoredFunctions.end())
+                        continue;
 
-                    // This struct member is allocated.. check that it is deallocated
-                    unsigned int indentlevel3 = indentlevel2;
-                    for (const Token *tok3 = tok2; tok3; tok3 = tok3->next())
+                    // Check if the struct is used..
+                    bool deallocated = false;
+                    unsigned int parlevel = 0;
+                    for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
                     {
-                        if (tok3->str() == "{")
-                            ++indentlevel3;
+                        if (tok4->str() == "(")
+                            ++parlevel;
 
-                        else if (tok3->str() == "}")
+                        else if (tok4->str() == ")")
                         {
-                            if (indentlevel3 == 0)
-                            {
-                                memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                            if (parlevel <= 1)
                                 break;
-                            }
-                            --indentlevel3;
+                            --parlevel;
                         }
 
-                        // Deallocating the struct member..
-                        else if (Token::Match(tok3, "free|kfree ( %var% . %varid% )", structmemberid))
+                        if (Token::Match(tok4, "[(,] %varid% [,)]", structid))
                         {
-                            // If the deallocation happens at the base level, don't check this member anymore
-                            if (indentlevel3 == 0)
-                                break;
-
-                            // deallocating and then returning from function in a conditional block =>
-                            // skip ahead out of the block
-                            bool ret = false;
-                            while (tok3)
-                            {
-                                // debug info
-                                const std::string tok3str_(tok3->str());
-                                if (tok3->str() == "return")
-                                    ret = true;
-                                else if (tok3->str() == "{" || tok3->str() == "}")
-                                    break;
-                                tok3 = tok3->next();
-                            }
-                            if (!ret || !tok3 || tok3->str() != "}")
-                                break;
-                            --indentlevel3;
-                            continue;
-                        }
-
-                        // Deallocating the struct..
-                        else if (indentlevel2 == 0 && Token::Match(tok3, "free|kfree ( %varid% )", structid))
-                        {
-                            memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                            /** @todo check if the function deallocates the memory */
+                            deallocated = true;
                             break;
-                        }
-
-                        // failed allocation => skip code..
-                        else if (Token::Match(tok3, "if ( ! %var% . %varid% )", structmemberid))
-                        {
-                            // Goto the ")"
-                            tok3 = tok3->next()->link();
-
-                            // make sure we have ") {".. it should be
-                            if (!Token::simpleMatch(tok3, ") {"))
-                                break;
-
-                            // Goto the "}"
-                            tok3 = tok3->next()->link();
-                        }
-
-                        // succeeded allocation
-                        else if (Token::Match(tok3, "if ( %var% . %varid% ) {", structmemberid))
-                        {
-                            // goto the ")"
-                            tok3 = tok3->next()->link();
-
-                            // check if the variable is deallocated or returned..
-                            unsigned int indentlevel4 = 0;
-                            for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
-                            {
-                                if (tok4->str() == "{")
-                                    ++indentlevel4;
-                                else if (tok4->str() == "}")
-                                {
-                                    --indentlevel4;
-                                    if (indentlevel4 == 0)
-                                        break;
-                                }
-                                else if (Token::Match(tok4, "free|kfree ( %var% . %varid% )", structmemberid))
-                                {
-                                    break;
-                                }
-                            }
-
-                            // was there a proper deallocation?
-                            if (indentlevel4 > 0)
-                                break;
-                        }
-
-                        // Returning from function..
-                        else if (tok3->str() == "return")
-                        {
-                            // Returning from function without deallocating struct member?
-                            if (!Token::Match(tok3, "return %varid% ;", structid) &&
-                                !Token::Match(tok3, "return & %varid% .", structid))
-                            {
-                                memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
-                            }
-                            break;
-                        }
-
-                        // goto isn't handled well.. bail out even though there might be leaks
-                        else if (tok3->str() == "goto")
-                            break;
-
-                        // using struct in a function call..
-                        else if (Token::Match(tok3, "%var% ("))
-                        {
-                            // Calling non-function / function that doesn't deallocate?
-                            if (ignoredFunctions.find(tok3->str()) != ignoredFunctions.end())
-                                continue;
-
-                            // Check if the struct is used..
-                            bool deallocated = false;
-                            unsigned int parlevel = 0;
-                            for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
-                            {
-                                if (tok4->str() == "(")
-                                    ++parlevel;
-
-                                else if (tok4->str() == ")")
-                                {
-                                    if (parlevel <= 1)
-                                        break;
-                                    --parlevel;
-                                }
-
-                                if (Token::Match(tok4, "[(,] %varid% [,)]", structid))
-                                {
-                                    /** @todo check if the function deallocates the memory */
-                                    deallocated = true;
-                                    break;
-                                }
-                            }
-
-                            if (deallocated)
-                                break;
                         }
                     }
+
+                    if (deallocated)
+                        break;
                 }
             }
         }

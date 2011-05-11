@@ -4809,7 +4809,7 @@ public:
     { }
 
 private:
-    void check(const char code[])
+    void check(const char code[], const char fname[] = 0)
     {
         // Clear the error buffer..
         errout.str("");
@@ -4819,7 +4819,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, fname ? fname : "test.cpp");
         tokenizer.simplifyTokenList();
 
         // Check for memory leaks..
@@ -4854,6 +4854,9 @@ private:
 
         // struct variable is a global variable
         TEST_CASE(globalvar);
+
+        // local struct variable
+        TEST_CASE(localvar);
     }
 
     void err()
@@ -5049,6 +5052,19 @@ private:
               "    return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar()
+    {
+        const char code[] = "void foo() {\n"
+                            "    struct ABC abc;\n"
+                            "    abc.a = malloc(10);\n"
+                            "}\n";
+
+        check(code, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+        check(code, "test.c");
+        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: abc.a\n", errout.str());
     }
 };
 
