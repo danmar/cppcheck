@@ -779,7 +779,7 @@ void MainWindow::LoadProjectFile(const QString &filePath)
 {
     QFileInfo inf(filePath);
     const QString filename = inf.fileName();
-    FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
+    FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
     AddProjectMRU(filePath);
 
     mUI.mActionCloseProjectFile->setEnabled(true);
@@ -825,7 +825,7 @@ void MainWindow::NewProjectFile()
         EnableProjectActions(true);
         QFileInfo inf(filepath);
         const QString filename = inf.fileName();
-        FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
+        FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
 
         delete mProject;
         mProject = new Project(filepath, this);
