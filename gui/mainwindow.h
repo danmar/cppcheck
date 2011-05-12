@@ -406,6 +406,12 @@ protected:
     void AddProjectMRU(const QString &project);
 
     /**
+    * @brief Remove project file (path) from the MRU list.
+    * @param project Full path of the project file to remove.
+    */
+    void RemoveProjectMRU(const QString &project);
+
+    /**
     * @brief Program settings
     *
     */

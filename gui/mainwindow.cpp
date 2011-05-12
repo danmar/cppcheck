@@ -948,7 +948,34 @@ void MainWindow::OpenRecentProject()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action)
-        LoadProjectFile(action->data().toString());
+    {
+        const QString project = action->data().toString();
+        QFileInfo inf(project);
+        if (inf.exists())
+        {
+            LoadProjectFile(project);
+        }
+        else
+        {
+            QString text(tr("The project file\n\n%1\n\n could not be found!\n\n"
+                            "Do you want to remove the file from the recently "
+                            "used projects -list?").arg(project));
+
+            QMessageBox msg(QMessageBox::Warning,
+                            tr("Cppcheck"),
+                            text,
+                            QMessageBox::Yes | QMessageBox::No,
+                            this);
+
+            msg.setDefaultButton(QMessageBox::No);
+            int rv = msg.exec();
+            if (rv == QMessageBox::Yes)
+            {
+                RemoveProjectMRU(project);
+            }
+
+        }
+    }
 }
 
 void MainWindow::UpdateMRUMenuItems()
@@ -982,6 +1009,15 @@ void MainWindow::AddProjectMRU(const QString &project)
     files.prepend(project);
     while (files.size() > MaxRecentProjects)
         files.removeLast();
+
+    mSettings->setValue(SETTINGS_MRU_PROJECTS, files);
+    UpdateMRUMenuItems();
+}
+
+void MainWindow::RemoveProjectMRU(const QString &project)
+{
+    QStringList files = mSettings->value(SETTINGS_MRU_PROJECTS).toStringList();
+    files.removeAll(project);
 
     mSettings->setValue(SETTINGS_MRU_PROJECTS, files);
     UpdateMRUMenuItems();
