@@ -4,4 +4,10 @@
         <dir name="../lib"/>
         <dir name="temp"/>
     </includedir>
+    <paths>
+        <dir name="."/>
+    </paths>
+    <ignore>
+        <path name="temp/"/>
+    </ignore>
 </project>
