@@ -84,6 +84,7 @@ ShowTypes;
 #define SETTINGS_GLOBAL_INCLUDE_PATHS   "Global include paths"
 #define SETTINGS_INLINE_SUPPRESSIONS    "Inline suppressions"
 #define SETTINGS_INCONCLUSIVE_ERRORS    "Inconclusive errors"
+#define SETTINGS_MRU_PROJECTS           "MRU Projects"
 
 /// @}
 #endif

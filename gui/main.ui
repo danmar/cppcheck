@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>28</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -80,6 +80,7 @@
     <addaction name="mActionEditProjectFile"/>
     <addaction name="mActionCloseProjectFile"/>
     <addaction name="separator"/>
+    <addaction name="mActionProjectMRU"/>
     <addaction name="mActionSave"/>
     <addaction name="mActionQuit"/>
    </widget>
@@ -538,6 +539,14 @@
    </property>
    <property name="toolTip">
     <string>Filter results</string>
+   </property>
+  </action>
+  <action name="mActionProjectMRU">
+   <property name="text">
+    <string>Project MRU placeholder</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
    </property>
   </action>
  </widget>

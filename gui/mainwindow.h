@@ -40,6 +40,7 @@ class HelpWindow;
 class Project;
 class ErrorItem;
 class StatsDialog;
+class QAction;
 
 /// @addtogroup GUI
 /// @{
@@ -52,6 +53,12 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
+
+    /**
+    * @brief Maximum number of MRU project items in File-menu.
+    */
+    enum { MaxRecentProjects = 5 };
+
     MainWindow();
     virtual ~MainWindow();
 
@@ -268,6 +275,10 @@ protected slots:
     */
     void FilterResults();
 
+    /**
+    * @brief Opens recently opened project file.
+    */
+    void OpenRecentProject();
 
 protected:
 
@@ -385,6 +396,17 @@ protected:
     void LoadProjectFile(const QString &filePath);
 
     /**
+    * @brief Update project MRU items in File-menu.
+    */
+    void UpdateMRUMenuItems();
+
+    /**
+    * @brief Add project file (path) to the MRU list.
+    * @param project Full path to the project file to add.
+    */
+    void AddProjectMRU(const QString &project);
+
+    /**
     * @brief Program settings
     *
     */
@@ -448,6 +470,10 @@ private:
     */
     bool mExiting;
 
+    /**
+    * @brief Project MRU menu actions.
+    */
+    QAction *mRecentProjectActs[MaxRecentProjects];
 };
 /// @}
 #endif // MAINWINDOW_H

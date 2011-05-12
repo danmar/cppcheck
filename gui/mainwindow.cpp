@@ -137,6 +137,16 @@ MainWindow::MainWindow() :
     {
         HandleCLIParams(args);
     }
+
+    for (int i = 0; i < MaxRecentProjects; ++i)
+    {
+        mRecentProjectActs[i] = new QAction(this);
+        mRecentProjectActs[i]->setVisible(false);
+        connect(mRecentProjectActs[i], SIGNAL(triggered()),
+                this, SLOT(OpenRecentProject()));
+    }
+    mUI.mActionProjectMRU->setVisible(false);
+    UpdateMRUMenuItems();
 }
 
 MainWindow::~MainWindow()
@@ -795,6 +805,7 @@ void MainWindow::LoadProjectFile(const QString &filePath)
     QFileInfo inf(filePath);
     const QString filename = inf.fileName();
     FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
+    AddProjectMRU(filePath);
 
     mUI.mActionCloseProjectFile->setEnabled(true);
     mUI.mActionEditProjectFile->setEnabled(true);
@@ -846,6 +857,7 @@ void MainWindow::NewProjectFile()
         mProject->Create();
         mProject->Edit();
     }
+    AddProjectMRU(filepath);
 }
 
 void MainWindow::CloseProjectFile()
@@ -930,4 +942,47 @@ void MainWindow::EnableProjectOpenActions(bool enable)
 {
     mUI.mActionNewProjectFile->setEnabled(enable);
     mUI.mActionOpenProjectFile->setEnabled(enable);
+}
+
+void MainWindow::OpenRecentProject()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (action)
+        LoadProjectFile(action->data().toString());
+}
+
+void MainWindow::UpdateMRUMenuItems()
+{
+    for (int i = 0; i < MaxRecentProjects; i++)
+    {
+        if (mRecentProjectActs[i] != NULL)
+            mUI.mMenuFile->removeAction(mRecentProjectActs[i]);
+    }
+
+    QStringList projects = mSettings->value(SETTINGS_MRU_PROJECTS).toStringList();
+    const int numRecentProjects = qMin(projects.size(), (int)MaxRecentProjects);
+    for (int i = 0; i < numRecentProjects; i++)
+    {
+        const QString filename = QFileInfo(projects[i]).fileName();
+        const QString text = QString("&%1 %2").arg(i + 1).arg(filename);
+        mRecentProjectActs[i]->setText(text);
+        mRecentProjectActs[i]->setData(projects[i]);
+        mRecentProjectActs[i]->setVisible(true);
+        mUI.mMenuFile->insertAction(mUI.mActionProjectMRU, mRecentProjectActs[i]);
+    }
+
+    if (numRecentProjects > 1)
+        mUI.mMenuFile->insertSeparator(mUI.mActionProjectMRU);
+}
+
+void MainWindow::AddProjectMRU(const QString &project)
+{
+    QStringList files = mSettings->value(SETTINGS_MRU_PROJECTS).toStringList();
+    files.removeAll(project);
+    files.prepend(project);
+    while (files.size() > MaxRecentProjects)
+        files.removeLast();
+
+    mSettings->setValue(SETTINGS_MRU_PROJECTS, files);
+    UpdateMRUMenuItems();
 }
