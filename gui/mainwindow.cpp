@@ -358,31 +358,6 @@ void MainWindow::CheckDirectory()
     DoCheckFiles(SelectFilesToCheck(QFileDialog::DirectoryOnly));
 }
 
-bool MainWindow::GetCheckProject()
-{
-    // We have successfully loaded project earlier and use that project
-    if (mProject)
-        return true;
-
-    if (!mCurrentDirectory.isEmpty())
-    {
-        // Format project filename (directory name + .cppcheck) and load
-        // the project file if it is found.
-        QStringList parts = mCurrentDirectory.split("/");
-        const QString filename = parts[parts.count() - 1] + ".cppcheck";;
-        const QString projfile = mCurrentDirectory + "/" + filename;
-        if (QFile::exists(projfile))
-        {
-            qDebug() << "Opening project file: " << projfile;
-            mProject = new Project();
-            mProject->SetFilename(projfile);
-            FormatAndSetTitle(tr("Project: ") + QString(" ") + filename);
-            return mProject->Open();
-        }
-    }
-    return false;
-}
-
 void MainWindow::AddIncludeDirs(const QStringList &includeDirs, Settings &result)
 {
     QString dir;
@@ -412,8 +387,8 @@ Settings MainWindow::GetCppcheckSettings()
         AddIncludeDirs(includes, result);
     }
 
-    bool projectRead = GetCheckProject();
-    if (projectRead)
+    // If project file loaded, read settings from it
+    if (mProject)
     {
         ProjectFile *pfile = mProject->GetProjectFile();
         QStringList dirs = pfile->GetIncludeDirs();

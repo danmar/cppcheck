@@ -322,15 +322,6 @@ protected:
     void DoCheckFiles(const QStringList &files);
 
     /**
-    * @brief Check if we have a project for the checked directory.
-    * This method checks if there is open project for the directory. If no open
-    * project then we check if there is project file in the directory and load
-    * it.
-    * @return true if we have project, false if no project.
-    */
-    bool GetCheckProject();
-
-    /**
     * @brief Get our default cppcheck settings and read project file.
     *
     * @return Default cppcheck settings
