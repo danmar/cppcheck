@@ -36,7 +36,6 @@
 
 class ThreadHandler;
 class LogView;
-class HelpWindow;
 class Project;
 class ErrorItem;
 class StatsDialog;
