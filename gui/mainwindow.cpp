@@ -53,7 +53,7 @@ MainWindow::MainWindow() :
     mUI.mResults->Initialize(mSettings, mApplications);
 
     mThread = new ThreadHandler(this);
-    mLogView = new LogView(mSettings);
+    mLogView = new LogView;
 
     // Filter timer to delay filtering results slightly while typing
     mFilterTimer = new QTimer(this);
@@ -862,7 +862,7 @@ void MainWindow::EditProjectFile()
 void MainWindow::ShowLogView()
 {
     if (mLogView == NULL)
-        mLogView = new LogView(mSettings);
+        mLogView = new LogView;
 
     mLogView->show();
     if (!mLogView->isActiveWindow())

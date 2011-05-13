@@ -24,8 +24,7 @@
 #include "common.h"
 #include "logview.h"
 
-LogView::LogView(QSettings *programSettings, QWidget *parent)
-    : mSettings(programSettings)
+LogView::LogView(QWidget *parent)
 {
     Q_UNUSED(parent);
     mUI.setupUi(this);
@@ -35,14 +34,16 @@ LogView::LogView(QSettings *programSettings, QWidget *parent)
     connect(mUI.mClearButton, SIGNAL(clicked()), this, SLOT(ClearButtonClicked()));
     connect(mUI.mSaveButton, SIGNAL(clicked()), this, SLOT(SaveButtonClicked()));
 
-    resize(mSettings->value(SETTINGS_LOG_VIEW_WIDTH, 400).toInt(),
-           mSettings->value(SETTINGS_LOG_VIEW_HEIGHT, 300).toInt());
+    QSettings settings;
+    resize(settings.value(SETTINGS_LOG_VIEW_WIDTH, 400).toInt(),
+           settings.value(SETTINGS_LOG_VIEW_HEIGHT, 300).toInt());
 }
 
 LogView::~LogView()
 {
-    mSettings->setValue(SETTINGS_LOG_VIEW_WIDTH, size().width());
-    mSettings->setValue(SETTINGS_LOG_VIEW_HEIGHT, size().height());
+    QSettings settings;
+    settings.setValue(SETTINGS_LOG_VIEW_WIDTH, size().width());
+    settings.setValue(SETTINGS_LOG_VIEW_HEIGHT, size().height());
 }
 
 void LogView::AppendLine(const QString &line)
