@@ -24,6 +24,8 @@
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QDir>
+#include <QSettings>
+#include "common.h"
 #include "projectfiledialog.h"
 
 ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
@@ -36,6 +38,7 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     QString filename = inf.fileName();
     QString title = tr("Project file: %1").arg(filename);
     setWindowTitle(title);
+    LoadSettings();
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
     connect(mUI.mBtnAddInclude, SIGNAL(clicked()), this, SLOT(AddIncludeDir()));
@@ -47,6 +50,25 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     connect(mUI.mBtnAddIgnorePath, SIGNAL(clicked()), this, SLOT(AddIgnorePath()));
     connect(mUI.mBtnEditIgnorePath, SIGNAL(clicked()), this, SLOT(EditIgnorePath()));
     connect(mUI.mBtnRemoveIgnorePath, SIGNAL(clicked()), this, SLOT(RemoveIgnorePath()));
+}
+
+ProjectFileDialog::~ProjectFileDialog()
+{
+    SaveSettings();
+}
+
+void ProjectFileDialog::LoadSettings()
+{
+    QSettings settings;
+    resize(settings.value(SETTINGS_PROJECT_DIALOG_WIDTH, 470).toInt(),
+           settings.value(SETTINGS_PROJECT_DIALOG_HEIGHT, 330).toInt());
+}
+
+void ProjectFileDialog::SaveSettings()
+{
+    QSettings settings;
+    settings.setValue(SETTINGS_PROJECT_DIALOG_WIDTH, size().width());
+    settings.setValue(SETTINGS_PROJECT_DIALOG_HEIGHT, size().height());
 }
 
 void ProjectFileDialog::AddIncludeDir(const QString &dir)

@@ -41,6 +41,7 @@ class ProjectFileDialog : public QDialog
     Q_OBJECT
 public:
     ProjectFileDialog(const QString &path, QWidget *parent = 0);
+    virtual ~ProjectFileDialog();
 
     /**
     * @brief Return project root path from the dialog control.
@@ -150,6 +151,16 @@ protected slots:
     void RemoveIgnorePath();
 
 protected:
+
+    /**
+     * @brief Save dialog settings.
+     */
+    void LoadSettings();
+
+    /**
+     * @brief Load dialog settings.
+     */
+    void SaveSettings();
 
     /**
     * @brief Add new indlude directory.

@@ -52,6 +52,8 @@ ShowTypes;
 #define SETTINGS_MAINWND_SPLITTER_STATE "Mainwindow/Vertical splitter state"
 #define SETTINGS_CHECK_DIALOG_WIDTH     "Check dialog width"
 #define SETTINGS_CHECK_DIALOG_HEIGHT    "Check dialog height"
+#define SETTINGS_PROJECT_DIALOG_WIDTH   "Project dialog width"
+#define SETTINGS_PROJECT_DIALOG_HEIGHT  "Project dialog height"
 
 // Main window settings
 #define SETTINGS_RESULT_COLUMN_WIDTH    "Result column %1 width"
