@@ -461,7 +461,7 @@ void MainWindow::CheckLockDownUI()
 
 void MainWindow::ProgramSettings()
 {
-    SettingsDialog dialog(mSettings, mApplications, mTranslation, this);
+    SettingsDialog dialog(mApplications, mTranslation, this);
     if (dialog.exec() == QDialog::Accepted)
     {
         dialog.SaveSettingValues();

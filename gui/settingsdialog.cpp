@@ -33,28 +33,27 @@
 #include "translationhandler.h"
 #include "common.h"
 
-SettingsDialog::SettingsDialog(QSettings *programSettings,
-                               ApplicationList *list,
+SettingsDialog::SettingsDialog(ApplicationList *list,
                                TranslationHandler *translator,
                                QWidget *parent) :
     QDialog(parent),
-    mSettings(programSettings),
     mApplications(list),
     mTempApplications(new ApplicationList(this)),
     mTranslator(translator)
 {
     mUI.setupUi(this);
+    QSettings settings;
     mTempApplications->Copy(list);
 
-    mUI.mJobs->setText(programSettings->value(SETTINGS_CHECK_THREADS, 1).toString());
-    mUI.mForce->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_CHECK_FORCE, false).toBool()));
-    mUI.mShowFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_FULL_PATH, false).toBool()));
-    mUI.mShowNoErrorsMessage->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_NO_ERRORS, false).toBool()));
-    mUI.mShowDebugWarnings->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool()));
-    mUI.mSaveAllErrors->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_ALL_ERRORS, false).toBool()));
-    mUI.mSaveFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
-    mUI.mInlineSuppressions->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool()));
-    mUI.mEnableInconclusive->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
+    mUI.mJobs->setText(settings.value(SETTINGS_CHECK_THREADS, 1).toString());
+    mUI.mForce->setCheckState(BoolToCheckState(settings.value(SETTINGS_CHECK_FORCE, false).toBool()));
+    mUI.mShowFullPath->setCheckState(BoolToCheckState(settings.value(SETTINGS_SHOW_FULL_PATH, false).toBool()));
+    mUI.mShowNoErrorsMessage->setCheckState(BoolToCheckState(settings.value(SETTINGS_SHOW_NO_ERRORS, false).toBool()));
+    mUI.mShowDebugWarnings->setCheckState(BoolToCheckState(settings.value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool()));
+    mUI.mSaveAllErrors->setCheckState(BoolToCheckState(settings.value(SETTINGS_SAVE_ALL_ERRORS, false).toBool()));
+    mUI.mSaveFullPath->setCheckState(BoolToCheckState(settings.value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
+    mUI.mInlineSuppressions->setCheckState(BoolToCheckState(settings.value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool()));
+    mUI.mEnableInconclusive->setCheckState(BoolToCheckState(settings.value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
@@ -106,7 +105,8 @@ void SettingsDialog::AddIncludePath(const QString &path)
 
 void SettingsDialog::InitIncludepathsList()
 {
-    const QString allPaths = mSettings->value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
+    QSettings settings;
+    const QString allPaths = settings.value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
     const QStringList paths = allPaths.split(";", QString::SkipEmptyParts);
     foreach(QString path, paths)
     {
@@ -150,14 +150,16 @@ bool SettingsDialog::CheckStateToBool(Qt::CheckState state) const
 
 void SettingsDialog::LoadSettings()
 {
-    resize(mSettings->value(SETTINGS_CHECK_DIALOG_WIDTH, 800).toInt(),
-           mSettings->value(SETTINGS_CHECK_DIALOG_HEIGHT, 600).toInt());
+    QSettings settings;
+    resize(settings.value(SETTINGS_CHECK_DIALOG_WIDTH, 800).toInt(),
+           settings.value(SETTINGS_CHECK_DIALOG_HEIGHT, 600).toInt());
 }
 
 void SettingsDialog::SaveSettings()
 {
-    mSettings->setValue(SETTINGS_CHECK_DIALOG_WIDTH, size().width());
-    mSettings->setValue(SETTINGS_CHECK_DIALOG_HEIGHT, size().height());
+    QSettings settings;
+    settings.setValue(SETTINGS_CHECK_DIALOG_WIDTH, size().width());
+    settings.setValue(SETTINGS_CHECK_DIALOG_HEIGHT, size().height());
 }
 
 void SettingsDialog::SaveSettingValues()
@@ -168,19 +170,20 @@ void SettingsDialog::SaveSettingValues()
         jobs = 1;
     }
 
-    mSettings->setValue(SETTINGS_CHECK_THREADS, jobs);
-    SaveCheckboxValue(mUI.mForce, SETTINGS_CHECK_FORCE);
-    SaveCheckboxValue(mUI.mSaveAllErrors, SETTINGS_SAVE_ALL_ERRORS);
-    SaveCheckboxValue(mUI.mSaveFullPath, SETTINGS_SAVE_FULL_PATH);
-    SaveCheckboxValue(mUI.mShowFullPath, SETTINGS_SHOW_FULL_PATH);
-    SaveCheckboxValue(mUI.mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
-    SaveCheckboxValue(mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
-    SaveCheckboxValue(mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
-    SaveCheckboxValue(mUI.mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
+    QSettings settings;
+    settings.setValue(SETTINGS_CHECK_THREADS, jobs);
+    SaveCheckboxValue(&settings, mUI.mForce, SETTINGS_CHECK_FORCE);
+    SaveCheckboxValue(&settings, mUI.mSaveAllErrors, SETTINGS_SAVE_ALL_ERRORS);
+    SaveCheckboxValue(&settings, mUI.mSaveFullPath, SETTINGS_SAVE_FULL_PATH);
+    SaveCheckboxValue(&settings, mUI.mShowFullPath, SETTINGS_SHOW_FULL_PATH);
+    SaveCheckboxValue(&settings, mUI.mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
+    SaveCheckboxValue(&settings, mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
+    SaveCheckboxValue(&settings, mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
+    SaveCheckboxValue(&settings, mUI.mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
 
     QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
     const QString langcode = currentLang->data(LangCodeRole).toString();
-    mSettings->setValue(SETTINGS_LANGUAGE, langcode);
+    settings.setValue(SETTINGS_LANGUAGE, langcode);
 
     const int count = mUI.mListIncludePaths->count();
     QString includePaths;
@@ -190,12 +193,13 @@ void SettingsDialog::SaveSettingValues()
         includePaths += item->text();
         includePaths += ";";
     }
-    mSettings->setValue(SETTINGS_GLOBAL_INCLUDE_PATHS, includePaths);
+    settings.setValue(SETTINGS_GLOBAL_INCLUDE_PATHS, includePaths);
 }
 
-void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
+void SettingsDialog::SaveCheckboxValue(QSettings *settings, QCheckBox *box,
+                                       const QString &name)
 {
-    mSettings->setValue(name, CheckStateToBool(box->checkState()));
+    settings->setValue(name, CheckStateToBool(box->checkState()));
 }
 
 void SettingsDialog::AddApplication()

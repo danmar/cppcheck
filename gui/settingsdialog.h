@@ -40,8 +40,7 @@ class SettingsDialog : public QDialog
 {
     Q_OBJECT
 public:
-    SettingsDialog(QSettings *programSettings,
-                   ApplicationList *list,
+    SettingsDialog(ApplicationList *list,
                    TranslationHandler *translator,
                    QWidget *parent = 0);
     virtual ~SettingsDialog();
@@ -160,13 +159,13 @@ protected:
     void LoadSettings();
 
     /**
-    * @brief Save a single checkboxes value
-    *
-    * @param box checkbox to save
-    * @param name name for QSettings to store the value
-    */
-    void SaveCheckboxValue(QCheckBox *box, const QString &name);
-
+     * @brief Save a single checkboxes value
+     *
+     * @param settings Pointer to Settings.
+     * @param box checkbox to save
+     * @param name name for QSettings to store the value
+     */
+    void SaveCheckboxValue(QSettings *settings, QCheckBox *box, const QString &name);
 
     /**
     * @brief Convert bool to Qt::CheckState
@@ -193,12 +192,6 @@ protected:
     * @brief Populate the translations list.
     */
     void InitTranslationsList();
-
-    /**
-    * @brief Settings
-    *
-    */
-    QSettings *mSettings;
 
     /**
     * @brief List of applications user has specified
