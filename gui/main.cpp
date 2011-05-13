@@ -18,6 +18,7 @@
 
 
 #include <QApplication>
+#include <QCoreApplication>
 #include <QTextCodec>
 #include <QTranslator>
 #include <QMetaType>
@@ -35,6 +36,9 @@ int main(int argc, char *argv[])
 
     if (!CheckArgs(app.arguments()))
         return 0;
+
+    QCoreApplication::setOrganizationName("Cppcheck");
+    QCoreApplication::setApplicationName("Cppcheck-GUI");
 
     app.setWindowIcon(QIcon(":icon.png"));
 
