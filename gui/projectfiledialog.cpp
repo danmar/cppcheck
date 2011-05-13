@@ -28,6 +28,7 @@
 
 ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     : QDialog(parent)
+    , mFilePath(path)
 {
     mUI.setupUi(this);
 
@@ -187,9 +188,11 @@ void ProjectFileDialog::SetIgnorePaths(const QStringList &paths)
 
 void ProjectFileDialog::AddIncludeDir()
 {
+    QFileInfo inf(mFilePath);
+    const QString rootpath = inf.absolutePath();
     QString selectedDir = QFileDialog::getExistingDirectory(this,
                           tr("Select include directory"),
-                          QString());
+                          rootpath);
 
     if (!selectedDir.isEmpty())
     {
@@ -199,9 +202,11 @@ void ProjectFileDialog::AddIncludeDir()
 
 void ProjectFileDialog::AddPath()
 {
+    QFileInfo inf(mFilePath);
+    const QString rootpath = inf.absolutePath();
     QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select directory to check"),
-                          QString());
+                          tr("Select a directory to check"),
+                          rootpath);
 
     if (!selectedDir.isEmpty())
     {
@@ -237,9 +242,12 @@ void ProjectFileDialog::RemovePath()
 
 void ProjectFileDialog::AddIgnorePath()
 {
+    QFileInfo inf(mFilePath);
+    const QString rootpath = inf.absolutePath();
+
     QString selectedDir = QFileDialog::getExistingDirectory(this,
                           tr("Select directory to ignore"),
-                          QString());
+                          rootpath);
 
     if (!selectedDir.isEmpty())
     {

@@ -171,6 +171,11 @@ protected:
 
 private:
     Ui::ProjectFile mUI;
+
+    /**
+     * @brief Projectfile path.
+     */
+    QString mFilePath;
 };
 
 /// @}
