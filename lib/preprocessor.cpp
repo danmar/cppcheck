@@ -1961,14 +1961,11 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
             path.erase(1 + path.find_last_of("\\/"));
             paths.push_back(path);
         }
-        else if (!fileOpened)
+        else if (!fileOpened && _settings && (headerType == UserHeader || _settings->debugwarnings))
         {
             missingIncludeFlag = true;
 
-            if (_errorLogger &&
-                _settings &&
-                _settings->checkConfiguration &&
-                (headerType == UserHeader || _settings->debugwarnings))
+            if (_errorLogger && _settings->checkConfiguration)
             {
                 std::string f = filePath;
 
