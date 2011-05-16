@@ -62,6 +62,7 @@ public:
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
+        checkOther.checkSizeofForNumericParameter();
         checkOther.checkSelfAssignment();
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
@@ -199,6 +200,9 @@ public:
     /** @brief %Check for using sizeof with array given as function argument */
     void checkSizeofForArrayParameter();
 
+    /** @brief %Check for using sizeof with numeric given as function argument */
+    void checkSizeofForNumericParameter();
+
     /** @brief %Check for using bad usage of strncmp and substr */
     void checkIncorrectStringCompare();
 
@@ -245,6 +249,7 @@ public:
     void catchExceptionByValueError(const Token *tok);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
+    void sizeofForNumericParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
     void incrementBooleanError(const Token *tok);
     void comparisonOfBoolWithIntError(const Token *tok, const std::string &varname);
@@ -265,6 +270,7 @@ public:
         c.fflushOnInputStreamError(0, "stdin");
         c.misusedScopeObjectError(NULL, "varname");
         c.sizeofForArrayParameterError(0);
+        c.sizeofForNumericParameterError(0);
 
         // style/warning
         c.cstyleCastError(0);
@@ -318,6 +324,7 @@ public:
                "* scoped object destroyed immediately after construction\n"
                "* assignment in an assert statement\n"
                "* sizeof for array given as function argument\n"
+               "* sizeof for numeric given as function argument\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
 
                // style

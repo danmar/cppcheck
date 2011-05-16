@@ -210,6 +210,16 @@ void CheckOther::checkFflushOnInputStream()
     }
 }
 
+void CheckOther::checkSizeofForNumericParameter()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "sizeof ( %num% )") || Token::Match(tok, "sizeof %num%"))
+        {
+            sizeofForNumericParameterError(tok);
+        }
+    }
+}
 
 void CheckOther::checkSizeofForArrayParameter()
 {
@@ -853,6 +863,19 @@ void CheckOther::checkComparisonOfBoolWithInt()
     }
 }
 
+void CheckOther::sizeofForNumericParameterError(const Token *tok)
+{
+    reportError(tok, Severity::error,
+                "sizeofwithnulericparamter", "Using sizeof with a numeric constant as function "
+                "argument might not be what you intended.\n"
+                "It is unusual to use contant value with sizeof. For example, this code:\n"
+                "     int f() {\n"
+                "         return sizeof(10);\n"
+                "     }\n"
+                " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 10."
+               );
+}
+
 void CheckOther::sizeofForArrayParameterError(const Token *tok)
 {
     reportError(tok, Severity::error,
@@ -869,6 +892,7 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
                 "size of the array in bytes)."
                );
 }
+
 void CheckOther::invalidScanfError(const Token *tok)
 {
     reportError(tok, Severity::warning,

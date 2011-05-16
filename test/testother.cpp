@@ -104,6 +104,7 @@ private:
         TEST_CASE(memsetZeroBytes);
 
         TEST_CASE(sizeofForArrayParameter);
+        TEST_CASE(sizeofForNumericParameter);
 
         TEST_CASE(clarifyCalculation);
 
@@ -143,6 +144,7 @@ private:
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
+        checkOther.checkSizeofForNumericParameter();
         checkOther.clarifyCondition();
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
@@ -2301,7 +2303,21 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
 
+    }
 
+    void sizeofForNumericParameter()
+    {
+        check("void f() {\n"
+              "    std::cout << sizeof(10) << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof with a numeric constant as function argument might not be what you intended.\n", errout.str());
+
+        check("void f() {\n"
+              "    std::cout << sizeof 10  << std::endl;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof with a numeric constant as function argument might not be what you intended.\n", errout.str());
 
     }
 
