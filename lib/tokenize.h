@@ -115,6 +115,11 @@ public:
     static void deleteTokens(Token *tok);
 
     /**
+     * Simplify '* & %any% =' to '%any% ='
+     */
+    void simplifyMulAnd(void);
+
+    /**
      * Get parameter name of function
      * @param ftok The token for the function name in a function
      *             implementation/declaration

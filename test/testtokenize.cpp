@@ -230,6 +230,7 @@ private:
         TEST_CASE(simplify_constants2);
         TEST_CASE(simplify_constants3);
         TEST_CASE(simplify_null);
+        TEST_CASE(simplifyMulAnd);          // #2784
 
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
@@ -3999,6 +4000,23 @@ private:
         const char expected[] =
             "int * p ; p = 0 ;\nint * q ; q = 0 ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+    }
+
+    void simplifyMulAnd()
+    {
+        // (error) Resource leak
+        ASSERT_EQUALS(
+            "void f ( ) { int f ; f = open ( ) ; }",
+            tokenizeAndStringify(
+                "void f() {int f; *&f=open(); }"
+            )
+        );
+        ASSERT_EQUALS(
+            "void f ( ) { int f ; f = open ( ) ; }",
+            tokenizeAndStringify(
+                "void f() {int f; *(&f)=open(); }"
+            )
+        );
     }
 
     void vardecl1()

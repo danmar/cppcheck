@@ -2019,6 +2019,28 @@ void Tokenizer::simplifyTypedef()
     }
 }
 
+void Tokenizer::simplifyMulAnd(void)
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        //fix Ticket #2784
+        if (Token::Match(tok->next(), "* & %any% ="))
+        {
+            tok->deleteNext(); //del *
+            tok->deleteNext(); //del &
+            continue;
+        }
+        if (Token::Match(tok->next(), "* ( & %any% ) ="))
+        {
+            tok->deleteNext(); //del *
+            tok->deleteNext(); //del (
+            tok->deleteNext(); //del &
+            tok->next()->deleteNext(); //del )
+            continue;
+        }
+    }
+}
+
 bool Tokenizer::tokenize(std::istream &code,
                          const char FileName[],
                          const std::string &configuration,
@@ -2033,6 +2055,9 @@ bool Tokenizer::tokenize(std::istream &code,
     _files.push_back(Path::simplifyPath(FileName));
 
     createTokens(code);
+
+    // simplify '* & %any% =' to '%any% ='
+    simplifyMulAnd();
 
     // Convert C# code
     if (_files[0].find(".cs"))
