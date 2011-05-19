@@ -302,6 +302,7 @@ private:
         TEST_CASE(bitfields7); // ticket #1987
         TEST_CASE(bitfields8);
         TEST_CASE(bitfields9); // ticket #2706
+        TEST_CASE(bitfields10);
 
         TEST_CASE(microsoftMFC);
 
@@ -5328,6 +5329,15 @@ private:
                             "};";
         tokenizeAndStringify(code,false);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void bitfields10() // ticket #2737
+    {
+        const char code[] = "{}"
+                            "MACRO "
+                            "default: { }"
+                            ";";
+        ASSERT_EQUALS("{ } MACRO default : { } ;", tokenizeAndStringify(code,false));
     }
 
     void microsoftMFC()

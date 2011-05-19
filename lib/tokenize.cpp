@@ -9472,7 +9472,8 @@ void Tokenizer::simplifyBitfields()
         Token *last = 0;
 
         if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% %var% :") &&
-            !Token::Match(tok->next(), "case|public|protected|private|class|struct"))
+            !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
+            !Token::simpleMatch(tok->tokAt(2), "default :"))
         {
             int offset = 0;
             if (tok->next()->str() == "const")
