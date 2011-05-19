@@ -1047,6 +1047,9 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             alloc = No;
                         }
                     }
+
+                    if (alloc == No && alloctype == No)
+                        alloctype = CheckMemoryLeak::New;
                 }
 
                 if (alloc != No)

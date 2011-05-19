@@ -208,6 +208,7 @@ private:
         TEST_CASE(mismatch2);
         TEST_CASE(mismatch3);
         TEST_CASE(mismatch4);
+        TEST_CASE(mismatch5);
 
         TEST_CASE(mismatchSize);
 
@@ -1423,6 +1424,17 @@ private:
               "    delete [] p;\n"
               "}\n", false);
         ASSERT_EQUALS("[test.cpp:7]: (error) Mismatching allocation and deallocation: p\n", errout.str());
+    }
+
+    void mismatch5()
+    {
+        check("void f() {\n"
+              "    C *c = new C;\n"
+              "    delete c;\n"
+              "    c = new C[2];\n"
+              "    delete [] c;\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mismatchSize()
