@@ -114,6 +114,7 @@ static void parseIfSwitchBody(const Token * const tok,
     {
         if (c.back()->varId == 0)
         {
+            delete c.back();
             c.pop_back();
             continue;
         }
@@ -131,6 +132,8 @@ static void parseIfSwitchBody(const Token * const tok,
         }
         if (!duplicate)
             newchecks.push_back(c.back());
+        else
+            delete c.back();
         c.pop_back();
     }
 
