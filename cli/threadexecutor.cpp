@@ -282,7 +282,9 @@ unsigned int ThreadExecutor::check()
                                                            oss.str(),
                                                            "cppcheckError",
                                                            false);
-                    _errorLogger.reportErr(errmsg);
+
+                    if (!_settings.nomsg.isSuppressed(errmsg._id, childname, 0))
+                        _errorLogger.reportErr(errmsg);
                 }
             }
         }
