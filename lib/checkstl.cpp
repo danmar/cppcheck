@@ -652,7 +652,8 @@ void CheckStl::pushback()
                 tok2 = tok2->tokAt(3)->link();
             }
 
-            else if (tok2->str() == "return" || tok2->str() == "break")
+            // TODO: instead of bail out for 'else' try to check all execution paths.
+            else if (tok2->str() == "return" || tok2->str() == "break" || tok2->str() == "else")
             {
                 invalidIterator.clear();
             }

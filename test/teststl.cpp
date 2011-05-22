@@ -75,6 +75,7 @@ private:
         TEST_CASE(pushback8);
         TEST_CASE(pushback9);
         TEST_CASE(pushback10);
+        TEST_CASE(pushback11);
 
         TEST_CASE(insert1);
         TEST_CASE(insert2);
@@ -890,6 +891,20 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (error) After reserve, the iterator 'it' may be invalid\n", errout.str());
     }
 
+    void pushback11()
+    {
+        // #2798
+        check("void f() {\n"
+              "    std::vector<int> ints;\n"
+              "    std::vector<int>::iterator it = ints.begin();\n"
+              "    if (it == ints.begin()) {\n"
+              "        ints.push_back(0);\n"
+              "    } else {\n"
+              "        ints.insert(it,0);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void insert1()
     {
