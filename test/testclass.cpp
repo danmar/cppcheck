@@ -63,6 +63,7 @@ private:
         TEST_CASE(uninitVar16);
         TEST_CASE(uninitVar17);
         TEST_CASE(uninitVar18); // ticket #2465
+        TEST_CASE(uninitVar19); // ticket #2792
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -2181,6 +2182,31 @@ private:
                        "    Altren value;\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'A::value' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void uninitVar19() // ticket #2792
+    {
+        checkUninitVar("class mystring\n"
+                       "{\n"
+                       "    char* m_str;\n"
+                       "    int m_len;\n"
+                       "public:\n"
+                       "    mystring(const char* str)\n"
+                       "    {\n"
+                       "        m_len = strlen(str);\n"
+                       "        m_str = (char*) malloc(m_len+1);\n"
+                       "        memcpy(m_str, str, m_len+1);\n"
+                       "    }\n"
+                       "    mystring& operator=(const mystring& copy)\n"
+                       "    {\n"
+                       "        return (*this = copy.m_str);\n"
+                       "    }\n"
+                       "    ~mystring()\n"
+                       "    {\n"
+                       "        free(m_str);\n"
+                       "    }\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarArray1()
