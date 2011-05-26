@@ -214,7 +214,11 @@ void CheckOther::checkSizeofForNumericParameter()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "sizeof ( %num% )") || Token::Match(tok, "sizeof %num%"))
+        if (Token::Match(tok, "sizeof ( %num% )")
+            || Token::Match(tok, "sizeof ( - %num% )")
+            || Token::Match(tok, "sizeof %num%")
+            || Token::Match(tok, "sizeof - %num%")
+           )
         {
             sizeofForNumericParameterError(tok);
         }
@@ -958,6 +962,17 @@ void CheckOther::checkUnsignedDivision()
                 {
                     udivError(tok->next());
                 }
+            }
+        }
+        else if (Token::Match(tok, "|[|=|return|%op% %var% / %var%"))
+        {
+
+            //std::cout << "cicicicic" << std::endl;
+            char sign1 = varsign[tok->tokAt(1)->varId()];
+            char sign2 = varsign[tok->tokAt(3)->varId()];
+            if ((sign1 == 'u' && sign2 == 's') || (sign1 == 's' && sign2 == 'u'))
+            {
+                //udivError(tok);
             }
         }
     }
