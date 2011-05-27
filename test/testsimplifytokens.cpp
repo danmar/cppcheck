@@ -307,6 +307,7 @@ private:
         TEST_CASE(enum20); // ticket #2600
         TEST_CASE(enum21); // ticket #2720
         TEST_CASE(enum22); // ticket #2745
+        TEST_CASE(enum23); // ticket #2804
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6607,6 +6608,15 @@ private:
         checkSimplifyEnum(code);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n"
                       "[test.cpp:6] -> [test.cpp:1]: (style) Function parameter 'x' hides enumerator with same name\n", errout.str());
+    }
+
+    void enum23() // ticket #2804
+    {
+        const char code[] = "enum Enumerator : std::uint8_t { ITEM1, ITEM2, ITEM3 };\n"
+                            "Enumerator e = ITEM3;\n";
+        const char expected[] = "; std :: uint8_t e ; e = 2 ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void removestd()

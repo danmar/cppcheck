@@ -7972,66 +7972,50 @@ void Tokenizer::simplifyEnum()
             if (Token::Match(tok->next(), "class|struct"))
                 tok->deleteNext();
 
-            // check for C++0x typed enumeration
-            if (Token::Match(tok->next(), "%type% :") || tok->next()->str() == ":")
+            // check for name
+            if (Token::Match(tok->next(), "%type%"))
             {
-                int offset = 2;
-                if (tok->next()->str() != ":")
-                    offset = 3;
+                enumType = tok->next();
+                tok = tok->next();
+            }
 
-                // check for forward declaration
-                const Token *temp = tok->tokAt(offset);
-                while (!Token::Match(temp, "{|;"))
-                    temp = temp->next();
-                if (temp->str() == ";")
-                {
-                    /** @todo start substitution check at forward declaration */
-                    // delete forward declaration
-                    tok->deleteThis();
-                    tok->deleteThis();
-                    tok->deleteThis();
-                    tok->deleteThis();
-                    continue;
-                }
-
-                typeTokenStart = tok->tokAt(offset);
+            // check for C++0x typed enumeration
+            if (tok->next()->str() == ":")
+            {
+                tok = tok->next();
+                typeTokenStart = tok->next();
+                tok = tok->next();
                 typeTokenEnd = typeTokenStart;
-                while (Token::Match(typeTokenEnd->next(), "signed|unsigned|char|short|int|long|const"))
-                    typeTokenEnd = typeTokenEnd->next();
 
-                if (!Token::Match(typeTokenEnd->next(), "{|;"))
+                while (typeTokenEnd->next()->str() == "::" ||
+                       Token::Match(typeTokenEnd->next(), "%type%"))
                 {
-                    syntaxError(typeTokenEnd->next());
-                    return;
+                    typeTokenEnd = typeTokenEnd->next();
+                    tok = tok->next();
                 }
             }
 
             // check for forward declaration
-            else if (Token::Match(tok->next(), "%type% ;"))
+            if (tok->next()->str() == ";")
             {
+                tok = tok->next();
+
                 /** @todo start substitution check at forward declaration */
                 // delete forward declaration
-                tok->deleteThis();
-                tok->deleteThis();
+                while (start->next() != tok)
+                    start->deleteThis();
+                start->deleteThis();
                 continue;
             }
-
-            if (tok->tokAt(1)->str() == "{")
-                tok1 = tok->tokAt(2);
-            else if (tok->tokAt(1)->str() == ":")
-                tok1 = typeTokenEnd->tokAt(2);
-            else if (tok->tokAt(2)->str() == "{")
+            else if (tok->next()->str() != "{")
             {
-                enumType = tok->tokAt(1);
-                tok1 = tok->tokAt(3);
-            }
-            else
-            {
-                enumType = tok->tokAt(1);
-                tok1 = typeTokenEnd->tokAt(2);
+                syntaxError(tok->next());
+                return;
             }
 
-            end = tok1->tokAt(-1)->link();
+            tok1 = tok->next();
+            end = tok1->link();
+            tok1 = tok1->next();
 
             MathLib::bigint lastValue = -1;
             Token * lastEnumValueStart = 0;
