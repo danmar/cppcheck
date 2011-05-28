@@ -44,6 +44,7 @@ private:
         TEST_CASE(nullpointer7);
         TEST_CASE(nullpointer8);
         TEST_CASE(nullpointer9);
+        TEST_CASE(nullpointer10);
         TEST_CASE(pointerCheckAndDeRef);	// check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);		// Dereference NULL constant
         TEST_CASE(gcc_statement_expression);    // Don't crash
@@ -869,6 +870,39 @@ private:
               "  *x = \"test\";\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
+    }
+
+    void nullpointer10()
+    {
+        check("void foo()\n"
+              "{\n"
+              "  struct my_type* p = 0;\n"
+              "  p->x = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "  struct my_type* p;\n"
+              "  p = 0; \n"
+              "  p->x = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        check("int foo()\n"
+              "{\n"
+              "  struct my_type* p = 0;\n"
+              "  return p->x;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", "", errout.str());
+
+        check("int foo()\n"
+              "{\n"
+              "  struct my_type* p;\n"
+              "  p = 0; \n"
+              "  return p->x;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", "", errout.str());
     }
 
     // Check if pointer is null and the dereference it

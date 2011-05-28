@@ -878,11 +878,14 @@ private:
     /** parse tokens */
     const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
     {
-        if (Token::Match(tok.previous(), "[;{}] const| %type% * %var% ;"))
+        if (Token::Match(tok.previous(), "[;{}] const| struct| %type% * %var% ;"))
         {
             const Token * vartok = tok.tokAt(2);
 
             if (tok.str() == "const")
+                vartok = vartok->next();
+
+            if (tok.str() == "struct")
                 vartok = vartok->next();
 
             if (vartok->varId() != 0)
