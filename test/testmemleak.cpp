@@ -263,7 +263,8 @@ private:
         TEST_CASE(realloc10);
         TEST_CASE(realloc11);
 
-        TEST_CASE(assign);
+        TEST_CASE(assign1);
+        TEST_CASE(assign2);   // #2806 - FP when using redundant assignment
 
         TEST_CASE(varid);
 
@@ -2705,7 +2706,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void assign()
+    void assign1()
     {
         check("void foo()\n"
               "{\n"
@@ -2761,6 +2762,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void assign2()
+    {
+        // #2806 - FP when there is redundant assignment
+        check("void foo() {\n"
+              "   gchar *bar;\n"
+              "   bar = g_strdup(fuba);\n"
+              "   bar = g_strstrip(bar);\n"
+              "   g_free(bar);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void varid()
     {
