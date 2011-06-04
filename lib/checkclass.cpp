@@ -1598,6 +1598,19 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
             }
         }
 
+        // std::map variable member
+        else if (Token::Match(tok1, "%var% [") && isMemberVar(scope, tok1))
+        {
+            const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
+
+            if (var && (var->typeStartToken()->str() == "map" ||
+                        Token::simpleMatch(var->typeStartToken(), "std :: map")))
+            {
+                isconst = false;
+                break;
+            }
+        }
+
         // function call..
         else if (Token::Match(tok1, "%var% (") &&
                  !(Token::Match(tok1, "return|c_str|if|string") || tok1->isStandardType()))

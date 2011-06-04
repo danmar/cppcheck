@@ -173,6 +173,7 @@ private:
         TEST_CASE(const46); // ticket #2636
         TEST_CASE(const47); // ticket #2670
         TEST_CASE(const48); // ticket #2672
+        TEST_CASE(const49); // ticket #2795
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5498,6 +5499,21 @@ private:
                    "    mSave = mCurrent;\n"
                    "}\n");
 
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const49() // ticket 2795
+    {
+        checkConst("class A {\n"
+                   "    private:\n"
+                   "         std::map<unsigned int,unsigned int> _hash;\n"
+                   "    public:\n"
+                   "         A() : _hash() {}\n"
+                   "         unsigned int fetch(unsigned int key) // cannot be 'const'\n"
+                   "         {\n"
+                   "             return _hash[key];\n"
+                   "         }\n"
+                   "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
