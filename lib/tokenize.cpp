@@ -8005,6 +8005,7 @@ void Tokenizer::simplifyEnum()
                 while (start->next() != tok)
                     start->deleteThis();
                 start->deleteThis();
+                tok = start;
                 continue;
             }
             else if (tok->next()->str() != "{")
@@ -8327,7 +8328,10 @@ void Tokenizer::simplifyEnum()
                 tok = tok1;
             }
             else
+            {
                 _tokens->deleteThis();
+                tok = _tokens;
+            }
         }
     }
 }
