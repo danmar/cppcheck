@@ -81,6 +81,15 @@ public:
     QStringList GetIgnoredPaths() const;
 
     /**
+    * @brief Get filename for the project file.
+    * @return file name.
+    */
+    QString GetFilename()
+    {
+        return mFilename;
+    }
+
+    /**
     * @brief Set project root path.
     * @param rootpath new project root path.
     */
