@@ -296,7 +296,8 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     mUI.mResults->SetCheckDirectory(checkPath);
     Settings checkSettings = GetCppcheckSettings();
 
-    qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
+    if (mProject)
+        qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
 
     mThread->Check(checkSettings, false);
 }
@@ -486,7 +487,8 @@ void MainWindow::ReCheck()
     Q_ASSERT(filesCount > 0); // If no files should not be able to recheck
     mUI.mResults->CheckingStarted(filesCount);
 
-    qDebug() << "Rechecking project file" << mProject->GetProjectFile()->GetFilename();
+    if (mProject)
+        qDebug() << "Rechecking project file" << mProject->GetProjectFile()->GetFilename();
 
     mThread->Check(GetCppcheckSettings(), true);
 }
