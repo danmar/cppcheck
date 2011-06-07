@@ -366,6 +366,7 @@ void MainWindow::CheckDirectory()
     QDir checkDir(dir[0]);
     QStringList filters;
     filters << "*.cppcheck";
+    checkDir.setFilter(QDir::Files | QDir::Readable);
     checkDir.setNameFilters(filters);
     QStringList projFiles = checkDir.entryList();
     if (!projFiles.empty())
