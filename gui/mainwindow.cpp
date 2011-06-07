@@ -359,7 +359,64 @@ void MainWindow::CheckFiles()
 
 void MainWindow::CheckDirectory()
 {
-    DoCheckFiles(SelectFilesToCheck(QFileDialog::DirectoryOnly));
+    QStringList dir = SelectFilesToCheck(QFileDialog::DirectoryOnly);
+    if (dir.isEmpty())
+        return;
+
+    QDir checkDir(dir[0]);
+    QStringList filters;
+    filters << "*.cppcheck";
+    checkDir.setNameFilters(filters);
+    QStringList projFiles = checkDir.entryList();
+    if (!projFiles.empty())
+    {
+        if (projFiles.size() == 1)
+        {
+            // If one project file found, suggest loading it
+            QMessageBox msgBox(this);
+            msgBox.setWindowTitle(tr("Cppcheck"));
+            const QString msg(tr("Found project file: %1\n\nDo you want to "
+                                 "load this project file instead?").arg(projFiles[0]));
+            msgBox.setText(msg);
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.addButton(QMessageBox::Yes);
+            msgBox.addButton(QMessageBox::No);
+            msgBox.setDefaultButton(QMessageBox::Yes);
+            int dlgResult = msgBox.exec();
+            if (dlgResult == QMessageBox::Yes)
+            {
+                LoadProjectFile(projFiles[0]);
+            }
+            else
+            {
+                DoCheckFiles(dir);
+            }
+        }
+        else
+        {
+            // If multiple project files found inform that there are project
+            // files also available.
+            QMessageBox msgBox(this);
+            msgBox.setWindowTitle(tr("Cppcheck"));
+            const QString msg(tr("Found project files from the directory.\n\n"
+                                 "Do you want to proceed checking without "
+                                 "using any of these project files?"));
+            msgBox.setText(msg);
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.addButton(QMessageBox::Yes);
+            msgBox.addButton(QMessageBox::No);
+            msgBox.setDefaultButton(QMessageBox::Yes);
+            int dlgResult = msgBox.exec();
+            if (dlgResult == QMessageBox::Yes)
+            {
+                DoCheckFiles(dir);
+            }
+        }
+    }
+    else
+    {
+        DoCheckFiles(dir);
+    }
 }
 
 void MainWindow::AddIncludeDirs(const QStringList &includeDirs, Settings &result)
