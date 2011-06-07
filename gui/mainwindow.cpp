@@ -796,27 +796,35 @@ void MainWindow::LoadProjectFile(const QString &filePath)
     mProject->Open();
     QString rootpath = mProject->GetProjectFile()->GetRootPath();
 
-    // If root path not give or "current dir" then use project file's directory
-    // as check path
+    // If the root path is not given or is not "current dir", use project
+    // file's location directory as root path
     if (rootpath.isEmpty() || rootpath == ".")
         mCurrentDirectory = inf.canonicalPath();
     else
         mCurrentDirectory = rootpath;
 
     QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
-    if (!paths.isEmpty())
+
+    // If paths not given then check the root path (which may be the project
+    // file's location, see above). This is to keep the compatibility with
+    // old "silent" project file loading when we checked the director where the
+    // project file was located.
+    if (paths.isEmpty())
     {
-        for (int i = 0; i < paths.size(); i++)
-        {
-            if (!QDir::isAbsolutePath(paths[i]))
-            {
-                QString path = mCurrentDirectory + "/";
-                path += paths[i];
-                paths[i] = QDir::cleanPath(path);
-            }
-        }
-        DoCheckFiles(paths);
+        paths << mCurrentDirectory;
     }
+
+    // Convert relative paths to absolute paths
+    for (int i = 0; i < paths.size(); i++)
+    {
+        if (!QDir::isAbsolutePath(paths[i]))
+        {
+            QString path = mCurrentDirectory + "/";
+            path += paths[i];
+            paths[i] = QDir::cleanPath(path);
+        }
+    }
+    DoCheckFiles(paths);
 }
 
 void MainWindow::NewProjectFile()
