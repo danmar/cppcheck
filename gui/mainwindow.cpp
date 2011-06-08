@@ -386,7 +386,11 @@ void MainWindow::CheckDirectory()
             int dlgResult = msgBox.exec();
             if (dlgResult == QMessageBox::Yes)
             {
-                LoadProjectFile(projFiles[0]);
+                QString path = checkDir.canonicalPath();
+                if (!path.endsWith("/"))
+                    path += "/";
+                path += projFiles[0];
+                LoadProjectFile(path);
             }
             else
             {
