@@ -2278,7 +2278,11 @@ void CheckOther::functionVariableUsage()
                 for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next())
                 {
                     if (tok2->varId())
+                    {
                         variables.read(tok2->varId());
+                        if (tok2->next()->isAssignmentOp())
+                            variables.write(tok2->varId());
+                    }
                 }
             }
         }
