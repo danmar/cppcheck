@@ -308,6 +308,7 @@ private:
         TEST_CASE(enum21); // ticket #2720
         TEST_CASE(enum22); // ticket #2745
         TEST_CASE(enum23); // ticket #2804
+        TEST_CASE(enum24); // ticket #2828
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6615,6 +6616,17 @@ private:
         const char code[] = "enum Enumerator : std::uint8_t { ITEM1, ITEM2, ITEM3 };\n"
                             "Enumerator e = ITEM3;\n";
         const char expected[] = "; std :: uint8_t e ; e = 2 ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum24() // ticket #2828
+    {
+        const char code[] = "enum EnumName { STYLE = 0x0001 };\n"
+                            "void f(long style) {\n"
+                            "    if (style & STYLE) { }\n"
+                            "}\n";
+        const char expected[] = "; void f ( long style ) { if ( style & 1 ) { } }";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }

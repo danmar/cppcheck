@@ -7873,7 +7873,7 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
         }
         else if (end->str() == ")")
         {
-            // check of function argument
+            // check for function argument
             if (tok->previous()->str() == ",")
                 return false;
         }
@@ -7882,6 +7882,10 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
         {
             if (Token::simpleMatch(end, ") {")) // function parameter ?
             {
+                // make sure it's not a conditional
+                if (Token::Match(end->link()->previous(), "if|for|while"))
+                    return false;
+
                 // look backwards
                 if (tok->previous()->str() == "enum" ||
                     (Token::Match(tok->previous(), "%type%") &&
