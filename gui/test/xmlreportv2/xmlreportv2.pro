@@ -2,8 +2,8 @@ TEMPLATE = app
 TARGET = test-xmlreportv2
 DEPENDPATH += .
 INCLUDEPATH += .
-OBJECTS_DIR = build
-MOC_DIR = build
+OBJECTS_DIR = ../build
+MOC_DIR = ../build
 
 include(../common.pri)
 
