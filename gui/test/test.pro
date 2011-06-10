@@ -2,4 +2,5 @@ CONFIG  += ordered
 TEMPLATE = subdirs
 
 SUBDIRS = translationhandler \
-    xmlreport
+    xmlreport \
+    xmlreportv1

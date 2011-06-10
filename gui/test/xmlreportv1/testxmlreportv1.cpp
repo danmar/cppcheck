@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2011 Daniel Marjam‰ki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjam√§ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,11 @@
 #include "testxmlreportv1.h"
 #include "xmlreportv1.h"
 #include "erroritem.h"
+#include "errorlogger.h"
 
 void TestXmlReportV1::readXml()
 {
-    const QString filepath("xmlfiles/xmlreport_v1.xml");
+    const QString filepath("../xmlfiles/xmlreport_v1.xml");
     XmlReportV1 report(filepath);
     QVERIFY(report.Open());
     QList<ErrorItem> errors = report.Read();
@@ -34,7 +35,9 @@ void TestXmlReportV1::readXml()
     QCOMPARE(item.file, QString("test.cxx"));
     QCOMPARE(item.lines[0], (unsigned int)11);
     QCOMPARE(item.id, QString("unreadVariable"));
-    QCOMPARE(item.severity, QString("Style"));
+    QCOMPARE(GuiSeverity::toString(item.severity), QString("Style"));
     QCOMPARE(item.summary, QString("Variable 'a' is assigned a value that is never used"));
     QCOMPARE(item.message, QString("Variable 'a' is assigned a value that is never used"));
 }
+
+QTEST_MAIN(TestXmlReportV1)
