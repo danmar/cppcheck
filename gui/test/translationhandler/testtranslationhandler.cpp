@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2011 Daniel Marjam‰ki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjam√§ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,3 +27,5 @@ void TestTranslationHandler::construct()
     QCOMPARE(10, handler.GetNames().size());
     QCOMPARE(QString("en"), handler.GetCurrentLanguage());
 }
+
+ QTEST_MAIN(TestTranslationHandler)
