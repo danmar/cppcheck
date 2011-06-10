@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2011 Daniel Marjam‰ki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjam√§ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,11 @@
 #include "testxmlreportv2.h"
 #include "xmlreportv2.h"
 #include "erroritem.h"
+#include "errorlogger.h"
 
 void TestXmlReportV2::readXml()
 {
-    const QString filepath("xmlfiles/xmlreport_v2.xml");
+    const QString filepath("../xmlfiles/xmlreport_v2.xml");
     XmlReportV2 report(filepath);
     QVERIFY(report.Open());
     QList<ErrorItem> errors = report.Read();
@@ -37,7 +38,7 @@ void TestXmlReportV2::readXml()
     QCOMPARE(item.files[0], QString("test.cxx"));
     QCOMPARE(item.lines[0], (unsigned int)11);
     QCOMPARE(item.id, QString("unreadVariable"));
-    QCOMPARE(item.severity, QString("style"));
+    QCOMPARE(GuiSeverity::toString(item.severity), QString("style"));
     QCOMPARE(item.summary, QString("Variable 'a' is assigned a value that is never used"));
     QCOMPARE(item.message, QString("Variable 'a' is assigned a value that is never used"));
 
@@ -50,7 +51,9 @@ void TestXmlReportV2::readXml()
     QCOMPARE(item2.files[1], QString("test.cxx"));
     QCOMPARE(item2.lines[1], (unsigned int)16);
     QCOMPARE(item2.id, QString("mismatchAllocDealloc"));
-    QCOMPARE(item2.severity, QString("error"));
+    QCOMPARE(GuiSeverity::toString(item2.severity), QString("error"));
     QCOMPARE(item2.summary, QString("Mismatching allocation and deallocation: k"));
     QCOMPARE(item2.message, QString("Mismatching allocation and deallocation: k"));
 }
+
+QTEST_MAIN(TestXmlReportV2)
