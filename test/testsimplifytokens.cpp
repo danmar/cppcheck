@@ -352,6 +352,7 @@ private:
         TEST_CASE(removeUnnecessaryQualification2);
 
         TEST_CASE(simplifyIfNotNull);
+        TEST_CASE(simplifyVarDecl); // ticket # 2682 segmentation fault
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -6983,7 +6984,13 @@ private:
                                 "}";
             ASSERT_EQUALS("void f ( int x ) { }", tok(code, false));
         }
+    }
 
+    void simplifyVarDecl() // ticket # 2682 segmentation fault
+    {
+        const char code[] = "x a[0] =";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

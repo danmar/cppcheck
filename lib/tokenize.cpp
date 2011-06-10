@@ -5877,7 +5877,7 @@ void Tokenizer::simplifyVarDecl()
 
                     tok2 = tok2->next();
 
-                    if (tok2->str() == ";")
+                    if (tok2 && tok2->str() == ";")
                         tok2 = NULL;
                 }
             }
