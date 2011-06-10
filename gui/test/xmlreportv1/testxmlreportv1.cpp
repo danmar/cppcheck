@@ -35,7 +35,7 @@ void TestXmlReportV1::readXml()
     QCOMPARE(item.file, QString("test.cxx"));
     QCOMPARE(item.lines[0], (unsigned int)11);
     QCOMPARE(item.id, QString("unreadVariable"));
-    QCOMPARE(GuiSeverity::toString(item.severity), QString("Style"));
+    QCOMPARE(GuiSeverity::toString(item.severity), QString("style"));
     QCOMPARE(item.summary, QString("Variable 'a' is assigned a value that is never used"));
     QCOMPARE(item.message, QString("Variable 'a' is assigned a value that is never used"));
 }
