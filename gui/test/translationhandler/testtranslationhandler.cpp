@@ -28,4 +28,4 @@ void TestTranslationHandler::construct()
     QCOMPARE(QString("en"), handler.GetCurrentLanguage());
 }
 
- QTEST_MAIN(TestTranslationHandler)
+QTEST_MAIN(TestTranslationHandler)
