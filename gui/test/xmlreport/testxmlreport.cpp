@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2011 Daniel Marjam‰ki and Cppcheck team.
+ * Copyright (C) 2007-2011 Daniel Marjam√§ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,3 +46,5 @@ void TestXmlReport::testGetVersion2()
     const QString filepath("xmlfiles/xmlreport_v2.xml");
     QCOMPARE(XmlReport::determineVersion(filepath), 2);
 }
+
+QTEST_MAIN(TestXmlReport)
