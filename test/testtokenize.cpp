@@ -337,6 +337,8 @@ private:
 
         // a = b = 0;
         TEST_CASE(multipleAssignment);
+
+        TEST_CASE(simplifyIfAddBraces); // ticket # 2739 (segmentation fault)
     }
 
 
@@ -5610,6 +5612,12 @@ private:
     void multipleAssignment()
     {
         ASSERT_EQUALS("a = b = 0 ;", tokenizeAndStringify("a=b=0;"));
+    }
+
+    void simplifyIfAddBraces() // ticket # 2739 (segmentation fault)
+    {
+        tokenizeAndStringify("if()x");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 };
 

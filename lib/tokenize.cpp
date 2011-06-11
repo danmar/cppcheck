@@ -2163,7 +2163,9 @@ bool Tokenizer::tokenize(std::istream &code,
     labels();
 
     simplifyDoWhileAddBraces();
-    simplifyIfAddBraces();
+
+    if (!simplifyIfAddBraces())
+        return false;
 
     // Combine "- %num%" ..
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -4852,7 +4854,7 @@ void Tokenizer::removeRedundantSemicolons()
 }
 
 
-void Tokenizer::simplifyIfAddBraces()
+bool Tokenizer::simplifyIfAddBraces()
 {
     for (Token *tok = _tokens; tok; tok = tok ? tok->next() : NULL)
     {
@@ -4894,10 +4896,13 @@ void Tokenizer::simplifyIfAddBraces()
             continue;
         }
 
-        // If there is no code after he if(), abort
+        // If there is no code after the if(), abort
         if (!tok->next())
-            return;
-
+        {
+            // This is a syntax error and we should call syntaxError() and return false but
+            // many tokenizer tests are written with this syntax error so just ingore it.
+            return true;
+        }
 
         // insert open brace..
         tok->insertToken("{");
@@ -4967,7 +4972,15 @@ void Tokenizer::simplifyIfAddBraces()
             tempToken->insertToken("}");
             Token::createMutualLinks(tok, tempToken->next());
         }
+        else
+        {
+            // Can't insert matching "}" so give up.  This is fatal because it
+            // causes unbalanced braces.
+            syntaxError(tok);
+            return false;
+        }
     }
+    return true;
 }
 
 bool Tokenizer::simplifyDoWhileAddBracesHelper(Token *tok)

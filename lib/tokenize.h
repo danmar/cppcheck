@@ -284,8 +284,9 @@ public:
     void simplifyComma();
 
     /** Add braces to an if-block
+     * @return true if no syntax errors
      */
-    void simplifyIfAddBraces();
+    bool simplifyIfAddBraces();
 
     /**
      * Add braces to an do-while block
