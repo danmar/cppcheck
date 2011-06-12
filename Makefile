@@ -4,7 +4,7 @@
 HAVE_RULES = yes
 
 ifndef CXXFLAGS
-    CXXFLAGS=-Wall -Wextra -Wshadow -pedantic -Wno-long-long -Wfloat-equal -Wcast-qual -g
+    CXXFLAGS=-O2 -DNDEBUG -Wall
 endif
 
 ifeq ($(HAVE_RULES),yes)
@@ -235,7 +235,7 @@ lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/token.h lib/mathlib.h lib/se
 cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/timer.h cli/cmdlineparser.h lib/path.h cli/filelister.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_CLI} -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h cli/threadexecutor.h cli/cmdlineparser.h cli/filelister.h lib/path.h cli/pathmatch.h
+cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h cli/threadexecutor.h lib/preprocessor.h cli/cmdlineparser.h cli/filelister.h lib/path.h cli/pathmatch.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_CLI} -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
 
 cli/filelister.o: cli/filelister.cpp cli/filelister.h lib/path.h
