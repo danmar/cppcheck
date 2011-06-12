@@ -56,7 +56,7 @@ void CppCheck::settings(const Settings &currentSettings)
 
 const char * CppCheck::version()
 {
-    return "1.48";
+    return "1.49";
 }
 
 unsigned int CppCheck::check(const std::string &path)
