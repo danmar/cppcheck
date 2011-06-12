@@ -3633,6 +3633,8 @@ void Tokenizer::setVarId()
                     while (tok2->str() != ">")
                         tok2 = tok2->next();
                     tok2 = tok2->next();
+                    if (!tok2) // syntax error
+                        return;
                     if (tok2->str() == ",")
                         tok2 = tok2->next();
                     if (level == 1 && tok2->str() == ">")

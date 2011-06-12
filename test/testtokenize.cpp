@@ -174,6 +174,7 @@ private:
         TEST_CASE(varid28);   // ticket #2630
         TEST_CASE(varid29);   // ticket #1974
         TEST_CASE(varid30);   // ticket #2614
+        TEST_CASE(varid31);   // ticket #2831 (segmentation fault)
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -2908,6 +2909,12 @@ private:
                                     "6: }\n"
                                     "7: }\n");
         ASSERT_EQUALS(expected3, tokenizeDebugListing(code3));
+    }
+
+    void varid31()   // ticket #2831 (segmentation fault)
+    {
+        const std::string code("z<y<x>");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void varidFunctionCall1()
