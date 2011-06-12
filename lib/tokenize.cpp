@@ -3605,6 +3605,9 @@ void Tokenizer::setVarId()
 
             do // Look for start of templates or template arguments
             {
+                if (!tok2) // syntax error
+                    return;
+
                 again = false;
 
                 if (tok2 && tok2->str() == "const")
@@ -3622,8 +3625,14 @@ void Tokenizer::setVarId()
                 else if (Token::Match(tok2, "%type% *|&| ,"))
                 {
                     tok2 = tok2->tokAt(2);
+                    if (!tok2) // syntax error
+                        return;
                     if (tok2->str() == ",")
+                    {
                         tok2 = tok2->next();
+                        if (!tok2) // syntax error
+                            return;
+                    }
                     again = true;
                 }
                 else if (level > 1 && (Token::Match(tok2, "%type% *|&| >") ||
@@ -3636,7 +3645,11 @@ void Tokenizer::setVarId()
                     if (!tok2) // syntax error
                         return;
                     if (tok2->str() == ",")
+                    {
                         tok2 = tok2->next();
+                        if (!tok2) // syntax error
+                            return;
+                    }
                     if (level == 1 && tok2->str() == ">")
                         break;
                     again = true;
