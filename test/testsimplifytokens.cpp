@@ -352,7 +352,8 @@ private:
         TEST_CASE(removeUnnecessaryQualification2);
 
         TEST_CASE(simplifyIfNotNull);
-        TEST_CASE(simplifyVarDecl); // ticket # 2682 segmentation fault
+        TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
+        TEST_CASE(simplifyVarDecl2); // ticket # 2834 segmentation fault
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -6986,9 +6987,16 @@ private:
         }
     }
 
-    void simplifyVarDecl() // ticket # 2682 segmentation fault
+    void simplifyVarDecl1() // ticket # 2682 segmentation fault
     {
         const char code[] = "x a[0] =";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyVarDecl2() // ticket # 2834 segmentation fault
+    {
+        const char code[] = "std::vector<int>::iterator";
         tok(code, false);
         ASSERT_EQUALS("", errout.str());
     }

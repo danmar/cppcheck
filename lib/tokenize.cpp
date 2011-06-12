@@ -5931,7 +5931,7 @@ void Tokenizer::simplifyVarDecl()
                 }
             }
 
-            if (!tok2)
+            if (!tok2) // syntax error
                 break;
 
             if (Token::Match(tok2, ":: %type%"))
@@ -5939,6 +5939,9 @@ void Tokenizer::simplifyVarDecl()
                 typelen += 2;
                 tok2 = tok2->tokAt(2);
             }
+
+            if (!tok2) // syntax error
+                break;
 
             if (tok2->str() == "*")
             {
