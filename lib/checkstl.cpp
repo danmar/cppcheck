@@ -162,7 +162,7 @@ void CheckStl::iterators()
 
             // bailout handling. Assume that the iterator becomes valid if we see return/break.
             // TODO: better handling
-            else if (Token::Match(tok2, "return|break ;"))
+            else if (Token::Match(tok2, "return|break"))
             {
                 validIterator = true;
             }
