@@ -9788,40 +9788,52 @@ void Tokenizer::simplifyOperatorName()
 }
 
 // remove unnecessary member qualification..
-struct ClassInfo
-{
-    std::string className;
-    Token *end;
-};
-
 void Tokenizer::removeUnnecessaryQualification()
 {
-    std::stack<ClassInfo> classInfo;
+    std::vector<Space> classInfo;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class|struct %type% :|{") &&
+        if (Token::Match(tok, "class|struct|namespace %type% :|{") &&
             (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum")))
         {
             tok = tok->next();
-            ClassInfo info;
+            Space info;
+            info.isNamespace = tok->str() == "namespace";
             info.className = tok->str();
             tok = tok->next();
             while (tok && tok->str() != "{")
                 tok = tok->next();
             if (!tok)
                 return;
-            info.end = tok->link();
-            classInfo.push(info);
+            info.classEnd = tok->link();
+            classInfo.push_back(info);
         }
         else if (!classInfo.empty())
         {
-            if (tok == classInfo.top().end)
-                classInfo.pop();
-            else if (tok->str() == classInfo.top().className &&
+            if (tok == classInfo.back().classEnd)
+                classInfo.pop_back();
+            else if (tok->str() == classInfo.back().className &&
                      Token::Match(tok, "%type% :: %type% (") &&
                      Token::Match(tok->tokAt(3)->link(), ") const| {|;") &&
                      tok->previous()->str() != ":")
             {
+                std::string qualification = tok->str() + "::";
+
+                // check for extra qualification
+                /** @todo this should be made more generic to handle more levels */
+                if (Token::Match(tok->tokAt(-2), "%type% ::"))
+                {
+                    if (classInfo.size() >= 2)
+                    {
+                        if (classInfo.at(classInfo.size() - 2).className != tok->strAt(-2))
+                            continue;
+                        else
+                            qualification = tok->strAt(-2) + "::" + qualification;
+                    }
+                    else
+                        continue;
+                }
+
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
                 loc.line = tok->linenr();
@@ -9830,7 +9842,7 @@ void Tokenizer::removeUnnecessaryQualification()
 
                 const ErrorLogger::ErrorMessage errmsg(locationList,
                                                        Severity::portability,
-                                                       "Extra qualification \'" + tok->str() + "::\' unnecessary and considered an error by many compilers.",
+                                                       "Extra qualification \'" + qualification + "\' unnecessary and considered an error by many compilers.",
                                                        "portability",
                                                        false);
 

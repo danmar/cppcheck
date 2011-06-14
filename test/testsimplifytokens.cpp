@@ -350,6 +350,9 @@ private:
 
         TEST_CASE(removeUnnecessaryQualification1);
         TEST_CASE(removeUnnecessaryQualification2);
+        TEST_CASE(removeUnnecessaryQualification3);
+        TEST_CASE(removeUnnecessaryQualification4);
+        TEST_CASE(removeUnnecessaryQualification5);
 
         TEST_CASE(simplifyIfNotNull);
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
@@ -6968,6 +6971,64 @@ private:
                             "};\n";
         tok(code, false);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void removeUnnecessaryQualification3()
+    {
+        const char code[] = "namespace one {\n"
+                            "   class c {\n"
+                            "   public:\n"
+                            "      void   function() {}\n"
+                            "   };\n"
+                            "}\n"
+                            "namespace two {\n"
+                            "   class c : public one::c {\n"
+                            "   public:\n"
+                            "      void   function() {\n"
+                            "         one::c::function();\n"
+                            "      }\n"
+                            "   };\n"
+                            "}\n";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void removeUnnecessaryQualification4()
+    {
+        const char code[] = "namespace one {\n"
+                            "   class c {\n"
+                            "   public:\n"
+                            "      void   function() {}\n"
+                            "   };\n"
+                            "}\n"
+                            "class c : public one::c {\n"
+                            "public:\n"
+                            "   void   function() {\n"
+                            "      one::c::function();\n"
+                            "   }\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void removeUnnecessaryQualification5()
+    {
+        const char code[] = "namespace one {\n"
+                            "   class c {\n"
+                            "   public:\n"
+                            "      void   function() {}\n"
+                            "   };\n"
+                            "}\n"
+                            "namespace two {\n"
+                            "   class c : public one::c {\n"
+                            "   public:\n"
+                            "      void   function() {\n"
+                            "         two::c::function();\n"
+                            "      }\n"
+                            "   };\n"
+                            "}\n";
+        tok(code, false);
+        ASSERT_EQUALS("[test.cpp:11]: (portability) Extra qualification 'two::c::' unnecessary and considered an error by many compilers.\n", errout.str());
     }
 
     void simplifyIfNotNull()
