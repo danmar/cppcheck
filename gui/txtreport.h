@@ -36,6 +36,8 @@
 */
 class TxtReport : public Report
 {
+    Q_OBJECT
+
 public:
     TxtReport(const QString &filename, QObject * parent = 0);
     virtual ~TxtReport();
