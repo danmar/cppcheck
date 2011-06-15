@@ -452,10 +452,6 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Project: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Open the report file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -521,6 +517,52 @@ The user interface language has been reset to English. Open the Preferences-dial
     </message>
     <message>
         <source>Spanish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>toolBar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filter results</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project MRU placeholder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quick Filter:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Found project file: %1
+
+Do you want to load this project file instead?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Found project files from the directory.
+
+Do you want to proceed checking without using any of these project files?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The project file
+
+%1
+
+ could not be found!
+
+Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -597,11 +639,11 @@ The user interface language has been reset to English. Open the Preferences-dial
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Select directory to check</source>
-        <translation type="unfinished">Sélectionner le répertoire à vérifier</translation>
+        <source>Select directory to ignore</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Select directory to ignore</source>
+        <source>Select a directory to check</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -821,10 +863,6 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Show internal warnings in log</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Enable inline suppressions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -858,6 +896,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>&amp;Show inconclusive errors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>S&amp;how internal warnings in log</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
