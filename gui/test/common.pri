@@ -10,6 +10,7 @@ include($$PWD/../../lib/lib.pri)
 
 # GUI
 SOURCES += ../../erroritem.cpp \
+    ../../projectfile.cpp \
     ../../report.cpp \
     ../../translationhandler.cpp \
     ../../xmlreport.cpp \
@@ -17,6 +18,7 @@ SOURCES += ../../erroritem.cpp \
     ../../xmlreportv2.cpp
 
 HEADERS += ../../erroritem.h \
+    ../../projectfile.h \
     ../../report.h \
     ../../translationhandler.h \
     ../../xmlreport.h \

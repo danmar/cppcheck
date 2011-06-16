@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <root name="../.."/>
+    <includedir>
+        <dir name="lib/"/>
+        <dir name="cli/"/>
+    </includedir>
+    <paths>
+        <dir name="gui/"/>
+        <dir name="test/"/>
+    </paths>
+    <ignore>
+        <path name="gui/temp/"/>
+    </ignore>
+    <defines>
+        <define name="FOO" />
+    </defines>
+</project>

@@ -1,7 +1,8 @@
 CONFIG  += ordered
 TEMPLATE = subdirs
 
-SUBDIRS = translationhandler \
+SUBDIRS = projectfile \
+    translationhandler \
     xmlreport \
     xmlreportv1 \
     xmlreportv2
