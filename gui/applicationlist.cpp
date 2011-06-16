@@ -39,13 +39,13 @@ ApplicationList::~ApplicationList()
     Clear();
 }
 
-bool ApplicationList::LoadSettings(QSettings *programSettings)
+bool ApplicationList::LoadSettings()
 {
-
-    QStringList names = programSettings->value(SETTINGS_APPLICATION_NAMES, QStringList()).toStringList();
-    QStringList paths = programSettings->value(SETTINGS_APPLICATION_PATHS, QStringList()).toStringList();
-    QStringList params = programSettings->value(SETTINGS_APPLICATION_PARAMS, QStringList()).toStringList();
-    int defapp = programSettings->value(SETTINGS_APPLICATION_DEFAULT, -1).toInt();
+    QSettings settings;
+    QStringList names = settings.value(SETTINGS_APPLICATION_NAMES, QStringList()).toStringList();
+    QStringList paths = settings.value(SETTINGS_APPLICATION_PATHS, QStringList()).toStringList();
+    QStringList params = settings.value(SETTINGS_APPLICATION_PARAMS, QStringList()).toStringList();
+    int defapp = settings.value(SETTINGS_APPLICATION_DEFAULT, -1).toInt();
 
     // Params will be empty first time starting with the new setting.
     // Return false and inform user about problem with application settings.
@@ -110,8 +110,9 @@ bool ApplicationList::LoadSettings(QSettings *programSettings)
     return succeeded;
 }
 
-void ApplicationList::SaveSettings(QSettings *programSettings)
+void ApplicationList::SaveSettings()
 {
+    QSettings settings;
     QStringList names;
     QStringList paths;
     QStringList params;
@@ -124,10 +125,10 @@ void ApplicationList::SaveSettings(QSettings *programSettings)
         params << app.getParameters();
     }
 
-    programSettings->setValue(SETTINGS_APPLICATION_NAMES, names);
-    programSettings->setValue(SETTINGS_APPLICATION_PATHS, paths);
-    programSettings->setValue(SETTINGS_APPLICATION_PARAMS, params);
-    programSettings->setValue(SETTINGS_APPLICATION_DEFAULT, mDefaultApplicationIndex);
+    settings.setValue(SETTINGS_APPLICATION_NAMES, names);
+    settings.setValue(SETTINGS_APPLICATION_PATHS, paths);
+    settings.setValue(SETTINGS_APPLICATION_PARAMS, params);
+    settings.setValue(SETTINGS_APPLICATION_DEFAULT, mDefaultApplicationIndex);
 
 }
 

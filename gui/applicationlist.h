@@ -41,18 +41,16 @@ public:
     /**
     * @brief Load all applications
     *
-    * @param programSettings QSettings to load application list from
     * @return true if loading succeeded, false if there is problem with
     *  application list. Most probably because of older version settings need
     *  to be upgraded.
     */
-    bool LoadSettings(QSettings *programSettings);
+    bool LoadSettings();
 
     /**
     * @brief Save all applications
-    * @param programSettings QSettings to save applications to
     */
-    void SaveSettings(QSettings *programSettings);
+    void SaveSettings();
 
     /**
     * @brief Get the amount of applications in the list

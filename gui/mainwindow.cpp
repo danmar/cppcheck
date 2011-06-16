@@ -209,7 +209,7 @@ void MainWindow::LoadSettings()
 
     SetLanguage(mSettings->value(SETTINGS_LANGUAGE, mTranslation->SuggestLanguage()).toString());
 
-    bool succeeded = mApplications->LoadSettings(mSettings);
+    bool succeeded = mApplications->LoadSettings();
     if (!succeeded)
     {
         QString msg = tr("There was a problem with loading the editor application settings.\n\n"
@@ -250,7 +250,7 @@ void MainWindow::SaveSettings()
     mSettings->setValue(SETTINGS_TOOLBARS_VIEW_SHOW, mUI.mToolBarView->isVisible());
     mSettings->setValue(SETTINGS_TOOLBARS_FILTER_SHOW, mUI.mToolBarFilter->isVisible());
 
-    mApplications->SaveSettings(mSettings);
+    mApplications->SaveSettings();
 
     mSettings->setValue(SETTINGS_LANGUAGE, mTranslation->GetCurrentLanguage());
     mUI.mResults->SaveSettings(mSettings);
