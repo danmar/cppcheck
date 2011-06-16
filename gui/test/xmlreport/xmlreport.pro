@@ -5,6 +5,8 @@ INCLUDEPATH += .
 OBJECTS_DIR = ../build
 MOC_DIR = ../build
 
+DEFINES += SRCDIR=\\\"$$PWD\\\"
+
 include(../common.pri)
 
 # tests

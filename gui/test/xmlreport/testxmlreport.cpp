@@ -37,13 +37,13 @@ void TestXmlReport::testUnquoteMessage()
 
 void TestXmlReport::testGetVersion1()
 {
-    const QString filepath("../xmlfiles/xmlreport_v1.xml");
+    const QString filepath(QString(SRCDIR) + "/../xmlfiles/xmlreport_v1.xml");
     QCOMPARE(XmlReport::determineVersion(filepath), 1);
 }
 
 void TestXmlReport::testGetVersion2()
 {
-    const QString filepath("../xmlfiles/xmlreport_v2.xml");
+    const QString filepath(QString(SRCDIR) + "/../xmlfiles/xmlreport_v2.xml");
     QCOMPARE(XmlReport::determineVersion(filepath), 2);
 }
 
