@@ -1107,3 +1107,104 @@ void CheckStl::string_c_strError(const Token *tok)
     reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str()");
 }
 
+
+//---------------------------------------------------------------------------
+//
+//---------------------------------------------------------------------------
+void CheckStl::checkAutoPointer()
+{
+
+    std::set<int> autoPtrVarId;
+    std::set<int>::const_iterator iter;
+    static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "auto_ptr <"))
+        {
+            if ((Token::Match(tok->tokAt(-1), "< auto_ptr") &&  Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) || (Token::Match(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST)))
+            {
+                autoPointerContainerError(tok);
+            }
+            else
+            {
+                const Token *tok2 = tok->next()->next();
+                while (tok2)
+                {
+
+                    if (Token::Match(tok2, "> %var%"))
+                    {
+                        const Token *tok3 = tok2->next()->next();
+                        while (tok3 && ! Token::simpleMatch(tok3, ";"))
+                        {
+                            tok3 = tok3->next();
+                        }
+                        if (Token::Match(tok3->previous()->previous(),"] )"))
+                        {
+                            autoPointerArrayError(tok2->next());
+                        }
+                        else if (Token::Match(tok3->previous()->previous(),"%var% )"))
+                        {
+                            const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type% [", tok3->previous()->previous()->varId());
+                            if (decltok)
+                            {
+                                autoPointerArrayError(tok2->next());
+                            }
+                        }
+                        autoPtrVarId.insert(tok2->next()->varId());
+                        break;
+                    }
+                    tok2 = tok2->next();
+                }
+            }
+        }
+        else
+        {
+            if (Token::Match(tok, "%var% = %var% ;"))
+            {
+                if (_settings->_checkCodingStyle)
+                {
+                    iter = autoPtrVarId.find(tok->next()->next()->varId());
+                    if (iter != autoPtrVarId.end())
+                    {
+                        autoPointerError(tok->next()->next());
+                    }
+                }
+            }
+            else if (Token::Match(tok, "%var% = new %type% [") || Token::Match(tok, "%var% . reset ( new %type% ["))
+            {
+                iter = autoPtrVarId.find(tok->varId());
+                if (iter != autoPtrVarId.end())
+                {
+                    autoPointerArrayError(tok);
+                }
+            }
+        }
+    }
+}
+
+
+void CheckStl::autoPointerError(const Token *tok)
+{
+    reportError(tok, Severity::style, "useAutoPointerCopy",
+                "Copy 'auto_ptr' pointer to another do not create two equal objects since one has lost its ownership of the pointer.\n"
+                "The auto_ptr has semantics of strict ownership, meaning that the auto_ptr instance is the sole entity responsible for the object's lifetime. If an auto_ptr is copied, the source loses the reference."
+               );
+}
+
+void CheckStl::autoPointerContainerError(const Token *tok)
+{
+    reportError(tok, Severity::error, "useAutoPointerContainer",
+                "You can randomly lose access to pointers if you store 'auto_ptr' pointers in a container because the copy-semantics of 'auto_ptr' are not compatible with containers.\n"
+                "An element of container must be able to be copied but 'auto_ptr' does not fulfill this requirement. You should consider to use 'shared_ptr' or 'unique_ptr'. It is suitable for use in containers, because they no longer copy their values, they move them."
+               );
+}
+
+void CheckStl::autoPointerArrayError(const Token *tok)
+{
+    reportError(tok, Severity::error, "useAutoPointerArray",
+                "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n"
+                "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. This means that you should only use 'auto_ptr' for pointers obtained with operator 'new'. This excludes arrays, which are allocated by operator 'new[]' and must be deallocated by operator 'delete[]'."
+               );
+}
+

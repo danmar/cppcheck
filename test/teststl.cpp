@@ -108,6 +108,9 @@ private:
 
         // catch common problems when using the string::c_str() function
         TEST_CASE(cstr);
+
+        TEST_CASE(autoPointer);
+
     }
 
     void check(const std::string &code)
@@ -1314,6 +1317,89 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str()\n", errout.str());
     }
+
+    void autoPointer()
+    {
+
+        check("void foo()\n"
+              "{\n"
+              "    auto_ptr< ns1:::MyClass > y;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() \n"
+              "{\n"
+              "    auto_ptr<T> p2;\n"
+              "    p2 = new T;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::vector< std::auto_ptr< ns1::MyClass> > v;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) You can randomly lose access to pointers if you store 'auto_ptr' pointers in a container because the copy-semantics of 'auto_ptr' are not compatible with containers.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::vector< auto_ptr< MyClass> > v;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) You can randomly lose access to pointers if you store 'auto_ptr' pointers in a container because the copy-semantics of 'auto_ptr' are not compatible with containers.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    int *i = new int;\n"
+              "    auto_ptr<int> x(i);\n"
+              "    auto_ptr<int> y;\n"
+              "    y = x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Copy 'auto_ptr' pointer to another do not create two equal objects since one has lost its ownership of the pointer.\n", errout.str());
+
+        // ticket #748
+        check("void f() \n"
+              "{\n"
+              "    T* var = new T[10];\n"
+              "    auto_ptr<T> p2( var );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+        check("void f() \n"
+              "{\n"
+              "    auto_ptr<T> p2( new T[] );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+        check("void f() \n"
+              "{\n"
+              "    auto_ptr<T> p2;\n"
+              "    p2.reset( new T[] );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+
+        check("void f() \n"
+              "{\n"
+              "    auto_ptr<T> p2( new T[][] );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+        check("void f() \n"
+              "{\n"
+              "    auto_ptr<T> p2;\n"
+              "    p2 = new T[10];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+        check("void f() \n"
+              "{\n"
+              "    auto_ptr<T> p2;\n"
+              "    p2.reset( new T[10] );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+    }
+
+
 };
 
 REGISTER_TEST(TestStl)

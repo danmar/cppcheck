@@ -56,11 +56,13 @@ public:
         checkStl.stlBoundries();
         checkStl.if_find();
         checkStl.string_c_str();
+        checkStl.checkAutoPointer();
 
         // Style check
         checkStl.size();
         checkStl.redundantCondition();
         checkStl.missingComparison();
+
     }
 
 
@@ -134,6 +136,10 @@ public:
     void string_c_str();
     void string_c_strError(const Token *tok);
 
+    /** @brief %Check for use and copy auto pointer */
+    void checkAutoPointer();
+
+
 private:
 
     /**
@@ -154,6 +160,10 @@ private:
     void sizeError(const Token *tok);
     void redundantIfRemoveError(const Token *tok);
 
+    void autoPointerError(const Token *tok);
+    void autoPointerContainerError(const Token *tok);
+    void autoPointerArrayError(const Token *tok);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckStl c(0, settings, errorLogger);
@@ -171,6 +181,9 @@ private:
         c.string_c_strError(0);
         c.sizeError(0);
         c.redundantIfRemoveError(0);
+        c.autoPointerError(0);
+        c.autoPointerContainerError(0);
+        c.autoPointerArrayError(0);
     }
 
     std::string myName() const
@@ -189,7 +202,8 @@ private:
                "* optimisation: use empty() instead of size() to guarantee fast code\n"
                "* suspicious condition when using find\n"
                "* redundant condition\n"
-               "* common mistakes when using string::c_str()";
+               "* common mistakes when using string::c_str()\n"
+               "* using auto pointer (auto_ptr)";
     }
 
     bool isStlContainer(unsigned int varid);
