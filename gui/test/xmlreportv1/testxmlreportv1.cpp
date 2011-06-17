@@ -25,7 +25,7 @@
 
 void TestXmlReportV1::readXml()
 {
-    const QString filepath(QString(SRCDIR) + "/../xmlfiles/xmlreport_v1.xml");
+    const QString filepath(QString(SRCDIR) + "/../data/xmlfiles/xmlreport_v1.xml");
     XmlReportV1 report(filepath);
     QVERIFY(report.Open());
     QList<ErrorItem> errors = report.Read();

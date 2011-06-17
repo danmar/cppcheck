@@ -23,14 +23,14 @@
 
 void TestProjectFile::loadInexisting()
 {
-    const QString filepath(QString(SRCDIR) + "/../projectfiles/foo.cppcheck");
+    const QString filepath(QString(SRCDIR) + "/../data/projectfiles/foo.cppcheck");
     ProjectFile pfile(filepath);
     QCOMPARE(pfile.Read(), false);
 }
 
 void TestProjectFile::loadSimple()
 {
-    const QString filepath(QString(SRCDIR) + "/../projectfiles/simple.cppcheck");
+    const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple.cppcheck");
     ProjectFile pfile(filepath);
     QVERIFY(pfile.Read());
     QCOMPARE(pfile.GetRootPath(), QString("../.."));
@@ -52,7 +52,7 @@ void TestProjectFile::loadSimple()
 
 void TestProjectFile::loadSimpleNoroot()
 {
-    const QString filepath(QString(SRCDIR) + "/../projectfiles/simple_noroot.cppcheck");
+    const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple_noroot.cppcheck");
     ProjectFile pfile(filepath);
     QVERIFY(pfile.Read());
     QCOMPARE(pfile.GetRootPath(), QString());
