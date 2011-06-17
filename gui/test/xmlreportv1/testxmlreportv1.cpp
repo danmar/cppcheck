@@ -29,7 +29,7 @@ void TestXmlReportV1::readXml()
     XmlReportV1 report(filepath);
     QVERIFY(report.Open());
     QList<ErrorItem> errors = report.Read();
-    QCOMPARE(6, errors.size());
+    QCOMPARE(errors.size(), 6);
 
     ErrorItem item = errors[0];
     QCOMPARE(item.file, QString("test.cxx"));

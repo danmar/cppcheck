@@ -25,7 +25,7 @@ void TestProjectFile::loadInexisting()
 {
     const QString filepath(QString(SRCDIR) + "/../projectfiles/foo.cppcheck");
     ProjectFile pfile(filepath);
-    QCOMPARE(false, pfile.Read());
+    QCOMPARE(pfile.Read(), false);
 }
 
 void TestProjectFile::loadSimple()
