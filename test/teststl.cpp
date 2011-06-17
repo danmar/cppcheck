@@ -1321,6 +1321,18 @@ private:
     void autoPointer()
     {
 
+        // ticket 2839
+        check("template <class MUTEX_TYPE>\n"
+              "class Guarded\n"
+              "{\n"
+              "    typedef std::auto_ptr<MUTEX_TYPE > WriteGuardType;\n"
+              "    virtual WriteGuardType getWriteGuard(bool enabledGuard = true);\n"
+              "};\n"
+              "class SafeSharedMemory : public Guarded<int>\n"
+              "{\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo()\n"
               "{\n"
               "    auto_ptr< ns1:::MyClass > y;\n"

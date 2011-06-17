@@ -1113,7 +1113,6 @@ void CheckStl::string_c_strError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckStl::checkAutoPointer()
 {
-
     std::set<int> autoPtrVarId;
     std::set<int>::const_iterator iter;
     static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
@@ -1122,7 +1121,7 @@ void CheckStl::checkAutoPointer()
     {
         if (Token::simpleMatch(tok, "auto_ptr <"))
         {
-            if ((Token::Match(tok->tokAt(-1), "< auto_ptr") &&  Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) || (Token::Match(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST)))
+            if ((tok->previous()->str() == "<" &&  Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) || (Token::Match(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST)))
             {
                 autoPointerContainerError(tok);
             }
@@ -1131,21 +1130,21 @@ void CheckStl::checkAutoPointer()
                 const Token *tok2 = tok->next()->next();
                 while (tok2)
                 {
-
                     if (Token::Match(tok2, "> %var%"))
                     {
                         const Token *tok3 = tok2->next()->next();
-                        while (tok3 && ! Token::simpleMatch(tok3, ";"))
+                        while (tok3 && tok3->str() != ";")
                         {
                             tok3 = tok3->next();
                         }
-                        if (Token::Match(tok3->previous()->previous(),"] )"))
+                        tok3 = tok3->previous()->previous();
+                        if (Token::Match(tok3, "] )"))
                         {
                             autoPointerArrayError(tok2->next());
                         }
-                        else if (Token::Match(tok3->previous()->previous(),"%var% )"))
+                        else if (tok3->varId())
                         {
-                            const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type% [", tok3->previous()->previous()->varId());
+                            const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type% [", tok3->varId());
                             if (decltok)
                             {
                                 autoPointerArrayError(tok2->next());
