@@ -27,4 +27,6 @@ private slots:
     void addFile();
     void addFile_notexist();
     void addFile_unknown();
+    void addDirectory();
+    void addDirectory_recursive();
 };

@@ -18,6 +18,7 @@
 
 #include <QtTest>
 #include <QObject>
+#include <QDir>
 #include "testfilelist.h"
 #include "filelist.h"
 
@@ -53,5 +54,24 @@ void TestFileList::addFile_unknown()
     QCOMPARE(files.size(), 0);
 }
 
+void TestFileList::addDirectory()
+{
+    FileList list;
+    list.AddDirectory(QString(SRCDIR) + "/../data/files");
+    QStringList files = list.GetFileList();
+    QCOMPARE(files.size(), 7);
+}
+
+void TestFileList::addDirectory_recursive()
+{
+    FileList list;
+    list.AddDirectory(QString(SRCDIR) + "/../data/files", true);
+    QStringList files = list.GetFileList();
+    QCOMPARE(files.size(), 9);
+    QDir dir(QString(SRCDIR) + "/../data/files");
+    QString base = dir.canonicalPath();
+    QVERIFY(files.contains(base + "/dir1/foo1.cpp"));
+    QVERIFY(files.contains(base + "/dir1/dir11/foo11.cpp"));
+}
 
 QTEST_MAIN(TestFileList)
