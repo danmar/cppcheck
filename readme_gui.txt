@@ -37,3 +37,12 @@ prompt/console, go to gui directory and run command:
 These commands generate makefiles to actually build the software. After that
 the actual building is done in IDE or command line as usual. Note that you
 don't need to run qmake again unless you add/remove files from the project.
+
+Tests
+-----
+There are tests for the GUI in gui/test -directory. There is test.pro
+-projectfile for building all the tests. Each test is in own subdirectory and
+builds own binary. Test is run by simple running that binary. The binary also
+has several options to select tests etc. You can get the help by running
+"binaryname -help" -command.
+
