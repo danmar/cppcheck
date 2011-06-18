@@ -25,8 +25,13 @@ class TestFileList: public QObject
 
 private slots:
     void addFile();
+    void addPathList();
     void addFile_notexist();
     void addFile_unknown();
     void addDirectory();
     void addDirectory_recursive();
+    void filterFiles();
+    void filterFiles2();
+    void filterFiles3();
+    void filterFiles4();
 };
