@@ -1215,23 +1215,41 @@ void Tokenizer::simplifyTypedef()
                     tok = deleteInvalidTypedef(typeDef);
                     continue;
                 }
-                else if (!Token::Match(tok->tokAt(offset)->link(), ") const| ;|,"))
+
+                // function pointer
+                else if (Token::Match(tok->tokAt(offset), "( * %var% ) ("))
+                {
+                    functionPtr = true;
+                    funcStart = tok->tokAt(offset + 1);
+                    funcEnd = tok->tokAt(offset)->link()->previous();
+                    typeName = tok->tokAt(offset)->link()->tokAt(-2);
+                    argStart = tok->tokAt(offset)->link()->next();
+                    argEnd = tok->tokAt(offset)->link()->next()->link();
+                    tok = argEnd->next();
+                }
+
+                // function
+                else if (Token::Match(tok->tokAt(offset)->link(), ") const| ;|,"))
+                {
+                    function = true;
+                    if (tok->tokAt(offset)->link()->next()->str() == "const")
+                    {
+                        specStart = tok->tokAt(offset)->link()->next();
+                        specEnd = specStart;
+                    }
+                    argStart = tok->tokAt(offset);
+                    argEnd = tok->tokAt(offset)->link();
+                    tok = argEnd->next();
+                    if (specStart)
+                        tok = tok->next();
+                }
+
+                // syntax error
+                else
                 {
                     syntaxError(tok);
                     return;
                 }
-
-                function = true;
-                if (tok->tokAt(offset)->link()->next()->str() == "const")
-                {
-                    specStart = tok->tokAt(offset)->link()->next();
-                    specEnd = specStart;
-                }
-                argStart = tok->tokAt(offset);
-                argEnd = tok->tokAt(offset)->link();
-                tok = argEnd->next();
-                if (specStart)
-                    tok = tok->next();
             }
 
             // unhandled typedef, skip it and continue

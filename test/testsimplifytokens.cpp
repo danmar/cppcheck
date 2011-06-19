@@ -259,6 +259,7 @@ private:
         TEST_CASE(simplifyTypedef92); // ticket #2736
         TEST_CASE(simplifyTypedef93); // ticket #2738
         TEST_CASE(simplifyTypedef94); // ticket #1982
+        TEST_CASE(simplifyTypedef95); // ticket #2844
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5320,6 +5321,15 @@ private:
 
         checkSimplifyTypedef(code3);
         ASSERT_EQUALS(expected3, sizeof_(code3));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef95() // ticket #2844
+    {
+        const char code1[] = "class symbol_table {\n"
+                             "public:\n"
+                             "  typedef expression_error::error_code (*valid_func)(void *cbparam, const char *name, expression_space space);\n"
+                             "};\n";
         ASSERT_EQUALS("", errout.str());
     }
 
