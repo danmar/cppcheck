@@ -249,10 +249,10 @@ int main(int argc, char **argv)
 
     fout << "ifeq ($(HAVE_RULES),yes)\n"
          << "    CXXFLAGS += -DHAVE_RULES\n"
-         << "    ifdef LDFLAGS\n"
-         << "        LDFLAGS += -lpcre\n"
+         << "    ifdef LIBS\n"
+         << "        LIBS += -lpcre\n"
          << "    else\n"
-         << "        LDFLAGS=-lpcre\n"
+         << "        LIBS=-lpcre\n"
          << "    endif\n"
          << "endif\n\n";
 
@@ -286,10 +286,10 @@ int main(int argc, char **argv)
 
     fout << "\n###### Targets\n\n";
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
     fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/pathmatch.o\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o cli/pathmatch.o $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o cli/pathmatch.o $(EXTOBJ) $(LIBS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
