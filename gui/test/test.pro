@@ -1,7 +1,8 @@
 CONFIG  += ordered
 TEMPLATE = subdirs
 
-SUBDIRS = filelist \
+SUBDIRS = benchmark \
+    filelist \
     projectfile \
     translationhandler \
     xmlreport \
