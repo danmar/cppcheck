@@ -1138,7 +1138,7 @@ void CheckStl::checkAutoPointer()
                             tok3 = tok3->next();
                         }
                         tok3 = tok3->previous()->previous();
-                        if (Token::Match(tok3, "] )"))
+                        if (Token::Match(tok3->previous(), "[ ] )"))
                         {
                             autoPointerArrayError(tok2->next());
                         }
