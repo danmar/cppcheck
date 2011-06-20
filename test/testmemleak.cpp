@@ -315,6 +315,7 @@ private:
         TEST_CASE(getc_function);
 
         TEST_CASE(open_function);
+        TEST_CASE(open_fdopen);
         TEST_CASE(creat_function);
         TEST_CASE(close_function);
         TEST_CASE(fd_functions);
@@ -586,7 +587,7 @@ private:
             , "_open", "_wopen", "vscanf", "vsscanf", "vfscanf", "vasprintf", "utime", "utimes", "unlink"
             , "tempnam", "system", "symlink", "strpbrk", "strncasecmp", "strdup", "strcspn", "strcoll"
             , "setlocale", "sethostname", "rmdir", "rindex", "rename", "remove", "adjtime", "creat", "execle"
-            , "execl", "execlp", "execve", "execv", "fdopen", "fmemopen", "fnmatch", "fopencookie", "fopen"
+            , "execl", "execlp", "execve", "execv", "fmemopen", "fnmatch", "fopencookie", "fopen"
             , "getgrnam", "gethostbyaddr", "getnetbyname", "getopt", "getopt_long", "getprotobyname", "getpwnam"
             , "getservbyname", "getservbyport", "glob", "index", "inet_addr", "inet_aton", "inet_network"
             , "initgroups", "link", "mblen", "mbstowcs", "mbtowc", "mkdir", "mkfifo", "mknod", "obstack_printf"
@@ -3340,6 +3341,18 @@ private:
               "       return;\n"
               "    close(fd);\n"
               "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void open_fdopen()
+    {
+        // Ticket #2830
+        check("void f(const char *path)\n"
+              "{\n"
+              "    int fd = open(path, O_RDONLY);\n"
+              "    FILE *f = fdopen(fd, x);\n"
+              "    fclose(f);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

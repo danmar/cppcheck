@@ -51,7 +51,7 @@ static const char * const call_func_white_list[] =
     , "atof", "atoi", "atol", "chdir", "chmod", "chown"
     , "clearerr", "creat", "ctime", "ctime_r", "delete", "execl", "execle"
     , "execlp", "execv", "execve", "fchmod", "fclose", "fcntl"
-    , "fdatasync", "fdopen", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
+    , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
     , "flock", "fmemopen", "fnmatch", "fopen", "fopencookie", "for", "fprintf", "fputc", "fputs", "fread", "free"
     , "freopen", "fscanf", "fseek", "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello"
     , "ftruncate", "fwrite", "getc", "getenv","getgrnam", "gethostbyaddr", "gethostbyname", "getnetbyname"
