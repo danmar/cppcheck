@@ -1321,13 +1321,13 @@ private:
     void autoPointer()
     {
 
-	// ticket 2846
-	check("void f()\n"
-	      "{\n"
-	      "    std::vector<int*> vec;\n"
-	      "    vec.push_back(new int(3));\n"
-	      "    std::auto_ptr<int> ret(vec[0]);\n"
-	      "};\n");
+        // ticket 2846
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int*> vec;\n"
+              "    vec.push_back(new int(3));\n"
+              "    std::auto_ptr<int> ret(vec[0]);\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
 
         // ticket 2839
