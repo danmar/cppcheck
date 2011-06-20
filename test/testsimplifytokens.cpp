@@ -5326,10 +5326,19 @@ private:
 
     void simplifyTypedef95() // ticket #2844
     {
-        const char code1[] = "class symbol_table {\n"
-                             "public:\n"
-                             "  typedef expression_error::error_code (*valid_func)(void *cbparam, const char *name, expression_space space);\n"
-                             "};\n";
+        const char code[] = "class symbol_table {\n"
+                            "public:\n"
+                            "  typedef expression_error::error_code (*valid_func)(void *cbparam, const char *name, expression_space space);\n"
+                            "  valid_func f;\n"
+                            "};\n";
+        const char expected[] = "class symbol_table { "
+                                "public: "
+                                "; "
+                                "expression_error :: error_code ( * f ) ( void * cbparam , const char * name , expression_space space ) ; "
+                                "} ;";
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
     }
 

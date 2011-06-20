@@ -1219,12 +1219,14 @@ void Tokenizer::simplifyTypedef()
                 // function pointer
                 else if (Token::Match(tok->tokAt(offset), "( * %var% ) ("))
                 {
+                    // name token wasn't a name, it was part of the type
+                    typeEnd = typeEnd->next();
                     functionPtr = true;
                     funcStart = tok->tokAt(offset + 1);
-                    funcEnd = tok->tokAt(offset)->link()->previous();
-                    typeName = tok->tokAt(offset)->link()->tokAt(-2);
-                    argStart = tok->tokAt(offset)->link()->next();
-                    argEnd = tok->tokAt(offset)->link()->next()->link();
+                    funcEnd = tok->tokAt(offset + 1);
+                    typeName = tok->tokAt(offset + 2);
+                    argStart = tok->tokAt(offset + 4);
+                    argEnd = tok->tokAt(offset + 4)->link();
                     tok = argEnd->next();
                 }
 
