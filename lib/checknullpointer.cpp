@@ -516,9 +516,13 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
             for (const Token *tok1 = tok->previous(); tok1 && tok1 != decltok; tok1 = tok1->previous())
             {
-                if (tok1->str() == ")" && Token::Match(tok1->link()->tokAt(-3), "%varid% = %var%", varid))
+                if (tok1->str() == ")" && Token::Match(tok1->link()->previous(), "%var% ("))
                 {
-                    break;
+                    const Token *tok2 = tok1->link();
+                    while (tok2 && !Token::Match(tok2, "[;{}]"))
+                        tok2 = tok2->previous();
+                    if (Token::Match(tok2, "[;{}] %varid% = %var%", varid))
+                        break;
                 }
 
                 if (tok1->str() == ")" && Token::Match(tok1->link()->previous(), "while ( %varid%", varid))

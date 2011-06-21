@@ -487,6 +487,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo(x *p)\n"
+              "{\n"
+              "    p = aa->bar(p->next);\n"
+              "    if (!p)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo(struct ABC *abc)\n"
               "{\n"
               "    abc = abc ? abc->next : 0;\n"
