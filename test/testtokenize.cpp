@@ -305,6 +305,7 @@ private:
         TEST_CASE(bitfields8);
         TEST_CASE(bitfields9); // ticket #2706
         TEST_CASE(bitfields10);
+        TEST_CASE(bitfields11); // ticket #2845 (segmentation fault)
 
         TEST_CASE(microsoftMFC);
 
@@ -5354,6 +5355,14 @@ private:
                             "default: { }"
                             ";";
         ASSERT_EQUALS("{ } MACRO default : { } ;", tokenizeAndStringify(code,false));
+    }
+
+    void bitfields11() // ticket #2845 (segmentation fault)
+    {
+        const char code[] = "#if b&&a\n"
+                            "#ifdef y z:\n";
+        tokenizeAndStringify(code,false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void microsoftMFC()

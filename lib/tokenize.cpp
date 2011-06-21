@@ -9523,8 +9523,9 @@ void Tokenizer::simplifyBitfields()
                 offset = 1;
 
             Token *tok1 = tok->tokAt(2 + offset);
-            if (tok1->tokAt(2)->isBoolean() || Token::Match(tok1->tokAt(2), "%num%") ||
-                !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;"))
+            if (tok1 && tok1->tokAt(2) &&
+                (tok1->tokAt(2)->isBoolean() || Token::Match(tok1->tokAt(2), "%num%") ||
+                 !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;")))
             {
                 while (tok1->next() && !Token::Match(tok1->next(), ";|,"))
                     tok1->deleteNext();
