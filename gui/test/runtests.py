@@ -14,6 +14,9 @@ class Test:
     def __init__(self):
         self.profile = ''
         self.binary = ''
+        self.passed = 0
+        self.failed = 0
+        self.skipped = 0
 
 
 class TestList:
@@ -105,6 +108,7 @@ class TestRunner:
     def runtests(self):
         for test in self._testlist:
             self._runtest(test)
+        self._printsummary()
 
     def _runtest(self, test):
         cmd = test.binary
@@ -115,6 +119,36 @@ class TestRunner:
                                 stderr = subprocess.STDOUT)
         stdout_value, stderr_value = proc.communicate()
         print stdout_value
+        self._parseoutput(test, stdout_value)
+
+    def _parseoutput(self, test, output):
+        '''Parse test counts (passed, failed, skipped) from the output.'''
+
+        lines = output.splitlines(True)
+        for line in lines:
+            # Lines are like: Totals: 6 passed, 0 failed, 0 skipped
+            if line.startswith('Totals: '):
+                parts = line.split(' ')
+                test.passed = int(parts[1])
+                test.failed = int(parts[3])
+                test.skipped = int(parts[5])
+
+    def _printsummary(self):
+        total = 0
+        passed = 0
+        failed = 0
+        skipped = 0
+        for test in self._testlist:
+            total += test.passed + test.failed + test.skipped
+            passed += test.passed
+            failed += test.failed
+            skipped += test.skipped
+
+        print '\nTEST SUMMARY:'
+        print '  Total tests:   %i' % total
+        print '  Passed tests:  %i' % passed
+        print '  Failed tests:  %i' % failed
+        print '  Skipped tests: %i' % skipped
 
 
 def main():
