@@ -70,6 +70,13 @@ private:
         TEST_CASE(testiterator);
         TEST_CASE(test2168);
         TEST_CASE(pointer);   // #2321 - postincrement of pointer is OK
+        TEST_CASE(testHangWithInvalidCode); // #2847 - cppcheck hangs with 100% cpu load
+    }
+
+    void testHangWithInvalidCode()
+    {
+        check("a,b--\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testsimple()

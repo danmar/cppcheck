@@ -55,7 +55,7 @@ void CheckPostfixOperator::postfixOperator()
             else if (tok->strAt(-2) == ",")
             {
                 int i(1);
-                while (tok->strAt(i) != ")")
+                while (tok->strAt(i) != ")" && tok->tokAt(i) != 0)
                 {
                     if (tok->strAt(i) == ";")
                     {
