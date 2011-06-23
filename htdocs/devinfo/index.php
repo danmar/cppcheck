@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <title>Developer Information - Cppcheck</title>
-  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Orbitron" />
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Orbitron&amp;text=Cppcheck" />
   <link rel="stylesheet" type="text/css" href="/site/css/all.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="alternate" type="application/atom+xml" title="Recent Commits to cppcheck:master"

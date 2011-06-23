@@ -9,7 +9,7 @@ goal is no false positives." />
 code, errors, bugs, compilers, bounds checking, memory leaks, obsolete functions,
 uninitialized variables, unused functions" />
   <title>Cppcheck - A tool for static C/C++ code analysis</title>
-  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Orbitron" />
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Orbitron&amp;text=Cppcheck" />
   <link rel="stylesheet" type="text/css" href="/site/css/all.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="alternate" type="application/rss+xml" title="Project News"
