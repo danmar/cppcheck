@@ -25,6 +25,7 @@
 #include "tokenize.h"
 #include "errorlogger.h"
 #include "mathlib.h"
+#include "symboldatabase.h"
 
 #include <algorithm>
 #include <sstream>
@@ -1931,6 +1932,20 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(const CheckBufferOverrun::ArrayInfo &ai
     *this = ai;
 }
 
+CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *tokenizer)
+{
+    _varid = var->varId();
+    _varname = var->name();
+    for (size_t i = 0; i < var->dimensions().size(); i++)
+        _num.push_back(var->dimension(i));
+    if (var->typeEndToken()->str() == "*")
+        _element_size = tokenizer->sizeOfType(var->typeEndToken());
+    else if (var->typeStartToken()->str() == "struct")
+        _element_size = 100;
+    else
+        _element_size = tokenizer->sizeOfType(var->typeEndToken());
+}
+
 CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(const CheckBufferOverrun::ArrayInfo &ai)
 {
     if (&ai != this)
@@ -2197,17 +2212,13 @@ private:
 
 void CheckBufferOverrun::executionPaths()
 {
-    // Parse all tokens and extract array info..
+    // Parse all variables and extract array info..
     std::map<unsigned int, ArrayInfo> arrayInfo;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    for (size_t i = 1; i < _tokenizer->varIdCount(); i++)
     {
-        if (Token::Match(tok, "[;{}] %type%"))
-        {
-            ArrayInfo ai;
-            if (!ai.declare(tok->next(), *_tokenizer))
-                continue;
-            arrayInfo[ai.varid()] = ai;
-        }
+        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(i);
+        if (var && var->isArray())
+            arrayInfo[i] = ArrayInfo(var, _tokenizer);
     }
 
     // Perform checking - check how the arrayInfo arrays are used

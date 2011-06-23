@@ -32,6 +32,7 @@
 class ErrorLogger;
 class Token;
 class Tokenizer;
+class Variable;
 
 /// @addtogroup Checks
 /// @{
@@ -127,6 +128,7 @@ public:
     public:
         ArrayInfo();
         ArrayInfo(const ArrayInfo &);
+        ArrayInfo(const Variable *var, const Tokenizer *tokenizer);
         ArrayInfo & operator=(const ArrayInfo &ai);
 
         /**
