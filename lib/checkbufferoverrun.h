@@ -148,17 +148,35 @@ public:
          */
         bool declare(const Token *tok, const Tokenizer &tokenizer);
 
+        /** array sizes */
+        const std::vector<MathLib::bigint> &num() const
+        {
+            return _num;
+        }
+
         /** array size */
-        const std::vector<MathLib::bigint> &num;
+        MathLib::bigint num(size_t index) const
+        {
+            return _num[index];
+        }
 
         /** size of each element */
-        const MathLib::bigint &element_size;
+        MathLib::bigint element_size() const
+        {
+            return _element_size;
+        }
 
         /** Variable name */
-        const unsigned int &varid;
+        unsigned int varid() const
+        {
+            return _varid;
+        }
 
         /** Variable name */
-        const std::string &varname;
+        const std::string &varname() const
+        {
+            return _varname;
+        }
     };
 
     /** Check for buffer overruns (based on ArrayInfo) */
