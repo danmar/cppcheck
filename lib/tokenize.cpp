@@ -6870,6 +6870,14 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (tok3->str() == "do")
             break;
 
+        // Stop if unknown function call is seen
+        // If the variable is a global or a member variable it might be
+        // changed by the function call
+        if (tok3->str() == ")" && tok3->link() &&
+            Token::Match(tok3->link()->tokAt(-2), "[;{}] %var% (") &&
+            !Token::Match(tok3->link()->previous(), "if|for|while|switch"))
+            break;
+
         // Stop if something like 'while (--var)' is found
         if (tok3->str() == "for" || tok3->str() == "while" || tok3->str() == "do")
         {

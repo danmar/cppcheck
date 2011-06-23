@@ -141,6 +141,7 @@ private:
         TEST_CASE(simplifyKnownVariablesBailOutConditionalIncrement);
         TEST_CASE(simplifyKnownVariablesBailOutSwitchBreak);	// ticket #2324
         TEST_CASE(simplifyKnownVariablesFloat);    // #2454 - float variable
+        TEST_CASE(simplifyKnownVariablesClassMember);  // #2815 - value of class member may be changed by function call
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -2266,6 +2267,20 @@ private:
         const char expected[] = "void f ( ) {\n;\nx ( 0.25 ) ;\n}";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+    }
+
+    void simplifyKnownVariablesClassMember()
+    {
+        // Ticket #2815
+        const char code[] = "char *a;\n"
+                            "void f(const char *s) {\n"
+                            "    a = NULL;\n"
+                            "    x();\n"
+                            "    memcpy(a, s, 10);\n"   // <- don't simplify "a" here
+                            "}\n";
+
+        const std::string s(tokenizeAndStringify(code, true));
+        ASSERT_EQUALS(true, s.find("memcpy ( a , s , 10 ) ;") != std::string::npos);
     }
 
 
