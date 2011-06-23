@@ -27,6 +27,7 @@
 #include <set>
 
 #include "token.h"
+#include "mathlib.h"
 
 class Tokenizer;
 class Settings;
@@ -39,6 +40,16 @@ class SymbolDatabase;
  * @brief Access control enumerations.
  */
 enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Local };
+
+/**
+ * @brief Array dimension information.
+ */
+struct Dimension
+{
+    const Token *start;  // size start token
+    const Token *end;    // size end token
+    MathLib::bigint num; // dimension length when size is a number, 0 if not known
+};
 
 /** @brief Information about a member variable. */
 class Variable
@@ -78,7 +89,8 @@ public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
              std::size_t index_, AccessControl access_, bool mutable_,
              bool static_, bool const_, bool class_, const Scope *type_,
-             const Scope *scope_, bool array_, bool default_)
+             const Scope *scope_, bool array_, bool default_,
+             const std::vector<Dimension> &dimensions_)
         : _name(name_),
           _start(start_),
           _end(end_),
@@ -94,6 +106,7 @@ public:
         setFlag(fIsClass, class_);
         setFlag(fIsArray, array_);
         setFlag(fHasDefault, default_);
+        _dimensions = dimensions_;
     }
 
     /**
@@ -295,6 +308,24 @@ public:
         return _scope;
     }
 
+    /**
+     * Get array dimensions.
+     * @return array dimensions vector
+     */
+    const std::vector<Dimension> &dimensions() const
+    {
+        return _dimensions;
+    }
+
+    /**
+     * Get array dimension length.
+     * @return length of dimension
+     */
+    MathLib::bigint dimension(size_t index_) const
+    {
+        return _dimensions[index_].num;
+    }
+
 private:
     /** @brief variable name token */
     const Token *_name;
@@ -319,6 +350,9 @@ private:
 
     /** @brief pointer to scope this variable is in */
     const Scope *_scope;
+
+    /** @brief array dimensions */
+    std::vector<Dimension> _dimensions;
 };
 
 class Function
@@ -452,11 +486,12 @@ public:
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, bool mutable_,
                      bool static_, bool const_, bool class_, const Scope *type_,
-                     const Scope *scope_, bool array_)
+                     const Scope *scope_, bool array_,
+                     const std::vector<Dimension> &dimensions_)
     {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
                                    access_, mutable_, static_, const_, class_,
-                                   type_, scope_, array_, false));
+                                   type_, scope_, array_, false, dimensions_));
     }
 
     /** @brief initialize varlist */
@@ -535,6 +570,14 @@ public:
      * @brief output a debug message
      */
     void debugMessage(const Token *tok, const std::string &msg) const;
+
+    /**
+     * @brief parse and save array dimension information
+     * @param dimensions array dimensions vector
+     * @param tokenizer tokenizer pointer
+     * @return true if array, false if not
+     */
+    bool arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok) const;
 
 private:
 

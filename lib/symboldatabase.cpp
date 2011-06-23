@@ -118,7 +118,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
             Scope *new_scope = &scopeList.back();
 
-            scope->addVariable(tok->next()->link()->next(), tok, tok, scope->access, false, false, false, true, new_scope, scope, tok->next()->link()->strAt(2) == "[");
+            std::vector<Dimension> dimensions;
+
+            bool isArray = false;
+
+            if (tok->next()->link()->strAt(2) == "[")
+                isArray = arrayDimensions(dimensions, tok->next()->link()->tokAt(2));
+
+            scope->addVariable(tok->next()->link()->next(), tok, tok, scope->access, false, false, false, true, new_scope, scope, isArray, dimensions);
 
             const Token *tok2 = tok->next();
 
@@ -1218,6 +1225,27 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
     }
 }
 
+bool SymbolDatabase::arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok) const
+{
+    bool isArray = false;
+
+    const Token *dim = tok;
+
+    while (dim->str() == "[" && dim->next() && dim->next()->str() != "]")
+    {
+        Dimension dimension;
+        dimension.num = 0;
+        dimension.start = dim->next();
+        dimension.end = dim->link()->previous();
+        if (dimension.start == dimension.end && dimension.start->isNumber())
+            dimension.num = MathLib::toLongNumber(dimension.start->str());
+        dimensions.push_back(dimension);
+        dim = dim->link()->next();
+        isArray = true;
+    }
+    return isArray;
+}
+
 //---------------------------------------------------------------------------
 
 unsigned int Function::initializedArgCount() const
@@ -1255,6 +1283,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
             isConstVar = bool(tok->str() == "const");
             isArrayVar = false;
             hasDefault = false;
+            std::vector<Dimension> dimensions;
 
             while (tok->str() != "," && tok->str() != ")" && tok->str() != "=")
             {
@@ -1264,7 +1293,9 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
                     endTok = tok->previous();
                 }
                 else if (tok->str() == "[")
-                    isArrayVar = true;
+                {
+                    isArrayVar = symbolDatabase->arrayDimensions(dimensions, tok);
+                }
                 else if (tok->str() == "<")
                 {
                     int level = 1;
@@ -1327,7 +1358,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
                     tok = tok->next();
             }
 
-            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, functionScope, isArrayVar, hasDefault));
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, functionScope, isArrayVar, hasDefault, dimensions));
 
             if (tok->str() == ")")
                 break;
@@ -1618,11 +1649,20 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     }
 
     bool isArray = false;
+    std::vector<Dimension> dimensions;
 
     if (tok && isVariableDeclaration(tok, vartok, typetok, isArray))
     {
         isClass = (!typetok->isStandardType() && vartok->previous()->str() != "*");
-        tok = vartok->next();
+        if (isArray)
+        {
+            isArray = check->arrayDimensions(dimensions, vartok->next());
+            tok = vartok->next();
+            while (tok && tok->str() == "[")
+                tok = tok->link()->next();
+        }
+        else
+            tok = vartok->next();
     }
 
     // If the vartok was set in the if-blocks above, create a entry for this variable..
@@ -1636,7 +1676,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
         if (typetok)
             scope = check->findVariableType(this, typetok);
 
-        addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this, isArray);
+        addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this, isArray, dimensions);
     }
 
     return tok;
