@@ -2272,15 +2272,29 @@ private:
     void simplifyKnownVariablesClassMember()
     {
         // Ticket #2815
-        const char code[] = "char *a;\n"
-                            "void f(const char *s) {\n"
-                            "    a = NULL;\n"
-                            "    x();\n"
-                            "    memcpy(a, s, 10);\n"   // <- don't simplify "a" here
-                            "}\n";
+        {
+            const char code[] = "char *a;\n"
+                                "void f(const char *s) {\n"
+                                "    a = NULL;\n"
+                                "    x();\n"
+                                "    memcpy(a, s, 10);\n"   // <- don't simplify "a" here
+                                "}\n";
 
-        const std::string s(tokenizeAndStringify(code, true));
-        ASSERT_EQUALS(true, s.find("memcpy ( a , s , 10 ) ;") != std::string::npos);
+            const std::string s(tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(true, s.find("memcpy ( a , s , 10 ) ;") != std::string::npos);
+        }
+
+        // If the variable is local then perform simplification..
+        {
+            const char code[] = "void f(const char *s) {\n"
+                                "    char *a = NULL;\n"
+                                "    x();\n"
+                                "    memcpy(a, s, 10);\n"   // <- simplify "a"
+                                "}\n";
+
+            const std::string s(tokenizeAndStringify(code, true));
+            TODO_ASSERT_EQUALS(true, false, s.find("memcpy ( 0 , s , 10 ) ;") != std::string::npos);
+        }
     }
 
 

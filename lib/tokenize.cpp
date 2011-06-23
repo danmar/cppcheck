@@ -6873,6 +6873,8 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         // Stop if unknown function call is seen
         // If the variable is a global or a member variable it might be
         // changed by the function call
+        // TODO: don't bail out if the variable is a local variable,
+        //       then it can't be changed by the function call.
         if (tok3->str() == ")" && tok3->link() &&
             Token::Match(tok3->link()->tokAt(-2), "[;{}] %var% (") &&
             !Token::Match(tok3->link()->previous(), "if|for|while|switch"))
