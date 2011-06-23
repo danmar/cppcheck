@@ -1277,10 +1277,15 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 continue; // FIXME we loose the check for negative index when we bail
 
             // get maximum size from type
-            // find where this token is defined
-            const Token *index_type = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->tokAt(varpos + 2)->varId());
+            // find where this type is defined
+            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->tokAt(varpos + 2)->varId());
 
-            index_type = index_type->previous();
+            // make sure it is in the database
+            if (!var)
+                continue;
+
+            // get type token
+            const Token *index_type = var->typeEndToken();
 
             if (index_type->str() == "char")
             {
@@ -1363,16 +1368,18 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (varid > 0)
             {
                 // get type of variable
-                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "[;{}] %type% * %varid% ;", varid);
-                if (!declTok)
+                const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
+                /** @todo false negatives: this may be too conservative */
+                if (!var || var->typeEndToken()->str() != "*" || var->typeStartToken()->next() != var->typeEndToken())
                     continue;
 
-                type = declTok->next()->str();
+                // get name of variable
+                type = var->typeStartToken()->str();
 
                 // malloc() gets count of bytes and not count of
                 // elements, so we should calculate count of elements
                 // manually
-                unsigned int sizeOfType = _tokenizer->sizeOfType(declTok->next());
+                unsigned int sizeOfType = _tokenizer->sizeOfType(var->typeStartToken());
                 if (sizeOfType > 0)
                     size /= static_cast<int>(sizeOfType);
             }
@@ -1903,8 +1910,8 @@ void CheckBufferOverrun::negativeIndex()
 
             if (tok2->previous() && tok2->previous()->varId())
             {
-                const Token *tok3 = Token::findmatch(_tokenizer->tokens(), "%varid%", tok2->previous()->varId());
-                if (tok3 && Token::Match(tok3->next(), "[ %any% ] ;|["))
+                const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->previous()->varId());
+                if (var && var->isArray())
                     negativeIndexError(tok, index);
             }
         }
