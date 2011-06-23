@@ -23,6 +23,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# Project repository:
+# https://bitbucket.org/kimmov/testrun
+
 '''Runs all the GUI tests in subdirectories.'''
 
 import os
@@ -49,11 +52,12 @@ class TestList:
         self._filelist = []
         self._basedirectory = None
 
-    def findtests(self, directory = ''):
+    def findtests(self, directory):
         '''Finds all tests from subdirectories of the given directory.'''
         
-        if directory == None or directory == '':
-            directory = os.getcwd()
+        if not os.path.exists(directory):
+            print 'Directory does not exist!'
+            return
 
         self._basedirectory = directory
         self._listprofiles(directory)
@@ -71,10 +75,6 @@ class TestList:
 
         for root, dirnames, filenames in os.walk(directory):
             self._walkfiles(root, filenames)
-
-            for curdir in dirnames:
-                fullpath = os.path.join(root, curdir)
-                self._listprofiles(fullpath)
 
     def _walkfiles(self, dirname, filenames):
         '''Find .pro files from list of given filenames.
@@ -100,10 +100,13 @@ class TestList:
         for fullpath, relpath in self._filelist:
             #print 'Reading file: %s' % relpath
             f = open(fullpath, 'r')
-            targetfound = False
-            while not targetfound:
+            target = ''
+            destdir = ''
+            allread = False
+            while not allread:
                 line = f.readline()
                 if line == '':
+                    allread = True
                     break
 
                 line = line.strip()
@@ -111,17 +114,26 @@ class TestList:
                     target = line[line.find('=') + 1:]
                     target = target.strip()
                     #print 'File: %s Target: %s' % (relpath, target)
-                    path = os.path.dirname(fullpath)
-                    target = os.path.join(path, target)
-                    targetfound = True
 
-                    if os.path.exists(target):
-                        testinfo = Test()
-                        testinfo.profile = relpath
-                        testinfo.binary = target
-                        self._testlist.append(testinfo)
-
+                if line.startswith('DESTDIR'):
+                    destdir = line[line.find('=') + 1:]
+                    destdir = destdir.strip()
+                    #print 'File: %s Dest: %s' % (relpath, dest)
             f.close()
+
+            if target != '':
+                path = os.path.dirname(fullpath)
+                if destdir != '':
+                    path = os.path.join(path, destdir)
+                path = os.path.join(path, target)
+                path = os.path.normpath(path)
+                #print 'Found test: %s' % path
+
+                if os.path.exists(path):
+                    testinfo = Test()
+                    testinfo.profile = relpath
+                    testinfo.binary = path
+                    self._testlist.append(testinfo)
 
 
 class TestRunner:
@@ -176,7 +188,8 @@ class TestRunner:
 
 def main():
     lister = TestList()
-    lister.findtests()
+    directory = os.getcwd()
+    lister.findtests(directory)
     runner = TestRunner(lister.testlist())
     runner.runtests()
     return 0
