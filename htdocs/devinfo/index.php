@@ -64,6 +64,18 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
   print("</ul>\n");
 ?>
 <p><a href="http://sourceforge.net/apps/trac/cppcheck/timeline">View complete Trac timeline&hellip;</a></p>
+<h2>Active Forum Topics</h2>
+<?php
+  require '../site/activetopics.php';
+
+  $activetopics = new Forum_ActiveTopics('http://sourceforge.net/apps/phpbb/cppcheck/');
+  print("<ul class=\"rssfeeditems\">\n");
+  foreach ($activetopics->getTopics(0, 10) as $topic) { //for all active topics...
+    print("  <li><a href=\"".$topic->getLink()."\">".$topic->getTitle()."</a><em>last post by <strong>".$topic->getLastPostUser()."</strong></em></li>\n");
+  }
+  print("</ul>\n");
+?>
+<p><a href="http://sourceforge.net/apps/phpbb/cppcheck/search.php?st=0&amp;search_id=active_topics">View all active topics&hellip;</a></p>
 <h2>Doxygen</h2>
 <ul>
   <li><a href="/doxyoutput/">Output</a></li>
