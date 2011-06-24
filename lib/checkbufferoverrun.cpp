@@ -2221,7 +2221,7 @@ void CheckBufferOverrun::executionPaths()
 {
     // Parse all variables and extract array info..
     std::map<unsigned int, ArrayInfo> arrayInfo;
-    for (size_t i = 1; i < _tokenizer->varIdCount(); i++)
+    for (size_t i = 1; i <= _tokenizer->varIdCount(); i++)
     {
         const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(i);
         if (var && var->isArray())
