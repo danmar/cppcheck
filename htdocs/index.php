@@ -36,10 +36,11 @@ uninitialized variables, unused functions" />
 </div> <!-- #tabs -->
 <div id="content">
   <div class="wrap">
-<p><strong>Cppcheck</strong> is an analysis tool for C/C++ code. Unlike C/C++
-compilers and many other analysis tools, it don't detect syntax errors. Cppcheck
-only detects the types of bugs that the compilers normally fail to detect. The
-goal is no false positives.</p>
+<p><strong>Cppcheck</strong> is an static analysis tool for C/C++ code. Unlike
+C/C++ compilers and many other analysis tools it does not detect syntax errors
+in the code. Cppcheck primarily detects the types of bugs that the compilers
+normally do not detect. The goal is to detect only real errors in the code
+(i.e. have zero false positives).</p>
 
 <h2>Download</h2>
 <p><a class="downloadnow" href="http://downloads.sourceforge.net/cppcheck/cppcheck-1.49-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.49 for Windows</em></a></p>
@@ -53,8 +54,8 @@ as plugin for your favorite IDE:</p>
   <li><strong>Hudson</strong> - <a href="http://wiki.hudson-ci.org/display/HUDSON/Cppcheck+Plugin">Cppcheck Plugin</a></li>
   <li><strong>Jenkins</strong> - <a href="http://wiki.jenkins-ci.org/display/JENKINS/Cppcheck+Plugin">Cppcheck Plugin</a></li>
 </ul>
-<p>No plugin exists for <strong>Visual Studio</strong>, but it's possible to add
-Cppcheck as an external tool.</p>
+<p>There is no plugin for <strong>Visual Studio</strong>, but it is possible to
+add Cppcheck as an external tool.</p>
 
 <h2>Features</h2>
 <ul>
@@ -91,7 +92,7 @@ Cppcheck as an external tool.</p>
 <ul>
   <li>Use <a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a> to report
   bugs and feature requests</li>
-  <li>Ask questions in the <a href="http://sourceforge.net/apps/phpbb/cppcheck/">forum</a>
+  <li>Ask questions in the <a href="http://sourceforge.net/apps/phpbb/cppcheck/">discussion forum</a>
   or at the IRC channel <a href="irc://irc.freenode.net/">#cppcheck</a></li>
   <li>For more details look at the <a href="http://sourceforge.net/apps/mediawiki/cppcheck/">wiki</a></li>
 </ul>
