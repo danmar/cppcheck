@@ -1224,6 +1224,23 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
 void CheckBufferOverrun::checkGlobalAndLocalVariable()
 {
+    // check all known fixed size arrays first by just looking them up
+    for (size_t i = 1; i <= _tokenizer->varIdCount(); i++)
+    {
+        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(i);
+        if (var && var->isArray() && var->dimension(0) > 0)
+        {
+            ArrayInfo arrayInfo(var, _tokenizer);
+            const Token *tok = var->nameToken();
+            while (tok && tok->str() != ";")
+                tok = tok->next();
+            if (!tok)
+                break;
+            checkScope(tok, arrayInfo);
+        }
+    }
+
+    // find all dynamically allocated arrays next by parsing the token stream
     // Count { and } when parsing all tokens
     int indentlevel = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -1254,87 +1271,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                                      "Check (BufferOverrun::checkGlobalAndLocalVariable)",
                                      tok->progressValue());
 
-        ArrayInfo arrayInfo;
-        if (arrayInfo.declare(tok, *_tokenizer))
-        {
-            while (tok && tok->str() != ";")
-                tok = tok->next();
-            if (!tok)
-                break;
-            checkScope(tok, arrayInfo);
-            continue;
-        }
-
-        if (Token::Match(tok, "%type% *| %var% [ %var% ] [;=]"))
-        {
-            // varpos : position for variable token
-            unsigned char varpos = 1;
-            if (tok->next()->str() == "*")
-                ++varpos;
-
-            // make sure the variable is defined
-            if (tok->tokAt(varpos + 2)->varId() == 0)
-                continue; // FIXME we loose the check for negative index when we bail
-
-            // get maximum size from type
-            // find where this type is defined
-            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->tokAt(varpos + 2)->varId());
-
-            // make sure it is in the database
-            if (!var)
-                continue;
-
-            // get type token
-            const Token *index_type = var->typeEndToken();
-
-            if (index_type->str() == "char")
-            {
-                if (index_type->isUnsigned())
-                    size = UCHAR_MAX + 1;
-                else if (index_type->isSigned())
-                    size = SCHAR_MAX + 1;
-                else
-                    size = CHAR_MAX + 1;
-            }
-            else if (index_type->str() == "short")
-            {
-                if (index_type->isUnsigned())
-                    size = USHRT_MAX + 1;
-                else
-                    size = SHRT_MAX + 1;
-            }
-
-            // checkScope assumes size is signed int so we limit the following sizes to INT_MAX
-            else if (index_type->str() == "int")
-            {
-                if (index_type->isUnsigned())
-                    size = INT_MAX; // should be UINT_MAX + 1U;
-                else
-                    size = INT_MAX; // should be INT_MAX + 1U;
-            }
-            else if (index_type->str() == "long")
-            {
-                if (index_type->isUnsigned())
-                {
-                    if (index_type->isLong())
-                        size = INT_MAX; // should be ULLONG_MAX + 1ULL;
-                    else
-                        size = INT_MAX; // should be ULONG_MAX + 1UL;
-                }
-                else
-                {
-                    if (index_type->isLong())
-                        size = INT_MAX; // should be LLONG_MAX + 1LL;
-                    else
-                        size = INT_MAX; // should be LONG_MAX + 1L;
-                }
-            }
-
-            type = tok->strAt(varpos - 1);
-            varid = tok->tokAt(varpos)->varId();
-            nextTok = varpos + 5;
-        }
-        else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
+        if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
         {
             size = MathLib::toLongNumber(tok->strAt(6));
             type = tok->strAt(4);

@@ -821,7 +821,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     // get maximum size from type
                     // find where this type is defined
                     const Variable *var = getVariableFromVarId(dimension.start->varId());
-    
+
                     // make sure it is in the database
                     if (!var)
                         break;
@@ -845,7 +845,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         else
                             dimension.num = SHRT_MAX + 1;
                     }
-    
+
                     // checkScope assumes size is signed int so we limit the following sizes to INT_MAX
                     else if (index_type->str() == "int")
                     {
