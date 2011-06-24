@@ -44,9 +44,9 @@ errors in the code (i.e. have zero false positives).</p>
 
 <h2>Download</h2>
 <p><a class="downloadnow" href="http://downloads.sourceforge.net/cppcheck/cppcheck-1.49-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.49 for Windows</em></a></p>
-<p>You can download the standalone tool from our
-<a href="http://sourceforge.net/projects/cppcheck/">project page</a> or try it 
-as plugin for your favorite IDE:</p>
+<p>You can download the standalone Cppcheck from our
+<a href="http://sourceforge.net/projects/cppcheck/">project page</a> or add it
+as a plugin for your favorite IDE:</p>
 <ul>
   <li><strong>Code::Blocks</strong> - <em>integrated</em></li>
   <li><strong>CodeLite</strong> - <em>integrated</em></li>
