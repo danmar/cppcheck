@@ -286,6 +286,7 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last)
         tok2->isSigned(tok->isSigned());
         tok2->isLong(tok->isLong());
         tok2->isUnused(tok->isUnused());
+        tok2->varId(tok->varId());
 
         // Check for links and fix them up
         if (tok2->str() == "(" || tok2->str() == "[" || tok2->str() == "{")
@@ -4655,6 +4656,8 @@ bool Tokenizer::simplifyTokenList()
         }
     }
 
+    simplifyReturn();
+
     removeRedundantAssignment();
 
     simplifyComma();
@@ -8401,7 +8404,6 @@ void Tokenizer::simplifyEnum()
     }
 }
 
-
 void Tokenizer::simplifyStd()
 {
     std::set<std::string> f;
@@ -9885,6 +9887,24 @@ void Tokenizer::removeUnnecessaryQualification()
                 tok->deleteThis();
                 tok->deleteThis();
             }
+        }
+    }
+}
+
+void Tokenizer::simplifyReturn()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "return strncat ( %any% , %any% , %any% ) ;"))
+        {
+            // Change to: strncat ( %any% , %any% , %any% ) ;
+            tok->deleteNext();
+            tok->str("strncat");
+
+            // Change to: strncat ( %any% , %any% , %any% ) ; return %any% ;
+            tok->tokAt(8)->insertToken("return");
+            copyTokens(tok->tokAt(9), tok->tokAt(2), tok->tokAt(2));
+            tok->tokAt(10)->insertToken(";");
         }
     }
 }

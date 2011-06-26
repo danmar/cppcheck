@@ -358,6 +358,7 @@ private:
         TEST_CASE(simplifyIfNotNull);
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
         TEST_CASE(simplifyVarDecl2); // ticket # 2834 segmentation fault
+        TEST_CASE(return_strncat); // ticket # 2860 Returning value of strncat() reported as memory leak
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -7079,6 +7080,23 @@ private:
         const char code[] = "std::vector<int>::iterator";
         tok(code, false);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void return_strncat()
+    {
+        const char code[] = "char *f()\n"
+                            "{\n"
+                            "    char *temp=malloc(2);\n"
+                            "    strcpy(temp,\"\");\n"
+                            "    return (strncat(temp,\"a\",1));\n"
+                            "}";
+        ASSERT_EQUALS("char * f ( ) { "
+                      "char * temp ; "
+                      "temp = malloc ( 2 ) ; "
+                      "strcpy ( temp , \"\" ) ; "
+                      "strncat ( temp , \"a\" , 1 ) ; "
+                      "return temp ; "
+                      "}", tok(code, true));
     }
 };
 
