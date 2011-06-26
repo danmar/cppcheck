@@ -103,7 +103,9 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     {
         if (functionNames1.find(tok.str()) != functionNames1.end())
             var.push_back(tok.tokAt(2));
-        else if (value == 0 && Token::Match(&tok, "memchr|memcmp|memcpy|memmove|memset|strcpy|printf|sprintf|snprintf"))
+        else if (value == 0 && Token::Match(&tok, "memchr|memcmp|memcpy|memmove|memset|strcpy|printf|sprintf"))
+            var.push_back(tok.tokAt(2));
+        else if (value == 0 && Token::simpleMatch(&tok, "snprintf") && tok.strAt(4) != "0")
             var.push_back(tok.tokAt(2));
         else if (value != 0 && Token::simpleMatch(&tok, "fflush"))
             var.push_back(tok.tokAt(2));

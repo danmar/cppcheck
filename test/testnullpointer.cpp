@@ -49,6 +49,8 @@ private:
         TEST_CASE(pointerCheckAndDeRef);	// check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);		// Dereference NULL constant
         TEST_CASE(gcc_statement_expression);    // Don't crash
+        TEST_CASE(snprintf_with_zero_size);
+        TEST_CASE(snprintf_with_non_zero_size);
     }
 
     void check(const char code[])
@@ -1174,6 +1176,24 @@ private:
               "    ({ if (abc) dbg(); })\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void snprintf_with_zero_size()
+    {
+        // Ticket #2840
+        check("void f() {\n"
+              "    int bytes = snprintf(0, 0, \"%u\", 1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void snprintf_with_non_zero_size()
+    {
+        // Ticket #2840
+        check("void f() {\n"
+              "    int bytes = snprintf(0, 10, \"%u\", 1);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
     }
 };
 
