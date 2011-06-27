@@ -354,6 +354,7 @@ private:
         TEST_CASE(removeUnnecessaryQualification3);
         TEST_CASE(removeUnnecessaryQualification4);
         TEST_CASE(removeUnnecessaryQualification5);
+        TEST_CASE(removeUnnecessaryQualification6); // ticket #2859
 
         TEST_CASE(simplifyIfNotNull);
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
@@ -7049,6 +7050,22 @@ private:
                             "}\n";
         tok(code, false);
         ASSERT_EQUALS("[test.cpp:11]: (portability) Extra qualification 'two::c::' unnecessary and considered an error by many compilers.\n", errout.str());
+    }
+
+    void removeUnnecessaryQualification6()
+    {
+        const char code[] = "namespace NS {\n"
+                            "    int HRDF_bit() { return 1; }\n"
+                            "    void HRDF_bit_set() { }\n"
+                            "    void func(int var) {\n"
+                            "        if (!NS::HRDF_bit())\n"
+                            "            return;\n"
+                            "        else\n"
+                            "            NS::HRDF_bit_set();\n"
+                            "    }\n"
+                            "}\n";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyIfNotNull()

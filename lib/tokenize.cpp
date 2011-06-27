@@ -9829,9 +9829,9 @@ void Tokenizer::removeUnnecessaryQualification()
         if (Token::Match(tok, "class|struct|namespace %type% :|{") &&
             (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum")))
         {
-            tok = tok->next();
             Space info;
             info.isNamespace = tok->str() == "namespace";
+            tok = tok->next();
             info.className = tok->str();
             tok = tok->next();
             while (tok && tok->str() != "{")
@@ -9848,7 +9848,7 @@ void Tokenizer::removeUnnecessaryQualification()
             else if (tok->str() == classInfo.back().className &&
                      Token::Match(tok, "%type% :: %type% (") &&
                      Token::Match(tok->tokAt(3)->link(), ") const| {|;") &&
-                     tok->previous()->str() != ":")
+                     tok->previous()->str() != ":" && !classInfo.back().isNamespace)
             {
                 std::string qualification = tok->str() + "::";
 
