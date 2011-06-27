@@ -120,6 +120,7 @@ private:
         TEST_CASE(symboldatabase15); // ticket #2591
         TEST_CASE(symboldatabase16); // ticket #2637
         TEST_CASE(symboldatabase17); // ticket #2657
+        TEST_CASE(symboldatabase18); // ticket #2865
     }
 
     void test_isVariableDeclarationCanHandleNull()
@@ -865,6 +866,14 @@ private:
     {
         // ticket #2657 - segmentation fault
         check("return f(){}\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase18()
+    {
+        // ticket #2865 - segmentation fault
+        check("char a[1]\n");
 
         ASSERT_EQUALS("", errout.str());
     }
