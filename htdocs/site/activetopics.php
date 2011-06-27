@@ -59,15 +59,20 @@ class Forum_ActiveTopics {
         $html = strip_tags($html, '<a><dd>');
         $html = preg_replace(array('#\t#', '#&amp;sid=[a-z0-9]+#'), '', $html);
         if (preg_match_all('#<a href="\./(.*?)" class="topictitle">(.*?)</a>#im', $html, $matches)) {
-            $lastPostUsers = array();
-            if (preg_match_all('#<dd class="lastpost">\nby <a href="\./(.*?)">(.*?)</a>#i', $html, $lastPosts)) {
-                $lastPostUserLinks = $lastPosts[1];
-                $lastPostUserNames = $lastPosts[2];
+            $lastPosts = array();
+            if (preg_match_all('#<dd class="lastpost">\nby <a href="\./(.*?)">(.*?)</a><a href=".*?"></a> ([A-Za-z0-9,: ]+) \n</dd>#i', $html, $lastPostMatches)) {
+                $lastPostUserLinks = $lastPostMatches[1];
+                $lastPostUserNames = $lastPostMatches[2];
+                $lastPostTimes = $lastPostMatches[3];
                 for ($i = 0; $i < count($lastPostUserLinks); $i++) { //for all users...
                     $link = $this->_forumHome . $lastPostUserLinks[$i];
                     $name = $lastPostUserNames[$i];
+                    $timestamp = strtotime($lastPostTimes[$i]);
+                    if ($timestamp === false || $timestamp === -1) {
+                        $timestamp = 0;
+                    }
 
-                    $lastPostUsers[] = new Forum_User($link, $name);
+                    $lastPosts[] = new Forum_LastPost(new Forum_User($link, $name), $timestamp);
                 }
             }
             $links = $matches[1];
@@ -75,9 +80,9 @@ class Forum_ActiveTopics {
             for ($i = 0; $i < count($links); $i++) { //for all topics...
                 $link = $this->_forumHome . $links[$i];
                 $title = $titles[$i];
-                $lastPostUser = $lastPostUsers[$i];
+                $lastPost = $lastPosts[$i];
 
-                $this->_topics[] = new Forum_Topic($link, $title, $lastPostUser);
+                $this->_topics[] = new Forum_Topic($link, $title, $lastPost);
             }
         }
     }
@@ -98,20 +103,20 @@ class Forum_Topic {
 
     /**
      * ...
-     * @var Forum_User ...
+     * @var Forum_LastPost ...
      */
-    private $_lastPostUser;
+    private $_lastPost;
 
     /**
      * ...
      * @param string $link ...
      * @param string $title ...
-     * @param Forum_User $lastPostUser ...
+     * @param Forum_LastPost $lastPost ...
      */
-    public function __construct($link, $title, $lastPostUser = null) {
+    public function __construct($link, $title, $lastPost = null) {
         $this->_link = $link;
         $this->_title = $title;
-        $this->_lastPostUser = $lastPostUser;
+        $this->_lastPost = $lastPost;
     }
 
     /**
@@ -132,10 +137,34 @@ class Forum_Topic {
 
     /**
      * ...
+     * @return Forum_LastPost ...
+     */
+    public function getLastPost() {
+        return $this->_lastPost;
+    }
+
+    /**
+     * ...
      * @return Forum_User ...
+     * @deprecated
      */
     public function getLastPostUser() {
-        return $this->_lastPostUser;
+        if (!empty($this->_lastPost)) {
+            return $this->_lastPost->getUser();
+        }
+        return null;
+    }
+
+    /**
+     * ...
+     * @return integer ...
+     * @deprecated
+     */
+    public function getLastPostTimestamp() {
+        if (!empty($this->_lastPost)) {
+            return $this->_lastPost->getTimestamp();
+        }
+        return 0;
     }
 }
 
@@ -183,6 +212,54 @@ class Forum_User {
      */
     public function __toString() {
         return $this->_name;
+    }
+}
+
+class Forum_LastPost {
+    /**
+     * ...
+     * @var Forum_User ...
+     */
+    private $_user;
+
+    /**
+     * ...
+     * @var integer ...
+     */
+    private $_timestamp;
+
+    /**
+     * ...
+     * @param Forum_User $user ...
+     * @param integer $timestamp ...
+     */
+    public function __construct($user, $timestamp) {
+        $this->_user = $user;
+        $this->_timestamp = $timestamp;
+    }
+
+    /**
+     * ...
+     * @return Forum_User ...
+     */
+    public function getUser() {
+        return $this->_user;
+    }
+
+    /**
+     * ...
+     * @return integer ...
+     */
+    public function getTimestamp() {
+        return $this->_timestamp;
+    }
+
+    /**
+     * ...
+     * @return string ...
+     */
+    public function getDate($format) {
+        return date($format, $this->_timestamp);
     }
 }
 ?>

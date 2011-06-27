@@ -71,7 +71,12 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
   $activetopics = new Forum_ActiveTopics('http://sourceforge.net/apps/phpbb/cppcheck/');
   print("<ul class=\"rssfeeditems\">\n");
   foreach ($activetopics->getTopics(0, 10) as $topic) { //for all active topics...
-    print("  <li><a href=\"".$topic->getLink()."\">".$topic->getTitle()."</a><em>last post by <strong>".$topic->getLastPostUser()."</strong></em></li>\n");
+    $lastPostLine = '';
+    if ($topic->getLastPost() != null) {
+        $lastPost = $topic->getLastPost();
+        $lastPostLine = sprintf('last post by <strong>%1$s</strong> at %2$s', $lastPost->getUser(), $lastPost->getDate('Y-m-d H:i'));
+    }
+    print("  <li><a href=\"".$topic->getLink()."\">".$topic->getTitle()."</a> <em>".$lastPostLine."</em></li>\n");
   }
   print("</ul>\n");
 ?>
