@@ -177,6 +177,7 @@ private:
         TEST_CASE(varid30);   // ticket #2614
         TEST_CASE(varid31);   // ticket #2831 (segmentation fault)
         TEST_CASE(varid32);   // ticket #2835 (segmentation fault)
+        TEST_CASE(varid33);   // ticket #2875 (segmentation fault)
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -2951,6 +2952,12 @@ private:
     void varid32()   // ticket #2835 (segmentation fault)
     {
         const std::string code("><,f<i,");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varid33()   // ticket #2875 (segmentation fault)
+    {
+        const std::string code("0; (a) < (a)");
         ASSERT_EQUALS("", errout.str());
     }
 

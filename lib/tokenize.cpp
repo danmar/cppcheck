@@ -3682,7 +3682,7 @@ void Tokenizer::setVarId()
                     if (tok2 && tok2->str() == "(")
                     {
                         tok2 = tok2->link()->next();
-                        if (tok2->str() == "(")
+                        if (tok2 && tok2->str() == "(")
                             tok2 = tok2->link()->next();
                         again = true;
                     }
