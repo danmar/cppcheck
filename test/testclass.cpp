@@ -64,6 +64,7 @@ private:
         TEST_CASE(uninitVar17);
         TEST_CASE(uninitVar18); // ticket #2465
         TEST_CASE(uninitVar19); // ticket #2792
+        TEST_CASE(uninitVar20); // ticket #2867
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -2208,6 +2209,19 @@ private:
                        "    }\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar20() // ticket #2867
+    {
+        checkUninitVar("Object::MemFunc() {\n"
+                       "    class LocalClass {\n"
+                       "    public:\n"
+                       "        LocalClass() : dataLength_(0) {}\n"
+                       "        std::streamsize dataLength_;\n"
+                       "        double bitsInData_;\n"
+                       "    } obj;\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1()
