@@ -2222,6 +2222,16 @@ private:
                        "    } obj;\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
+
+        checkUninitVar("Object::MemFunc() {\n"
+                       "    class LocalClass : public copy_protected {\n"
+                       "    public:\n"
+                       "        LocalClass() : copy_protected(1), dataLength_(0) {}\n"
+                       "        std::streamsize dataLength_;\n"
+                       "        double bitsInData_;\n"
+                       "    } obj;\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1()
