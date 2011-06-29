@@ -972,6 +972,17 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         }
         else
         {
+
+            if (Token::Match(tok, "%varid% = close ( %varid% )", varid))
+            {
+                addtoken(&rettail, tok, "dealloc");
+                addtoken(&rettail, tok, ";");
+                addtoken(&rettail, tok, "assign");
+                addtoken(&rettail, tok, ";");
+                tok = tok->tokAt(5);
+                continue;
+            }
+
             // var = strcpy|.. ( var ,
             if (Token::Match(tok, "[;{}] %varid% = memcpy|memmove|memset|strcpy|strncpy|strcat|strncat ( %varid% ,", varid))
             {
