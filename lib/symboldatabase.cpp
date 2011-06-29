@@ -1265,7 +1265,7 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
                     if (tok2->next()->str() == ">")
                     {
                         level1--;
-                        if (level == 0)
+                        if (level1 == 0)
                             break;
                     }
                     else if (tok2->next()->str() == "<")
