@@ -50,7 +50,7 @@ public:
 
     /**
      * @brief Simplify path "foo/bar/.." => "foo"
-     * @param originalPath path to be simplified
+     * @param originalPath path to be simplified, must have / -separators.
      * @return simplified path
      */
     static std::string simplifyPath(const char *originalPath);
