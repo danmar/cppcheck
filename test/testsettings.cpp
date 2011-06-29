@@ -37,6 +37,7 @@ private:
         TEST_CASE(suppressionsDosFormat);     // Ticket #1836
         TEST_CASE(suppressionsFileNameWithColon);    // Ticket #1919 - filename includes colon
         TEST_CASE(suppressionsGlob);
+        TEST_CASE(suppressionsFileNameWithExtraPath);
     }
 
     void suppressionsBadId1()
@@ -98,6 +99,14 @@ private:
             ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "abc.cpp", 1));
             ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "abc.cpp", 2));
         }
+    }
+
+    void suppressionsFileNameWithExtraPath()
+    {
+        // Ticket #2797
+        Settings::Suppressions suppressions;
+        suppressions.addSuppression("errorid", "./a.c", 123);
+        ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "a.c", 123));
     }
 };
 

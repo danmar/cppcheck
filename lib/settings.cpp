@@ -17,6 +17,7 @@
  */
 
 #include "settings.h"
+#include "path.h"
 
 #include <algorithm>
 #include <fstream>
@@ -224,7 +225,7 @@ std::string Settings::Suppressions::FileMatcher::addFile(const std::string &name
     }
     else
     {
-        _files[name][line] = false;
+        _files[Path::simplifyPath(name.c_str())][line] = false;
     }
     return "";
 }
