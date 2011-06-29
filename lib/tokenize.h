@@ -592,6 +592,11 @@ public:
     void removeUnnecessaryQualification();
 
     /**
+     * unnecessary member qualification error
+     */
+    void unnecessaryQualificationError(const Token *tok, const std::string &qualification);
+
+    /**
      * Remove Microsoft MFC 'DECLARE_MESSAGE_MAP()'
      */
     void simplifyMicrosoftMFC();

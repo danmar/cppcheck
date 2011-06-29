@@ -486,21 +486,28 @@ void Tokenizer::createTokens(std::istream &code)
 
 void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string &type)
 {
-    if (!(_settings->_checkCodingStyle))
+    if (tok1 && !(_settings->_checkCodingStyle))
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    ErrorLogger::ErrorMessage::FileLocation loc;
-    loc.line = tok1->linenr();
-    loc.setfile(file(tok1));
-    locationList.push_back(loc);
-    loc.line = tok2->linenr();
-    loc.setfile(file(tok2));
-    locationList.push_back(loc);
+    std::string tok2_str;
+    if (tok1 && tok2)
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok1->linenr();
+        loc.setfile(file(tok1));
+        locationList.push_back(loc);
+        loc.line = tok2->linenr();
+        loc.setfile(file(tok2));
+        locationList.push_back(loc);
+        tok2_str = tok2->str();
+    }
+    else
+        tok2_str = "name";
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            Severity::style,
-                                           std::string(type + " '" + tok2->str() +
+                                           std::string(type + " '" + tok2_str +
                                                    "' hides typedef with same name"),
                                            "variableHidingTypedef",
                                            false);
@@ -513,21 +520,28 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
 
 void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type)
 {
-    if (!(_settings->_checkCodingStyle))
+    if (tok1 && !(_settings->_checkCodingStyle))
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    ErrorLogger::ErrorMessage::FileLocation loc;
-    loc.line = tok1->linenr();
-    loc.setfile(file(tok1));
-    locationList.push_back(loc);
-    loc.line = tok2->linenr();
-    loc.setfile(file(tok2));
-    locationList.push_back(loc);
+    std::string tok2_str;
+    if (tok1 && tok2)
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok1->linenr();
+        loc.setfile(file(tok1));
+        locationList.push_back(loc);
+        loc.line = tok2->linenr();
+        loc.setfile(file(tok2));
+        locationList.push_back(loc);
+        tok2_str = tok2->str();
+    }
+    else
+        tok2_str = "name";
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            Severity::style,
-                                           std::string(type + " '" + tok2->str() +
+                                           std::string(type + " '" + tok2_str +
                                                    "' forward declaration unnecessary, already declared"),
                                            "unnecessaryForwardDeclaration",
                                            false);
@@ -7878,21 +7892,28 @@ void Tokenizer::simplifyNestedStrcat()
 
 void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const std::string & type)
 {
-    if (!(_settings->_checkCodingStyle))
+    if (tok1 && !(_settings->_checkCodingStyle))
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    ErrorLogger::ErrorMessage::FileLocation loc;
-    loc.line = tok1->linenr();
-    loc.setfile(file(tok1));
-    locationList.push_back(loc);
-    loc.line = tok2->linenr();
-    loc.setfile(file(tok2));
-    locationList.push_back(loc);
+    std::string tok2_str;
+    if (tok1 && tok2)
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok1->linenr();
+        loc.setfile(file(tok1));
+        locationList.push_back(loc);
+        loc.line = tok2->linenr();
+        loc.setfile(file(tok2));
+        locationList.push_back(loc);
+        tok2_str = tok2->str();
+    }
+    else
+        tok2_str = "name";
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            Severity::style,
-                                           std::string(type + " '" + tok2->str() +
+                                           std::string(type + " '" + tok2_str +
                                                    "' hides enumerator with same name"),
                                            "variableHidingEnum",
                                            false);
@@ -9083,6 +9104,10 @@ void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *setti
     Tokenizer t(settings, errorLogger);
     t.syntaxError(0, ' ');
     t.cppcheckError(0);
+    t.duplicateTypedefError(0, 0, "Variable");
+    t.duplicateDeclarationError(0, 0, "Variable");
+    t.duplicateEnumError(0, 0, "Variable");
+    t.unnecessaryQualificationError(0, "type");
 }
 
 /** find pattern */
@@ -9869,28 +9894,36 @@ void Tokenizer::removeUnnecessaryQualification()
                         continue;
                 }
 
-                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.line = tok->linenr();
-                loc.setfile(file(tok));
-                locationList.push_back(loc);
-
-                const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                       Severity::portability,
-                                                       "Extra qualification \'" + qualification + "\' unnecessary and considered an error by many compilers.",
-                                                       "portability",
-                                                       false);
-
-                if (_errorLogger)
-                    _errorLogger->reportErr(errmsg);
-                else
-                    Check::reportError(errmsg);
+                unnecessaryQualificationError(tok, qualification);
 
                 tok->deleteThis();
                 tok->deleteThis();
             }
         }
     }
+}
+
+void Tokenizer::unnecessaryQualificationError(const Token *tok, const std::string &qualification)
+{
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    if (tok)
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok->linenr();
+        loc.setfile(file(tok));
+        locationList.push_back(loc);
+    }
+
+    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                           Severity::portability,
+                                           "Extra qualification \'" + qualification + "\' unnecessary and considered an error by many compilers.",
+                                           "unnecessaryQualification",
+                                           false);
+
+    if (_errorLogger)
+        _errorLogger->reportErr(errmsg);
+    else
+        Check::reportError(errmsg);
 }
 
 void Tokenizer::simplifyReturn()
