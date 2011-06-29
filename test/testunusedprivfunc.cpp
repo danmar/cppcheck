@@ -45,6 +45,7 @@ private:
         TEST_CASE(func_pointer1);
         TEST_CASE(func_pointer2);
         TEST_CASE(func_pointer3);
+        TEST_CASE(func_pointer4); // ticket #2807
 
         TEST_CASE(ctor);
 
@@ -294,6 +295,21 @@ private:
               "private:\n"
               "    void f1() const {}\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void func_pointer4() // ticket #2807
+    {
+        check("class myclass {\n"
+              "public:\n"
+              "    myclass();\n"
+              "private:\n"
+              "    static void f();\n"
+              "    void (*fptr)();\n"
+              "};\n"
+              "myclass::myclass() { fptr = &f; }\n"
+              "void myclass::f() {}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

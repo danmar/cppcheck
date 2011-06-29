@@ -662,7 +662,7 @@ void CheckClass::privateFunctions()
         while (!FuncList.empty())
         {
             // Final check; check if the function pointer is used somewhere..
-            const std::string _pattern("return|(|)|,|= " + FuncList.front()->str());
+            const std::string _pattern("return|(|)|,|= &|" + FuncList.front()->str());
 
             // or if the function address is used somewhere...
             // eg. sigc::mem_fun(this, &className::classFunction)
