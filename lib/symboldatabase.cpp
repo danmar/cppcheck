@@ -1236,6 +1236,13 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
                 tok2 = tok2->next();
             }
 
+            // handle global namespace
+            if (tok2->str() == "::")
+            {
+                base.name = ":: ";
+                tok2 = tok2->next();
+            }
+
             // handle derived base classes
             while (Token::Match(tok2, "%var% ::"))
             {
