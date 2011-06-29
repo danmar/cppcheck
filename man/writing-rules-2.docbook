@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<article>
-  <articleinfo>
-    <title>Writing Cppcheck rules</title>
-
-    <subtitle>Part 2 - The Cppcheck data representation</subtitle>
+<section>
+  <info>
+    <title>Part 2 - The Cppcheck data representation</title>
 
     <author>
       <firstname>Daniel</firstname>
@@ -18,7 +14,7 @@
     </author>
 
     <pubdate>2010</pubdate>
-  </articleinfo>
+  </info>
 
   <section>
     <title>Introduction</title>
@@ -350,4 +346,4 @@ s8 x;</programlisting>
       </section>
     </section>
   </section>
-</article>
+</section>

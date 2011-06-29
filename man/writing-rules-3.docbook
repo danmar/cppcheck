@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<article version="5.0" xmlns="http://docbook.org/ns/docbook"
-         xmlns:xlink="http://www.w3.org/1999/xlink"
-         xmlns:xi="http://www.w3.org/2001/XInclude"
-         xmlns:svg="http://www.w3.org/2000/svg"
-         xmlns:m="http://www.w3.org/1998/Math/MathML"
-         xmlns:html="http://www.w3.org/1999/xhtml"
-         xmlns:db="http://docbook.org/ns/docbook">
+<section>
   <info>
-    <title>Writing Cppcheck rules</title>
-
-    <subtitle>Part 3 - Introduction to writing rules with C++</subtitle>
+    <title>Part 3 - Introduction to writing rules with C++</title>
 
     <author>
       <personname><firstname>Daniel</firstname><surname>Marjamäki</surname></personname>
@@ -246,4 +238,4 @@ void CheckOther::dangerousUsageStrtolError(const Token *tok)
     <para>The pattern <literal>(|,</literal> can also be written as
     <literal>[(,]</literal>.</para>
   </section>
-</article>
+</section>

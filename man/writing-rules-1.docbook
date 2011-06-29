@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<article>
-  <articleinfo>
-    <title>Writing Cppcheck rules</title>
-
-    <subtitle>Part 1 - Getting started</subtitle>
+<section>
+  <info>
+    <title>Part 1 - Getting started</title>
 
     <author>
       <firstname>Daniel</firstname>
@@ -18,7 +14,7 @@
     </author>
 
     <pubdate>2010</pubdate>
-  </articleinfo>
+  </info>
 
   <section>
     <title>Introduction</title>
@@ -146,4 +142,4 @@ Checking dealloc.cpp...
 [dealloc.cpp:2]: (style) Redundant condition. It is valid to free a NULL pointer.</programlisting>
     </section>
   </section>
-</article>
+</section>
