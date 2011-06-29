@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"/usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd">
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
+<!ENTITY writing-rules-1 SYSTEM "writing-rules-1.docbook">
+<!ENTITY writing-rules-2 SYSTEM "writing-rules-2.docbook">
+<!ENTITY writing-rules-3 SYSTEM "writing-rules-3.docbook">
+<!ENTITY cppcheck-design SYSTEM "cppcheck-design.docbook">
+]>
 <book>
   <bookinfo>
     <title>Cppcheck 1.49</title>
@@ -612,4 +617,13 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
       if you want to limit the checking.</para>
     </section>
   </chapter>
+  
+  <appendix>
+    <title>Writing Cppcheck rules</title>
+    &writing-rules-1;
+    &writing-rules-2;
+    &writing-rules-3;
+  </appendix>
+
+  &cppcheck-design;
 </book>
