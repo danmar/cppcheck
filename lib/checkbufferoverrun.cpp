@@ -662,8 +662,15 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                 }
                 else if (ftok2->str() == ")")
                     break;
-                else if (parameter == par && Token::Match(ftok2, "%var% ,|)"))
-                    parameterVarId = ftok2->varId();
+                else if (parameter == par && Token::Match(ftok2, "%var% ,|)|["))
+                {
+                    // check type..
+                    const Token *type = ftok2->previous();
+                    while (Token::Match(type, "*|const"))
+                        type = type->previous();
+                    if (type && _tokenizer->sizeOfType(type) == arrayInfo.element_size())
+                        parameterVarId = ftok2->varId();
+                }
             }
 
             // No parameterVarId => bail out

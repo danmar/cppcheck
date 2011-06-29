@@ -118,6 +118,7 @@ private:
         TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
         TEST_CASE(array_index_for_question);	// #2561: for, ?:
         TEST_CASE(array_index_extern);      // FP when using 'extern'. #1684
+        TEST_CASE(array_index_cast);       // FP after cast. #2841
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -1388,6 +1389,31 @@ private:
         check("extern char arr[15];\n"
               "char arr[15] = \"abc\";");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_cast()
+    {
+        // Ticket #2841. FP when using cast.
+
+        // Different types => no error
+        check("void f1(char *buf) {\n"
+              "    buf[4] = 0;\n"
+              "}\n"
+              "void f2() {\n"
+              "    int x[2];\n"
+              "    f1(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Same type => error
+        check("void f1(const char buf[]) {\n"
+              "    char c = buf[4];\n"
+              "}\n"
+              "void f2() {\n"
+              "    char x[2];\n"
+              "    f1(x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array 'x[2]' index 4 out of bounds\n", errout.str());
     }
 
     void buffer_overrun_1()
