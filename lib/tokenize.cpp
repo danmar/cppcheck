@@ -3802,7 +3802,10 @@ void Tokenizer::setVarId()
                     while (NULL != (tok2 = tok2->previous()))
                     {
                         if (Token::Match(tok2, "[,;{})]"))
-                            break;
+                        {
+                            if (!Token::Match(tok2, ", public|protected|private"))
+                                break;
+                        }
                         if (Token::Match(tok2, "class|struct"))
                             break;
                     }

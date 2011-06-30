@@ -178,6 +178,7 @@ private:
         TEST_CASE(varid31);   // ticket #2831 (segmentation fault)
         TEST_CASE(varid32);   // ticket #2835 (segmentation fault)
         TEST_CASE(varid33);   // ticket #2875 (segmentation fault)
+        TEST_CASE(varid34);   // ticket #2825
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -2958,6 +2959,27 @@ private:
     void varid33()   // ticket #2875 (segmentation fault)
     {
         const std::string code("0; (a) < (a)");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varid34()   // ticket #2825
+    {
+        const std::string code("class Fred : public B1, public B2\n"
+                               "{\n"
+                               "public:\n"
+                               "    Fred() { a = 0; }\n"
+                               "private:\n"
+                               "    int a;\n"
+                               "};\n");
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class Fred : public B1 , public B2\n"
+                                   "2: {\n"
+                                   "3: public:\n"
+                                   "4: Fred ( ) { a@1 = 0 ; }\n"
+                                   "5: private:\n"
+                                   "6: int a@1 ;\n"
+                                   "7: } ;\n");
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         ASSERT_EQUALS("", errout.str());
     }
 
