@@ -485,7 +485,7 @@ private:
 
         {
             const char code1[] = "void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; }";
-            const char code2[] = "void f ( ) { ; { ; } ; }";
+            const char code2[] = "void f ( ) { ; }";
             ASSERT_EQUALS(code2, tok(code1));
         }
 
@@ -2697,6 +2697,34 @@ private:
         {
             const char code[] = "= 1 ? 0 : ({ 0; });";
             ASSERT_EQUALS("= 0 ;", tok(code));
+        }
+
+        {
+            const char code[] = "int f(int b, int d)\n"
+                                "{\n"
+                                "  d = b ? b : 10;\n"
+                                "  return d;\n"
+                                "}\n";
+            ASSERT_EQUALS("int f ( int b , int d ) { if ( b ) { d = b ; } else { d = 10 ; } return d ; }", tok(code));
+        }
+
+        {
+            const char code[] = "int f(int b, int *d)\n"
+                                "{\n"
+                                "  *d = b ? b : 10;\n"
+                                "  return *d;\n"
+                                "}\n";
+            ASSERT_EQUALS("int f ( int b , int * d ) { if ( b ) { * d = b ; } else { * d = 10 ; } return * d ; }", tok(code));
+        }
+
+        {
+            const char code[] = "int f(int b, int *d)\n"
+                                "{\n"
+                                "  if(b) {b++;}"
+                                "  *d = b ? b : 10;\n"
+                                "  return *d;\n"
+                                "}\n";
+            ASSERT_EQUALS("int f ( int b , int * d ) { if ( b ) { b ++ ; } if ( b ) { * d = b ; } else { * d = 10 ; } return * d ; }", tok(code));
         }
     }
 

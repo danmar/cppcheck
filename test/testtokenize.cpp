@@ -2048,7 +2048,7 @@ private:
         const char expected[] = "void f ( ) {\n"
                                 ";\n"
                                 "\n"
-                                "{ ; }\n"
+                                "\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }

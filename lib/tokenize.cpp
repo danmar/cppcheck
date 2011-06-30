@@ -4928,9 +4928,22 @@ void Tokenizer::removeRedundantSemicolons()
         {
             tok = tok->link();
         }
-        while (Token::simpleMatch(tok, "; ;"))
+        for (;;)
         {
-            tok->deleteNext();
+            if (Token::simpleMatch(tok, "; ;"))
+            {
+                tok->deleteNext();
+            }
+            else if (Token::simpleMatch(tok, "; { ; }"))
+            {
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+            }
+            else
+            {
+                break;
+            }
         }
     }
 }
@@ -5270,14 +5283,31 @@ void Tokenizer::simplifyConditionOperator()
             ++parlevel;
         else if (tok->str() == ")")
             --parlevel;
-        else if (parlevel == 0 && Token::Match(tok, "; %var% = %var% ? %var% : %var% ;"))
+        else if (parlevel == 0 && Token::Match(tok, ";|{|} *| %any% = %any% ? %any% : %any% ;"))
         {
-            const std::string var(tok->strAt(1));
+            std::string var(tok->strAt(1));
+            bool isPointer = false;
+            if (Token::simpleMatch(tok->next(), "*"))
+            {
+                tok = tok->next();
+                var += " " + tok->strAt(1);
+                isPointer = true;
+            }
+
             const std::string condition(tok->strAt(3));
             const std::string value1(tok->strAt(5));
             const std::string value2(tok->strAt(7));
 
-            Token::eraseTokens(tok, tok->tokAt(9));
+            if (isPointer)
+            {
+                tok = tok->previous();
+                Token::eraseTokens(tok, tok->tokAt(10));
+            }
+            else
+            {
+                Token::eraseTokens(tok, tok->tokAt(9));
+            }
+
 
             std::string str("if ( " + condition + " ) { " + var + " = " + value1 + " ; } else { " + var + " = " + value2 + " ; }");
             std::string::size_type pos1 = 0;
@@ -5297,9 +5327,18 @@ void Tokenizer::simplifyConditionOperator()
                 tok = tok->next();
             }
 
-            Token::createMutualLinks(tok->tokAt(-15), tok->tokAt(-13));
-            Token::createMutualLinks(tok->tokAt(-12), tok->tokAt(-7));
-            Token::createMutualLinks(tok->tokAt(-5), tok);
+            if (isPointer)
+            {
+                Token::createMutualLinks(tok->tokAt(-17), tok->tokAt(-15));
+                Token::createMutualLinks(tok->tokAt(-14), tok->tokAt(-8));
+                Token::createMutualLinks(tok->tokAt(-6), tok);
+            }
+            else
+            {
+                Token::createMutualLinks(tok->tokAt(-15), tok->tokAt(-13));
+                Token::createMutualLinks(tok->tokAt(-12), tok->tokAt(-7));
+                Token::createMutualLinks(tok->tokAt(-5), tok);
+            }
         }
     }
 }
