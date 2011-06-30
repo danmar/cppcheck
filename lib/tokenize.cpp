@@ -430,6 +430,21 @@ void Tokenizer::createTokens(std::istream &code)
                 addtoken("&&", lineno, FileIndex, true);
                 continue;
             }
+            else if (ch==':' && CurrentToken.empty() && code.peek() == ' ')
+            {
+                // :
+                addtoken(":", lineno, FileIndex, true);
+                CurrentToken.clear();
+                continue;
+            }
+            else if (ch==':' && CurrentToken.empty() && code.peek() == ':')
+            {
+                // ::
+                ch = (char)code.get();
+                addtoken("::", lineno, FileIndex, true);
+                CurrentToken.clear();
+                continue;
+            }
             else
             {
                 if (CurrentToken == "#file")
