@@ -106,11 +106,12 @@ Checking path/file2.cpp...
 
       <programlisting>cppcheck src/a src/b</programlisting>
 
-      <para>All files under "src/a" and "src/b" are then checked.</para>
+      <para>All files under <filename class="directory">src/a</filename> and
+      <filename class="directory">src/b</filename> are then checked.</para>
 
       <para>The second option is to use <literal>-i</literal>, with it you
-      specify files/paths to ignore. With this command no files in "src/c" are
-      checked:</para>
+      specify files/paths to ignore. With this command no files in
+      <filename class="directory">src/c</filename> are checked:</para>
 
       <programlisting>cppcheck -isrc/c src</programlisting>
     </section>

@@ -85,7 +85,7 @@
         free(p);
 }</programlisting>
 
-      <para>Save that code as <literal>dealloc.cpp</literal> and then use
+      <para>Save that code as <filename>dealloc.cpp</filename> and then use
       <literal>cppcheck --rule=".+" dealloc.cpp</literal>:</para>
 
       <programlisting>$ ./cppcheck --rule=".+" dealloc.cpp 
@@ -134,7 +134,7 @@ Checking dealloc.cpp...
   &lt;/message&gt;
 &lt;/rule&gt;</programlisting>
 
-      <para>If you save that xml data in <literal>dealloc.rule</literal> you
+      <para>If you save that xml data in <filename>dealloc.rule</filename> you
       can test this rule:</para>
 
       <programlisting>$ cppcheck --rule-file=dealloc.rule dealloc.cpp
