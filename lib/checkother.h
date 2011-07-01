@@ -224,6 +224,9 @@ public:
     /** @brief %Check for suspicious code that compares string literals for equality */
     void checkAlwaysTrueOrFalseStringCompare();
 
+    /** @brief check if token is a record type without side effects */
+    bool isRecordTypeWithoutSideEffects(const Token *tok);
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);

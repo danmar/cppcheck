@@ -104,6 +104,7 @@ private:
         TEST_CASE(localvarStruct2);
         TEST_CASE(localvarStruct3);
         TEST_CASE(localvarStruct4); // Ticket #31: sigsegv on incomplete struct
+        TEST_CASE(localvarStruct5);
 
         TEST_CASE(localvarOp);          // Usage with arithmetic operators
         TEST_CASE(localvarInvert);      // Usage with inverted variable
@@ -2346,6 +2347,107 @@ private:
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    struct { \n");
+    }
+
+    void localvarStruct5()
+    {
+        functionVariableUsage("int foo() {\n"
+                              "    A a;\n"
+                              "    return a.i;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n"
+                              "    A a;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct A { int i; };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    return a.i;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class A { int i; };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    return a.i;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct A { int i; };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    a.i = 0;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class A { int i; };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    a.i = 0;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct A { int i; };\n"
+                              "int foo() {\n"
+                              "    A a = { 0 };\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("class A { int i; };\n"
+                              "int foo() {\n"
+                              "    A a = { 0 };\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("class A { int i; public: A(); { } };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct A { int i; };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n", errout.str());
+
+        functionVariableUsage("class A { int i; };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n", errout.str());
+
+        functionVariableUsage("class A { int i; public: A(); { } };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class A { unknown i; };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class A : public Fred { int i; };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarOp()

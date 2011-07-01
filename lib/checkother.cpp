@@ -1671,6 +1671,21 @@ static bool nextIsStandardTypeOrVoid(const Token *tok)
     return tok->isStandardType() || tok->str() == "void";
 }
 
+bool CheckOther::isRecordTypeWithoutSideEffects(const Token *tok)
+{
+    const Variable * var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->varId());
+
+    // a type that has no side effects (no constructors and no members with constructors)
+    /** @todo false negative: check base class for side effects */
+    /** @todo false negative: check constructors for side effects */
+    if (var && var->type() && var->type()->numConstructors == 0 &&
+        (var->type()->varlist.empty() || var->type()->needInitialization == Scope::True) &&
+        var->type()->derivedFrom.empty())
+        return true;
+
+    return false;
+}
+
 void CheckOther::functionVariableUsage()
 {
     if (!_settings->_checkCodingStyle)
@@ -1738,7 +1753,7 @@ void CheckOther::functionVariableUsage()
             // standard type declaration with possible initialization
             // int i; int j = 0; static int k;
             if (Token::Match(tok, "[;{}] static| %type% %var% ;|=") &&
-                nextIsStandardType(tok))
+                (nextIsStandardType(tok) || isRecordTypeWithoutSideEffects(tok->strAt(1) == "static" ? tok->tokAt(3) : tok->tokAt(2))))
             {
                 tok = tok->next();
 
