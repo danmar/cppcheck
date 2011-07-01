@@ -109,8 +109,8 @@ Checking path/file2.cpp...
       <para>All files under <filename class="directory">src/a</filename> and
       <filename class="directory">src/b</filename> are then checked.</para>
 
-      <para>The second option is to use <literal>-i</literal>, with it you
-      specify files/paths to ignore. With this command no files in
+      <para>The second option is to use <parameter class="command">-i</parameter>,
+      with it you specify files/paths to ignore. With this command no files in
       <filename class="directory">src/c</filename> are checked:</para>
 
       <programlisting>cppcheck -isrc/c src</programlisting>
@@ -175,16 +175,17 @@ Checking path/file2.cpp...
     <section>
       <title>Enable messages</title>
 
-      <para>By default only <literal>error</literal> messages are shown.
-      Through the <literal>--enable</literal> command more checks can be
-      enabled.</para>
+      <para>By default only <parameter class="command">error</parameter> messages
+      are shown. Through the <parameter class="command">--enable</parameter>
+      command more checks can be enabled.</para>
 
       <section>
         <title>Stylistic issues</title>
 
-        <para>With <literal>--enable=style</literal> you enable most
-        <literal>warning</literal>, <literal>style</literal> and
-        <literal>performance</literal> messages.</para>
+        <para>With <parameter class="command">--enable=style</parameter> you
+        enable most <parameter class="command">warning</parameter>,
+        <parameter class="command">style</parameter> and
+        <parameter class="command">performance</parameter> messages.</para>
 
         <para>Here is a simple code example:</para>
 
@@ -198,8 +199,8 @@ Checking path/file2.cpp...
 }</programlisting>
 
         <para>There are no bugs in that code so Cppcheck won't report anything
-        by default. To enable the stylistic messages, use the --enable=style
-        command:</para>
+        by default. To enable the stylistic messages, use the
+        <parameter class="command">--enable=style</parameter> command:</para>
 
         <programlisting>cppcheck --enable=style file3.c</programlisting>
 
@@ -224,7 +225,7 @@ Checking path/file2.cpp...
         <title>Enable all checks</title>
 
         <para>To enable all checks your can use the
-        <literal>--enable=all</literal> flag:</para>
+        <parameter class="command">--enable=all</parameter> flag:</para>
 
         <programlisting>cppcheck --enable=all path</programlisting>
       </section>
@@ -257,7 +258,7 @@ Checking path/file2.cpp...
     behaviour.</para>
 
     <para>But if you want to manually limit the checking you can do so with
-    <literal>-D</literal>.</para>
+    <parameter class="command">-D</parameter>.</para>
 
     <para>Beware that only the macros, which are given here and the macros
     defined in source files and known header files are considered. That
@@ -276,7 +277,8 @@ Checking path/file2.cpp...
 
     <para>Cppcheck can generate the output in XML format.</para>
 
-    <para>Use the --xml flag when you execute cppcheck:</para>
+    <para>Use the <parameter class="command">--xml</parameter> flag when you
+    execute cppcheck:</para>
 
     <programlisting>cppcheck --xml file1.cpp</programlisting>
 
@@ -341,8 +343,8 @@ Checking path/file2.cpp...
     <para>If you want to reformat the output so it looks different you can use
     templates.</para>
 
-    <para>To get Visual Studio compatible output you can use "--template
-    vs":</para>
+    <para>To get Visual Studio compatible output you can use
+    <parameter class="command">--template vs</parameter>:</para>
 
     <programlisting>cppcheck --template vs gui/test.cpp</programlisting>
 
@@ -352,7 +354,8 @@ Checking path/file2.cpp...
 gui/test.cpp(31): error: Memory leak: b
 gui/test.cpp(16): error: Mismatching allocation and deallocation: k</programlisting>
 
-    <para>To get gcc compatible output you can use "--template gcc":</para>
+    <para>To get gcc compatible output you can use
+    <parameter class="command">--template gcc</parameter>:</para>
 
     <programlisting>cppcheck --template gcc gui/test.cpp</programlisting>
 
@@ -380,16 +383,17 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
     <title>Suppressions</title>
 
     <para>If you want to filter out certain errors you can suppress these.
-    The <literal>--suppress=</literal> command line option is used to specify
-    suppressions on the command line.  The format is one of:</para>
+    The <parameter class="command">--suppress=</parameter> command line option
+    is used to specify suppressions on the command line.
+    The format is one of:</para>
 
     <programlisting>[error id]:[filename]:[line]
 [error id]:[filename2]
 [error id]</programlisting>
 
     <para>The <literal>error id</literal> is the id that you want to suppress.
-    The easiest way to get it is to use the <literal>--xml</literal> command
-    line flag. Copy and paste the <literal>id</literal> string from the XML
+    The easiest way to get it is to use the <parameter class="command">--xml</parameter>
+    command line flag. Copy and paste the <literal>id</literal> string from the XML
     output. This may be * to suppress all warnings (for a specified file or
     files).</para>
 
@@ -425,7 +429,7 @@ uninitvar</programlisting>
     <section>
       <title>User-defined allocation/deallocation functions</title>
 
-      <para><literal>Cppcheck</literal> understands many common allocation and
+      <para>Cppcheck understands many common allocation and
       deallocation functions. But not all.</para>
 
       <para>Here is example code that might leak memory or resources:</para>
@@ -459,11 +463,11 @@ void DestroyFred(void *p)
       <para>When Cppcheck see this it understands that CreateFred will return
       allocated memory and that DestroyFred will deallocate memory.</para>
 
-      <para>Now, execute <literal>Cppcheck</literal> this way:</para>
+      <para>Now, execute <command>cppcheck</command> this way:</para>
 
       <programlisting>cppcheck --append=fred.cpp fred1.cpp</programlisting>
 
-      <para>The output from cppcheck is:</para>
+      <para>The output from <command>cppcheck</command> is:</para>
 
       <programlisting>Checking fred1.cpp...
 [fred1.cpp:5]: (error) Memory leak: f</programlisting>
@@ -487,7 +491,7 @@ void DestroyFred(void *p)
     code.</para>
 
     <para>To enable the exception safety checking you can use
-    <literal>--enable</literal>:</para>
+    <parameter class="command">--enable</parameter>:</para>
 
     <programlisting>cppcheck --enable=exceptNew --enable=exceptRealloc fred.cpp</programlisting>
 

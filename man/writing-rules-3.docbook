@@ -18,7 +18,7 @@
     <title>Introduction</title>
 
     <para>The goal for this article is to introduce how
-    <literal>Cppcheck</literal> rules are written with C++. With C++ it is
+    Cppcheck rules are written with C++. With C++ it is
     possible to write more complex rules than is possible with regular
     expressions.</para>
   </section>

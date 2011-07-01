@@ -30,7 +30,7 @@
     <title>Data representation of the source code</title>
 
     <para>The data used by the rules are not the raw source code.
-    <literal>Cppcheck</literal> will read the source code and process it
+    Cppcheck will read the source code and process it
     before the rules are used.</para>
 
     <para>Cppcheck is designed to find bugs and dangerous code. Stylistic
@@ -86,7 +86,7 @@
 }</programlisting>
 
       <para>Save that code as <filename>dealloc.cpp</filename> and then use
-      <literal>cppcheck --rule=".+" dealloc.cpp</literal>:</para>
+      <command>cppcheck --rule=".+" dealloc.cpp</command>:</para>
 
       <programlisting>$ ./cppcheck --rule=".+" dealloc.cpp 
 Checking dealloc.cpp...

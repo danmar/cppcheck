@@ -33,23 +33,25 @@
     <para>There are two ways to look at the data representation at
     runtime.</para>
 
-    <para>Using --rule=.+ is one way. All tokens are written on a line:</para>
+    <para>Using <parameter class="command">--rule=.+</parameter> is one way.
+    All tokens are written on a line:</para>
 
     <programlisting> int a ; int b ;</programlisting>
 
-    <para>Using --debug is another way. The tokens are line separated in the
-    same way as the original code:</para>
+    <para>Using <parameter class="command">--debug</parameter> is another way.
+    The tokens are line separated in the same way as the original code:</para>
 
     <programlisting>1: int a@1 ;
 2: int b@2 ;</programlisting>
 
-    <para>In the --debug output there are "@1" and "@2" shown. These are the
+    <para>In the <parameter class="command">--debug</parameter> output there are
+    "@1" and "@2" shown. These are the
     variable ids (Cppcheck gives each variable a unique id). You can ignore
     these if you only plan to write rules with regular expressions, you can't
     use variable ids with regular expressions.</para>
 
-    <para>In general, I will use the <literal>--rule=.+</literal> output in
-    this article because it is more compact.</para>
+    <para>In general, I will use the <parameter class="command">--rule=.+</parameter>
+    output in this article because it is more compact.</para>
   </section>
 
   <section>
@@ -130,7 +132,8 @@ s8 x;</programlisting>
     array[x + 2] = 0;
 }</programlisting>
 
-        <para>The <literal>--debug</literal> output for that is:</para>
+        <para>The <parameter class="command">--debug</parameter> output for that
+        is:</para>
 
         <programlisting>1: void f ( )
 2: {
@@ -154,7 +157,8 @@ s8 x;</programlisting>
     free(b);
 }</programlisting>
 
-        <para>The <literal>--debug</literal> output for that is:</para>
+        <para>The <parameter class="command">--debug</parameter> output for that
+        is:</para>
 
         <programlisting>1: void f ( )
 2: {
@@ -196,7 +200,7 @@ s8 x;</programlisting>
         f2();
 }</programlisting>
 
-        <para>The <literal>--debug</literal> output:</para>
+        <para>The <parameter class="command">--debug</parameter> output:</para>
 
         <programlisting>1: void f ( int x@1 )
 2: {
@@ -253,7 +257,7 @@ s8 x;</programlisting>
 }</programlisting>
 
         <para>The <literal>x=f1()</literal> is broken out. The
-        <literal>--debug</literal> output:</para>
+        <parameter class="command">--debug</parameter> output:</para>
 
         <programlisting>1: void f ( )
 2: {
@@ -274,7 +278,7 @@ s8 x;</programlisting>
 }</programlisting>
 
         <para>The <literal>x=f1()</literal> is broken out twice. The
-        <literal>--debug</literal> output:</para>
+        <parameter class="command">--debug</parameter> output:</para>
 
         <programlisting>1: void f ( )
 2: {
@@ -331,7 +335,7 @@ s8 x;</programlisting>
     if (x != 0);
 }</programlisting>
 
-        <para>The <literal>--debug</literal> output is:</para>
+        <para>The <parameter class="command">--debug</parameter> output is:</para>
 
         <programlisting>1: void f ( )
 2: {
