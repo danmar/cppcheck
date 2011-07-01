@@ -859,16 +859,16 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         if (index_type->isUnsigned())
                         {
                             if (index_type->isLong())
-                                dimension.num = ULLONG_MAX; // should be ULLONG_MAX + 1ULL;
+                                dimension.num = ULLONG_MAX; // should be ULLONG_MAX + 1ULL
                             else
-                                dimension.num = ULONG_MAX + 1ULL;
+                                dimension.num = ULONG_MAX; // should be ULONG_MAX + 1ULL
                         }
                         else
                         {
                             if (index_type->isLong())
-                                dimension.num = LLONG_MAX; // should be LLONG_MAX + 1LL;
+                                dimension.num = LLONG_MAX; // should be LLONG_MAX + 1LL
                             else
-                                dimension.num = LONG_MAX + 1LL;
+                                dimension.num = LONG_MAX;  // should be LONG_MAX + 1LL
                         }
                     }
                 }
