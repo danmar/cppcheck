@@ -1766,6 +1766,24 @@ void CheckOther::functionVariableUsage()
                 tok = tok->next();
             }
 
+            // standard struct type declaration with possible initialization
+            // struct S s; struct S s = { 0 }; static struct S s;
+            else if (Token::Match(tok, "[;{}] static| struct %type% %var% ;|=") &&
+                     (isRecordTypeWithoutSideEffects(tok->strAt(1) == "static" ? tok->tokAt(4) : tok->tokAt(3))))
+            {
+                tok = tok->next();
+
+                bool isStatic = tok->str() == "static";
+                if (isStatic)
+                    tok = tok->next();
+
+                tok = tok->next();
+
+                variables.addVar(tok->next(), Variables::standard, info,
+                                 tok->tokAt(2)->str() == "=" || isStatic);
+                tok = tok->next();
+            }
+
             // standard type declaration and initialization using constructor
             // int i(0); static int j(0);
             else if (Token::Match(tok, "[;{}] static| %type% %var% ( %any% ) ;") &&
@@ -2162,7 +2180,7 @@ void CheckOther::functionVariableUsage()
                             variables.read(tok->varId());
                         }
                         else if (tok->varId() != varid1 && Token::Match(tok, "%var% ."))
-                            variables.use(tok->varId());
+                            variables.read(tok->varId());
                         else if (tok->varId() != varid1 &&
                                  var2->_type == Variables::standard &&
                                  tok->strAt(-1) != "&")

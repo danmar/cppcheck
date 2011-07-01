@@ -1887,7 +1887,8 @@ private:
                               "    struct AB ab;\n"
                               "    int * a = &ab.a;\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ab' is not assigned a value\n"
+                      "[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("struct AB { int a; int b; };\n"
                               "void foo()\n"
@@ -2322,7 +2323,7 @@ private:
                               "    struct ABC { int a, b, c; };\n"
                               "    struct ABC abc = { 1, 2, 3 };\n"
                               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'abc' is assigned a value that is never used\n", errout.str());
     }
 
     void localvarStruct3()
