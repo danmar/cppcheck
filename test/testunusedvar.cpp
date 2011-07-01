@@ -105,6 +105,7 @@ private:
         TEST_CASE(localvarStruct3);
         TEST_CASE(localvarStruct4); // Ticket #31: sigsegv on incomplete struct
         TEST_CASE(localvarStruct5);
+        TEST_CASE(localvarStruct6);
 
         TEST_CASE(localvarOp);          // Usage with arithmetic operators
         TEST_CASE(localvarInvert);      // Usage with inverted variable
@@ -2448,6 +2449,18 @@ private:
                               "    A a;\n"
                               "    return 0;\n"
                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarStruct6()
+    {
+        functionVariableUsage("class Type { };\n"
+                              "class A {\n"
+                              "public:\n"
+                              "    Type & get() { return t; }\n"
+                              "private:\n"
+                              "    Type t;\n"
+                              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

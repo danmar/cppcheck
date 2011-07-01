@@ -1753,7 +1753,7 @@ void CheckOther::functionVariableUsage()
             // standard type declaration with possible initialization
             // int i; int j = 0; static int k;
             if (Token::Match(tok, "[;{}] static| %type% %var% ;|=") &&
-                (nextIsStandardType(tok) || isRecordTypeWithoutSideEffects(tok->strAt(1) == "static" ? tok->tokAt(3) : tok->tokAt(2))))
+                !Token::Match(tok->next(), "return|throw"))
             {
                 tok = tok->next();
 
@@ -1761,8 +1761,11 @@ void CheckOther::functionVariableUsage()
                 if (isStatic)
                     tok = tok->next();
 
-                variables.addVar(tok->next(), Variables::standard, info,
-                                 tok->tokAt(2)->str() == "=" || isStatic);
+                if (tok->isStandardType() || isRecordTypeWithoutSideEffects(tok->next()))
+                {
+                    variables.addVar(tok->next(), Variables::standard, info,
+                                     tok->tokAt(2)->str() == "=" || isStatic);
+                }
                 tok = tok->next();
             }
 
