@@ -94,7 +94,7 @@
     analysis can be needed to avoid false warnings. Here is an example that
     logically is the same as the previous example:</para>
 
-    <para><programlisting>void f1(char *s)
+    <programlisting>void f1(char *s)
 {
     s[20] = 0;
 }
@@ -105,7 +105,9 @@ void f2()
     if (x + y == 2) {
         f1(a);
     }
-}</programlisting>Cppcheck will report this message:</para>
+}</programlisting>
+
+    <para>Cppcheck will report this message:</para>
 
     <programlisting>Array 'a[10]' index 20 out of bounds</programlisting>
 
@@ -116,7 +118,7 @@ void f2()
     prove that "x+y==2" can be true when the function is called from "f2". No
     error message is reported for this code:</para>
 
-    <para><programlisting>void f1(char *s)
+    <programlisting>void f1(char *s)
 {
     if (x + y == 2) {
         s[20] = 0;
@@ -127,7 +129,7 @@ void f2()
 {
     char a[10];
     f1(a);
-}</programlisting></para>
+}</programlisting>
   </section>
 
   <section>

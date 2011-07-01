@@ -206,9 +206,9 @@ Checking path/file2.cpp...
 
         <para>The output from Cppcheck is now:</para>
 
-        <para><programlisting>Checking file3.c...
+        <programlisting>Checking file3.c...
 [file3.c:3]: (style) Variable 'i' is assigned a value that is never used
-[file3.c:3]: (style) The scope of the variable i can be reduced</programlisting></para>
+[file3.c:3]: (style) The scope of the variable i can be reduced</programlisting>
       </section>
 
       <section>
