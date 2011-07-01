@@ -570,7 +570,7 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
     <section>
       <title>Check source code</title>
 
-      <para>Use the <literal>Check</literal> menu.</para>
+      <para>Use the <guimenu>Check</guimenu> menu.</para>
     </section>
 
     <section>
@@ -579,7 +579,7 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
       <para>The results are shown in a list.</para>
 
       <para>You can show/hide certain types of messages through the
-      <literal>View</literal> menu.</para>
+      <guimenu>View</guimenu> menu.</para>
 
       <para>Results can be saved to an XML file that can later be opened. See
       <literal>Save results to file</literal> and <literal>Open
@@ -590,10 +590,11 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
       <title>Settings</title>
 
       <para>The language can be changed at any time by using the
-      <literal>Language</literal> menu.</para>
+      <guimenu>Language</guimenu> menu.</para>
 
       <para>More settings are available in
-      <literal>Edit</literal>&gt;<literal>Preferences</literal>.</para>
+      <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem>
+      </menuchoice>.</para>
     </section>
 
     <section>
