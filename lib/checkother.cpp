@@ -1757,12 +1757,12 @@ void CheckOther::functionVariableUsage()
             {
                 tok = tok->next();
 
-                if (tok->str() == "static")
+                const bool isStatic = tok->str() == "static";
+                if (isStatic)
                     tok = tok->next();
 
                 variables.addVar(tok->next(), Variables::standard, info,
-                                 tok->tokAt(2)->str() == "=" ||
-                                 tok->previous()->str() == "static");
+                                 tok->tokAt(2)->str() == "=" || isStatic);
                 tok = tok->next();
             }
 
@@ -1789,15 +1789,11 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "[;{}] static| const| %type% *| %var% [ %any% ] ;|=") &&
                      nextIsStandardType(tok))
             {
-                bool isStatic = false;
-
                 tok = tok->next();
 
-                if (tok->str() == "static")
-                {
+                const bool isStatic = tok->str() == "static";
+                if (isStatic)
                     tok = tok->next();
-                    isStatic = true;
-                }
 
                 if (tok->str() == "const")
                     tok = tok->next();
@@ -1834,15 +1830,11 @@ void CheckOther::functionVariableUsage()
             // int * i; int * j = 0; static int * k = 0;
             else if (Token::Match(tok, "[;{}] static| const| %type% *|& %var% ;|="))
             {
-                bool isStatic = false;
-
                 tok = tok->next();
 
-                if (tok->str() == "static")
-                {
+                const bool isStatic = tok->str() == "static";
+                if (isStatic)
                     tok = tok->next();
-                    isStatic = true;
-                }
 
                 if (tok->str() == "const")
                     tok = tok->next();
@@ -1877,15 +1869,11 @@ void CheckOther::functionVariableUsage()
             // int ** i; int ** j = 0; static int ** k = 0;
             else if (Token::Match(tok, "[;{}] static| const| %type% * * %var% ;|="))
             {
-                bool isStatic = false;
-
                 tok = tok->next();
 
-                if (tok->str() == "static")
-                {
+                const bool isStatic = tok->str() == "static";
+                if (isStatic)
                     tok = tok->next();
-                    isStatic = true;
-                }
 
                 if (tok->str() == "const")
                     tok = tok->next();
@@ -1911,15 +1899,12 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "[;{}] static| const| struct|union %type% *|& %var% ;|="))
             {
                 Variables::VariableType type;
-                bool isStatic = false;
 
                 tok = tok->next();
 
-                if (tok->str() == "static")
-                {
+                const bool isStatic = tok->str() == "static";
+                if (isStatic)
                     tok = tok->next();
-                    isStatic = true;
-                }
 
                 if (tok->str() == "const")
                     tok = tok->next();
@@ -1997,15 +1982,11 @@ void CheckOther::functionVariableUsage()
             // int * p[10]; int * q[10] = { 0 }; static int * * r[10] = { 0 };
             else if (Token::Match(tok, "[;{}] static| const| %type% *|& %var% [ %any% ] ;|="))
             {
-                bool isStatic = false;
-
                 tok = tok->next();
 
-                if (tok->str() == "static")
-                {
+                const bool isStatic = tok->str() == "static";
+                if (isStatic)
                     tok = tok->next();
-                    isStatic = true;
-                }
 
                 if (tok->str() == "const")
                     tok = tok->next();
@@ -2028,15 +2009,11 @@ void CheckOther::functionVariableUsage()
             // struct S * p[10]; struct T * q[10] = { 0 }; static struct S * r[10] = { 0 };
             else if (Token::Match(tok, "[;{}] static| const| struct|union %type% *|& %var% [ %any% ] ;|="))
             {
-                bool isStatic = false;
-
                 tok = tok->next();
 
-                if (tok->str() == "static")
-                {
+                const bool isStatic = tok->str() == "static";
+                if (isStatic)
                     tok = tok->next();
-                    isStatic = true;
-                }
 
                 if (tok->str() == "const")
                     tok = tok->next();
