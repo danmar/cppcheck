@@ -7914,8 +7914,19 @@ void Tokenizer::simplifyGoto()
                 }
             }
 
+            // goto the end of the function
+            while (tok)
+            {
+                if (tok->str() == "{")
+                    tok = tok->link();
+                else if (tok->str() == "}")
+                    break;
+                tok = tok->next();
+            }
+            if (!tok)
+                break;
             gotos.clear();
-            tok = beginfunction;
+            beginfunction = 0;
             indentlevel = 0;
             continue;
         }
