@@ -83,13 +83,13 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
 <p><a href="http://sourceforge.net/apps/phpbb/cppcheck/search.php?st=0&amp;search_id=active_topics">View all active topics&hellip;</a></p>
 <h2>Doxygen</h2>
 <ul>
-  <li><a href="/doxyoutput/">Output</a></li>
-  <li><a href="/doxygen-errors.txt">Errors</a></li>
+  <li><a href="doxyoutput/">Output</a></li>
+  <li><a href="doxygen-errors.txt">Errors</a></li>
 </ul>
 <h2>Other</h2>
 <ul>
-  <li><a href="/coverage_report/">Coverage report</a></li>
-  <li><a href="/cpd.txt">CPD report (duplicate code)</a></li>
+  <li><a href="coverage_report/">Coverage report</a></li>
+  <li><a href="cpd.txt">CPD report (duplicate code)</a></li>
 </ul>
   </div> <!-- .wrap -->
 </div> <!-- #content -->

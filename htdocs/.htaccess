@@ -22,3 +22,9 @@ AddType image/vnd.microsoft.icon .ico
 
 #Redirect "devinfo.html" to the new place...
 Redirect permanent /devinfo.html http://cppcheck.sourceforge.net/devinfo/
+
+#Redirect doxyoutput, coverage- and cpd report to the new place...
+Redirect permanent /doxyoutput/ http://cppcheck.sourceforge.net/devinfo/doxyoutput/
+Redirect permanent /doxygen-errors.txt http://cppcheck.sourceforge.net/devinfo/doxygen-errors.txt
+Redirect permanent /coverage_report/ http://cppcheck.sourceforge.net/devinfo/coverage_report/
+Redirect permanent /cpd.txt http://cppcheck.sourceforge.net/devinfo/cpd.txt
