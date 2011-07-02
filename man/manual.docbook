@@ -250,7 +250,7 @@ Checking path/file2.cpp...
     </section>
   </chapter>
 
-  <chapter>
+  <chapter id="preprocessor-configurations">
     <title>Preprocessor configurations</title>
 
     <para>By default Cppcheck will check all preprocessor configurations
@@ -263,11 +263,11 @@ Checking path/file2.cpp...
     <para>Beware that only the macros, which are given here and the macros
     defined in source files and known header files are considered. That
     excludes all the macros defined in some system header files, which are by
-    default not examined by cppcheck.</para>
+    default not examined by Cppcheck.</para>
 
     <para>The usage: if you, for example, want to limit the checking so the
-    only configuration to check should be "DEBUG=1;__cplusplus" then something
-    like this can be used:</para>
+    only configuration to check should be <literal>DEBUG=1;__cplusplus</literal>
+    then something like this can be used:</para>
 
     <programlisting>cppcheck -DDEBUG=1 -D__cplusplus path</programlisting>
   </chapter>
@@ -617,9 +617,9 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
       recommended that this known functionality is redefined. But feel free to
       try it.</para>
 
-      <para>As you can read in chapter 3 in this manual the default is that
-      Cppcheck checks all configurations. So only provide preprocessor defines
-      if you want to limit the checking.</para>
+      <para>As you can read in <link linkend="preprocessor-configurations">chapter
+      3</link> in this manual the default is that Cppcheck checks all configurations.
+      So only provide preprocessor defines if you want to limit the checking.</para>
     </section>
   </chapter>
   
