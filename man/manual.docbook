@@ -294,7 +294,7 @@ Checking path/file2.cpp...
 
     <variablelist>
       <varlistentry>
-        <term>file</term>
+        <term><sgmltag class="attribute">file</sgmltag></term>
 
         <listitem>
           <para>filename. Both relative and absolute paths are possible</para>
@@ -302,7 +302,7 @@ Checking path/file2.cpp...
       </varlistentry>
 
       <varlistentry>
-        <term>line</term>
+        <term><sgmltag class="attribute">line</sgmltag></term>
 
         <listitem>
           <para>a number</para>
@@ -310,7 +310,7 @@ Checking path/file2.cpp...
       </varlistentry>
 
       <varlistentry>
-        <term>id</term>
+        <term><sgmltag class="attribute">id</sgmltag></term>
 
         <listitem>
           <para>id of error. These are always valid symbolnames.</para>
@@ -318,17 +318,18 @@ Checking path/file2.cpp...
       </varlistentry>
 
       <varlistentry>
-        <term>severity</term>
+        <term><sgmltag class="attribute">severity</sgmltag></term>
 
         <listitem>
-          <para>either <literal>error</literal> or <literal>style</literal>.
-          <literal>warning</literal> and <literal>performance</literal> are
-          saved as <literal>style</literal>.</para>
+          <para>either <sgmltag class="attvalue">error</sgmltag> or
+          <sgmltag class="attvalue">style</sgmltag>.</para>
+          <para><literal>warning</literal> and <literal>performance</literal>
+          are saved as <sgmltag class="attvalue">style</sgmltag>.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>msg</term>
+        <term><sgmltag class="attribute">msg</sgmltag></term>
 
         <listitem>
           <para>the error message</para>
@@ -375,8 +376,6 @@ gui/test.cpp:16: error: Mismatching allocation and deallocation: k</programlisti
     <programlisting>Checking gui/test.cpp...
 gui/test.cpp,31,error,memleak,Memory leak: b
 gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocation: k</programlisting>
-
-    <para></para>
   </chapter>
 
   <chapter>
@@ -391,15 +390,15 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
 [error id]:[filename2]
 [error id]</programlisting>
 
-    <para>The <literal>error id</literal> is the id that you want to suppress.
+    <para>The <replaceable>error id</replaceable> is the id that you want to suppress.
     The easiest way to get it is to use the <parameter class="command">--xml</parameter>
-    command line flag. Copy and paste the <literal>id</literal> string from the XML
-    output. This may be * to suppress all warnings (for a specified file or
-    files).</para>
+    command line flag. Copy and paste the <replaceable>id</replaceable> string from the XML
+    output. This may be <literal>*</literal> to suppress all warnings (for a
+    specified file or files).</para>
 
-    <para>The <literal>filename</literal> may include the wildcard characters
-    * or ?, which match any sequence of characters or any single character
-    respectively.</para>
+    <para>The <replaceable>filename</replaceable> may include the wildcard characters
+    <literal>*</literal> or <literal>?</literal>, which match any sequence of
+    characters or any single character respectively.</para>
 
     <programlisting>cppcheck --suppress=memleak:file1.cpp src/</programlisting>
 
@@ -415,8 +414,6 @@ uninitvar</programlisting>
     <para>You can then use the suppressions file:</para>
 
     <programlisting>cppcheck --suppressions suppressions.txt src/</programlisting>
-
-    <para></para>
   </chapter>
 
   <chapter>
