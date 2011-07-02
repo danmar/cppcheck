@@ -335,6 +335,7 @@ private:
         // struct ABC { } abc; => struct ABC { }; ABC abc;
         TEST_CASE(simplifyStructDecl1);
         TEST_CASE(simplifyStructDecl2); // ticket #2579
+        TEST_CASE(simplifyStructDecl3);
 
         // register int var; => int var;
         // inline int foo() {} => int foo() {}
@@ -6929,6 +6930,129 @@ private:
         const char code[] = "struct { char c; }";
         const char expected[] = "struct { char c ; }";
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyStructDecl3()
+    {
+        {
+            const char code[] = "class ABC { } abc;";
+            const char expected[] = "class ABC { } ; ABC abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class ABC { } * pabc;";
+            const char expected[] = "class ABC { } ; ABC * pabc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class ABC { } abc[4];";
+            const char expected[] = "class ABC { } ; ABC abc [ 4 ] ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class ABC { } abc, def;";
+            const char expected[] = "class ABC { } ; ABC abc ; ABC def ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class ABC { } abc, * pabc;";
+            const char expected[] = "class ABC { } ; ABC abc ; ABC * pabc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class ABC { class DEF {} def; } abc;";
+            const char expected[] = "class ABC { class DEF { } ; DEF def ; } ; ABC abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class { } abc;";
+            const char expected[] = "class { } abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class { } * pabc;";
+            const char expected[] = "class { } * pabc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class { } abc[4];";
+            const char expected[] = "class { } abc [ 4 ] ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class { } abc, def;";
+            const char expected[] = "class { } abc , def ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class { } abc, * pabc;";
+            const char expected[] = "class { } abc , * pabc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct { class DEF {} def; } abc;";
+            const char expected[] = "struct Anonymous0 { class DEF { } ; DEF def ; } ; Anonymous0 abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class ABC { struct {} def; } abc;";
+            const char expected[] = "class ABC { struct Anonymous0 { } ; Anonymous0 def ; } ; ABC abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class { class {} def; } abc;";
+            const char expected[] = "class { class { } def ; } abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class ABC { struct {} def; };";
+            const char expected[] = "class ABC { struct Anonymous0 { } ; Anonymous0 def ; } ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class ABC : public XYZ { struct {} def; };";
+            const char expected[] = "class ABC : public XYZ { struct Anonymous0 { } ; Anonymous0 def ; } ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class { int x; }; int y;";
+            const char expected[] = "class { int x ; } ; int y ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class { int x; };";
+            const char expected[] = "class { int x ; } ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class { };";
+            const char expected[] = "class { } ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class { struct { struct { } ; } ; };";
+            const char expected[] = "class { } ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void removeUnwantedKeywords()

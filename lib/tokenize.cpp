@@ -9323,22 +9323,23 @@ void Tokenizer::simplifyStructDecl()
     unsigned int count = 0;
 
     // Skip simplification of unions in class definition
-    std::list<bool> skip;
+    std::list<bool> skip; // true = in function, false = not in function
     skip.push_back(false);
 
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         Token *restart;
 
+        // check for start of scope and determine if it is in a function
         if (tok->str() == "{")
-            skip.push_back(!Token::Match(tok->previous(), "const|)"));
+            skip.push_back(Token::Match(tok->previous(), "const|)"));
+
+        // end of scope
         else if (tok->str() == "}" && !skip.empty())
             skip.pop_back();
-        else if (!skip.empty() && skip.back() && tok->str() == "union")
-            continue;
 
         // check for named struct/union
-        if (Token::Match(tok, "struct|union %type% :|{"))
+        else if (Token::Match(tok, "class|struct|union %type% :|{"))
         {
             Token *isStatic = tok->previous() && tok->previous()->str() == "static" ? tok->previous() : NULL;
             Token *type = tok->next();
@@ -9348,7 +9349,7 @@ void Tokenizer::simplifyStructDecl()
                 next = next->next();
             if (!next)
                 continue;
-
+            skip.push_back(false);
             tok = next->link();
             restart = next;
 
@@ -9372,6 +9373,8 @@ void Tokenizer::simplifyStructDecl()
         // check for anonymous struct/union
         else if (Token::Match(tok, "struct|union {"))
         {
+            bool inFunction = skip.back();
+            skip.push_back(false);
             Token *tok1 = tok;
 
             restart = tok->next();
@@ -9391,10 +9394,10 @@ void Tokenizer::simplifyStructDecl()
                 tok->insertToken(name.c_str());
             }
 
-            // unnamed anonymous struct/union so remove it
+            // unnamed anonymous struct/union so possibly remove it
             else if (tok->next() && tok->next()->str() == ";")
             {
-                if (tok1->str() == "union")
+                if (tok1->str() == "union" && inFunction)
                 {
                     // Try to create references in the union..
                     Token *tok2 = tok1->tokAt(2);
@@ -9428,18 +9431,22 @@ void Tokenizer::simplifyStructDecl()
                     }
                 }
 
-                tok1->deleteThis();
-                if (tok1->next() == tok)
+                // don't remove unnamed anonymous unions from a class, struct or union
+                if (!(tok1->str() == "union" && !inFunction))
                 {
                     tok1->deleteThis();
-                    tok = tok1;
-                }
-                else
-                    tok1->deleteThis();
-                restart = tok1->previous();
-                tok->deleteThis();
-                if (tok->next())
+                    if (tok1->next() == tok)
+                    {
+                        tok1->deleteThis();
+                        tok = tok1;
+                    }
+                    else
+                        tok1->deleteThis();
+                    restart = tok1->previous();
                     tok->deleteThis();
+                    if (tok->next())
+                        tok->deleteThis();
+                }
             }
 
             if (!restart)
