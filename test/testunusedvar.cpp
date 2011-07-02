@@ -98,6 +98,7 @@ private:
         TEST_CASE(localvarstatic);
         TEST_CASE(localvardynamic);
         TEST_CASE(localvararray1);  // ticket #2780
+        TEST_CASE(localvarstring);
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -2778,6 +2779,37 @@ private:
         functionVariableUsage("void foo() {\n"
                               "    int p[5];\n"
                               "    *p = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarstring() // ticket #1597
+    {
+        functionVariableUsage("void foo() {\n"
+                              "    std::string s;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: s\n", errout.str());
+
+        functionVariableUsage("void foo() {\n"
+                              "    std::string s;\n"
+                              "    s = \"foo\";\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo() {\n"
+                              "    std::string s = \"foo\";\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("std::string foo() {\n"
+                              "    std::string s;\n"
+                              "    return s;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is not assigned a value\n", errout.str());
+
+        functionVariableUsage("std::string foo() {\n"
+                              "    std::string s = \"foo\";\n"
+                              "    return s;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

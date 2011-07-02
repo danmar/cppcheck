@@ -1769,6 +1769,22 @@ void CheckOther::functionVariableUsage()
                 tok = tok->next();
             }
 
+            // std::string declaration with possible initialization
+            // std::string s; std::string s = "string";
+            else if (Token::Match(tok, "[;{}] static| std :: string %var% ;|="))
+            {
+                tok = tok->next();
+
+                const bool isStatic = tok->str() == "static";
+                if (isStatic)
+                    tok = tok->next();
+
+                tok = tok->tokAt(3);
+                variables.addVar(tok, Variables::standard, info,
+                                 tok->next()->str() == "=" || isStatic);
+                tok = tok->next();
+            }
+
             // standard struct type declaration with possible initialization
             // struct S s; struct S s = { 0 }; static struct S s;
             else if (Token::Match(tok, "[;{}] static| struct %type% %var% ;|=") &&
