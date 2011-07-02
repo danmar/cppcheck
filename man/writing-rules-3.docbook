@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section>
-  <info>
-    <title>Part 3 - Introduction to writing rules with C++</title>
-
-    <author>
-      <personname><firstname>Daniel</firstname><surname>Marjamäki</surname></personname>
-
-      <affiliation>
-        <orgname>Cppcheck</orgname>
-      </affiliation>
-    </author>
-
-    <pubdate>2011</pubdate>
-  </info>
+  <title>Part 3 - Introduction to writing rules with C++</title>
 
   <section>
     <title>Introduction</title>

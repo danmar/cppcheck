@@ -627,6 +627,16 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
   </chapter>
   
   <appendix>
+    <info>
+      <author>
+        <firstname>Daniel</firstname>
+        <surname>Marjamäki</surname>
+        <affiliation>
+          <orgname>Cppcheck</orgname>
+        </affiliation>
+      </author>
+      <pubdate>2010-2011</pubdate>
+    </info>
     <title>Writing Cppcheck rules</title>
     &writing-rules-1;
     &writing-rules-2;

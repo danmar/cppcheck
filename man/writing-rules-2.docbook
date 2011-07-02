@@ -1,20 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section>
-  <info>
-    <title>Part 2 - The Cppcheck data representation</title>
-
-    <author>
-      <firstname>Daniel</firstname>
-
-      <surname>Marjamäki</surname>
-
-      <affiliation>
-        <orgname>Cppcheck</orgname>
-      </affiliation>
-    </author>
-
-    <pubdate>2010</pubdate>
-  </info>
+  <title>Part 2 - The Cppcheck data representation</title>
 
   <section>
     <title>Introduction</title>
