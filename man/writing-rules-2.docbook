@@ -256,7 +256,7 @@ s8 x;</programlisting>
     }
 }</programlisting>
 
-        <para>The <literal>x=f1()</literal> is broken out. The
+        <para>The <code>x=f1()</code> is broken out. The
         <parameter class="command">--debug</parameter> output:</para>
 
         <programlisting>1: void f ( )

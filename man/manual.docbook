@@ -434,13 +434,13 @@ uninitvar</programlisting>
 
       <para>Here is example code that might leak memory or resources:</para>
 
-      <para><programlisting>void foo(int x)
+      <programlisting>void foo(int x)
 {
     void *f = CreateFred();
     if (x == 1)
         return;
     DestroyFred(f);
-}</programlisting></para>
+}</programlisting>
 
       <para>If you analyse that with Cppcheck it won't find any leaks:</para>
 
@@ -460,8 +460,9 @@ void DestroyFred(void *p)
     free(p);
 }</programlisting>
 
-      <para>When Cppcheck see this it understands that CreateFred will return
-      allocated memory and that DestroyFred will deallocate memory.</para>
+      <para>When Cppcheck see this it understands that <function>CreateFred()
+      </function> will return allocated memory and that <function>DestroyFred()
+      </function> will deallocate memory.</para>
 
       <para>Now, execute <command>cppcheck</command> this way:</para>
 
@@ -487,7 +488,7 @@ void DestroyFred(void *p)
 {
 }</programlisting>
 
-    <para>By default cppcheck will not detect any problems in that
+    <para>By default Cppcheck will not detect any problems in that
     code.</para>
 
     <para>To enable the exception safety checking you can use
@@ -499,8 +500,8 @@ void DestroyFred(void *p)
 
     <programlisting>[fred.cpp:3]: (style) Upon exception there is memory leak: a</programlisting>
 
-    <para>If an exception occurs when <literal>b</literal> is allocated,
-    <literal>a</literal> will leak.</para>
+    <para>If an exception occurs when <varname>b</varname> is allocated,
+    <varname>a</varname> will leak.</para>
 
     <para>Here is another example:</para>
 
@@ -528,17 +529,18 @@ int a(int sz)
 
     <para>You can convert the XML output from cppcheck into a HTML report.
     You'll need Python and the pygments module
-    (<uri>http://pygments.org/</uri>) for this to work. In the Cppcheck source
-    tree there is a folder "htmlreport" that contains a script that transforms
-    a Cppcheck XML file into HTML output.</para>
+    (<ulink url="http://pygments.org/">http://pygments.org/</ulink>) for this to
+    work. In the Cppcheck source tree there is a folder
+    <filename class="directory">htmlreport</filename> that contains a script
+    that transforms a Cppcheck XML file into HTML output.</para>
 
     <para>This command generates the help screen:</para>
 
-    <para><programlisting>htmlreport/cppcheck-htmlreport -h</programlisting></para>
+    <programlisting>htmlreport/cppcheck-htmlreport -h</programlisting>
 
     <para>The output screen says:</para>
 
-    <para><programlisting>Usage: cppcheck-htmlreport [options]
+    <programlisting>Usage: cppcheck-htmlreport [options]
 
 Options:
   -h, --help      show this help message and exit 
@@ -547,7 +549,7 @@ Options:
   --report-dir=REPORT_DIR 
                   The directory where the html report content is written.
   --source-dir=SOURCE_DIR
-                  Base directory where source code files can be found.</programlisting></para>
+                  Base directory where source code files can be found.</programlisting>
 
     <para>An example usage:</para>
 
