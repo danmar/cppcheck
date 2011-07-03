@@ -898,7 +898,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
     tok1->insertToken(";");
     tok1 = tok1->next();
 
-    if (tok1->next()->str() == ";" && tok1 && tok1->previous()->str() == "}")
+    if (tok1->next() && tok1->next()->str() == ";" && tok1 && tok1->previous()->str() == "}")
     {
         tok->deleteThis();
         tok1->deleteThis();
