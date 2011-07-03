@@ -9434,6 +9434,7 @@ void Tokenizer::simplifyStructDecl()
                 // don't remove unnamed anonymous unions from a class, struct or union
                 if (!(tok1->str() == "union" && !inFunction))
                 {
+                    skip.pop_back();
                     tok1->deleteThis();
                     if (tok1->next() == tok)
                     {
