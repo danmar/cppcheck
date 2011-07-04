@@ -1296,6 +1296,7 @@ private:
         ASSERT_EQUALS("rename", analyseFunctions("int rename (const char oldname[], const char newname[]);"));
         ASSERT_EQUALS("", analyseFunctions("void foo(int &x) { x = 0; }"));
         ASSERT_EQUALS("", analyseFunctions("void foo(s x) { }"));
+        ASSERT_EQUALS("foo", analyseFunctions("void foo(Fred *fred) { fred->x = 0; }"));
 
         // function calls..
         checkUninitVar("void assignOne(int &x)\n"
@@ -1448,6 +1449,17 @@ private:
                        "    fread(buf, 1, 10, f);\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #2775 - uninitialized struct pointer in subfunction
+        checkUninitVar("void a(struct Fred *fred) {\n"
+                       "    fred->x = 0;\n"
+                       "}\n"
+                       "\n"
+                       "void b() {\n"
+                       "    struct Fred *p;\n"
+                       "    a(p);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: p\n", errout.str());
     }
 
     // valid and invalid use of 'int a(int x) { return x + x; }'

@@ -1047,6 +1047,14 @@ public:
                         continue;
                     }
 
+                    if (Token::Match(tok2, "const| struct| %type% * %var% ,|)"))
+                    {
+                        while (tok2->isName())
+                            tok2 = tok2->next();
+                        tok2 = tok2->tokAt(2);
+                        continue;
+                    }
+
                     break;
                 }
 
