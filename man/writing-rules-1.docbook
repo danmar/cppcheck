@@ -1,20 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<section>
-  <info>
-    <title>Part 1 - Getting started</title>
-
-    <author>
-      <firstname>Daniel</firstname>
-
-      <surname>Marjamäki</surname>
-
-      <affiliation>
-        <orgname>Cppcheck</orgname>
-      </affiliation>
-    </author>
-
-    <pubdate>2010</pubdate>
-  </info>
+<section id="writing-rules-1">
+  <title>Part 1 - Getting started</title>
 
   <section>
     <title>Introduction</title>
@@ -30,7 +16,7 @@
     <title>Data representation of the source code</title>
 
     <para>The data used by the rules are not the raw source code.
-    <literal>Cppcheck</literal> will read the source code and process it
+    Cppcheck will read the source code and process it
     before the rules are used.</para>
 
     <para>Cppcheck is designed to find bugs and dangerous code. Stylistic
@@ -39,7 +25,8 @@
     you write rules.</para>
 
     <para>Between each token in the code there is always a space. For instance
-    the raw code "1+f()" is processed into "1 + f ( )".</para>
+    the raw code "<code>1+f()</code>" is processed into "<code>1 + f ( )</code>"
+    .</para>
 
     <para>The code is simplified in many ways.</para>
   </section>
@@ -62,10 +49,10 @@
     <section>
       <title>Step 1 - Creating the regular expression</title>
 
-      <para>Cppcheck uses the <literal>PCRE</literal> library to handle
-      regular expressions. <literal>PCRE</literal> stands for "Perl Compatible
-      Regular Expressions". The homepage for <literal>PCRE</literal> is
-      <literal>http://www.pcre.org</literal>.</para>
+      <para>Cppcheck uses the PCRE library to handle regular expressions.
+      <acronym>PCRE</acronym> stands for "Perl Compatible Regular Expressions".
+      The homepage for PCRE is <ulink url="http://www.pcre.org/">
+      http://www.pcre.org/</ulink>.</para>
 
       <para>Let's create a regular expression that checks for code such
       as:</para>
@@ -74,7 +61,8 @@
     free(p);</programlisting>
 
       <para>For such code the condition is often redundant (on most
-      implementations it is valid to free a NULL pointer).</para>
+      implementations it is valid to free a <constant>NULL</constant> pointer).
+      </para>
 
       <para>The regular expression must be written for the simplified code. To
       see what the simplified code looks like you can create a source file
@@ -85,8 +73,8 @@
         free(p);
 }</programlisting>
 
-      <para>Save that code as <literal>dealloc.cpp</literal> and then use
-      <literal>cppcheck --rule=".+" dealloc.cpp</literal>:</para>
+      <para>Save that code as <filename>dealloc.cpp</filename> and then use
+      <command>cppcheck --rule=".+" dealloc.cpp</command>:</para>
 
       <programlisting>$ ./cppcheck --rule=".+" dealloc.cpp 
 Checking dealloc.cpp...
@@ -134,7 +122,7 @@ Checking dealloc.cpp...
   &lt;/message&gt;
 &lt;/rule&gt;</programlisting>
 
-      <para>If you save that xml data in <literal>dealloc.rule</literal> you
+      <para>If you save that xml data in <filename>dealloc.rule</filename> you
       can test this rule:</para>
 
       <programlisting>$ cppcheck --rule-file=dealloc.rule dealloc.cpp

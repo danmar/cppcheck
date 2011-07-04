@@ -1,24 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<section>
-  <info>
-    <title>Part 3 - Introduction to writing rules with C++</title>
-
-    <author>
-      <personname><firstname>Daniel</firstname><surname>Marjamäki</surname></personname>
-
-      <affiliation>
-        <orgname>Cppcheck</orgname>
-      </affiliation>
-    </author>
-
-    <pubdate>2011</pubdate>
-  </info>
+<section id="writing-rules-3">
+  <title>Part 3 - Introduction to writing rules with C++</title>
 
   <section>
     <title>Introduction</title>
 
     <para>The goal for this article is to introduce how
-    <literal>Cppcheck</literal> rules are written with C++. With C++ it is
+    Cppcheck rules are written with C++. With C++ it is
     possible to write more complex rules than is possible with regular
     expressions.</para>
   </section>
@@ -95,9 +83,9 @@ void CheckOther::divisionByZeroError()
   <section>
     <title>Condition before deallocation</title>
 
-    <para>In the first <literal>Writing rules</literal> article I described a
-    rule that looks for redundant conditions. Here is the regular expression
-    that was shown:</para>
+    <para>In the first <link linkend="writing-rules-1">Writing rules</link> part
+    I described a rule that looks for redundant conditions. Here is the regular
+    expression that was shown:</para>
 
     <programlisting>if \( p \) { free \( p \) ; }</programlisting>
 
