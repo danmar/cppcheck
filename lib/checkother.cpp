@@ -2761,15 +2761,22 @@ void CheckOther::checkCharVariable()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring the variable..
-        if (Token::Match(tok, "[{};(,] char %var% [;=,)]"))
+        if (Token::Match(tok, "[{};(,] const| char *| %var% [;=,)]") ||
+            Token::Match(tok, "[{};(,] const| char %var% ["))
         {
+            // goto 'char' token
+            tok = tok->next();
+            if (tok->str() == "const")
+                tok = tok->next();
+
             // Check for unsigned char
-            if (tok->tokAt(1)->isUnsigned())
+            if (tok->isUnsigned())
                 continue;
 
             // Set tok to point to the variable name
-            tok = tok->tokAt(2);
-            if (tok->str() == "char")
+            tok = tok->next();
+            const bool isPointer(tok->str() == "*" || tok->strAt(1) == "[");
+            if (tok->str() == "*")
                 tok = tok->next();
 
             // Check usage of char variable..
@@ -2786,9 +2793,6 @@ void CheckOther::checkCharVariable()
                         break;
                 }
 
-                else if (tok2->str() == "return")
-                    continue;
-
                 std::string temp = "%var% [ " + tok->str() + " ]";
                 if ((tok2->str() != ".") && Token::Match(tok2->next(), temp.c_str()))
                 {
@@ -2803,13 +2807,28 @@ void CheckOther::checkCharVariable()
                         continue;
 
                     // it's ok with a bitwise and where the other operand is 0xff or less..
-                    if (std::string(tok2->strAt(4)) == "&")
+                    if (tok2->strAt(4) == "&")
                     {
                         if (tok2->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok2->strAt(3)))
                             continue;
                         if (tok2->tokAt(5)->isNumber() && MathLib::isGreater("0x100", tok2->strAt(5)))
                             continue;
                     }
+
+                    // is the result stored in a short|int|long?
+                    if (!Token::findmatch(_tokenizer->tokens(), "short|int|long %varid%", tok2->next()->varId()))
+                        continue;
+
+                    // This is an error..
+                    charBitOpError(tok2);
+                    break;
+                }
+
+                if (isPointer && Token::Match(tok2, "[;{}] %var% = %any% [&|] ( * %varid% ) ;", tok->varId()))
+                {
+                    // it's ok with a bitwise and where the other operand is 0xff or less..
+                    if (tok2->strAt(4) == "&" && tok2->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok2->strAt(3)))
+                        continue;
 
                     // is the result stored in a short|int|long?
                     if (!Token::findmatch(_tokenizer->tokens(), "short|int|long %varid%", tok2->next()->varId()))
@@ -3477,12 +3496,30 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type)
 
 void CheckOther::charArrayIndexError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "charArrayIndex", "Warning - using char variable as array index");
+    reportError(tok,
+                Severity::warning,
+                "charArrayIndex",
+                "When using a char variable as array index, sign extension will mean buffer overflow.\n"
+                "When using a char variable as array index, sign extension will cause buffer overflows. For example:\n"
+                "    char c = 0x80;\n"
+                "    char buf[512];\n"
+                "    buf[c] = 13;    // buffer overflow, index must be a value between 0 and 511.\n"
+                "    printf(\"%i\", buf[0x80]);\n"
+                "There is a big chance that the value that is printed won't be 13.");
 }
 
 void CheckOther::charBitOpError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "charBitOp", "Warning - using char variable in bit operation");
+    reportError(tok,
+                Severity::warning,
+                "charBitOp",
+                "When using char variables in bit operations, sign extension can generate unexpected results.\n"
+                "When using char variables in bit operations, sign extension can generate unexpected results. For example:\n"
+                "    char c = 0x80;\n"
+                "    int i = 0 | c;\n"
+                "    if (i & 0x8000)\n"
+                "        printf(\"not expected\");\n"
+                "The 'not expected' will be printed on the screen.");
 }
 
 void CheckOther::variableScopeError(const Token *tok, const std::string &varname)

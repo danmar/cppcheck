@@ -41,6 +41,7 @@ private:
         TEST_CASE(return1);
         TEST_CASE(assignChar);
         TEST_CASE(and03);
+        TEST_CASE(pointer);
     }
 
     void check(const char code[])
@@ -76,20 +77,20 @@ private:
               "    char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Warning - using char variable as array index\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) When using a char variable as array index, sign extension will mean buffer overflow.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    signed char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Warning - using char variable as array index\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) When using a char variable as array index, sign extension will mean buffer overflow.\n", errout.str());
 
         check("void foo(char ch)\n"
               "{\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Warning - using char variable as array index\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) When using a char variable as array index, sign extension will mean buffer overflow.\n", errout.str());
     }
 
 
@@ -101,7 +102,7 @@ private:
               "    char ch;\n"
               "    result = a | ch;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Warning - using char variable in bit operation\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
     }
 
     void bitop2()
@@ -145,6 +146,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void pointer()
+    {
+        check("void f(char *p) {\n"
+              "    int ret = 0;\n"
+              "    ret |= *p;\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+    }
 };
 
 REGISTER_TEST(TestCharVar)
