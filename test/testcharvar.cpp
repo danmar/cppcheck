@@ -148,12 +148,21 @@ private:
 
     void pointer()
     {
+        // ticket #2866
         check("void f(char *p) {\n"
               "    int ret = 0;\n"
               "    ret |= *p;\n"
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+
+        // fixed code
+        check("void f(char *p) {\n"
+              "    int ret = 0;\n"
+              "    ret |= (unsigned char)*p;\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
