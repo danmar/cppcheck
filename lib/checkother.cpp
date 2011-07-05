@@ -870,7 +870,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
 void CheckOther::sizeofForNumericParameterError(const Token *tok)
 {
     reportError(tok, Severity::error,
-                "sizeofwithnulericparamter", "Using sizeof with a numeric constant as function "
+                "sizeofwithnumericparameter", "Using sizeof with a numeric constant as function "
                 "argument might not be what you intended.\n"
                 "It is unusual to use contant value with sizeof. For example, this code:\n"
                 "     int f() {\n"
