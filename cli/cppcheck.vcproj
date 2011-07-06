@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="cppcheck"
-	ProjectGUID="{DFF8822D-8155-38DC-BAFD-1B7A99B650DB}"
+	ProjectGUID="{56B0F403-02CE-3F89-9A1B-E03F21240A63}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -124,6 +124,8 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
+				RelativePath="..\lib\check64bit.cpp" />
+			<File
 				RelativePath="..\lib\checkautovariables.cpp" />
 			<File
 				RelativePath="..\lib\checkbufferoverrun.cpp" />
@@ -196,6 +198,8 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
 				RelativePath="..\lib\check.h" />
+			<File
+				RelativePath="..\lib\check64bit.h" />
 			<File
 				RelativePath="..\lib\checkautovariables.h" />
 			<File
