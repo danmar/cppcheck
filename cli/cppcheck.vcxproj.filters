@@ -15,6 +15,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\lib\check64bit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\checkautovariables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -117,6 +120,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\check.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\check64bit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\checkautovariables.h">

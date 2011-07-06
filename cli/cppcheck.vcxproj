@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D647F468-12E1-3A1D-A42E-59F4C080F475}</ProjectGuid>
+    <ProjectGuid>{A6DACC3F-847F-3498-9415-164FBC746D6B}</ProjectGuid>
     <RootNamespace>cppcheck</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
@@ -117,6 +117,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\lib\check64bit.cpp" />
     <ClCompile Include="..\lib\checkautovariables.cpp" />
     <ClCompile Include="..\lib\checkbufferoverrun.cpp" />
     <ClCompile Include="..\lib\checkclass.cpp" />
@@ -153,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\check.h" />
+    <ClInclude Include="..\lib\check64bit.h" />
     <ClInclude Include="..\lib\checkautovariables.h" />
     <ClInclude Include="..\lib\checkbufferoverrun.h" />
     <ClInclude Include="..\lib\checkclass.h" />
