@@ -63,6 +63,10 @@ void Check64BitPortability::pointerassignment()
 void Check64BitPortability::pointerassignmentError(const Token *tok)
 {
     reportError(tok, Severity::portability,
-                "addresstoint", "Assigning address to int/long is not portable"
-               );
+                "addresstoint", 
+                "Assigning an address value to the integer (int/long/etc) type is not portable\n"
+                "Assigning an address value to the integer (int/long/etc) type is not portable across different platforms and "
+                "compilers. For example in 32-bit Windows and linux they are same width, but in 64-bit Windows and linux "
+                "they are of different width. In worst case you end up assigning 64-bit address to 32-bit integer. The safe "
+                "way is to always assign addresses only to pointer types (or typedefs).");
 }

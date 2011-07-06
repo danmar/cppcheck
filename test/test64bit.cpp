@@ -76,21 +76,21 @@ private:
               "    int a = p;\n"
               "    return a + 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning address to int/long is not portable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", errout.str());
 
         check("int foo(int p[])\n"
               "{\n"
               "    int a = p;\n"
               "    return a + 4;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning address to int/long is not portable\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", "", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    int *p = x;\n"
               "    *p = 0;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning int/long to pointer is not portable\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", "", errout.str());
     }
 
     void structmember()
@@ -99,7 +99,7 @@ private:
               "void f(struct Foo *foo) {\n"
               "    int i = foo->p;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning address to int/long is not portable\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", "", errout.str());
     }
 };
 
