@@ -3,6 +3,7 @@
 LIBS += -L../externals -lpcre
 INCLUDEPATH += ../externals ../externals/tinyxml
 HEADERS += $${BASEPATH}check.h \
+           $${BASEPATH}check64bit.h \
            $${BASEPATH}checkautovariables.h \
            $${BASEPATH}checkbufferoverrun.h \
            $${BASEPATH}checkclass.h \
@@ -27,7 +28,8 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}token.h \
            $${BASEPATH}tokenize.h
 
-SOURCES += $${BASEPATH}checkautovariables.cpp \
+SOURCES += $${BASEPATH}check64bit.cpp \
+           $${BASEPATH}checkautovariables.cpp \
            $${BASEPATH}checkbufferoverrun.cpp \
            $${BASEPATH}checkclass.cpp \
            $${BASEPATH}checkexceptionsafety.cpp \
