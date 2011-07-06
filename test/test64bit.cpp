@@ -83,14 +83,14 @@ private:
               "    int a = p;\n"
               "    return a + 4;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    int *p = x;\n"
               "    *p = 0;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an integer (int/long/etc) to a pointer is not portable\n", errout.str());
     }
 
     void structmember()

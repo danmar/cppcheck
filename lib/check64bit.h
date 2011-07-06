@@ -66,12 +66,14 @@ public:
 
 private:
 
-    void pointerassignmentError(const Token *tok);
+    void assignmentAddressToIntegerError(const Token *tok);
+    void assignmentIntegerToAddressError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         Check64BitPortability c(0, settings, errorLogger);
-        c.pointerassignmentError(0);
+        c.assignmentAddressToIntegerError(0);
+        c.assignmentIntegerToAddressError(0);
     }
 
     std::string myName() const

@@ -31,6 +31,19 @@ namespace
 Check64BitPortability instance;
 }
 
+/** Is given variable a pointer or array? */
+static bool isaddr(const Variable *var)
+{
+    const Token *nametok = var ? var->nameToken() : 0;
+    return (var && (nametok->strAt(-1) == "*" || nametok->strAt(1) == "["));
+}
+
+/** Is given variable an integer variable */
+static bool isint(const Variable *var)
+{
+    return (var && Token::Match(var->nameToken()->previous(), "int|long|DWORD"));
+}
+
 void Check64BitPortability::pointerassignment()
 {
     if (!_settings->_checkCodingStyle)
@@ -38,35 +51,40 @@ void Check64BitPortability::pointerassignment()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[;{}] %var% = %var% ;"))
+        if (Token::Match(tok, "[;{}] %var% = %var% [;+]"))
         {
             const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
             const Variable *var1(symbolDatabase->getVariableFromVarId(tok->tokAt(1)->varId()));
             const Variable *var2(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId()));
-            if (!var1 || !var2)
-                continue;
 
-            // Check if var1 is an int/long/DWORD variable
-            if (!Token::Match(var1->nameToken()->previous(), "int|long|DWORD"))
-                continue;
+            if (isaddr(var1) && isint(var2))
+                assignmentIntegerToAddressError(tok->next());
 
-            // Check if var2 is a pointer variable
-            if (!Token::simpleMatch(var2->nameToken()->previous(), "*"))
-                continue;
-
-            pointerassignmentError(tok->next());
+            else if (isint(var1) && isaddr(var2))
+                assignmentAddressToIntegerError(tok->next());
         }
     }
 }
 
-void Check64BitPortability::pointerassignmentError(const Token *tok)
+void Check64BitPortability::assignmentAddressToIntegerError(const Token *tok)
 {
     reportError(tok, Severity::portability,
-                "addresstoint", 
+                "AssignmentAddressToInteger",
                 "Assigning an address value to the integer (int/long/etc) type is not portable\n"
                 "Assigning an address value to the integer (int/long/etc) type is not portable across different platforms and "
                 "compilers. For example in 32-bit Windows and linux they are same width, but in 64-bit Windows and linux "
                 "they are of different width. In worst case you end up assigning 64-bit address to 32-bit integer. The safe "
                 "way is to always assign addresses only to pointer types (or typedefs).");
+}
+
+void Check64BitPortability::assignmentIntegerToAddressError(const Token *tok)
+{
+    reportError(tok, Severity::portability,
+                "AssignmentIntegerToAddress",
+                "Assigning an integer (int/long/etc) to a pointer is not portable\n"
+                "Assigning an integer (int/long/etc) to a pointer is not portable across different platforms and "
+                "compilers. For example in 32-bit Windows and linux they are same width, but in 64-bit Windows and linux "
+                "they are of different width. In worst case you end up assigning 32-bit integer to 64-bit pointer. The safe "
+                "way is to always assign address to pointer.");
 }
