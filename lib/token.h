@@ -219,6 +219,14 @@ public:
     {
         _isSigned = sign;
     }
+    bool isPointerCompare() const
+    {
+        return _isPointerCompare;
+    }
+    void isPointerCompare(bool b)
+    {
+        _isPointerCompare = b;
+    }
     bool isLong() const
     {
         return _isLong;
@@ -447,6 +455,7 @@ private:
     bool _isBoolean;
     bool _isUnsigned;
     bool _isSigned;
+    bool _isPointerCompare;
     bool _isLong;
     bool _isUnused;
     unsigned int _varId;

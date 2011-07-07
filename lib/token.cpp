@@ -36,6 +36,7 @@ Token::Token(Token **t) :
     _isBoolean(false),
     _isUnsigned(false),
     _isSigned(false),
+    _isPointerCompare(false),
     _isLong(false),
     _isUnused(false),
     _varId(0),
@@ -112,6 +113,7 @@ void Token::deleteThis()
         _isBoolean = _next->_isBoolean;
         _isUnsigned = _next->_isUnsigned;
         _isSigned = _next->_isSigned;
+        _isPointerCompare = _next->_isPointerCompare;
         _isLong = _next->_isLong;
         _isUnused = _next->_isUnused;
         _varId = _next->_varId;

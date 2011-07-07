@@ -38,6 +38,7 @@ private:
         TEST_CASE(novardecl);
         TEST_CASE(functionpar);
         TEST_CASE(structmember);
+        TEST_CASE(ptrcompare);
     }
 
     void check(const char code[])
@@ -100,6 +101,15 @@ private:
               "    int i = foo->p;\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", "", errout.str());
+    }
+
+    void ptrcompare()
+    {
+        // Ticket #2892
+        check("void foo(int *p) {\n"
+              "    int a = (p != NULL);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

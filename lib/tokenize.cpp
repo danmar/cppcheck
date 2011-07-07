@@ -260,6 +260,7 @@ void Tokenizer::insertTokens(Token *dest, const Token *src, unsigned int n)
         dest->isBoolean(src->isBoolean());
         dest->isUnsigned(src->isUnsigned());
         dest->isSigned(src->isSigned());
+        dest->isPointerCompare(src->isPointerCompare());
         dest->isLong(src->isLong());
         dest->isUnused(src->isUnused());
         src  = src->next();
@@ -284,6 +285,7 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last)
         tok2->isBoolean(tok->isBoolean());
         tok2->isUnsigned(tok->isUnsigned());
         tok2->isSigned(tok->isSigned());
+        tok2->isPointerCompare(tok->isPointerCompare());
         tok2->isLong(tok->isLong());
         tok2->isUnused(tok->isUnused());
         tok2->varId(tok->varId());
@@ -6477,17 +6479,21 @@ void Tokenizer::simplifyIfNotNull()
                 Token::Match(tok, "0 != %var%"))
             {
                 deleteFrom = tok->previous();
+                if (tok->tokAt(2))
+                    tok->tokAt(2)->isPointerCompare(true);
             }
 
             else if (Token::Match(tok, "%var% != 0"))
             {
                 deleteFrom = tok;
+                tok->isPointerCompare(true);
             }
 
             else if (Token::Match(tok, "%var% .|:: %var% != 0"))
             {
                 tok = tok->tokAt(2);
                 deleteFrom = tok;
+                tok->isPointerCompare(true);
             }
         }
 

@@ -61,7 +61,7 @@ void Check64BitPortability::pointerassignment()
             if (isaddr(var1) && isint(var2))
                 assignmentIntegerToAddressError(tok->next());
 
-            else if (isint(var1) && isaddr(var2))
+            else if (isint(var1) && isaddr(var2) && !tok->tokAt(3)->isPointerCompare())
                 assignmentAddressToIntegerError(tok->next());
         }
     }
