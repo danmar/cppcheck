@@ -88,7 +88,7 @@ bool CheckMemoryLeak::isclass(const Tokenizer *_tokenizer, const Token *tok) con
         return false;
 
     // return false if the type is a simple struct without member functions
-    const std::string pattern("struct " + tok->str() + " {");
+    const std::string pattern("struct|class " + tok->str() + " {");
     const Token *tok2 = Token::findmatch(_tokenizer->tokens(), pattern.c_str());
     if (tok2)
     {

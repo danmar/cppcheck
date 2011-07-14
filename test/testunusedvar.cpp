@@ -96,7 +96,8 @@ private:
         TEST_CASE(localvaralias10); // ticket #2004
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
-        TEST_CASE(localvardynamic);
+        TEST_CASE(localvardynamic1);
+        TEST_CASE(localvardynamic2); // ticket #2904
         TEST_CASE(localvararray1);  // ticket #2780
         TEST_CASE(localvarstring);
 
@@ -2670,7 +2671,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
     }
 
-    void localvardynamic()
+    void localvardynamic1()
     {
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2770,6 +2771,111 @@ private:
                               "{\n"
                               "    char* ptr = names[i];\n"
                               "    delete[] ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvardynamic2()
+    {
+        functionVariableUsage("struct Fred { int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* ptr = malloc(sizeof(Fred));\n"
+                              "    free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("struct Fred { int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* ptr = malloc(sizeof(Fred));\n"
+                              "    ptr->i = 0;\n"
+                              "    free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct Fred { int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    struct Fred* ptr = malloc(sizeof(Fred));\n"
+                              "    free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("struct Fred { int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    struct Fred* ptr = malloc(sizeof(Fred));\n"
+                              "    ptr->i = 0;\n"
+                              "    free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct Fred { int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* ptr = new Fred();\n"
+                              "    delete ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("struct Fred { int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* ptr = new Fred();\n"
+                              "    ptr->i = 0;\n"
+                              "    delete ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct Fred { int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    struct Fred* ptr = new Fred();\n"
+                              "    free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("struct Fred { int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    struct Fred* ptr = new Fred();\n"
+                              "    ptr->i = 0;\n"
+                              "    free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class Fred { public: int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* ptr = malloc(sizeof(Fred));\n"
+                              "    free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("class Fred { public: int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* ptr = malloc(sizeof(Fred));\n"
+                              "    ptr->i = 0;\n"
+                              "    free(ptr);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class Fred { public: int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* ptr = new Fred();\n"
+                              "    delete ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("class Fred { public: int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* ptr = new Fred();\n"
+                              "    ptr->i = 0;\n"
+                              "    delete ptr;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

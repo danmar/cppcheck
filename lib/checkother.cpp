@@ -2162,16 +2162,7 @@ void CheckOther::functionVariableUsage()
                             // is it a user defined type?
                             if (!start->tokAt(3)->isStandardType())
                             {
-                                // lookup the type
-                                const Scope *type = symbolDatabase->findVariableType(&(*scope), start->tokAt(3));
-
-                                // unknown type?
-                                if (!type)
-                                    allocate = false;
-
-                                // has default constructor or
-                                // has members with unknown type or default constructor
-                                else if (type->needInitialization == Scope::False)
+                                if (!isRecordTypeWithoutSideEffects(start))
                                     allocate = false;
                             }
                         }
