@@ -621,8 +621,11 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         }
 
         // [.. => search for a one-character token..
-        else if (p[0] == '[' && tok->_str.length() == 1 && chrInFirstWord(p, ']'))
+        else if (p[0] == '[' && chrInFirstWord(p, ']'))
         {
+            if(tok->_str.length() != 1)
+                return false;
+            
             const char *temp = p + 1;
             bool chrFound = false;
             int count = 0;

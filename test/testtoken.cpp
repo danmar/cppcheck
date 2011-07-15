@@ -42,6 +42,7 @@ private:
         TEST_CASE(deleteLast);
 
         TEST_CASE(matchAny);
+        TEST_CASE(matchSingleChar);
         TEST_CASE(matchNothingOrAnyNotElse);
         TEST_CASE(matchNumeric);
         TEST_CASE(matchBoolean);
@@ -143,6 +144,17 @@ private:
 
         givenACodeSampleToTokenize varLogOrVar("abc||def");
         ASSERT_EQUALS(true, Token::Match(varLogOrVar.tokens(), "%var% || %var%"));
+    }
+    
+    void matchSingleChar()
+    {
+        givenACodeSampleToTokenize singleChar("a");
+        ASSERT_EQUALS(true, Token::Match(singleChar.tokens(), "[a|bc]"));
+        ASSERT_EQUALS(false, Token::Match(singleChar.tokens(), "[d|ef]"));
+
+        Token multiChar(0);
+        multiChar.str("[ab");
+        ASSERT_EQUALS(false, Token::Match(&multiChar, "[ab|def]"));
     }
 
     void matchNothingOrAnyNotElse()
