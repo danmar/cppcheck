@@ -67,6 +67,7 @@ public:
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
+        checkOther.checkDuplicateBreak();
 
         // information checks
         checkOther.checkVariableScope();
@@ -224,8 +225,12 @@ public:
     /** @brief %Check for suspicious code that compares string literals for equality */
     void checkAlwaysTrueOrFalseStringCompare();
 
+    /** @brief %Check for duplicate break statements in a switch or loop */
+    void checkDuplicateBreak();
+
     /** @brief check if token is a record type without side effects */
     bool isRecordTypeWithoutSideEffects(const Token *tok);
+
 
     // Error messages..
     void cstyleCastError(const Token *tok);
@@ -260,6 +265,7 @@ public:
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void alwaysTrueFalseStringCompare(const Token *tok, const std::string& str1, const std::string& str2);
+    void duplicateBreakError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -309,6 +315,7 @@ public:
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
         c.alwaysTrueFalseStringCompare(0, "str1", "str2");
+        c.duplicateBreakError(0);
     }
 
     std::string myName() const
@@ -354,6 +361,7 @@ public:
                "* comparison of a boolean with a non-zero integer\n"
                "* suspicious condition (assignment+comparison)\n"
                "* suspicious condition (runtime comparison of string literals)\n"
+               "* duplicate break statement\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";

@@ -77,6 +77,7 @@ private:
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchFallThroughCase);
+        TEST_CASE(duplicateBreak);
 
         TEST_CASE(selfAssignment);
         TEST_CASE(testScanf1);
@@ -166,6 +167,7 @@ private:
         checkOther.checkIncorrectStringCompare();
         checkOther.checkIncrementBoolean();
         checkOther.checkComparisonOfBoolWithInt();
+        checkOther.checkDuplicateBreak();
     }
 
     class SimpleSuppressor: public ErrorLogger
@@ -1557,6 +1559,71 @@ private:
             "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void duplicateBreak()
+    {
+        check("void foo(int a)\n"
+              "{\n"
+              "        switch(a) {\n"
+              "          case 0:\n"
+              "            printf(\"case 0\");\n"
+              "            break;\n"
+              "            break;\n"
+              "          case 1:\n"
+              "            c++;\n"
+              "            break;\n"
+              "         }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Consecutive break or continue statements are unnecessary\n", errout.str());
+
+        check("void foo(int a)\n"
+              "{\n"
+              "        switch(a) {\n"
+              "          case 0:\n"
+              "            printf(\"case 0\");\n"
+              "            break;\n"
+              "          case 1:\n"
+              "            c++;\n"
+              "            break;\n"
+              "         }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int a)\n"
+              "{\n"
+              "        while(1) {\n"
+              "          if (a++ >= 100) {\n"
+              "            break;\n"
+              "            break;\n"
+              "          }\n"
+              "       }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consecutive break or continue statements are unnecessary\n", errout.str());
+
+        check("void foo(int a)\n"
+              "{\n"
+              "        while(1) {\n"
+              "          if (a++ >= 100) {\n"
+              "            continue;\n"
+              "            continue;\n"
+              "          }\n"
+              "          a+=2;\n"
+              "       }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consecutive break or continue statements are unnecessary\n", errout.str());
+
+        check("void foo(int a)\n"
+              "{\n"
+              "        while(1) {\n"
+              "          if (a++ >= 100) {\n"
+              "            continue;\n"
+              "          }\n"
+              "          a+=2;\n"
+              "       }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void selfAssignment()
     {

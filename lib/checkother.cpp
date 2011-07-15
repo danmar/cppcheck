@@ -867,6 +867,35 @@ void CheckOther::checkComparisonOfBoolWithInt()
     }
 }
 
+//---------------------------------------------------------------------------
+//    switch (x)
+//    {
+//        case 2:
+//            y = a;
+//            break;
+//            break; // <- Redundant break
+//        case 3:
+//            y = b;
+//    }
+//---------------------------------------------------------------------------
+void CheckOther::checkDuplicateBreak()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const char breakPattern[] = "break|continue ; break|continue ;";
+
+    // Find consecutive break or continue statements. e.g.:
+    //   break; break;
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), breakPattern);
+    while (tok)
+    {
+        duplicateBreakError(tok);
+        tok = Token::findmatch(tok->next(), breakPattern);
+    }
+}
+
+
 void CheckOther::sizeofForNumericParameterError(const Token *tok)
 {
     reportError(tok, Severity::error,
@@ -3693,4 +3722,11 @@ void CheckOther::comparisonOfBoolWithIntError(const Token *tok, const std::strin
     reportError(tok, Severity::warning, "comparisonOfBoolWithInt",
                 "Comparison of a boolean with a non-zero integer\n"
                 "The expression \"!" + varname + "\" is of type 'bool' but is compared against a non-zero 'int'.");
+}
+
+void CheckOther::duplicateBreakError(const Token *tok)
+{
+    reportError(tok, Severity::style, "duplicateBreak",
+                "Consecutive break or continue statements are unnecessary\n"
+                "The second of the two statements can never be executed, and so should be removed\n");
 }
