@@ -51,6 +51,7 @@ private:
         TEST_CASE(tokenize15);  // tokenize ".123"
         TEST_CASE(tokenize16);  // #2612 - segfault for "<><<"
         TEST_CASE(tokenize17);  // #2759
+        TEST_CASE(tokenize18);  // tokenize "(X&&Y)" into "( X && Y )" instead of "( X & & Y )"
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -557,6 +558,11 @@ private:
     void tokenize17() // #2759
     {
         ASSERT_EQUALS("class B : private :: A { } ;", tokenizeAndStringify("class B : private ::A { };"));
+    }
+
+    void tokenize18() // tokenize "(X&&Y)" into "( X && Y )" instead of "( X & & Y )"
+    {
+        ASSERT_EQUALS("( X && Y )", tokenizeAndStringify("(X&&Y)"));
     }
 
     void wrong_syntax()

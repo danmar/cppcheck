@@ -425,8 +425,14 @@ void Tokenizer::createTokens(std::istream &code)
                 // tokenize .125 into 0.125
                 CurrentToken = "0";
             }
-            else if (ch=='&' && CurrentToken.empty() && code.peek() == '&')
+            else if (ch=='&' && code.peek() == '&')
             {
+                if (!CurrentToken.empty())
+                {
+                    addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+                    CurrentToken.clear();
+                }
+
                 // &&
                 ch = (char)code.get();
                 addtoken("&&", lineno, FileIndex, true);
