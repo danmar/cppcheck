@@ -145,7 +145,7 @@ private:
         givenACodeSampleToTokenize varLogOrVar("abc||def");
         ASSERT_EQUALS(true, Token::Match(varLogOrVar.tokens(), "%var% || %var%"));
     }
-    
+
     void matchSingleChar()
     {
         givenACodeSampleToTokenize singleChar("a");
