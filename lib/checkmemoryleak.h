@@ -127,7 +127,7 @@ public:
      * @param typestr type name
      * @return true if the type name is the name of a class
      */
-    bool isclass(const Tokenizer *_tokenizer, const Token *typestr) const;
+    bool isclass(const Tokenizer *_tokenizer, const Token *typestr, unsigned int varid) const;
 
     void memleakError(const Token *tok, const std::string &varname);
     void resourceLeakError(const Token *tok, const std::string &varname);

@@ -2236,6 +2236,21 @@ private:
               "  Fred *f = new Fred();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: f\n", errout.str());
+
+        check("class Fred { void foo(){ } };\n"
+              "void f(void) \n"
+              "{\n"
+              "  Fred *f = new Fred();\n"
+              "  delete f;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred { void foo(){ } };\n"
+              "void f(void) \n"
+              "{\n"
+              "  Fred *f = new Fred();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: f\n", errout.str());
     }
 
     void allocfunc1()

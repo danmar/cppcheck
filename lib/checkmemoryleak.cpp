@@ -82,23 +82,21 @@ static int call_func_white_list_compare(const void *a, const void *b)
 
 //---------------------------------------------------------------------------
 
-bool CheckMemoryLeak::isclass(const Tokenizer *_tokenizer, const Token *tok) const
+bool CheckMemoryLeak::isclass(const Tokenizer *_tokenizer, const Token *tok, unsigned int varid) const
 {
     if (tok->isStandardType())
         return false;
 
-    // return false if the type is a simple struct without member functions
-    const std::string pattern("struct|class " + tok->str() + " {");
-    const Token *tok2 = Token::findmatch(_tokenizer->tokens(), pattern.c_str());
-    if (tok2)
-    {
-        while (tok2 && tok2->str() != "}" && tok2->str() != "(")
-            tok2 = tok2->next();
+    const Variable * var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
 
-        // Simple struct => return false
-        if (tok2 && tok2->str() == "}")
-            return false;
-    }
+    // return false if the type is a simple record type without side effects
+    // a type that has no side effects (no constructors and no members with constructors)
+    /** @todo false negative: check base class for side effects */
+    /** @todo false negative: check constructors for side effects */
+    if (var && var->type() && var->type()->numConstructors == 0 &&
+        (var->type()->varlist.empty() || var->type()->needInitialization == Scope::True) &&
+        var->type()->derivedFrom.empty())
+        return false;
 
     return true;
 }
@@ -1039,21 +1037,21 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 {
                     if (Token::Match(tok->tokAt(2), "new %type% [(;]"))
                     {
-                        if (isclass(_tokenizer, tok->tokAt(3)))
+                        if (isclass(_tokenizer, tok->tokAt(3), varid))
                         {
                             alloc = No;
                         }
                     }
                     else if (Token::Match(tok->tokAt(2), "new ( nothrow ) %type%"))
                     {
-                        if (isclass(_tokenizer, tok->tokAt(6)))
+                        if (isclass(_tokenizer, tok->tokAt(6), varid))
                         {
                             alloc = No;
                         }
                     }
                     else if (Token::Match(tok->tokAt(2), "new ( std :: nothrow ) %type%"))
                     {
-                        if (isclass(_tokenizer, tok->tokAt(8)))
+                        if (isclass(_tokenizer, tok->tokAt(8), varid))
                         {
                             alloc = No;
                         }
