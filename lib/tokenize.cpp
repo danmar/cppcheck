@@ -4191,6 +4191,11 @@ void Tokenizer::simplifySizeof()
                 sizeOfVar[varId] = MathLib::toString<unsigned int>(size);
             }
 
+            else if (Token::Match(tok->tokAt(-3), "[;{}(,] struct %type% %var% [;,)]"))
+            {
+                sizeOfVar[varId] = "100";
+            }
+
             else if (Token::Match(tok->tokAt(-1), "%type% %var% [ %num% ] [;=]") ||
                      Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [;=]"))
             {

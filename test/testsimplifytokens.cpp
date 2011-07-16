@@ -86,6 +86,7 @@ private:
         TEST_CASE(sizeof21);    // #2232 - sizeof...(Args)
         TEST_CASE(sizeof22);    // #2599
         TEST_CASE(sizeof23);    // #2604
+        TEST_CASE(sizeof24);    // struct variable
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
@@ -1473,6 +1474,14 @@ private:
 
         // don't segfault
         tok(code);
+    }
+
+    void sizeof24()
+    {
+        const char code[] = "; struct AB ab; sizeof(ab)";
+
+        // don't segfault
+        ASSERT_EQUALS("; struct AB ab ; 100", tok(code));
     }
 
 
