@@ -241,6 +241,10 @@ private:
         ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%oror%"));
         ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "&&|%oror%"));
         ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "%oror%|&&"));
+
+        givenACodeSampleToTokenize logicalAnd("&&");
+        ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "&&|%oror%"));
+        TODO_ASSERT_EQUALS(true, false, Token::Match(logicalAnd.tokens(), "%oror%|&&"));
     }
 
     void matchOp()
