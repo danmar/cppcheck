@@ -1722,7 +1722,12 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
                 if (pos == std::string::npos)
                     cfgmap[line.substr(8)] = "";
                 else if (line[pos] == ' ')
-                    cfgmap[line.substr(8, pos - 8)] = line.substr(pos + 1);
+                {
+                    std::string value(line.substr(pos + 1));
+                    if (cfgmap.find(value) != cfgmap.end())
+                        value = cfgmap[value];
+                    cfgmap[line.substr(8, pos - 8)] = value;
+                }
                 else
                     cfgmap[line.substr(8, pos - 8)] = "";
             }

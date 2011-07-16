@@ -225,6 +225,7 @@ private:
         // Using -D to predefine symbols
         TEST_CASE(predefine1);
         TEST_CASE(predefine2);
+        TEST_CASE(predefine3);
     }
 
 
@@ -2889,6 +2890,18 @@ private:
         }
     }
 
+    void predefine3()
+    {
+        // #2871 - define in source is not used if -D is used
+        const char code[] = "#define X 1\n"
+                            "#define Y X\n"
+                            "#if (X == Y)\n"
+                            "Fred & Wilma\n"
+                            "#endif\n";
+        const Settings settings;
+        const std::string actual = Preprocessor::getcode(code, "TEST", "test.c", &settings, this);
+        ASSERT_EQUALS("\n\n\nFred & Wilma\n\n", actual);
+    }
 };
 
 REGISTER_TEST(TestPreprocessor)
