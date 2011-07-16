@@ -86,6 +86,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", errout.str());
 
+        check("int foo(int p[])\n"
+              "{\n"
+              "    int *a = p;\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo(int x)\n"
               "{\n"
               "    int *p = x;\n"
