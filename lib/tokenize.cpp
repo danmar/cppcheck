@@ -2142,11 +2142,12 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     // Simplify JAVA/C# code
-    if (isJavaOrCSharp() && _files[0].find(".java") != std::string::npos)
+    if (isJavaOrCSharp())
     {
+        const bool isJava(_files[0].find(".java") != std::string::npos);
         for (Token *tok = _tokens; tok; tok = tok->next())
         {
-            if (Token::Match(tok, ") throws %var% {"))
+            if (isJava && Token::Match(tok, ") throws %var% {"))
                 Token::eraseTokens(tok, tok->tokAt(3));
             else if (tok->str() == "private")
                 tok->str("private:");
