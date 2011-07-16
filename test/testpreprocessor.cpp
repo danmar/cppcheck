@@ -221,6 +221,10 @@ private:
 
         // inline suppression, missingInclude
         TEST_CASE(inline_suppression_for_missing_include);
+
+        // Using -D to predefine symbols
+        TEST_CASE(predefine1);
+        TEST_CASE(predefine2);
     }
 
 
@@ -2853,6 +2857,38 @@ private:
         preprocessor.preprocess(src, processedFile, cfg, "test.c", paths);
         ASSERT_EQUALS("", errout.str());
     }
+
+    void predefine1()
+    {
+        Settings settings;
+
+        const std::string src("#ifdef X || Y\n"
+                              "Fred & Wilma\n"
+                              "#endif\n");
+
+        std::string actual = Preprocessor::getcode(src, "X=1", "test.c", &settings, this);
+
+        ASSERT_EQUALS("\nFred & Wilma\n\n", actual);
+    }
+
+    void predefine2()
+    {
+        Settings settings;
+
+        const std::string src("#ifdef X && Y\n"
+                              "Fred & Wilma\n"
+                              "#endif\n");
+        {
+            std::string actual = Preprocessor::getcode(src, "X=1", "test.c", &settings, this);
+            ASSERT_EQUALS("\n\n\n", actual);
+        }
+
+        {
+            std::string actual = Preprocessor::getcode(src, "X=1;Y=2", "test.c", &settings, this);
+            ASSERT_EQUALS("\nFred & Wilma\n\n", actual);
+        }
+    }
+
 };
 
 REGISTER_TEST(TestPreprocessor)

@@ -1446,7 +1446,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 }
 
 
-void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &variables, std::string &condition, bool match)
+void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &cfg, std::string &condition, bool match)
 {
     Settings settings;
     Tokenizer tokenizer(&settings, NULL);
@@ -1455,8 +1455,8 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
     if (Token::Match(tokenizer.tokens(), "( %var% )"))
     {
-        std::map<std::string,std::string>::const_iterator var = variables.find(tokenizer.tokens()->strAt(1));
-        if (var != variables.end())
+        std::map<std::string,std::string>::const_iterator var = cfg.find(tokenizer.tokens()->strAt(1));
+        if (var != cfg.end())
         {
             const std::string &value = (*var).second;
             condition = (value == "0") ? "0" : "1";
@@ -1468,7 +1468,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
     if (Token::Match(tokenizer.tokens(), "( ! %var% )"))
     {
-        if (variables.find(tokenizer.tokens()->strAt(2)) == variables.end())
+        if (cfg.find(tokenizer.tokens()->strAt(2)) == cfg.end())
             condition = "1";
         else if (match)
             condition = "0";
@@ -1483,7 +1483,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
         if (Token::Match(tok, "defined ( %var% )"))
         {
-            if (variables.find(tok->strAt(2)) != variables.end())
+            if (cfg.find(tok->strAt(2)) != cfg.end())
                 tok->str("1");
             else if (match)
                 tok->str("0");
@@ -1497,7 +1497,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
         if (Token::Match(tok, "defined %var%"))
         {
-            if (variables.find(tok->strAt(1)) != variables.end())
+            if (cfg.find(tok->strAt(1)) != cfg.end())
                 tok->str("1");
             else if (match)
                 tok->str("0");
@@ -1507,8 +1507,8 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
             continue;
         }
 
-        const std::map<std::string, std::string>::const_iterator it = variables.find(tok->str());
-        if (it != variables.end())
+        const std::map<std::string, std::string>::const_iterator it = cfg.find(tok->str());
+        if (it != cfg.end())
         {
             if (!it->second.empty())
             {
@@ -1565,6 +1565,17 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
     for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
     {
+        if (Token::Match(tok, "(|%oror%|&& %num% &&|%oror%|)"))
+        {
+            if (tok->next()->str() != "0")
+            {
+                tok->next()->str("1");
+            }
+        }
+    }
+
+    for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
+    {
         while (Token::Match(tok, "(|%oror% %any% %oror% 1"))
         {
             tok->deleteNext();
@@ -1583,8 +1594,18 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
 bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def)
 {
-    //std::cout << "cfg: \"" << cfg << "\"  ";
-    //std::cout << "def: \"" << def << "\"";
+/*
+    std::cout << "cfg: \"";
+    for (std::map<std::string, std::string>::const_iterator it = cfg.begin(); it != cfg.end(); ++it)
+    {
+        std::cout << it->first;
+        if (!it->second.empty())
+            std::cout << "=" << it->second;
+        std::cout << ";";
+    }
+    std::cout << "\"  ";
+    std::cout << "def: \"" << def << "\"\n";
+*/
 
     simplifyCondition(cfg, def, true);
 
@@ -1601,7 +1622,7 @@ bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, 
 }
 
 
-std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, const std::string &filename, const Settings *settings, ErrorLogger *errorLogger)
+std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, const Settings *settings, ErrorLogger *errorLogger)
 {
     // For the error report
     unsigned int lineno = 0;
