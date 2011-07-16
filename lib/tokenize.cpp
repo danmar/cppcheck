@@ -4962,7 +4962,7 @@ bool Tokenizer::simplifyIfAddBraces()
 {
     for (Token *tok = _tokens; tok; tok = tok ? tok->next() : NULL)
     {
-        if (tok->str() == "(")
+        if (tok->str() == "(" && !Token::Match(tok->previous(), "[;{}]"))
         {
             tok = tok->link();
             continue;
