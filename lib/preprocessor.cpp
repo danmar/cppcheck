@@ -1594,18 +1594,18 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
 
 bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def)
 {
-/*
-    std::cout << "cfg: \"";
-    for (std::map<std::string, std::string>::const_iterator it = cfg.begin(); it != cfg.end(); ++it)
-    {
-        std::cout << it->first;
-        if (!it->second.empty())
-            std::cout << "=" << it->second;
-        std::cout << ";";
-    }
-    std::cout << "\"  ";
-    std::cout << "def: \"" << def << "\"\n";
-*/
+    /*
+        std::cout << "cfg: \"";
+        for (std::map<std::string, std::string>::const_iterator it = cfg.begin(); it != cfg.end(); ++it)
+        {
+            std::cout << it->first;
+            if (!it->second.empty())
+                std::cout << "=" << it->second;
+            std::cout << ";";
+        }
+        std::cout << "\"  ";
+        std::cout << "def: \"" << def << "\"\n";
+    */
 
     simplifyCondition(cfg, def, true);
 
