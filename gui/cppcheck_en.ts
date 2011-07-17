@@ -852,25 +852,25 @@ Do you want to remove the file from the recently used projects -list?</source>
     <name>ResultsTree</name>
     <message>
         <location filename="resultstree.cpp" line="60"/>
-        <location filename="resultstree.cpp" line="1098"/>
+        <location filename="resultstree.cpp" line="1114"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="60"/>
-        <location filename="resultstree.cpp" line="1098"/>
+        <location filename="resultstree.cpp" line="1114"/>
         <source>Severity</source>
         <translation>Severity</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="60"/>
-        <location filename="resultstree.cpp" line="1098"/>
+        <location filename="resultstree.cpp" line="1114"/>
         <source>Line</source>
         <translation>Line</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="60"/>
-        <location filename="resultstree.cpp" line="1098"/>
+        <location filename="resultstree.cpp" line="1114"/>
         <source>Summary</source>
         <translation type="unfinished"></translation>
     </message>
@@ -881,7 +881,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     </message>
     <message>
         <location filename="resultstree.cpp" line="217"/>
-        <location filename="resultstree.cpp" line="820"/>
+        <location filename="resultstree.cpp" line="836"/>
         <source>[Inconclusive]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -912,22 +912,32 @@ Do you want to remove the file from the recently used projects -list?</source>
     </message>
     <message>
         <location filename="resultstree.cpp" line="685"/>
+        <location filename="resultstree.cpp" line="700"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="686"/>
-        <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
-        <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
-        <translation>You can open this error by specifying applications in program&apos;s settings.</translation>
+        <source>No editor application configured.
+
+Configure the editor application for Cppcheck in preferences/Applications.</source>
+        <oldsource>Configure the text file viewer program in Cppcheck preferences/Applications.</oldsource>
+        <translation type="unfinished">You can open this error by specifying applications in program&apos;s settings.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="714"/>
+        <location filename="resultstree.cpp" line="701"/>
+        <source>No default editor application selected.
+
+Please select the default editor application in preferences/Applications.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultstree.cpp" line="730"/>
         <source>Could not find the file!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="769"/>
+        <location filename="resultstree.cpp" line="785"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -936,14 +946,14 @@ Please check the application path and parameters are correct.</source>
 Please check the application path and parameters are correct.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="783"/>
+        <location filename="resultstree.cpp" line="799"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="790"/>
+        <location filename="resultstree.cpp" line="806"/>
         <source>Select Directory</source>
         <translation type="unfinished"></translation>
     </message>

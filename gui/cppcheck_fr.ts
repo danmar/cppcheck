@@ -697,10 +697,6 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
-        <translation type="unfinished">Configurez l&apos;application d&apos;affichage des fichers dans préférences/Applications.</translation>
-    </message>
-    <message>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -760,6 +756,18 @@ Please select the directory where file is located.</source>
     </message>
     <message>
         <source>[Inconclusive]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No editor application configured.
+
+Configure the editor application for Cppcheck in preferences/Applications.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No default editor application selected.
+
+Please select the default editor application in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
