@@ -1302,7 +1302,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             varid = tok->next()->varId();
             nextTok = 4;
         }
-        else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = malloc ( %num% ) ;"))
+        else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = malloc|alloca ( %num% ) ;"))
         {
             size = MathLib::toLongNumber(tok->strAt(5));
             type = "char";   // minimum type, typesize=1
