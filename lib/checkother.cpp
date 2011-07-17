@@ -621,7 +621,7 @@ void CheckOther::checkIncorrectLogicOperator()
         // e.g. if (x != 3 || x != 4)
         const Token *logicTok = NULL, *term1Tok = NULL, *term2Tok = NULL;
         const Token *op1Tok = NULL, *op2Tok = NULL, *op3Tok = NULL, *nextTok = NULL;
-        if (NULL != (logicTok = Token::findmatch(tok, "( %any% !=|==|<|> %any% ) &&|%oror% ( %any% !=|==|<|> %any% ) %any%", endTok)))
+        if (NULL != (logicTok = Token::findmatch(tok, "( %any% !=|==|<|>|>=|<= %any% ) &&|%oror% ( %any% !=|==|<|>|>=|<= %any% ) %any%", endTok)))
         {
             term1Tok = logicTok->next();
             term2Tok = logicTok->tokAt(7);
@@ -630,7 +630,7 @@ void CheckOther::checkIncorrectLogicOperator()
             op3Tok = logicTok->tokAt(8);
             nextTok = logicTok->tokAt(11);
         }
-        else if (NULL != (logicTok = Token::findmatch(tok, "%any% !=|==|<|> %any% &&|%oror% %any% !=|==|<|> %any% %any%", endTok)))
+        else if (NULL != (logicTok = Token::findmatch(tok, "%any% !=|==|<|>|>=|<= %any% &&|%oror% %any% !=|==|<|>|>=|<= %any% %any%", endTok)))
         {
             term1Tok = logicTok;
             term2Tok = logicTok->tokAt(4);
@@ -735,24 +735,24 @@ void CheckOther::checkIncorrectLogicOperator()
                 bool       state;
             } conditions[] =
             {
-                { "&&", false, NA,     "!=", "||", NA,     "!=", "&&", false, NotEqual,  true  }, // (x != 1) || (x != 3) <- always true
-                { "(",  true,  NA,     "==", "&&", NA,     "==", ")",  true,  NotEqual,  false }, // (x == 1) && (x == 3) <- always false
-                { "(",  true,  First,  "<",  "&&", First,  ">",  ")",  true,  LessEqual, false }, // (x < 1)  && (x > 3)  <- always false
-                { "(",  true,  First,  ">",  "&&", First,  "<",  ")",  true,  MoreEqual, false }, // (x > 3)  && (x < 1)  <- always false
-                { "(",  true,  Second, ">",  "&&", First,  ">",  ")",  true,  LessEqual, false }, // (1 > x)  && (x > 3)  <- always false
-                { "(",  true,  First,  ">",  "&&", Second, ">",  ")",  true,  MoreEqual, false }, // (x > 3)  && (1 > x)  <- always false
-                { "(",  true,  First,  "<",  "&&", Second, "<",  ")",  true,  LessEqual, false }, // (x < 1)  && (3 < x)  <- always false
-                { "(",  true,  Second, "<",  "&&", First,  "<",  ")",  true,  MoreEqual, false }, // (3 < x)  && (x < 1)  <- always false
-                { "(",  true,  Second, ">",  "&&", Second, "<",  ")",  true,  LessEqual, false }, // (1 > x)  && (3 < x)  <- always false
-                { "(",  true,  Second, "<",  "&&", Second, ">",  ")",  true,  MoreEqual, false }, // (3 < x)  && (1 > x)  <- always false
-                { "(",  true,  First , ">",  "||", First,  "<",  ")",  true,  Less,      true  }, // (x > 3)  || (x < 10) <- always true
-                { "(",  true,  First , "<",  "||", First,  ">",  ")",  true,  More,      true  }, // (x < 10) || (x > 3)  <- always true
-                { "(",  true,  Second, "<",  "||", First,  "<",  ")",  true,  Less,      true  }, // (3 < x)  || (x < 10) <- always true
-                { "(",  true,  First,  "<",  "||", Second, "<",  ")",  true,  More,      true  }, // (x < 10) || (3 < x)  <- always true
-                { "(",  true,  First,  ">",  "||", Second, ">",  ")",  true,  Less,      true  }, // (x > 3)  || (10 > x) <- always true
-                { "(",  true,  Second, ">",  "||", First,  ">",  ")",  true,  More,      true  }, // (10 > x) || (x > 3)  <- always true
-                { "(",  true,  Second, "<",  "||", Second, ">",  ")",  true,  Less,      true  }, // (3 < x)  || (10 > x) <- always true
-                { "(",  true,  Second, ">",  "||", Second, "<",  ")",  true,  More,      true  }, // (10 > x) || (3 < x)  <- always true
+                { "&&", false, NA,     "!=",   "||", NA,     "!=",   "&&", false, NotEqual,  true  }, // (x != 1) || (x != 3) <- always true
+                { "(",  true,  NA,     "==",   "&&", NA,     "==",   ")",  true,  NotEqual,  false }, // (x == 1) && (x == 3) <- always false
+                { "(",  true,  First,  "<",    "&&", First,  ">",    ")",  true,  LessEqual, false }, // (x < 1)  && (x > 3)  <- always false
+                { "(",  true,  First,  ">",    "&&", First,  "<",    ")",  true,  MoreEqual, false }, // (x > 3)  && (x < 1)  <- always false
+                { "(",  true,  Second, ">",    "&&", First,  ">",    ")",  true,  LessEqual, false }, // (1 > x)  && (x > 3)  <- always false
+                { "(",  true,  First,  ">",    "&&", Second, ">",    ")",  true,  MoreEqual, false }, // (x > 3)  && (1 > x)  <- always false
+                { "(",  true,  First,  "<",    "&&", Second, "<",    ")",  true,  LessEqual, false }, // (x < 1)  && (3 < x)  <- always false
+                { "(",  true,  Second, "<",    "&&", First,  "<",    ")",  true,  MoreEqual, false }, // (3 < x)  && (x < 1)  <- always false
+                { "(",  true,  Second, ">",    "&&", Second, "<",    ")",  true,  LessEqual, false }, // (1 > x)  && (3 < x)  <- always false
+                { "(",  true,  Second, "<",    "&&", Second, ">",    ")",  true,  MoreEqual, false }, // (3 < x)  && (1 > x)  <- always false
+                { "(",  true,  First , ">|>=", "||", First,  "<|<=", ")",  true,  Less,      true  }, // (x > 3)  || (x < 10) <- always true
+                { "(",  true,  First , "<|<=", "||", First,  ">|>=", ")",  true,  More,      true  }, // (x < 10) || (x > 3)  <- always true
+                { "(",  true,  Second, "<|<=", "||", First,  "<|<=", ")",  true,  Less,      true  }, // (3 < x)  || (x < 10) <- always true
+                { "(",  true,  First,  "<|<=", "||", Second, "<|<=", ")",  true,  More,      true  }, // (x < 10) || (3 < x)  <- always true
+                { "(",  true,  First,  ">|>=", "||", Second, ">|>=", ")",  true,  Less,      true  }, // (x > 3)  || (10 > x) <- always true
+                { "(",  true,  Second, ">|>=", "||", First,  ">|>=", ")",  true,  More,      true  }, // (10 > x) || (x > 3)  <- always true
+                { "(",  true,  Second, "<|<=", "||", Second, ">|<=", ")",  true,  Less,      true  }, // (3 < x)  || (10 > x) <- always true
+                { "(",  true,  Second, ">|>=", "||", Second, "<|<=", ")",  true,  More,      true  }, // (10 > x) || (3 < x)  <- always true
             };
 
             for (unsigned int i = 0; i < (sizeof(conditions) / sizeof(conditions[0])); i++)
@@ -763,13 +763,13 @@ void CheckOther::checkIncorrectLogicOperator()
                 if (!((conditions[i].position2 == NA) || (((conditions[i].position2 == First) && varFirst2) || ((conditions[i].position2 == Second) && !varFirst2))))
                     continue;
 
-                if (op1Tok->str() != conditions[i].op1TokStr)
+                if (!Token::Match(op1Tok, conditions[i].op1TokStr))
                     continue;
 
-                if (op2Tok->str() != conditions[i].op2TokStr)
+                if (!Token::Match(op2Tok, conditions[i].op2TokStr))
                     continue;
 
-                if (op3Tok->str() != conditions[i].op3TokStr)
+                if (!Token::Match(op3Tok, conditions[i].op3TokStr))
                     continue;
 
                 if (!((conditions[i].beforeEqual && (conditions[i].before == logicTok->strAt(-1))) || (!conditions[i].beforeEqual && (conditions[i].before != logicTok->strAt(-1)))))

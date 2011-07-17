@@ -2244,7 +2244,49 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
 
         check("void f(int x) {\n"
+              "    if (x >= 3 || x <= 10)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x >= 3 || x < 10)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 3 || x <= 10)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+
+        check("void f(int x) {\n"
               "    if (x > 3 || x < 3)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x >= 3 || x <= 3)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x >= 3 || x < 3)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 3 || x <= 3)\n"
               "        a++;\n"
               "}\n"
              );
