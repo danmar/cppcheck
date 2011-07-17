@@ -1479,8 +1479,6 @@ private:
     void sizeof24()
     {
         const char code[] = "; struct AB ab; sizeof(ab)";
-
-        // don't segfault
         ASSERT_EQUALS("; struct AB ab ; 100", tok(code));
     }
 
