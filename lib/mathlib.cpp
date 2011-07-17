@@ -297,9 +297,34 @@ std::string MathLib::abs(const std::string &tok)
     return toString<double>(std::abs(toDoubleNumber(tok)));
 }
 
+bool MathLib::isEqual(const std::string &first, const std::string &second)
+{
+    return toDoubleNumber(first) == toDoubleNumber(second);
+}
+
+bool MathLib::isNotEqual(const std::string &first, const std::string &second)
+{
+    return toDoubleNumber(first) != toDoubleNumber(second);
+}
+
 bool MathLib::isGreater(const std::string &first, const std::string &second)
 {
     return toDoubleNumber(first) > toDoubleNumber(second);
+}
+
+bool MathLib::isGreaterEqual(const std::string &first, const std::string &second)
+{
+    return toDoubleNumber(first) >= toDoubleNumber(second);
+}
+
+bool MathLib::isLess(const std::string &first, const std::string &second)
+{
+    return toDoubleNumber(first) < toDoubleNumber(second);
+}
+
+bool MathLib::isLessEqual(const std::string &first, const std::string &second)
+{
+    return toDoubleNumber(first) <= toDoubleNumber(second);
 }
 
 bool MathLib::isNullValue(const std::string &str)

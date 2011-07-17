@@ -2139,6 +2139,27 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
 
         check("void f(int x) {\n"
+              "    if ((x == 1.0) && (x == 3.0))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(float x) {\n"
+              "    if ((x == 1) && (x == 1.0))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x == 1) && (x == 0x00000001))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
               "    if (x == 1 && x == 3)\n"
               "        a++;\n"
               "}\n"
@@ -2146,7 +2167,49 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
 
         check("void f(int x) {\n"
+              "    if (x == 1.0 && x == 3.0)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(float x) {\n"
+              "    if (x == 1 && x == 1.0)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x < 1 && x > 1)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x < 1.0 && x > 1.0)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x < 1 && x > 1.0)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(int x) {\n"
               "    if (x < 1 && x > 3)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(float x) {\n"
+              "    if (x < 1.0 && x > 3.0)\n"
               "        a++;\n"
               "}\n"
              );

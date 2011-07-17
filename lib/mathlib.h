@@ -66,7 +66,12 @@ public:
     static std::string cos(const std::string & tok);
     static std::string tan(const std::string & tok);
     static std::string abs(const std::string & tok);
+    static bool isEqual(const std::string & first, const std::string & second);
+    static bool isNotEqual(const std::string & first, const std::string & second);
     static bool isGreater(const std::string & first, const std::string & second);
+    static bool isGreaterEqual(const std::string & first, const std::string & second);
+    static bool isLess(const std::string & first, const std::string & second);
+    static bool isLessEqual(const std::string & first, const std::string & second);
     static bool isNullValue(const std::string &tok);
     /**
      * Return true if given character is 0,1,2,3,4,5,6 or 7.
