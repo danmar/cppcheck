@@ -268,7 +268,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
 ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
 {
     int value = data.toInt();
-    if (value < SHOW_STYLE && value > SHOW_ERRORS)
+    if (value < SHOW_STYLE || value > SHOW_ERRORS)
     {
         return SHOW_NONE;
     }
