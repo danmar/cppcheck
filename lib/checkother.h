@@ -252,7 +252,7 @@ public:
     void switchCaseFallThrough(const Token *tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
-    void incorrectLogicOperatorError(const Token *tok);
+    void incorrectLogicOperatorError(const Token *tok, bool always);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void catchExceptionByValueError(const Token *tok);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
@@ -299,7 +299,7 @@ public:
         c.selfAssignmentError(0, "varname");
         c.assignmentInAssertError(0, "varname");
         c.invalidScanfError(0);
-        c.incorrectLogicOperatorError(0);
+        c.incorrectLogicOperatorError(0, true);
         c.unusedVariableError(0, "varname");
         c.allocatedButUnusedVariableError(0, "varname");
         c.unreadVariableError(0, "varname");
