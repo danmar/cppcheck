@@ -681,9 +681,10 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
     //If there are no applications specified, tell the user about it
     if (mApplications->GetApplicationCount() == 0)
     {
-        QMessageBox msg(QMessageBox::Information,
+        QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        tr("Configure the text file viewer program in Cppcheck preferences/Applications."),
+                        tr("No editor application configured.\n\n"
+                           "Configure the editor application for Cppcheck in preferences/Applications."),
                         QMessageBox::Ok,
                         this);
         msg.exec();
@@ -692,6 +693,19 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
 
     if (application == -1)
         application = mApplications->GetDefaultApplication();
+
+    if (application == -1)
+    {
+        QMessageBox msg(QMessageBox::Critical,
+                        tr("Cppcheck"),
+                        tr("No default editor application selected.\n\n"
+                           "Please select the default editor application in preferences/Applications."),
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
+        return;
+
+    }
 
     if (target && application >= 0 && application < mApplications->GetApplicationCount() && target->parent())
     {
