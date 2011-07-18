@@ -1551,7 +1551,8 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
     while (modified)
     {
         modified = false;
-        tokenizer.simplifyCalculations();
+        modified |= tokenizer.simplifyCalculations();
+        modified |= tokenizer.simplifyRedundantParenthesis();
         for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
         {
             if (Token::Match(tok, "! %num%"))
