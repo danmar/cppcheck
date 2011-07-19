@@ -36,6 +36,53 @@ private:
         TEST_CASE(isint);
         TEST_CASE(isnegative);
         TEST_CASE(isfloat);
+        TEST_CASE(isGreater)
+        TEST_CASE(isGreaterEqual)
+        TEST_CASE(isEqual)
+        TEST_CASE(isNotEqual)
+        TEST_CASE(isLess)
+        TEST_CASE(isLessEqual)
+    }
+
+
+    void isGreater()
+    {
+        ASSERT_EQUALS(true , MathLib::isGreater("1.0", "0.001"));
+        ASSERT_EQUALS(false, MathLib::isGreater("-1.0", "0.001"));
+    }
+
+    void isGreaterEqual()
+    {
+        ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.00", "1.0"));
+        ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.001", "1.0"));
+        ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.0", "0.001"));
+        ASSERT_EQUALS(false, MathLib::isGreaterEqual("-1.0", "0.001"));
+    }
+
+    void isEqual()
+    {
+        ASSERT_EQUALS(true  , MathLib::isEqual("1.0", "1.0"));
+        ASSERT_EQUALS(false , MathLib::isEqual("1.", "1.01"));
+    }
+
+    void isNotEqual()
+    {
+        ASSERT_EQUALS(false , MathLib::isNotEqual("1.0", "1.0"));
+        ASSERT_EQUALS(true  , MathLib::isNotEqual("1.", "1.01"));
+    }
+
+    void isLess()
+    {
+        ASSERT_EQUALS(false , MathLib::isLess("1.0", "0.001"));
+        ASSERT_EQUALS(true  , MathLib::isLess("-1.0", "0.001"));
+    }
+
+    void isLessEqual()
+    {
+        ASSERT_EQUALS(true  , MathLib::isLessEqual("1.00", "1.0"));
+        ASSERT_EQUALS(false , MathLib::isLessEqual("1.001", "1.0"));
+        ASSERT_EQUALS(false , MathLib::isLessEqual("1.0", "0.001"));
+        ASSERT_EQUALS(true  , MathLib::isLessEqual("-1.0", "0.001"));
     }
 
     void calculate()
