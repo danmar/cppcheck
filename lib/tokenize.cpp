@@ -6709,8 +6709,20 @@ bool Tokenizer::simplifyKnownVariables()
         std::map<unsigned int, std::string> constantValues;
         for (Token *tok = _tokens; tok; tok = tok->next())
         {
-            if (Token::Match(tok, "static| const static| %type% %var% = %any% ;"))
+            if (tok->isName() && Token::Match(tok, "static| const| static| %type% const| %var% = %any% ;"))
             {
+                bool isconst = false;
+                for (const Token *tok2 = tok; tok2->str() != "="; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "const")
+                    {
+                        isconst = true;
+                        break;
+                    }
+                }
+                if (!isconst)
+                    continue;
+
                 Token *tok1 = tok;
 
                 // start of statement
@@ -6723,8 +6735,8 @@ bool Tokenizer::simplifyKnownVariables()
                 if (!tok->isStandardType())
                     continue;
 
-                const Token * const vartok = tok->next();
-                const Token * const valuetok = tok->tokAt(3);
+                const Token * const vartok = (tok->strAt(1) == "const") ? tok->tokAt(2) : tok->next();
+                const Token * const valuetok = vartok->tokAt(2);
                 if (valuetok->isNumber() || Token::Match(valuetok, "%str% ;"))
                 {
                     constantValues[vartok->varId()] = valuetok->str();

@@ -1957,15 +1957,19 @@ private:
 
     void simplifyKnownVariables32()
     {
-        const char code[] = "void foo() {\n"
-                            "    const int x = 0;\n"
-                            "    bar(0,x);\n"
-                            "}\n";
-        const char expected[] = "void foo ( ) {\n"
-                                ";\n"
-                                "bar ( 0 , 0 ) ;\n"
-                                "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        {
+            const char code[] = "void foo() {\n"
+                                "    const int x = 0;\n"
+                                "    bar(0,x);\n"
+                                "}\n";
+            const char expected[] = "void foo ( ) {\n;\nbar ( 0 , 0 ) ;\n}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "static int const SZ = 22; char str[SZ];\n";
+            ASSERT_EQUALS("; char str [ 22 ] ;", tokenizeAndStringify(code,true));
+        }
     }
 
     void simplifyKnownVariables33()
