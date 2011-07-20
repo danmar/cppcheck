@@ -185,7 +185,7 @@
   </widget>
   <widget class="QToolBar" name="mToolBarFilter">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Filter</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
