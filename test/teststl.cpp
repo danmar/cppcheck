@@ -1376,6 +1376,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Copy 'auto_ptr' pointer to another do not create two equal objects since one has lost its ownership of the pointer.\n", errout.str());
 
+        check("std::auto_ptr<A> function();\n"
+              "int quit;"
+              "void f() { quit = true; }\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
         // ticket #748
         check("void f() \n"
               "{\n"
