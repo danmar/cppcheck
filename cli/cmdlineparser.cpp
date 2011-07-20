@@ -595,9 +595,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
     }
 
-    if (_settings->isEnabled("unusedFunctions") && _settings->_jobs > 1)
+    if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1)
     {
-        PrintMessage("unusedFunctions check can't be used with -j option, so it was disabled.");
+        PrintMessage("unusedFunction check can't be used with -j option, so it was disabled.");
     }
 
     // FIXME: Make the _settings.test_2_pass thread safe
