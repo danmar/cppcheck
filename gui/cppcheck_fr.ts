@@ -520,10 +520,6 @@ The user interface language has been reset to English. Open the Preferences-dial
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>toolBar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>&amp;Filter</source>
         <translation type="unfinished"></translation>
     </message>
@@ -563,6 +559,10 @@ Do you want to proceed checking without using any of these project files?</sourc
  could not be found!
 
 Do you want to remove the file from the recently used projects -list?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -186,8 +186,8 @@ Parametrar: -l(line) (file)</translation>
         <location filename="mainwindow.cpp" line="646"/>
         <location filename="mainwindow.cpp" line="776"/>
         <location filename="mainwindow.cpp" line="797"/>
-        <location filename="mainwindow.cpp" line="929"/>
-        <location filename="mainwindow.cpp" line="1017"/>
+        <location filename="mainwindow.cpp" line="930"/>
+        <location filename="mainwindow.cpp" line="1018"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -220,11 +220,6 @@ Parametrar: -l(line) (file)</translation>
         <location filename="main.ui" line="139"/>
         <source>&amp;Edit</source>
         <translation>&amp;Redigera</translation>
-    </message>
-    <message>
-        <location filename="main.ui" line="188"/>
-        <source>toolBar</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="199"/>
@@ -401,6 +396,11 @@ Parametrar: -l(line) (file)</translation>
         <location filename="main.ui" line="351"/>
         <source>&amp;Check all</source>
         <translation>&amp;Kryssa alla</translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="188"/>
+        <source>Filter</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="356"/>
@@ -646,34 +646,34 @@ The user interface language has been reset to English. Open the Preferences-dial
 Språket har nollställts till Engelska. Öppna Preferences och välj något av de tillgängliga språken.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="835"/>
-        <location filename="mainwindow.cpp" line="894"/>
+        <location filename="mainwindow.cpp" line="836"/>
+        <location filename="mainwindow.cpp" line="895"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Projektfiler (*.cppcheck);;Alla filer(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="837"/>
+        <location filename="mainwindow.cpp" line="838"/>
         <source>Select Project File</source>
         <translation>Välj projektfil</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="851"/>
-        <location filename="mainwindow.cpp" line="905"/>
+        <location filename="mainwindow.cpp" line="852"/>
+        <location filename="mainwindow.cpp" line="906"/>
         <source>Project:</source>
         <translation type="unfinished">Projekt:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="896"/>
+        <location filename="mainwindow.cpp" line="897"/>
         <source>Select Project Filename</source>
         <translation>Välj Projektfil</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="930"/>
+        <location filename="mainwindow.cpp" line="931"/>
         <source>No project file loaded</source>
         <translation>Inget projekt laddat</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1012"/>
+        <location filename="mainwindow.cpp" line="1013"/>
         <source>The project file
 
 %1
