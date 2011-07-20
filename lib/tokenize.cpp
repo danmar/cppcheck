@@ -7627,6 +7627,7 @@ bool Tokenizer::simplifyCalculations()
                     tok = tok->previous();
                 tok->deleteThis();
                 tok->deleteThis();
+                ret = true;
             }
 
             if (Token::Match(tok, "%num% ==|!=|<=|>=|<|> %num%") &&

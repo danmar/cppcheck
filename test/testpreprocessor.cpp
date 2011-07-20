@@ -227,6 +227,9 @@ private:
         TEST_CASE(predefine1);
         TEST_CASE(predefine2);
         TEST_CASE(predefine3);
+
+        // Test Preprocessor::simplifyCondition
+        TEST_CASE(simplifyCondition);
     }
 
 
@@ -2912,6 +2915,16 @@ private:
         const Settings settings;
         const std::string actual = Preprocessor::getcode(code, "TEST", "test.c", &settings, this);
         ASSERT_EQUALS("\n\n\nFred & Wilma\n\n", actual);
+    }
+
+    void simplifyCondition()
+    {
+        // Ticket #2794
+        std::map<std::string, std::string> cfg;
+        cfg["C"] = "";
+        std::string condition("defined(A) || defined(B) || defined(C)");
+        Preprocessor::simplifyCondition(cfg, condition, true);
+        ASSERT_EQUALS("1", condition);
     }
 };
 
