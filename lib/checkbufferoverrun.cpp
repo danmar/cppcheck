@@ -2168,7 +2168,7 @@ void CheckBufferOverrun::executionPaths()
     for (size_t i = 1; i <= _tokenizer->varIdCount(); i++)
     {
         const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(i);
-        if (var && var->isArray())
+        if (var && var->isArray() && var->dimension(0) > 0)
             arrayInfo[i] = ArrayInfo(var, _tokenizer);
     }
 

@@ -208,6 +208,7 @@ private:
         TEST_CASE(executionPaths2);
         TEST_CASE(executionPaths3);   // no FP for function parameter
         TEST_CASE(executionPaths4);   // Ticket #2386 - Segmentation fault in the ExecutionPath handling
+        TEST_CASE(executionPaths5);   // Ticket #2920 - False positive when size is unknown
 
         TEST_CASE(cmdLineArgs1);
 
@@ -2856,6 +2857,20 @@ private:
                 "        case struct Tree : break;\n"
                 "    }\n"
                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void executionPaths5()
+    {
+        // No false positive
+        epcheck("class A {\n"
+                "    void foo() {\n"
+                "        int j = g();\n"
+                "        arr[j]=0;\n"
+                "    }\n"
+                "\n"
+                "    int arr[2*BSize + 2];\n"
+                "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
