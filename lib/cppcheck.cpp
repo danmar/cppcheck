@@ -194,7 +194,7 @@ unsigned int CppCheck::processFile()
     // This generates false positives - especially for libraries
     const bool verbose_orig = _settings._verbose;
     _settings._verbose = false;
-    if (_settings.isEnabled("unusedFunctions") && _settings._jobs == 1)
+    if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
     {
         _errout.str("");
         if (_settings._errorsOnly == false)
@@ -292,7 +292,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     _tokenizer.fillFunctionList();
     timer4.Stop();
 
-    if (_settings.isEnabled("unusedFunctions") && _settings._jobs == 1)
+    if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
         _checkUnusedFunctions.parseTokens(_tokenizer);
 
     // call all "runSimplifiedChecks" in all registered Check classes
