@@ -812,6 +812,7 @@ void MainWindow::AboutToShowViewMenu()
 {
     mUI.mActionToolBarMain->setChecked(mUI.mToolBarMain->isVisible());
     mUI.mActionToolBarView->setChecked(mUI.mToolBarView->isVisible());
+    mUI.mActionToolBarFilter->setChecked(mUI.mToolBarFilter->isVisible());
 }
 
 void MainWindow::StopChecking()
