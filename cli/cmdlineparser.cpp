@@ -258,17 +258,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--quiet") == 0)
             _settings->_errorsOnly = true;
 
-        // Check if there are unused functions
-        else if (strcmp(argv[i], "--unused-functions") == 0)
-        {
-            const std::string errmsg = _settings->addEnabled("unusedFunctions");
-            if (!errmsg.empty())
-            {
-                PrintMessage(errmsg);
-                return false;
-            }
-        }
-
         // Append userdefined code to checked source code
         else if (strncmp(argv[i], "--append=", 9) == 0)
             _settings->append(9 + argv[i]);
