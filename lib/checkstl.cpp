@@ -1150,7 +1150,10 @@ void CheckStl::checkAutoPointer()
                                 autoPointerArrayError(tok2->next());
                             }
                         }
-                        autoPtrVarId.insert(tok2->next()->varId());
+                        if (tok2->next()->varId())
+                        {
+                            autoPtrVarId.insert(tok2->next()->varId());
+                        }
                         break;
                     }
                     tok2 = tok2->next();
