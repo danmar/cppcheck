@@ -4918,8 +4918,8 @@ private:
         // Failed allocation
         TEST_CASE(failedAllocation);
 
-        // Deallocating in a function
-        TEST_CASE(function);
+        TEST_CASE(function1);   // Deallocating in function
+        TEST_CASE(function2);   // #2848: Taking address in function
 
         // Handle if-else
         TEST_CASE(ifelse);
@@ -5073,7 +5073,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void function()
+    void function1()
     {
         // Not found function => assume that the function may deallocate
         check("static void foo()\n"
@@ -5090,6 +5090,17 @@ private:
               "    abclist.push_back(abc);\n"
               "    abc->a = malloc(10);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #2848: Taking address in function 'assign'
+    void function2()
+    {
+        check("void f() {\n"
+              "  A a = { 0 };\n"
+              "  a.foo = (char *) malloc(10);\n"
+              "  assign(&a);\n"
+              "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 

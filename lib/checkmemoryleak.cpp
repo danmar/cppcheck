@@ -3185,7 +3185,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
                             --parlevel;
                         }
 
-                        if (Token::Match(tok4, "[(,] %varid% [,)]", structid))
+                        if (Token::Match(tok4, "[(,] &| %varid% [,)]", structid))
                         {
                             /** @todo check if the function deallocates the memory */
                             deallocated = true;
