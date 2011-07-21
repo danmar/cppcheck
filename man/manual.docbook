@@ -381,39 +381,97 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
   <chapter>
     <title>Suppressions</title>
 
-    <para>If you want to filter out certain errors you can suppress these.
-    The <parameter class="command">--suppress=</parameter> command line option
-    is used to specify suppressions on the command line.
-    The format is one of:</para>
+    <para>If you want to filter out certain errors you can suppress
+    these.</para>
 
-    <programlisting>[error id]:[filename]:[line]
+    <section>
+      <title>Suppressing a certain error type</title>
+
+      <para>You can suppress certain types of errors. The format for such a
+      suppression is one of:</para>
+
+      <programlisting>[error id]:[filename]:[line]
 [error id]:[filename2]
 [error id]</programlisting>
 
-    <para>The <replaceable>error id</replaceable> is the id that you want to suppress.
-    The easiest way to get it is to use the <parameter class="command">--xml</parameter>
-    command line flag. Copy and paste the <replaceable>id</replaceable> string from the XML
-    output. This may be <literal>*</literal> to suppress all warnings (for a
-    specified file or files).</para>
+      <para>The <replaceable>error id</replaceable> is the id that you want to
+      suppress. The easiest way to get it is to use the <parameter
+      class="command">--xml</parameter> command line flag. Copy and paste the
+      <replaceable>id</replaceable> string from the XML output. This may be
+      <literal>*</literal> to suppress all warnings (for a specified file or
+      files).</para>
 
-    <para>The <replaceable>filename</replaceable> may include the wildcard characters
-    <literal>*</literal> or <literal>?</literal>, which match any sequence of
-    characters or any single character respectively.</para>
+      <para>The <replaceable>filename</replaceable> may include the wildcard
+      characters <literal>*</literal> or <literal>?</literal>, which match any
+      sequence of characters or any single character respectively. It is
+      recommended that you use "/" as path separator on all operating
+      systems.</para>
 
-    <programlisting>cppcheck --suppress=memleak:file1.cpp src/</programlisting>
+      <section>
+        <title>Command line suppression</title>
 
-    <para>If you have more than a couple of suppressions, create a suppressions
-    file with one line per suppression as above.</para>
+        <para>The <parameter class="command">--suppress=</parameter> command
+        line option is used to specify suppressions on the command line.
+        Example:</para>
 
-    <para>Here is an example:</para>
+        <programlisting>cppcheck --suppress=memleak:src/file1.cpp src/</programlisting>
+      </section>
 
-    <programlisting>memleak:file1.cpp
-exceptNew:file1.cpp
+      <section>
+        <title>Listing suppressions in a file</title>
+
+        <para>You can create a suppressions file. Example:</para>
+
+        <programlisting>// suppress memleak and exceptNew errors in the file src/file1.cpp
+memleak:src/file1.cpp
+exceptNew:src/file1.cpp
+
+// suppress all uninitvar errors in all files
 uninitvar</programlisting>
 
-    <para>You can then use the suppressions file:</para>
+        <para>Note that you may add empty lines and comments in the
+        suppressions file.</para>
 
-    <programlisting>cppcheck --suppressions suppressions.txt src/</programlisting>
+        <para>You can use the suppressions file like this:</para>
+
+        <programlisting>cppcheck --suppressions suppressions.txt src/</programlisting>
+      </section>
+    </section>
+
+    <section>
+      <title>Inline suppressions</title>
+
+      <para>Suppressions can also be added directly in the code by adding
+      comments that contain special keywords. Before adding such comments,
+      consider that the code readability is sacrificed a little.</para>
+
+      <para>This code will normally generate an error message:</para>
+
+      <programlisting>void f() {
+    char arr[5];
+    arr[10] = 0;
+}</programlisting>
+
+      <para>The output is:</para>
+
+      <programlisting># cppcheck test.c
+Checking test.c...
+[test.c:3]: (error) Array 'arr[5]' index 10 out of bounds</programlisting>
+
+      <para>To suppress the error message, a comment can be added:</para>
+
+      <programlisting>void f() {
+    char arr[5];
+
+    // cppcheck-suppress arrayIndexOutOfBounds
+    arr[10] = 0;
+}</programlisting>
+
+      <para>Now the --inline-suppr flag can be used to suppress the warning.
+      No error is reported when invoking cppcheck this way:</para>
+
+      <programlisting>cppcheck --inline-suppr test.c</programlisting>
+    </section>
   </chapter>
 
   <chapter>
