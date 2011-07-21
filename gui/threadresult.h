@@ -24,7 +24,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QVariant>
-#include "../lib/errorlogger.h"
+#include "errorlogger.h"
 
 class ErrorItem;
 

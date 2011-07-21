@@ -23,8 +23,8 @@
 #include <QObject>
 #include <QStringList>
 #include <QTime>
-#include "../lib/settings.h"
-#include "../lib/cppcheck.h"
+#include "settings.h"
+#include "cppcheck.h"
 #include "threadresult.h"
 #include "checkthread.h"
 #include "resultsview.h"

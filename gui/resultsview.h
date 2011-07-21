@@ -22,7 +22,7 @@
 
 
 #include <QWidget>
-#include "../lib/errorlogger.h"
+#include "errorlogger.h"
 #include "common.h"
 #include "report.h"
 #include "ui_resultsview.h"

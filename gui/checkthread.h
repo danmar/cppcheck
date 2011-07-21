@@ -21,8 +21,8 @@
 #define CHECKTHREAD_H
 
 #include <QThread>
-#include "../lib/cppcheck.h"
-#include "../lib/settings.h"
+#include "cppcheck.h"
+#include "settings.h"
 #include "threadresult.h"
 
 /// @addtogroup GUI
