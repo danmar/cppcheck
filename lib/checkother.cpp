@@ -1912,7 +1912,6 @@ void CheckOther::functionVariableUsage()
                 tok = tok->tokAt(3);
                 variables.addVar(tok, Variables::standard, info,
                                  tok->next()->str() == "=" || isStatic);
-                tok = tok->next();
             }
 
             // standard struct type declaration with possible initialization

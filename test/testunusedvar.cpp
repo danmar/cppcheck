@@ -99,7 +99,8 @@ private:
         TEST_CASE(localvardynamic1);
         TEST_CASE(localvardynamic2); // ticket #2904
         TEST_CASE(localvararray1);  // ticket #2780
-        TEST_CASE(localvarstring);
+        TEST_CASE(localvarstring1);
+        TEST_CASE(localvarstring2); // ticket #2929
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -2889,7 +2890,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarstring() // ticket #1597
+    void localvarstring1() // ticket #1597
     {
         functionVariableUsage("void foo() {\n"
                               "    std::string s;\n"
@@ -2918,6 +2919,16 @@ private:
                               "    return s;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarstring2() // ticket #2929
+    {
+        functionVariableUsage("void foo() {\n"
+                              "    std::string s;\n"
+                              "    int i;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: s\n"
+                      "[test.cpp:3]: (style) Unused variable: i\n", errout.str());
     }
 };
 
