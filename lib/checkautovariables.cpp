@@ -119,12 +119,12 @@ void CheckAutoVariables::autoVariables()
             // Critical return
             else if (Token::Match(tok, "return & %var% ;") && isAutoVar(tok->tokAt(2)->varId()))
             {
-                reportError(tok, Severity::error, "autoVariables", "Return of the address of an auto-variable");
+                errorReturnAddressToAutoVariable(tok);
             }
             // Invalid pointer deallocation
             else if (Token::Match(tok, "free ( %var% ) ;") && isAutoVarArray(tok->tokAt(2)->varId()))
             {
-                reportError(tok, Severity::error, "autoVariables", "Invalid deallocation");
+                errorInvalidDeallocation(tok);
             }
         }
     }
@@ -186,6 +186,11 @@ void CheckAutoVariables::returnPointerToLocalArray()
             }
         }
     }
+}
+
+void CheckAutoVariables::errorReturnAddressToAutoVariable(const Token *tok)
+{
+    reportError(tok, Severity::error, "returnAddressOfAutoVariable", "Return of the address of an auto-variable");
 }
 
 void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)
@@ -290,6 +295,12 @@ void CheckAutoVariables::errorReturnTempReference(const Token *tok)
 {
     reportError(tok, Severity::error, "returnTempReference", "Returning reference to temporary");
 }
+
+void CheckAutoVariables::errorInvalidDeallocation(const Token *tok)
+{
+    reportError(tok, Severity::error, "autovarInvalidDeallocation", "Invalid deallocation");
+}
+
 
 //---------------------------------------------------------------------------
 

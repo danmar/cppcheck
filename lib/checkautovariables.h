@@ -81,22 +81,26 @@ private:
      */
     bool returnTemporary(const Token *tok) const;
 
+    void errorReturnAddressToAutoVariable(const Token *tok);
     void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok);
     void errorReturnReference(const Token *tok);
     void errorReturnTempReference(const Token *tok);
     void errorReturnAutocstr(const Token *tok);
     void errorReturnTempPointer(const Token *tok);
+    void errorInvalidDeallocation(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckAutoVariables c(0,settings,errorLogger);
         c.errorAutoVariableAssignment(0);
+        c.errorReturnAddressToAutoVariable(0);
         c.errorReturnPointerToLocalArray(0);
         c.errorReturnReference(0);
         c.errorReturnTempReference(0);
         c.errorReturnAutocstr(0);
         c.errorReturnTempPointer(0);
+        c.errorInvalidDeallocation(0);
     }
 
     std::string myName() const
