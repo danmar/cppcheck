@@ -2739,6 +2739,12 @@ private:
                                 "}\n";
             ASSERT_EQUALS("int f ( int b , int * d ) { if ( b ) { b ++ ; } if ( b ) { * d = b ; } else { * d = 10 ; } return * d ; }", tok(code));
         }
+
+        {
+            // Ticket #2885
+            const char code[] = "; s = x ? \" \" : \"-\" ;";
+            tok(code);
+        }
     }
 
     void calculations()

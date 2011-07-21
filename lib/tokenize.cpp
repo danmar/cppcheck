@@ -5323,7 +5323,9 @@ void Tokenizer::simplifyConditionOperator()
             }
 
 
-            std::string str("if ( " + condition + " ) { " + var + " = " + value1 + " ; } else { " + var + " = " + value2 + " ; }");
+            Token *starttok = 0;
+
+            const std::string str("if ( condition ) { var = value1 ; } else { var = value2 ; }");
             std::string::size_type pos1 = 0;
             while (pos1 != std::string::npos)
             {
@@ -5339,19 +5341,23 @@ void Tokenizer::simplifyConditionOperator()
                     pos1 = pos2 + 1;
                 }
                 tok = tok->next();
-            }
 
-            if (isPointer)
-            {
-                Token::createMutualLinks(tok->tokAt(-17), tok->tokAt(-15));
-                Token::createMutualLinks(tok->tokAt(-14), tok->tokAt(-8));
-                Token::createMutualLinks(tok->tokAt(-6), tok);
-            }
-            else
-            {
-                Token::createMutualLinks(tok->tokAt(-15), tok->tokAt(-13));
-                Token::createMutualLinks(tok->tokAt(-12), tok->tokAt(-7));
-                Token::createMutualLinks(tok->tokAt(-5), tok);
+                // set links.
+                if (tok->str() == "(" || tok->str() == "{")
+                    starttok = tok;
+                else if (starttok && (tok->str() == ")" || tok->str() == "}"))
+                {
+                    Token::createMutualLinks(starttok, tok);
+                    starttok = 0;
+                }
+                else if (tok->str() == "condition")
+                    tok->str(condition);
+                else if (tok->str() == "var")
+                    tok->str(var);
+                else if (tok->str() == "value1")
+                    tok->str(value1);
+                else if (tok->str() == "value2")
+                    tok->str(value2);
             }
         }
     }
