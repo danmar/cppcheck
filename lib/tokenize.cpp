@@ -5612,6 +5612,14 @@ void Tokenizer::simplifyCasts()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        // #2897 : don't remove cast in such cases:
+        // *((char *)a + 1) = 0;
+        if (!tok->isName() && Token::simpleMatch(tok->next(), "* ("))
+        {
+            tok = tok->tokAt(2)->link();
+            continue;
+        }
+
         while (Token::Match(tok->next(), "( %type% *| ) *|&| %var%") ||
                Token::Match(tok->next(), "( %type% %type% *| ) *|&| %var%") ||
                (!tok->isName() && (Token::Match(tok->next(), "( %type% * ) (") ||

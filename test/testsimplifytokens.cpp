@@ -434,6 +434,9 @@ private:
         ASSERT_EQUALS("class A { A operator* ( int ) ; } ;", tok("class A { A operator *(int); };"));
         ASSERT_EQUALS("class A { A operator* ( int ) const ; } ;", tok("class A { A operator *(int) const; };"));
         ASSERT_EQUALS("if ( ! p )", tok("if (p == (char *)(char *)0)"));
+
+        // no simplification as the cast may be important here. see #2897 for example
+        ASSERT_EQUALS("; * ( ( char * ) p + 1 ) = 0 ;", tok("; *((char *)p + 1) = 0;"));
     }
 
 
