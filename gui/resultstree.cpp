@@ -161,7 +161,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
-    for (int i = 1; i < item.files.size() && i < item.lines.size(); i++)
+    for (int i = 1; i < item.files.size(); i++)
     {
         line.file = StripPath(item.files[i], false);
         line.line = item.lines[i];
