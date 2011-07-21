@@ -16,9 +16,9 @@ ifeq ($(HAVE_RULES),yes)
     endif
 endif
 
-ifndef CXX
-    CXX=g++
-endif
+#ifndef CXX
+    CXX=clang++
+#endif
 
 ifndef PREFIX
     PREFIX=/usr
