@@ -5807,6 +5807,14 @@ void Tokenizer:: simplifyFunctionPointers()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        // #2873 - dont simplify function pointer usage here:
+        // (void)(xy(*p)(0));
+        if (Token::simpleMatch(tok, ") ("))
+        {
+            tok = tok->next()->link();
+            continue;
+        }
+
         // check for function pointer cast
         if (Token::Match(tok, "( %type% *| *| ( * ) (") ||
             Token::Match(tok, "( %type% %type% *| *| ( * ) (") ||
