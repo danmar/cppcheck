@@ -173,8 +173,9 @@ public slots:
     * @brief Slot for updating the checking progress
     *
     * @param value Current progress value
+    * @param description Description to accompany the progress
     */
-    void Progress(int value);
+    void Progress(int value, const QString& description);
 
     /**
     * @brief Slot for new error to be displayed
@@ -224,7 +225,6 @@ protected:
     Ui::ResultsView mUI;
 
     CheckStatistics *mStatistics;
-
 
 private:
 };

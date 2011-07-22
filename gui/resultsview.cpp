@@ -37,6 +37,9 @@
 #include "applicationlist.h"
 #include "checkstatistics.h"
 
+// The maximum value for the progress bar
+const int PROGRESS_MAX = 1024;
+
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
     mErrorsFound(false),
@@ -74,13 +77,15 @@ void ResultsView::Clear()
     mStatistics->Clear();
 
     //Clear the progressbar
-    mUI.mProgress->setMaximum(100);
+    mUI.mProgress->setMaximum(PROGRESS_MAX);
     mUI.mProgress->setValue(0);
+    mUI.mProgress->setFormat(tr("%p%"));
 }
 
-void ResultsView::Progress(int value)
+void ResultsView::Progress(int value, const QString& description)
 {
     mUI.mProgress->setValue(value);
+    mUI.mProgress->setFormat(tr("%p% (%1)").arg(description));
 }
 
 void ResultsView::Error(const ErrorItem &item)
@@ -184,12 +189,16 @@ void ResultsView::SetCheckDirectory(const QString &dir)
 void ResultsView::CheckingStarted(int count)
 {
     mUI.mProgress->setVisible(true);
-    mUI.mProgress->setMaximum(count);
+    mUI.mProgress->setMaximum(PROGRESS_MAX);
+    mUI.mProgress->setValue(0);
+    mUI.mProgress->setFormat(tr("%p% (%1 of %2 files checked)").arg(0).arg(count));
 }
 
 void ResultsView::CheckingFinished()
 {
     mUI.mProgress->setVisible(false);
+    mUI.mProgress->setFormat("%p%");
+
     //Should we inform user of non visible/not found errors?
     if (mShowNoErrorsMessage)
     {

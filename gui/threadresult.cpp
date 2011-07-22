@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <QFile>
 #include <QString>
 #include <QMutexLocker>
 #include <QList>
@@ -26,7 +26,10 @@
 #include "errorlogger.h"
 #include "threadresult.h"
 
-ThreadResult::ThreadResult() : mMaxProgress(0), mProgress(0)
+// The maximum value for the progress bar
+const double PROGRESS_MAX = 1024.0;
+
+ThreadResult::ThreadResult() : mMaxProgress(0), mProgress(0), mFilesChecked(0), mTotalFiles(0)
 {
     //ctor
 }
@@ -44,9 +47,17 @@ void ThreadResult::reportOut(const std::string &outmsg)
 void ThreadResult::FileChecked(const QString &file)
 {
     QMutexLocker locker(&mutex);
-    Q_UNUSED(file); //For later use maybe?
-    mProgress++;
-    emit Progress(mProgress);
+
+    mProgress += QFile(file).size();
+    mFilesChecked ++;
+
+    if (mMaxProgress > 0)
+    {
+        const int value = static_cast<int>(PROGRESS_MAX * mProgress / mMaxProgress);
+        const QString description = tr("%1 of %2 files checked").arg(mFilesChecked).arg(mTotalFiles);
+
+        emit Progress(value, description);
+    }
 }
 
 void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
@@ -96,13 +107,25 @@ void ThreadResult::SetFiles(const QStringList &files)
     QMutexLocker locker(&mutex);
     mFiles = files;
     mProgress = 0;
-    mMaxProgress = files.size();
+    mFilesChecked = 0;
+    mTotalFiles = files.size();
+
+    // Determine the total size of all of the files to check, so that we can
+    // show an accurate progress estimate
+    quint64 sizeOfFiles = 0;
+    foreach(const QString& file, files)
+    {
+        sizeOfFiles += QFile(file).size();
+    }
+    mMaxProgress = sizeOfFiles;
 }
 
 void ThreadResult::ClearFiles()
 {
     QMutexLocker locker(&mutex);
     mFiles.clear();
+    mFilesChecked = 0;
+    mTotalFiles = 0;
 }
 
 int ThreadResult::GetFileCount()
