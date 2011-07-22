@@ -110,6 +110,7 @@ void CheckAutoVariables::autoVariables()
                     if (var2 && var2->isLocal() && !var2->isStatic())
                         errorAutoVariableAssignment(tok);
                 }
+                tok = tok->tokAt(6);
             }
             else if (Token::Match(tok, "[;{}] * %var% = %var% ;"))
             {
@@ -118,6 +119,17 @@ void CheckAutoVariables::autoVariables()
                 {
                     const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(4)->varId());
                     if (var2 && var2->isLocal() && var2->isArray() && !var2->isStatic())
+                        errorAutoVariableAssignment(tok);
+                }
+                tok = tok->tokAt(4);
+            }
+            else if (Token::Match(tok, "[;{}] %var% = & %var% ;"))
+            {
+                const Variable * var1 = symbolDatabase->getVariableFromVarId(tok->tokAt(1)->varId());
+                if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-2), "%type% *"))
+                {
+                    const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(4)->varId());
+                    if (var2 && var2->isLocal() && !var2->isStatic())
                         errorAutoVariableAssignment(tok);
                 }
                 tok = tok->tokAt(4);

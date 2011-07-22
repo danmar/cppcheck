@@ -72,6 +72,7 @@ private:
         TEST_CASE(testautovar3); // ticket #2925
         TEST_CASE(testautovar4); // ticket #2928
         TEST_CASE(testautovar5); // ticket #2926
+        TEST_CASE(testautovar6); // ticket #1514
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -182,6 +183,16 @@ private:
               "{\n"
               "    char a;\n"
               "    ab->a = &a;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+    }
+
+    void testautovar6() // ticket #1514
+    {
+        check("void foo(int * x)\n"
+              "{\n"
+              "    int y;\n"
+              "    x = &y;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
