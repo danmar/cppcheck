@@ -284,6 +284,7 @@ private:
 
         TEST_CASE(functionpointer1);
         TEST_CASE(functionpointer2);
+        TEST_CASE(functionpointer3);
 
         TEST_CASE(removeRedundantAssignment);
 
@@ -4843,6 +4844,18 @@ private:
                                 "void f1(){} "
                                 "void* pf; pf=& f1; "
                                 "void* pfs[]={& f1,& f1};";
+        ASSERT_EQUALS(expected, simplifyFunctionPointers(code));
+    }
+
+    void functionpointer3()
+    {
+        // Related with ticket #2873
+        const char code[] = "void f() {\n"
+                            "(void)(xy(*p)(0);)"
+                            "\n}";
+        const char expected[] = " void f(){"
+                                "( void)( xy(* p)(0);)"
+                                "}";
         ASSERT_EQUALS(expected, simplifyFunctionPointers(code));
     }
 
