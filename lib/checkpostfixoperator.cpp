@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "checkpostfixoperator.h"
+#include "symboldatabase.h"
 
 //---------------------------------------------------------------------------
 
@@ -38,6 +39,7 @@ void CheckPostfixOperator::postfixOperator()
         return;
 
     const Token *tok = _tokenizer->tokens();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // prevent crash if first token is ++ or --
     if (Token::Match(tok, "++|--"))
@@ -73,23 +75,21 @@ void CheckPostfixOperator::postfixOperator()
 
         if (result && tok->previous()->varId())
         {
-            const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->previous()->varId());
-            if (decltok == NULL || !Token::Match(decltok->tokAt(-1), "%type%"))
+            const Variable *var = symbolDatabase->getVariableFromVarId(tok->previous()->varId());
+            if (!var || !Token::Match(var->typeEndToken(), "%type%"))
                 continue;
+
+            const Token *decltok = var->nameToken();
 
             if (Token::Match(decltok->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
             {
                 // the variable is an iterator
                 postfixOperatorError(tok);
             }
-            else
+            else if (var->type())
             {
-                const std::string classDef = std::string("class ") + std::string(decltok->previous()->strAt(0));
-                if (Token::findmatch(_tokenizer->tokens(), classDef.c_str()))
-                {
-                    // the variable is an instance of class
-                    postfixOperatorError(tok);
-                }
+                // the variable is an instance of class
+                postfixOperatorError(tok);
             }
         }
     }
