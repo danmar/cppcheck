@@ -1828,6 +1828,14 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         typetok = localTypeTok;
         isArray = true;
     }
+    else if ((isLocal() || type == Scope::eFunction) &&
+             Token::Match(localVarTok, "%var% (") &&
+             Token::simpleMatch(localVarTok->next()->link(), ") ;"))
+    {
+        vartok = localVarTok;
+        typetok = localTypeTok;
+        isArray = false;
+    }
 
     return NULL != vartok;
 }
