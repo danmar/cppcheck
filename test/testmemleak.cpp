@@ -244,6 +244,7 @@ private:
         TEST_CASE(allocfunc7);
         TEST_CASE(allocfunc8);
         TEST_CASE(allocfunc9);
+        TEST_CASE(allocfunc10);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -2528,6 +2529,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void allocfunc10()
+    {
+        // Ticket #2921 - static pointer
+        check("char *getstr() {\n"
+              "    static char *ret = malloc(100);\n"
+              "    return ret;\n"
+              "}\n"
+              "\n"
+              "void foo() {\n"
+              "    char *s = getstr();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void throw1()
     {
