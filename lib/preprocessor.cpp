@@ -660,7 +660,7 @@ std::string Preprocessor::removeIf0(const std::string &code)
                     ++level;
                 else if (line == "#endif")
                     --level;
-                else if (line == "#else")
+                else if ((line == "#else") || (line.compare(0, 5, "#elif") == 0))
                 {
                     if (level == 1)
                         in = true;

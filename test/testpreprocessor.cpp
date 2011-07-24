@@ -723,8 +723,7 @@ private:
                                 "B\n"
                                 "#endif\n"
                                 "C\n");
-        TODO_ASSERT_EQUALS("#if 0\n\n#elif 1\nB\n#endif\nC\n",
-                           "#if 0\n\n\n\n#endif\nC\n", preprocessor.read(code,"",NULL));
+        ASSERT_EQUALS("#if 0\n\n#elif 1\nB\n#endif\nC\n", preprocessor.read(code,"",NULL));
     }
 
     void if0_include_1()
