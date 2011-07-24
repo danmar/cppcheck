@@ -1888,6 +1888,18 @@ void CheckOther::functionVariableUsage()
                 tok = tok->next();
             }
 
+            // standard const type declaration
+            // const int i = x;
+            if (Token::Match(tok, "[;{}] const %type% %var% ="))
+            {
+                tok = tok->next()->next();
+
+                if (tok->isStandardType() || isRecordTypeWithoutSideEffects(tok->next()))
+                    variables.addVar(tok->next(), Variables::standard, info, true);
+
+                tok = tok->next();
+            }
+
             // std::string declaration with possible initialization
             // std::string s; std::string s = "string";
             else if (Token::Match(tok, "[;{}] static| std :: string %var% ;|="))

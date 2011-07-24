@@ -101,6 +101,7 @@ private:
         TEST_CASE(localvararray1);  // ticket #2780
         TEST_CASE(localvarstring1);
         TEST_CASE(localvarstring2); // ticket #2929
+        TEST_CASE(localvarconst);
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -2929,6 +2930,14 @@ private:
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: s\n"
                       "[test.cpp:3]: (style) Unused variable: i\n", errout.str());
+    }
+
+    void localvarconst()
+    {
+        functionVariableUsage("void foo() {\n"
+                              "    const bool b = true;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
     }
 };
 
