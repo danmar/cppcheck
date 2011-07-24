@@ -112,7 +112,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
-	check("\n"
+        check("\n"
               "struct K {};"
               "void foo()\n"
               "{\n"
@@ -121,7 +121,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
-	check("\n"
+        check("\n"
               "union K {};"
               "void foo()\n"
               "{\n"

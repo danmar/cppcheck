@@ -3463,7 +3463,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                         if (tok6->isName())
                             used.remove(tok6);
                     }
-                    removeTokens.push_back( std::pair<Token*,Token*>(tok4, tok5->next()) );
+                    removeTokens.push_back(std::pair<Token*,Token*>(tok4, tok5->next()));
                 }
 
                 tok4 = tok5;
