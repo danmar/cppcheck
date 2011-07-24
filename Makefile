@@ -165,7 +165,7 @@ install: cppcheck
 
 ###### Build
 
-lib/check64bit.o: lib/check64bit.cpp lib/check64bit.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
+lib/check64bit.o: lib/check64bit.cpp lib/check64bit.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/check64bit.o lib/check64bit.cpp
 
 lib/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
@@ -192,7 +192,7 @@ lib/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefu
 lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/symboldatabase.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkother.o lib/checkother.cpp
 
-lib/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/checkpostfixoperator.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
+lib/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/checkpostfixoperator.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkpostfixoperator.o lib/checkpostfixoperator.cpp
 
 lib/checkstl.o: lib/checkstl.cpp lib/checkstl.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/executionpath.h lib/symboldatabase.h lib/mathlib.h
