@@ -304,7 +304,7 @@ bool MathLib::isEqual(const std::string &first, const std::string &second)
 
 bool MathLib::isNotEqual(const std::string &first, const std::string &second)
 {
-    return toDoubleNumber(first) != toDoubleNumber(second);
+    return !isEqual(first, second);
 }
 
 bool MathLib::isGreater(const std::string &first, const std::string &second)
