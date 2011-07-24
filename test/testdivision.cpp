@@ -64,6 +64,7 @@ private:
         TEST_CASE(division7);
         TEST_CASE(division8);
         TEST_CASE(division9);
+        TEST_CASE(division10);
     }
 
     void division1()
@@ -197,6 +198,13 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("unsigned division",
                            "", errout.str());
+    }
+
+    void division10()
+    {
+        // Ticket: #2932 - don't segfault
+        check("i / i");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

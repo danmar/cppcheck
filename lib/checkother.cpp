@@ -1094,17 +1094,6 @@ void CheckOther::checkUnsignedDivision()
                 }
             }
         }
-        else if (Token::Match(tok, "|[|=|return|%op% %var% / %var%"))
-        {
-
-            //std::cout << "cicicicic" << std::endl;
-            char sign1 = varsign[tok->tokAt(1)->varId()];
-            char sign2 = varsign[tok->tokAt(3)->varId()];
-            if ((sign1 == 'u' && sign2 == 's') || (sign1 == 's' && sign2 == 'u'))
-            {
-                //udivError(tok);
-            }
-        }
     }
 }
 
