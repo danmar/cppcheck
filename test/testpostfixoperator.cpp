@@ -112,6 +112,24 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
 
+	check("\n"
+              "struct K {};"
+              "void foo()\n"
+              "{\n"
+              "    K k(0);\n"
+              "    k++;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
+
+	check("\n"
+              "union K {};"
+              "void foo()\n"
+              "{\n"
+              "    K k(0);\n"
+              "    k++;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
+
         check("\n"
               "#include <iostream>\n"
               "class K {};"
