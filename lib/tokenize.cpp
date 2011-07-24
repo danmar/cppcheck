@@ -3423,15 +3423,15 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         }
 
         // Replace all these template usages..
+        std::list< std::pair<Token *, Token *> > removeTokens;
         for (Token *tok4 = tok2; tok4; tok4 = tok4->next())
         {
             if (Token::simpleMatch(tok4, s1.c_str()))
             {
-                bool match = true;
                 Token * tok5 = tok4->tokAt(2);
                 unsigned int count = 0;
                 const Token *typetok = (!types2.empty()) ? types2[0] : 0;
-                while (tok5->str() != ">")
+                while (tok5 && tok5->str() != ">")
                 {
                     if (tok5->str() != ",")
                     {
@@ -3440,7 +3440,6 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                             tok5->isSigned() != typetok->isSigned() ||
                             tok5->isLong() != typetok->isLong())
                         {
-                            match = false;
                             break;
                         }
 
@@ -3454,18 +3453,28 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                     tok5 = tok5->next();
                 }
 
-                if (match)
+                // matching template usage => replace tokens..
+                // Foo < int >  =>  Foo<int>
+                if (tok5 && tok5->str() == ">" && count + 1U == types2.size())
                 {
                     tok4->str(name2);
-                    while (tok4->next()->str() != ">")
+                    for (Token *tok6 = tok4->next(); tok6 != tok5; tok6 = tok6->next())
                     {
-                        used.remove(tok4->next());
-                        tok4->deleteNext();
+                        if (tok6->isName())
+                            used.remove(tok6);
                     }
-                    used.remove(tok4->next());
-                    tok4->deleteNext();
+                    removeTokens.push_back( std::pair<Token*,Token*>(tok4, tok5->next()) );
                 }
+
+                tok4 = tok5;
+                if (!tok4)
+                    break;
             }
+        }
+        while (!removeTokens.empty())
+        {
+            Token::eraseTokens(removeTokens.back().first, removeTokens.back().second);
+            removeTokens.pop_back();
         }
     }
 }
