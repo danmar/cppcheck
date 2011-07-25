@@ -80,6 +80,12 @@ public:
     unsigned int check(const std::string &path, const std::string &content);
 
     /**
+     * @brief Check function usage.
+     * @note Call this after all files has been checked
+     */
+    void checkFunctionUsage();
+
+    /**
      * @brief Adjust the settings before doing the check. E.g. show only
      * actual bugs or also coding style issues.
      *

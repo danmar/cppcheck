@@ -191,21 +191,26 @@ unsigned int CppCheck::processFile()
 
     reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(_filename));
 
+    _errorList.clear();
+    return exitcode;
+}
+
+void CppCheck::checkFunctionUsage()
+{
     // This generates false positives - especially for libraries
-    const bool verbose_orig = _settings._verbose;
-    _settings._verbose = false;
     if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
     {
+        const bool verbose_orig = _settings._verbose;
+        _settings._verbose = false;
+
         _errout.str("");
         if (_settings._errorsOnly == false)
             _errorLogger.reportOut("Checking usage of global functions..");
 
         _checkUnusedFunctions.check(this);
-    }
-    _settings._verbose = verbose_orig;
 
-    _errorList.clear();
-    return exitcode;
+        _settings._verbose = verbose_orig;
+    }
 }
 
 void CppCheck::analyseFile(std::istream &fin, const std::string &filename)

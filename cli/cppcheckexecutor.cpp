@@ -172,6 +172,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
             if (!_settings._errorsOnly)
                 reportStatus(c + 1, _filenames.size(), processedsize, totalfilesize);
         }
+
+        cppCheck.checkFunctionUsage();
     }
     else if (!ThreadExecutor::isEnabled())
     {
