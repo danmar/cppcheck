@@ -201,7 +201,7 @@ void CheckNullPointer::nullPointerAfterLoop()
         // TODO: Aren't there false negatives. Shouldn't other loops be handled such as:
         //       - while ( ! %var% )
         //       - while ( %var% && .. )
-        if (! Token::Match(tok, "while ( %var% )"))
+        if (! Token::Match(tok, "while ( %var% )|&&"))
             continue;
 
         // Get variable id for the loop variable
@@ -217,7 +217,7 @@ void CheckNullPointer::nullPointerAfterLoop()
         const std::string varname(tok->strAt(2));
 
         // Locate the end of the while loop body..
-        const Token *tok2 = tok->tokAt(4)->link();
+        const Token *tok2 = tok->next()->link()->next()->link();
 
         // Check if the variable is dereferenced after the while loop
         while (0 != (tok2 = tok2 ? tok2->next() : 0))

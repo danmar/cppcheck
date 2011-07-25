@@ -88,12 +88,12 @@ private:
         check("void foo(const Token *tok)\n"
               "{\n"
               "    while (tok && tok->str() == \"=\")\n"
-              "        tok = tok->tokAt(-2);\n"
+              "        tok = tok->next();\n"
               "\n"
               "    if (tok->str() != \";\")\n"
               "        ;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
 
         check("void foo()\n"
               "{\n"
