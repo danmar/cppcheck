@@ -678,8 +678,12 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
                 if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch"))
                 {
+                    bool dummy = false;
                     if (Token::Match(tok2, "return * %varid%", varid))
-                        nullPointerError(tok2, tok->strAt(3), linenr);
+                        nullPointerError(tok2, pointerName, linenr);
+                    else if (Token::Match(tok2, "return %varid%", varid) &&
+                             CheckNullPointer::isPointerDeRef(tok2->next(), dummy))
+                        nullPointerError(tok2, pointerName, linenr);
                     break;
                 }
 

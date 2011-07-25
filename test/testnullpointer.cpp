@@ -1148,6 +1148,12 @@ private:
               "   len = decltype(*pFoo);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int foo(struct Fred *fred) {\n"
+              "    if (fred) { int a = 0; }\n"
+              "    return fred->a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 2\n", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
