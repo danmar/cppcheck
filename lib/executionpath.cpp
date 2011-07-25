@@ -160,8 +160,14 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
             return;
         }
 
-        if (tok->str() == "}" || tok->str() == "break")
+        if (tok->str() == "}")
             return;
+
+        if (tok->str() == "break")
+        {
+            ExecutionPath::bailOut(checks);
+            return;
+        }
 
         if (Token::simpleMatch(tok, "while ("))
         {

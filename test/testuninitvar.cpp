@@ -837,6 +837,17 @@ private:
                        "    return x;\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:11]: (error) Uninitialized variable: x\n", errout.str());
+
+        // Ticket #2796
+        checkUninitVar("void foo() {\n"
+                       "    while (true) {\n"
+                       "        int x;\n"
+                       "        if (y) x = 0;\n"
+                       "        else break;\n"
+                       "        return x;\n"   // <- x is initialized
+                       "    }\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // switch..
