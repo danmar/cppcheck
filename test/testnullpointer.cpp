@@ -794,7 +794,6 @@ private:
               "    int x = &fred->x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
     }
 
     // Ticket #2350
@@ -908,14 +907,14 @@ private:
               "  my_type* p = 0;\n"
               "  return p->x;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
 
         check("int foo()\n"
               "{\n"
               "  struct my_type* p = 0;\n"
               "  return p->x;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
 
         check("int foo()\n"
               "{\n"
@@ -923,7 +922,7 @@ private:
               "  p = 0; \n"
               "  return p->x;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
 
         check("int foo()\n"
               "{\n"
@@ -931,7 +930,7 @@ private:
               "  p = 0; \n"
               "  return p->x;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
     // Check if pointer is null and the dereference it

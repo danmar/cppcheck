@@ -985,6 +985,18 @@ private:
                 return ret->next();
         }
 
+        else if (tok.str() == "return")
+        {
+            bool unknown = false;
+            const Token *vartok = tok.next();
+            if (vartok->str() == "*")
+                vartok = vartok->next();
+            if (vartok->varId() && CheckNullPointer::isPointerDeRef(vartok, unknown))
+            {
+                dereference(checks, vartok);
+            }
+        }
+
         return &tok;
     }
 
