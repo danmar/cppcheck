@@ -181,6 +181,12 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("static int foo() {\n"
+                       "    int ret;\n"
+                       "    return cin >> ret;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("void f()\n"
                        "{\n"
                        "    int a;\n"
