@@ -1257,6 +1257,9 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
             // add unhandled templates
             if (tok2->next()->str() == "<")
             {
+                tok2 = tok2->next();
+                base.name += tok2->str();
+
                 int level1 = 1;
                 while (tok2->next())
                 {

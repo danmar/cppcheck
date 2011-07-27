@@ -175,6 +175,7 @@ private:
         TEST_CASE(const47); // ticket #2670
         TEST_CASE(const48); // ticket #2672
         TEST_CASE(const49); // ticket #2795
+        TEST_CASE(const50); // ticket #2943
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5548,6 +5549,23 @@ private:
                    "             return _hash[key];\n"
                    "         }\n"
                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const50() // ticket 2943
+    {
+        checkConst("class Altren\n"
+                   "{\n"
+                   "        class SubClass : public std::vector<int>\n"
+                   "        {\n"
+                   "        };\n"
+                   "};\n"
+                   "void _setAlign()\n"
+                   "{\n"
+                   "        if (mTileSize.height > 0) return;\n"
+                   "        if (mEmptyView) return;\n"
+                   "}\n");
+
         ASSERT_EQUALS("", errout.str());
     }
 
