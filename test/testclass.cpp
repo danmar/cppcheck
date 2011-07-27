@@ -65,6 +65,7 @@ private:
         TEST_CASE(uninitVar18); // ticket #2465
         TEST_CASE(uninitVar19); // ticket #2792
         TEST_CASE(uninitVar20); // ticket #2867
+        TEST_CASE(uninitVar21); // ticket #2947
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -2243,6 +2244,20 @@ private:
                        "    } obj;\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void uninitVar21() // ticket #2947
+    {
+        checkUninitVar("class Fred {\n"
+                       "private:\n"
+                       "    int a[23];\n"
+                       "public:\n"
+                       "    Fred(); \n"
+                       "};\n"
+                       "Fred::Fred() {\n"
+                       "    a[x::y] = 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarArray1()

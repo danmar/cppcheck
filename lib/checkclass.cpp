@@ -500,20 +500,24 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         }
 
         // Assignment of array item of member variable?
-        else if (Token::Match(ftok, "%var% [ %any% ] ="))
+        else if (Token::Match(ftok, "%var% [") &&
+                 Token::simpleMatch(ftok->next()->link(), "] ="))
         {
             assignVar(ftok->str(), scope, usage);
         }
 
         // Assignment of member of array item of member variable?
-        else if (Token::Match(ftok, "%var% [ %any% ] . %var%  =") ||
-                 Token::Match(ftok, "%var% [ %any% ] . %var% . %var%  ="))
+        else if (Token::Match(ftok, "%var% [ ") &&
+                 (Token::Match(ftok->next()->link(), "] . %var%  =") ||
+                  Token::Match(ftok->next()->link(), "] . %var% . %var%  =")))
         {
             assignVar(ftok->str(), scope, usage);
         }
 
         // Assignment of array item of member variable?
-        else if (Token::Match(ftok, "%var% [ %any% ] [ %any% ] ="))
+        else if (Token::Match(ftok, "%var% [") &&
+                 Token::simpleMatch(ftok->next()->link(), "] [") &&
+                 Token::simpleMatch(ftok->next()->link()->next()->link(), "] ="))
         {
             assignVar(ftok->str(), scope, usage);
         }
