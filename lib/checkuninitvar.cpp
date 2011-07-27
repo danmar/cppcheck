@@ -1073,6 +1073,8 @@ public:
                         continue;
                     }
 
+                    /// @todo enable this code. if pointer is written in function then dead pointer is invalid but valid pointer is ok.
+                    /*
                     if (Token::Match(tok2, "const| struct| %type% * %var% ,|)"))
                     {
                         while (tok2->isName())
@@ -1080,6 +1082,7 @@ public:
                         tok2 = tok2->tokAt(2);
                         continue;
                     }
+                    */
 
                     break;
                 }

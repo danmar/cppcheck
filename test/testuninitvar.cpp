@@ -1326,7 +1326,9 @@ private:
         ASSERT_EQUALS("rename", analyseFunctions("int rename (const char oldname[], const char newname[]);"));
         ASSERT_EQUALS("", analyseFunctions("void foo(int &x) { x = 0; }"));
         ASSERT_EQUALS("", analyseFunctions("void foo(s x) { }"));
-        ASSERT_EQUALS("foo", analyseFunctions("void foo(Fred *fred) { fred->x = 0; }"));
+        // TODO: it's ok to pass a valid pointer to "foo". See #2775 and #2946
+        TODO_ASSERT_EQUALS("foo", "", analyseFunctions("void foo(Fred *fred) { fred->x = 0; }"));
+        ASSERT_EQUALS("", analyseFunctions("void foo(int *x) { x[0] = 0; }"));
 
         // function calls..
         checkUninitVar("void assignOne(int &x)\n"
@@ -1489,7 +1491,19 @@ private:
                        "    struct Fred *p;\n"
                        "    a(p);\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: p\n", errout.str());
+        // TODO: See #2946
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: p\n", "", errout.str());
+
+        // #2946 - FP array is initialized in subfunction
+        checkUninitVar("void a(char *buf) {\n"
+                       "    buf[0] = 0;\n"
+                       "}\n"
+                       "void b() {\n"
+                       "    char buf[10];\n"
+                       "    a(buf);\n"
+                       "    buf[1] = buf[0];\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // valid and invalid use of 'int a(int x) { return x + x; }'
