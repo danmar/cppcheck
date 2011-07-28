@@ -876,6 +876,8 @@ void CheckOther::invalidFunctionUsage()
         const Token *tok2 = tok->tokAt(3);
         while (tok2 && tok2->str() != ",")
             tok2 = tok2->next();
+        if (!tok2)
+            continue;
 
         // is any source buffer overlapping the target buffer?
         int parlevel = 0;

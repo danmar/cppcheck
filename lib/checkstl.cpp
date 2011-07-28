@@ -763,7 +763,8 @@ void CheckStl::if_find()
                 while (decl && !Token::Match(decl, "[;{}(,]"))
                     decl = decl->previous();
 
-                decl = decl->next();
+                if (decl)
+                    decl = decl->next();
 
                 // stl container
                 if (Token::Match(decl, "const| std :: %var% < %type% > &|*| %varid%", varid))
@@ -1137,8 +1138,10 @@ void CheckStl::checkAutoPointer()
                         {
                             tok3 = tok3->next();
                         }
+                        if (!tok3)
+                            continue;
                         tok3 = tok3->previous()->previous();
-                        if (Token::Match(tok3->previous(), "[ ] )"))
+                        if (Token::simpleMatch(tok3->previous(), "[ ] )"))
                         {
                             autoPointerArrayError(tok2->next());
                         }

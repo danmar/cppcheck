@@ -1088,7 +1088,7 @@ public:
                 }
 
                 // found simple function..
-                if (tok2->link() == tok->tokAt(2))
+                if (tok2 && tok2->link() == tok->tokAt(2))
                     func.insert(tok->next()->str());
             }
         }

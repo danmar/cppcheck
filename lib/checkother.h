@@ -101,7 +101,7 @@ public:
         checkOther.checkComparisonOfBoolWithInt();
         checkOther.checkSwitchCaseFallThrough();
         checkOther.checkAlwaysTrueOrFalseStringCompare();
-        
+
         checkOther.checkAssignBoolToPointer();
     }
 

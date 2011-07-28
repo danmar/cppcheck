@@ -36,7 +36,7 @@ private:
     void run()
     {
         TEST_CASE(assignBoolToPointer);
-        
+
         TEST_CASE(zeroDiv1);
         TEST_CASE(zeroDiv2);
         TEST_CASE(zeroDiv3);

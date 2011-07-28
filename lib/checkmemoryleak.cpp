@@ -811,6 +811,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                 // Check if the function deallocates the variable..
                 while (ftok && (ftok->str() != "{"))
                     ftok = ftok->next();
+                if (!ftok)
+                    return 0;
                 Token *func = getcode(ftok->tokAt(1), callstack, parameterVarid, alloctype, dealloctype, false, sz);
                 //simplifycode(func, all);
                 const Token *func_ = func;
