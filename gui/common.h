@@ -88,5 +88,8 @@ ShowTypes;
 #define SETTINGS_INCONCLUSIVE_ERRORS    "Inconclusive errors"
 #define SETTINGS_MRU_PROJECTS           "MRU Projects"
 
+// The maximum value for the progress bar
+#define PROGRESS_MAX                    1024.0
+
 /// @}
 #endif
