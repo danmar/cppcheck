@@ -83,8 +83,9 @@ signals:
     /**
     * @brief Progress signal
     * @param value Current progress
+    * @param description Description of the current stage
     */
-    void Progress(int value);
+    void Progress(int value, const QString& description);
 
     /**
     * @brief Signal of a new error
@@ -125,14 +126,25 @@ protected:
     * @brief Max progress
     *
     */
-    int mMaxProgress;
+    quint64 mMaxProgress;
 
     /**
     * @brief Current progress
     *
     */
-    int mProgress;
-private:
+    quint64 mProgress;
+
+    /**
+    * @brief Current number of files checked
+    *
+    */
+    unsigned long mFilesChecked;
+
+    /**
+    * @brief Total number of files
+    *
+    */
+    unsigned long mTotalFiles;
 };
 /// @}
 #endif // THREADRESULT_H
