@@ -35,6 +35,8 @@ private:
 
     void run()
     {
+        TEST_CASE(assignBoolToPointer);
+        
         TEST_CASE(zeroDiv1);
         TEST_CASE(zeroDiv2);
         TEST_CASE(zeroDiv3);
@@ -171,6 +173,7 @@ private:
         checkOther.checkIncrementBoolean();
         checkOther.checkComparisonOfBoolWithInt();
         checkOther.checkDuplicateBreak();
+        checkOther.checkAssignBoolToPointer();
     }
 
     class SimpleSuppressor: public ErrorLogger
@@ -226,6 +229,15 @@ private:
         checkOther.checkAlwaysTrueOrFalseStringCompare();
 
         logger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(filename));
+    }
+
+
+    void assignBoolToPointer()
+    {
+        check("void foo(bool *p) {\n"
+              "    p = false;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Assigning bool value to pointer (converting bool value to address)\n", errout.str());
     }
 
 

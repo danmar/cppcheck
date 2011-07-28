@@ -101,6 +101,8 @@ public:
         checkOther.checkComparisonOfBoolWithInt();
         checkOther.checkSwitchCaseFallThrough();
         checkOther.checkAlwaysTrueOrFalseStringCompare();
+        
+        checkOther.checkAssignBoolToPointer();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -232,6 +234,9 @@ public:
     bool isRecordTypeWithoutSideEffects(const Token *tok);
 
 
+    /** @brief assigning bool to pointer */
+    void checkAssignBoolToPointer();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -266,12 +271,14 @@ public:
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void alwaysTrueFalseStringCompare(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok);
+    void assignBoolToPointerError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckOther c(0, settings, errorLogger);
 
         // error
+        c.assignBoolToPointerError(0);
         c.sprintfOverlappingDataError(0, "varname");
         c.udivError(0);
         c.zerodivError(0);
@@ -328,6 +335,7 @@ public:
         return "Other checks\n"
 
                // error
+               "* Assigning bool value to pointer (converting bool value to address)"
                "* [[OverlappingData|bad usage of the function 'sprintf' (overlapping data)]]\n"
                "* division with zero\n"
                "* using fflush() on an input stream\n"

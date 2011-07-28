@@ -3835,3 +3835,27 @@ void CheckOther::duplicateBreakError(const Token *tok)
                 "Consecutive break or continue statements are unnecessary\n"
                 "The second of the two statements can never be executed, and so should be removed\n");
 }
+
+
+void CheckOther::checkAssignBoolToPointer()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "[;{}] %var% = %bool% ;"))
+        {
+            const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+            const Variable *var1(symbolDatabase->getVariableFromVarId(tok->next()->varId()));
+
+            // Is variable a pointer?
+            if (var1 && var1->nameToken()->strAt(-1) == "*")
+                assignBoolToPointerError(tok->next());
+        }
+    }
+}
+
+void CheckOther::assignBoolToPointerError(const Token *tok)
+{
+    reportError(tok, Severity::error, "assignBoolToPointer",
+                "Assigning bool value to pointer (converting bool value to address)");
+}
