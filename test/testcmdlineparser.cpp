@@ -75,10 +75,10 @@ private:
         TEST_CASE(jobsInvalid);
         TEST_CASE(reportProgress);
         TEST_CASE(suppressionsOld); // TODO: Create and test real suppression file
-        TEST_CASE(suppressions)
-        TEST_CASE(suppressionsNoFile)
-        TEST_CASE(suppressionSingle)
-        TEST_CASE(suppressionSingleFile)
+        TEST_CASE(suppressions);
+        TEST_CASE(suppressionsNoFile);
+        TEST_CASE(suppressionSingle);
+        TEST_CASE(suppressionSingleFile);
         TEST_CASE(templates);
         TEST_CASE(templatesGcc);
         TEST_CASE(templatesVs);
@@ -90,16 +90,16 @@ private:
         TEST_CASE(xmlverunknown);
         TEST_CASE(xmlverinvalid);
         TEST_CASE(errorlist1);
-        TEST_CASE(errorlistverbose1)
-        TEST_CASE(errorlistverbose2)
-        TEST_CASE(ignorepathsnopath)
-        TEST_CASE(ignorepaths1)
-        TEST_CASE(ignorepaths2)
-        TEST_CASE(ignorepaths3)
-        TEST_CASE(ignorepaths4)
-        TEST_CASE(ignorefilepaths1)
-        TEST_CASE(ignorefilepaths2)
-        TEST_CASE(checkconfig)
+        TEST_CASE(errorlistverbose1);
+        TEST_CASE(errorlistverbose2);
+        TEST_CASE(ignorepathsnopath);
+        TEST_CASE(ignorepaths1);
+        TEST_CASE(ignorepaths2);
+        TEST_CASE(ignorepaths3);
+        TEST_CASE(ignorepaths4);
+        TEST_CASE(ignorefilepaths1);
+        TEST_CASE(ignorefilepaths2);
+        TEST_CASE(checkconfig);
         TEST_CASE(posix);
         TEST_CASE(unknownParam);
     }
