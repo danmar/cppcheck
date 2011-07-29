@@ -44,7 +44,6 @@ private:
         TEST_CASE(isLessEqual)
     }
 
-
     void isGreater()
     {
         ASSERT_EQUALS(true , MathLib::isGreater("1.0", "0.001"));
@@ -63,6 +62,7 @@ private:
     {
         ASSERT_EQUALS(true  , MathLib::isEqual("1.0", "1.0"));
         ASSERT_EQUALS(false , MathLib::isEqual("1.", "1.01"));
+        ASSERT_EQUALS(true  , MathLib::isEqual("0.1","1.0E-1"));
     }
 
     void isNotEqual()

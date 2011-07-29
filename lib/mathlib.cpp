@@ -299,7 +299,9 @@ std::string MathLib::abs(const std::string &tok)
 
 bool MathLib::isEqual(const std::string &first, const std::string &second)
 {
-    return toDoubleNumber(first) == toDoubleNumber(second);
+    // this conversion is needed for formating
+    // e.g. if first=0.1 and second=1.0E-1, the direct comparison of the strings whould fail
+    return toString<double>(toDoubleNumber(first)) == toString<double>(toDoubleNumber(second));
 }
 
 bool MathLib::isNotEqual(const std::string &first, const std::string &second)
