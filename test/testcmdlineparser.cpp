@@ -100,6 +100,7 @@ private:
         TEST_CASE(ignorefilepaths1)
         TEST_CASE(ignorefilepaths2)
         TEST_CASE(checkconfig)
+        TEST_CASE(posix);
         TEST_CASE(unknownParam);
     }
 
@@ -810,6 +811,16 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings.checkConfiguration);
+    }
+
+    void posix()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--posix", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings._posix);
     }
 
     void unknownParam()
