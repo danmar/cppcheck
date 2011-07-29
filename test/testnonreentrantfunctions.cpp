@@ -45,8 +45,9 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings._posix = true;
         settings.inconclusive = true;
+        settings._checkCodingStyle = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -72,7 +73,7 @@ private:
               "    char *cpwd;"
               "    crypt(pwd, cpwd);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found the non reentrant function 'crpyt'. For threadsafe applications it is recommended to use the reentrant replacement function 'crypt_r'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Found non reentrant function 'crypt'. For threadsafe applications it is recommended to use the reentrant replacement function 'crypt_r'\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -80,7 +81,7 @@ private:
               "    char *cpwd;"
               "    crypt(pwd, cpwd);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found the non reentrant function 'crpyt'. For threadsafe applications it is recommended to use the reentrant replacement function 'crypt_r'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Found non reentrant function 'crypt'. For threadsafe applications it is recommended to use the reentrant replacement function 'crypt_r'\n", errout.str());
 
         check("int f()\n"
               "{\n"

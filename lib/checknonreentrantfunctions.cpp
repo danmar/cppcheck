@@ -28,12 +28,12 @@
 // Register this check class (by creating a static instance of it)
 namespace
 {
-    CheckNonReentrantFunctions instance;
+CheckNonReentrantFunctions instance;
 }
 
 void CheckNonReentrantFunctions::nonReentrantFunctions()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->_posix || !_settings->_checkCodingStyle)
         return;
 
     // Don't check C# and Java code
@@ -47,9 +47,9 @@ void CheckNonReentrantFunctions::nonReentrantFunctions()
         {
             if (tok->strAt(1) == it->first && tok->strAt(2) == "(" && tok->tokAt(1)->varId() == 0 && !tok->tokAt(0)->isName() && !Token::Match(tok, ".|::|:|,"))
             {
-                // If checking an code that is single threaded, this might be not interesing.
-                // Therefore this is "style"
-                reportError(tok->tokAt(1), Severity::style, "nonreentrantFunctions"+it->first, it->second);
+                // If checking code that is single threaded, this might be not interesing for all.
+                // Therefore this is "portabiblity"
+                reportError(tok->tokAt(1), Severity::portability, "nonreentrantFunctions"+it->first, it->second);
                 break;
             }
         }

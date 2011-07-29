@@ -36,6 +36,7 @@ Settings::Settings()
     _inlineSuppressions = false;
     _verbose = false;
     _force = false;
+    _posix = false;
     _xml = false;
     _xml_version = 1;
     _jobs = 1;
