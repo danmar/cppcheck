@@ -2887,9 +2887,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                 // Function call .. possible deallocation
                 else if (Token::Match(tok->previous(), "[{};] %var% ("))
                 {
-                    if (!std::bsearch(tok->str().c_str(), call_func_white_list,
-                                      sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
-                                      sizeof(call_func_white_list[0]), call_func_white_list_compare))
+                    if (!CheckMemoryLeakInFunction::test_white_list(tok->str().c_str()))
                     {
                         return;
                     }
