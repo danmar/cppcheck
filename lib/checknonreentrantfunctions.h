@@ -67,18 +67,26 @@ private:
     /** init nonreentrant functions list ' */
     void initNonReentrantFunctions()
     {
-        _nonReentrantFunctions.push_back(std::make_pair("crypt","Found non reentrant function 'crypt'. For threadsafe applications it is recommended to use the reentrant replacement function 'crypt_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("getlogin","Found non reentrant function 'getlogin'. For threadsafe applications it is recommended to use the reentrant replacement function 'getlogin_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("ttyname","Found non reentrant function 'ttyname'. For threadsafe applications it is recommended to use the reentrant replacement function 'ttyname_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("asctime","Found non reentrant function 'asctime'. For threadsafe applications it is recommended to use the reentrant replacement function 'asctime_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("ctime","Found non reentrant function 'ctime'. For threadsafe applications it is recommended to use the reentrant replacement function 'ctime_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("gmtime","Found non reentrant function 'gmtime'. For threadsafe applications it is recommended to use the reentrant replacement function 'gmtime_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("localtime","Found non reentrant function 'localtime'. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("getgrgid","Found non reentrant function 'getgrgid'. For threadsafe applications it is recommended to use the reentrant replacement function 'getgrgid_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("getgrnam","Found non reentrant function 'getgrnam'. For threadsafe applications it is recommended to use the reentrant replacement function 'getgrnam_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("getpwnam","Found non reentrant function 'getpwnam'. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwnam_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("getpwuid","Found non reentrant function 'getpwuid'. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwuid_r'"));
-        _nonReentrantFunctions.push_back(std::make_pair("rand","Found non reentrant function 'rand'. For threadsafe applications it is recommended to use the reentrant replacement function 'rand_r'"));
+        static const char * const non_reentrant_functions_list[] =
+        {
+            "ctime", "localtime", "gmtime", "asctime", "strtok", "gethostbyname", "gethostbyaddr", "getservbyname"
+            , "getservbyport", "crypt", "ttyname", "rand", "gethostbyname2"
+            , "getprotobyname", "getnetbyname", "getnetbyaddr", "getrpcbyname", "getrpcbynumber", "getrpcent"
+            , "rand", "ctermid", "tmpnam", "readdir", "getlogin", "getpwent", "getpwnam", "getpwuid", "getspent"
+            , "fgetspent", "getspnam", "getgrnam", "getgrgid", "getnetgrent", "getrpcbyname", "tempnam", "fgetpwent"
+            , "fgetgrent", "ecvt", "gcvt", "getservent", "gethostent", "getgrent", "fcvt"
+        };
+
+        // generate messages
+        for (unsigned int i = 0; i < (sizeof(non_reentrant_functions_list) / sizeof(char *)); ++i)
+        {
+            std::string strMsg("Found non reentrant function \'");
+            strMsg+=non_reentrant_functions_list[i];
+            strMsg+= "\'. For threadsafe applications it is recommended to use the reentrant replacement function \'";
+            strMsg+=non_reentrant_functions_list[i];
+            strMsg+="_r\'";
+            _nonReentrantFunctions.push_back(std::make_pair(non_reentrant_functions_list[i],strMsg));
+        }
     }
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
