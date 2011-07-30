@@ -606,7 +606,8 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
 
                 end = end->next();
             }
-            end = end->next();
+            if (end)
+                end = end->next();
         }
         else if (end->str() == "(")
         {
