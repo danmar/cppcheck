@@ -4818,8 +4818,7 @@ private:
                    "std::vector<std::string> m_strVec;\n"
                    "};\n"
                   );
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetSize' can be const.\n",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetSize' can be const.\n", errout.str());
     }
 
     void const26() // ticket #1847
@@ -5988,8 +5987,7 @@ private:
                    "   A(){}\n"
                    "   unsigned int GetVecSize()  {return m_v.size();}\n"
                    "};");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (information) Technically the member function 'A::GetVecSize' can be const.\n",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (information) Technically the member function 'A::GetVecSize' can be const.\n", errout.str());
     }
 
     void constVirtualFunc()

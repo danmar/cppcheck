@@ -1630,6 +1630,23 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
             isconst = false;
             break;
         }
+        else if (Token::Match(tok1, "%var% . size ( )") && tok1->varId())
+        {
+            // STL container size() is const
+            static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|string|vector";
+            const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
+
+            if (var)
+            {
+                const Token *tok2 = var->typeStartToken();
+                // skip namespace if present
+                if (Token::simpleMatch(tok2, "std ::"))
+                    tok2 = tok2->tokAt(2);
+                // check for STL container
+                if (Token::Match(tok2, STL_CONTAINER_LIST))
+                    tok1 = tok1->tokAt(4);
+            }
+        }
 
         // delete..
         else if (tok1->str() == "delete")
