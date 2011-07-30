@@ -1630,7 +1630,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
             isconst = false;
             break;
         }
-        else if (Token::Match(tok1, "%var% . size ( )") && tok1->varId())
+        else if (Token::Match(tok1, "%var% . size|empty ( )") && tok1->varId())
         {
             // STL container size() is const
             static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|string|vector";

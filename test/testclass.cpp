@@ -4808,7 +4808,6 @@ private:
                   );
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetString1' can be const.\n", errout.str());
 
-
         checkConst("class A{\n"
                    "public:\n"
                    "A(){m_strVec.push_back("");}\n"
@@ -4819,6 +4818,17 @@ private:
                    "};\n"
                   );
         ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetSize' can be const.\n", errout.str());
+
+        checkConst("class A{\n"
+                   "public:\n"
+                   "A(){m_strVec.push_back("");}\n"
+                   "bool strGetEmpty()\n"
+                   "{return m_strVec.empty();}\n"
+                   "private:\n"
+                   "std::vector<std::string> m_strVec;\n"
+                   "};\n"
+                  );
+        ASSERT_EQUALS("[test.cpp:4]: (information) Technically the member function 'A::strGetEmpty' can be const.\n", errout.str());
     }
 
     void const26() // ticket #1847
@@ -5988,6 +5998,16 @@ private:
                    "   unsigned int GetVecSize()  {return m_v.size();}\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:7]: (information) Technically the member function 'A::GetVecSize' can be const.\n", errout.str());
+
+        checkConst("#include <vector>\n"
+                   "class A\n"
+                   "{\n"
+                   "   std::vector<int> m_v;\n"
+                   "public:\n"
+                   "   A(){}\n"
+                   "   bool GetVecEmpty()  {return m_v.empty();}\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:7]: (information) Technically the member function 'A::GetVecEmpty' can be const.\n", errout.str());
     }
 
     void constVirtualFunc()
