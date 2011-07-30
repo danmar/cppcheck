@@ -229,7 +229,7 @@ private:
               "    }\n"
               "    if (abc) {}\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 5\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 5\n", errout.str());
 
         // TODO: False negative if member of member is dereferenced
         check("void foo(ABC *abc) {\n"
@@ -516,7 +516,7 @@ private:
               "    a = b ? c : d;\n"
               "    if (item) { }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: item - otherwise it is redundant to check if item is null at line 4\n", errout.str());
 
         check("BOOL GotoFlyAnchor()\n"  // #2243
               "{\n"

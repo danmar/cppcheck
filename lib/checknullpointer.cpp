@@ -378,6 +378,12 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             tok1 = tok1->tokAt(3);
         }
 
+        // dereference in condition
+        else if (Token::Match(tok1, "if ( %var% ."))
+        {
+            tok1 = tok1->tokAt(2);
+        }
+
         // dereference in function call (but not sizeof|decltype)
         else if ((Token::Match(tok1->tokAt(-2), "%var% ( %var% . %var%") && !Token::Match(tok1->tokAt(-2), "sizeof|decltype ( %var% . %var%")) ||
                  Token::Match(tok1->previous(), ", %var% . %var%"))
@@ -441,7 +447,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
 
             else if (tok2->str() == "}")
             {
-                if (indentlevel2 <= 1)
+                if (indentlevel2 == 0)
                     break;
                 --indentlevel2;
             }
@@ -454,7 +460,13 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             else if (tok2->varId() == varid1)
             {
                 if (tok2->next()->str() == "=")
+                {
+                    // Avoid false positives when there is 'else if'
+                    // TODO: can this be handled better?
+                    if (tok1->strAt(-2) == "if")
+                        skipvar.insert(varid1);
                     break;
+                }
                 if (Token::Match(tok2->tokAt(-2), "[,(] &"))
                     break;
             }
