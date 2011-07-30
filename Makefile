@@ -47,6 +47,7 @@ MAN_SOURCE=man/cppcheck.1.xml
 ###### Object Files
 
 LIBOBJ =      lib/check64bit.o \
+              lib/checkassignif.o \
               lib/checkautovariables.o \
               lib/checkbufferoverrun.o \
               lib/checkclass.o \
@@ -81,6 +82,7 @@ CLIOBJ =      cli/cmdlineparser.o \
 
 TESTOBJ =     test/options.o \
               test/test64bit.o \
+              test/testassignif.o \
               test/testautovariables.o \
               test/testbufferoverrun.o \
               test/testcharvar.o \
@@ -169,6 +171,9 @@ install: cppcheck
 
 lib/check64bit.o: lib/check64bit.cpp lib/check64bit.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/check64bit.o lib/check64bit.cpp
+
+lib/checkassignif.o: lib/checkassignif.cpp lib/checkassignif.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkassignif.o lib/checkassignif.cpp
 
 lib/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkautovariables.o lib/checkautovariables.cpp
@@ -265,6 +270,9 @@ test/options.o: test/options.cpp test/options.h
 
 test/test64bit.o: test/test64bit.cpp lib/tokenize.h lib/check64bit.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/test64bit.o test/test64bit.cpp
+
+test/testassignif.o: test/testassignif.cpp lib/tokenize.h lib/checkassignif.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testassignif.o test/testassignif.cpp
 
 test/testautovariables.o: test/testautovariables.cpp lib/tokenize.h lib/checkautovariables.h lib/check.h lib/token.h lib/settings.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testautovariables.o test/testautovariables.cpp
