@@ -1892,7 +1892,7 @@ void CheckOther::functionVariableUsage()
 
             // standard const type declaration
             // const int i = x;
-            if (Token::Match(tok, "[;{}] const %type% %var% ="))
+            else if (Token::Match(tok, "[;{}] const %type% %var% ="))
             {
                 tok = tok->next()->next();
 
