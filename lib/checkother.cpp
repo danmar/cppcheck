@@ -388,7 +388,7 @@ void CheckOther::checkSwitchCaseFallThrough()
         bool firstcase = true;
         for (const Token *tok2 = tok->tokAt(1)->link()->tokAt(2); tok2; tok2 = tok2->next())
         {
-            if (Token::Match(tok2, "if ("))
+            if (Token::simpleMatch(tok2, "if ("))
             {
                 tok2 = tok2->tokAt(1)->link()->next();
                 if (tok2->link() == NULL)
@@ -401,7 +401,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 ifnest.push(std::make_pair(tok2->link(), false));
                 justbreak = false;
             }
-            else if (Token::Match(tok2, "while ("))
+            else if (Token::simpleMatch(tok2, "while ("))
             {
                 tok2 = tok2->tokAt(1)->link()->next();
                 // skip over "do { } while ( ) ;" case
@@ -418,7 +418,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 }
                 justbreak = false;
             }
-            else if (Token::Match(tok2, "do {"))
+            else if (Token::simpleMatch(tok2, "do {"))
             {
                 tok2 = tok2->tokAt(1);
                 if (tok2->link() == NULL)
@@ -431,7 +431,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 loopnest.push(tok2->link());
                 justbreak = false;
             }
-            else if (Token::Match(tok2, "for ("))
+            else if (Token::simpleMatch(tok2, "for ("))
             {
                 tok2 = tok2->tokAt(1)->link()->next();
                 if (tok2->link() == NULL)
@@ -2348,7 +2348,7 @@ void CheckOther::functionVariableUsage()
             }
 
             // assignment
-            else if (Token::Match(tok, "%var% [") && Token::Match(tok->next()->link(), "] ="))
+            else if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->next()->link(), "] ="))
             {
                 unsigned int varid = tok->varId();
                 const Variables::VariableUsage *var = variables.find(varid);
@@ -3339,8 +3339,8 @@ void CheckOther::checkDuplicateIf()
         // check all the code in the function for if (...) and else if (...) statements
         for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next())
         {
-            if (Token::Match(tok, "if (") && tok->strAt(-1) != "else" &&
-                Token::Match(tok->next()->link(), ") {"))
+            if (Token::simpleMatch(tok, "if (") && tok->strAt(-1) != "else" &&
+                Token::simpleMatch(tok->next()->link(), ") {"))
             {
                 std::map<std::string, const Token*> expressionMap;
 
@@ -3354,8 +3354,8 @@ void CheckOther::checkDuplicateIf()
                 const Token *tok1 = tok->next()->link()->next()->link();
 
                 // check all the else if (...) statements
-                while (Token::Match(tok1, "} else if (") &&
-                       Token::Match(tok1->tokAt(3)->link(), ") {"))
+                while (Token::simpleMatch(tok1, "} else if (") &&
+                       Token::simpleMatch(tok1->tokAt(3)->link(), ") {"))
                 {
                     // get the expression from the token stream
                     expression = stringifyTokens(tok1->tokAt(4), tok1->tokAt(3)->link()->previous());
@@ -3423,9 +3423,9 @@ void CheckOther::checkDuplicateBranch()
         // check all the code in the function for if (..) else
         for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next())
         {
-            if (Token::Match(tok, "if (") && tok->strAt(-1) != "else" &&
-                Token::Match(tok->next()->link(), ") {") &&
-                Token::Match(tok->next()->link()->next()->link(), "} else {"))
+            if (Token::simpleMatch(tok, "if (") && tok->strAt(-1) != "else" &&
+                Token::simpleMatch(tok->next()->link(), ") {") &&
+                Token::simpleMatch(tok->next()->link()->next()->link(), "} else {"))
             {
                 // save if branch code
                 std::string branch1 = stringifyTokens(tok->next()->link()->tokAt(2), tok->next()->link()->next()->link()->previous());
