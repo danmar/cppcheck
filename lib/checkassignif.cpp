@@ -92,19 +92,27 @@ void CheckAssignIf::comparison()
         if (tok->str() != "&")
             continue;
 
-        if (Token::Match(tok, "& %num% ==|!= %num% &&|%oror%|)"))
+        if (Token::Match(tok, "& %num% )| ==|!= %num% &&|%oror%|)"))
         {
             const MathLib::bigint num1 = MathLib::toLongNumber(tok->strAt(1));
             if (num1 < 0)
                 continue;
 
-            const MathLib::bigint num2 = MathLib::toLongNumber(tok->strAt(3));
+            const Token *compareToken = tok->tokAt(2);
+            if (compareToken->str() == ")")
+            {
+                if (!Token::Match(compareToken->link()->previous(), "(|%oror%|&&"))
+                    continue;
+                compareToken = compareToken->next();
+            }
+
+            const MathLib::bigint num2 = MathLib::toLongNumber(compareToken->strAt(1));
             if (num2 < 0)
                 continue;
 
             if ((num1 & num2) != num2)
             {
-                const std::string op(tok->strAt(2));
+                const std::string op(compareToken->str());
                 comparisonError(tok, op=="==" ? false : true);
             }
         }

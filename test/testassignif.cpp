@@ -87,6 +87,12 @@ private:
 
         check("void foo(int x)\n"
               "{\n"
+              "    if ((x & 4) == 3);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison is always false\n", errout.str());
+
+        check("void foo(int x)\n"
+              "{\n"
               "    if (x & 4 != 3);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Comparison is always true\n", errout.str());
