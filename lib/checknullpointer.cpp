@@ -735,7 +735,15 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     (Token::Match(tok2->link()->tokAt(-2), "[;{}] %var% (") ||
                      Token::Match(tok2->link()->tokAt(-5), "[;{}] ( * %var% ) (")))
                 {
-                    break;
+                    // noreturn function?
+                    if (tok2->strAt(2) == "}")
+                        break;
+
+                    // init function (global variables)
+                    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                    if (!var || !(var->isLocal() || var->isArgument()))
+                        break;
                 }
 
                 if (tok2->varId() == varid)
