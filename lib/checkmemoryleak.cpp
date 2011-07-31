@@ -1140,7 +1140,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             }
 
             // if else switch
-            if (tok->str() == "if")
+            if (Token::simpleMatch(tok, "if ("))
             {
                 if (alloctype == Fd)
                 {
