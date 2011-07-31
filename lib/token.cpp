@@ -561,6 +561,9 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                         int result = multiCompare(p, tok->str().c_str());
                         if (result == -1)
                             return false;   // No match
+
+                        while (*p && *p != ' ')
+                            p++;
                     }
 
                     // single compare..
@@ -568,38 +571,40 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                     {
                         if (tok->str() != "|")
                             return false;
+                        p += 4;
                     }
                     else if (p[3] == 'p')
                     {
                         if (!tok->isOp())
                             return false;
+                        p += 4;
                     }
                     else
                         patternUnderstood = false;
                 }
 
                 // Oror (%oror%)
-                else
+                else if (p[5] == '%')
                 {
                     // multicompare..
-                    if (p[5] == '|')
+                    if (p[6] == '|')
                     {
                         int result = multiCompare(p, tok->str().c_str());
                         if (result == -1)
                             return false;   // No match
+
+                        while (*p && *p != ' ')
+                            p++;
                     }
 
                     // single compare..
-                    if (tok->str() != "||")
+                    else if (tok->str() != "||")
                         return false;
 
-                    patternUnderstood = true;
-                }
+                    else
+                        p += 6;
 
-                if (patternUnderstood)
-                {
-                    while (*p && *p != ' ')
-                        p++;
+                    patternUnderstood = true;
                 }
                 break;
             default:

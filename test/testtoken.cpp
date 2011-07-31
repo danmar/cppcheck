@@ -233,18 +233,21 @@ private:
     void matchOr()
     {
         givenACodeSampleToTokenize bitwiseOr("|");
-        ASSERT_EQUALS(true, Token::Match(bitwiseOr.tokens(), "%or%"));
+        ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "%or%"));
+        ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%op%"));
+        ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%oror%"));
 
         givenACodeSampleToTokenize logicalOr("||");
-        ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "%oror%"));
         ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "%or%"));
-        ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%oror%"));
-        ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "&&|%oror%"));
-        ASSERT_EQUALS(true, Token::Match(logicalOr.tokens(), "%oror%|&&"));
+        ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "%op%"));
+        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%oror%"));
+        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "&&|%oror%"));
+        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%oror%|&&"));
 
         givenACodeSampleToTokenize logicalAnd("&&");
+        ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "&&"));
         ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "&&|%oror%"));
-        TODO_ASSERT_EQUALS(true, false, Token::Match(logicalAnd.tokens(), "%oror%|&&"));
+        ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "%oror%|&&"));
     }
 
     void matchOp()
