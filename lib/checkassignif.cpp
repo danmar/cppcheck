@@ -56,12 +56,14 @@ void CheckAssignIf::check()
             {
                 if (tok2->str() == "(" || tok2->str() == "}" || tok2->str() == "=")
                     break;
-                if (Token::Match(tok2,"if ( %varid% %any% %num% ) ", varid))
+                if (Token::Match(tok2,"if ( %varid% %any% %num% &&|%oror%|)", varid))
                 {
                     const std::string op(tok2->strAt(3));
                     const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
                     if (op == "==" && (num & num2) != num2)
-                        mismatchError(tok2);
+                        mismatchError(tok2, false);
+                    else if (op == "!=" && (num & num2) != num2)
+                        mismatchError(tok2, true);
                     break;
                 }
             }
@@ -69,9 +71,9 @@ void CheckAssignIf::check()
     }
 }
 
-void CheckAssignIf::mismatchError(const Token *tok)
+void CheckAssignIf::mismatchError(const Token *tok, bool result)
 {
     reportError(tok, Severity::style,
                 "assignIfMismatchError",
-                "Mismatching assignment and condition, condition is always false");
+                "Mismatching assignment and comparison, comparison is always " + std::string(result ? "true" : "false"));
 }

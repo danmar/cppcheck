@@ -58,12 +58,12 @@ public:
 
 private:
 
-    void mismatchError(const Token *tok);
+    void mismatchError(const Token *tok, bool result);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckAssignIf c(0, settings, errorLogger);
-        c.mismatchError(0);
+        c.mismatchError(0, false);
     }
 
     std::string myName() const
@@ -74,7 +74,7 @@ private:
     std::string classInfo() const
     {
         return "Match assignments and conditions:\n"
-               " mismatching assignment and condition";
+               " Mismatching assignment and comparison => comparison is always true/false";
     }
 };
 /// @}
