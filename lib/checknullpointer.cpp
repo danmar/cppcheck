@@ -715,6 +715,21 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     continue;
                 }
 
+                // function call, check if pointer is dereferenced
+                if (Token::Match(tok2, "%var% ("))
+                {
+                    std::list<const Token *> var;
+                    parseFunctionCall(*tok2, var, 0);
+                    for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
+                    {
+                        if ((*it)->varId() == varid)
+                        {
+                            nullPointerError(*it, pointerName, linenr);
+                            break;
+                        }
+                    }
+                }
+
                 // calling unknown function (abort/init)..
                 if (Token::simpleMatch(tok2, ") ;") &&
                     (Token::Match(tok2->link()->tokAt(-2), "[;{}] %var% (") ||
