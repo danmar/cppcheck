@@ -63,7 +63,7 @@ public:
 private:
 
     void assignIfError(const Token *tok, bool result);
-    
+
     void comparisonError(const Token *tok, bool result);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
