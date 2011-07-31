@@ -221,13 +221,6 @@ public:
     void parseFunctionScope(const Token *tok, const Token *tok1, const bool classmember);
 
     /**
-     * @brief %Check if there is a "p = foo(p, .." and foo returns the argument (p)
-     * @param tok token to the ";" before the statement
-     * @param varid varid to check
-     */
-    bool matchFunctionsThatReturnArg(const Token *tok, unsigned int varid) const;
-
-    /**
      * @brief %Check if there is a "!var" match inside a condition
      * @param tok      first token to match
      * @param varid    variabla id

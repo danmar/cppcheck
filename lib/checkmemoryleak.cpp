@@ -628,12 +628,6 @@ void CheckMemoryLeakInFunction::parse_noreturn()
 }
 
 
-bool CheckMemoryLeakInFunction::matchFunctionsThatReturnArg(const Token *tok, unsigned int varid) const
-{
-    return Token::Match(tok, "; %varid% = strcat|memcpy|memmove|strcpy ( %varid% ,", varid);
-}
-
-
 bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid, bool endpar) const
 {
     const std::string end(endpar ? " &&|)" : " [;)&|]");
