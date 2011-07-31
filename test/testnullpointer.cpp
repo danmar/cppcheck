@@ -410,6 +410,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 4\n", errout.str());
 
+        check("void foo(char *p)\n"
+              "{\n"
+              "    strcpy(p, \"abc\");\n"
+              "    if (!p)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 4\n", errout.str());
+
         // no error
         check("void foo()\n"
               "{\n"

@@ -537,17 +537,26 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                         tok2 = tok2->previous();
                     if (Token::Match(tok2, "[;{}] %varid% = %var%", varid))
                         break;
-                }
 
-                if (tok1->str() == ")" && Token::Match(tok1->link()->previous(), "while ( %varid%", varid))
-                {
-                    break;
-                }
+                    if (Token::Match(tok1->link()->previous(), "while ( %varid%", varid))
+                        break;
 
-                if (tok1->str() == ")" && Token::simpleMatch(tok1->link()->previous(), "sizeof ("))
-                {
-                    tok1 = tok1->link()->previous();
-                    continue;
+                    if (Token::simpleMatch(tok1->link()->previous(), "sizeof ("))
+                    {
+                        tok1 = tok1->link()->previous();
+                        continue;
+                    }
+
+                    if (Token::Match(tok2, "[;{}] %var% ( %varid% ,", varid))
+                    {
+                        std::list<const Token *> var;
+                        parseFunctionCall(*(tok2->next()), var, 0);
+                        if (!var.empty() && var.front() == tok2->tokAt(3))
+                        {
+                            nullPointerError(tok2->tokAt(3), varname, tok->linenr());
+                            break;
+                        }
+                    }
                 }
 
                 if (tok1->str() == "break")
