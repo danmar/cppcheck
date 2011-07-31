@@ -32,7 +32,7 @@ CheckAssignIf instance;
 }
 
 
-void CheckAssignIf::check()
+void CheckAssignIf::assignIf()
 {
     if (!_settings->_checkCodingStyle)
         return;
@@ -61,9 +61,9 @@ void CheckAssignIf::check()
                     const std::string op(tok2->strAt(3));
                     const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
                     if (op == "==" && (num & num2) != num2)
-                        mismatchError(tok2, false);
+                        assignIfError(tok2, false);
                     else if (op == "!=" && (num & num2) != num2)
-                        mismatchError(tok2, true);
+                        assignIfError(tok2, true);
                     break;
                 }
             }
@@ -71,9 +71,49 @@ void CheckAssignIf::check()
     }
 }
 
-void CheckAssignIf::mismatchError(const Token *tok, bool result)
+void CheckAssignIf::assignIfError(const Token *tok, bool result)
 {
     reportError(tok, Severity::style,
-                "assignIfMismatchError",
+                "assignIfError",
                 "Mismatching assignment and comparison, comparison is always " + std::string(result ? "true" : "false"));
+}
+
+
+
+
+
+void CheckAssignIf::comparison()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() != "&")
+            continue;
+
+        if (Token::Match(tok, "& %num% ==|!= %num% &&|%oror%|)"))
+        {
+            const MathLib::bigint num1 = MathLib::toLongNumber(tok->strAt(1));
+            if (num1 < 0)
+                continue;
+
+            const MathLib::bigint num2 = MathLib::toLongNumber(tok->strAt(3));
+            if (num2 < 0)
+                continue;
+
+            if ((num1 & num2) != num2)
+            {
+                const std::string op(tok->strAt(2));
+                comparisonError(tok, op=="==" ? false : true);
+            }
+        }
+    }
+}
+
+void CheckAssignIf::comparisonError(const Token *tok, bool result)
+{
+    reportError(tok, Severity::style,
+                "comparisonError",
+                "Comparison is always " + std::string(result ? "true" : "false"));
 }

@@ -35,7 +35,8 @@ private:
 
     void run()
     {
-        TEST_CASE(testand);
+        TEST_CASE(assignAndCompare);
+        TEST_CASE(compare);
     }
 
     void check(const char code[])
@@ -54,11 +55,12 @@ private:
         tokenizer.simplifyTokenList();
 
         // Check char variable usage..
-        CheckAssignIf CheckAssignIf(&tokenizer, &settings, this);
-        CheckAssignIf.check();
+        CheckAssignIf checkAssignIf(&tokenizer, &settings, this);
+        checkAssignIf.assignIf();
+        checkAssignIf.comparison();
     }
 
-    void testand()
+    void assignAndCompare()
     {
         check("void foo(int x)\n"
               "{\n"
@@ -73,6 +75,21 @@ private:
               "    if (y != 3);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Mismatching assignment and comparison, comparison is always true\n", errout.str());
+    }
+
+    void compare()
+    {
+        check("void foo(int x)\n"
+              "{\n"
+              "    if (x & 4 == 3);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison is always false\n", errout.str());
+
+        check("void foo(int x)\n"
+              "{\n"
+              "    if (x & 4 != 3);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison is always true\n", errout.str());
     }
 };
 

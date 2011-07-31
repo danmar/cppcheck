@@ -50,31 +50,39 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckAssignIf checkAssignIf(tokenizer, settings, errorLogger);
-        checkAssignIf.check();
+        checkAssignIf.assignIf();
+        checkAssignIf.comparison();
     }
 
-    /** Check for obsolete functions */
-    void check();
+    /** mismatching assignment / comparison */
+    void assignIf();
+
+    /** mismatching lhs and rhs in comparison */
+    void comparison();
 
 private:
 
-    void mismatchError(const Token *tok, bool result);
+    void assignIfError(const Token *tok, bool result);
+    
+    void comparisonError(const Token *tok, bool result);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckAssignIf c(0, settings, errorLogger);
-        c.mismatchError(0, false);
+        c.assignIfError(0, false);
+        c.comparisonError(0, false);
     }
 
     std::string myName() const
     {
-        return "match assignment / conditions";
+        return "match assignments and conditions";
     }
 
     std::string classInfo() const
     {
         return "Match assignments and conditions:\n"
-               " Mismatching assignment and comparison => comparison is always true/false";
+               " * Mismatching assignment and comparison => comparison is always true/false\n"
+               " * Mismatching lhs and rhs in comparison => comparison is always true/false";
     }
 };
 /// @}
