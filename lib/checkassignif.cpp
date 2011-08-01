@@ -121,7 +121,14 @@ void CheckAssignIf::comparison()
 
 void CheckAssignIf::comparisonError(const Token *tok, bool result)
 {
-    reportError(tok, Severity::style,
-                "comparisonError",
-                "Comparison is always " + std::string(result ? "true" : "false"));
+    std::string errmsg("Mismatching comparison, the result is always " + std::string(result ? "true" : "false") + "\n"
+                       "Mismatching comparison. This error message is for example given for such a comparison: ");
+
+    if (result)
+        errmsg += "'(x & 6 != 1)'. The result of 'x & 6' can't be 1 so the result of the comparison is always true";
+    else
+        errmsg += "'(x & 6 == 1)'. The result of 'x & 6' can't be 1 so the result of the comparison is always false";
+    
+
+    reportError(tok, Severity::style, "comparisonError", errmsg);
 }
