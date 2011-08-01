@@ -479,6 +479,13 @@ private:
                        "exit:\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #2146 - False negative
+        checkUninitVar("int f(int x) {\n"
+                       "    int y;\n"
+                       "    return x ? 1 : y;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: y\n", errout.str());
     }
 
 

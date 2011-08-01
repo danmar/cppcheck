@@ -5307,35 +5307,47 @@ void Tokenizer::simplifyConditionOperator()
             ++parlevel;
         else if (tok->str() == ")")
             --parlevel;
-        else if (parlevel == 0 && Token::Match(tok, ";|{|} *| %any% = %any% ? %any% : %any% ;"))
+        else if (parlevel == 0 && (Token::Match(tok, ";|{|} *| %any% = %any% ? %any% : %any% ;") ||
+                                   Token::Match(tok, ";|{|} return %any% ? %any% : %any% ;")))
         {
             std::string var(tok->strAt(1));
             bool isPointer = false;
-            if (Token::simpleMatch(tok->next(), "*"))
+            bool isReturn = false;
+            int offset = 0;
+            if (tok->next()->str() == "*")
             {
                 tok = tok->next();
                 var += " " + tok->strAt(1);
                 isPointer = true;
             }
+            else if (tok->next()->str() == "return")
+            {
+                isReturn = true;
+                offset = -1;
+            }
 
-            const std::string condition(tok->strAt(3));
-            const std::string value1(tok->strAt(5));
-            const std::string value2(tok->strAt(7));
+            const std::string condition(tok->strAt(3 + offset));
+            const std::string value1(tok->strAt(5 + offset));
+            const std::string value2(tok->strAt(7 + offset));
 
             if (isPointer)
             {
                 tok = tok->previous();
                 Token::eraseTokens(tok, tok->tokAt(10));
             }
+            else if (isReturn)
+                Token::eraseTokens(tok, tok->tokAt(7));
             else
-            {
                 Token::eraseTokens(tok, tok->tokAt(9));
-            }
-
 
             Token *starttok = 0;
 
-            const std::string str("if ( condition ) { var = value1 ; } else { var = value2 ; }");
+            std::string str;
+            if (isReturn)
+                str = "if ( condition ) { return value1 ; } return value2 ;";
+            else
+                str = "if ( condition ) { var = value1 ; } else { var = value2 ; }";
+
             std::string::size_type pos1 = 0;
             while (pos1 != std::string::npos)
             {
