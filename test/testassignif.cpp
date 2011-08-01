@@ -59,7 +59,7 @@ private:
         CheckAssignIf checkAssignIf(&tokenizer, &settings, this);
         checkAssignIf.assignIf();
         checkAssignIf.comparison();
-        checkAssignIf.multicompare();
+        checkAssignIf.multiCondition();
     }
 
     void assignAndCompare()
@@ -107,8 +107,14 @@ private:
               "    if (x & 7);\n"
               "    else if (x == 1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison is always false because otherwise the condition at line 3 is not false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) 'else if' condition matches previous condition at line 3\n", errout.str());
 
+        check("void foo(int x)\n"
+              "{\n"
+              "    if (x & 7);\n"
+              "    else if (x & 1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (information) 'else if' condition matches previous condition at line 3\n", errout.str());
     }
 };
 

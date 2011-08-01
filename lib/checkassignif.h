@@ -52,7 +52,7 @@ public:
         CheckAssignIf checkAssignIf(tokenizer, settings, errorLogger);
         checkAssignIf.assignIf();
         checkAssignIf.comparison();
-        checkAssignIf.multicompare();
+        checkAssignIf.multiCondition();
     }
 
     /** mismatching assignment / comparison */
@@ -62,20 +62,20 @@ public:
     void comparison();
 
     /** match 'if' and 'else if' conditions */
-    void multicompare();
+    void multiCondition();
 
 private:
 
     void assignIfError(const Token *tok, bool result);
     void comparisonError(const Token *tok, bool result);
-    void multicompareError(const Token *tok, unsigned int line1);
+    void multiConditionError(const Token *tok, unsigned int line1);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckAssignIf c(0, settings, errorLogger);
         c.assignIfError(0, false);
         c.comparisonError(0, false);
-        c.multicompareError(0,1);
+        c.multiConditionError(0,1);
     }
 
     std::string myName() const
@@ -88,7 +88,7 @@ private:
         return "Match assignments and conditions:\n"
                " * Mismatching assignment and comparison => comparison is always true/false\n"
                " * Mismatching lhs and rhs in comparison => comparison is always true/false\n"
-               " * Match 'if' and 'else if' conditions";
+               " * Detect matching 'if' and 'else if' conditions";
     }
 };
 /// @}

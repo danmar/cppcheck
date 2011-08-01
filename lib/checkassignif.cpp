@@ -138,7 +138,7 @@ void CheckAssignIf::comparisonError(const Token *tok, bool result)
 
 
 
-void CheckAssignIf::multicompare()
+void CheckAssignIf::multiCondition()
 {
     if (!_settings->_checkCodingStyle)
         return;
@@ -167,7 +167,7 @@ void CheckAssignIf::multicompare()
                     tok2 = tok2->next()->link();
 
                 // check condition..
-                if (Token::Match(opar, "( %varid% == %num% &&|%oror%|)", varid))
+                if (Token::Match(opar, "( %varid% ==|& %num% &&|%oror%|)", varid))
                 {
                     const MathLib::bigint num2 = MathLib::toLongNumber(opar->strAt(3));
                     if (num2 < 0)
@@ -175,7 +175,7 @@ void CheckAssignIf::multicompare()
 
                     if ((num1 & num2) == num2)
                     {
-                        multicompareError(opar, tok->linenr());
+                        multiConditionError(opar, tok->linenr());
                     }
                 }
             }
@@ -183,12 +183,11 @@ void CheckAssignIf::multicompare()
     }
 }
 
-void CheckAssignIf::multicompareError(const Token *tok, unsigned int line1)
+void CheckAssignIf::multiConditionError(const Token *tok, unsigned int line1)
 {
     std::ostringstream errmsg;
-    errmsg << "Comparison is always false because otherwise the condition at line "
-           << line1
-           << " is not false";
+    errmsg << "'else if' condition matches previous condition at line "
+           << line1;
 
-    reportError(tok, Severity::style, "multicompare", errmsg.str());
+    reportError(tok, Severity::information, "multiCondition", errmsg.str());
 }
