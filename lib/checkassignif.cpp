@@ -132,3 +132,63 @@ void CheckAssignIf::comparisonError(const Token *tok, bool result)
 
     reportError(tok, Severity::style, "comparisonError", errmsg);
 }
+
+
+
+
+
+
+void CheckAssignIf::multicompare()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "if ( %var% & %num% ) {"))
+        {
+            const unsigned int varid(tok->tokAt(2)->varId());
+            if (varid == 0)
+                continue;
+
+            const MathLib::bigint num1 = MathLib::toLongNumber(tok->strAt(4));
+            if (num1 < 0)
+                continue;
+
+            const Token *tok2 = tok->tokAt(6)->link();
+            while (Token::simpleMatch(tok2, "} else { if ("))
+            {
+                // Goto '('
+                const Token * const opar = tok2->tokAt(4);
+
+                // tok2: skip if-block
+                tok2 = opar->link();
+                if (Token::simpleMatch(tok2, ") {"))
+                    tok2 = tok2->next()->link();
+
+                // check condition..
+                if (Token::Match(opar, "( %varid% == %num% &&|%oror%|)", varid))
+                {
+                    const MathLib::bigint num2 = MathLib::toLongNumber(opar->strAt(3));
+                    if (num2 < 0)
+                        continue;
+
+                    if ((num1 & num2) == num2)
+                    {
+                        multicompareError(opar, tok->linenr());
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckAssignIf::multicompareError(const Token *tok, unsigned int line1)
+{
+    std::ostringstream errmsg;
+    errmsg << "Comparison is always false because otherwise the condition at line "
+           << line1
+           << " is not false";
+
+    reportError(tok, Severity::style, "multicompare", errmsg.str());
+}

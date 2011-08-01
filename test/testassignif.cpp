@@ -35,8 +35,9 @@ private:
 
     void run()
     {
-        TEST_CASE(assignAndCompare);
-        TEST_CASE(compare);
+        TEST_CASE(assignAndCompare);   // assignment and comparison don't match
+        TEST_CASE(compare);            // mismatching LHS/RHS in comparison
+        TEST_CASE(multicompare);       // mismatching comparisons
     }
 
     void check(const char code[])
@@ -58,6 +59,7 @@ private:
         CheckAssignIf checkAssignIf(&tokenizer, &settings, this);
         checkAssignIf.assignIf();
         checkAssignIf.comparison();
+        checkAssignIf.multicompare();
     }
 
     void assignAndCompare()
@@ -96,6 +98,17 @@ private:
               "    if (x & 4 != 3);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Mismatching comparison, the result is always true\n", errout.str());
+    }
+
+    void multicompare()
+    {
+        check("void foo(int x)\n"
+              "{\n"
+              "    if (x & 7);\n"
+              "    else if (x == 1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison is always false because otherwise the condition at line 3 is not false\n", errout.str());
+
     }
 };
 
