@@ -180,6 +180,7 @@ private:
         TEST_CASE(varid32);   // ticket #2835 (segmentation fault)
         TEST_CASE(varid33);   // ticket #2875 (segmentation fault)
         TEST_CASE(varid34);   // ticket #2825
+        TEST_CASE(varid35);   // ticket #2937
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -2992,6 +2993,25 @@ private:
                                    "7: } ;\n");
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varid35()   // ticket #2937
+    {
+        const std::string code("int foo() {\n"
+                               "    int f(x);\n"
+                               "    return f;\n"
+                               "}\n");
+        const std::string expected("\n\n##file 0\n"
+                                   "1: int foo ( ) {\n"
+                                   "2: int f@1 ( x ) ;\n"
+                                   "3: return f@1 ;\n"
+                                   "4: }\n");
+        const std::string actual("\n\n##file 0\n"
+                                 "1: int foo ( ) {\n"
+                                 "2: int f ( x ) ;\n"
+                                 "3: return f ;\n"
+                                 "4: }\n");
+        TODO_ASSERT_EQUALS(expected, actual, tokenizeDebugListing(code));
     }
 
     void varidFunctionCall1()
