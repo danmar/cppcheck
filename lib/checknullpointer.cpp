@@ -379,9 +379,11 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         }
 
         // dereference in condition
-        else if (Token::Match(tok1, "if ( %var% ."))
+        else if (Token::Match(tok1, "if ( !| %var% ."))
         {
             tok1 = tok1->tokAt(2);
+            if (tok1->str() == "!")
+                tok1 = tok1->next();
         }
 
         // dereference in function call (but not sizeof|decltype)
