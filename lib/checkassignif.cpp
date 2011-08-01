@@ -128,7 +128,7 @@ void CheckAssignIf::comparisonError(const Token *tok, bool result)
         errmsg += "'(x & 6 != 1)'. The result of 'x & 6' can't be 1 so the result of the comparison is always true";
     else
         errmsg += "'(x & 6 == 1)'. The result of 'x & 6' can't be 1 so the result of the comparison is always false";
-    
+
 
     reportError(tok, Severity::style, "comparisonError", errmsg);
 }
