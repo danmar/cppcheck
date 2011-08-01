@@ -1177,6 +1177,14 @@ private:
               "    return fred->a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 2\n", errout.str());
+
+        // #2789 - assign and check pointer
+        check("void f() {\n"
+              "    char *p;\n"
+              "    if (!(p=x())) { }\n"
+              "    *p = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 3\n", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
