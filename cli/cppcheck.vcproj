@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="cppcheck"
-	ProjectGUID="{56B0F403-02CE-3F89-9A1B-E03F21240A63}"
+	ProjectGUID="{230A4467-25A6-3276-A1D0-CB521812CD43}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -126,6 +126,8 @@
 			<File
 				RelativePath="..\lib\check64bit.cpp" />
 			<File
+				RelativePath="..\lib\checkassignif.cpp" />
+			<File
 				RelativePath="..\lib\checkautovariables.cpp" />
 			<File
 				RelativePath="..\lib\checkbufferoverrun.cpp" />
@@ -135,6 +137,8 @@
 				RelativePath="..\lib\checkexceptionsafety.cpp" />
 			<File
 				RelativePath="..\lib\checkmemoryleak.cpp" />
+			<File
+				RelativePath="..\lib\checknonreentrantfunctions.cpp" />
 			<File
 				RelativePath="..\lib\checknullpointer.cpp" />
 			<File
@@ -201,6 +205,8 @@
 			<File
 				RelativePath="..\lib\check64bit.h" />
 			<File
+				RelativePath="..\lib\checkassignif.h" />
+			<File
 				RelativePath="..\lib\checkautovariables.h" />
 			<File
 				RelativePath="..\lib\checkbufferoverrun.h" />
@@ -210,6 +216,8 @@
 				RelativePath="..\lib\checkexceptionsafety.h" />
 			<File
 				RelativePath="..\lib\checkmemoryleak.h" />
+			<File
+				RelativePath="..\lib\checknonreentrantfunctions.h" />
 			<File
 				RelativePath="..\lib\checknullpointer.h" />
 			<File

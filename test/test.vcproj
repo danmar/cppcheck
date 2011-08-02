@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="test"
-	ProjectGUID="{5B7869EA-A1CB-3E73-8569-5B385608779E}"
+	ProjectGUID="{26089205-888A-3B36-A3DF-6911F2B15F7F}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -72,7 +72,7 @@
 			UseOfMfc="0">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\cli&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\..\..\Qt\qt-everywhere-opensource-src-4.7.2-vs2008-x86\mkspecs\win32-msvc2008"
+				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\cli&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\Qt\VS4.7.0\mkspecs\win32-msvc2008"
 				AdditionalOptions="-Zm200 -w34100 -w34189"
 				AssemblerListingLocation="temp\"
 				BufferSecurityCheck="false"
@@ -126,6 +126,8 @@
 			<File
 				RelativePath="..\lib\check64bit.cpp" />
 			<File
+				RelativePath="..\lib\checkassignif.cpp" />
+			<File
 				RelativePath="..\lib\checkautovariables.cpp" />
 			<File
 				RelativePath="..\lib\checkbufferoverrun.cpp" />
@@ -135,6 +137,8 @@
 				RelativePath="..\lib\checkexceptionsafety.cpp" />
 			<File
 				RelativePath="..\lib\checkmemoryleak.cpp" />
+			<File
+				RelativePath="..\lib\checknonreentrantfunctions.cpp" />
 			<File
 				RelativePath="..\lib\checknullpointer.cpp" />
 			<File
@@ -273,6 +277,8 @@
 			<File
 				RelativePath="..\lib\check64bit.h" />
 			<File
+				RelativePath="..\lib\checkassignif.h" />
+			<File
 				RelativePath="..\lib\checkautovariables.h" />
 			<File
 				RelativePath="..\lib\checkbufferoverrun.h" />
@@ -282,6 +288,8 @@
 				RelativePath="..\lib\checkexceptionsafety.h" />
 			<File
 				RelativePath="..\lib\checkmemoryleak.h" />
+			<File
+				RelativePath="..\lib\checknonreentrantfunctions.h" />
 			<File
 				RelativePath="..\lib\checknullpointer.h" />
 			<File

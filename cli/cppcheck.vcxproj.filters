@@ -18,6 +18,9 @@
     <ClCompile Include="..\lib\check64bit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\lib\checkassignif.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\checkautovariables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -31,6 +34,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\checkmemoryleak.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\checknonreentrantfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\checknullpointer.cpp">
@@ -125,6 +131,9 @@
     <ClInclude Include="..\lib\check64bit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\lib\checkassignif.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\lib\checkautovariables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -138,6 +147,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\checkmemoryleak.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\checknonreentrantfunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\checknullpointer.h">

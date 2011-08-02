@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D0001948-3B19-3314-8BEE-3B92350BC5B5}</ProjectGuid>
+    <ProjectGuid>{BED73C50-0373-3E1B-BFBD-5449C1396DBF}</ProjectGuid>
     <RootNamespace>test</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
@@ -118,11 +118,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\lib\check64bit.cpp" />
+    <ClCompile Include="..\lib\checkassignif.cpp" />
     <ClCompile Include="..\lib\checkautovariables.cpp" />
     <ClCompile Include="..\lib\checkbufferoverrun.cpp" />
     <ClCompile Include="..\lib\checkclass.cpp" />
     <ClCompile Include="..\lib\checkexceptionsafety.cpp" />
     <ClCompile Include="..\lib\checkmemoryleak.cpp" />
+    <ClCompile Include="..\lib\checknonreentrantfunctions.cpp" />
     <ClCompile Include="..\lib\checknullpointer.cpp" />
     <ClCompile Include="..\lib\checkobsoletefunctions.cpp" />
     <ClCompile Include="..\lib\checkother.cpp" />
@@ -191,11 +193,13 @@
   <ItemGroup>
     <ClInclude Include="..\lib\check.h" />
     <ClInclude Include="..\lib\check64bit.h" />
+    <ClInclude Include="..\lib\checkassignif.h" />
     <ClInclude Include="..\lib\checkautovariables.h" />
     <ClInclude Include="..\lib\checkbufferoverrun.h" />
     <ClInclude Include="..\lib\checkclass.h" />
     <ClInclude Include="..\lib\checkexceptionsafety.h" />
     <ClInclude Include="..\lib\checkmemoryleak.h" />
+    <ClInclude Include="..\lib\checknonreentrantfunctions.h" />
     <ClInclude Include="..\lib\checknullpointer.h" />
     <ClInclude Include="..\lib\checkobsoletefunctions.h" />
     <ClInclude Include="..\lib\checkother.h" />
