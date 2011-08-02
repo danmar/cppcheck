@@ -408,6 +408,13 @@ private:
 
         check("void foo(int *p)\n"
               "{\n"
+              "    *p = 0;\n"
+              "    if (p || q) { }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 4\n", errout.str());
+
+        check("void foo(int *p)\n"
+              "{\n"
               "    bar(*p);\n"
               "    if (!p)\n"
               "        ;\n"

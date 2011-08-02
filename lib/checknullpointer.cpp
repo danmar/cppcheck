@@ -513,7 +513,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         // TODO: false negatives.
         // - logical operators
         // - while
-        if (tok->str() == "if" && Token::Match(tok->previous(), "; if ( !| %var% )"))
+        if (tok->str() == "if" && Token::Match(tok->previous(), "; if ( !| %var% )|%oror%|&&"))
         {
             const Token * vartok = tok->tokAt(2);
             if (vartok->str() == "!")
