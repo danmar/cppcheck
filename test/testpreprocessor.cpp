@@ -230,6 +230,7 @@ private:
 
         // Test Preprocessor::simplifyCondition
         TEST_CASE(simplifyCondition);
+        TEST_CASE(invalidElIf); // #2942 segfault
     }
 
 
@@ -2924,6 +2925,15 @@ private:
         std::string condition("defined(A) || defined(B) || defined(C)");
         Preprocessor::simplifyCondition(cfg, condition, true);
         ASSERT_EQUALS("1", condition);
+    }
+
+    void invalidElIf()
+    {
+        // #2942 - segfault
+        const char code[] = "#elif (){\n";
+        const Settings settings;
+        const std::string actual = Preprocessor::getcode(code, "TEST", "test.c", &settings, this);
+        ASSERT_EQUALS("\n", actual);
     }
 };
 

@@ -1451,7 +1451,12 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
     Settings settings;
     Tokenizer tokenizer(&settings, NULL);
     std::istringstream istr(("(" + condition + ")").c_str());
-    tokenizer.tokenize(istr, "", "", true);
+    if (!tokenizer.tokenize(istr, "", "", true))
+    {
+        // If tokenize returns false, then there is syntax error in the
+        // code which we can't handle. So stop here.
+        return;
+    }
 
     if (Token::Match(tokenizer.tokens(), "( %var% )"))
     {
