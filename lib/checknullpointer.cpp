@@ -513,15 +513,19 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         // TODO: false negatives.
         // - logical operators
         // - while
-        if (tok->str() == "if" && Token::Match(tok->previous(), "; if ( ! %var% )"))
+        if (tok->str() == "if" && Token::Match(tok->previous(), "; if ( !| %var% )"))
         {
+            const Token * vartok = tok->tokAt(2);
+            if (vartok->str() == "!")
+                vartok = vartok->next();
+
             // Variable id for pointer
-            const unsigned int varid(tok->tokAt(3)->varId());
+            const unsigned int varid(vartok->varId());
             if (varid == 0)
                 continue;
 
             // Name of pointer
-            const std::string varname(tok->strAt(3));
+            const std::string varname(vartok->str());
 
             // Check that variable is a pointer..
             if (!isPointer(varid))
@@ -535,8 +539,10 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                 if (tok1->str() == ")" && Token::Match(tok1->link()->previous(), "%var% ("))
                 {
                     const Token *tok2 = tok1->link();
-                    while (tok2 && !Token::Match(tok2, "[;{}]"))
+                    while (tok2 && !Token::Match(tok2, "[;{}?:]"))
                         tok2 = tok2->previous();
+                    if (Token::Match(tok2, "[?:]"))
+                        break;
                     if (Token::Match(tok2, "[;{}] %varid% = %var%", varid))
                         break;
 
@@ -559,6 +565,11 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                             break;
                         }
                     }
+
+                    // calling unknown function => it might initialize the pointer
+                    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
+                    if (!var || !(var->isLocal() || var->isArgument()))
+                        break;
                 }
 
                 if (tok1->str() == "break")

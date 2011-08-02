@@ -306,17 +306,6 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // loops..
-        check("void freeAbc(struct ABC *abc)\n"
-              "{\n"
-              "    while (abc)\n"
-              "    {\n"
-              "        struct ABC *next = abc->next;\n"
-              "        if (abc) delete abc;\n"
-              "        abc = next;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
         check("void foo(struct ABC *abc)\n"
               "{\n"
               "    int a = abc->a;"
@@ -407,6 +396,13 @@ private:
               "    *p = 0;\n"
               "    if (!p)\n"
               "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 4\n", errout.str());
+
+        check("void foo(int *p)\n"
+              "{\n"
+              "    *p = 0;\n"
+              "    if (p) { }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 4\n", errout.str());
 
