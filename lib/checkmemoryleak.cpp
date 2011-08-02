@@ -1915,8 +1915,9 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                     done = false;
                 }
 
-                // Remove "if { dealloc ; callfunc ; } !!else"
-                else if (Token::Match(tok2->next(), "if { dealloc|assign ; callfunc ; } !!else"))
+                // Remove "if { dealloc ; callfunc ; } !!else|return"
+                else if (Token::Match(tok2->next(), "if { dealloc|assign ; callfunc ; }") &&
+                         !Token::Match(tok2->tokAt(8), "else|return"))
                 {
                     Token::eraseTokens(tok2, tok2->tokAt(8));
                     done = false;

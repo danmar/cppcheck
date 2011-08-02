@@ -738,6 +738,10 @@ private:
         ASSERT_EQUALS("dealloc ; alloc ; return ; }", simplifycode("while1 { dealloc ; alloc ; } callfunc ; return ; }"));
         ASSERT_EQUALS("; }", simplifycode("loop callfunc ; }"));
 
+        // #2900 - don't report false positive
+        ASSERT_EQUALS("; alloc ; if { if { dealloc ; callfunc ; } return ; } dealloc ; }",
+                      simplifycode("; alloc ; if { if { dealloc ; callfunc ; } return ; } dealloc ; }"));
+
         // exit..
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc; exit;"));
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc; if { loop ; } dealloc; exit;"));
