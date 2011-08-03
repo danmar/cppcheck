@@ -145,6 +145,8 @@
     <ClCompile Include="..\lib\preprocessor.cpp" />
     <ClCompile Include="..\lib\settings.cpp" />
     <ClCompile Include="..\lib\symboldatabase.cpp" />
+    <ClCompile Include="test64bit.cpp" />
+    <ClCompile Include="testassignif.cpp" />
     <ClCompile Include="testautovariables.cpp" />
     <ClCompile Include="testbufferoverrun.cpp" />
     <ClCompile Include="testcharvar.cpp" />
@@ -159,6 +161,7 @@
     <ClCompile Include="testincompletestatement.cpp" />
     <ClCompile Include="testmathlib.cpp" />
     <ClCompile Include="testmemleak.cpp" />
+    <ClCompile Include="testnonreentrantfunctions.cpp" />
     <ClCompile Include="testnullpointer.cpp" />
     <ClCompile Include="testobsoletefunctions.cpp" />
     <ClCompile Include="testoptions.cpp" />

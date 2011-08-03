@@ -95,6 +95,12 @@
     <ClCompile Include="..\lib\symboldatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test64bit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testassignif.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="testautovariables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -135,6 +141,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testmemleak.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testnonreentrantfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testnullpointer.cpp">

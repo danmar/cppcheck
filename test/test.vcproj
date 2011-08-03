@@ -180,6 +180,10 @@
 			<File
 				RelativePath="..\lib\symboldatabase.cpp" />
 			<File
+				RelativePath="test64bit.cpp" />
+			<File
+				RelativePath="testassignif.cpp" />
+			<File
 				RelativePath="testautovariables.cpp" />
 			<File
 				RelativePath="testbufferoverrun.cpp" />
@@ -207,6 +211,8 @@
 				RelativePath="testmathlib.cpp" />
 			<File
 				RelativePath="testmemleak.cpp" />
+			<File
+				RelativePath="testnonreentrantfunctions.cpp" />
 			<File
 				RelativePath="testnullpointer.cpp" />
 			<File
