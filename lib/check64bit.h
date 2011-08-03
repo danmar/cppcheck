@@ -61,7 +61,7 @@ public:
         (void)errorLogger;
     }
 
-    /** Check for obsolete functions */
+    /** Check for pointer assignment */
     void pointerassignment();
 
 private:
