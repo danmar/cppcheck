@@ -32,6 +32,8 @@ HEADERS += ../cli/cmdlineparser.h \
 
 HEADERS += options.h redirect.h testsuite.h
 SOURCES += options.cpp \
+           test64bit.cpp \
+           testassignif.cpp \
            testautovariables.cpp \
            testbufferoverrun.cpp \
            testcharvar.cpp \
@@ -46,6 +48,7 @@ SOURCES += options.cpp \
            testincompletestatement.cpp \
            testmathlib.cpp \
            testmemleak.cpp \
+           testnonreentrantfunctions.cpp \
            testnullpointer.cpp \
            testobsoletefunctions.cpp \
            testoptions.cpp \
