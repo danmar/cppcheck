@@ -49,7 +49,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
             // function declaration?
             if (tok->previous() && tok->previous()->isName())
                 continue;
-            
+
             std::map<std::string,std::string>::const_iterator it = _obsoleteStandardFunctions.find(tok->str());
             if (it != _obsoleteStandardFunctions.end())
             {

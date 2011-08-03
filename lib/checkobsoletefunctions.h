@@ -73,7 +73,7 @@ private:
         _obsoletePosixFunctions["gethostbyname"] = "Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getaddrinfo' function";
 
         _obsoletePosixFunctions["usleep"] = "Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function\n"
-                                     "Found obsolete function 'usleep'. POSIX.1-2001 declares usleep() function obsolete and POSIX.1-2008 removes it. It is recommended that new applications use the 'nanosleep' or 'setitimer' function.";
+                                            "Found obsolete function 'usleep'. POSIX.1-2001 declares usleep() function obsolete and POSIX.1-2008 removes it. It is recommended that new applications use the 'nanosleep' or 'setitimer' function.";
 
         _obsoletePosixFunctions["bcmp"]="Found obsolete function 'bcmp'. It is recommended that new applications use the 'memcmp' function";
         _obsoletePosixFunctions["bcopy"]="Found obsolete function 'bcopy'. It is recommended that new applications use the 'memmove' or 'memcpy' functions";
@@ -84,8 +84,8 @@ private:
         _obsoletePosixFunctions["gcvt"]="Found obsolete function 'gcvt'. It is recommended that new applications use the 'sprintf' function";
 
         _obsoletePosixFunctions["ftime"]="Found obsolete function 'ftime'.\n"
-                                     "It is recommended that new applications use time(), gettimeofday(), or clock_gettime() instead. "
-                                     "For high-resolution timing on Windows, QueryPerformanceCounter() and QueryPerformanceFrequency may be used.";
+                                         "It is recommended that new applications use time(), gettimeofday(), or clock_gettime() instead. "
+                                         "For high-resolution timing on Windows, QueryPerformanceCounter() and QueryPerformanceFrequency may be used.";
 
         _obsoletePosixFunctions["getcontext"] = "Found obsolete function 'getcontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads";
         _obsoletePosixFunctions["makecontext"] = "Found obsolete function 'makecontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads";
@@ -110,7 +110,7 @@ private:
         _obsoletePosixFunctions["wcswcs"] = "Found obsolete function 'wcswcs'. It is recommended to use the function 'wcsstr' instead";
 
         _obsoleteStandardFunctions["gets"] = "Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n"
-                                     "Found obsolete function 'gets'. With gets you'll get buffer overruns if the input data too big for the buffer. It is recommended to use the function 'fgets' instead.";
+                                             "Found obsolete function 'gets'. With gets you'll get buffer overruns if the input data too big for the buffer. It is recommended to use the function 'fgets' instead.";
 
     }
 
