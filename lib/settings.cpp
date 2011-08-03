@@ -36,7 +36,6 @@ Settings::Settings()
     _inlineSuppressions = false;
     _verbose = false;
     _force = false;
-    _posix = false;
     _xml = false;
     _xml_version = 1;
     _jobs = 1;
@@ -399,6 +398,7 @@ std::string Settings::addEnabled(const std::string &str)
     id.insert("missingInclude");
     id.insert("unusedFunction");
     id.insert("information");
+    id.insert("posix");
 
     if (str == "all")
     {

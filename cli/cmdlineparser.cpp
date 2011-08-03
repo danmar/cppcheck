@@ -460,13 +460,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
         }
 
-        // Posix compliant code checks
-        else if (strcmp(argv[i], "--posix") == 0)
-        {
-            _settings->_posix = true;
-        }
-
-
         // deprecated: auto deallocated classes..
         else if (strcmp(argv[i], "--auto-dealloc") == 0)
         {
@@ -662,6 +655,9 @@ void CmdLineParser::PrintHelp()
               "                          * missingInclude\n"
               "                                  Warn if there are missing includes.\n"
               "                                  For detailed information use --check-config\n"
+              "                           * posix\n"
+              "                                  Enable checks specific for POSIX-compiliant\n"
+              "                                  code.\n"
               "                         Several ids can be given if you separate them with\n"
               "                         commas.\n"
               "    --error-exitcode=<n> If errors are found, integer [n] is returned instead\n"
@@ -689,7 +685,6 @@ void CmdLineParser::PrintHelp()
               "                         more comments, like: // cppcheck-suppress warningId\n"
               "                         on the lines before the warning to suppress.\n"
               "    -j <jobs>            Start [jobs] threads to do the checking simultaneously.\n"
-              "    --posix              Enable checks applicable only to Posix compliant code.\n"
               "    -q, --quiet          Only print error messages.\n"
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES

@@ -45,7 +45,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._posix = true;
+        settings.addEnabled("posix");
         settings.inconclusive = true;
         settings._checkCodingStyle = true;
 

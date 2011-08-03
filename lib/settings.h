@@ -96,9 +96,6 @@ public:
     /** @brief write XML results (--xml) */
     bool _xml;
 
-    /** @brief check posix functions (--posix) */
-    bool _posix;
-
     /** @brief XML version (--xmlver=..) */
     int _xml_version;
 

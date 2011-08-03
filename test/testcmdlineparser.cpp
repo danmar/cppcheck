@@ -62,6 +62,7 @@ private:
         TEST_CASE(enabledStyle);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
+        TEST_CASE(enablePosix);
         TEST_CASE(errorExitcode);
         TEST_CASE(errorExitcodeMissing);
         TEST_CASE(errorExitcodeStr);
@@ -100,7 +101,6 @@ private:
         TEST_CASE(ignorefilepaths1);
         TEST_CASE(ignorefilepaths2);
         TEST_CASE(checkconfig);
-        TEST_CASE(posix);
         TEST_CASE(unknownParam);
     }
 
@@ -419,6 +419,16 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings.isEnabled("missingInclude"));
+    }
+
+    void enablePosix()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--enable=posix", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings.isEnabled("posix"));
     }
 
     void errorExitcode()
@@ -811,16 +821,6 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings.checkConfiguration);
-    }
-
-    void posix()
-    {
-        REDIRECT;
-        const char *argv[] = {"cppcheck", "--posix", "file.cpp"};
-        Settings settings;
-        CmdLineParser parser(&settings);
-        ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings._posix);
     }
 
     void unknownParam()
