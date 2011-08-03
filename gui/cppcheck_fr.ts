@@ -811,6 +811,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <source>Message</source>
         <translation type="unfinished">Message</translation>
     </message>
+    <message>
+        <source>%p% (%1 of %2 files checked)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Settings</name>
@@ -1091,6 +1095,13 @@ Statistics
  &lt;tr&gt;&lt;th&gt;Information messages:&lt;/th&gt;&lt;td&gt;%13&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ThreadResult</name>
+    <message>
+        <source>%1 of %2 files checked</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

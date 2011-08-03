@@ -995,47 +995,52 @@ Please select the directory where file is located.</source>
         <translation>結果</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="124"/>
+        <location filename="resultsview.cpp" line="127"/>
         <source>No errors found, nothing to save.</source>
         <translation>警告/エラーが見つからなかったため、保存しません。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="154"/>
-        <location filename="resultsview.cpp" line="164"/>
+        <location filename="resultsview.cpp" line="157"/>
+        <location filename="resultsview.cpp" line="167"/>
         <source>Failed to save the report.</source>
         <translation>レポートの保存に失敗しました。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="200"/>
-        <location filename="resultsview.cpp" line="212"/>
+        <location filename="resultsview.cpp" line="192"/>
+        <source>%p% (%1 of %2 files checked)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultsview.cpp" line="207"/>
+        <location filename="resultsview.cpp" line="219"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="201"/>
+        <location filename="resultsview.cpp" line="208"/>
         <source>No errors found.</source>
         <translation>警告/エラーは見つかりませんでした。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="209"/>
+        <location filename="resultsview.cpp" line="216"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>警告/エラーが見つかりましたが、非表示設定になっています。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="256"/>
-        <location filename="resultsview.cpp" line="276"/>
-        <location filename="resultsview.cpp" line="286"/>
+        <location filename="resultsview.cpp" line="263"/>
+        <location filename="resultsview.cpp" line="283"/>
+        <location filename="resultsview.cpp" line="293"/>
         <source>Failed to read the report.</source>
         <translation>レポートの読み込みに失敗.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="326"/>
+        <location filename="resultsview.cpp" line="333"/>
         <source>Summary</source>
         <translation>内容</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="327"/>
+        <location filename="resultsview.cpp" line="334"/>
         <source>Message</source>
         <translation>メッセージ</translation>
     </message>
@@ -1383,6 +1388,14 @@ Statistics
  &lt;tr&gt;&lt;th&gt;Information messages:&lt;/th&gt;&lt;td&gt;%13&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ThreadResult</name>
+    <message>
+        <location filename="threadresult.cpp" line="55"/>
+        <source>%1 of %2 files checked</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -993,48 +993,53 @@ Por favor selecciona la carpeta donde se encuentra.</translation>
         <translation>Resultados</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="124"/>
+        <location filename="resultsview.cpp" line="127"/>
         <source>No errors found, nothing to save.</source>
         <translation>No se han encontrado errores, nada que guardar.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="154"/>
-        <location filename="resultsview.cpp" line="164"/>
+        <location filename="resultsview.cpp" line="157"/>
+        <location filename="resultsview.cpp" line="167"/>
         <source>Failed to save the report.</source>
         <translation>Error al guardar el informe.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="200"/>
-        <location filename="resultsview.cpp" line="212"/>
+        <location filename="resultsview.cpp" line="192"/>
+        <source>%p% (%1 of %2 files checked)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultsview.cpp" line="207"/>
+        <location filename="resultsview.cpp" line="219"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="201"/>
+        <location filename="resultsview.cpp" line="208"/>
         <source>No errors found.</source>
         <translation>No se han encontrado errores.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="209"/>
+        <location filename="resultsview.cpp" line="216"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>Se han encontrado errores, pero están configurados para que no se muestren.
 Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="256"/>
-        <location filename="resultsview.cpp" line="276"/>
-        <location filename="resultsview.cpp" line="286"/>
+        <location filename="resultsview.cpp" line="263"/>
+        <location filename="resultsview.cpp" line="283"/>
+        <location filename="resultsview.cpp" line="293"/>
         <source>Failed to read the report.</source>
         <translation>Error al leer el informe.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="326"/>
+        <location filename="resultsview.cpp" line="333"/>
         <source>Summary</source>
         <translation>Resumen</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="327"/>
+        <location filename="resultsview.cpp" line="334"/>
         <source>Message</source>
         <translation>Mensaje</translation>
     </message>
@@ -1381,6 +1386,14 @@ Statistics
  &lt;tr&gt;&lt;th&gt;Information messages:&lt;/th&gt;&lt;td&gt;%13&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ThreadResult</name>
+    <message>
+        <location filename="threadresult.cpp" line="55"/>
+        <source>%1 of %2 files checked</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
