@@ -77,13 +77,13 @@ void ResultsView::Clear()
     //Clear the progressbar
     mUI.mProgress->setMaximum(PROGRESS_MAX);
     mUI.mProgress->setValue(0);
-    mUI.mProgress->setFormat(tr("%p%"));
+    mUI.mProgress->setFormat("%p%");
 }
 
 void ResultsView::Progress(int value, const QString& description)
 {
     mUI.mProgress->setValue(value);
-    mUI.mProgress->setFormat(tr("%p% (%1)").arg(description));
+    mUI.mProgress->setFormat(QString("%p% (%1)").arg(description));
 }
 
 void ResultsView::Error(const ErrorItem &item)
