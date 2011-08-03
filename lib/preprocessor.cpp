@@ -1673,6 +1673,9 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
         }
     }
 
+    std::stack<std::string> filenames;
+    filenames.push(filename);
+    std::stack<unsigned int> lineNumbers;
     std::istringstream istr(filedata);
     std::string line;
     while (getline(istr, line))
@@ -1811,7 +1814,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             {
                 Settings settings2(*settings);
                 Preprocessor preprocessor(&settings2, errorLogger);
-                preprocessor.error(filename, lineno, line);
+                preprocessor.error(filenames.top(), lineno, line);
             }
             return "";
         }
@@ -1829,6 +1832,25 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
         {
             // We must not remove #file tags or line numbers
             // are corrupted. File tags are removed by the tokenizer.
+
+            // Keep location info updated
+            if (line.compare(0, 7, "#file \"") == 0)
+            {
+                filenames.push(line.substr(7, line.size() - 8));
+                lineNumbers.push(lineno);
+                lineno = 0;
+            }
+            else if (line.compare(0, 8, "#endfile") == 0)
+            {
+                if (filenames.size() > 1U)
+                    filenames.pop();
+
+                if (!lineNumbers.empty())
+                {
+                    lineno = lineNumbers.top();
+                    lineNumbers.pop();
+                }
+            }
         }
         else if (!match || line.compare(0, 1, "#") == 0)
         {

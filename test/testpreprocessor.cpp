@@ -91,6 +91,7 @@ private:
         TEST_CASE(error2);
 
         TEST_CASE(error3);
+        TEST_CASE(error4);  // #2919 - wrong filename is reported
 
         TEST_CASE(if0_exclude);
         TEST_CASE(if0_whitespace);
@@ -639,6 +640,8 @@ private:
 
     void error2()
     {
+        errout.str("");
+
         const char filedata[] = "#error ê\n"
                                 "#warning ê\n"
                                 "123";
@@ -653,11 +656,36 @@ private:
 
     void error3()
     {
+        errout.str("");
         Settings settings;
         settings.userDefines = "__cplusplus";
         const std::string code("#error hello world!\n");
         Preprocessor::getcode(code, "X", "test.c", &settings, this);
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
+    }
+
+    // Ticket #2919 - wrong filename reported for #error
+    void error4()
+    {
+        // In included file
+        {
+            errout.str("");
+            Settings settings;
+            settings.userDefines = "TEST";
+            const std::string code("#file \"ab.h\"\n#error hello world!\n#endfile");
+            Preprocessor::getcode(code, "TEST", "test.c", &settings, this);
+            ASSERT_EQUALS("[ab.h:1]: (error) #error hello world!\n", errout.str());
+        }
+
+        // After including a file
+        {
+            errout.str("");
+            Settings settings;
+            settings.userDefines = "TEST";
+            const std::string code("#file \"ab.h\"\n\n#endfile\n#error aaa");
+            Preprocessor::getcode(code, "TEST", "test.c", &settings, this);
+            ASSERT_EQUALS("[test.c:2]: (error) #error aaa\n", errout.str());
+        }
     }
 
     void if0_exclude()
