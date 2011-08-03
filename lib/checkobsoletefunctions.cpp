@@ -40,17 +40,34 @@ void CheckObsoleteFunctions::obsoleteFunctions()
     if (_tokenizer->isJavaOrCSharp())
         return;
 
+    const bool checkPosix = _settings->isEnabled("posix");
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        std::list< std::pair<const std::string, const std::string> >::const_iterator it(_obsoleteFunctions.begin()), itend(_obsoleteFunctions.end());
-        for (; it!=itend; ++it)
+        if (tok->isName() && tok->varId()==0 && tok->strAt(1) == "(" && !Token::Match(tok->previous(), ".|::|:|,"))
         {
-            if (tok->strAt(1) == it->first && tok->strAt(2) == "(" && tok->tokAt(1)->varId() == 0 && !tok->tokAt(0)->isName() && !Token::Match(tok, ".|::|:|,"))
+            // function declaration?
+            if (tok->previous() && tok->previous()->isName())
+                continue;
+            
+            std::map<std::string,std::string>::const_iterator it = _obsoleteStandardFunctions.find(tok->str());
+            if (it != _obsoleteStandardFunctions.end())
             {
                 // If checking an old code base it might be uninteresting to update obsolete functions.
-                // Therefore this is "style"
-                reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
+                // Therefore this is "information"
+                reportError(tok->tokAt(1), Severity::information, "obsoleteFunctions"+it->first, it->second);
                 break;
+            }
+            else if (checkPosix)
+            {
+                it = _obsoletePosixFunctions.find(tok->str());
+                if (it != _obsoletePosixFunctions.end())
+                {
+                    // If checking an old code base it might be uninteresting to update obsolete functions.
+                    // Therefore this is "information"
+                    reportError(tok->tokAt(1), Severity::information, "obsoleteFunctions"+it->first, it->second);
+                    break;
+                }
             }
         }
     }

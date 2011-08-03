@@ -58,7 +58,7 @@ private:
 
         Settings settings;
         settings._checkCodingStyle = true;
-        settings.inconclusive = true;
+        settings.addEnabled("posix");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -83,7 +83,7 @@ private:
               "{\n"
               "    bsd_signal(SIGABRT, SIG_IGN);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'bsd_signal'. It is recommended that new applications use the 'sigaction' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (information) Found obsolete function 'bsd_signal'. It is recommended that new applications use the 'sigaction' function\n", errout.str());
 
         check("int f()\n"
               "{\n"
@@ -103,7 +103,7 @@ private:
               "        exit(1);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getaddrinfo' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getaddrinfo' function\n", errout.str());
     }
 
     void testgethostbyaddr()
@@ -116,7 +116,7 @@ private:
               "        exit(1);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getnameinfo' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (information) Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getnameinfo' function\n", errout.str());
     }
 
     void testusleep()
@@ -125,7 +125,7 @@ private:
               "{\n"
               "    usleep( 1000 );\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (information) Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function\n", errout.str());
     }
 
     void testindex()
@@ -166,8 +166,8 @@ private:
               "    const char i = index(var, 0);\n"
               "    return i;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'index'. It is recommended to use the function 'strchr' instead\n",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) Found obsolete function 'index'. It is recommended to use the function 'strchr' instead\n",
+                      errout.str());
     }
 
     void test_qt_index()
@@ -175,7 +175,7 @@ private:
         check("void TDataModel::forceRowRefresh(int row) {\n"
               "    emit dataChanged(index(row, 0), index(row, columnCount() - 1));\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (information) Found obsolete function 'index'. It is recommended to use the function 'strchr' instead\n", errout.str());
     }
 
     void testrindex()
@@ -191,7 +191,7 @@ private:
               "    const char var[7] = 'rindex';\n"
               "    print(rindex(var, 0));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'rindex'. It is recommended to use the function 'strrchr' instead\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) Found obsolete function 'rindex'. It is recommended to use the function 'strrchr' instead\n", errout.str());
     }
 
 
@@ -211,7 +211,7 @@ private:
               "{\n"
               "    char *x = gets();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (information) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n", errout.str());
     }
 
 
