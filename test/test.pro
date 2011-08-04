@@ -1,6 +1,6 @@
 
 TEMPLATE = app
-TARGET = test
+TARGET = testrunner
 DEPENDPATH += .
 INCLUDEPATH += . ../cli ../lib
 OBJECTS_DIR = temp
