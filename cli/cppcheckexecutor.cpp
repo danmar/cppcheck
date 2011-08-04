@@ -189,7 +189,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     if (!cppCheck.settings().checkConfiguration)
     {
-        reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
+        if (!_settings._errorsOnly)
+            reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
 
         if (Preprocessor::missingIncludeFlag)
         {
