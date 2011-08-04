@@ -60,6 +60,7 @@ private:
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.negativeIndex();
+        checkBufferOverrun.arrayIndexThenCheck();
     }
 
     void run()
@@ -217,6 +218,9 @@ private:
         TEST_CASE(getErrorMessages);
 
         TEST_CASE(unknownMacroNoDecl);    // #2638 - not variable declaration: 'AAA a[0] = 0;'
+
+        // Access array and then check if the used index is within bounds
+        TEST_CASE(arrayIndexThenCheck);
     }
 
 
@@ -3014,6 +3018,21 @@ private:
               "    a[1] = 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void arrayIndexThenCheck()
+    {
+        check("void f(const char s[]) {\n"
+              "    if (s[i] == 'x' && i < y) {\n"
+              "    }"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) array index i is used before bounds check\n", errout.str());
+
+        check("void f(const char s[]) {\n"
+              "    for (i = 0; s[i] == 'x' && i < y; ++i) {\n"
+              "    }"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) array index i is used before bounds check\n", errout.str());
     }
 };
 

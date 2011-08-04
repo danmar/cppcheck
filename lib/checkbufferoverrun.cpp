@@ -2179,3 +2179,35 @@ void CheckBufferOverrun::executionPaths()
 
 
 
+
+void CheckBufferOverrun::arrayIndexThenCheck()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%var% [ %var% ]"))
+        {
+            const std::string arrayName(tok->str());
+            const std::string indexName(tok->strAt(2));
+
+            // skip array index..
+            tok = tok->tokAt(4);
+            while (tok->str() == "[")
+                tok = tok->link()->next();
+
+            // skip comparison
+            if (Token::Match(tok, "==|!=|<|<=|>|>= %any% &&"))
+                tok = tok->tokAt(2);
+
+            // check if array index is ok
+            if (Token::Match(tok, ("&& " + indexName + " <|<=").c_str()))
+                arrayIndexThenCheckError(tok, indexName);
+        }
+    }
+}
+
+void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::string &indexName)
+{
+    reportError(tok, Severity::style, "arrayIndexThenCheck", "array index " + indexName + " is used before bounds check");
+}

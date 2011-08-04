@@ -64,6 +64,7 @@ public:
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.negativeIndex();
+        checkBufferOverrun.arrayIndexThenCheck();
 
         /** ExecutionPath checking.. */
         checkBufferOverrun.executionPaths();
@@ -71,6 +72,9 @@ public:
 
     /** @brief %Check for buffer overruns */
     void bufferOverrun();
+
+    /** @brief Using array index before bounds check */
+    void arrayIndexThenCheck();
 
     /** @brief %Check for buffer overruns by inspecting execution paths */
     void executionPaths();
@@ -216,6 +220,7 @@ public:
     void negativeIndexError(const Token *tok, MathLib::bigint index);
     void cmdLineArgsError(const Token *tok);
     void pointerOutOfBounds(const Token *tok, const std::string &object);	// UB when result of calculation is out of bounds
+    void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -229,6 +234,7 @@ public:
         c.negativeIndexError(0, -1);
         c.cmdLineArgsError(0);
         c.pointerOutOfBounds(0, "array");
+        c.arrayIndexThenCheckError(0, "index");
     }
 
     std::string myName() const
