@@ -603,13 +603,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
     if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1)
     {
-        PrintMessage("unusedFunction check can't be used with -j option, so it was disabled.");
+        PrintMessage("cppcheck: unusedFunction check can't be used with -j option, so it was disabled.");
     }
 
     // FIXME: Make the _settings.test_2_pass thread safe
     if (_settings->test_2_pass && _settings->_jobs > 1)
     {
-        PrintMessage("--test-2-pass doesn't work with -j option yet.");
+        PrintMessage("cppcheck: --test-2-pass doesn't work with -j option yet.");
     }
 
     if (argc <= 1)
