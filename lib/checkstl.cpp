@@ -1138,26 +1138,27 @@ void CheckStl::checkAutoPointer()
                         {
                             tok3 = tok3->next();
                         }
-                        if (!tok3)
-                            continue;
-                        tok3 = tok3->previous()->previous();
-                        if (Token::simpleMatch(tok3->previous(), "[ ] )"))
+                        if (tok3)
                         {
-                            autoPointerArrayError(tok2->next());
-                        }
-                        else if (tok3->varId())
-                        {
-                            const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type% [", tok3->varId());
-                            if (decltok)
+                            tok3 = tok3->previous()->previous();
+                            if (Token::simpleMatch(tok3->previous(), "[ ] )"))
                             {
                                 autoPointerArrayError(tok2->next());
                             }
+                            else if (tok3->varId())
+                            {
+                                const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type% [", tok3->varId());
+                                if (decltok)
+                                {
+                                    autoPointerArrayError(tok2->next());
+                                }
+                            }
+                            if (tok2->next()->varId())
+                            {
+                                autoPtrVarId.insert(tok2->next()->varId());
+                            }
+                            break;
                         }
-                        if (tok2->next()->varId())
-                        {
-                            autoPtrVarId.insert(tok2->next()->varId());
-                        }
-                        break;
                     }
                     tok2 = tok2->next();
                 }
