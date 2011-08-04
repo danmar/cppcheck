@@ -91,18 +91,23 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--debug-warnings") == 0)
             _settings->debugwarnings = true;
 
-        // Inconclusive checking - keep this for compatibility but don't
-        // handle it
+        // Enable all checks - will be removed in future
         else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0)
-            ;
+        {
+            PrintMessage("cppcheck: -a/--all option is deprecated and will be removed in 1.55 release.");
+            PrintMessage("cppcheck:   please use --enable=all instead.");
+        }
 
         // Inconclusive checking (still in testing phase)
         else if (strcmp(argv[i], "--inconclusive") == 0)
             _settings->inconclusive = true;
 
-        // Checking coding style
+        // Checking coding style - will be removed in the future
         else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--style") == 0)
         {
+            PrintMessage("cppcheck: -s/--style option is deprecated and will be removed in 1.55 release.");
+            PrintMessage("cppcheck:   please use --enable=style instead.");
+
             const std::string errmsg = _settings->addEnabled("style");
             if (!errmsg.empty())
             {
@@ -464,6 +469,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--auto-dealloc") == 0)
         {
             ++i;
+            PrintMessage("cppcheck: --auto-dealloc option is deprecated and will be removed in 1.55 release.");
         }
 
         // print all possible error messages..
