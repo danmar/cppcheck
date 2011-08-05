@@ -1424,8 +1424,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
-        // ticket #1887 infinite loop
+        // ticket #2887 (infinite loop)
         check("A::A(std::auto_ptr<X> e){}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // ticket #2967 (segmentation fault)
+        check("auto_ptr<x>\n");
         ASSERT_EQUALS("", errout.str());
     }
 

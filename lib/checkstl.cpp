@@ -1122,7 +1122,8 @@ void CheckStl::checkAutoPointer()
     {
         if (Token::simpleMatch(tok, "auto_ptr <"))
         {
-            if ((tok->previous()->str() == "<" &&  Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) || (Token::Match(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST)))
+            if ((tok->previous() && tok->previous()->str() == "<" && Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) ||
+                (Token::Match(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST)))
             {
                 autoPointerContainerError(tok);
             }
