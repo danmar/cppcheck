@@ -76,6 +76,7 @@ private:
         TEST_CASE(uninitVarArray4);
         TEST_CASE(uninitVarArray5);
         TEST_CASE(uninitVarArray6);
+        TEST_CASE(uninitVarArray7);
         TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitVarStruct1); // ticket #2172
         TEST_CASE(uninitVarStruct2); // ticket #838
@@ -2395,6 +2396,33 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void uninitVarArray7()
+    {
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "    int array[10];\n"
+                       "public:\n"
+                       "    Foo() { }\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Foo::array' is not initialized in the constructor.\n", errout.str());
+
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "    int array[10];\n"
+                       "public:\n"
+                       "    Foo() { memset(array, 0, sizeof(array)); }\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "    int array[10];\n"
+                       "public:\n"
+                       "    Foo() { ::memset(array, 0, sizeof(array)); }\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void uninitVarArray2D()
     {
         checkUninitVar("class John\n"
@@ -2613,6 +2641,15 @@ private:
                        "public:\n"
                        "    int * pointer;\n"
                        "    Foo() { memset(this, 0, sizeof(*this)); }\n"
+                       "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "public:\n"
+                       "    int * pointer;\n"
+                       "    Foo() { ::memset(this, 0, sizeof(*this)); }\n"
                        "};\n");
 
         ASSERT_EQUALS("", errout.str());

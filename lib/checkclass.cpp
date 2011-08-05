@@ -331,7 +331,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
             ftok = ftok->tokAt(2);
         }
 
-        if (!Token::Match(ftok->next(), "%var%") &&
+        if (!Token::Match(ftok->next(), "::| %var%") &&
             !Token::Match(ftok->next(), "this . %var%") &&
             !Token::Match(ftok->next(), "* %var% =") &&
             !Token::Match(ftok->next(), "( * this ) . %var%"))
@@ -355,17 +355,18 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
             ftok = ftok->tokAt(2);
 
         // Clearing all variables..
-        if (Token::simpleMatch(ftok, "memset ( this ,"))
+        if (Token::Match(ftok, "::| memset ( this ,"))
         {
             assignAllVar(usage);
             return;
         }
 
         // Clearing array..
-        else if (Token::Match(ftok, "memset ( %var% ,"))
+        else if (Token::Match(ftok, "::| memset ( %var% ,"))
         {
-            assignVar(ftok->strAt(2), scope, usage);
-            ftok = ftok->next()->link();
+            const int offset = ftok->str() == "::" ? 1 : 0;
+            assignVar(ftok->strAt(2 + offset), scope, usage);
+            ftok = ftok->tokAt(1 + offset)->link();
             continue;
         }
 
