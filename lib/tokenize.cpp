@@ -8227,6 +8227,13 @@ void Tokenizer::simplifyEnum()
             if (tok->next()->str() == ":")
             {
                 tok = tok->next();
+
+                if (!tok->next())
+                {
+                    syntaxError(tok);
+                    return;
+                }
+
                 typeTokenStart = tok->next();
                 tok = tok->next();
                 typeTokenEnd = typeTokenStart;

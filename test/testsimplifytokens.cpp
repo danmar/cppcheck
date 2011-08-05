@@ -312,6 +312,7 @@ private:
         TEST_CASE(enum22); // ticket #2745
         TEST_CASE(enum23); // ticket #2804
         TEST_CASE(enum24); // ticket #2828
+        TEST_CASE(enum25); // ticket #2966
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6646,6 +6647,13 @@ private:
         const char expected[] = "; void f ( long style ) { if ( style & 1 ) { } }";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum25() // ticket #2966 (segmentation fault)
+    {
+        const char code[] = "enum x :\n";
+        tok(code, false);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void removestd()
