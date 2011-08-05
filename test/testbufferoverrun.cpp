@@ -1159,7 +1159,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[6][6][6]' index a[6][6][2] out of bounds\n", errout.str());
 
-
+        // unknown dim..
+        check("void f()\n"
+              "{\n"
+              "  int a[2][countof(x)] = {{1,2},{3,4}};\n"
+              "  a[0][0] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_switch_in_for()

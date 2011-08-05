@@ -1093,6 +1093,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     totalElements *= arrayInfo.num(ri);
                 }
 
+                // totalElements == 0 => Unknown size
+                if (totalElements == 0)
+                    continue;
+
                 // just taking the address?
                 const bool addr(Token::Match(tok->previous(), "[.&]") ||
                                 Token::simpleMatch(tok->tokAt(-2), "& ("));
