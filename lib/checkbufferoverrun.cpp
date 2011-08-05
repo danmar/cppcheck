@@ -2209,5 +2209,9 @@ void CheckBufferOverrun::arrayIndexThenCheck()
 
 void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::string &indexName)
 {
-    reportError(tok, Severity::style, "arrayIndexThenCheck", "array index " + indexName + " is used before bounds check");
+    reportError(tok, Severity::style, "arrayIndexThenCheck",
+                "Array index " + indexName + " is used before limits check\n"
+                "Defensive programming: The variable " + indexName + " is used as array index and then there is a check that it is within limits. This can "
+                "mean that the array might be accessed out-of-bounds. Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the "
+                "array will not be accessed when the index is out of limits.");
 }

@@ -3026,13 +3026,13 @@ private:
               "    if (s[i] == 'x' && i < y) {\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) array index i is used before bounds check\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Array index i is used before limits check\n", errout.str());
 
         check("void f(const char s[]) {\n"
               "    for (i = 0; s[i] == 'x' && i < y; ++i) {\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) array index i is used before bounds check\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Array index i is used before limits check\n", errout.str());
     }
 };
 
