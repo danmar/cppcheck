@@ -7613,10 +7613,10 @@ bool Tokenizer::simplifyCalculations()
         {
             if (tok->str() == "0")
             {
-                if (Token::Match(tok->previous(), "[+-] 0"))
+                if (Token::Match(tok->previous(), "[+-|] 0"))
                 {
                     tok = tok->previous();
-                    if (Token::Match(tok->tokAt(-4), "[;{}] %var% = %var% [+-] 0 ;") &&
+                    if (Token::Match(tok->tokAt(-4), "[;{}] %var% = %var% [+-|] 0 ;") &&
                         tok->strAt(-3) == tok->strAt(-1))
                     {
                         tok = tok->previous()->previous()->previous();
@@ -7628,7 +7628,7 @@ bool Tokenizer::simplifyCalculations()
                     tok->deleteThis();
                     ret = true;
                 }
-                else if (Token::Match(tok->previous(), "[=([,] 0 +"))
+                else if (Token::Match(tok->previous(), "[=([,] 0 [+|]"))
                 {
                     tok->deleteThis();
                     tok->deleteThis();
@@ -7646,7 +7646,7 @@ bool Tokenizer::simplifyCalculations()
 
             if (Token::simpleMatch(tok->previous(), "* 1") || Token::simpleMatch(tok, "1 *"))
             {
-                if (Token::simpleMatch(tok->previous(), "*"))
+                if (tok->previous()->isOp())
                     tok = tok->previous();
                 tok->deleteThis();
                 tok->deleteThis();
@@ -7664,10 +7664,12 @@ bool Tokenizer::simplifyCalculations()
 
             if (Token::simpleMatch(tok->previous(), "( 0 ||") ||
                 Token::simpleMatch(tok->previous(), "|| 0 )") ||
+                Token::simpleMatch(tok->previous(), "( 0 |") ||
+                Token::simpleMatch(tok->previous(), "| 0 )") ||
                 Token::simpleMatch(tok->previous(), "( 1 &&") ||
                 Token::simpleMatch(tok->previous(), "&& 1 )"))
             {
-                if (!Token::simpleMatch(tok->previous(), "("))
+                if (tok->previous()->isOp())
                     tok = tok->previous();
                 tok->deleteThis();
                 tok->deleteThis();

@@ -323,6 +323,8 @@ private:
 
         TEST_CASE(simplifyLogicalOperators);
 
+        TEST_CASE(simplifyCalculations); // ticket #2870
+
         // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
         TEST_CASE(simplifyAssignmentInFunctionCall);
 
@@ -5572,6 +5574,20 @@ private:
         ASSERT_EQUALS("if ( ~ b )", tokenizeAndStringify("if (compl b)"));
         ASSERT_EQUALS("if ( ! b )", tokenizeAndStringify("if (not b)"));
         ASSERT_EQUALS("if ( a != b )", tokenizeAndStringify("if (a not_eq b)"));
+    }
+
+    void simplifyCalculations()
+    {
+	ASSERT_EQUALS("void foo ( char str [ ] ) { char x ; x = * str ; }",
+		      tokenizeAndStringify("void foo ( char str [ ] ) { char x = 0 | ( * str ) ; }", true));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tokenizeAndStringify("void foo ( ) { if (b | 0) { } }", true));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tokenizeAndStringify("void foo ( ) { if (0 | b) { } }", true));
+        ASSERT_EQUALS("void foo ( int b ) { int a ; a = b ; bar ( a ) ; }",
+                      tokenizeAndStringify("void foo ( int b ) { int a = b | 0 ; bar ( a ) ; }", true));
+        ASSERT_EQUALS("void foo ( int b ) { int a ; a = b ; bar ( a ) ; }",
+                      tokenizeAndStringify("void foo ( int b ) { int a = 0 | b ; bar ( a ) ; }", true));
     }
 
     void simplifyCompoundAssignment()
