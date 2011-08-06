@@ -57,6 +57,12 @@ public:
      */
     static bool isDirectory(const std::string &path);
 
+    /**
+      * @brief Check if the given path is a file and if it exists?
+      * @return true if path points to file and the file exists.
+      */
+    static bool fileExists(const std::string &path);
+
 #ifndef _WIN32
     static void recursiveAddFiles2(std::vector<std::string> &relative,
                                    std::vector<std::string> &absolute,

@@ -228,7 +228,13 @@ bool FileLister::isDirectory(const std::string &path)
     return (MyIsDirectory(path) != FALSE);
 }
 
-
+bool FileLister::fileExists(const std::string &path)
+{
+    if (PathFileExists(path.c_str()) == TRUE)
+        return true;
+    else
+        return false;
+}
 
 
 #else
@@ -333,6 +339,24 @@ bool FileLister::isDirectory(const std::string &path)
     globfree(&glob_results);
 
     return ret;
+}
+
+bool FileLister::fileExists(const std::string &path)
+{
+    struct stat statinfo;
+    int result = stat(path.c_str(), &statinfo);
+
+    if (result < 0)  // Todo: should check errno == ENOENT?
+    {
+        // File not found
+        return false;
+    }
+
+    // Check if file is regular file
+    if ((statinfo.st_mode & S_IFMT) == S_IFREG)
+        return true;
+
+    return false;
 }
 
 #endif
