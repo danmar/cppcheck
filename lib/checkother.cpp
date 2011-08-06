@@ -3866,3 +3866,63 @@ void CheckOther::assignBoolToPointerError(const Token *tok)
     reportError(tok, Severity::error, "assignBoolToPointer",
                 "Assigning bool value to pointer (converting bool value to address)");
 }
+
+//---------------------------------------------------------------------------
+// Check testing sign of unsigned variables.
+//---------------------------------------------------------------------------
+
+void CheckOther::checkSignOfUnsignedVariable()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
+    {
+        // only check functions
+        if (scope->type != Scope::eFunction)
+            continue;
+
+        // check all the code in the function
+        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next())
+        {
+            if (Token::Match(tok, "( %var% <|<= 0 )") && tok->next()->varId())
+            {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                if (var && var->typeEndToken()->isUnsigned())
+                    unsignedLessThanZero(tok->next(), tok->next()->str());
+            }
+            else if (Token::Match(tok, "( 0 > %var% )") && tok->tokAt(3)->varId())
+            {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
+                if (var && var->typeEndToken()->isUnsigned())
+                    unsignedLessThanZero(tok->tokAt(3), tok->strAt(3));
+            }
+            else if (Token::Match(tok, "( 0 <= %var% )") && tok->tokAt(3)->varId())
+            {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
+                if (var && var->typeEndToken()->isUnsigned())
+                    unsignedPositive(tok->tokAt(3), tok->strAt(3));
+            }
+        }
+    }
+}
+
+void CheckOther::unsignedLessThanZero(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::style, "unsignedLessThanZero",
+                "Checking if unsigned variable '" + varname + "' is less than zero.\n"
+                "An unsigned variable will never be negative so it is either pointless or "
+                "an error to check if it is.");
+}
+
+void CheckOther::unsignedPositive(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::style, "unsignedPositive",
+                "Checking if unsigned variable '" + varname + "' is positive is always true.\n"
+                "An unsigned variable will never alwayw be positive so it is either pointless or "
+                "an error to check if it is.");
+}

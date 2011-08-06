@@ -127,6 +127,7 @@ private:
         TEST_CASE(duplicateExpression2); // ticket #2730
 
         TEST_CASE(alwaysTrueFalseStringCompare);
+        TEST_CASE(checkSignOfUnsignedVariable);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -2885,6 +2886,75 @@ private:
             "  {"
             "    std::cout << \"Equal\n\""
             "  }"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void check_signOfUnsignedVariable(const char code[])
+    {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings._checkCodingStyle = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check for redundant code..
+        CheckOther checkOther(&tokenizer, &settings, this);
+        checkOther.checkSignOfUnsignedVariable();
+    }
+
+    void checkSignOfUnsignedVariable()
+    {
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x) {\n"
+            "  if (x < 0)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x) {\n"
+            "  if (x < 0)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x) {\n"
+            "  if (0 > x)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x) {\n"
+            "  if (0 > x)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x) {\n"
+            "  if (x >= 0)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is positive is always true.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x) {\n"
+            "  if (x >= 0)"
+            "    return true;\n"
+            "  return false;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
     }

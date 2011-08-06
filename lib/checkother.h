@@ -103,6 +103,7 @@ public:
         checkOther.checkAlwaysTrueOrFalseStringCompare();
 
         checkOther.checkAssignBoolToPointer();
+        checkOther.checkSignOfUnsignedVariable();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -233,9 +234,11 @@ public:
     /** @brief check if token is a record type without side effects */
     bool isRecordTypeWithoutSideEffects(const Token *tok);
 
-
     /** @brief assigning bool to pointer */
     void checkAssignBoolToPointer();
+
+    /** @brief %Check for testing sign of unsigned variable */
+    void checkSignOfUnsignedVariable();
 
     // Error messages..
     void cstyleCastError(const Token *tok);
@@ -272,6 +275,8 @@ public:
     void alwaysTrueFalseStringCompare(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok);
     void assignBoolToPointerError(const Token *tok);
+    void unsignedLessThanZero(const Token *tok, const std::string &varname);
+    void unsignedPositive(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -323,6 +328,8 @@ public:
         c.duplicateExpressionError(0, 0, "&&");
         c.alwaysTrueFalseStringCompare(0, "str1", "str2");
         c.duplicateBreakError(0);
+        c.unsignedLessThanZero(0, "varname");
+        c.unsignedPositive(0, "varname");
     }
 
     std::string myName() const
@@ -370,6 +377,8 @@ public:
                "* suspicious condition (assignment+comparison)\n"
                "* suspicious condition (runtime comparison of string literals)\n"
                "* duplicate break statement\n"
+               "* testing if unsigned variable is negative\n"
+               "* testing is unsigned variable is positive\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
