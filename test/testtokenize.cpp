@@ -5578,8 +5578,8 @@ private:
 
     void simplifyCalculations()
     {
-	ASSERT_EQUALS("void foo ( char str [ ] ) { char x ; x = * str ; }",
-		      tokenizeAndStringify("void foo ( char str [ ] ) { char x = 0 | ( * str ) ; }", true));
+        ASSERT_EQUALS("void foo ( char str [ ] ) { char x ; x = * str ; }",
+                      tokenizeAndStringify("void foo ( char str [ ] ) { char x = 0 | ( * str ) ; }", true));
         ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
                       tokenizeAndStringify("void foo ( ) { if (b | 0) { } }", true));
         ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
