@@ -2510,6 +2510,13 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // convert Microsoft DEBUG_NEW macro to new
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "DEBUG_NEW")
+            tok->str("new");
+    }
+
     // typedef..
     simplifyTypedef();
 

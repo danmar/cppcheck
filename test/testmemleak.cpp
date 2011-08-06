@@ -971,6 +971,21 @@ private:
               "    Fred *f = new(std::nothrow) Fred;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #2971
+        check("void f()\n"
+              "{\n"
+              "    Fred *f = new(std::nothrow) Fred[10];\n"
+              "    delete f;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    struct Fred *f = new(std::nothrow) struct Fred[10];\n"
+              "    delete f;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: f\n", errout.str());
     }
 
 
@@ -1385,6 +1400,21 @@ private:
         check("void f()\n"
               "{\n"
               "    int *a = new int[10];\n"
+              "    free(a);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: a\n", errout.str());
+
+        // ticket #2971
+        check("void f()\n"
+              "{\n"
+              "    Fred *a = new Fred[10];\n"
+              "    free(a);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: a\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    struct Fred *a = new struct Fred[10];\n"
               "    free(a);\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: a\n", errout.str());

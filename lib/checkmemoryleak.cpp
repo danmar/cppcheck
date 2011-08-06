@@ -159,14 +159,14 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             return gMalloc;
     }
 
-    if (Token::Match(tok2, "new %type% [;()]") ||
-        Token::Match(tok2, "new ( std :: nothrow ) %type% [;()]") ||
-        Token::Match(tok2, "new ( nothrow ) %type% [;()]"))
+    if (Token::Match(tok2, "new struct| %type% [;()]") ||
+        Token::Match(tok2, "new ( std :: nothrow ) struct| %type% [;()]") ||
+        Token::Match(tok2, "new ( nothrow ) struct| %type% [;()]"))
         return New;
 
-    if (Token::Match(tok2, "new %type% [") ||
-        Token::Match(tok2, "new ( std :: nothrow ) %type% [") ||
-        Token::Match(tok2, "new ( nothrow ) %type% ["))
+    if (Token::Match(tok2, "new struct| %type% [") ||
+        Token::Match(tok2, "new ( std :: nothrow ) struct| %type% [") ||
+        Token::Match(tok2, "new ( nothrow ) struct| %type% ["))
         return NewArray;
 
     if (Token::Match(tok2, "fopen|tmpfile|g_fopen ("))
@@ -1035,23 +1035,26 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 // don't check classes..
                 if (alloc == CheckMemoryLeak::New)
                 {
-                    if (Token::Match(tok->tokAt(2), "new %type% [(;]"))
+                    if (Token::Match(tok->tokAt(2), "new struct| %type% [(;]"))
                     {
-                        if (isclass(_tokenizer, tok->tokAt(3), varid))
+                        const int offset = tok->strAt(3) == "struct" ? 1 : 0;
+                        if (isclass(_tokenizer, tok->tokAt(3 + offset), varid))
                         {
                             alloc = No;
                         }
                     }
-                    else if (Token::Match(tok->tokAt(2), "new ( nothrow ) %type%"))
+                    else if (Token::Match(tok->tokAt(2), "new ( nothrow ) struct| %type%"))
                     {
-                        if (isclass(_tokenizer, tok->tokAt(6), varid))
+                        const int offset = tok->strAt(6) == "struct" ? 1 : 0;
+                        if (isclass(_tokenizer, tok->tokAt(6 + offset), varid))
                         {
                             alloc = No;
                         }
                     }
-                    else if (Token::Match(tok->tokAt(2), "new ( std :: nothrow ) %type%"))
+                    else if (Token::Match(tok->tokAt(2), "new ( std :: nothrow ) struct| %type%"))
                     {
-                        if (isclass(_tokenizer, tok->tokAt(8), varid))
+                        const int offset = tok->strAt(8) == "struct" ? 1 : 0;
+                        if (isclass(_tokenizer, tok->tokAt(8 + offset), varid))
                         {
                             alloc = No;
                         }
