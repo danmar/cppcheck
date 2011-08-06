@@ -698,9 +698,11 @@ void CmdLineParser::PrintHelp()
               "                         https://sourceforge.net/projects/cppcheck/files/Articles/\n"
 #endif
               "    -s, --style          Deprecated, use --enable=style\n"
-              "    --suppress=<spec>    Suppress a specific warning. The format of <spec> is:\n"
+              "    --suppress=<spec>    Suppress warnings that match <spec>. The format of <spec>\n"
+              "                         is:\n"
               "                         [error id]:[filename]:[line]\n"
-              "                         The [filename] and [line] are optional.\n"
+              "                         The [filename] and [line] are optional. If [error id] is a\n"
+              "                         wildcard '*', all error ids match.\n"
               "    --suppressions-list=<file>\n"
               "                         Suppress warnings listed in the file. Each suppression\n"
               "                         is in the same format as <spec> above.\n"
