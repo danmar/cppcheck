@@ -107,6 +107,15 @@ static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
     return hFind;
 }
 
+static BOOL MyFileExists(std::string path)
+{
+    WCHAR * unicodeOss = new wchar_t[path.size() + 1];
+    TransformAnsiToUcs2(path.c_str(), unicodeOss, (path.size() + 1) * sizeof(WCHAR));
+    BOOL result = PathFileExists(unicodeOss);
+    delete [] unicodeOss;
+    return result;
+}
+
 #else // defined(UNICODE)
 
 static BOOL MyIsDirectory(std::string path)
@@ -123,6 +132,12 @@ static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
 {
     HANDLE hFind = FindFirstFile(path.c_str(), findData);
     return hFind;
+}
+
+static BOOL MyFileExists(std::string path)
+{
+    BOOL result = PathFileExists(path.c_str());
+    return result;
 }
 
 #endif // defined(UNICODE)
@@ -228,7 +243,7 @@ bool FileLister::isDirectory(const std::string &path)
 
 bool FileLister::fileExists(const std::string &path)
 {
-    if (PathFileExists(path.c_str()) == TRUE)
+    if (MyFileExists(path) == TRUE)
         return true;
     else
         return false;
