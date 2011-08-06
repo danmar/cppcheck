@@ -10044,7 +10044,7 @@ void Tokenizer::removeUnnecessaryQualification()
                 classInfo.pop_back();
             else if (tok->str() == classInfo.back().className &&
                      Token::Match(tok, "%type% :: %type% (") &&
-                     Token::Match(tok->tokAt(3)->link(), ") const| {|;") &&
+                     Token::Match(tok->tokAt(3)->link(), ") const| {|;|:") &&
                      tok->previous()->str() != ":" && !classInfo.back().isNamespace)
             {
                 std::string qualification = tok->str() + "::";

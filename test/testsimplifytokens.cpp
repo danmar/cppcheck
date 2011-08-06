@@ -360,6 +360,7 @@ private:
         TEST_CASE(removeUnnecessaryQualification4);
         TEST_CASE(removeUnnecessaryQualification5);
         TEST_CASE(removeUnnecessaryQualification6); // ticket #2859
+        TEST_CASE(removeUnnecessaryQualification7); // ticket #2970
 
         TEST_CASE(simplifyIfNotNull);
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
@@ -7219,6 +7220,18 @@ private:
                             "}\n";
         tok(code, false);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void removeUnnecessaryQualification7() // ticket #2970
+    {
+        const char code[] = "class TProcedure {\n"
+                            "public:\n"
+                            "    TProcedure::TProcedure(long endAddress) : m_lEndAddr(endAddress){}\n"
+                            "private:\n"
+                            "    long m_lEndAddr;\n"
+                            "}\n";
+        tok(code, false);
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Extra qualification 'TProcedure::' unnecessary and considered an error by many compilers.\n", errout.str());
     }
 
     void simplifyIfNotNull()
