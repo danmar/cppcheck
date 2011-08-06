@@ -99,6 +99,27 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     if (!filenames.empty())
     {
+        // Remove header files from the list of ignored files.
+        // Also output a warning for the user.
+        // TODO: Remove all unknown files? (use FileLister::acceptFile())
+        bool warned = false;
+        std::vector<std::string> ignored = parser.GetIgnoredPaths();
+        std::vector<std::string>::iterator iterIgnored = ignored.begin();
+        for (int i = (int)ignored.size() - 1; i >= 0; i--)
+        {
+            const std::string extension = Path::getFilenameExtension(ignored[i]);
+            if (extension == ".h" || extension == ".hpp")
+            {
+                ignored.erase(iterIgnored + i);
+                if (!warned)
+                {
+                    std::cout << "cppcheck: filename exclusion does not apply to header (.h and .hpp) files." << std::endl;
+                    std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
+                    warned = true; // Warn only once
+                }
+            }
+        }
+
         PathMatch matcher(parser.GetIgnoredPaths());
         std::vector<std::string>::iterator iterBegin = filenames.begin();
         for (int i = (int)filenames.size() - 1; i >= 0; i--)

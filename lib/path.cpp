@@ -127,3 +127,13 @@ std::string Path::removeQuotationMarks(const std::string &path)
     editPath.erase(std::remove(editPath.begin(), editPath.end(), '\"'), editPath.end());
     return editPath;
 }
+
+std::string Path::getFilenameExtension(const std::string &path)
+{
+    const std::string::size_type dotLocation = path.find_last_of('.');
+    if (dotLocation == std::string::npos)
+        return "";
+
+    const std::string extension = path.substr(dotLocation);
+    return extension;
+}

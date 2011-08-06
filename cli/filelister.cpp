@@ -33,11 +33,9 @@ static int tolowerWrapper(int c)
 
 bool FileLister::acceptFile(const std::string &filename)
 {
-    std::string::size_type dotLocation = filename.find_last_of('.');
-    if (dotLocation == std::string::npos)
+    std::string extension = Path::getFilenameExtension(filename);
+    if (extension == "")
         return false;
-
-    std::string extension = filename.substr(dotLocation);
     std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
 
     if (extension == ".cpp" ||

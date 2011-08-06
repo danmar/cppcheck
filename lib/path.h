@@ -70,6 +70,13 @@ public:
      * @return Cleaned path without quotation marks.
      */
     static std::string removeQuotationMarks(const std::string &path);
+
+    /**
+      * @brief Get an extension of the filename.
+      * @param path Path containing filename.
+      * @return Filename extension (containing the dot, e.g. ".h").
+      */
+    static std::string getFilenameExtension(const std::string &path);
 };
 
 /// @}
