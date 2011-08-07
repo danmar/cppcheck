@@ -8531,7 +8531,7 @@ void Tokenizer::simplifyEnum()
                         simplify = true;
                         hasClass = true;
                     }
-                    else if (inScope && !exitThisScope && (tok2->str() == enumType->str() || (tok2->str() == "enum" && tok2->next()->str() == enumType->str())))
+                    else if (inScope && !exitThisScope && (tok2->str() == enumType->str() || (tok2->str() == "enum" && tok2->next() && tok2->next()->str() == enumType->str())))
                     {
                         if (Token::simpleMatch(tok2->previous(), "::"))
                         {
