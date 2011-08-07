@@ -1244,9 +1244,20 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             ArrayInfo arrayInfo(var, _tokenizer);
             const Token *tok = var->nameToken();
             while (tok && tok->str() != ";")
+            {
+                if (tok->str() == "{")
+                {
+                    if (Token::simpleMatch(tok->previous(), "= {"))
+                        tok = tok->link();
+                    else
+                        break;
+                }
                 tok = tok->next();
+            }
             if (!tok)
                 break;
+            if (tok->str() == "{")
+                tok = tok->next();
             checkScope(tok, arrayInfo);
         }
     }
