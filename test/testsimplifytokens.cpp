@@ -3976,7 +3976,7 @@ private:
         // Tokenize..
         Settings settings;
         settings.inconclusive = true;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
         settings.debugwarnings = true;   // show warnings about unhandled typedef
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -6400,7 +6400,7 @@ private:
         // Tokenize..
         Settings settings;
         settings.inconclusive = true;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");

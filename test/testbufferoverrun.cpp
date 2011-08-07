@@ -43,7 +43,7 @@ private:
 
         Settings settings;
         settings.experimental = experimental;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

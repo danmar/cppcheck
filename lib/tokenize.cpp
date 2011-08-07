@@ -509,7 +509,7 @@ void Tokenizer::createTokens(std::istream &code)
 
 void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string &type)
 {
-    if (tok1 && !(_settings->_checkCodingStyle))
+    if (tok1 && !(_settings->isEnabled("style")))
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -543,7 +543,7 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
 
 void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type)
 {
-    if (tok1 && !(_settings->_checkCodingStyle))
+    if (tok1 && !(_settings->isEnabled("style")))
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -8054,7 +8054,7 @@ void Tokenizer::simplifyNestedStrcat()
 
 void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const std::string & type)
 {
-    if (tok1 && !(_settings->_checkCodingStyle))
+    if (tok1 && !(_settings->isEnabled("style")))
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;

@@ -5013,7 +5013,7 @@ private:
         // Tokenize..
         Settings settings;
         settings.inconclusive = true;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         errout.str("");

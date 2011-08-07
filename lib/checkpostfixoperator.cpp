@@ -35,7 +35,7 @@ CheckPostfixOperator instance;
 
 void CheckPostfixOperator::postfixOperator()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const Token *tok = _tokenizer->tokens();

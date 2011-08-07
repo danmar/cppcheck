@@ -41,7 +41,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
         settings.inconclusive = true;
 
         // Tokenize..

@@ -390,7 +390,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT(settings._checkCodingStyle);
+        ASSERT(settings.isEnabled("style"));
         ASSERT(settings.isEnabled("unusedFunction"));
         ASSERT(settings.isEnabled("missingInclude"));
     }
@@ -402,7 +402,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT(settings._checkCodingStyle);
+        ASSERT(settings.isEnabled("style"));
     }
 
     void enabledUnusedFunction()

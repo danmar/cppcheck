@@ -744,7 +744,7 @@ void CheckStl::stlBoundriesError(const Token *tok, const std::string &container_
 
 void CheckStl::if_find()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -844,7 +844,7 @@ bool CheckStl::isStlContainer(unsigned int varid)
 
 void CheckStl::size()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -1169,7 +1169,7 @@ void CheckStl::checkAutoPointer()
         {
             if (Token::Match(tok, "%var% = %var% ;"))
             {
-                if (_settings->_checkCodingStyle)
+                if (_settings->isEnabled("style"))
                 {
                     iter = autoPtrVarId.find(tok->next()->next()->varId());
                     if (iter != autoPtrVarId.end())

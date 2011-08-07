@@ -63,7 +63,7 @@ void CheckClass::createSymbolDatabase()
 
 void CheckClass::constructors()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     createSymbolDatabase();
@@ -570,7 +570,7 @@ void CheckClass::operatorEqVarError(const Token *tok, const std::string &classna
 
 void CheckClass::privateFunctions()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     // don't check code that contains templates. Templates that are
@@ -802,7 +802,7 @@ void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const
 
 void CheckClass::operatorEq()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     createSymbolDatabase();
@@ -841,7 +841,7 @@ void CheckClass::operatorEqReturnError(const Token *tok, const std::string &clas
 
 void CheckClass::operatorEqRetRefThis()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     createSymbolDatabase();
@@ -957,7 +957,7 @@ void CheckClass::operatorEqRetRefThisError(const Token *tok)
 
 void CheckClass::operatorEqToSelf()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     createSymbolDatabase();
@@ -1251,7 +1251,7 @@ void CheckClass::virtualDestructorError(const Token *tok, const std::string &Bas
 
 void CheckClass::thisSubtraction()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const Token *tok = _tokenizer->tokens();

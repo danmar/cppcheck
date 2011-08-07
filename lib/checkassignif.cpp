@@ -34,7 +34,7 @@ CheckAssignIf instance;
 
 void CheckAssignIf::assignIf()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -84,7 +84,7 @@ void CheckAssignIf::assignIfError(const Token *tok, bool result)
 
 void CheckAssignIf::comparison()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -140,7 +140,7 @@ void CheckAssignIf::comparisonError(const Token *tok, bool result)
 
 void CheckAssignIf::multiCondition()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
