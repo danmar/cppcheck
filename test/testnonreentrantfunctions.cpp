@@ -47,7 +47,7 @@ private:
         Settings settings;
         settings.addEnabled("posix");
         settings.inconclusive = true;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

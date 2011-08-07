@@ -2910,7 +2910,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
     // Check that public functions deallocate the pointers that they allocate.
     // There is no checking how these functions are used and therefore it
     // isn't established if there is real leaks or not.
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const unsigned int varid = classtok->varId();

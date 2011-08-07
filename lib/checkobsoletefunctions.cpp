@@ -33,7 +33,7 @@ CheckObsoleteFunctions instance;
 
 void CheckObsoleteFunctions::obsoleteFunctions()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     // Don't check C# and Java code

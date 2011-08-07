@@ -41,7 +41,7 @@ private:
 
         Settings settings;
         settings.inconclusive = showAll;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

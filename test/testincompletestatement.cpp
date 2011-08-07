@@ -42,7 +42,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

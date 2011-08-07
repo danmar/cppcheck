@@ -57,7 +57,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
         settings.addEnabled("posix");
 
         // Tokenize..

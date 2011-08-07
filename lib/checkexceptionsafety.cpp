@@ -35,7 +35,7 @@ CheckExceptionSafety instance;
 void CheckExceptionSafety::destructors()
 {
     // This is a style error..
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     // Perform check..
@@ -175,7 +175,7 @@ void CheckExceptionSafety::deallocThrow()
 //---------------------------------------------------------------------------
 void CheckExceptionSafety::checkRethrowCopy()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
     const char catchPattern[] = "catch ( const| %type% &|*| %var% ) { %any%";
 

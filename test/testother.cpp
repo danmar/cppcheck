@@ -136,7 +136,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
         settings.inconclusive = true;
 
         // Tokenize..
@@ -206,7 +206,7 @@ private:
             filename = "test.cpp";
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
         settings.experimental = true;
 
         // Preprocess file..
@@ -726,7 +726,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizerCpp(&settings, this);
@@ -825,7 +825,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -2896,7 +2896,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings._checkCodingStyle = true;
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

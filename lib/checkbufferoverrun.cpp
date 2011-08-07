@@ -115,7 +115,7 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varn
 
 void CheckBufferOverrun::strncatUsage(const Token *tok)
 {
-    if (_settings && !_settings->_checkCodingStyle)
+    if (_settings && !_settings->isEnabled("style"))
         return;
 
     reportError(tok, Severity::warning, "strncatUsage",
@@ -137,7 +137,7 @@ void CheckBufferOverrun::pointerOutOfBounds(const Token *tok, const std::string 
 
 void CheckBufferOverrun::sizeArgumentAsChar(const Token *tok)
 {
-    if (_settings && !_settings->_checkCodingStyle)
+    if (_settings && !_settings->isEnabled("style"))
         return;
     reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument is given as a char constant");
 }
@@ -1017,7 +1017,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         if (varid && Token::Match(tok, "= %varid% + %num% ;", varid))
         {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
-            if (index > size && _settings->_checkCodingStyle)
+            if (index > size && _settings->isEnabled("style"))
                 pointerOutOfBounds(tok->next(), "buffer");
             if (index >= size && Token::Match(tok->tokAt(-2), "[;{}] %varid% =", varid))
                 pointerIsOutOfBounds = true;
@@ -1127,7 +1127,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             checkFunctionCall(tok, arrayInfo);
         }
 
-        if (_settings->_checkCodingStyle)
+        if (_settings->isEnabled("style"))
         {
             // check for strncpy which is not terminated
             if ((Token::Match(tok, "strncpy ( %varid% , %var% , %num% )", arrayInfo.varid())))
@@ -1217,7 +1217,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
-        if (_settings->_checkCodingStyle && Token::Match(tok, "= %varid% + %num% ;", arrayInfo.varid()))
+        if (_settings->isEnabled("style") && Token::Match(tok, "= %varid% + %num% ;", arrayInfo.varid()))
         {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
             if (index < 0 || index > arrayInfo.num(0))
@@ -2186,7 +2186,7 @@ void CheckBufferOverrun::executionPaths()
 
 void CheckBufferOverrun::arrayIndexThenCheck()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {

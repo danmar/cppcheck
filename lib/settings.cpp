@@ -31,7 +31,6 @@
 Settings::Settings()
 {
     debug = debugwarnings = false;
-    _checkCodingStyle = false;
     _errorsOnly = false;
     _inlineSuppressions = false;
     _verbose = false;
@@ -389,12 +388,8 @@ std::string Settings::addEnabled(const std::string &str)
 
     bool handled = false;
 
-    if (str == "all")
-        handled = _checkCodingStyle = true;
-    else if (str == "style")
-        handled = _checkCodingStyle = true;
-
     std::set<std::string> id;
+    id.insert("style");
     id.insert("missingInclude");
     id.insert("unusedFunction");
     id.insert("information");

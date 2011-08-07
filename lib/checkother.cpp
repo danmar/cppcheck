@@ -37,7 +37,7 @@ CheckOther instance;
 
 void CheckOther::checkIncrementBoolean()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -70,7 +70,7 @@ void CheckOther::incrementBooleanError(const Token *tok)
 
 void CheckOther::clarifyCalculation()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -136,7 +136,7 @@ void CheckOther::clarifyCalculationError(const Token *tok, const std::string &op
 // Clarify condition '(x = a < 0)' into '((x = a) < 0)' or '(x = (a < 0))'
 void CheckOther::clarifyCondition()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -170,7 +170,7 @@ void CheckOther::clarifyConditionError(const Token *tok)
 
 void CheckOther::warningOldStylePointerCast()
 {
-    if (!_settings->_checkCodingStyle ||
+    if (!_settings->isEnabled("style") ||
         (_tokenizer->tokens() && _tokenizer->fileLine(_tokenizer->tokens()).find(".cpp") == std::string::npos))
         return;
 
@@ -368,7 +368,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 
 void CheckOther::checkSwitchCaseFallThrough()
 {
-    if (!(_settings->_checkCodingStyle && _settings->experimental))
+    if (!(_settings->isEnabled("style") && _settings->experimental))
         return;
 
     const char switchPattern[] = "switch (";
@@ -544,7 +544,7 @@ void CheckOther::checkSwitchCaseFallThrough()
 //---------------------------------------------------------------------------
 void CheckOther::checkSelfAssignment()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     // POD variables..
@@ -576,7 +576,7 @@ void CheckOther::checkSelfAssignment()
 //---------------------------------------------------------------------------
 void CheckOther::checkAssignmentInAssert()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const char assertPattern[] = "assert ( %any%";
@@ -608,7 +608,7 @@ void CheckOther::checkAssignmentInAssert()
 //---------------------------------------------------------------------------
 void CheckOther::checkIncorrectLogicOperator()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const char conditionPattern[] = "if|while (";
@@ -796,7 +796,7 @@ void CheckOther::checkIncorrectLogicOperator()
 //---------------------------------------------------------------------------
 void CheckOther::checkCatchExceptionByValue()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const char catchPattern[] = "} catch (";
@@ -903,7 +903,7 @@ void CheckOther::invalidFunctionUsage()
 
 void CheckOther::invalidScanf()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -946,7 +946,7 @@ void CheckOther::invalidScanf()
 //---------------------------------------------------------------------------
 void CheckOther::checkComparisonOfBoolWithInt()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -983,7 +983,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
 //---------------------------------------------------------------------------
 void CheckOther::checkDuplicateBreak()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const char breakPattern[] = "break|continue ; break|continue ;";
@@ -1058,7 +1058,7 @@ void CheckOther::invalidScanfError(const Token *tok)
 
 void CheckOther::checkUnsignedDivision()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     // Check for "ivar / uvar" and "uvar / ivar"
@@ -1809,7 +1809,7 @@ bool CheckOther::isRecordTypeWithoutSideEffects(const Token *tok)
 
 void CheckOther::functionVariableUsage()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     // Parse all executing scopes..
@@ -2711,7 +2711,7 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
 
 void CheckOther::checkConstantFunctionParameter()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -2777,7 +2777,7 @@ void CheckOther::checkConstantFunctionParameter()
 
 void CheckOther::checkStructMemberUsage()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     std::string structname;
@@ -2878,7 +2878,7 @@ void CheckOther::checkStructMemberUsage()
 
 void CheckOther::checkCharVariable()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -2978,7 +2978,7 @@ void CheckOther::checkCharVariable()
 
 void CheckOther::checkIncompleteStatement()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -3328,7 +3328,7 @@ static bool expressionHasSideEffects(const Token *first, const Token *last)
 
 void CheckOther::checkDuplicateIf()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -3409,7 +3409,7 @@ void CheckOther::duplicateIfError(const Token *tok1, const Token *tok2)
 
 void CheckOther::checkDuplicateBranch()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     if (!_settings->inconclusive)
@@ -3471,7 +3471,7 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
 
 void CheckOther::checkDuplicateExpression()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     // Parse all executing scopes..
@@ -3532,7 +3532,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
 
 void CheckOther::checkAlwaysTrueOrFalseStringCompare()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const char pattern1[] = "strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% )";
@@ -3709,7 +3709,7 @@ void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &v
 
 void CheckOther::sizeofsizeof()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -3732,7 +3732,7 @@ void CheckOther::sizeofsizeofError(const Token *tok)
 
 void CheckOther::sizeofCalculation()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -3873,7 +3873,7 @@ void CheckOther::assignBoolToPointerError(const Token *tok)
 
 void CheckOther::checkSignOfUnsignedVariable()
 {
-    if (!_settings->_checkCodingStyle)
+    if (!_settings->isEnabled("style"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();

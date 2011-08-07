@@ -66,9 +66,6 @@ public:
      */
     bool experimental;
 
-    /** @brief Is --style given? */
-    bool _checkCodingStyle;
-
     /** @brief Is --quiet given? */
     bool _errorsOnly;
 
