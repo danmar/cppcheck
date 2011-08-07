@@ -1203,6 +1203,15 @@ private:
               "    *p = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 3\n", errout.str());
+
+        // check, assign and use
+        check("void f() {\n"
+              "    char *p;\n"
+              "    if (p == 0 && (p = malloc(10)) != 0) {\n"
+              "        *p = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference

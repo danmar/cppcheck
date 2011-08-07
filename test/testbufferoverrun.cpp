@@ -442,6 +442,15 @@ private:
                   "}\n");
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            check("void foo(int a[10]) {\n"
+                  "    for (int i=0;i<50;++i) {\n"
+                  "        a[i] = 0;\n"
+                  "    }\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        }
     }
 
     void array_index_4()

@@ -665,6 +665,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             if (pointerVariables.find(varid) == pointerVariables.end())
                 continue;
 
+            if (Token::Match(vartok->next(), "&& ( %varid% =", varid))
+                continue;
+
             // if this is true then it is known that the pointer is null
             bool null = true;
 
