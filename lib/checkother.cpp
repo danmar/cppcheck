@@ -3627,13 +3627,10 @@ void CheckOther::charArrayIndexError(const Token *tok)
     reportError(tok,
                 Severity::warning,
                 "charArrayIndex",
-                "When using a char variable as array index, sign extension will mean buffer overflow.\n"
-                "When using a char variable as array index, sign extension will cause buffer overflows. For example:\n"
-                "    char c = 0x80;\n"
-                "    char buf[512];\n"
-                "    buf[c] = 13;    // buffer overflow, index must be a value between 0 and 511.\n"
-                "    printf(\"%i\", buf[0x80]);\n"
-                "There is a big chance that the value that is printed won't be 13.");
+                "Using char type as array index\n"
+                "Using signed char type as array index. If the value "
+                "can be greater than 127 there will be a buffer overflow "
+                "(because of sign extension).");
 }
 
 void CheckOther::charBitOpError(const Token *tok)

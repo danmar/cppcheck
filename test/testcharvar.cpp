@@ -77,20 +77,20 @@ private:
               "    char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) When using a char variable as array index, sign extension will mean buffer overflow.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Using char type as array index\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    signed char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) When using a char variable as array index, sign extension will mean buffer overflow.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Using char type as array index\n", errout.str());
 
         check("void foo(char ch)\n"
               "{\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) When using a char variable as array index, sign extension will mean buffer overflow.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Using char type as array index\n", errout.str());
     }
 
 
