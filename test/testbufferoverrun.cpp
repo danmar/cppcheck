@@ -2497,6 +2497,13 @@ private:
               "    s[10] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[1]' index 10 out of bounds\n", errout.str());
+
+        check("void foo() {\n"
+              "    const char *s = \"\";\n"
+              "    s = y();\n"
+              "    s[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // data is allocated with alloca
