@@ -3161,6 +3161,12 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
                     break;
                 }
 
+                // struct assignment..
+                else if (Token::Match(tok3, "= %varid% ;", structid))
+                {
+                    break;
+                }
+
                 // goto isn't handled well.. bail out even though there might be leaks
                 else if (tok3->str() == "goto")
                     break;

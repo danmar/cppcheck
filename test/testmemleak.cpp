@@ -4962,6 +4962,7 @@ private:
         // assignments
         TEST_CASE(assign1);
         TEST_CASE(assign2);
+        TEST_CASE(assign3);
 
         // Failed allocation
         TEST_CASE(failedAllocation);
@@ -5100,8 +5101,18 @@ private:
     {
         check("static void foo() {\n"
               "    struct ABC *abc = malloc(123);\n"
-              "    abc->a = abc->b = malloc(10)\n"
+              "    abc->a = abc->b = malloc(10);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign3()
+    {
+        check("void f(struct s *f1) {\n"
+              "    struct s f2;\n"
+              "    f2.a = malloc(100);\n"
+              "    *f1 = f2;\n"
+              "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 
