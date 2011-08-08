@@ -181,6 +181,7 @@ private:
         TEST_CASE(varid33);   // ticket #2875 (segmentation fault)
         TEST_CASE(varid34);   // ticket #2825
         TEST_CASE(varid35);   // ticket #2937
+        TEST_CASE(varid36);   // ticket #2980 (segmentation fault)
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -3014,6 +3015,13 @@ private:
                                  "3: return f ;\n"
                                  "4: }\n");
         TODO_ASSERT_EQUALS(expected, actual, tokenizeDebugListing(code));
+    }
+
+    void varid36()   // ticket #2980 (segmentation fault)
+    {
+        const std::string code("#elif A\n"
+                               "A,a<b<x0;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void varidFunctionCall1()

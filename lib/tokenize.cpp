@@ -3751,7 +3751,7 @@ void Tokenizer::setVarId()
 
                 if (level == 1 && Token::Match(tok2, "> %var%"))
                     tok = tok2;
-                else if (level > 1 && tok2->str() == ">")
+                else if (level > 1 && tok2 && tok2->str() == ">")
                 {
                     level--;
                     if (level == 0)
