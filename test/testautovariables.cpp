@@ -35,13 +35,13 @@ private:
 
 
 
-    void check(const char code[])
+    void check(const char code[], bool inconclusive=false)
     {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.debugwarnings = true;
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -183,8 +183,15 @@ private:
               "{\n"
               "    char a;\n"
               "    ab->a = &a;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(struct AB *ab)\n"
+              "{\n"
+              "    char a;\n"
+              "    ab->a = &a;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
     void testautovar6() // ticket #2931
@@ -193,8 +200,15 @@ private:
               "{\n"
               "    char a[10];\n"
               "    x->str = a;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(struct X *x)\n"
+              "{\n"
+              "    char a[10];\n"
+              "    x->str = a;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
     void testautovar_array1()

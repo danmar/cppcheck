@@ -83,7 +83,7 @@ private:
 
     void errorReturnAddressToAutoVariable(const Token *tok);
     void errorReturnPointerToLocalArray(const Token *tok);
-    void errorAutoVariableAssignment(const Token *tok);
+    void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnReference(const Token *tok);
     void errorReturnTempReference(const Token *tok);
     void errorReturnAutocstr(const Token *tok);
@@ -93,7 +93,7 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckAutoVariables c(0,settings,errorLogger);
-        c.errorAutoVariableAssignment(0);
+        c.errorAutoVariableAssignment(0, false);
         c.errorReturnAddressToAutoVariable(0);
         c.errorReturnPointerToLocalArray(0);
         c.errorReturnReference(0);

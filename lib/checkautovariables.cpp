@@ -99,27 +99,35 @@ void CheckAutoVariables::autoVariables()
             {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId());
                 if (var && (!var->isClass() || var->type()))
-                    errorAutoVariableAssignment(tok);
+                    errorAutoVariableAssignment(tok, false);
             }
             else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%"))
             {
-                const Variable * var1 = symbolDatabase->getVariableFromVarId(tok->tokAt(1)->varId());
-                if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-2), "%type% *"))
+                // TODO: check if the parameter is only changed temporarily (#2969)
+                if (_settings->inconclusive)
                 {
-                    const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(6)->varId());
-                    if (var2 && var2->isLocal() && !var2->isStatic())
-                        errorAutoVariableAssignment(tok);
+                    const Variable * var1 = symbolDatabase->getVariableFromVarId(tok->tokAt(1)->varId());
+                    if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-2), "%type% *"))
+                    {
+                        const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(6)->varId());
+                        if (var2 && var2->isLocal() && !var2->isStatic())
+                            errorAutoVariableAssignment(tok, _settings->inconclusive);
+                    }
                 }
                 tok = tok->tokAt(6);
             }
             else if (Token::Match(tok, "[;{}] %var% . %var% = %var% ;"))
             {
-                const Variable * var1 = symbolDatabase->getVariableFromVarId(tok->tokAt(1)->varId());
-                if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-2), "%type% *"))
+                // TODO: check if the parameter is only changed temporarily (#2969)
+                if (_settings->inconclusive)
                 {
-                    const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId());
-                    if (var2 && var2->isLocal() && var2->isArray() && !var2->isStatic())
-                        errorAutoVariableAssignment(tok);
+                    const Variable * var1 = symbolDatabase->getVariableFromVarId(tok->tokAt(1)->varId());
+                    if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-2), "%type% *"))
+                    {
+                        const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId());
+                        if (var2 && var2->isLocal() && var2->isArray() && !var2->isStatic())
+                            errorAutoVariableAssignment(tok, _settings->inconclusive);
+                    }
                 }
                 tok = tok->tokAt(5);
             }
@@ -130,13 +138,13 @@ void CheckAutoVariables::autoVariables()
                 {
                     const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(4)->varId());
                     if (var2 && var2->isLocal() && var2->isArray() && !var2->isStatic())
-                        errorAutoVariableAssignment(tok);
+                        errorAutoVariableAssignment(tok, false);
                 }
                 tok = tok->tokAt(4);
             }
             else if (Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(7)))
             {
-                errorAutoVariableAssignment(tok);
+                errorAutoVariableAssignment(tok, false);
             }
             // Critical return
             else if (Token::Match(tok, "return & %var% ;") && isAutoVar(tok->tokAt(2)->varId()))
@@ -220,14 +228,26 @@ void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)
     reportError(tok, Severity::error, "returnLocalVariable", "Returning pointer to local array variable");
 }
 
-void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok)
+void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::error, "autoVariables",
-                "Assigning address of local auto-variable to a function parameter.\n"
-                "Dangerous assignment - function parameter takes the address of a local "
-                "auto-variable. Local auto-variables are reserved from the stack. And the "
-                "stack is freed when the function ends. So the pointer to a local variable "
-                "is invalid after the function ends.");
+    if (!inconclusive)
+    {
+        reportError(tok, Severity::error, "autoVariables",
+                    "Assigning address of local auto-variable to a function parameter.\n"
+                    "Dangerous assignment - function parameter takes the address of a local "
+                    "auto-variable. Local auto-variables are reserved from the stack. And the "
+                    "stack is freed when the function ends. So the pointer to a local variable "
+                    "is invalid after the function ends.");
+    }
+    else
+    {
+        reportInconclusiveError(tok, Severity::error, "autoVariables",
+                                "Inconclusive: Assigning address of local auto-variable to a function parameter.\n"
+                                "Inconclusive: function parameter takes the address of a local auto-variable. "
+                                "Local auto-variables are reserved from the stack. And the stack is freed when "
+                                "the function ends. The address is invalid after the function ends and it "
+                                "might 'leak' from the function through the parameter.");
+    }
 }
 
 //---------------------------------------------------------------------------
