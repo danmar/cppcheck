@@ -1773,7 +1773,7 @@ void Tokenizer::simplifyTypedef()
                         // don't add parenthesis around function names because it
                         // confuses other simplifications
                         bool needParen = true;
-                        if (!inTemplate && function && tok2->next()->str() != "*")
+                        if (!inTemplate && function && tok2->next() && tok2->next()->str() != "*")
                             needParen = false;
                         if (needParen)
                         {

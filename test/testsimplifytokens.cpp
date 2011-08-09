@@ -262,6 +262,7 @@ private:
         TEST_CASE(simplifyTypedef94); // ticket #1982
         TEST_CASE(simplifyTypedef95); // ticket #2844
         TEST_CASE(simplifyTypedef96); // ticket #2886
+        TEST_CASE(simplifyTypedef97); // ticket #2983 (segmentation fault)
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5336,6 +5337,14 @@ private:
         const char code[] = "typedef struct x { }\n";
         sizeof_(code);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void simplifyTypedef97() // ticket #2983 (segmentation fault)
+    {
+        const char code[] = "typedef x y\n"
+                            "(A); y\n";
+        sizeof_(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1()
