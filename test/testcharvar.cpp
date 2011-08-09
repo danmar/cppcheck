@@ -91,6 +91,12 @@ private:
               "    buf[ch] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Using char type as array index\n", errout.str());
+
+        check("void foo(const char str[])\n"
+              "{\n"
+              "    map[str] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

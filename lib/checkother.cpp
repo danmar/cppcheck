@@ -2916,11 +2916,14 @@ void CheckOther::checkCharVariable()
                         break;
                 }
 
-                std::string temp = "%var% [ " + tok->str() + " ]";
-                if ((tok2->str() != ".") && Token::Match(tok2->next(), temp.c_str()))
+                if (!isPointer)
                 {
-                    charArrayIndexError(tok2->next());
-                    break;
+                    std::string temp = "%var% [ " + tok->str() + " ]";
+                    if ((tok2->str() != ".") && Token::Match(tok2->next(), temp.c_str()))
+                    {
+                        charArrayIndexError(tok2->next());
+                        break;
+                    }
                 }
 
                 if (Token::Match(tok2, "[;{}] %var% = %any% [&|] %any% ;"))
