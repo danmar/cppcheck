@@ -140,6 +140,7 @@ private:
         TEST_CASE(buffer_overrun_17); // ticket #2548
         TEST_CASE(buffer_overrun_18); // ticket #2576 - for, calculation with loop variable
         TEST_CASE(buffer_overrun_19); // #2597 - class member with unknown type
+        TEST_CASE(buffer_overrun_20); // #2986 (segmentation fault)
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
 
         // It is undefined behaviour to point out of bounds of an array
@@ -1966,6 +1967,12 @@ private:
               "A::A() {\n"
               "    memset(buf, 0, 10);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void buffer_overrun_20() // #2986(segmentation fault)
+    {
+        check("x[y]\n");
         ASSERT_EQUALS("", errout.str());
     }
 

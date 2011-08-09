@@ -2214,8 +2214,12 @@ void CheckBufferOverrun::arrayIndexThenCheck()
 
             // skip array index..
             tok = tok->tokAt(4);
-            while (tok->str() == "[")
+            while (tok && tok->str() == "[")
                 tok = tok->link()->next();
+
+            // syntax error
+            if (!tok)
+                return;
 
             // skip comparison
             if (Token::Match(tok, "==|!=|<|<=|>|>= %any% &&"))
