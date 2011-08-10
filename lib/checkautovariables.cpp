@@ -56,6 +56,14 @@ bool CheckAutoVariables::isAutoVar(unsigned int varId)
     if (!var || !var->isLocal() || var->isStatic() || var->isArray() || var->typeEndToken()->str() == "*")
         return false;
 
+    if (Token::simpleMatch(var->nameToken()->previous(), "&"))
+    {
+        // address of reference variable can be taken if the address
+        // of the variable it points at is not a auto-var
+        // TODO: check what the reference variable references.
+        return false;
+    }
+
     return true;
 }
 

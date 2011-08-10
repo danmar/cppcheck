@@ -77,6 +77,7 @@ private:
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
         TEST_CASE(testautovar_return2);
+        TEST_CASE(testautovar_return3);
         TEST_CASE(testautovar_extern);
         TEST_CASE(testinvaliddealloc);
         TEST_CASE(testassign1);  // Ticket #1819
@@ -255,6 +256,17 @@ private:
               "    return &num;"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Return of the address of an auto-variable\n", errout.str());
+    }
+
+    void testautovar_return3()
+    {
+        // #2975 - FP
+        check("void** f()\n"
+              "{\n"
+              "    void *&value = tls[id];"
+              "    return &value;"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar_extern()

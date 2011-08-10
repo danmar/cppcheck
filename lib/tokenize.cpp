@@ -2082,20 +2082,23 @@ void Tokenizer::simplifyMulAnd(void)
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        //fix Ticket #2784
-        if (Token::Match(tok->next(), "* & %any% ="))
+        if (Token::Match(tok, "[;{}] *"))
         {
-            tok->deleteNext(); //del *
-            tok->deleteNext(); //del &
-            continue;
-        }
-        if (Token::Match(tok->next(), "* ( & %any% ) ="))
-        {
-            tok->deleteNext(); //del *
-            tok->deleteNext(); //del (
-            tok->deleteNext(); //del &
-            tok->next()->deleteNext(); //del )
-            continue;
+            //fix Ticket #2784
+            if (Token::Match(tok->next(), "* & %any% ="))
+            {
+                tok->deleteNext(); //del *
+                tok->deleteNext(); //del &
+                continue;
+            }
+            if (Token::Match(tok->next(), "* ( & %any% ) ="))
+            {
+                tok->deleteNext(); //del *
+                tok->deleteNext(); //del (
+                tok->deleteNext(); //del &
+                tok->next()->deleteNext(); //del )
+                continue;
+            }
         }
     }
 }
@@ -2115,7 +2118,7 @@ bool Tokenizer::tokenize(std::istream &code,
 
     createTokens(code);
 
-    // simplify '* & %any% =' to '%any% ='
+    // simplify '[;{}] * & %any% =' to '%any% ='
     simplifyMulAnd();
 
     // Convert C# code
