@@ -42,7 +42,8 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
+        if (style)
+            settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
