@@ -298,7 +298,7 @@ int main(int argc, char **argv)
     fout << "\t$(CXX) -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib\n\n";
     fout << "clean:\n";
 #ifdef _WIN32
-    fout << "\tdel lib\*.o\n\tdel cli\*.o\n\tdel test\*.o\n\tdel *.exe\n";
+    fout << "\tdel lib\\*.o\n\tdel cli\\*.o\n\tdel test\\*.o\n\tdel *.exe\n";
 #else
     fout << "\trm -f lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner cppcheck cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
