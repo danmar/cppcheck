@@ -263,6 +263,7 @@ private:
         TEST_CASE(simplifyTypedef95); // ticket #2844
         TEST_CASE(simplifyTypedef96); // ticket #2886
         TEST_CASE(simplifyTypedef97); // ticket #2983 (segmentation fault)
+        TEST_CASE(simplifyTypedef98); // ticket #2963
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5343,6 +5344,15 @@ private:
     {
         const char code[] = "typedef x y\n"
                             "(A); y\n";
+        sizeof_(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef98() // ticket #2963
+    {
+        const char code[] = "#define X type ## __LINE__\n"
+                            "typedef int X;\n"
+                            "typedef int X;\n";
         sizeof_(code);
         ASSERT_EQUALS("", errout.str());
     }

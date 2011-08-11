@@ -2118,6 +2118,29 @@ bool Tokenizer::tokenize(std::istream &code,
 
     createTokens(code);
 
+    // replace __LINE__ macro with line number
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "__LINE__")
+        {
+            tok->str(MathLib::toString(tok->linenr()));
+            tok->isNumber(true);
+        }
+    }
+
+    // token concatenation
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%var%|%num% ## %var%|%num%"))
+        {
+            tok->str(tok->str() + tok->strAt(2));
+            tok->deleteNext();
+            tok->deleteNext();
+            if (tok->previous())
+                tok = tok->previous();
+        }
+    }
+
     // simplify '[;{}] * & %any% =' to '%any% ='
     simplifyMulAnd();
 

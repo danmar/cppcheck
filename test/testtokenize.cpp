@@ -3796,7 +3796,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << tok->str() << " ";
 
-        ASSERT_EQUALS("TEST ( var , val ) var ## _ ## val = val ", ostr.str());
+        ASSERT_EQUALS("TEST ( var , val ) var_val = val ", ostr.str());
     }
 
     void macrodoublesharp()
