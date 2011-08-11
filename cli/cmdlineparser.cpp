@@ -660,7 +660,7 @@ void CmdLineParser::PrintHelp()
               "                          * missingInclude\n"
               "                                  Warn if there are missing includes.\n"
               "                                  For detailed information use --check-config\n"
-              "                           * posix\n"
+              "                          * posix\n"
               "                                  Enable checks specific for POSIX-compiliant\n"
               "                                  code.\n"
               "                         Several ids can be given if you separate them with\n"
