@@ -21,11 +21,7 @@ Running
 As each test is compiled as single executable binary you can run the test just
 by running the executable.
 
-If you want to run all the tests, you can run them all using the runtests.py
--script. Just run the script in the tests root folder:
- - ./runtests  in linux
- - python runtests.py  in Windows
-
-The script runs all the test binaries it founds and then outputs the total
-number of tests passed / failed (or not run).
+You can get from
+ http://bitbucket.org/kimmov/testrun
+a script which runs all the tests and collects the results.
 
