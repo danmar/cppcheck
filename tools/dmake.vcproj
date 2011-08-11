@@ -185,11 +185,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\lib\filelister.cpp"
+				RelativePath="..\cli\filelister.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\filelister_win32.cpp"
+				RelativePath="..\lib\path.cpp"
 				>
 			</File>
 		</Filter>
@@ -199,11 +199,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\lib\filelister.h"
+				RelativePath="..\cli\filelister.h"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\filelister_win32.h"
+				RelativePath="..\lib\path.h"
 				>
 			</File>
 		</Filter>
