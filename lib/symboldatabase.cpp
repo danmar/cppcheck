@@ -1008,6 +1008,10 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
     else
         tok1 = (*tok)->tokAt(-2);
 
+    // syntax error?
+    if (!tok1)
+        return;
+
     // back up to head of path
     while (tok1 && tok1->previous() && tok1->previous()->str() == "::")
     {
