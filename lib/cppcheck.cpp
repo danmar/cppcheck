@@ -35,6 +35,9 @@
 #include <pcre.h>
 #endif
 
+static const char Version[] = "1.49";
+static const char ExtraVersion[] = "";
+
 static TimerResults S_timerResults;
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
@@ -56,7 +59,12 @@ void CppCheck::settings(const Settings &currentSettings)
 
 const char * CppCheck::version()
 {
-    return "1.49";
+    return Version;
+}
+
+const char * CppCheck::extraVersion()
+{
+    return ExtraVersion;
 }
 
 unsigned int CppCheck::check(const std::string &path)

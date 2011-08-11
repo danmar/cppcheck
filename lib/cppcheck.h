@@ -105,6 +105,14 @@ public:
      */
     static const char * version();
 
+    /**
+     * @brief Returns extra version info as a string.
+     * This is for returning extra version info, like Git commit id, build
+     * time/date etc.
+     * @return extra version info, e.g. "04d42151" (Git commit id).
+     */
+    static const char * extraVersion();
+
     virtual void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal);
 
     /**

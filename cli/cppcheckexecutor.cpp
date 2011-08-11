@@ -24,6 +24,7 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
+#include <cstring>
 #include "cmdlineparser.h"
 #include "filelister.h"
 #include "path.h"
@@ -50,7 +51,12 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     {
         if (parser.GetShowVersion() && !parser.GetShowErrorMessages())
         {
-            std::cout << "Cppcheck " << cppcheck->version() << std::endl;
+            const char * extraVersion = cppcheck->extraVersion();
+            if (strlen(extraVersion) > 0)
+                std::cout << "Cppcheck " << cppcheck->version() << " ("
+                          << extraVersion << ")" << std::endl;
+            else
+                std::cout << "Cppcheck " << cppcheck->version() << std::endl;
         }
 
         if (parser.GetShowErrorMessages())
