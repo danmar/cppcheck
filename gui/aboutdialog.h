@@ -36,7 +36,8 @@ class AboutDialog : public QDialog
 {
     Q_OBJECT
 public:
-    AboutDialog(const QString &version, QWidget *parent = 0);
+    AboutDialog(const QString &version, const QString &extraVersion,
+                QWidget *parent = 0);
 
 private:
     Ui::About mUI;

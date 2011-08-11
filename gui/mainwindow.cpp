@@ -680,7 +680,7 @@ void MainWindow::ToggleAllChecked(bool checked)
 
 void MainWindow::About()
 {
-    AboutDialog *dlg = new AboutDialog(CppCheck::version(), this);
+    AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), this);
     dlg->exec();
 }
 

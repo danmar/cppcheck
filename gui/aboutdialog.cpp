@@ -21,12 +21,17 @@
 #include <QString>
 #include "aboutdialog.h"
 
-AboutDialog::AboutDialog(const QString &version, QWidget *parent)
+AboutDialog::AboutDialog(const QString &version, const QString &extraVersion, QWidget *parent)
     : QDialog(parent)
 {
     mUI.setupUi(this);
 
-    mUI.mVersion->setText(mUI.mVersion->text().arg(version));
+    QString fmtVersion(version);
+    if (!extraVersion.isEmpty())
+    {
+        fmtVersion += " (" + extraVersion + ")";
+    }
+    mUI.mVersion->setText(mUI.mVersion->text().arg(fmtVersion));
     QString url = "<a href=\"http://cppcheck.sourceforge.net/\">http://cppcheck.sourceforge.net/</a>";
     mUI.mHomepage->setText(mUI.mHomepage->text().arg(url));
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
