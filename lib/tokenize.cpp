@@ -2122,10 +2122,7 @@ bool Tokenizer::tokenize(std::istream &code,
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->str() == "__LINE__")
-        {
             tok->str(MathLib::toString(tok->linenr()));
-            tok->isNumber(true);
-        }
     }
 
     // token concatenation
