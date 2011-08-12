@@ -15,5 +15,6 @@
     </paths>
     <ignore>
         <path name="gui/temp/"/>
+        <path name="test/test.cxx"/>
     </ignore>
 </project>
