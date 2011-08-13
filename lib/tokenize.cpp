@@ -6350,7 +6350,7 @@ void Tokenizer::simplifyIfAssign()
                 ++indentlevel;
             else if (tok2->str() == ")")
             {
-                if (indentlevel <= 0)
+                if (indentlevel == 0)
                     break;
                 --indentlevel;
             }
