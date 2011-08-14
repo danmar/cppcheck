@@ -505,6 +505,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
 
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     // Dereferencing a pointer and then checking if it's NULL..
     // This check will first scan for the check. And then scan backwards
     // from the check, searching for dereferencing.
@@ -532,7 +534,11 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                 continue;
 
             // Token where pointer is declared
-            const Token * const decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
+            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+            if (!var)
+                continue;
+
+            const Token * const decltok = var->nameToken();
 
             for (const Token *tok1 = tok->previous(); tok1 && tok1 != decltok; tok1 = tok1->previous())
             {
@@ -557,9 +563,9 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
                     if (Token::Match(tok2, "[;{}] %var% ( %varid% ,", varid))
                     {
-                        std::list<const Token *> var;
-                        parseFunctionCall(*(tok2->next()), var, 0);
-                        if (!var.empty() && var.front() == tok2->tokAt(3))
+                        std::list<const Token *> varlist;
+                        parseFunctionCall(*(tok2->next()), varlist, 0);
+                        if (!varlist.empty() && varlist.front() == tok2->tokAt(3))
                         {
                             nullPointerError(tok2->tokAt(3), varname, tok->linenr());
                             break;
@@ -567,8 +573,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     }
 
                     // calling unknown function => it might initialize the pointer
-                    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
-                    if (!var || !(var->isLocal() || var->isArgument()))
+                    if (!(var->isLocal() || var->isArgument()))
                         break;
                 }
 
