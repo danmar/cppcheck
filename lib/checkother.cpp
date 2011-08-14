@@ -2887,6 +2887,8 @@ void CheckOther::checkCharVariable()
     if (!_settings->isEnabled("style"))
         return;
 
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring the variable..
@@ -2948,7 +2950,8 @@ void CheckOther::checkCharVariable()
                     }
 
                     // is the result stored in a short|int|long?
-                    if (!Token::findmatch(_tokenizer->tokens(), "short|int|long %varid%", tok2->next()->varId()))
+                    const Variable *var = symbolDatabase->getVariableFromVarId(tok2->next()->varId());
+                    if (!(var && Token::Match(var->typeEndToken(), "short|int|long")))
                         continue;
 
                     // This is an error..
@@ -2963,7 +2966,8 @@ void CheckOther::checkCharVariable()
                         continue;
 
                     // is the result stored in a short|int|long?
-                    if (!Token::findmatch(_tokenizer->tokens(), "short|int|long %varid%", tok2->next()->varId()))
+                    const Variable *var = symbolDatabase->getVariableFromVarId(tok2->next()->varId());
+                    if (!(var && Token::Match(var->typeEndToken(), "short|int|long")))
                         continue;
 
                     // This is an error..
