@@ -1716,8 +1716,10 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             continue;
         }
 
-        std::string def = getdef(line, true);
-        std::string ndef = getdef(line, false);
+        const std::string def = getdef(line, true);
+        const std::string ndef = getdef(line, false);
+
+        const bool emptymatch = matching_ifdef.empty() | matched_ifdef.empty();
 
         if (line.compare(0, 8, "#define ") == 0)
         {
@@ -1742,7 +1744,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             }
         }
 
-        else if (line.compare(0, 7, "#elif !") == 0)
+        else if (!emptymatch && line.compare(0, 7, "#elif !") == 0)
         {
             if (matched_ifdef.back())
             {
@@ -1758,7 +1760,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             }
         }
 
-        else if (line.compare(0, 6, "#elif ") == 0)
+        else if (!emptymatch && line.compare(0, 6, "#elif ") == 0)
         {
             if (matched_ifdef.back())
             {
@@ -1786,7 +1788,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             matched_ifdef.push_back(matching_ifdef.back());
         }
 
-        else if (line == "#else")
+        else if (!emptymatch && line == "#else")
         {
             if (! matched_ifdef.empty())
                 matching_ifdef.back() = ! matched_ifdef.back();
