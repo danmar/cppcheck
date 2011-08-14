@@ -244,6 +244,7 @@ int main(int argc, char **argv)
                                 "-Wcast-qual "
 //                                "-Wsign-conversion "
 //                                "-Wconversion "
+                                "-D_GLIBCXX_DEBUG "
                                 "-g");
     }
 
