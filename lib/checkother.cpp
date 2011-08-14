@@ -40,14 +40,17 @@ void CheckOther::checkIncrementBoolean()
     if (!_settings->isEnabled("style"))
         return;
 
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "%var% ++"))
         {
             if (tok->varId())
             {
-                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "bool %varid%", tok->varId());
-                if (declTok)
+                const Variable *var = symbolDatabase->getVariableFromVarId(tok->varId());
+
+                if (var && var->typeEndToken()->str() == "bool")
                     incrementBooleanError(tok);
             }
         }
