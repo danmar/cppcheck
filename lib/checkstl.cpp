@@ -746,6 +746,9 @@ void CheckStl::if_find()
 {
     if (!_settings->isEnabled("style"))
         return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "if ( !| %var% . find ( %any% ) )"))
@@ -756,10 +759,11 @@ void CheckStl::if_find()
                 tok = tok->next();
 
             const unsigned int varid = tok->varId();
-            if (varid > 0)
+            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+            if (var)
             {
                 // Is the variable a std::string or STL container?
-                const Token * decl = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
+                const Token * decl = var->nameToken();
                 while (decl && !Token::Match(decl, "[;{}(,]"))
                     decl = decl->previous();
 
