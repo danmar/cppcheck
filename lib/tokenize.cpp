@@ -576,7 +576,7 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
 }
 
 // check if this statement is a duplicate definition
-bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef)
+bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, bool undefinedStruct)
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
@@ -713,6 +713,12 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 typeDef->strAt(3) != "{")
                             {
                                 // declaration after forward declaration
+                                return true;
+                            }
+                            else if (tok->next()->str() == "{")
+                            {
+                                if (!undefinedStruct)
+                                    duplicateTypedefError(*tokPtr, name, "Struct");
                                 return true;
                             }
                             else if (tok->next()->str() != ";")
@@ -1071,14 +1077,25 @@ void Tokenizer::simplifyTypedef()
             }
         }
 
-        /** @todo add support for struct and union */
-        if (Token::Match(tok, "typedef enum %type% %type% ;") && tok->strAt(2) == tok->strAt(3))
+        /** @todo add support for union */
+        bool undefinedStruct = false;
+        if (Token::Match(tok, "typedef enum|struct %type% %type% ;") && tok->strAt(2) == tok->strAt(3))
         {
-            tok->deleteThis();
-            tok->deleteThis();
-            tok->deleteThis();
-            tok->deleteThis();
-            continue;
+            if (tok->strAt(1) == "enum")
+            {
+                tok->deleteThis();
+                tok->deleteThis();
+                tok->deleteThis();
+                tok->deleteThis();
+                continue;
+            }
+            else
+            {
+                const std::string pattern("struct " + tok->strAt(2) + " {|:");
+                const Token *tok2 = Token::findmatch(_tokens, pattern.c_str(), tok);
+                if (!tok2)
+                    undefinedStruct = true;
+            }
         }
 
         Token *typeName;
@@ -1620,7 +1637,7 @@ void Tokenizer::simplifyTypedef()
                         {
                             tok2 = tok2->next();
                         }
-                        else if (duplicateTypedef(&tok2, typeName, typeDef))
+                        else if (duplicateTypedef(&tok2, typeName, typeDef, undefinedStruct))
                         {
                             exitScope = scope;
 

@@ -637,7 +637,7 @@ public:
      */
     void duplicateEnumError(const Token *tok1, const Token *tok2, const std::string & type);
 
-    bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef);
+    bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, bool undefinedStruct);
     void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type);
 
     /**
