@@ -1,3 +1,1611 @@
+2011-08-14  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cppcheck.rc, cli/main.cpp, lib/cppcheck.cpp,
+	man/manual.docbook, win_installer/productInfo.wxi: 1.50: Updated
+	version
+
+2011-08-13  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp: fix [tokenize.cpp:6353]: (style) Checking if
+	unsigned variable 'indentlevel' is less than zero.
+
+2011-08-12  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/data/benchmark/simple.cpp: GUITESTS: Replace benchmark
+	data file.  The benchmark data file had errors when checking with Cppcheck.  And
+	people reported these errors. So replace the file with one that has
+	no (currently found) errors.
+
+2011-08-12  Kimmo Varis <kimmov@gmail.com>
+
+	* cppcheck.cppcheck: GUI: Exclude test file from project file.  The 'test/test.cxx' is a test file that contains some errors for
+	testing purposes. Exclude it from the GUI-project file used to check
+	Cppcheck sources so people don't report errors from it.
+
+2011-08-12  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp: removed redundant set isNumber flag from
+	previous commit
+
+2011-08-11  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp,
+	test/testtokenize.cpp: fix #2963 (FP: Typedef names considered
+	duplicate because __LINE__ not expanded)
+
+2011-08-11  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp, test/testsymboldatabase.cpp: fix #2991
+	(segmentation fault of cppcheck ( ::y(){x} ))
+
+2011-08-12  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/readme.txt, gui/test/runtests.py: GUITESTS: Remove the
+	running script.  The script is available in another repository. I don't want to
+	distribute it with Cppcheck sources for now. Maybe if and when there
+	is more interest towards GUI tests...
+
+2011-08-11  Kimmo Varis <kimmov@gmail.com>
+
+	* tools/dmake.cpp: dmake: Fix build in Windows.
+
+2011-08-11  Kimmo Varis <kimmov@gmail.com>
+
+	* tools/dmake.vcproj: Tools: Update VS project file.
+
+2011-08-11  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/aboutdialog.cpp, gui/aboutdialog.h, gui/mainwindow.cpp: GUI:
+	Show extraversion in About-dialog.  If the "extra version" is defined (not empty) then it is shown after
+	the actual version number in the About-dialog.  Ticket: #2164 ([GUI] Add revision info to "About" window)
+
+2011-08-11  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cppcheckexecutor.cpp, lib/cppcheck.cpp, lib/cppcheck.h: Add
+	"ExtraVersion" version number information.  The "ExtraVersion" can be used for things like Git commit Id,
+	release tag (version control), release date etc. If the string is
+	empty, nothing is printed.
+
+2011-08-11  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cmdlineparser.cpp: CLI: Fix misalign of "posix" in help text.  Ticket: #2992 (Little misalignment of '* posix' by one space in CLI
+	command help)
+
+2011-08-11  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cmdlineparser.cpp: CLI: Fix word-wrapping of the help text.
+
+2011-08-11  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cmdlineparser.cpp: CLI: Reword the help text for -i.  New help text emphasizes we are ignoring/excluding source files.
+	The header files (include via source files) are not touched.  Ticket: #2965 (CLI: need better description for -i option (applies
+	only to source files))
+
+2011-08-10  Kimmo Varis <kimmov@gmail.com>
+
+	* tools/Makefile: Tools: fix Makefile tools/ Makefile contained errmsg target whose source does not exist
+	anymore. And it didn't have a target for extracttests.  Removed the
+	errmsg target and added new target for extracttests.  Ticket: #2988 (In tools, make error: no rule to make target
+	`errmsg.cpp', needed by `errmsg'.)
+
+2011-08-10  Kimmo Varis <kimmov@gmail.com>
+
+	* test/testdivision.cpp: Tests: Re-enable style param for
+	testdivision.  My earlier commit (cfcfa3f0) removed the use of style parameter.
+	This commit adds it back.  Ticket: #2987 (GCC: warning: unused parameter ‘style’ in
+	test/testdivision.cpp:39:10)
+
+2011-08-10  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkautovariables.cpp, lib/tokenize.cpp,
+	test/testautovariables.cpp: Fixed #2975 (False positive: Return of
+	the address of an auto-variable)
+
+2011-08-09  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: fix #2986
+	(segmentation fault of cppcheck ( x[y] ))
+
+2011-08-09  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #2983
+	(segmentation fault of cppcheck)
+
+2011-08-09  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkautovariables.cpp, lib/checkautovariables.h,
+	test/testautovariables.cpp: Fixed #2969 (False positive: assign
+	address of auto-var to function parameter, when function parameter
+	is reassigned later)
+
+2011-08-09  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, test/testcharvar.cpp: Fixed #2982 (false
+	positive: using char type as array index (using string as key))
+
+2011-08-08  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #2981 (False
+	positive: struct member leak)
+
+2011-08-08  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, test/testcharvar.cpp: Fixed #2979 (Improve
+	message: using char as array index)
+
+2011-08-08  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fixed
+	#2976 (False positive: array out of bounds)
+
+2011-08-08  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: fix #2980 (segmentation
+	fault of cppcheck)
+
+2011-08-07  Robert Reif <reif@earthlink.net>
+
+	* : commit 829611b12964cdf8346eae9255d32fbed8b2d520 Author: Robert
+	Reif <reif@earthlink.net> Date:   Sun Aug 7 16:48:47 2011 -0400
+
+2011-08-07  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Buffer
+	overrun: Fix false negative
+
+2011-08-07  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Null pointer:
+	Fixed false positive when condition contains assignment 'if (p==NULL
+	&& (p=malloc(10))!=NULL) *p=0;'
+
+2011-08-07  Kimmo Varis <kimmov@gmail.com>
+
+	* lib/check64bit.cpp, lib/checkassignif.cpp,
+	lib/checkbufferoverrun.cpp, lib/checkclass.cpp,
+	lib/checkexceptionsafety.cpp, lib/checkmemoryleak.cpp,
+	lib/checknonreentrantfunctions.cpp, lib/checkobsoletefunctions.cpp,
+	lib/checkother.cpp, lib/checkpostfixoperator.cpp, lib/checkstl.cpp,
+	lib/preprocessor.cpp, lib/settings.cpp, lib/settings.h,
+	lib/tokenize.cpp, test/test64bit.cpp, test/testassignif.cpp,
+	test/testbufferoverrun.cpp, test/testcharvar.cpp,
+	test/testclass.cpp, test/testcmdlineparser.cpp,
+	test/testconstructors.cpp, test/testdivision.cpp,
+	test/testincompletestatement.cpp, test/testmemleak.cpp,
+	test/testnonreentrantfunctions.cpp, test/testnullpointer.cpp,
+	test/testobsoletefunctions.cpp, test/testother.cpp,
+	test/testpostfixoperator.cpp, test/testsimplifytokens.cpp,
+	test/teststl.cpp, test/testtokenize.cpp,
+	test/testunusedfunctions.cpp, test/testunusedprivfunc.cpp,
+	test/testunusedvar.cpp: Use "enabled" list for the style checking.  Settings-class currently enables style checking via dedicated
+	boolean attribute. All other CLI's enable-options are handled
+	through the enable-list. This commit moves style-check enabling to
+	use the enable-list.  Main advantage is the consistency how options are handled/stored in
+	the Settings class. Which also unifies using them for the other
+	code. You need to enable certain type of checks? Use the
+	addEnabled()-method. You want to check if certain type of checks are
+	enabled? Use the isEnabled()-method.
+
+2011-08-06  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: fix
+	#2968 (new check: testing if unsigned variable is less than 0)
+
+2011-08-06  Robert Reif <reif@earthlink.net>
+
+	* lib/checkmemoryleak.cpp, lib/tokenize.cpp, test/testmemleak.cpp: 
+	fix #2971 (Wrong warning generated)
+
+2011-08-06  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #2970
+	(Incorrect report: Class does not have a constructor)
+
+2011-08-06  Robert Reif <reif@earthlink.net>
+
+	* test/testtokenize.cpp: run astyle
+
+2011-08-07  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/filelister.cpp: CLI: Fix problem building in Windows.
+
+2011-08-06  Kimmo Varis <kimmov@gmail.com>
+
+	* test/testcmdlineparser.cpp: Tests: Disable tests for CLI -i
+	option.  The tests use non-existing relative paths. Currently the code checks
+	if the paths added to -i exist and hence these tests fail.
+
+2011-08-06  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cmdlineparser.cpp: help: clarify --suppress a little in the
+	--help output. Ticket: #2964
+
+2011-08-06  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cppcheckexecutor.cpp, cli/filelister.cpp, lib/path.cpp,
+	lib/path.h: CLI: Warn if user tries to exclude header files.  Filename exclusion (with -i) works only for the source files.  Print
+	a warning if user tries to exclude header file. The warning
+	instructs user to use --suppress for ignoring warnings from the
+	header files.
+
+2011-08-06  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cmdlineparser.cpp, cli/filelister.cpp, cli/filelister.h: CLI:
+	Strict check if exclude path is file.  Initially I added logic that checked if excluded path was a file we
+	would accept. This works for source files, but when file with
+	"unknown" extension was given it was determined as a directory name
+	and ending slash was added. E.g. -ifile.h would end up having
+	ignored path file.h/.  This commit adds per-platform checks if the path points to the file
+	and if the file also exists.
+
+2011-08-06  Simon Martin <simartin@users.sourceforge.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Fixed #2870 (Tokenizer:
+	simplify '0 |')
+
+2011-08-05  Robert Reif <reif@earthlink.net>
+
+	* lib/checkstl.cpp, test/teststl.cpp: fix #2967 (segmentation fault
+	of cppcheck ( auto_ptr< x >))
+
+2011-08-05  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #2966
+	(segmentation fault of cppcheck ( enum x : ))
+
+2011-08-05  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Array
+	index out of bounds: prevent false positive when a dimension for an
+	array is unknown
+
+2011-08-05  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: tweaked
+	the error message somewhat for id arrayIndexThenCheck
+
+2011-08-04  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: add support for using
+	global qualified :: memset on class and class member initialization
+
+2011-08-04  Robert Reif <reif@earthlink.net>
+
+	* lib/checkstl.cpp, test/teststl.cpp: fix #2887 (infinit loop with (
+	A::A(std::auto_ptr<X> e){} ))
+
+2011-08-04  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cmdlineparser.cpp: CLI: Couple of messages missing
+	cppcheck-prefix.
+
+2011-08-04  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cmdlineparser.cpp: CLI print warning for deprecated options.  We don't want to keep these deprecated options for ever. So lets
+	print a clear warning for the users and give also specific release
+	number when they will be removed. Users have a plenty of time to
+	update their scripts and environments before removal.  Ticket: #2515 (Print warning for deprecated command line options)
+
+2011-08-04  Edoardo Prezioso <edo88@email.it>
+
+	* test/test.pro: Fixed #2961 (Test executable name differs between
+	Makefile and test.pro)
+
+2011-08-04  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: Fixed #2956 (False negative: read array
+	and then immediately check the index 'str[i] && i<sizeof(str)')
+
+2011-08-04  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cppcheckexecutor.cpp, lib/cppcheck.cpp: No unmatched
+	suppressions list in quiet output.  When user wants to see only errors printed (--quiet in CLI) we must
+	obey that. And not print unmatchedSuppressions list.  Ticket: #2895 (Cannot suppress unmatchedSuppression reports)
+
+2011-08-03  Kimmo Varis <kimmov@gmail.com>
+
+	* test/test.vcproj, test/test.vcxproj, test/test.vcxproj.filters: 
+	Update VS project files.
+
+2011-08-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkobsoletefunctions.cpp, lib/checkobsoletefunctions.h: 
+	astyle formatting
+
+2011-08-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkobsoletefunctions.cpp, lib/checkobsoletefunctions.h,
+	test/testobsoletefunctions.cpp: Obsolete functions: Split up
+	functions into posix/standard sets. Only check for obsolete posix
+	functions if --enable=posix has been given.
+
+2011-08-03  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/cppcheck_de.ts, gui/cppcheck_en.ts, gui/cppcheck_es.ts,
+	gui/cppcheck_fi.ts, gui/cppcheck_fr.ts, gui/cppcheck_ja.ts,
+	gui/cppcheck_nl.ts, gui/cppcheck_pl.ts, gui/cppcheck_ru.ts,
+	gui/cppcheck_sr.ts, gui/cppcheck_sv.ts: GUI: Update translation
+	files.
+
+2011-08-03  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/resultsview.cpp: GUI: Don't translate non-translatable
+	strings.  If strings contain only formatting placeholders for the dynamically
+	formatted text it does not make sense to mark the strings as
+	translatable. There is nothing translators can translate e.g. in
+	"%p".
+
+2011-08-03  Kimmo Varis <kimmov@gmail.com>
+
+	* test/test.pro: Add missing test files to test.pro -project.
+
+2011-08-03  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cmdlineparser.cpp, lib/checknonreentrantfunctions.cpp,
+	lib/settings.cpp, lib/settings.h, test/testcmdlineparser.cpp,
+	test/testnonreentrantfunctions.cpp: CLI: Rename --posix to
+	--enable=posix.  Ticket: #2949 (new check: (style) finding non-reentrant functions)
+	Ticket: #2952 (CLI option --posix is wrong)
+
+2011-08-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/check64bit.h: corrected a comment
+
+2011-08-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/preprocessor.cpp, test/testpreprocessor.cpp: Fixed #2919
+	(Wrong file name reported with #error in header)
+
+2011-08-02  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* lib/preprocessor.cpp, test/testpreprocessor.cpp: Fix: #2942
+	(segmentation fault of cppcheck ( #elif (){ ))
+	http://sourceforge.net/apps/trac/cppcheck/ticket/2942
+
+2011-08-02  Daniel Marjamaki <danielm77@spray.se>
+
+	* cli/cppcheck.vcproj, cli/cppcheck.vcxproj,
+	cli/cppcheck.vcxproj.filters, cppcheck.sln, test/test.vcproj,
+	test/test.vcxproj, test/test.vcxproj.filters: Visual Studio: Updated
+	project files
+
+2011-08-02  Daniel Marjamäki <danielm77@spray.se>
+
+	* test/testnullpointer.cpp: Null pointer: Added todo test case to
+	better handle dereference in condition
+
+2011-08-02  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Null pointer:
+	reduce false negatives in pointerDerefAndCheck
+
+2011-08-02  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #2954
+	(False negative: Null pointer dereference not detected '*p=4; if (p)
+	{ }')
+
+2011-08-02  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #2900 (found
+	memory leak in kernel p54usb and a false positive reported)
+
+2011-08-01  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Null pointers:
+	Fixed false negative when struct is dereferenced in condition
+
+2011-08-01  Robert Reif <reif@earthlink.net>
+
+	* test/testtokenize.cpp: add test for #2937 (Scope::checkVariable
+	found variable 'sMMF' with varid 0.)
+
+2011-08-01  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkassignif.cpp, lib/checkassignif.h, test/testassignif.cpp: 
+	AssignIf: detect more problems for 'if' and 'else if' conditions
+
+2011-08-01  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkassignif.cpp, lib/checkassignif.h, test/testassignif.cpp: 
+	Fixed #2908 (common logic when using bitwise and)
+
+2011-08-01  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #2789
+	(null pointer: problems not detected when pointer is assigned and
+	checked if it's null in a if statement)
+
+2011-08-01  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkassignif.cpp: astyle formatting
+
+2011-08-01  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkassignif.cpp, test/testassignif.cpp: AssignIf: Improved
+	the error message for mismatching comparison
+
+2011-07-31  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testuninitvar.cpp: fix #2146 (uninitialized
+	variable: false negative for 'return x ? 1 : y;')
+
+2011-07-31  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp: Memory leaks: fix endless loop for 'if
+	)'. the check assumed that the link after the 'if' pointed forwards.
+	Ticket: #2404
+
+2011-07-31  Robert Reif <reif@earthlink.net>
+
+	* lib/token.cpp, test/testtoken.cpp: fix #2911 (Token::Match(tok,
+	%oror%|&&) doesn't match &&)
+
+2011-07-31  Moritz Lipp <mlq@pwmt.org>
+
+	* lib/checkother.cpp: Fixed #2793 (SIGABRT on filenames without file
+	extension)
+
+2011-07-31  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, lib/checkmemoryleak.h: removed the unused
+	function CheckMemoryLeakInFunction::matchFunctionsThatReturnArg
+
+2011-07-31  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Null pointer:
+	fix false negatives when unknown function is called and pointer is
+	local/argument
+
+2011-07-31  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Null pointer:
+	better handling when calling standard functions with possible null
+	pointer
+
+2011-07-31  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkassignif.cpp, test/testassignif.cpp: AssignIf: handle
+	parantheses. ticket: #2909
+
+2011-07-31  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #2935
+	(possible null pointer dereference when using strcpy etc)
+
+2011-07-31  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkassignif.h: astyle formatting
+
+2011-07-31  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkassignif.cpp, lib/checkassignif.h, test/testassignif.cpp: 
+	AssignIf: Match lhs and rhs for comparisons. Ticket: #2909
+
+2011-07-31  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkassignif.cpp, lib/checkassignif.h, test/testassignif.cpp: 
+	AssignIf: Detect problem for 'y=x&4; if(y!=3)..'. Ticket: #2909
+
+2011-07-30  Daniel Marjamäki <danielm77@spray.se>
+
+	* Makefile, lib/checkassignif.cpp, lib/checkassignif.h,
+	lib/lib.pri, test/testassignif.cpp: AssignIf: Added new check.
+	Ticket: #2909
+
+2011-07-30  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #2788
+	(null pointer: dereference and then check 'if (abc->a == 3) { } if
+	(!abc) ..')
+
+2011-07-30  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp: assume all std::*::size() and std::*::empty()
+	are const in CheckClass::checkConstFunc()
+
+2011-07-30  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp: fix cppcheck warning in
+	Tokenizer::duplicateTypedef()
+
+2011-07-30  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: add std::*.empty() to
+	possible const functions in CheckClass::checkConstFunc
+
+2011-07-30  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: fix #1593 (false negative:
+	the function can be declared as const)
+
+2011-07-30  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp: fix missing else in patch that added support
+	for unused const local variables
+
+2011-07-30  Simon Martin <simartin@users.sourceforge.net>
+
+	* lib/checkmemoryleak.cpp: Fixed #2951 (Small code factorization in
+	checkmemoryleak.cpp)
+
+2011-07-30  Ettl Martin <ettl.martin@gmx.de>
+
+	* lib/checknonreentrantfunctions.h: nonreentrant-functions: added
+	more functions to check
+
+2011-07-29  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp: use simpleMatch where possible in
+	checkother.cpp
+
+2011-07-29  Ettl Martin <ettl.martin@gmx.de>
+
+	* : commit f441a958cd50959f94695cb754fa925611927aa3 Author: Ettl
+	Martin <ettl.martin@gmx.de> Date:   Fri Jul 29 23:37:40 2011 +0200
+
+2011-07-29  Kimmo Varis <kimmov@gmail.com>
+
+	* test/testcmdlineparser.cpp: Tests: add semicolons after
+	TEST_CASE()
+
+2011-07-29  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cmdlineparser.cpp, test/testcmdlineparser.cpp: Add --posix CLI
+	option.  Part of ticket #2949 (new check: (style) finding non-reentrant
+	functions)
+
+2011-07-29  Ettl Martin <ettl.martin@gmx.de>
+
+	* lib/checknonreentrantfunctions.cpp,
+	lib/checknonreentrantfunctions.h, lib/settings.cpp, lib/settings.h,
+	test/testnonreentrantfunctions.cpp: added a check to detect
+	nonreentrant functions and a --posix switch
+
+2011-07-28  Ettl Martin <ettl.martin@gmx.de>
+
+	* Makefile, lib/checknonreentrantfunctions.cpp,
+	lib/checknonreentrantfunctions.h, lib/lib.pri,
+	test/testnonreentrantfunctions.cpp: Added a new check for finding
+	non-reentrant functions
+
+2011-07-27  Zachary Blair <zack_blair@hotmail.com>
+
+	* gui/common.h, gui/resultsview.cpp, gui/resultsview.h,
+	gui/threadhandler.cpp, gui/threadresult.cpp, gui/threadresult.h: 
+	Fixed 2915 (GUI: Show files checked in progress bar)
+
+2011-07-28  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, lib/checkother.cpp, lib/checkother.h,
+	lib/checkstl.cpp, lib/checkuninitvar.cpp, test/testother.cpp: Fixed
+	'possible null pointer dereference' warning messages
+
+2011-07-28  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: Fixed
+	#2821 (New Check : bool pointer null truth assignment)
+
+2011-07-28  Daniel Marjamäki <danielm77@spray.se>
+
+	* scripts/comment.pl, scripts/define.pl, scripts/magic-numbers.pl,
+	scripts/readme.txt, scripts/tabs.pl: removed the 'scripts' folder. I
+	don't think it belongs in the cppcheck repo.
+
+2011-07-27  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: fix #2947 (False positive:
+	member variable is not initialized (a[x::y] = 0;))
+
+2011-07-27  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp, test/testclass.cpp: fix #2943 (Symbol
+	database: Wrong parsing of std::vector as base class.)
+
+2011-07-27  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkautovariables.cpp, test/testautovariables.cpp: Auto
+	Variables: Reverted fix for #1514 because my idea was wrong. See
+	ticket: #2944
+
+2011-07-27  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkuninitvar.cpp, test/testuninitvar.cpp: Fixed #2946 (False
+	positive: Uninitialized buffer variable (init in subfunction))
+
+2011-07-26  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkuninitvar.cpp, test/testuninitvar.cpp: Fixed #2945 (False
+	positive: Uninitialized variable reading from stream)
+
+2011-07-25  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Null pointer:
+	Added check for 'if (fred); return fred->a;'
+
+2011-07-25  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #2812
+	(false negative: null pointer dereference when returning struct
+	member)
+
+2011-07-25  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/executionpath.cpp, test/testuninitvar.cpp: Fixed #2796
+	(uninitialized and leaving scope)
+
+2011-07-25  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #2681
+	(False negative: Possible null pointer dereference)
+
+2011-07-25  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cppcheckexecutor.cpp, lib/cppcheck.cpp, lib/cppcheck.h: Fixed
+	#2941 (False positive: unused function (individual checking of
+	files))
+
+2011-07-24  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkuninitvar.cpp, test/testuninitvar.cpp: Uninitialized
+	variables: Fixed false positive if there is assignment in return
+	statement
+
+2011-07-24  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkuninitvar.cpp, test/testuninitvar.cpp: Fixed #2938
+	(Uninitialized variable not detected when part of expression)
+
+2011-07-24  Simon Martin <simartin@users.sourceforge.net>
+
+	* lib/mathlib.cpp: Fix GCC warning about float comparison. Ticket:
+	#2936
+
+2011-07-24  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/readme.txt: GUITESTS: Add simple readme.txt.
+
+2011-07-24  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, test/testunusedvar.cpp: add support for unused
+	const local variables
+
+2011-07-24  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #2921 (False
+	positive: Memory leak with static pointer)
+
+2011-07-24  Daniel Marjamäki <danielm77@spray.se>
+
+	* Makefile: Makefile: auto-update by dmake
+
+2011-07-24  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testpostfixoperator.cpp: astyle formatting
+
+2011-07-24  Simon Martin <simartin@users.sourceforge.net>
+
+	* test/testpostfixoperator.cpp: Added testcases for #2933 (Postfix
+	operator check fails to warn for structs)
+
+2011-07-24  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp: Fixed #2817 (valgrind errors in simplifyTemplate
+	when running tests)
+
+2011-07-24  Simon Martin <simartin@users.sourceforge.net>
+
+	* lib/checkother.cpp, test/testdivision.cpp: Fixed #2932
+	(segmentation fault of cppcheck ( i / i ))
+
+2011-07-24  Simon Martin <simartin@users.sourceforge.net>
+
+	* lib/preprocessor.cpp, test/testpreprocessor.cpp: Preprocessor: Fix
+	#if0 #elif todo test case. Ticket: #2619
+
+2011-07-23  Robert Reif <reif@earthlink.net>
+
+	* lib/checkpostfixoperator.cpp: convert
+	CheckPostfixOperator::postfixOperator() to use the symbol database
+
+2011-07-23  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp: add support for local variables with
+	constructors to the symbol database
+
+2011-07-22  Robert Reif <reif@earthlink.net>
+
+	* : commit 527c1aae3319a70e03e0215081746c3c24a37347 Author: Robert
+	Reif <reif@earthlink.net> Date:   Fri Jul 22 08:31:31 2011 -0400
+
+2011-07-22  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: 
+	Tokenizer::simplifyFunctionPointer: don't simplify function call.
+	Ticket: #2873
+
+2011-07-21  Robert Reif <reif@earthlink.net>
+
+	* lib/checkautovariables.cpp, test/testautovariables.cpp: fix #1514
+	(Improve CheckAutoVariables: assign autovariable address to
+	effective parameter)
+
+2011-07-21  Robert Reif <reif@earthlink.net>
+
+	* lib/checkautovariables.cpp, test/testautovariables.cpp: fix #2926
+	(false negative in auto variables checking when function parameter
+	is a struct)
+
+2011-07-21  Robert Reif <reif@earthlink.net>
+
+	* Makefile: fix some development stuff that snuck in by mistake
+
+2011-07-21  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, test/testunusedvar.cpp: fix #2929 (Additional
+	Unused variable check)
+
+2011-07-21  Robert Reif <reif@earthlink.net>
+
+	* Makefile, lib/checkautovariables.cpp, test/testautovariables.cpp: 
+	fix #2928 (False positive (static variable misinterpreted as auto
+	variable))
+
+2011-07-21  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/resultstree.cpp: GUI: Simplify condition.  With current code we always have both filename and linenumber for
+	each error.
+
+2011-07-21  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: Fixed #2885 (crash
+	of cppcheck while checking gcc-testsuite)
+
+2011-07-21  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkautovariables.cpp, lib/checkautovariables.h: Fixed #2856
+	(--errorlist not printing all auto-variable errors)
+
+2011-07-21  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/checkthread.h, gui/resultsview.h, gui/threadhandler.h,
+	gui/threadresult.h: GUI: Don't use relative paths for include files.
+
+2011-07-21  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #2848 (False
+	positive: Memory leak when assigning and freeing from another
+	struct)
+
+2011-07-21  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: Fixed #2897 (out of
+	bounds false positive, using reinterpret_cast)
+
+2011-07-21  Daniel Marjamäki <danielm77@spray.se>
+
+	* man/manual.docbook: Fixed #2850 (Inline suppressions not
+	documented in manual)
+
+2011-07-20  Robert Reif <reif@earthlink.net>
+
+	* lib/checkautovariables.cpp, test/testautovariables.cpp: fix #2925
+	(False negative: auto variables - assigning address of array to
+	function parameter)
+
+2011-07-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testpreprocessor.cpp: Fixed #2794 (Improper
+	hanling of preprocessor directives #if defined)
+
+2011-07-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* : Merge pull request #28 from bwy/master Fix "auto_ptr assignment" false positive
+
+2011-07-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cmdlineparser.cpp: cmdlineparser: changed unusedFunctions to
+	unusedFunction to make it work
+
+2011-07-20  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/cppcheck_de.ts, gui/cppcheck_en.ts, gui/cppcheck_es.ts,
+	gui/cppcheck_fi.ts, gui/cppcheck_fr.ts, gui/cppcheck_ja.ts,
+	gui/cppcheck_nl.ts, gui/cppcheck_pl.ts, gui/cppcheck_ru.ts,
+	gui/cppcheck_sr.ts, gui/cppcheck_sv.ts: GUI: Update translation
+	files.
+
+2011-07-20  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/mainwindow.cpp: GUI: Filter toolbar menu items not in synch.  When Filter-toolbar was enabled/disabled from the View-menu its
+	state was not updated to the context menu. And vice versa.  Ticket: #2923 (GUI: Filter toolbar menu items not synchronized)
+
+2011-07-20  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/main.ui: GUI: Filter toolbar didn't have a title.  Ticket: #2922 (GUI: Filter toolbar does not have a title)
+
+2011-07-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/cppcheck.cpp: Fixed #2924 (Unable to turn on unused function
+	detection from command line)
+
+2011-07-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Tokenizer: Better
+	handling of constants. Related with #2920
+
+2011-07-20  Benjamin Wolsey <bwy@benjaminwolsey.de>
+
+	* test/teststl.cpp: Test false auto_ptr positive.  Assignments after a function returning an auto_ptr is declared are
+	detected as auto_ptr assignments!
+
+2011-07-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fixed
+	#2920 (False positive: Array 'arr[0]' index 0 out of bounds (array
+	size and index are unknown))
+
+2011-07-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cmdlineparser.cpp: Cmdlineparser: Removed deprecated flag
+	--unused-functions
+
+2011-07-19  Ettl Martin <ettl.martin@gmx.de>
+
+	* test/testmathlib.cpp: testmathlib: improved testcoverage of
+	mathlib
+
+2011-07-18  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/preprocessor.cpp, test/testpreprocessor.cpp: Fixed #2917
+	(Problem with || in #if)
+
+2011-07-18  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp: simplify
+	CheckOther::checkIncorrectLogicOperator() by using more pattern
+	matching
+
+2011-07-17  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, test/testother.cpp: made #2827 fix more
+	generic by adding more ops and using pattern matching rather than
+	string matching
+
+2011-07-17  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/resultstree.cpp: GUI: Fix always false condition.  Ticket: #2827 (false negative: gui/resultstree.cpp:271 condition
+	always false)
+
+2011-07-17  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/cppcheck_de.ts, gui/cppcheck_en.ts, gui/cppcheck_es.ts,
+	gui/cppcheck_fi.ts, gui/cppcheck_fr.ts, gui/cppcheck_ja.ts,
+	gui/cppcheck_nl.ts, gui/cppcheck_pl.ts, gui/cppcheck_ru.ts,
+	gui/cppcheck_sr.ts, gui/cppcheck_sv.ts: GUI: Update translation
+	files.
+
+2011-07-17  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/resultstree.cpp: GUI: Show error if no default editor
+	configured.  There always should be default editor if there is editor application
+	configured. But it is possible in some cases that default
+	application is "lost". So check that we have default application
+	configured before trying to use it. And inform user to configure
+	default application instead of silently failing to open the
+	application (and the file) for the user.
+
+2011-07-17  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/resultstree.cpp: GUI: Fix separators when opening file to
+	editor.  Ticket: #2916 (Wrong slashes in file path passed to the Windows-text
+	editors)
+
+2011-07-17  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: 
+	CheckBufferOverrun: Detect overflows when buffer is allocated with
+	alloca
+
+2011-07-17  Daniel Marjamäki <danielm77@spray.se>
+
+	* test/testsimplifytokens.cpp: TestSimplifyTokens: removed
+	copy/pasted comment
+
+2011-07-16  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, lib/mathlib.cpp, lib/mathlib.h,
+	test/testother.cpp: fix #2827 to use numeric comparisons
+
+2011-07-16  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: fix
+	#2827 condition always false or true)
+
+2011-07-16  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: Tokenizer: better
+	handling of 'struct AB ab; sizeof(ab)'
+
+2011-07-16  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Fixed #2873 (segmentation
+	fault of cppcheck while scanning rose-compiler suite)
+
+2011-07-16  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp: Tokenizer: minor update to handle C# code better
+
+2011-07-16  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/check64bit.cpp, test/test64bit.cpp: Fixed #2912 (false
+	positive: (portability) Assigning an integer (int/long/etc) to a
+	pointer is not portable)
+
+2011-07-16  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/preprocessor.cpp, test/testpreprocessor.cpp: Fixed #2871
+	(Define in source not set when -D is used)
+
+2011-07-16  Kimmo Varis <kimmov@gmail.com>
+
+	* test/testerrorlogger.cpp: Add more tests for ErrorLogger.  Add tests that have two items in error location stack.
+
+2011-07-16  Robert Reif <reif@earthlink.net>
+
+	* test/testtoken.cpp: testcase for broken Token::Match %oror%|&&
+
+2011-07-16  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cmdlineparser.cpp: CLI: Improve and clarify help text.
+
+2011-07-16  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/preprocessor.cpp: astyle formatting
+
+2011-07-16  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/preprocessor.cpp, lib/preprocessor.h,
+	test/testpreprocessor.cpp: Preprocessor: fix handling of (1&&2)
+	condition
+
+2011-07-15  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Tokenizer: Fix minor
+	problem with 'X&&Y'
+
+2011-07-15  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/token.cpp, test/testtoken.cpp: astyle formatting
+
+2011-07-15  John Smits <japsmits@users.sourceforge.net>
+
+	* lib/token.cpp, test/testtoken.cpp: Fixed #2882 (One-character
+	token can be mistaken for a multiCompare)
+
+2011-07-14  Robert Reif <reif@earthlink.net>
+
+	* lib/checkmemoryleak.cpp, lib/checkmemoryleak.h,
+	test/testmemleak.cpp: fix some more false negatives for #2904
+	(Memory leak not detected when creating a new class instance)
+
+2011-07-14  Zachary Blair <zack_blair@hotmail.com>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: Fixed
+	#2822 (New check: Duplicate break statements in switch)
+
+2011-07-14  Robert Reif <reif@earthlink.net>
+
+	* lib/checkmemoryleak.cpp, lib/checkother.cpp,
+	test/testmemleak.cpp, test/testunusedvar.cpp: fix #2904 (Memory leak
+	not detected when creating a new class instance)
+
+2011-07-07  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/check64bit.cpp, lib/token.cpp, lib/token.h, lib/tokenize.cpp,
+	test/test64bit.cpp: Fixed #2892 (false positive: (portability)
+	Assigning an address value to the integer (int/long/etc) type is not
+	portable)
+
+2011-07-06  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/check64bit.cpp, lib/check64bit.h, test/test64bit.cpp: 64-bit
+	portability: fixed two of the TODO test cases. Ticket: #2791
+
+2011-07-06  Daniel Marjamäki <danielm77@spray.se>
+
+	* : commit 827fb01ec19c9ab2be07840c14f93f915866eb3f Author: Daniel
+	Marjamäki <danielm77@spray.se> Date:   Wed Jul 6 12:57:45 2011
+	+0200
+
+2011-07-06  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cppcheck.vcproj, cli/cppcheck.vcxproj,
+	cli/cppcheck.vcxproj.filters, test/test.vcproj, test/test.vcxproj,
+	test/test.vcxproj.filters: Update Visual Studio 2008/2010 project
+	files.
+
+2011-07-06  Daniel Marjamäki <danielm77@spray.se>
+
+	* Makefile, lib/check64bit.cpp, lib/check64bit.h, lib/lib.pri,
+	test/test64bit.cpp: 64-bit checking: Added simple check for
+	assigning pointer address to int/long. Ticket: #2791
+
+2011-07-05  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp: spell check of error message. contant =>
+	constant
+
+2011-07-05  Daniel Marjamäki <danielm77@spray.se>
+
+	* test/testcharvar.cpp: TestCharVar::pointer: Added one more test
+	case to see that error message disappears when code is fixed
+
+2011-07-05  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, test/testcharvar.cpp: Fixed #2866 (Detect sign
+	extension bugs)
+
+2011-07-05  Greg Hewgill <greg@hewgill.com>
+
+	* lib/checkother.cpp: Fix spelling error in warning identifier
+
+2011-07-04  Daniel Marjamäki <danielm77@spray.se>
+
+	* : Merge pull request #27 from gerundt/man-improvements Manual improvements
+
+2011-07-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* test/testsimplifytokens.cpp: Tokenizer::simplifyGoto: fixed unit
+	tests
+
+2011-07-03  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #2886 (crash of
+	cppcheck ( typedef struct x { } ))
+
+2011-07-03  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix missing pop in
+	Tokenizer::simplifyStructDecl() when anonymous struct/union removed
+
+2011-07-02  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, test/testunusedvar.cpp: add support for
+	checking unused std::string local variables
+
+2011-07-02  Tim Gerundt <tim@gerundt.de>
+
+	* htdocs/.htaccess, htdocs/devinfo/index.php: Web: Redirect
+	doxyoutput, coverage- and cpd report to devinfo directory
+
+2011-07-02  Tim Gerundt <tim@gerundt.de>
+
+	* man/manual.docbook, man/writing-rules-1.docbook,
+	man/writing-rules-2.docbook, man/writing-rules-3.docbook: Manual:
+	Add internal links
+
+2011-07-02  Tim Gerundt <tim@gerundt.de>
+
+	* man/manual.docbook: * Manual: Miscellaneous tag changes
+
+2011-07-02  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: add class A {} a;
+	-> class A {}; A a; conversion capability to
+	Tokenizer::simplifyStructDecl()
+
+2011-07-02  Tim Gerundt <tim@gerundt.de>
+
+	* man/manual.docbook, man/writing-rules-1.docbook,
+	man/writing-rules-2.docbook, man/writing-rules-3.docbook: Manual:
+	Move "Writing Cppcheck rules" author to the beginning of the
+	appendix
+
+2011-07-02  Tim Gerundt <tim@gerundt.de>
+
+	* man/manual.docbook, man/writing-rules-1.docbook,
+	man/writing-rules-2.docbook: Manual: Miscellaneous tag changes
+
+2011-07-01  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp: fix #2884 (Integer overflow warning in
+	64-bit build)
+
+2011-07-01  Tim Gerundt <tim@gerundt.de>
+
+	* man/manual.docbook: Manual: Use tags for menu items
+
+2011-07-01  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp: Tokenizer::simplifyGoto: Only simplify the last
+	label in the function. If there are many labels in the same function
+	and all labels are simplified, this function becomes very slow.
+
+2011-07-01  Tim Gerundt <tim@gerundt.de>
+
+	* man/cppcheck-design.docbook, man/manual.docbook: Manual: Don't
+	wrap <programlisting> with <para>
+
+2011-07-01  Tim Gerundt <tim@gerundt.de>
+
+	* man/manual.docbook, man/writing-rules-1.docbook,
+	man/writing-rules-2.docbook, man/writing-rules-3.docbook: Manual:
+	Use <command> and <parameter> tags
+
+2011-07-01  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, test/testunusedvar.cpp: fix false positive for
+	unused local class/struct variable
+
+2011-07-01  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, test/testunusedvar.cpp: add support in
+	CheckOther::functionVariableUsage() for checking structures that are
+	declared with struct keyword
+
+2011-07-01  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp: cleanup isStatic in
+	CheckOther::functionVariableUsage()
+
+2011-06-30  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testunusedvar.cpp: add
+	support for detecting unused function variables of type class or
+	struct
+
+2011-06-30  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* lib/checkmemoryleak.cpp: Minor cleanup related to previous fix.
+	This code should not be needed anymore as tokenizer should simplify
+	question mark away.
+
+2011-06-30  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* lib/tokenize.cpp, test/testmemleak.cpp,
+	test/testsimplifytokens.cpp, test/testtokenize.cpp: Fix #2849, False
+	positive: memory leak (using question mark operator)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/2849 Simplify: *d =
+	b ? b : a; into if-else Simplify { ; { ; } } into { ; } Removed one
+	memleak test which should be redundant now as question marks should
+	not get into memleak check.
+
+2011-06-30  Tim Gerundt <tim@gerundt.de>
+
+	* man/manual.docbook, man/writing-rules-1.docbook: Manual: Use
+	<filename> tag for files and directories
+
+2011-06-30  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #2849 (False
+	positive: memory leak (using question mark operator))
+
+2011-06-30  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testclass.cpp: fix #2878 (derived global
+	class not tokenized properly (class A : ::B { };))
+
+2011-06-29  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: fix #2825 (missing varid
+	on class variables when multiple inheritance is used)
+
+2011-06-29  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp: fix symbol database derived template class
+	support
+
+2011-06-29  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp: add global namespace derived class support
+
+2011-06-29  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testclass.cpp: partial fix for #2867 handle
+	derived class
+
+2011-06-29  Kimmo Varis <kimmov@gmail.com>
+
+	* lib/path.h: Document that Path::simplifyPath() needs / as
+	separators.
+
+2011-06-29  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/settings.cpp, test/testsettings.cpp: Fixed #2797 (Inline
+	suppressions do not handle filenames correctly)
+
+2011-06-29  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #2855 (False
+	positive: resource leak when reusing fd)
+
+2011-06-29  Daniel Marjamäki <danielm77@spray.se>
+
+	* : Merge pull request #26 from gerundt/man-appendix Add "Writing Cppcheck rules" and "Cppcheck Design" articles as
+	appendix to the manual
+
+2011-06-29  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testunusedprivfunc.cpp: fix #2807 (Wrong
+	handling of function references when prefixed with &)
+
+2011-06-28  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, lib/tokenize.h: fix #2864 (--errorlist missing
+	errors: variableHidingTypedef and Extra qualification)
+
+2011-06-28  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testclass.cpp: partial fix for #2867
+	Tokenizer::removeRedundantAssignment didn't understand function
+	local class and removed class variable
+
+2011-06-28  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: fix #2875 (segmentation
+	fault of cppcheck ( 0; (a) < (a) ))
+
+2011-06-27  Tim Gerundt <tim@gerundt.de>
+
+	* man/buildman.sh: Drop "Writing Cppcheck rules" and "Cppcheck
+	Design" articles from build file
+
+2011-06-27  Tim Gerundt <tim@gerundt.de>
+
+	* man/cppcheck-design.docbook, man/manual.docbook,
+	man/writing-rules-1.docbook, man/writing-rules-2.docbook,
+	man/writing-rules-3.docbook: Add "Writing Cppcheck rules" and
+	"Cppcheck Design" articles as appendix to the manual
+
+2011-06-27  Tim Gerundt <tim@gerundt.de>
+
+	* htdocs/devinfo/index.php: Web: Update style from trac timeline
+	items at dev info page
+
+2011-06-27  Tim Gerundt <tim@gerundt.de>
+
+	* htdocs/devinfo/index.php, htdocs/site/activetopics.php: Web: Show
+	also last post time from active forum topics
+
+2011-06-27  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp, test/testsymboldatabase.cpp: fix #2865
+	(segmentation fault of cppcheck ( char a[1] ))
+
+2011-06-26  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #2859 (Extra
+	qualification not detected)
+
+2011-06-26  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* lib/tokenize.cpp, lib/tokenize.h, test/testsimplifytokens.cpp: 
+	Fixed #2860, False positive: Returning value of strncat() reported
+	as memory leak http://sourceforge.net/apps/trac/cppcheck/ticket/2860
+
+2011-06-26  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fix #2840,
+	False positive: Null pointer dereference
+	http://sourceforge.net/apps/trac/cppcheck/ticket/2840
+
+2011-06-25  Tim Gerundt <tim@gerundt.de>
+
+	* : Merge pull request #25 from kimmov/web Web: Couple of front page improvements
+
+2011-06-24  Kimmo Varis <kimmov@gmail.com>
+
+	* htdocs/index.php: Web: Add link to Wikipedia's static analysis
+	tool article.  People looking at our front page may not be familiar with what the
+	static analysis even means. Add a link which explains it for them.
+
+2011-06-24  Kimmo Varis <kimmov@gmail.com>
+
+	* htdocs/index.php: Web: Improve front page language.  Improve language in few places at the home page. And try to make
+	couple of things more clear for people not familiar with this kind
+	of tools.
+
+2011-06-24  Tim Gerundt <tim@gerundt.de>
+
+	* htdocs/devinfo/index.php, htdocs/site/activetopics.php: Web: Show
+	active forum topics at dev info page
+
+2011-06-24  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/symboldatabase.cpp: replace some
+	pattern matching with variable lookup in checkGlobalAndLocalVariable
+
+2011-06-23  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp: set symbol database array variable
+	dimensions specified by a variable to the maximum size that variable
+	can hold
+
+2011-06-23  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp: fix an off by 1 error introduced in
+	48e6ea271a08a0d1cb9d2a5a22b6f946e404b959 that prevented checking all
+	variables
+
+2011-06-23  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/runtests.py: GUITESTS: Improve the running script.  Don't use recursion in the script. The Python's os.walk() already
+	lists all files in subdirectories and using recursion only caused
+	tests to be found twice. Also handle the case the project file
+	defines binary path with DESTDIR define.
+
+2011-06-23  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Added TODO test case for
+	the simplifyKnownVariables to better simplify local variables
+
+2011-06-23  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Fixed #2815 (FP: Null
+	pointer dereference error about a member)
+
+2011-06-23  Tim Gerundt <tim@gerundt.de>
+
+	* : commit dcaf7be9b5fdb6f9c53626ac5cdedbad475f7f35 Author: Tim
+	Gerundt <tim@gerundt.de> Date:   Thu Jun 23 11:10:42 2011 +0200
+
+2011-06-23  Tim Gerundt <tim@gerundt.de>
+
+	* htdocs/index.php: Web: Download only the chars we really need from
+	Orbitron font
+
+2011-06-23  Tim Gerundt <tim@gerundt.de>
+
+	* htdocs/index.php: Web: Update download to version 1.49
+
+2011-06-22  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp: use symbol database to lookup variable
+	type for buffer overrun checks
+
+2011-06-22  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h: start using
+	symbol database array info for buffer overrun checks
+
+2011-06-22  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp, lib/symboldatabase.h: add array
+	information to symbol database
+
+2011-06-22  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h: use a more
+	conventional technique for accessing ArrayInfo private variables
+
+2011-06-22  Robert Reif <reif@earthlink.net>
+
+	* gui/test/benchmark/simple/benchmarksimple.cpp: run astyle
+
+2011-06-22  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/runtests.py: GUITESTS: Run only existing tests with the
+	script.  Improve the runner script to run only tests whose binary file
+	exists. Tests with inexistant binary file are not counted into test
+	counts in the summary.  Add the MIT license header. I'm now maintaining this script in
+	external repository with MIT license. So I can use the script in
+	other projects too.
+
+2011-06-20  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/benchmark/benchmark.pro, gui/test/benchmark/common.pri,
+	gui/test/benchmark/simple/benchmarksimple.cpp,
+	gui/test/benchmark/simple/benchmarksimple.h,
+	gui/test/benchmark/simple/simple.pro,
+	gui/test/data/benchmark/simple.cpp, gui/test/test.pro: BENCHMARKS:
+	Add simple benchmark.
+
+2011-06-22  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* runastyle: Fix #2843, Astyle script does not recognize Astyle 2.02
+	http://sourceforge.net/apps/trac/cppcheck/ticket/2843
+
+2011-06-22  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* runastyle: Add some comments to runastyle script
+
+2011-06-22  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* lib/checkpostfixoperator.cpp, test/testpostfixoperator.cpp: Fix
+	#2847, cppcheck hangs with 100% cpu load
+	http://sourceforge.net/apps/trac/cppcheck/ticket/2847
+
+2011-06-21  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #2808
+	(False positive 'Possible null pointer dereference')
+
+2011-06-21  Daniel Marjamäki <danielm77@spray.se>
+
+	* createrelease: createrelease: updated upload command
+
+2011-06-21  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/runtests.py: GUITESTS: Print summary from the test
+	script.
+
+2011-06-21  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/runtests.py: GUITESTS: Add Python script for running all
+	tests.
+
+2011-06-21  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: fix #2845 (segmentation
+	fault of cppcheck)
+
+2011-06-20  seb777 <sebastien.debrard@gmail.com>
+
+	* test/teststl.cpp: run astyle
+
+2011-06-20  seb777 <sebastien.debrard@gmail.com>
+
+	* lib/checkstl.cpp, test/teststl.cpp: fix 2846 (false positive for
+	auto_ptr check with container element)
+
+2011-06-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #2830 (false
+	positive: resource leak when using fdopen)
+
+2011-06-19  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #2844 fix to
+	generate correct output
+
+2011-06-19  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #2844 (typedef
+	causes 'syntax error')
+
+2011-06-19  Felix Geyer <debfx@fobos.de>
+
+	* Makefile, tools/dmake.cpp: Ticket: #2823 (cppcheck fails to build
+	with system tinymxl and -Wl,--as-needed)
+
+2011-06-18  Kimmo Varis <kimmov@gmail.com>
+
+	* readme_gui.txt: GUITESTS: Add short mention of tests to gui
+	readme.
+
+2011-06-18  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/data/files/dir2/foo1.cpp,
+	gui/test/filelist/testfilelist.cpp,
+	gui/test/filelist/testfilelist.h: GUITESTS: Add FileList filtering
+	tests.
+
+2011-06-18  Kimmo Varis <kimmov@gmail.com>
+
+	* tools/Makefile: Fix tools/Makefile permissions.
+
+2011-06-18  Daniel Marjamäki <danielm77@spray.se>
+
+	* createrelease: createrelease: added scp command for uploading
+	files
+
+2011-06-17  seb777 <sebastien.debrard@gmail.com>
+
+	* lib/checkstl.cpp, test/teststl.cpp: fix 2838 (Token::Match called
+	with varid 0 on auto_ptr check) cleanup code and better check varid
+
+2011-06-17  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/data/files/dir1/dir11/foo11.cpp,
+	gui/test/data/files/dir1/foo1.cpp,
+	gui/test/filelist/testfilelist.cpp,
+	gui/test/filelist/testfilelist.h: GUITESTS: Add tests for adding
+	directory.
+
+2011-06-17  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/data/projectfiles/simple.cppcheck,
+	gui/test/data/projectfiles/simple_noroot.cppcheck,
+	gui/test/data/xmlfiles/xmlreport_v1.xml,
+	gui/test/data/xmlfiles/xmlreport_v2.xml,
+	gui/test/projectfile/testprojectfile.cpp,
+	gui/test/projectfiles/simple.cppcheck,
+	gui/test/projectfiles/simple_noroot.cppcheck,
+	gui/test/xmlfiles/xmlreport_v1.xml,
+	gui/test/xmlfiles/xmlreport_v2.xml,
+	gui/test/xmlreport/testxmlreport.cpp,
+	gui/test/xmlreportv1/testxmlreportv1.cpp,
+	gui/test/xmlreportv2/testxmlreportv2.cpp: GUITESTS: Move testdata to
+	data-subdirectory.
+
+2011-06-17  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/common.pri, gui/test/data/files/bar1,
+	gui/test/data/files/bar1.foo, gui/test/data/files/foo1.cpp,
+	gui/test/data/files/foo2.cxx, gui/test/data/files/foo3.cc,
+	gui/test/data/files/foo4.c, gui/test/data/files/foo5.c++,
+	gui/test/data/files/foo6.txx, gui/test/data/files/foo7.tpp,
+	gui/test/filelist/filelist.pro, gui/test/filelist/testfilelist.cpp,
+	gui/test/filelist/testfilelist.h, gui/test/test.pro: GUITESTS: Add
+	simple test for FileList.  These tests check that FileList only accepts existing files with
+	accepted filename extensions.
+
+2011-06-17  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/projectfile/testprojectfile.cpp,
+	gui/test/translationhandler/testtranslationhandler.cpp,
+	gui/test/xmlreportv1/testxmlreportv1.cpp,
+	gui/test/xmlreportv2/testxmlreportv2.cpp: GUITESTS: Few compares in
+	tests were wrong way around.
+
+2011-06-16  seb777 <sebastien.debrard@gmail.com>
+
+	* lib/checkstl.cpp, lib/checkstl.h, test/teststl.cpp: fix #747 and
+	#748 (incorrect use of auto_ptr - new check)
+
+2011-06-16  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/applicationlist.cpp, gui/applicationlist.h,
+	gui/mainwindow.cpp: GUI: Cleanup settings usage.  Use local QSettings instead of the one created by MainWindow.
+
+2011-06-16  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/common.pri, gui/test/projectfile/projectfile.pro,
+	gui/test/projectfile/testprojectfile.cpp,
+	gui/test/projectfile/testprojectfile.h,
+	gui/test/projectfiles/simple.cppcheck,
+	gui/test/projectfiles/simple_noroot.cppcheck, gui/test/test.pro: 
+	GUITESTS: Add tests for loading project files.
+
+2011-06-16  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/xmlreport/testxmlreport.cpp,
+	gui/test/xmlreport/xmlreport.pro,
+	gui/test/xmlreportv1/testxmlreportv1.cpp,
+	gui/test/xmlreportv1/xmlreportv1.pro,
+	gui/test/xmlreportv2/testxmlreportv2.cpp,
+	gui/test/xmlreportv2/xmlreportv2.pro: GUITESTS: More flexible test
+	data paths.  Use build-time define to set the path to the source files directory.
+	Which then can be used to format path to the test data. This allows
+	running tests from out-of-source-tree -builds that e.g. QtCreator
+	does.
+
+2011-06-15  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/cppcheck_de.ts, gui/cppcheck_en.ts, gui/cppcheck_es.ts,
+	gui/cppcheck_fi.ts, gui/cppcheck_fr.ts, gui/cppcheck_ja.ts,
+	gui/cppcheck_nl.ts, gui/cppcheck_pl.ts, gui/cppcheck_ru.ts,
+	gui/cppcheck_sr.ts, gui/cppcheck_sv.ts: GUI: Update translation
+	files.
+
+2011-06-15  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/txtreport.h: GUI: Add Q_OBJECT to TxtReport class.
+
+2011-06-14  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix extra
+	qualification check for same class name in different namespaces
+
+2011-06-14  Lauri Nurmi <lanurmi@users.sourceforge.net>
+
+	* lib/checkstl.cpp: Fixed #2836 ([PATCH] FP: Dereferenced iterator
+	has been erased)
+
+2011-06-12  Daniel Marjamäki <danielm77@spray.se>
+
+	* Makefile: Makefile: Set debug mode
+
+2011-06-12  Daniel Marjamäki <danielm77@spray.se>
+
+	* Makefile: 1.49: Updated Makefile for release
+
+2011-06-12  Daniel Marjamäki <danielm77@spray.se>
+
+	* Changelog: 1.49: Updated the changelog
+
 2011-06-12  Daniel Marjamäki <danielm77@spray.se>
 
 	* cli/cppcheck.rc, cli/main.cpp, lib/cppcheck.cpp,
