@@ -300,6 +300,9 @@ public:
 
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
+
+    /** Posix checks */
+    bool posix;
 };
 
 /// @}

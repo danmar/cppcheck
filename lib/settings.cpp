@@ -48,6 +48,7 @@ Settings::Settings()
     reportProgress = false;
     ifcfg = false;
     checkConfiguration = false;
+    posix = false;
 }
 
 std::string Settings::Suppressions::parseFile(std::istream &istr)
@@ -393,7 +394,6 @@ std::string Settings::addEnabled(const std::string &str)
     id.insert("missingInclude");
     id.insert("unusedFunction");
     id.insert("information");
-    id.insert("posix");
 
     if (str == "all")
     {

@@ -50,7 +50,6 @@ private:
         TEST_CASE(testgets);
     }
 
-
     void check(const char code[])
     {
         // Clear the error buffer..
@@ -58,7 +57,7 @@ private:
 
         Settings settings;
         settings.addEnabled("style");
-        settings.addEnabled("posix");
+        settings.posix = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

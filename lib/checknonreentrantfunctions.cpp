@@ -33,7 +33,7 @@ CheckNonReentrantFunctions instance;
 
 void CheckNonReentrantFunctions::nonReentrantFunctions()
 {
-    if (!_settings->isEnabled("posix") || !_settings->isEnabled("style"))
+    if (!_settings->posix || !_settings->isEnabled("style"))
         return;
 
     // Don't check C# and Java code

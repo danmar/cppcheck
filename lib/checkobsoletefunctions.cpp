@@ -40,8 +40,6 @@ void CheckObsoleteFunctions::obsoleteFunctions()
     if (_tokenizer->isJavaOrCSharp())
         return;
 
-    const bool checkPosix = _settings->isEnabled("posix");
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->isName() && tok->varId()==0 && tok->strAt(1) == "(" && !Token::Match(tok->previous(), ".|::|:|,"))
@@ -58,7 +56,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
                 reportError(tok->tokAt(1), Severity::information, "obsoleteFunctions"+it->first, it->second);
                 break;
             }
-            else if (checkPosix)
+            else if (_settings->posix)
             {
                 it = _obsoletePosixFunctions.find(tok->str());
                 if (it != _obsoletePosixFunctions.end())

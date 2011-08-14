@@ -38,15 +38,13 @@ private:
         TEST_CASE(test_crypt);
     }
 
-
     void check(const char code[])
     {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("posix");
-        settings.inconclusive = true;
+        settings.posix = true;
         settings.addEnabled("style");
 
         // Tokenize..
