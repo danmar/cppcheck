@@ -230,6 +230,8 @@ void CheckOther::checkSizeofForNumericParameter()
 
 void CheckOther::checkSizeofForArrayParameter()
 {
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var%"))
@@ -241,9 +243,10 @@ void CheckOther::checkSizeofForArrayParameter()
             }
             if (tok->tokAt(tokIdx)->varId() > 0)
             {
-                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->tokAt(tokIdx)->varId());
-                if (declTok)
+                const Variable *var = symbolDatabase->getVariableFromVarId(tok->tokAt(tokIdx)->varId());
+                if (var)
                 {
+                    const Token *declTok = var->nameToken();
                     if (Token::simpleMatch(declTok->next(), "["))
                     {
                         declTok = declTok->next()->link();
