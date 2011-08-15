@@ -721,7 +721,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                     duplicateTypedefError(*tokPtr, name, "Struct");
                                 return true;
                             }
-                            else if (tok->next()->str() == ")")
+                            else if (Token::Match(tok->next(), ")|*"))
                             {
                                 return true;
                             }
