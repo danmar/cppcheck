@@ -268,6 +268,7 @@ private:
         TEST_CASE(simplifyTypedef100); // ticket #3000
         TEST_CASE(simplifyTypedef101); // ticket #3003 (segmentation fault)
         TEST_CASE(simplifyTypedef102); // ticket #3004
+        TEST_CASE(simplifyTypedef103); // ticket #3007
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5400,6 +5401,17 @@ private:
                             "void foo()\n"
                             "{\n"
                             "    Fred * Fred;\n"
+                            "}\n";
+        sizeof_(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef103() // ticket #3007
+    {
+        const char code[] = "typedef struct { } Fred;\n"
+                            "void foo()\n"
+                            "{\n"
+                            "    Fred Fred;\n"
                             "}\n";
         sizeof_(code);
         ASSERT_EQUALS("", errout.str());
