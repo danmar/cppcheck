@@ -1977,6 +1977,12 @@ void Tokenizer::simplifyTypedef()
                     {
                         do
                         {
+                            if (!tok2->next())
+                            {
+                                syntaxError(tok2);
+                                return; // can't recover so quit
+                            }
+
                             if (!inCast && !inSizeof)
                                 tok2 = tok2->next();
 
