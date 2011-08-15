@@ -8294,18 +8294,24 @@ void Tokenizer::simplifyEnum()
                 if (!tok->next())
                 {
                     syntaxError(tok);
-                    return;
+                    return; // can't recover
                 }
 
                 typeTokenStart = tok->next();
                 tok = tok->next();
                 typeTokenEnd = typeTokenStart;
 
-                while (typeTokenEnd->next()->str() == "::" ||
-                       Token::Match(typeTokenEnd->next(), "%type%"))
+                while (typeTokenEnd->next() && (typeTokenEnd->next()->str() == "::" ||
+                                                Token::Match(typeTokenEnd->next(), "%type%")))
                 {
                     typeTokenEnd = typeTokenEnd->next();
                     tok = tok->next();
+                }
+
+                if (!tok->next())
+                {
+                    syntaxError(tok);
+                    return; // can't recover
                 }
             }
 
