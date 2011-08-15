@@ -52,6 +52,7 @@ private:
         TEST_CASE(tokenize16);  // #2612 - segfault for "<><<"
         TEST_CASE(tokenize17);  // #2759
         TEST_CASE(tokenize18);  // tokenize "(X&&Y)" into "( X && Y )" instead of "( X & & Y )"
+        TEST_CASE(tokenize19);  // #3006 (segmentation fault)
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -568,6 +569,11 @@ private:
     void tokenize18() // tokenize "(X&&Y)" into "( X && Y )" instead of "( X & & Y )"
     {
         ASSERT_EQUALS("( X && Y )", tokenizeAndStringify("(X&&Y)"));
+    }
+
+    void tokenize19() // #3006 (segmentation fault)
+    {
+        tokenizeAndStringify("x < () <");
     }
 
     void wrong_syntax()

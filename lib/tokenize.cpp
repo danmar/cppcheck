@@ -2420,7 +2420,7 @@ bool Tokenizer::tokenize(std::istream &code,
                             ;
                         else if (level == 0)
                             inclevel = true;
-                        else if (tok2->next()->isStandardType())
+                        else if (tok2->next() && tok2->next()->isStandardType())
                             inclevel = true;
                         else if (Token::simpleMatch(tok2, "< typename"))
                             inclevel = true;
