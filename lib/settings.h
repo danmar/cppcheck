@@ -55,6 +55,9 @@ public:
     /** @brief Is --debug-warnings given? */
     bool debugwarnings;
 
+    /** @brief Is --debug-fp given? */
+    bool debugFalsePositive;
+
     /** @brief Inconclusive checks */
     bool inconclusive;
 

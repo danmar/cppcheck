@@ -158,6 +158,19 @@ private:
      */
     virtual void reportOut(const std::string &outmsg);
 
+    /**
+     * @brief Check given code. If error is found, return true
+     * and print out source of the file. Try to reduce the code
+     * while still showing the error.
+     */
+    bool findError(std::string code, const char FileName[]);
+
+    /**
+     * @brief Replace "from" strings with "to" strings in "code"
+     * and return it.
+     */
+    std::string replaceAll(std::string code, const std::string &from, const std::string &to);
+
     unsigned int exitcode;
     std::list<std::string> _errorList;
     std::ostringstream _errout;

@@ -82,6 +82,73 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
     return retval;
 }
 
+std::string CppCheck::replaceAll(std::string code, const std::string &from, const std::string &to)
+{
+    size_t pos = 0;
+    while ((pos = code.find(from, pos)) != std::string::npos)
+    {
+        code.replace(pos, from.length(), to);
+        pos += to.length();
+    }
+
+    return code;
+}
+
+bool CppCheck::findError(std::string code, const char FileName[])
+{
+    // First make sure that error occurs with the original code
+    checkFile(code, FileName);
+    if (_errorList.empty())
+    {
+        // Error does not occur with this code
+        return false;
+    }
+
+    std::string previousCode = code;
+    std::string error = _errorList.front();
+    for (;;)
+    {
+
+        // Try to remove included files from the source
+        size_t found=previousCode.rfind("\n#endfile");
+        if (found == std::string::npos)
+        {
+            // No modifications can be done to the code
+        }
+        else
+        {
+            // Modify code and re-check it to see if error
+            // is still there.
+            code = previousCode.substr(found+9);
+            _errorList.clear();
+            checkFile(code, FileName);
+        }
+
+        if (_errorList.empty())
+        {
+            // Latest code didn't fail anymore. Fall back
+            // to previous code
+            code = previousCode;
+        }
+        else
+        {
+            error = _errorList.front();
+        }
+
+        // Add '\n' so that "\n#file" on first line would be found
+        code = "// " + error + "\n" + code;
+        code = replaceAll(code, "\n#file", "\n// #file");
+        code = replaceAll(code, "\n#endfile", "\n// #endfile");
+
+        // We have reduced the code as much as we can. Print out
+        // the code and quit.
+        _errorLogger.reportOut(code);
+        break;
+    }
+
+    return true;
+}
+
 unsigned int CppCheck::processFile()
 {
     exitcode = 0;
@@ -186,7 +253,18 @@ unsigned int CppCheck::processFile()
             if (!appendCode.empty())
                 Preprocessor::preprocessWhitespaces(appendCode);
 
-            checkFile(codeWithoutCfg + appendCode, _filename.c_str());
+            if (_settings.debugFalsePositive)
+            {
+                if (findError(codeWithoutCfg + appendCode, _filename.c_str()))
+                {
+                    return exitcode;
+                }
+            }
+            else
+            {
+                checkFile(codeWithoutCfg + appendCode, _filename.c_str());
+            }
+
             ++checkCount;
         }
     }
@@ -203,6 +281,8 @@ unsigned int CppCheck::processFile()
     _errorList.clear();
     return exitcode;
 }
+
+
 
 void CppCheck::checkFunctionUsage()
 {
@@ -408,6 +488,13 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     const std::string errmsg = msg.toString(_settings._verbose);
     if (errmsg.empty())
         return;
+
+    if (_settings.debugFalsePositive)
+    {
+        // Don't print out error
+        _errorList.push_back(errmsg);
+        return;
+    }
 
     // Alert only about unique errors
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())

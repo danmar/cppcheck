@@ -83,6 +83,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _exitAfterPrint = true;
             return true;
         }
+
         // Flag used for various purposes during debugging
         else if (strcmp(argv[i], "--debug") == 0)
             _settings->debug = _settings->debugwarnings = true;
@@ -90,6 +91,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // Show debug warnings
         else if (strcmp(argv[i], "--debug-warnings") == 0)
             _settings->debugwarnings = true;
+
+        // Print out code that triggers false positive
+        else if (strcmp(argv[i], "--debug-fp") == 0)
+            _settings->debugFalsePositive = true;
 
         // Enable all checks - will be removed in future
         else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0)

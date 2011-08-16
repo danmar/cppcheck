@@ -31,6 +31,7 @@
 Settings::Settings()
 {
     debug = debugwarnings = false;
+    debugFalsePositive = false;
     _errorsOnly = false;
     _inlineSuppressions = false;
     _verbose = false;
