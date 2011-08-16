@@ -122,6 +122,7 @@ private:
         TEST_CASE(symboldatabase17); // ticket #2657
         TEST_CASE(symboldatabase18); // ticket #2865
         TEST_CASE(symboldatabase19); // ticket #2991 (segmentation fault)
+        TEST_CASE(symboldatabase20); // ticket #3013 (segmentation fault)
     }
 
     void test_isVariableDeclarationCanHandleNull()
@@ -883,6 +884,14 @@ private:
     {
         // ticket #2991 - segmentation fault
         check("::y(){x}\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase20()
+    {
+        // ticket #3013 - segmentation fault
+        check("struct x : virtual y\n");
 
         ASSERT_EQUALS("", errout.str());
     }
