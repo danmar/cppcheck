@@ -272,16 +272,16 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, const std::string &varname) const
 {
-    if (Token::simpleMatch(tok, std::string("delete " + varname + " ;").c_str()))
+    if (Token::Match(tok, std::string("delete " + varname + " [,;]").c_str()))
         return New;
 
-    if (Token::simpleMatch(tok, std::string("delete [ ] " + varname + " ;").c_str()))
+    if (Token::Match(tok, std::string("delete [ ] " + varname + " [,;]").c_str()))
         return NewArray;
 
-    if (Token::simpleMatch(tok, std::string("delete ( " + varname + " ) ;").c_str()))
+    if (Token::Match(tok, std::string("delete ( " + varname + " ) [,;]").c_str()))
         return New;
 
-    if (Token::simpleMatch(tok, std::string("delete [ ] ( " + varname + " ) ;").c_str()))
+    if (Token::Match(tok, std::string("delete [ ] ( " + varname + " ) [,;]").c_str()))
         return NewArray;
 
     if (Token::simpleMatch(tok, std::string("free ( " + varname + " ) ;").c_str()) ||

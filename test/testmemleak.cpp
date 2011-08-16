@@ -3877,6 +3877,7 @@ private:
         TEST_CASE(class19); // ticket #2219
         TEST_CASE(class20);
         TEST_CASE(class21); // ticket #2517
+        TEST_CASE(class22); // ticket #3012
 
         TEST_CASE(staticvar);
 
@@ -4767,6 +4768,18 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: A::b\n"
                       "[test.cpp:10]: (error) Memory leak: A::c\n", errout.str());
+    }
+
+    void class22() // ticket #3012 - false positive
+    {
+        check("class Fred {\n"
+              "private:\n"
+              "    int * a;\n"
+              "private:\n"
+              "    Fred() { a = new int; }\n"
+              "    ~Fred() { (delete(a), (a)=NULL); }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void staticvar()
