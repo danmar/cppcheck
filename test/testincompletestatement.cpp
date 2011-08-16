@@ -69,6 +69,7 @@ private:
         TEST_CASE(conditionalcall);     // ; 0==x ? X() : Y();
         TEST_CASE(structinit);          // #2462 : ABC abc{1,2,3};
         TEST_CASE(returnstruct);
+        TEST_CASE(cast);                // #3009 : (struct Foo *)123.a = 1;
     }
 
     void test1()
@@ -198,6 +199,14 @@ private:
     {
         check("struct s foo() {\n"
               "    return (struct s){0,0};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void cast()
+    {
+        check("void f() {\n"
+              "    ((struct foo *)(0x1234))->xy = 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
