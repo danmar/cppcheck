@@ -74,6 +74,7 @@ private:
         TEST_CASE(jobsMissingCount);
         TEST_CASE(jobsInvalid);
         TEST_CASE(reportProgress);
+        TEST_CASE(stdposix);
         TEST_CASE(suppressionsOld); // TODO: Create and test real suppression file
         TEST_CASE(suppressions);
         TEST_CASE(suppressionsNoFile);
@@ -541,6 +542,16 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings.reportProgress);
+    }
+
+    void stdposix()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--std=posix", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings.posix);
     }
 
     void suppressionsOld()

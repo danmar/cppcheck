@@ -409,6 +409,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->reportProgress = true;
         }
 
+        // --std
+        else if (strcmp(argv[i], "--std=posix") == 0)
+        {
+            _settings->posix = true;
+        }
+
         // Output formatter
         else if (strcmp(argv[i], "--template") == 0)
         {
@@ -700,6 +706,8 @@ void CmdLineParser::PrintHelp()
               "                         https://sourceforge.net/projects/cppcheck/files/Articles/\n"
 #endif
               "    -s, --style          Deprecated, use --enable=style\n"
+              "    --std=posix          Code is posix => it is not compatible with non-posix\n"
+              "                         environments.\n"
               "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
               "                         <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"

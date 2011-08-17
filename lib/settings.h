@@ -304,7 +304,7 @@ public:
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
 
-    /** Posix checks */
+    /** Code is posix - it is not compatible with non-posix environments */
     bool posix;
 };
 
