@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team.
  *
@@ -706,8 +706,7 @@ void CmdLineParser::PrintHelp()
               "                         https://sourceforge.net/projects/cppcheck/files/Articles/\n"
 #endif
               "    -s, --style          Deprecated, use --enable=style\n"
-              "    --std=posix          Code is posix => it is not compatible with non-posix\n"
-              "                         environments.\n"
+              "    --std=posix          Code is posix\n"
               "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
               "                         <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"
