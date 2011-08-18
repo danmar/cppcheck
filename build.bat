@@ -13,8 +13,13 @@ REM  - run tests too
 if "%1" == "" goto help
 
 REM QT prompt sets QMAKESPEC
-if NOT "%QMAKESPEC%" == "" (
-  set MAKE=mingw32-make
+if "%QMAKESPEC%" == "" (
+REM parse qmakespec to see if it's some msvc
+  if "%QMAKESPEC:~6,4%" == "msvc" (
+    set MAKE=nmake
+  ) else (
+    set MAKE=mingw32-make
+  )
 ) else (
   set MAKE=nmake
 )
