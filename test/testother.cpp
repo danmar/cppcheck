@@ -2639,6 +2639,11 @@ private:
               "    if (x & 2 == 2) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison), it can be clarified with parentheses\n", errout.str());
+
+        check("void f() {\n"
+              "    if (a & fred1.x == fred2.y) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison), it can be clarified with parentheses\n", errout.str());
     }
 
     void incorrectStringCompare()
