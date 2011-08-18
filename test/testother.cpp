@@ -114,7 +114,8 @@ private:
 
         TEST_CASE(clarifyCalculation);
 
-        TEST_CASE(clarifyCondition);     // if (a = b() < 0)
+        TEST_CASE(clarifyCondition1);     // if (a = b() < 0)
+        TEST_CASE(clarifyCondition2);     // if (a & b == c)
 
         TEST_CASE(incorrectStringCompare);
 
@@ -2623,12 +2624,21 @@ private:
     }
 
     // clarify conditions with = and comparison
-    void clarifyCondition()
+    void clarifyCondition1()
     {
         check("void f() {\n"
               "    if (x = b() < 0) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment+comparison), it can be clarified with parentheses\n", errout.str());
+    }
+
+    // clarify conditions with bitwise operator and comparison
+    void clarifyCondition2()
+    {
+        check("void f() {\n"
+              "    if (x & 2 == 2) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison), it can be clarified with parentheses\n", errout.str());
     }
 
     void incorrectStringCompare()

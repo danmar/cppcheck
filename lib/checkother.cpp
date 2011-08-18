@@ -137,13 +137,14 @@ void CheckOther::clarifyCalculationError(const Token *tok, const std::string &op
 
 
 // Clarify condition '(x = a < 0)' into '((x = a) < 0)' or '(x = (a < 0))'
+// Clarify condition '(a & b == c)' into '((a & b) == c)' or '(a & (b == c))'
 void CheckOther::clarifyCondition()
 {
     if (!_settings->isEnabled("style"))
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "( %var% ="))
+        if (Token::Match(tok, "( %var% [=&|^]"))
         {
             for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
             {
@@ -153,7 +154,7 @@ void CheckOther::clarifyCondition()
                     break;
                 else if (Token::Match(tok2, "<|<=|==|!=|>|>= %num% )"))
                 {
-                    clarifyConditionError(tok);
+                    clarifyConditionError(tok, tok->strAt(2) == "=");
                     break;
                 }
             }
@@ -161,12 +162,19 @@ void CheckOther::clarifyCondition()
     }
 }
 
-void CheckOther::clarifyConditionError(const Token *tok)
+void CheckOther::clarifyConditionError(const Token *tok, bool assign)
 {
+    std::string errmsg;
+    if (assign)
+        errmsg = "Suspicious condition (assignment+comparison), it can be clarified with parentheses";
+    else
+        errmsg = "Suspicious condition (bitwise operator + comparison), it can be clarified with parentheses\n"
+                 "Suspicious condition. Comparison operators have higher precedence than bitwise operators. Please clarify the condition with parentheses.";
+
     reportError(tok,
                 Severity::style,
                 "clarifyCondition",
-                "Suspicious condition (assignment+comparison), it can be clarified with parentheses");
+                errmsg);
 }
 
 

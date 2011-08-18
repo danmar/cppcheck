@@ -112,7 +112,7 @@ public:
 
     /** @brief Suspicious condition (assignment+comparison) */
     void clarifyCondition();
-    void clarifyConditionError(const Token *tok);
+    void clarifyConditionError(const Token *tok, bool assign);
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
@@ -319,7 +319,7 @@ public:
         c.catchExceptionByValueError(0);
         c.memsetZeroBytesError(0, "varname");
         c.clarifyCalculationError(0, "+");
-        c.clarifyConditionError(0);
+        c.clarifyConditionError(0, true);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
         c.incrementBooleanError(0);
         c.comparisonOfBoolWithIntError(0, "varname");
