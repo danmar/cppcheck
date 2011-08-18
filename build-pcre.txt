@@ -14,8 +14,7 @@ If you're using qmake to generate makefiles, the following behavior applies:
     by passing HAVE_RULES=yes to qmake.
 
     - Note: This includes using build.bat since it calls qmake - to use PCRE and
-        build.bat, you need to edit build.bat to add HAVE_RULES=yes to the
-        qmake call.
+        build.bat, you need to run set HAVE_RULES=yes before each run of build.bat
 
 
 Some temporary build instructions. This is work in progress.
