@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{BED73C50-0373-3E1B-BFBD-5449C1396DBF}</ProjectGuid>
-    <RootNamespace>test</RootNamespace>
+    <ProjectGuid>{4F7DCE5E-6CDE-38C4-9EA7-27AF3B25CEB4}</ProjectGuid>
+    <RootNamespace>testrunner</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -40,11 +40,11 @@
   <PropertyGroup>
     <OutDir Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">debug\</OutDir>
     <IntDir Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">temp\</IntDir>
-    <TargetName Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">test</TargetName>
+    <TargetName Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">testrunner</TargetName>
     <IgnoreImportLibrary Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">true</IgnoreImportLibrary>
     <OutDir Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">release\</OutDir>
     <IntDir Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">temp\</IntDir>
-    <TargetName Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">test</TargetName>
+    <TargetName Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">testrunner</TargetName>
     <IgnoreImportLibrary Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">true</IgnoreImportLibrary>
     <LinkIncremental Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">false</LinkIncremental>
   </PropertyGroup>
@@ -57,6 +57,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ObjectFileName>temp\</ObjectFileName>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNICODE;WIN32;QT_LARGEFILE_SUPPORT;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -73,7 +74,7 @@
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
-      <OutputFile>debug\test.exe</OutputFile>
+      <OutputFile>debug\testrunner.exe</OutputFile>
       <SubSystem>Console</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
@@ -90,6 +91,7 @@
       <BrowseInformation>false</BrowseInformation>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ObjectFileName>temp\</ObjectFileName>
       <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>QT_NO_DEBUG;NDEBUG;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -107,7 +109,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
       <LinkIncremental>false</LinkIncremental>
-      <OutputFile>release\test.exe</OutputFile>
+      <OutputFile>release\testrunner.exe</OutputFile>
       <SubSystem>Console</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
@@ -132,6 +134,7 @@
     <ClCompile Include="..\lib\checkstl.cpp" />
     <ClCompile Include="..\lib\checkuninitvar.cpp" />
     <ClCompile Include="..\lib\checkunusedfunctions.cpp" />
+    <ClCompile Include="..\lib\checkunusedvar.cpp" />
     <ClCompile Include="..\cli\cmdlineparser.cpp" />
     <ClCompile Include="..\lib\cppcheck.cpp" />
     <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
@@ -210,6 +213,7 @@
     <ClInclude Include="..\lib\checkstl.h" />
     <ClInclude Include="..\lib\checkuninitvar.h" />
     <ClInclude Include="..\lib\checkunusedfunctions.h" />
+    <ClInclude Include="..\lib\checkunusedvar.h" />
     <ClInclude Include="..\cli\cmdlineparser.h" />
     <ClInclude Include="..\lib\cppcheck.h" />
     <ClInclude Include="..\cli\cppcheckexecutor.h" />

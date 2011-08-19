@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="test"
-	ProjectGUID="{26089205-888A-3B36-A3DF-6911F2B15F7F}"
+	Name="testrunner"
+	ProjectGUID="{A1772A4C-E3F0-33FC-9A59-2189857FB799}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -44,7 +44,7 @@
 				GenerateDebugInformation="true"
 				IgnoreImportLibrary="true"
 				LinkTimeCodeGeneration="0"
-				OutputFile="debug\test.exe"
+				OutputFile="debug\testrunner.exe"
 				ProgramDatabaseFile=""
 				SubSystem="1"
 				SuppressStartupBanner="true" />
@@ -98,7 +98,7 @@
 				IgnoreImportLibrary="true"
 				LinkIncremental="1"
 				LinkTimeCodeGeneration="0"
-				OutputFile="release\test.exe"
+				OutputFile="release\testrunner.exe"
 				ProgramDatabaseFile=""
 				SubSystem="1"
 				SuppressStartupBanner="true" />
@@ -153,6 +153,8 @@
 				RelativePath="..\lib\checkuninitvar.cpp" />
 			<File
 				RelativePath="..\lib\checkunusedfunctions.cpp" />
+			<File
+				RelativePath="..\lib\checkunusedvar.cpp" />
 			<File
 				RelativePath="..\cli\cmdlineparser.cpp" />
 			<File
@@ -310,6 +312,8 @@
 				RelativePath="..\lib\checkuninitvar.h" />
 			<File
 				RelativePath="..\lib\checkunusedfunctions.h" />
+			<File
+				RelativePath="..\lib\checkunusedvar.h" />
 			<File
 				RelativePath="..\cli\cmdlineparser.h" />
 			<File
