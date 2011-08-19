@@ -2637,6 +2637,11 @@ private:
               "    if (x = b() < 0) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment+comparison), it can be clarified with parentheses\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    for (i = 0; i < 10; i++) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // clarify conditions with bitwise operator and comparison

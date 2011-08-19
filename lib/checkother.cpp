@@ -147,17 +147,17 @@ void CheckOther::clarifyCondition()
     {
         if (Token::Match(tok, "( %var% [=&|^]"))
         {
-            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+            for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "(" || tok2->str() == "[")
                     tok2 = tok2->link();
-                else if (Token::Match(tok2, "&&|%oror%|?|)"))
-                    break;
                 else if (Token::Match(tok2, "<|<=|==|!=|>|>="))
                 {
                     clarifyConditionError(tok, tok->strAt(2) == "=", false);
                     break;
                 }
+                else if (!tok2->isName() && !tok2->isNumber() && tok2->str() != ".")
+                    break;
             }
         }
     }
@@ -168,7 +168,7 @@ void CheckOther::clarifyCondition()
         if (Token::Match(tok, "!|<|<=|==|!=|>|>="))
         {
             const Token *tok2 = tok->next();
-            while (tok2 && (tok2->isName() || Token::Match(tok2,".|(|[")))
+            while (tok2 && (tok2->isName() || tok2->isNumber() || Token::Match(tok2,".|(|[")))
             {
                 if (Token::Match(tok2, "(|["))
                     tok2 = tok2->link();
