@@ -104,6 +104,7 @@ private:
 
         TEST_CASE(incorrectLogicOperator1);
         TEST_CASE(incorrectLogicOperator2);
+        TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
 
         TEST_CASE(catchExceptionByValue);
 
@@ -2315,6 +2316,121 @@ private:
 
         check("void f(int x) {\n"
               "    if (x > 10 || x < 3)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void secondAlwaysTrueFalseWhenFirstTrueError()
+    {
+        check("void f(int x) {\n"
+              "    if (x > 5 && x != 1)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x != 1 is always true.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 5 && x != 6)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x > 5) && (x != 1))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x != 1 is always true.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x > 5) && (x != 6))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (5 < x && x != 1)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x != 1 is always true.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (5 < x && x != 6)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((5 < x) && (x != 1))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x != 1 is always true.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((5 < x) && (x != 6))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 5 && x == 1)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x == 1 is always false.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 5 && x == 6)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x > 5) && (x == 1))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x == 1 is always false.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x > 5) && (x == 6))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (5 < x && x == 1)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x == 1 is always false.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (5 < x && x == 6)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((5 < x) && (x == 1))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x == 1 is always false.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((5 < x) && (x == 6))\n"
               "        a++;\n"
               "}\n"
              );

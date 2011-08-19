@@ -748,10 +748,20 @@ void CheckOther::assignmentInAssertError(const Token *tok, const std::string &va
 }
 
 //---------------------------------------------------------------------------
-//    if ((x != 1) || (x != 3))            // <- always true
-//    if ((x == 1) && (x == 3))            // <- always false
-//    if ((x < 1)  && (x > 3))             // <- always false
-//    if ((x > 3)  || (x < 10))            // <- always true
+//    if ((x != 1) || (x != 3))            // expression always true
+//    if ((x == 1) && (x == 3))            // expression always false
+//    if ((x < 1)  && (x > 3))             // expression always false
+//    if ((x > 3)  || (x < 10))            // expression always true
+//    if ((x > 5)  && (x != 1))            // second comparison always true
+//
+//    Check for suspect logic for an expression consisting of 2 comparison
+//    expressions with a shared variable and constants and a logical operator
+//    between them.
+//
+//    Suggest a different logical operator when the logical operator between
+//    the comparisons is probably wrong.
+//
+//    Inform that second comparison is always true when first comparison is true.
 //---------------------------------------------------------------------------
 void CheckOther::checkIncorrectLogicOperator()
 {
@@ -764,7 +774,8 @@ void CheckOther::checkIncorrectLogicOperator()
 
     while (tok && endTok)
     {
-        // Find a pair of OR'd terms, with or without parenthesis
+        // Find a pair of comparison expressions with or without parenthesis
+        // with a shared variable and constants and with a logical operator between them.
         // e.g. if (x != 3 || x != 4)
         const Token *logicTok = NULL, *term1Tok = NULL, *term2Tok = NULL;
         const Token *op1Tok = NULL, *op2Tok = NULL, *op3Tok = NULL, *nextTok = NULL;
@@ -794,9 +805,11 @@ void CheckOther::checkIncorrectLogicOperator()
             std::string firstConstant, secondConstant;
             bool varFirst1, varFirst2;
             unsigned int varId;
+            const Token *varTok = NULL;
             if (Token::Match(term1Tok, "%var% %any% %num%"))
             {
-                varId = term1Tok->varId();
+                varTok = term1Tok;
+                varId = varTok->varId();
                 if (!varId)
                 {
                     tok = Token::findmatch(endTok->next(), conditionPattern);
@@ -808,7 +821,8 @@ void CheckOther::checkIncorrectLogicOperator()
             }
             else if (Token::Match(term1Tok, "%num% %any% %var%"))
             {
-                varId = term1Tok->tokAt(2)->varId();
+                varTok = term1Tok->tokAt(2);
+                varId = varTok->varId();
                 if (!varId)
                 {
                     tok = Token::findmatch(endTok->next(), conditionPattern);
@@ -867,6 +881,7 @@ void CheckOther::checkIncorrectLogicOperator()
 
             enum Position { First, Second, NA };
             enum Relation { Equal, NotEqual, Less, LessEqual, More, MoreEqual };
+            enum LogicError { Exclusion, AlwaysTrue, AlwaysFalse, AlwaysFalseOr };
             struct Condition
             {
                 const char *before;
@@ -877,27 +892,31 @@ void CheckOther::checkIncorrectLogicOperator()
                 const char *op3TokStr;
                 const char *after;
                 Relation   relation;
-                bool       state;
+                LogicError error;
             } conditions[] =
             {
-                { "!!&&", NA,     "!=",   "||", NA,     "!=",   "!!&&", NotEqual,  true  }, // (x != 1) || (x != 3) <- always true
-                { "(",    NA,     "==",   "&&", NA,     "==",   ")",    NotEqual,  false }, // (x == 1) && (x == 3) <- always false
-                { "(",    First,  "<",    "&&", First,  ">",    ")",    LessEqual, false }, // (x < 1)  && (x > 3)  <- always false
-                { "(",    First,  ">",    "&&", First,  "<",    ")",    MoreEqual, false }, // (x > 3)  && (x < 1)  <- always false
-                { "(",    Second, ">",    "&&", First,  ">",    ")",    LessEqual, false }, // (1 > x)  && (x > 3)  <- always false
-                { "(",    First,  ">",    "&&", Second, ">",    ")",    MoreEqual, false }, // (x > 3)  && (1 > x)  <- always false
-                { "(",    First,  "<",    "&&", Second, "<",    ")",    LessEqual, false }, // (x < 1)  && (3 < x)  <- always false
-                { "(",    Second, "<",    "&&", First,  "<",    ")",    MoreEqual, false }, // (3 < x)  && (x < 1)  <- always false
-                { "(",    Second, ">",    "&&", Second, "<",    ")",    LessEqual, false }, // (1 > x)  && (3 < x)  <- always false
-                { "(",    Second, "<",    "&&", Second, ">",    ")",    MoreEqual, false }, // (3 < x)  && (1 > x)  <- always false
-                { "(",    First , ">|>=", "||", First,  "<|<=", ")",    Less,      true  }, // (x > 3)  || (x < 10) <- always true
-                { "(",    First , "<|<=", "||", First,  ">|>=", ")",    More,      true  }, // (x < 10) || (x > 3)  <- always true
-                { "(",    Second, "<|<=", "||", First,  "<|<=", ")",    Less,      true  }, // (3 < x)  || (x < 10) <- always true
-                { "(",    First,  "<|<=", "||", Second, "<|<=", ")",    More,      true  }, // (x < 10) || (3 < x)  <- always true
-                { "(",    First,  ">|>=", "||", Second, ">|>=", ")",    Less,      true  }, // (x > 3)  || (10 > x) <- always true
-                { "(",    Second, ">|>=", "||", First,  ">|>=", ")",    More,      true  }, // (10 > x) || (x > 3)  <- always true
-                { "(",    Second, "<|<=", "||", Second, ">|<=", ")",    Less,      true  }, // (3 < x)  || (10 > x) <- always true
-                { "(",    Second, ">|>=", "||", Second, "<|<=", ")",    More,      true  }, // (10 > x) || (3 < x)  <- always true
+                { "!!&&", NA,     "!=",   "||", NA,     "!=",   "!!&&", NotEqual,  Exclusion     }, // (x != 1) || (x != 3) <- always true
+                { "(",    NA,     "==",   "&&", NA,     "==",   ")",    NotEqual,  AlwaysFalseOr }, // (x == 1) && (x == 3) <- always false
+                { "(",    First,  "<",    "&&", First,  ">",    ")",    LessEqual, AlwaysFalseOr }, // (x < 1)  && (x > 3)  <- always false
+                { "(",    First,  ">",    "&&", First,  "<",    ")",    MoreEqual, AlwaysFalseOr }, // (x > 3)  && (x < 1)  <- always false
+                { "(",    Second, ">",    "&&", First,  ">",    ")",    LessEqual, AlwaysFalseOr }, // (1 > x)  && (x > 3)  <- always false
+                { "(",    First,  ">",    "&&", Second, ">",    ")",    MoreEqual, AlwaysFalseOr }, // (x > 3)  && (1 > x)  <- always false
+                { "(",    First,  "<",    "&&", Second, "<",    ")",    LessEqual, AlwaysFalseOr }, // (x < 1)  && (3 < x)  <- always false
+                { "(",    Second, "<",    "&&", First,  "<",    ")",    MoreEqual, AlwaysFalseOr }, // (3 < x)  && (x < 1)  <- always false
+                { "(",    Second, ">",    "&&", Second, "<",    ")",    LessEqual, AlwaysFalseOr }, // (1 > x)  && (3 < x)  <- always false
+                { "(",    Second, "<",    "&&", Second, ">",    ")",    MoreEqual, AlwaysFalseOr }, // (3 < x)  && (1 > x)  <- always false
+                { "(",    First , ">|>=", "||", First,  "<|<=", ")",    Less,      Exclusion     }, // (x > 3)  || (x < 10) <- always true
+                { "(",    First , "<|<=", "||", First,  ">|>=", ")",    More,      Exclusion     }, // (x < 10) || (x > 3)  <- always true
+                { "(",    Second, "<|<=", "||", First,  "<|<=", ")",    Less,      Exclusion     }, // (3 < x)  || (x < 10) <- always true
+                { "(",    First,  "<|<=", "||", Second, "<|<=", ")",    More,      Exclusion     }, // (x < 10) || (3 < x)  <- always true
+                { "(",    First,  ">|>=", "||", Second, ">|>=", ")",    Less,      Exclusion     }, // (x > 3)  || (10 > x) <- always true
+                { "(",    Second, ">|>=", "||", First,  ">|>=", ")",    More,      Exclusion     }, // (10 > x) || (x > 3)  <- always true
+                { "(",    Second, "<|<=", "||", Second, ">|<=", ")",    Less,      Exclusion     }, // (3 < x)  || (10 > x) <- always true
+                { "(",    Second, ">|>=", "||", Second, "<|<=", ")",    More,      Exclusion     }, // (10 > x) || (3 < x)  <- always true
+                { "(",    First,  ">",    "&&", NA,     "!=",   ")",    More,      AlwaysTrue    }, // (x > 5)  && (x != 1) <- second expression always true
+                { "(",    Second, "<",    "&&", NA,     "!=",   ")",    More,      AlwaysTrue    }, // (5 < x)  && (x != 1) <- second expression always true
+                { "(",    First,  ">",    "&&", NA,     "==",   ")",    More,      AlwaysFalse   }, // (x > 5)  && (x == 1) <- second expression always false
+                { "(",    Second, "<",    "&&", NA,     "==",   ")",    More,      AlwaysFalse   }, // (5 < x)  && (x == 1) <- second expression always false
             };
 
             for (unsigned int i = 0; i < (sizeof(conditions) / sizeof(conditions[0])); i++)
@@ -929,7 +948,17 @@ void CheckOther::checkIncorrectLogicOperator()
                     (conditions[i].relation == LessEqual && MathLib::isLessEqual(firstConstant, secondConstant)) ||
                     (conditions[i].relation == More      && MathLib::isGreater(firstConstant, secondConstant)) ||
                     (conditions[i].relation == MoreEqual && MathLib::isGreaterEqual(firstConstant, secondConstant)))
-                    incorrectLogicOperatorError(term1Tok, conditions[i].state);
+                {
+                    if (conditions[i].error == Exclusion || conditions[i].error == AlwaysFalseOr)
+                        incorrectLogicOperatorError(term1Tok, conditions[i].error == Exclusion);
+                    else
+                    {
+                        std::string text("When " + varTok->str() + " is greater than " + firstConstant + ", the comparison " +
+                                         varTok->str() + " " + conditions[i].op3TokStr + " " + secondConstant +
+                                         " is always " + (conditions[i].error == AlwaysTrue ? "true." : "false."));
+                        secondAlwaysTrueFalseWhenFirstTrueError(term1Tok, text);
+                    }
+                }
             }
         }
 
@@ -946,6 +975,11 @@ void CheckOther::incorrectLogicOperatorError(const Token *tok, bool always)
     else
         reportError(tok, Severity::warning,
                     "incorrectLogicOperator", "Expression always evaluates to false. Did you intend to use || instead?");
+}
+
+void CheckOther::secondAlwaysTrueFalseWhenFirstTrueError(const Token *tok, const std::string &truefalse)
+{
+    reportError(tok, Severity::style, "secondAlwaysTrueFalseWhenFirstTrue", truefalse);
 }
 
 //---------------------------------------------------------------------------

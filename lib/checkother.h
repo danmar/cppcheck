@@ -260,6 +260,7 @@ public:
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
     void incorrectLogicOperatorError(const Token *tok, bool always);
+    void secondAlwaysTrueFalseWhenFirstTrueError(const Token *tok, const std::string &truefalse);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void catchExceptionByValueError(const Token *tok);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
@@ -310,6 +311,7 @@ public:
         c.assignmentInAssertError(0, "varname");
         c.invalidScanfError(0);
         c.incorrectLogicOperatorError(0, true);
+        c.secondAlwaysTrueFalseWhenFirstTrueError(0, "when first comparison is true, the 2nd comparison is always true");
         c.unusedVariableError(0, "varname");
         c.allocatedButUnusedVariableError(0, "varname");
         c.unreadVariableError(0, "varname");
