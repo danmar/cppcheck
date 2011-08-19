@@ -63,6 +63,7 @@ LIBOBJ =      lib/check64bit.o \
               lib/checkstl.o \
               lib/checkuninitvar.o \
               lib/checkunusedfunctions.o \
+              lib/checkunusedvar.o \
               lib/cppcheck.o \
               lib/errorlogger.o \
               lib/executionpath.o \
@@ -215,6 +216,9 @@ lib/checkuninitvar.o: lib/checkuninitvar.cpp lib/checkuninitvar.h lib/check.h li
 
 lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkunusedfunctions.o lib/checkunusedfunctions.cpp
+
+lib/checkunusedvar.o: lib/checkunusedvar.cpp lib/checkunusedvar.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/symboldatabase.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkunusedvar.o lib/checkunusedvar.cpp
 
 lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/preprocessor.h lib/path.h lib/timer.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/cppcheck.o lib/cppcheck.cpp

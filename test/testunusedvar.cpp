@@ -22,7 +22,7 @@
 
 #include "testsuite.h"
 #include "tokenize.h"
-#include "checkother.h"
+#include "checkunusedvar.h"
 
 #include <sstream>
 extern std::ostringstream errout;
@@ -139,8 +139,8 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check for unused variables..
-        CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.checkStructMemberUsage();
+        CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
+        checkUnusedVar.checkStructMemberUsage();
     }
 
     void structmember1()
@@ -376,8 +376,8 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check for unused variables..
-        CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.functionVariableUsage();
+        CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
+        checkUnusedVar.checkFunctionVariableUsage();
     }
 
     void localvar1()

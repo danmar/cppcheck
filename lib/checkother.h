@@ -54,8 +54,6 @@ public:
         checkOther.warningOldStylePointerCast();
         checkOther.checkUnsignedDivision();
         checkOther.checkCharVariable();
-        checkOther.functionVariableUsage();
-        checkOther.checkStructMemberUsage();
         checkOther.strPlusChar();
         checkOther.sizeofsizeof();
         checkOther.sizeofCalculation();
@@ -129,21 +127,11 @@ public:
     /** @brief %Check for unsigned division */
     void checkUnsignedDivision();
 
-    /** @brief %Check for unused function variables */
-    void functionVariableUsage();
-    void unusedVariableError(const Token *tok, const std::string &varname);
-    void allocatedButUnusedVariableError(const Token *tok, const std::string &varname);
-    void unreadVariableError(const Token *tok, const std::string &varname);
-    void unassignedVariableError(const Token *tok, const std::string &varname);
-
     /** @brief %Check scope of variables */
     void checkVariableScope();
 
     /** @brief %Check for constant function parameter */
     void checkConstantFunctionParameter();
-
-    /** @brief %Check that all struct members are used */
-    void checkStructMemberUsage();
 
     /** @brief Using char variable as array index / as operand in bit operation */
     void checkCharVariable();
@@ -231,9 +219,6 @@ public:
     /** @brief %Check for duplicate break statements in a switch or loop */
     void checkDuplicateBreak();
 
-    /** @brief check if token is a record type without side effects */
-    bool isRecordTypeWithoutSideEffects(const Token *tok);
-
     /** @brief assigning bool to pointer */
     void checkAssignBoolToPointer();
 
@@ -245,7 +230,6 @@ public:
     void dangerousUsageStrtolError(const Token *tok);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
     void udivError(const Token *tok);
-    void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname);
     void passedByValueError(const Token *tok, const std::string &parname);
     void constStatementError(const Token *tok, const std::string &type);
     void charArrayIndexError(const Token *tok);
@@ -296,7 +280,6 @@ public:
         // style/warning
         c.cstyleCastError(0);
         c.dangerousUsageStrtolError(0);
-        c.unusedStructMemberError(0, "structname", "variable");
         c.passedByValueError(0, "parametername");
         c.constStatementError(0, "type");
         c.charArrayIndexError(0);
@@ -312,10 +295,6 @@ public:
         c.invalidScanfError(0);
         c.incorrectLogicOperatorError(0, true);
         c.secondAlwaysTrueFalseWhenFirstTrueError(0, "when first comparison is true, the 2nd comparison is always true");
-        c.unusedVariableError(0, "varname");
-        c.allocatedButUnusedVariableError(0, "varname");
-        c.unreadVariableError(0, "varname");
-        c.unassignedVariableError(0, "varname");
         c.catchExceptionByValueError(0);
         c.memsetZeroBytesError(0, "varname");
         c.clarifyCalculationError(0, "+");
@@ -358,7 +337,6 @@ public:
                "* bad usage of the function 'strtol'\n"
                "* [[CheckUnsignedDivision|unsigned division]]\n"
                "* Dangerous usage of 'scanf'\n"
-               "* unused struct member\n"
                "* passing parameter by value\n"
                "* [[IncompleteStatement|Incomplete statement]]\n"
                "* [[charvar|check how signed char variables are used]]\n"
