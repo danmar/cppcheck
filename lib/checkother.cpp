@@ -142,6 +142,7 @@ void CheckOther::clarifyCondition()
 {
     if (!_settings->isEnabled("style"))
         return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "( %var% [=&|^]"))
@@ -154,19 +155,45 @@ void CheckOther::clarifyCondition()
                     break;
                 else if (Token::Match(tok2, "<|<=|==|!=|>|>="))
                 {
-                    clarifyConditionError(tok, tok->strAt(2) == "=");
+                    clarifyConditionError(tok, tok->strAt(2) == "=", false);
                     break;
                 }
             }
         }
     }
+
+    // using boolean result in bitwise operation ! x [&|^]
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "!|<|<=|==|!=|>|>="))
+        {
+            const Token *tok2 = tok->next();
+            while (tok2 && (tok2->isName() || Token::Match(tok2,".|(|[")))
+            {
+                if (Token::Match(tok2, "(|["))
+                    tok2 = tok2->link();
+                tok2 = tok2->next();
+            }
+            if (Token::Match(tok2, "[&|^]"))
+            {
+                clarifyConditionError(tok,false,true);
+            }
+        }
+    }
 }
 
-void CheckOther::clarifyConditionError(const Token *tok, bool assign)
+void CheckOther::clarifyConditionError(const Token *tok, bool assign, bool boolop)
 {
     std::string errmsg;
+
     if (assign)
         errmsg = "Suspicious condition (assignment+comparison), it can be clarified with parentheses";
+
+    else if (boolop)
+        errmsg = "Boolean result is used in bitwise operation. Clarify expression with parentheses\n"
+                 "Suspicious expression. Boolean result is used in bitwise operation. The ! operator "
+                 "and the comparison operators have higher precedence than bitwise operators. "
+                 "It is recommended that the expression is clarified with parentheses.";
     else
         errmsg = "Suspicious condition (bitwise operator + comparison), it can be clarified with parentheses\n"
                  "Suspicious condition. Comparison operators have higher precedence than bitwise operators. Please clarify the condition with parentheses.";

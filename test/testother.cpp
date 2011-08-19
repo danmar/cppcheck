@@ -116,6 +116,7 @@ private:
 
         TEST_CASE(clarifyCondition1);     // if (a = b() < 0)
         TEST_CASE(clarifyCondition2);     // if (a & b == c)
+        TEST_CASE(clarifyCondition3);     // if (! a & b)
 
         TEST_CASE(incorrectStringCompare);
 
@@ -2650,6 +2651,20 @@ private:
               "    if (a & fred1.x == fred2.y) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison), it can be clarified with parentheses\n", errout.str());
+    }
+
+    // clarify condition that uses ! operator and then bitwise operator
+    void clarifyCondition3()
+    {
+        check("void f(int w) {\n"
+              "    if(!w & 0x8000) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses\n", errout.str());
+
+        check("void f() {\n"
+              "    if (x == foo() & 2) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses\n", errout.str());
     }
 
     void incorrectStringCompare()
