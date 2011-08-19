@@ -42,11 +42,13 @@ void CheckAssignIf::assignIf()
         if (tok->str() != "=")
             continue;
 
-        if (Token::Match(tok->tokAt(-2), "[;{}] %var% = %var% & %num% ;"))
+        if (Token::Match(tok->tokAt(-2), "[;{}] %var% = %var% [&|] %num% ;"))
         {
             const unsigned int varid(tok->previous()->varId());
             if (varid == 0)
                 continue;
+
+            const char bitop(tok->strAt(2).at(0));
 
             const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(3));
             if (num < 0)
@@ -60,9 +62,9 @@ void CheckAssignIf::assignIf()
                 {
                     const std::string op(tok2->strAt(3));
                     const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
-                    if (op == "==" && (num & num2) != num2)
+                    if (op == "==" && (num & num2) != ((bitop=='&') ? num2 : num))
                         assignIfError(tok2, false);
-                    else if (op == "!=" && (num & num2) != num2)
+                    else if (op == "!=" && (num & num2) != ((bitop=='&') ? num2 : num))
                         assignIfError(tok2, true);
                     break;
                 }

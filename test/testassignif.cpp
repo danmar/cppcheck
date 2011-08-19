@@ -64,6 +64,7 @@ private:
 
     void assignAndCompare()
     {
+        // &
         check("void foo(int x)\n"
               "{\n"
               "    int y = x & 4;\n"
@@ -77,6 +78,19 @@ private:
               "    if (y != 3);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Mismatching assignment and comparison, comparison is always true\n", errout.str());
+
+        // |
+        check("void foo(int x) {\n"
+              "    int y = x | 0x14;\n"
+              "    if (y == 0x710);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Mismatching assignment and comparison, comparison is always false\n", errout.str());
+
+        check("void foo(int x) {\n"
+              "    int y = x | 0x14;\n"
+              "    if (y == 0x71f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void compare()
