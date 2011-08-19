@@ -1697,6 +1697,12 @@ private:
               "    func(x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #3001 - false positive
+        check("void foo(int x) {\n"
+              "    x = x ? x : 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testScanf1()

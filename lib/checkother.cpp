@@ -577,7 +577,25 @@ void CheckOther::checkSelfAssignment()
             tok->varId() && tok->varId() == tok->tokAt(2)->varId() &&
             pod.find(tok->varId()) != pod.end())
         {
-            selfAssignmentError(tok, tok->str());
+            bool err = true;
+
+            // no false positive for 'x = x ? x : 1;'
+            // if is simplified to 'if (x) { x = x ; } else { x = 1 ; }'. The simplification
+            // writes all tokens on 1 line so check if the lineno is the same for all the tokens.
+            if (Token::Match(tok->tokAt(-2), ") { %var% = %var% ; } else { %varid% =", tok->varId()))
+            {
+                // Find the 'if' token
+                const Token *tokif = tok->tokAt(-2)->link()->previous();
+
+                // find the '}' that terminates the 'else'-block
+                const Token *else_end = tok->tokAt(6)->link();
+
+                if (tokif && else_end && tokif->linenr() == else_end->linenr())
+                    err = false;
+            }
+
+            if (err)
+                selfAssignmentError(tok, tok->str());
         }
 
         tok = Token::findmatch(tok->next(), selfAssignmentPattern);
