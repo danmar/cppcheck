@@ -7,6 +7,9 @@ REM  where <target> is any of cppcheck/gui/tests/all
 REM        release or debug is the configuration
 REM  all-target builds both cppcheck and gui.
 REM
+REM Run the command before build.bat to enable rules using pcre:
+REM   set HAVE_RULES=yes
+REM
 REM TODO:
 REM  - run tests too
 
@@ -36,7 +39,7 @@ goto help
 
 :cppcheck
 cd cli
-qmake -config %TARGET%
+qmake -config %TARGET% HAVE_RULES=%HAVE_RULES%
 %MAKE%
 cd ..
 if "%1" == "all" goto gui
@@ -44,7 +47,7 @@ goto end
 
 :gui
 cd gui
-qmake -config %TARGET%
+qmake -config %TARGET% HAVE_RULES=%HAVE_RULES%
 %MAKE%
 lrelease gui.pro
 cd ..
@@ -52,7 +55,7 @@ goto end
 
 :tests
 cd test
-qmake -config %TARGET%
+qmake -config %TARGET% HAVE_RULES=%HAVE_RULES%
 %MAKE%
 cd ..
 goto end
