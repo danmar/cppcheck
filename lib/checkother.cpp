@@ -153,6 +153,10 @@ void CheckOther::clarifyCondition()
                     tok2 = tok2->link();
                 else if (Token::Match(tok2, "<|<=|==|!=|>|>="))
                 {
+                    // This might be a template
+                    if (!code_is_c() && Token::Match(tok2->previous(), "%var% <"))
+                        break;
+
                     clarifyConditionError(tok, tok->strAt(2) == "=", false);
                     break;
                 }
@@ -174,8 +178,13 @@ void CheckOther::clarifyCondition()
                     tok2 = tok2->link();
                 tok2 = tok2->next();
             }
+
             if (Token::Match(tok2, "[&|^]"))
             {
+                // don't write false positives when templates are used
+                if (Token::Match(tok, "<|>") && !code_is_c() && tok2->str() == "&")
+                    continue;
+
                 clarifyConditionError(tok,false,true);
             }
         }
@@ -3413,19 +3422,27 @@ static bool isFunction(const std::string &name, const Token *startToken)
     return false;
 }
 
+bool CheckOther::code_is_c() const
+{
+    const std::string fname = _tokenizer->getFiles()->at(0);
+    const size_t position   = fname.rfind(".");
+
+    if (position != std::string::npos)
+    {
+        const std::string ext = fname.substr(position);
+        if (ext == ".c" || ext == ".C")
+            return true;
+    }
+
+    return false;
+}
+
 void CheckOther::checkMisusedScopedObject()
 {
     // Skip this check for .c files
+    if (code_is_c())
     {
-        const std::string fname = _tokenizer->getFiles()->at(0);
-        size_t position         = fname.rfind(".");
-
-        if (position != std::string::npos)
-        {
-            const std::string ext = fname.substr(position);
-            if (ext == ".c" || ext == ".C")
-                return;
-        }
+        return;
     }
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();

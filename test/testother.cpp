@@ -2642,6 +2642,12 @@ private:
               "    for (i = 0; i < 10; i++) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if (x = a<int>()) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     // clarify conditions with bitwise operator and comparison
@@ -2672,6 +2678,9 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses\n", errout.str());
 
         check("void f(std::list<int> &ints) { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { A<x &> a; }");
         ASSERT_EQUALS("", errout.str());
     }
 
