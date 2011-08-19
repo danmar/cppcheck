@@ -34,7 +34,7 @@ CheckOther instance;
 }
 
 //---------------------------------------------------------------------------
-
+//---------------------------------------------------------------------------
 void CheckOther::checkIncrementBoolean()
 {
     if (!_settings->isEnabled("style"))
@@ -69,8 +69,7 @@ void CheckOther::incrementBooleanError(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
-
-
+//---------------------------------------------------------------------------
 void CheckOther::clarifyCalculation()
 {
     if (!_settings->isEnabled("style"))
@@ -135,9 +134,10 @@ void CheckOther::clarifyCalculationError(const Token *tok, const std::string &op
                 "The code " + calc + " should be written as either " + s1 + " or " + s2 + ".");
 }
 
-
+//---------------------------------------------------------------------------
 // Clarify condition '(x = a < 0)' into '((x = a) < 0)' or '(x = (a < 0))'
 // Clarify condition '(a & b == c)' into '((a & b) == c)' or '(a & (b == c))'
+//---------------------------------------------------------------------------
 void CheckOther::clarifyCondition()
 {
     if (!_settings->isEnabled("style"))
@@ -204,8 +204,8 @@ void CheckOther::clarifyConditionError(const Token *tok, bool assign, bool boolo
                 errmsg);
 }
 
-
-
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void CheckOther::warningOldStylePointerCast()
 {
     if (!_settings->isEnabled("style") ||
@@ -235,6 +235,11 @@ void CheckOther::warningOldStylePointerCast()
     }
 }
 
+void CheckOther::cstyleCastError(const Token *tok)
+{
+    reportError(tok, Severity::style, "cstyleCast", "C-style pointer casting");
+}
+
 //---------------------------------------------------------------------------
 // fflush(stdin) <- fflush only applies to output streams in ANSI C
 //---------------------------------------------------------------------------
@@ -248,6 +253,14 @@ void CheckOther::checkFflushOnInputStream()
     }
 }
 
+void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::error,
+                "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour");
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void CheckOther::checkSizeofForNumericParameter()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -263,6 +276,21 @@ void CheckOther::checkSizeofForNumericParameter()
     }
 }
 
+void CheckOther::sizeofForNumericParameterError(const Token *tok)
+{
+    reportError(tok, Severity::error,
+                "sizeofwithnumericparameter", "Using sizeof with a numeric constant as function "
+                "argument might not be what you intended.\n"
+                "It is unusual to use constant value with sizeof. For example, this code:\n"
+                "     int f() {\n"
+                "         return sizeof(10);\n"
+                "     }\n"
+                " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 10."
+               );
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void CheckOther::checkSizeofForArrayParameter()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -321,7 +349,22 @@ void CheckOther::checkSizeofForArrayParameter()
     }
 }
 
-
+void CheckOther::sizeofForArrayParameterError(const Token *tok)
+{
+    reportError(tok, Severity::error,
+                "sizeofwithsilentarraypointer", "Using sizeof for array given as function argument "
+                "returns the size of pointer.\n"
+                "Giving array as function parameter and then using sizeof-operator for the array "
+                "argument. In this case the sizeof-operator returns the size of pointer (in the "
+                "system). It does not return the size of the whole array in bytes as might be "
+                "expected. For example, this code:\n"
+                "     int f(char a[100]) {\n"
+                "         return sizeof(a);\n"
+                "     }\n"
+                " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 100 (the "
+                "size of the array in bytes)."
+               );
+}
 
 //---------------------------------------------------------------------------
 //    switch (x)
@@ -406,7 +449,14 @@ void CheckOther::checkRedundantAssignmentInSwitch()
     }
 }
 
+void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning,
+                "redundantAssignInSwitch", "Redundant assignment of \"" + varname + "\" in switch");
+}
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void CheckOther::checkSwitchCaseFallThrough()
 {
     if (!(_settings->isEnabled("style") && _settings->experimental))
@@ -576,6 +626,11 @@ void CheckOther::checkSwitchCaseFallThrough()
     }
 }
 
+void CheckOther::switchCaseFallThrough(const Token *tok)
+{
+    reportError(tok, Severity::style,
+                "switchCaseFallThrough", "Switch falls through case without comment");
+}
 
 //---------------------------------------------------------------------------
 //    int x = 1;
@@ -630,6 +685,12 @@ void CheckOther::checkSelfAssignment()
     }
 }
 
+void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning,
+                "selfAssignment", "Redundant assignment of \"" + varname + "\" to itself");
+}
+
 //---------------------------------------------------------------------------
 //    int a = 1;
 //    assert(a = 2);            // <- assert should not have a side-effect
@@ -658,6 +719,16 @@ void CheckOther::checkAssignmentInAssert()
         tok = Token::findmatch(endTok->next(), assertPattern);
         endTok = tok ? tok->next()->link() : NULL;
     }
+}
+
+void CheckOther::assignmentInAssertError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning,
+                "assignmentInAssert", "Assert statement modifies '" + varname + "'.\n"
+                "Variable '" + varname + "' is modified insert assert statement. "
+                "Assert statements are removed from release builds so the code inside "
+                "assert statement is not run. If the code is needed also in release "
+                "builds this is a bug.");
 }
 
 //---------------------------------------------------------------------------
@@ -851,6 +922,16 @@ void CheckOther::checkIncorrectLogicOperator()
     }
 }
 
+void CheckOther::incorrectLogicOperatorError(const Token *tok, bool always)
+{
+    if (always)
+        reportError(tok, Severity::warning,
+                    "incorrectLogicOperator", "Mutual exclusion over || always evaluates to true. Did you intend to use && instead?");
+    else
+        reportError(tok, Severity::warning,
+                    "incorrectLogicOperator", "Expression always evaluates to false. Did you intend to use || instead?");
+}
+
 //---------------------------------------------------------------------------
 //    try {} catch (std::exception err) {} <- Should be "std::exception& err"
 //---------------------------------------------------------------------------
@@ -878,10 +959,17 @@ void CheckOther::checkCatchExceptionByValue()
     }
 }
 
+void CheckOther::catchExceptionByValueError(const Token *tok)
+{
+    reportError(tok, Severity::style,
+                "catchExceptionByValue", "Exception should be caught by reference.\n"
+                "The exception is caught as a value. It could be caught "
+                "as a (const) reference which is usually recommended in C++.");
+}
+
 //---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
-
 void CheckOther::invalidFunctionUsage()
 {
     // strtol and strtoul..
@@ -959,8 +1047,25 @@ void CheckOther::invalidFunctionUsage()
         }
     }
 }
-//---------------------------------------------------------------------------
 
+void CheckOther::dangerousUsageStrtolError(const Token *tok)
+{
+    reportError(tok, Severity::error, "dangerousUsageStrtol", "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36");
+}
+
+void CheckOther::sprintfOverlappingDataError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::error, "sprintfOverlappingData",
+                "Undefined behavior: variable is used as parameter and destination in s[n]printf().\n"
+                "The variable '" + varname + "' is used both as a parameter and as a destination in "
+                "s[n]printf(). The origin and destination buffers overlap. Quote from glibc (C-library) "
+                "documentation (http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
+                "'If copying takes place between objects that overlap as a result of a call "
+                "to sprintf() or snprintf(), the results are undefined.'");
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void CheckOther::invalidScanf()
 {
     if (!_settings->isEnabled("style"))
@@ -1001,6 +1106,29 @@ void CheckOther::invalidScanf()
     }
 }
 
+void CheckOther::invalidScanfError(const Token *tok)
+{
+    reportError(tok, Severity::warning,
+                "invalidscanf", "scanf without field width limits can crash with huge input data\n"
+                "scanf without field width limits can crash with huge input data. To fix this error "
+                "message add a field width specifier:\n"
+                "    %s => %20s\n"
+                "    %i => %3i\n"
+                "\n"
+                "Sample program that can crash:\n"
+                "\n"
+                "#include <stdio.h>\n"
+                "int main()\n"
+                "{\n"
+                "    int a;\n"
+                "    scanf(\"%i\", &a);\n"
+                "    return 0;\n"
+                "}\n"
+                "\n"
+                "To make it crash:\n"
+                "perl -e 'print \"5\"x2100000' | ./a.out");
+}
+
 //---------------------------------------------------------------------------
 //    if (!x==3) <- Probably meant to be "x!=3"
 //---------------------------------------------------------------------------
@@ -1028,6 +1156,13 @@ void CheckOther::checkComparisonOfBoolWithInt()
             }
         }
     }
+}
+
+void CheckOther::comparisonOfBoolWithIntError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning, "comparisonOfBoolWithInt",
+                "Comparison of a boolean with a non-zero integer\n"
+                "The expression \"!" + varname + "\" is of type 'bool' but is compared against a non-zero 'int'.");
 }
 
 //---------------------------------------------------------------------------
@@ -1058,64 +1193,16 @@ void CheckOther::checkDuplicateBreak()
     }
 }
 
-
-void CheckOther::sizeofForNumericParameterError(const Token *tok)
+void CheckOther::duplicateBreakError(const Token *tok)
 {
-    reportError(tok, Severity::error,
-                "sizeofwithnumericparameter", "Using sizeof with a numeric constant as function "
-                "argument might not be what you intended.\n"
-                "It is unusual to use constant value with sizeof. For example, this code:\n"
-                "     int f() {\n"
-                "         return sizeof(10);\n"
-                "     }\n"
-                " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 10."
-               );
-}
-
-void CheckOther::sizeofForArrayParameterError(const Token *tok)
-{
-    reportError(tok, Severity::error,
-                "sizeofwithsilentarraypointer", "Using sizeof for array given as function argument "
-                "returns the size of pointer.\n"
-                "Giving array as function parameter and then using sizeof-operator for the array "
-                "argument. In this case the sizeof-operator returns the size of pointer (in the "
-                "system). It does not return the size of the whole array in bytes as might be "
-                "expected. For example, this code:\n"
-                "     int f(char a[100]) {\n"
-                "         return sizeof(a);\n"
-                "     }\n"
-                " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 100 (the "
-                "size of the array in bytes)."
-               );
-}
-
-void CheckOther::invalidScanfError(const Token *tok)
-{
-    reportError(tok, Severity::warning,
-                "invalidscanf", "scanf without field width limits can crash with huge input data\n"
-                "scanf without field width limits can crash with huge input data. To fix this error "
-                "message add a field width specifier:\n"
-                "    %s => %20s\n"
-                "    %i => %3i\n"
-                "\n"
-                "Sample program that can crash:\n"
-                "\n"
-                "#include <stdio.h>\n"
-                "int main()\n"
-                "{\n"
-                "    int a;\n"
-                "    scanf(\"%i\", &a);\n"
-                "    return 0;\n"
-                "}\n"
-                "\n"
-                "To make it crash:\n"
-                "perl -e 'print \"5\"x2100000' | ./a.out");
+    reportError(tok, Severity::style, "duplicateBreak",
+                "Consecutive break or continue statements are unnecessary\n"
+                "The second of the two statements can never be executed, and so should be removed\n");
 }
 
 //---------------------------------------------------------------------------
 // Check for unsigned divisions
 //---------------------------------------------------------------------------
-
 void CheckOther::checkUnsignedDivision()
 {
     if (!_settings->isEnabled("style"))
@@ -1159,6 +1246,11 @@ void CheckOther::checkUnsignedDivision()
     }
 }
 
+void CheckOther::udivError(const Token *tok)
+{
+    reportError(tok, Severity::error, "udivError", "Unsigned division. The result will be wrong.");
+}
+
 //---------------------------------------------------------------------------
 // memset(p, y, 0 /* bytes to fill */) <- 2nd and 3rd arguments inverted
 //---------------------------------------------------------------------------
@@ -1171,9 +1263,13 @@ void CheckOther::checkMemsetZeroBytes()
         tok = tok->tokAt(8);
     }
 }
-//---------------------------------------------------------------------------
 
-
+void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varname)
+{
+    const std::string summary("memset() called to fill 0 bytes of \'" + varname + "\'");
+    const std::string verbose(summary + ". Second and third arguments might be inverted.");
+    reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose);
+}
 
 //---------------------------------------------------------------------------
 // Usage of function variables
@@ -2559,16 +2655,10 @@ void CheckOther::unassignedVariableError(const Token *tok, const std::string &va
 {
     reportError(tok, Severity::style, "unassignedVariable", "Variable '" + varname + "' is not assigned a value");
 }
-//---------------------------------------------------------------------------
-
-
-
-
 
 //---------------------------------------------------------------------------
 // Check scope of variables..
 //---------------------------------------------------------------------------
-
 void CheckOther::checkVariableScope()
 {
     if (!_settings->isEnabled("information"))
@@ -2652,9 +2742,7 @@ void CheckOther::checkVariableScope()
             }
         }
     }
-
 }
-//---------------------------------------------------------------------------
 
 void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
 {
@@ -2762,13 +2850,33 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
     if (used1 || used2)
         variableScopeError(tok1, varname);
 }
-//---------------------------------------------------------------------------
 
+void CheckOther::variableScopeError(const Token *tok, const std::string &varname)
+{
+    reportError(tok,
+                Severity::information,
+                "variableScope",
+                "The scope of the variable '" + varname + "' can be reduced\n"
+                "The scope of the variable '" + varname + "' can be reduced. Warning: It can be unsafe "
+                "to fix this message. Be careful. Especially when there are inner loops. Here is an "
+                "example where cppcheck will write that the scope for 'i' can be reduced:\n"
+                "void f(int x)\n"
+                "{\n"
+                "    int i = 0;\n"
+                "    if (x) {\n"
+                "        // it's safe to move 'int i = 0' here\n"
+                "        for (int n = 0; n < 10; ++n) {\n"
+                "            // it is possible but not safe to move 'int i = 0' here\n"
+                "            do_something(&i);\n"
+                "        }\n"
+                "    }\n"
+                "}\n"
+                "When you see this message it is always safe to reduce the variable scope 1 level.");
+}
 
 //---------------------------------------------------------------------------
 // Check for constant function parameters
 //---------------------------------------------------------------------------
-
 void CheckOther::checkConstantFunctionParameter()
 {
     if (!_settings->isEnabled("style"))
@@ -2828,13 +2936,18 @@ void CheckOther::checkConstantFunctionParameter()
         }
     }
 }
-//---------------------------------------------------------------------------
 
+void CheckOther::passedByValueError(const Token *tok, const std::string &parname)
+{
+    reportError(tok, Severity::performance, "passedByValue",
+                "Function parameter '" + parname + "' should be passed by reference.\n"
+                "Parameter '" +  parname + "' is passed as a value. It could be passed "
+                "as a (const) reference which is usually faster and recommended in C++.");
+}
 
 //---------------------------------------------------------------------------
 // Check that all struct members are used
 //---------------------------------------------------------------------------
-
 void CheckOther::checkStructMemberUsage()
 {
     if (!_settings->isEnabled("style"))
@@ -2928,14 +3041,14 @@ void CheckOther::checkStructMemberUsage()
     }
 }
 
-
-
-
+void CheckOther::unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname)
+{
+    reportError(tok, Severity::style, "unusedStructMember", "struct or union member '" + structname + "::" + varname + "' is never used");
+}
 
 //---------------------------------------------------------------------------
 // Check usage of char variables..
 //---------------------------------------------------------------------------
-
 void CheckOther::checkCharVariable()
 {
     if (!_settings->isEnabled("style"))
@@ -3032,17 +3145,35 @@ void CheckOther::checkCharVariable()
         }
     }
 }
-//---------------------------------------------------------------------------
 
+void CheckOther::charArrayIndexError(const Token *tok)
+{
+    reportError(tok,
+                Severity::warning,
+                "charArrayIndex",
+                "Using char type as array index\n"
+                "Using signed char type as array index. If the value "
+                "can be greater than 127 there will be a buffer overflow "
+                "(because of sign extension).");
+}
 
-
-
-
+void CheckOther::charBitOpError(const Token *tok)
+{
+    reportError(tok,
+                Severity::warning,
+                "charBitOp",
+                "When using char variables in bit operations, sign extension can generate unexpected results.\n"
+                "When using char variables in bit operations, sign extension can generate unexpected results. For example:\n"
+                "    char c = 0x80;\n"
+                "    int i = 0 | c;\n"
+                "    if (i & 0x8000)\n"
+                "        printf(\"not expected\");\n"
+                "The 'not expected' will be printed on the screen.");
+}
 
 //---------------------------------------------------------------------------
 // Incomplete statement..
 //---------------------------------------------------------------------------
-
 void CheckOther::checkIncompleteStatement()
 {
     if (!_settings->isEnabled("style"))
@@ -3081,17 +3212,15 @@ void CheckOther::checkIncompleteStatement()
         }
     }
 }
-//---------------------------------------------------------------------------
 
-
-
-
-
+void CheckOther::constStatementError(const Token *tok, const std::string &type)
+{
+    reportError(tok, Severity::warning, "constStatement", "Redundant code: Found a statement that begins with " + type + " constant");
+}
 
 //---------------------------------------------------------------------------
 // str plus char
 //---------------------------------------------------------------------------
-
 void CheckOther::strPlusChar()
 {
     // Don't use this check for Java and C# programs..
@@ -3118,16 +3247,23 @@ void CheckOther::strPlusChar()
             // char constant..
             const std::string s = tok->strAt(3);
             if (s[0] == '\'')
-                strPlusChar(tok->next());
+                strPlusCharError(tok->next());
 
             // char variable..
             unsigned int varid = tok->tokAt(3)->varId();
             if (varid > 0 && varid < 10000 && charVars[varid])
-                strPlusChar(tok->next());
+                strPlusCharError(tok->next());
         }
     }
 }
 
+void CheckOther::strPlusCharError(const Token *tok)
+{
+    reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic");
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void CheckOther::checkZeroDivision()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -3148,7 +3284,13 @@ void CheckOther::checkZeroDivision()
     }
 }
 
+void CheckOther::zerodivError(const Token *tok)
+{
+    reportError(tok, Severity::error, "zerodiv", "Division by zero");
+}
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void CheckOther::checkMathFunctions()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -3232,6 +3374,21 @@ void CheckOther::checkMathFunctions()
     }
 }
 
+void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numParam)
+{
+    if (tok)
+    {
+        if (numParam == 1)
+            reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
+        else if (numParam == 2)
+            reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " and " + tok->tokAt(4)->str() + " to " + tok->str() + "() leads to undefined result");
+    }
+    else
+        reportError(tok, Severity::error, "wrongmathcall", "Passing value " " to " "() leads to undefined result");
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 /** Is there a function with given name? */
 static bool isFunction(const std::string &name, const Token *startToken)
 {
@@ -3309,6 +3466,14 @@ void CheckOther::checkMisusedScopedObject()
     }
 }
 
+void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
+{
+    reportError(tok, Severity::error,
+                "unusedScopedObject", "instance of \"" + varname + "\" object destroyed immediately");
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void CheckOther::checkIncorrectStringCompare()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -3334,11 +3499,15 @@ void CheckOther::checkIncorrectStringCompare()
     }
 }
 
+void CheckOther::incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len)
+{
+    reportError(tok, Severity::warning, "incorrectStringCompare", "String literal " + string + " doesn't match length argument for " + func + "(" + len + ").");
+}
+
 //-----------------------------------------------------------------------------
 // check for duplicate expressions in if statements
 // if (a) { } else if (a) { }
 //-----------------------------------------------------------------------------
-
 static const std::string stringifyTokens(const Token *start, const Token *end)
 {
     const Token *tok = start;
@@ -3473,7 +3642,6 @@ void CheckOther::duplicateIfError(const Token *tok1, const Token *tok2)
 // check for duplicate code in if and else branches
 // if (a) { b = true; } else { b = true; }
 //-----------------------------------------------------------------------------
-
 void CheckOther::checkDuplicateBranch()
 {
     if (!_settings->isEnabled("style"))
@@ -3535,7 +3703,6 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
 // (x == x), (x && x), (x || x)
 // (x.y == x.y), (x.y && x.y), (x.y || x.y)
 //---------------------------------------------------------------------------
-
 void CheckOther::checkDuplicateExpression()
 {
     if (!_settings->isEnabled("style"))
@@ -3591,12 +3758,10 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
                 "determine if it is correct.");
 }
 
-
 //---------------------------------------------------------------------------
 // Check for string comparison involving two static strings.
 // if(strcmp("00FF00","00FF00")==0) // <- statement is always true
 //---------------------------------------------------------------------------
-
 void CheckOther::checkAlwaysTrueOrFalseStringCompare()
 {
     if (!_settings->isEnabled("style"))
@@ -3608,19 +3773,19 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     const Token *tok = _tokenizer->tokens();
     while (tok && (tok = Token::findmatch(tok, pattern1)) != NULL)
     {
-        alwaysTrueFalseStringCompare(tok, tok->strAt(2), tok->strAt(4));
+        alwaysTrueFalseStringCompareError(tok, tok->strAt(2), tok->strAt(4));
         tok = tok->tokAt(5);
     }
 
     tok = _tokenizer->tokens();
     while (tok && (tok = Token::findmatch(tok, pattern2)) != NULL)
     {
-        alwaysTrueFalseStringCompare(tok, tok->strAt(4), tok->strAt(6));
+        alwaysTrueFalseStringCompareError(tok, tok->strAt(4), tok->strAt(6));
         tok = tok->tokAt(7);
     }
 }
 
-void CheckOther::alwaysTrueFalseStringCompare(const Token *tok, const std::string& str1, const std::string& str2)
+void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2)
 {
     const size_t stringLen = 10;
     const std::string string1 = (str1.size() < stringLen) ? str1 : (str1.substr(0, stringLen-2) + "..");
@@ -3644,133 +3809,7 @@ void CheckOther::alwaysTrueFalseStringCompare(const Token *tok, const std::strin
 }
 
 //-----------------------------------------------------------------------------
-
-void CheckOther::cstyleCastError(const Token *tok)
-{
-    reportError(tok, Severity::style, "cstyleCast", "C-style pointer casting");
-}
-
-void CheckOther::dangerousUsageStrtolError(const Token *tok)
-{
-    reportError(tok, Severity::error, "dangerousUsageStrtol", "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36");
-}
-
-void CheckOther::sprintfOverlappingDataError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::error, "sprintfOverlappingData",
-                "Undefined behavior: variable is used as parameter and destination in s[n]printf().\n"
-                "The variable '" + varname + "' is used both as a parameter and as a destination in "
-                "s[n]printf(). The origin and destination buffers overlap. Quote from glibc (C-library) "
-                "documentation (http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
-                "'If copying takes place between objects that overlap as a result of a call "
-                "to sprintf() or snprintf(), the results are undefined.'");
-}
-
-void CheckOther::udivError(const Token *tok)
-{
-    reportError(tok, Severity::error, "udivError", "Unsigned division. The result will be wrong.");
-}
-
-void CheckOther::unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname)
-{
-    reportError(tok, Severity::style, "unusedStructMember", "struct or union member '" + structname + "::" + varname + "' is never used");
-}
-
-void CheckOther::passedByValueError(const Token *tok, const std::string &parname)
-{
-    reportError(tok, Severity::performance, "passedByValue",
-                "Function parameter '" + parname + "' should be passed by reference.\n"
-                "Parameter '" +  parname + "' is passed as a value. It could be passed "
-                "as a (const) reference which is usually faster and recommended in C++.");
-}
-
-void CheckOther::constStatementError(const Token *tok, const std::string &type)
-{
-    reportError(tok, Severity::warning, "constStatement", "Redundant code: Found a statement that begins with " + type + " constant");
-}
-
-void CheckOther::charArrayIndexError(const Token *tok)
-{
-    reportError(tok,
-                Severity::warning,
-                "charArrayIndex",
-                "Using char type as array index\n"
-                "Using signed char type as array index. If the value "
-                "can be greater than 127 there will be a buffer overflow "
-                "(because of sign extension).");
-}
-
-void CheckOther::charBitOpError(const Token *tok)
-{
-    reportError(tok,
-                Severity::warning,
-                "charBitOp",
-                "When using char variables in bit operations, sign extension can generate unexpected results.\n"
-                "When using char variables in bit operations, sign extension can generate unexpected results. For example:\n"
-                "    char c = 0x80;\n"
-                "    int i = 0 | c;\n"
-                "    if (i & 0x8000)\n"
-                "        printf(\"not expected\");\n"
-                "The 'not expected' will be printed on the screen.");
-}
-
-void CheckOther::variableScopeError(const Token *tok, const std::string &varname)
-{
-    reportError(tok,
-                Severity::information,
-                "variableScope",
-                "The scope of the variable '" + varname + "' can be reduced\n"
-                "The scope of the variable '" + varname + "' can be reduced. Warning: It can be unsafe "
-                "to fix this message. Be careful. Especially when there are inner loops. Here is an "
-                "example where cppcheck will write that the scope for 'i' can be reduced:\n"
-                "void f(int x)\n"
-                "{\n"
-                "    int i = 0;\n"
-                "    if (x) {\n"
-                "        // it's safe to move 'int i = 0' here\n"
-                "        for (int n = 0; n < 10; ++n) {\n"
-                "            // it is possible but not safe to move 'int i = 0' here\n"
-                "            do_something(&i);\n"
-                "        }\n"
-                "    }\n"
-                "}\n"
-                "When you see this message it is always safe to reduce the variable scope 1 level.");
-}
-
-void CheckOther::conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse)
-{
-    reportError(tok, Severity::style, "conditionAlwaysTrueFalse", "Condition is always " + truefalse);
-}
-
-void CheckOther::strPlusChar(const Token *tok)
-{
-    reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic");
-}
-
-void CheckOther::zerodivError(const Token *tok)
-{
-    reportError(tok, Severity::error, "zerodiv", "Division by zero");
-}
-
-void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numParam)
-{
-    if (tok)
-    {
-        if (numParam == 1)
-            reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
-        else if (numParam == 2)
-            reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " and " + tok->tokAt(4)->str() + " to " + tok->str() + "() leads to undefined result");
-    }
-    else
-        reportError(tok, Severity::error, "wrongmathcall", "Passing value " " to " "() leads to undefined result");
-}
-
-void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::error,
-                "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour");
-}
-
+//-----------------------------------------------------------------------------
 void CheckOther::sizeofsizeof()
 {
     if (!_settings->isEnabled("style"))
@@ -3794,6 +3833,8 @@ void CheckOther::sizeofsizeofError(const Token *tok)
                 "code is equivalent to 'sizeof(size_t)'");
 }
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void CheckOther::sizeofCalculation()
 {
     if (!_settings->isEnabled("style"))
@@ -3829,85 +3870,8 @@ void CheckOther::sizeofCalculationError(const Token *tok)
                 "sizeofCalculation", "Found calculation inside sizeof()");
 }
 
-void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning,
-                "redundantAssignInSwitch", "Redundant assignment of \"" + varname + "\" in switch");
-}
-
-void CheckOther::switchCaseFallThrough(const Token *tok)
-{
-    reportError(tok, Severity::style,
-                "switchCaseFallThrough", "Switch falls through case without comment");
-}
-
-void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning,
-                "selfAssignment", "Redundant assignment of \"" + varname + "\" to itself");
-}
-
-void CheckOther::assignmentInAssertError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning,
-                "assignmentInAssert", "Assert statement modifies '" + varname + "'.\n"
-                "Variable '" + varname + "' is modified insert assert statement. "
-                "Assert statements are removed from release builds so the code inside "
-                "assert statement is not run. If the code is needed also in release "
-                "builds this is a bug.");
-}
-
-void CheckOther::incorrectLogicOperatorError(const Token *tok, bool always)
-{
-    if (always)
-        reportError(tok, Severity::warning,
-                    "incorrectLogicOperator", "Mutual exclusion over || always evaluates to true. Did you intend to use && instead?");
-    else
-        reportError(tok, Severity::warning,
-                    "incorrectLogicOperator", "Expression always evaluates to false. Did you intend to use || instead?");
-}
-
-void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
-{
-    reportError(tok, Severity::error,
-                "unusedScopedObject", "instance of \"" + varname + "\" object destroyed immediately");
-}
-
-void CheckOther::catchExceptionByValueError(const Token *tok)
-{
-    reportError(tok, Severity::style,
-                "catchExceptionByValue", "Exception should be caught by reference.\n"
-                "The exception is caught as a value. It could be caught "
-                "as a (const) reference which is usually recommended in C++.");
-}
-
-void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varname)
-{
-    const std::string summary("memset() called to fill 0 bytes of \'" + varname + "\'");
-    const std::string verbose(summary + ". Second and third arguments might be inverted.");
-    reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose);
-}
-
-void CheckOther::incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len)
-{
-    reportError(tok, Severity::warning, "incorrectStringCompare", "String literal " + string + " doesn't match length argument for " + func + "(" + len + ").");
-}
-
-void CheckOther::comparisonOfBoolWithIntError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning, "comparisonOfBoolWithInt",
-                "Comparison of a boolean with a non-zero integer\n"
-                "The expression \"!" + varname + "\" is of type 'bool' but is compared against a non-zero 'int'.");
-}
-
-void CheckOther::duplicateBreakError(const Token *tok)
-{
-    reportError(tok, Severity::style, "duplicateBreak",
-                "Consecutive break or continue statements are unnecessary\n"
-                "The second of the two statements can never be executed, and so should be removed\n");
-}
-
-
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void CheckOther::checkAssignBoolToPointer()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -3934,7 +3898,6 @@ void CheckOther::assignBoolToPointerError(const Token *tok)
 //---------------------------------------------------------------------------
 // Check testing sign of unsigned variables.
 //---------------------------------------------------------------------------
-
 void CheckOther::checkSignOfUnsignedVariable()
 {
     if (!_settings->isEnabled("style"))
@@ -3957,25 +3920,25 @@ void CheckOther::checkSignOfUnsignedVariable()
             {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZero(tok->next(), tok->next()->str());
+                    unsignedLessThanZeroError(tok->next(), tok->next()->str());
             }
             else if (Token::Match(tok, "( 0 > %var% )") && tok->tokAt(3)->varId())
             {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZero(tok->tokAt(3), tok->strAt(3));
+                    unsignedLessThanZeroError(tok->tokAt(3), tok->strAt(3));
             }
             else if (Token::Match(tok, "( 0 <= %var% )") && tok->tokAt(3)->varId())
             {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositive(tok->tokAt(3), tok->strAt(3));
+                    unsignedPositiveError(tok->tokAt(3), tok->strAt(3));
             }
         }
     }
 }
 
-void CheckOther::unsignedLessThanZero(const Token *tok, const std::string &varname)
+void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::style, "unsignedLessThanZero",
                 "Checking if unsigned variable '" + varname + "' is less than zero.\n"
@@ -3983,7 +3946,7 @@ void CheckOther::unsignedLessThanZero(const Token *tok, const std::string &varna
                 "an error to check if it is.");
 }
 
-void CheckOther::unsignedPositive(const Token *tok, const std::string &varname)
+void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::style, "unsignedPositive",
                 "Checking if unsigned variable '" + varname + "' is positive is always true.\n"

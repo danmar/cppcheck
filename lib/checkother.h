@@ -251,8 +251,7 @@ public:
     void charArrayIndexError(const Token *tok);
     void charBitOpError(const Token *tok);
     void variableScopeError(const Token *tok, const std::string &varname);
-    void conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse);
-    void strPlusChar(const Token *tok);
+    void strPlusCharError(const Token *tok);
     void zerodivError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
@@ -272,11 +271,11 @@ public:
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
-    void alwaysTrueFalseStringCompare(const Token *tok, const std::string& str1, const std::string& str2);
+    void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok);
     void assignBoolToPointerError(const Token *tok);
-    void unsignedLessThanZero(const Token *tok, const std::string &varname);
-    void unsignedPositive(const Token *tok, const std::string &varname);
+    void unsignedLessThanZeroError(const Token *tok, const std::string &varname);
+    void unsignedPositiveError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -302,8 +301,7 @@ public:
         c.charArrayIndexError(0);
         c.charBitOpError(0);
         c.variableScopeError(0, "varname");
-        c.conditionAlwaysTrueFalse(0, "true/false");
-        c.strPlusChar(0);
+        c.strPlusCharError(0);
         c.sizeofsizeofError(0);
         c.sizeofCalculationError(0);
         c.redundantAssignmentInSwitchError(0, "varname");
@@ -326,10 +324,10 @@ public:
         c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
-        c.alwaysTrueFalseStringCompare(0, "str1", "str2");
+        c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
         c.duplicateBreakError(0);
-        c.unsignedLessThanZero(0, "varname");
-        c.unsignedPositive(0, "varname");
+        c.unsignedLessThanZeroError(0, "varname");
+        c.unsignedPositiveError(0, "varname");
     }
 
     std::string myName() const
