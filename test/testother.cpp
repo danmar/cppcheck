@@ -2682,6 +2682,11 @@ private:
 
         check("void f() { A<x &> a; }");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if (result != (char *)&inline_result) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectStringCompare()

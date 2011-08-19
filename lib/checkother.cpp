@@ -169,9 +169,16 @@ void CheckOther::clarifyCondition()
     // using boolean result in bitwise operation ! x [&|^]
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "!|<|<=|==|!=|>|>= !!&"))
+        if (Token::Match(tok, "!|<|<=|==|!=|>|>="))
         {
             const Token *tok2 = tok->next();
+
+            // Todo: There are false positives if '(' if encountered. It
+            // is assumed there is something like '(char *)&..' and therefore
+            // it bails out.
+            if (Token::Match(tok2, "(|&"))
+                continue;
+
             while (tok2 && (tok2->isName() || tok2->isNumber() || Token::Match(tok2,".|(|[")))
             {
                 if (Token::Match(tok2, "(|["))
