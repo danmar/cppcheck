@@ -400,11 +400,11 @@ std::string Settings::addEnabled(const std::string &str)
     {
         std::set<std::string>::const_iterator it;
         for (it = id.begin(); it != id.end(); ++it)
-            _enabled[*it] = true;
+            _enabled.insert(*it);
     }
     else if (id.find(str) != id.end())
     {
-        _enabled[str] = true;
+        _enabled.insert(str);
     }
     else if (!handled)
     {

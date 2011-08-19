@@ -41,7 +41,7 @@ private:
     std::string _append;
 
     /** @brief enable extra checks by id */
-    std::map<std::string, bool> _enabled;
+    std::set<std::string> _enabled;
 
     /** @brief terminate checking */
     bool _terminate;
