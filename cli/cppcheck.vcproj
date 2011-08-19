@@ -154,6 +154,8 @@
 			<File
 				RelativePath="..\lib\checkunusedfunctions.cpp" />
 			<File
+				RelativePath="..\lib\checkunusedvar.cpp" />
+			<File
 				RelativePath="cmdlineparser.cpp" />
 			<File
 				RelativePath="..\lib\cppcheck.cpp" />
@@ -232,6 +234,8 @@
 				RelativePath="..\lib\checkuninitvar.h" />
 			<File
 				RelativePath="..\lib\checkunusedfunctions.h" />
+			<File
+				RelativePath="..\lib\checkunusedvar.h" />
 			<File
 				RelativePath="cmdlineparser.h" />
 			<File

@@ -57,6 +57,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ObjectFileName>temp\</ObjectFileName>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNICODE;WIN32;QT_LARGEFILE_SUPPORT;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -90,6 +91,7 @@
       <BrowseInformation>false</BrowseInformation>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ObjectFileName>temp\</ObjectFileName>
       <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>QT_NO_DEBUG;NDEBUG;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;HAVE_RULES;NDEBUG;_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -132,6 +134,7 @@
     <ClCompile Include="..\lib\checkstl.cpp" />
     <ClCompile Include="..\lib\checkuninitvar.cpp" />
     <ClCompile Include="..\lib\checkunusedfunctions.cpp" />
+    <ClCompile Include="..\lib\checkunusedvar.cpp" />
     <ClCompile Include="cmdlineparser.cpp" />
     <ClCompile Include="..\lib\cppcheck.cpp" />
     <ClCompile Include="cppcheckexecutor.cpp" />
@@ -171,6 +174,7 @@
     <ClInclude Include="..\lib\checkstl.h" />
     <ClInclude Include="..\lib\checkuninitvar.h" />
     <ClInclude Include="..\lib\checkunusedfunctions.h" />
+    <ClInclude Include="..\lib\checkunusedvar.h" />
     <ClInclude Include="cmdlineparser.h" />
     <ClInclude Include="..\lib\cppcheck.h" />
     <ClInclude Include="cppcheckexecutor.h" />
