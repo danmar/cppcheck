@@ -580,8 +580,9 @@ void CheckOther::checkSelfAssignment()
             bool err = true;
 
             // no false positive for 'x = x ? x : 1;'
-            // if is simplified to 'if (x) { x = x ; } else { x = 1 ; }'. The simplification
-            // writes all tokens on 1 line so check if the lineno is the same for all the tokens.
+            // it is simplified to 'if (x) { x=x; } else { x=1; }'. The simplification
+            // always write all tokens on 1 line (even if the statement is several lines), so
+            // check if the linenr is the same for all the tokens.
             if (Token::Match(tok->tokAt(-2), ") { %var% = %var% ; } else { %varid% =", tok->varId()))
             {
                 // Find the 'if' token
