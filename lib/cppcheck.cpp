@@ -217,25 +217,28 @@ unsigned int CppCheck::processFile()
             // was used.
             if (!_settings._force && checkCount > 11)
             {
-                if (_settings.isEnabled("information"))
+
+                const std::string fixedpath = Path::toNativeSeparators(_filename);
+                ErrorLogger::ErrorMessage::FileLocation location;
+                location.setfile(fixedpath);
+                std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
+                loclist.push_back(location);
+                const std::string msg("Interrupted checking because of too many #ifdef configurations.\n"
+                                      "The checking of the file was interrupted because there were too many "
+                                      "#ifdef configurations. Checking of all #ifdef configurations can be forced "
+                                      "by --force command line option or from GUI preferences. However that may "
+                                      "increase the checking time.");
+                ErrorLogger::ErrorMessage errmsg(loclist,
+                                                 Severity::information,
+                                                 msg,
+                                                 "toomanyconfigs",
+                                                 false);
+
+                if (!_settings.nomsg.isSuppressedLocal(errmsg._id, fixedpath, location.line))
                 {
-                    const std::string fixedpath = Path::toNativeSeparators(_filename);
-                    ErrorLogger::ErrorMessage::FileLocation location;
-                    location.setfile(fixedpath);
-                    std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
-                    loclist.push_back(location);
-                    const std::string msg("Interrupted checking because of too many #ifdef configurations.\n"
-                                          "The checking of the file was interrupted because there were too many "
-                                          "#ifdef configurations. Checking of all #ifdef configurations can be forced "
-                                          "by --force command line option or from GUI preferences. However that may "
-                                          "increase the checking time.");
-                    ErrorLogger::ErrorMessage errmsg(loclist,
-                                                     Severity::information,
-                                                     msg,
-                                                     "toomanyconfigs",
-                                                     false);
-                    _errorLogger.reportErr(errmsg);
+                    reportErr(errmsg);
                 }
+
                 break;
             }
 
