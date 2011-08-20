@@ -78,6 +78,7 @@ private:
         TEST_CASE(testautovar_return1);
         TEST_CASE(testautovar_return2);
         TEST_CASE(testautovar_return3);
+        TEST_CASE(testautovar_return4); // ticket #3030
         TEST_CASE(testautovar_extern);
         TEST_CASE(testinvaliddealloc);
         TEST_CASE(testassign1);  // Ticket #1819
@@ -267,6 +268,17 @@ private:
               "    return &value;"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar_return4()
+    {
+        // #3030
+        check("char *foo()\n"
+              "{\n"
+              "    char q[] = \"AAAAAAAAAAAA\";\n"
+              "    return &q[1];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Return of the address of an auto-variable\n", errout.str());
     }
 
     void testautovar_extern()

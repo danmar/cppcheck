@@ -159,6 +159,12 @@ void CheckAutoVariables::autoVariables()
             {
                 errorReturnAddressToAutoVariable(tok);
             }
+            else if (Token::Match(tok, "return & %var% [") &&
+                     Token::Match(tok->tokAt(3)->link(), "] ;") &&
+                     isAutoVarArray(tok->tokAt(2)->varId()))
+            {
+                errorReturnAddressToAutoVariable(tok);
+            }
             // Invalid pointer deallocation
             else if (Token::Match(tok, "free ( %var% ) ;") && isAutoVarArray(tok->tokAt(2)->varId()))
             {
