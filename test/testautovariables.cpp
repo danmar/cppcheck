@@ -279,6 +279,13 @@ private:
               "    return &q[1];\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Return of the address of an auto-variable\n", errout.str());
+
+        check("char *foo()\n"
+              "{\n"
+              "    static char q[] = \"AAAAAAAAAAAA\";\n"
+              "    return &q[1];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar_extern()
