@@ -3199,6 +3199,14 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
                             deallocated = true;
                             break;
                         }
+
+                        // Linux kernel list
+                        if (Token::Match(tok4, "[(,] & %varid% . %var% [,)]", structid))
+                        {
+                            /** @todo check if the function deallocates the memory */
+                            deallocated = true;
+                            break;
+                        }
                     }
 
                     if (deallocated)
