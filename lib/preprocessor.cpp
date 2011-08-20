@@ -2019,7 +2019,8 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         }
         else if (!fileOpened && _settings && (headerType == UserHeader || _settings->debugwarnings))
         {
-            missingIncludeFlag = true;
+            if (!_settings->nomsg.isSuppressed("missingInclude", "", 0))
+                missingIncludeFlag = true;
 
             if (_errorLogger && _settings->checkConfiguration)
             {
