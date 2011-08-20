@@ -584,6 +584,18 @@ private:
               "        ;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #3023 - checked deref
+        check("void f(struct ABC *abc) {\n"
+              "  WARN_ON(!abc || abc->x == 0);\n"
+              "  if (!abc) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(struct ABC *abc) {\n"
+              "  WARN_ON(!abc || abc->x == 7);\n"
+              "  if (!abc) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer5()

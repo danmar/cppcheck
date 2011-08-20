@@ -590,6 +590,14 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     {
                         break;
                     }
+                    else if (Token::Match(tok1->previous(), "&&|%oror%"))
+                    {
+                        break;
+                    }
+                    else if (Token::Match(tok1->tokAt(-2), "&&|%oror% !"))
+                    {
+                        break;
+                    }
                     else if (CheckNullPointer::isPointerDeRef(tok1, unknown))
                     {
                         nullPointerError(tok1, varname, tok->linenr());
