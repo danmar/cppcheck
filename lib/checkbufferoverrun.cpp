@@ -113,6 +113,13 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varn
     reportError(tok, Severity::error, "bufferAccessOutOfBounds",  errmsg);
 }
 
+void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst)
+{
+    reportError(tok, Severity::warning, "possibleBufferAccessOutOfBounds",
+                "Possible buffer overflow if strlen(" + src + ") is larger than sizeof(" + dst + ")-strlen(" + dst +").\n"
+                "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
+}
+
 void CheckBufferOverrun::strncatUsage(const Token *tok)
 {
     if (_settings && !_settings->isEnabled("style"))
@@ -970,7 +977,21 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 continue;
             }
         }
-
+        else if ((varid > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %var% )", varid)) ||
+                 (varid == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %var% )").c_str())))
+        {
+            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->tokAt(4)->varId());
+            if (var && var->isArray() && var->dimensions().size() == 1)
+            {
+                const std::size_t len = var->dimension(0);
+                if (total_size > 0 && len > (unsigned int)total_size)
+                {
+                    if (_settings->inconclusive)
+                        possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2));
+                    continue;
+                }
+            }
+        }
 
         // Detect few strcat() calls
         const std::string strcatPattern = varid > 0 ? std::string("strcat ( %varid% , %str% ) ;") : ("strcat ( " + varnames + " , %str% ) ;");

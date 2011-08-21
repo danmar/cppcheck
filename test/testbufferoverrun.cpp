@@ -42,6 +42,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.inconclusive = true;
         settings.experimental = experimental;
         settings.addEnabled("style");
 
@@ -142,6 +143,7 @@ private:
         TEST_CASE(buffer_overrun_19); // #2597 - class member with unknown type
         TEST_CASE(buffer_overrun_20); // #2986 (segmentation fault)
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
+        TEST_CASE(possible_buffer_overrun_1); // #3035
 
         // It is undefined behaviour to point out of bounds of an array
         // the address beyond the last element is in bounds
@@ -2012,6 +2014,39 @@ private:
               "    f1(a);"
               "}");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Array 'a[10]' index 100 out of bounds\n", errout.str());
+    }
+
+    void possible_buffer_overrun_1() // #3035
+    {
+        check("void foo() {\n"
+              "    char * data = (char *)alloca(50);\n"
+              "    char src[100];\n"
+              "    memset(src, 'C', 100-1);\n"
+              "    src[100-1] = '\\0';\n"
+              "    strcat(data, src);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible buffer overflow if strlen(src) is larger than sizeof(data)-strlen(data).\n", errout.str());
+
+        check("void foo() {\n"
+              "    char * data = (char *)alloca(100);\n"
+              "    char src[100];\n"
+              "    memset(src, 'C', 100-1);\n"
+              "    src[100-1] = '\\0';\n"
+              "    strcat(data, src);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char src[100]) {\n"
+              "    char * data = (char *)alloca(50);\n"
+              "    strcat(data, src);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible buffer overflow if strlen(src) is larger than sizeof(data)-strlen(data).\n", errout.str());
+
+        check("void foo(char src[100]) {\n"
+              "    char * data = (char *)alloca(100);\n"
+              "    strcat(data, src);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pointer_out_of_bounds_1()
