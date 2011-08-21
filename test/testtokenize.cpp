@@ -135,7 +135,8 @@ private:
         TEST_CASE(simplifyKnownVariables40);
         TEST_CASE(simplifyKnownVariables41);    // p=&x; if (p) ..
         TEST_CASE(simplifyKnownVariables42);    // ticket #2031 - known string value after strcpy
-        TEST_CASE(simplifyKnownVariablesBailOutAssign);
+        TEST_CASE(simplifyKnownVariablesBailOutAssign1);
+        TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
         TEST_CASE(simplifyKnownVariablesBailOutFor3);
@@ -2158,7 +2159,7 @@ private:
         }
     }
 
-    void simplifyKnownVariablesBailOutAssign()
+    void simplifyKnownVariablesBailOutAssign1()
     {
         const char code[] = "int foo() {\n"
                             "    int i; i = 0;\n"
@@ -2169,6 +2170,20 @@ private:
                                 "int i ; i = 0 ;\n"
                                 "if ( x ) { i = 10 ; }\n"
                                 "return i ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutAssign2()
+    {
+        // ticket #3032 - assignment in condition
+        const char code[] = "void f(struct ABC *list) {\n"
+                            "    struct ABC *last = NULL;\n"
+                            "    nr = (last = list->prev)->nr;\n"  // <- don't replace "last" with 0
+                            "}\n";
+        const char expected[] = "void f ( struct ABC * list ) {\n"
+                                "struct ABC * last ; last = 0 ;\n"
+                                "nr = ( last = list . prev ) . nr ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
