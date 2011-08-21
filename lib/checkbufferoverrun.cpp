@@ -113,11 +113,16 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varn
     reportError(tok, Severity::error, "bufferAccessOutOfBounds",  errmsg);
 }
 
-void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst)
+void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat)
 {
-    reportError(tok, Severity::warning, "possibleBufferAccessOutOfBounds",
-                "Possible buffer overflow if strlen(" + src + ") is larger than sizeof(" + dst + ")-strlen(" + dst +").\n"
-                "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
+    if (cat)
+        reportError(tok, Severity::warning, "possibleBufferAccessOutOfBounds",
+                    "Possible buffer overflow if strlen(" + src + ") is larger than sizeof(" + dst + ")-strlen(" + dst +").\n"
+                    "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
+    else
+        reportError(tok, Severity::warning, "possibleBufferAccessOutOfBounds",
+                    "Possible buffer overflow if strlen(" + src + ") is larger than or equal to sizeof(" + dst + ").\n"
+                    "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
 }
 
 void CheckBufferOverrun::strncatUsage(const Token *tok)
@@ -987,7 +992,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 if (total_size > 0 && len > (unsigned int)total_size)
                 {
                     if (_settings->inconclusive)
-                        possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2));
+                        possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2), tok->str() == "strcat");
                     continue;
                 }
             }

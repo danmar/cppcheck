@@ -2047,6 +2047,36 @@ private:
               "    strcat(data, src);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    char * data = (char *)alloca(50);\n"
+              "    char src[100];\n"
+              "    memset(src, 'C', 100-1);\n"
+              "    src[100-1] = '\\0';\n"
+              "    strcpy(data, src);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible buffer overflow if strlen(src) is larger than or equal to sizeof(data).\n", errout.str());
+
+        check("void foo() {\n"
+              "    char * data = (char *)alloca(100);\n"
+              "    char src[100];\n"
+              "    memset(src, 'C', 100-1);\n"
+              "    src[100-1] = '\\0';\n"
+              "    strcpy(data, src);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char src[100]) {\n"
+              "    char * data = (char *)alloca(50);\n"
+              "    strcpy(data, src);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible buffer overflow if strlen(src) is larger than or equal to sizeof(data).\n", errout.str());
+
+        check("void foo(char src[100]) {\n"
+              "    char * data = (char *)alloca(100);\n"
+              "    strcpy(data, src);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pointer_out_of_bounds_1()

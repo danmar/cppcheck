@@ -221,7 +221,7 @@ public:
     void cmdLineArgsError(const Token *tok);
     void pointerOutOfBounds(const Token *tok, const std::string &object);	// UB when result of calculation is out of bounds
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
-    void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst);
+    void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -236,7 +236,7 @@ public:
         c.cmdLineArgsError(0);
         c.pointerOutOfBounds(0, "array");
         c.arrayIndexThenCheckError(0, "index");
-        c.possibleBufferOverrunError(0, "source", "destination");
+        c.possibleBufferOverrunError(0, "source", "destination", false);
     }
 
     std::string myName() const
