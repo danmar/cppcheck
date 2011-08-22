@@ -750,34 +750,34 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="34"/>
-        <source>Project:</source>
+        <location filename="projectfile.ui" line="51"/>
+        <source>Root:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="70"/>
-        <location filename="projectfile.ui" line="207"/>
+        <location filename="projectfile.ui" line="221"/>
         <source>Paths:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="97"/>
         <location filename="projectfile.ui" line="162"/>
-        <location filename="projectfile.ui" line="221"/>
+        <location filename="projectfile.ui" line="235"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="104"/>
         <location filename="projectfile.ui" line="169"/>
-        <location filename="projectfile.ui" line="228"/>
+        <location filename="projectfile.ui" line="242"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="111"/>
         <location filename="projectfile.ui" line="176"/>
-        <location filename="projectfile.ui" line="235"/>
+        <location filename="projectfile.ui" line="249"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -792,12 +792,22 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="201"/>
+        <location filename="projectfile.ui" line="196"/>
+        <source>Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectfile.ui" line="203"/>
+        <source>Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectfile.ui" line="215"/>
         <source>Ignore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="51"/>
+        <location filename="projectfile.ui" line="34"/>
         <source>Defines:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -810,17 +820,17 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="216"/>
+        <location filename="projectfiledialog.cpp" line="218"/>
         <source>Select include directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="230"/>
+        <location filename="projectfiledialog.cpp" line="232"/>
         <source>Select a directory to check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="271"/>
+        <location filename="projectfiledialog.cpp" line="273"/>
         <source>Select directory to ignore</source>
         <translation type="unfinished"></translation>
     </message>
