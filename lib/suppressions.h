@@ -24,6 +24,8 @@
 #include <istream>
 #include <map>
 
+/// @addtogroup Core
+/// @{
 
 /** @brief class for handling suppressions */
 class Suppressions
@@ -141,5 +143,6 @@ public:
     std::list<SuppressionEntry> getUnmatchedGlobalSuppressions() const;
 };
 
+/// @}
 
 #endif // SUPPRESSIONS_H
