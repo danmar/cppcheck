@@ -190,6 +190,20 @@
              </property>
             </spacer>
            </item>
+           <item>
+            <widget class="QPushButton" name="mBtnIncludeUp">
+             <property name="text">
+              <string>Up</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnIncludeDown">
+             <property name="text">
+              <string>Down</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
         </layout>
@@ -282,6 +296,8 @@
   <tabstop>mBtnAddInclude</tabstop>
   <tabstop>mBtnEditInclude</tabstop>
   <tabstop>mBtnRemoveInclude</tabstop>
+  <tabstop>mBtnIncludeUp</tabstop>
+  <tabstop>mBtnIncludeDown</tabstop>
   <tabstop>mListIgnoredPaths</tabstop>
   <tabstop>mBtnAddIgnorePath</tabstop>
   <tabstop>mBtnEditIgnorePath</tabstop>

@@ -150,6 +150,16 @@ protected slots:
     */
     void RemoveIgnorePath();
 
+    /**
+      * @brief Move include path up in the list.
+      */
+    void MoveIncludePathUp();
+
+    /**
+      * @brief Move include path down in the list.
+      */
+    void MoveIncludePathDown();
+
 protected:
 
     /**

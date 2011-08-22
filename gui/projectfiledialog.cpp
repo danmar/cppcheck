@@ -50,6 +50,8 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     connect(mUI.mBtnAddIgnorePath, SIGNAL(clicked()), this, SLOT(AddIgnorePath()));
     connect(mUI.mBtnEditIgnorePath, SIGNAL(clicked()), this, SLOT(EditIgnorePath()));
     connect(mUI.mBtnRemoveIgnorePath, SIGNAL(clicked()), this, SLOT(RemoveIgnorePath()));
+    connect(mUI.mBtnIncludeUp, SIGNAL(clicked()), this, SLOT(MoveIncludePathUp()));
+    connect(mUI.mBtnIncludeDown, SIGNAL(clicked()), this, SLOT(MoveIncludePathDown()));
 }
 
 ProjectFileDialog::~ProjectFileDialog()
@@ -290,4 +292,23 @@ void ProjectFileDialog::RemoveIgnorePath()
     const int row = mUI.mListIgnoredPaths->currentRow();
     QListWidgetItem *item = mUI.mListIgnoredPaths->takeItem(row);
     delete item;
+}
+
+void ProjectFileDialog::MoveIncludePathUp()
+{
+    int row = mUI.mListIncludeDirs->currentRow();
+    QListWidgetItem *item = mUI.mListIncludeDirs->takeItem(row);
+    row = row > 0 ? row - 1 : 0;
+    mUI.mListIncludeDirs->insertItem(row, item);
+    mUI.mListIncludeDirs->setCurrentItem(item);
+}
+
+void ProjectFileDialog::MoveIncludePathDown()
+{
+    int row = mUI.mListIncludeDirs->currentRow();
+    QListWidgetItem *item = mUI.mListIncludeDirs->takeItem(row);
+    const int count = mUI.mListIncludeDirs->count();
+    row = row < count ? row + 1 : count;
+    mUI.mListIncludeDirs->insertItem(row, item);
+    mUI.mListIncludeDirs->setCurrentItem(item);
 }
