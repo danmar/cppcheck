@@ -147,6 +147,7 @@
     <ClCompile Include="pathmatch.cpp" />
     <ClCompile Include="..\lib\preprocessor.cpp" />
     <ClCompile Include="..\lib\settings.cpp" />
+    <ClCompile Include="..\lib\suppressions.cpp" />
     <ClCompile Include="..\lib\symboldatabase.cpp" />
     <ClCompile Include="threadexecutor.cpp" />
     <ClCompile Include="..\lib\timer.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="..\lib\preprocessor.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\lib\settings.h" />
+    <ClInclude Include="..\lib\suppressions.h" />
     <ClInclude Include="..\lib\symboldatabase.h" />
     <ClInclude Include="threadexecutor.h" />
     <ClInclude Include="..\lib\timer.h" />

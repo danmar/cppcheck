@@ -180,6 +180,8 @@
 			<File
 				RelativePath="..\lib\settings.cpp" />
 			<File
+				RelativePath="..\lib\suppressions.cpp" />
+			<File
 				RelativePath="..\lib\symboldatabase.cpp" />
 			<File
 				RelativePath="threadexecutor.cpp" />
@@ -260,6 +262,8 @@
 				RelativePath="resource.h" />
 			<File
 				RelativePath="..\lib\settings.h" />
+			<File
+				RelativePath="..\lib\suppressions.h" />
 			<File
 				RelativePath="..\lib\symboldatabase.h" />
 			<File

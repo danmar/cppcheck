@@ -28,7 +28,7 @@
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="4"
-				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS"
 				ProgramDataBaseFileName=".\"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -61,7 +61,7 @@
 				Name="VCPreLinkEventTool" />
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS,_DEBUG" />
+				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS,_DEBUG" />
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -81,7 +81,7 @@
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="2"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS,NDEBUG"
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS,NDEBUG"
 				ProgramDataBaseFileName=".\"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -115,7 +115,7 @@
 				Name="VCPreLinkEventTool" />
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS" />
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS" />
 		</Configuration>
 	</Configurations>
 	<Files>
@@ -180,6 +180,8 @@
 			<File
 				RelativePath="..\lib\settings.cpp" />
 			<File
+				RelativePath="..\lib\suppressions.cpp" />
+			<File
 				RelativePath="..\lib\symboldatabase.cpp" />
 			<File
 				RelativePath="test64bit.cpp" />
@@ -233,8 +235,6 @@
 				RelativePath="testpreprocessor.cpp" />
 			<File
 				RelativePath="testrunner.cpp" />
-			<File
-				RelativePath="testsettings.cpp" />
 			<File
 				RelativePath="testsimplifytokens.cpp" />
 			<File
@@ -340,6 +340,8 @@
 				RelativePath="redirect.h" />
 			<File
 				RelativePath="..\lib\settings.h" />
+			<File
+				RelativePath="..\lib\suppressions.h" />
 			<File
 				RelativePath="..\lib\symboldatabase.h" />
 			<File
