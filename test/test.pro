@@ -58,7 +58,6 @@ SOURCES += options.cpp \
            testpostfixoperator.cpp \
            testpreprocessor.cpp \
            testrunner.cpp \
-           testsettings.cpp \
            testsimplifytokens.cpp \
            teststl.cpp \
            testsuite.cpp \

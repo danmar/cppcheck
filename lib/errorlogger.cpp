@@ -313,9 +313,9 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     }
 }
 
-void ErrorLogger::reportUnmatchedSuppressions(const std::list<Settings::Suppressions::SuppressionEntry> &unmatched)
+void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched)
 {
-    for (std::list<Settings::Suppressions::SuppressionEntry>::const_iterator i = unmatched.begin(); i != unmatched.end(); ++i)
+    for (std::list<Suppressions::SuppressionEntry>::const_iterator i = unmatched.begin(); i != unmatched.end(); ++i)
     {
         std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
         callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(i->file, i->line));

@@ -36,8 +36,82 @@ private:
 
     void run()
     {
+        TEST_CASE(suppressionsBadId1);
+        TEST_CASE(suppressionsDosFormat);     // Ticket #1836
+        TEST_CASE(suppressionsFileNameWithColon);    // Ticket #1919 - filename includes colon
+        TEST_CASE(suppressionsGlob);
+        TEST_CASE(suppressionsFileNameWithExtraPath);
         TEST_CASE(suppressionsSettings);
         TEST_CASE(suppressionsMultiFile);
+    }
+
+    void suppressionsBadId1()
+    {
+        Suppressions suppressions;
+        std::istringstream s("123");
+        ASSERT_EQUALS("Failed to add suppression. Invalid id \"123\"", suppressions.parseFile(s));
+    }
+
+    void suppressionsDosFormat()
+    {
+        Suppressions suppressions;
+        std::istringstream s("abc\r\ndef\r\n");
+        ASSERT_EQUALS("", suppressions.parseFile(s));
+        ASSERT_EQUALS(true, suppressions.isSuppressed("abc", "test.cpp", 1));
+        ASSERT_EQUALS(true, suppressions.isSuppressed("def", "test.cpp", 1));
+    }
+
+    void suppressionsFileNameWithColon()
+    {
+        Suppressions suppressions;
+        std::istringstream s("errorid:c:\\foo.cpp\nerrorid:c:\\bar.cpp:12");
+        ASSERT_EQUALS("", suppressions.parseFile(s));
+        ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "c:\\foo.cpp", 1111));
+        ASSERT_EQUALS(false, suppressions.isSuppressed("errorid", "c:\\bar.cpp", 10));
+        ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "c:\\bar.cpp", 12));
+    }
+
+    void suppressionsGlob()
+    {
+        // Check for syntax errors in glob
+        {
+            Suppressions suppressions;
+            std::istringstream s("errorid:**.cpp\n");
+            ASSERT_EQUALS("Failed to add suppression. Syntax error in glob.", suppressions.parseFile(s));
+        }
+
+        // Check that globbing works
+        {
+            Suppressions suppressions;
+            std::istringstream s("errorid:x*.cpp\nerrorid:y?.cpp\nerrorid:test.c*");
+            ASSERT_EQUALS("", suppressions.parseFile(s));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "xyz.cpp", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "xyz.cpp.cpp", 1));
+            ASSERT_EQUALS(false, suppressions.isSuppressed("errorid", "abc.cpp", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "ya.cpp", 1));
+            ASSERT_EQUALS(false, suppressions.isSuppressed("errorid", "y.cpp", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "test.c", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "test.cpp", 1));
+        }
+
+        // Check that both a filename match and a glob match apply
+        {
+            Suppressions suppressions;
+            std::istringstream s("errorid:x*.cpp\nerrorid:xyz.cpp:1\nerrorid:a*.cpp:1\nerrorid:abc.cpp:2");
+            ASSERT_EQUALS("", suppressions.parseFile(s));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "xyz.cpp", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "xyz.cpp", 2));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "abc.cpp", 1));
+            ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "abc.cpp", 2));
+        }
+    }
+
+    void suppressionsFileNameWithExtraPath()
+    {
+        // Ticket #2797
+        Suppressions suppressions;
+        suppressions.addSuppression("errorid", "./a.c", 123);
+        ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "a.c", 123));
     }
 
     // Check the suppression

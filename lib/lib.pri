@@ -26,6 +26,7 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}path.h \
            $${BASEPATH}preprocessor.h \
            $${BASEPATH}settings.h \
+           $${BASEPATH}suppressions.h \
            $${BASEPATH}symboldatabase.h \
            $${BASEPATH}timer.h \
            $${BASEPATH}token.h \
@@ -54,6 +55,7 @@ SOURCES += $${BASEPATH}check64bit.cpp \
            $${BASEPATH}path.cpp \
            $${BASEPATH}preprocessor.cpp \
            $${BASEPATH}settings.cpp \
+           $${BASEPATH}suppressions.cpp \
            $${BASEPATH}symboldatabase.cpp \
            $${BASEPATH}timer.cpp \
            $${BASEPATH}token.cpp \

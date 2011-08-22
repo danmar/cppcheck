@@ -24,6 +24,7 @@
 #include <string>
 
 #include "settings.h"
+#include "suppressions.h"
 
 class Token;
 class Tokenizer;
@@ -289,7 +290,7 @@ public:
      * Report list of unmatched suppressions
      * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
      */
-    void reportUnmatchedSuppressions(const std::list<Settings::Suppressions::SuppressionEntry> &unmatched);
+    void reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched);
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 };
