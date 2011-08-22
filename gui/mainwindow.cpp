@@ -212,7 +212,7 @@ void MainWindow::LoadSettings()
     bool succeeded = mApplications->LoadSettings();
     if (!succeeded)
     {
-        QString msg = tr("There was a problem with loading the editor application settings.\n\n"
+        const QString msg = tr("There was a problem with loading the editor application settings.\n\n"
                          "This is probably because the settings were changed between the Cppcheck versions. "
                          "Please check (and fix) the editor application settings, otherwise the editor "
                          "program might not start correctly.");
@@ -565,7 +565,7 @@ void MainWindow::ClearResults()
 void MainWindow::OpenXML()
 {
     QString selectedFilter;
-    QString filter(tr("XML files (*.xml)"));
+    const QString filter(tr("XML files (*.xml)"));
     QString selectedFile = QFileDialog::getOpenFileName(this,
                            tr("Open the report file"),
                            QString(),
@@ -639,7 +639,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
     else
     {
-        QString text(tr("Checking is running.\n\n" \
+        const QString text(tr("Checking is running.\n\n" \
                         "Do you want to stop the checking and exit Cppcheck?."));
 
         QMessageBox msg(QMessageBox::Warning,
@@ -701,7 +701,7 @@ void MainWindow::ShowAuthors()
 void MainWindow::Save()
 {
     QString selectedFilter;
-    QString filter(tr("XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
+    const QString filter(tr("XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
     QString selectedFile = QFileDialog::getSaveFileName(this,
                            tr("Save the report file"),
                            QString(),
@@ -857,7 +857,7 @@ void MainWindow::LoadProjectFile(const QString &filePath)
     delete mProject;
     mProject = new Project(filePath, this);
     mProject->Open();
-    QString rootpath = mProject->GetProjectFile()->GetRootPath();
+    const QString rootpath = mProject->GetProjectFile()->GetRootPath();
 
     // If the root path is not given or is not "current dir", use project
     // file's location directory as root path
@@ -1010,7 +1010,7 @@ void MainWindow::OpenRecentProject()
         }
         else
         {
-            QString text(tr("The project file\n\n%1\n\n could not be found!\n\n"
+            const QString text(tr("The project file\n\n%1\n\n could not be found!\n\n"
                             "Do you want to remove the file from the recently "
                             "used projects -list?").arg(project));
 
