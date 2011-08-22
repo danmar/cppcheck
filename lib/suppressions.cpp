@@ -23,6 +23,7 @@
 #include <sstream>
 #include <iostream>
 #include <stack>
+#include <cctype>   // std::isdigit, std::isalnum, etc
 
 std::string Suppressions::parseFile(std::istream &istr)
 {
