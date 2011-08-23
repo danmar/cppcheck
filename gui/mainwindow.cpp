@@ -213,9 +213,9 @@ void MainWindow::LoadSettings()
     if (!succeeded)
     {
         const QString msg = tr("There was a problem with loading the editor application settings.\n\n"
-                         "This is probably because the settings were changed between the Cppcheck versions. "
-                         "Please check (and fix) the editor application settings, otherwise the editor "
-                         "program might not start correctly.");
+                               "This is probably because the settings were changed between the Cppcheck versions. "
+                               "Please check (and fix) the editor application settings, otherwise the editor "
+                               "program might not start correctly.");
         QMessageBox msgBox(QMessageBox::Warning,
                            tr("Cppcheck"),
                            msg,
@@ -640,7 +640,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     else
     {
         const QString text(tr("Checking is running.\n\n" \
-                        "Do you want to stop the checking and exit Cppcheck?."));
+                              "Do you want to stop the checking and exit Cppcheck?."));
 
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
@@ -1011,8 +1011,8 @@ void MainWindow::OpenRecentProject()
         else
         {
             const QString text(tr("The project file\n\n%1\n\n could not be found!\n\n"
-                            "Do you want to remove the file from the recently "
-                            "used projects -list?").arg(project));
+                                  "Do you want to remove the file from the recently "
+                                  "used projects -list?").arg(project));
 
             QMessageBox msg(QMessageBox::Warning,
                             tr("Cppcheck"),
