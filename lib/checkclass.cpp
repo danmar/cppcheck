@@ -1493,14 +1493,24 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
     unsigned int args = countParameters(tok);
 
     std::list<Function>::const_iterator    func;
+    unsigned int matches = 0;
+    unsigned int consts = 0;
 
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
     {
         /** @todo we need to look at the argument types when there are overloaded functions
           * with the same number of arguments */
-        if (func->tokenDef->str() == tok->str() && func->argCount() == args && func->isConst)
-            return true;
+        if (func->tokenDef->str() == tok->str() && func->argCount() == args)
+        {
+            matches++;
+            if (func->isConst)
+                consts++;
+        }
     }
+
+    // if there are multiple matches that are all const, return const
+    if (matches > 0 && matches == consts)
+        return true;
 
     // not found in this class
     if (!scope->derivedFrom.empty())

@@ -178,6 +178,7 @@ private:
         TEST_CASE(const48); // ticket #2672
         TEST_CASE(const49); // ticket #2795
         TEST_CASE(const50); // ticket #2943
+        TEST_CASE(const51); // ticket #3040
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5627,6 +5628,35 @@ private:
                    "        if (mEmptyView) return;\n"
                    "}\n");
 
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const51() // ticket 3040
+    {
+        checkConst("class PSIPTable {\n"
+                   "public:\n"
+                   "    PSIPTable() : _pesdata(0) { }\n"
+                   "    const unsigned char* pesdata() const { return _pesdata; }\n"
+                   "    unsigned char* pesdata()             { return _pesdata; }\n"
+                   "    void SetSection(uint num) { pesdata()[6] = num; }\n"
+                   "private:\n"
+                   "    unsigned char *_pesdata;\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class PESPacket {\n"
+                   "public:\n"
+                   "    PESPacket() : _pesdata(0) { }\n"
+                   "    const unsigned char* pesdata() const { return _pesdata; }\n"
+                   "    unsigned char* pesdata()             { return _pesdata; }\n"
+                   "private:\n"
+                   "    unsigned char *_pesdata;\n"
+                   "};\n"
+                   "class PSIPTable : public PESPacket\n"
+                   "{\n"
+                   "public:\n"
+                   "    void SetSection(uint num) { pesdata()[6] = num; }\n"
+                   "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
