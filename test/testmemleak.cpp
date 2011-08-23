@@ -276,6 +276,7 @@ private:
         // * It is ok to take the address to deallocated memory
         // * It is not ok to dereference a pointer to deallocated memory
         TEST_CASE(dealloc_use);
+        TEST_CASE(dealloc_use_2);
 
         // free a free'd pointer
         TEST_CASE(freefree1);
@@ -2962,6 +2963,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void dealloc_use_2()
+    {
+        // #3041 - assigning pointer when it's used
+        check("void f(char *s) {\n"
+              "    free(s);\n"
+              "    strcpy(a, s=b());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void freefree1()
     {
