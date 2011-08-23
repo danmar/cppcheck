@@ -9,9 +9,9 @@
         <dir name="gui/"/>
         <dir name="test/"/>
     </paths>
-    <exclude>
+    <ignore>
         <path name="gui/temp/"/>
-    </exclude>
+    </ignore>
     <defines>
         <define name="FOO" />
     </defines>

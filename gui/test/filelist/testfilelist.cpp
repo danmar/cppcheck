@@ -98,7 +98,7 @@ void TestFileList::filterFiles()
     FileList list;
     QStringList filters;
     filters << "foo1.cpp" << "foo3.cc";
-    list.AddIngoreList(filters);
+    list.AddExcludeList(filters);
     list.AddFile(QString(SRCDIR) + "/../data/files/foo1.cpp");
     list.AddFile(QString(SRCDIR) + "/../data/files/foo2.cxx");
     list.AddFile(QString(SRCDIR) + "/../data/files/foo3.cc");
@@ -119,7 +119,7 @@ void TestFileList::filterFiles2()
     FileList list;
     QStringList filters;
     filters << "foo1.cpp" << "foo3.cc";
-    list.AddIngoreList(filters);
+    list.AddExcludeList(filters);
     list.AddDirectory(QString(SRCDIR) + "/../data/files");
     QStringList files = list.GetFileList();
     QCOMPARE(files.size(), 5);
@@ -134,7 +134,7 @@ void TestFileList::filterFiles3()
     FileList list;
     QStringList filters;
     filters << "foo1.cpp" << "foo3.cc";
-    list.AddIngoreList(filters);
+    list.AddExcludeList(filters);
     list.AddDirectory(QString(SRCDIR) + "/../data/files", true);
     QStringList files = list.GetFileList();
     QCOMPARE(files.size(), 6);
@@ -151,7 +151,7 @@ void TestFileList::filterFiles4()
     FileList list;
     QStringList filters;
     filters << "dir1/";
-    list.AddIngoreList(filters);
+    list.AddExcludeList(filters);
     list.AddDirectory(QString(SRCDIR) + "/../data/files", true);
     QStringList files = list.GetFileList();
     QCOMPARE(files.size(), 8);

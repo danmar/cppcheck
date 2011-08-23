@@ -42,7 +42,30 @@ void TestProjectFile::loadSimple()
     QCOMPARE(paths.size(), 2);
     QCOMPARE(paths[0], QString("gui/"));
     QCOMPARE(paths[1], QString("test/"));
-    QStringList ignores = pfile.GetIgnoredPaths();
+    QStringList excludes = pfile.GetExcludedPaths();
+    QCOMPARE(excludes.size(), 1);
+    QCOMPARE(excludes[0], QString("gui/temp/"));
+    QStringList defines = pfile.GetDefines();
+    QCOMPARE(defines.size(), 1);
+    QCOMPARE(defines[0], QString("FOO"));
+}
+
+// Test that project file with old 'ignore' element works
+void TestProjectFile::loadSimpleWithIgnore()
+{
+    const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple_ignore.cppcheck");
+    ProjectFile pfile(filepath);
+    QVERIFY(pfile.Read());
+    QCOMPARE(pfile.GetRootPath(), QString("../.."));
+    QStringList includes = pfile.GetIncludeDirs();
+    QCOMPARE(includes.size(), 2);
+    QCOMPARE(includes[0], QString("lib/"));
+    QCOMPARE(includes[1], QString("cli/"));
+    QStringList paths = pfile.GetCheckPaths();
+    QCOMPARE(paths.size(), 2);
+    QCOMPARE(paths[0], QString("gui/"));
+    QCOMPARE(paths[1], QString("test/"));
+    QStringList ignores = pfile.GetExcludedPaths();
     QCOMPARE(ignores.size(), 1);
     QCOMPARE(ignores[0], QString("gui/temp/"));
     QStringList defines = pfile.GetDefines();
@@ -64,7 +87,7 @@ void TestProjectFile::loadSimpleNoroot()
     QCOMPARE(paths.size(), 2);
     QCOMPARE(paths[0], QString("gui/"));
     QCOMPARE(paths[1], QString("test/"));
-    QStringList ignores = pfile.GetIgnoredPaths();
+    QStringList ignores = pfile.GetExcludedPaths();
     QCOMPARE(ignores.size(), 1);
     QCOMPARE(ignores[0], QString("gui/temp/"));
     QStringList defines = pfile.GetDefines();
