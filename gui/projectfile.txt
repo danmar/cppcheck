@@ -23,9 +23,9 @@ program. The format is:
         <define name="_MSC_VER=1400" />
         <define name="_WIN32" />
     </defines>
-   <ignore>
+   <exclude>
         <path name="gui/temp/" />
-   </ignore>
+   </exclude>
 </project>
 
 where:
@@ -41,8 +41,8 @@ where:
    recommended that relative paths are used for paths inside the project root
    folder for better portability.
 -  defines element contains a list of C/C++ preprocessor defines.
--  ignore element contains list of paths to ignore. The path can be a
-   directory (must end with path separator) or file.
+-  exclude element contains list of paths to exclude from the check. The path
+   can be a directory (must end with path separator) or a file.
 
 For real life examples see the cppcheck.cppcheck-file in the Cppcheck sources
 root-directory or gui.cppcheck file in gui-directory.
