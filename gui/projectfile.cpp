@@ -41,6 +41,9 @@ static const char RootPathNameAttrib[] = "name";
 static const char IgnoreElementName[] = "ignore";
 static const char IgnorePathName[] = "path";
 static const char IgnorePathNameAttrib[] = "name";
+static const char ExcludeElementName[] = "exclude";
+static const char ExcludePathName[] = "path";
+static const char ExcludePathNameAttrib[] = "name";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -91,9 +94,14 @@ bool ProjectFile::Read(const QString &filename)
             if (insideProject && xmlReader.name() == DefinesElementName)
                 ReadDefines(xmlReader);
 
+            // Find exclude list from inside project element
+            if (insideProject && xmlReader.name() == ExcludeElementName)
+                ReadExcludes(xmlReader);
+
             // Find ignore list from inside project element
+            // These are read for compatibility
             if (insideProject && xmlReader.name() == IgnoreElementName)
-                ReadIgnores(xmlReader);
+                ReadExcludes(xmlReader);
 
             break;
 
@@ -148,10 +156,10 @@ QStringList ProjectFile::GetCheckPaths() const
     return paths;
 }
 
-QStringList ProjectFile::GetIgnoredPaths() const
+QStringList ProjectFile::GetExcludedPaths() const
 {
     QStringList paths;
-    foreach(QString path, mIgnoredPaths)
+    foreach(QString path, mExcludedPaths)
     {
         paths << QDir::fromNativeSeparators(path);
     }
@@ -291,7 +299,7 @@ void ProjectFile::ReadCheckPaths(QXmlStreamReader &reader)
     while (!allRead);
 }
 
-void ProjectFile::ReadIgnores(QXmlStreamReader &reader)
+void ProjectFile::ReadExcludes(QXmlStreamReader &reader)
 {
     QXmlStreamReader::TokenType type;
     bool allRead = false;
@@ -301,18 +309,28 @@ void ProjectFile::ReadIgnores(QXmlStreamReader &reader)
         switch (type)
         {
         case QXmlStreamReader::StartElement:
-            // Read define-elements
-            if (reader.name().toString() == IgnorePathName)
+            // Read exclude-elements
+            if (reader.name().toString() == ExcludePathName)
+            {
+                QXmlStreamAttributes attribs = reader.attributes();
+                QString name = attribs.value("", ExcludePathNameAttrib).toString();
+                if (!name.isEmpty())
+                    mExcludedPaths << name;
+            }
+            // Read ignore-elements - deprecated but support reading them
+            else if (reader.name().toString() == IgnorePathName)
             {
                 QXmlStreamAttributes attribs = reader.attributes();
                 QString name = attribs.value("", IgnorePathNameAttrib).toString();
                 if (!name.isEmpty())
-                    mIgnoredPaths << name;
+                    mExcludedPaths << name;
             }
             break;
 
         case QXmlStreamReader::EndElement:
             if (reader.name().toString() == IgnoreElementName)
+                allRead = true;
+            if (reader.name().toString() == ExcludeElementName)
                 allRead = true;
             break;
 
@@ -347,9 +365,9 @@ void ProjectFile::SetCheckPaths(const QStringList &paths)
     mPaths = paths;
 }
 
-void ProjectFile::SetIgnoredPaths(const QStringList &paths)
+void ProjectFile::SetExcludedPaths(const QStringList &paths)
 {
-    mIgnoredPaths = paths;
+    mExcludedPaths = paths;
 }
 
 bool ProjectFile::Write(const QString &filename)
@@ -410,13 +428,13 @@ bool ProjectFile::Write(const QString &filename)
         xmlWriter.writeEndElement();
     }
 
-    if (!mIgnoredPaths.isEmpty())
+    if (!mExcludedPaths.isEmpty())
     {
-        xmlWriter.writeStartElement(IgnoreElementName);
-        foreach(QString path, mIgnoredPaths)
+        xmlWriter.writeStartElement(ExcludeElementName);
+        foreach(QString path, mExcludedPaths)
         {
-            xmlWriter.writeStartElement(IgnorePathName);
-            xmlWriter.writeAttribute(IgnorePathNameAttrib, path);
+            xmlWriter.writeStartElement(ExcludePathName);
+            xmlWriter.writeAttribute(ExcludePathNameAttrib, path);
             xmlWriter.writeEndElement();
         }
         xmlWriter.writeEndElement();

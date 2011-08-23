@@ -29,7 +29,7 @@
 
 
 /**
-* @brief A class that reads and writes (TODO) project files.
+* @brief A class that reads and writes project files.
 * The project files contain project-specific settings for checking. For
 * example a list of include paths.
 */
@@ -75,10 +75,10 @@ public:
     QStringList GetCheckPaths() const;
 
     /**
-    * @brief Get list of paths to ignore.
+    * @brief Get list of paths to exclude from the check.
     * @return list of paths.
     */
-    QStringList GetIgnoredPaths() const;
+    QStringList GetExcludedPaths() const;
 
     /**
     * @brief Get filename for the project file.
@@ -117,10 +117,10 @@ public:
     void SetCheckPaths(const QStringList &paths);
 
     /**
-    * @brief Set list of paths to ignore.
+    * @brief Set list of paths to exclude from the check.
     * @param defines List of paths.
     */
-    void SetIgnoredPaths(const QStringList &paths);
+    void SetExcludedPaths(const QStringList &paths);
 
     /**
     * @brief Write project file (to disk).
@@ -164,10 +164,10 @@ protected:
     void ReadCheckPaths(QXmlStreamReader &reader);
 
     /**
-    * @brief Read lists of ignores.
+    * @brief Read lists of excluded paths.
     * @param reader XML stream reader.
     */
-    void ReadIgnores(QXmlStreamReader &reader);
+    void ReadExcludes(QXmlStreamReader &reader);
 
 private:
 
@@ -200,9 +200,9 @@ private:
     QStringList mPaths;
 
     /**
-    * @brief Paths ignored from the check.
+    * @brief Paths excluded from the check.
     */
-    QStringList mIgnoredPaths;
+    QStringList mExcludedPaths;
 };
 /// @}
 #endif  // PROJECT_FILE_H

@@ -65,10 +65,10 @@ public:
     QStringList GetFileList() const;
 
     /**
-    * @brief Add list of paths to ignore list.
-    * @param paths Paths to ignore.
+    * @brief Add list of paths to exclusion list.
+    * @param paths Paths to exclude.
     */
-    void AddIngoreList(const QStringList &paths);
+    void AddExcludeList(const QStringList &paths);
 
 protected:
 
@@ -86,23 +86,23 @@ protected:
 
     /**
     * @brief Get filtered list of paths.
-    * This method takes the list of paths and applies the ignore lists to
+    * This method takes the list of paths and applies the exclude lists to
     * it. And then returns the list of paths that did not match the
-    * ignore filters.
+    * exclude filters.
     * @return Filtered list of paths.
     */
-    QStringList ApplyIgnoreList() const;
+    QStringList ApplyExcludeList() const;
 
     /**
-    * @brief Test if path matches any of the ignore filters.
-    * @param path Path to test against filters.
+    * @brief Test if path matches any of the exclude filters.
+    * @param path Path to test against exclude filters.
     * @return true if any of the filters matches, false otherwise.
     */
     bool Match(const QString &path) const;
 
 private:
     QFileInfoList mFileList;
-    QStringList mIgnoredPaths;
+    QStringList mExcludedPaths;
 };
 
 #endif // FILELIST_H

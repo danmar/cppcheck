@@ -96,7 +96,7 @@ void FileList::AddPathList(const QStringList &paths)
 
 QStringList FileList::GetFileList() const
 {
-    if (mIgnoredPaths.empty())
+    if (mExcludedPaths.empty())
     {
         QStringList names;
         foreach(QFileInfo item, mFileList)
@@ -108,16 +108,16 @@ QStringList FileList::GetFileList() const
     }
     else
     {
-        return ApplyIgnoreList();
+        return ApplyExcludeList();
     }
 }
 
-void FileList::AddIngoreList(const QStringList &paths)
+void FileList::AddExcludeList(const QStringList &paths)
 {
-    mIgnoredPaths = paths;
+    mExcludedPaths = paths;
 }
 
-QStringList FileList::ApplyIgnoreList() const
+QStringList FileList::ApplyExcludeList() const
 {
     QStringList paths;
     foreach(QFileInfo item, mFileList)
@@ -131,17 +131,17 @@ QStringList FileList::ApplyIgnoreList() const
 
 bool FileList::Match(const QString &path) const
 {
-    for (int i = 0; i < mIgnoredPaths.size(); i++)
+    for (int i = 0; i < mExcludedPaths.size(); i++)
     {
-        if (mIgnoredPaths[i].endsWith('/'))
+        if (mExcludedPaths[i].endsWith('/'))
         {
-            const QString pathignore("/" + mIgnoredPaths[i]);
-            if (path.indexOf(pathignore) != -1)
+            const QString pathexclude("/" + mExcludedPaths[i]);
+            if (path.indexOf(pathexclude) != -1)
                 return true;
         }
         else
         {
-            if (path.endsWith(mIgnoredPaths[i]))
+            if (path.endsWith(mExcludedPaths[i]))
                 return true;
         }
     }

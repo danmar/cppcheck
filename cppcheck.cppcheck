@@ -13,8 +13,8 @@
         <dir name="gui/"/>
         <dir name="test/"/>
     </paths>
-    <ignore>
+    <exclude>
         <path name="gui/temp/"/>
         <path name="test/test.cxx"/>
-    </ignore>
+    </exclude>
 </project>

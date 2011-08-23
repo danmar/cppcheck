@@ -212,7 +212,7 @@
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
-       <string>Ignore</string>
+       <string>Exclude</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_9">
        <item>
