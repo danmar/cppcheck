@@ -209,32 +209,32 @@ public:
      */
     void checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo);
 
-    void arrayIndexOutOfBounds(const Token *tok, MathLib::bigint size, MathLib::bigint index);
-    void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
-    void arrayIndexOutOfBounds(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
-    void bufferOverrun(const Token *tok, const std::string &varnames = "");
-    void strncatUsage(const Token *tok);
-    void outOfBounds(const Token *tok, const std::string &what);
-    void sizeArgumentAsChar(const Token *tok);
+    void arrayIndexOutOfBoundsError(const Token *tok, MathLib::bigint size, MathLib::bigint index);
+    void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
+    void arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
+    void bufferOverrunError(const Token *tok, const std::string &varnames = "");
+    void strncatUsageError(const Token *tok);
+    void outOfBoundsError(const Token *tok, const std::string &what);
+    void sizeArgumentAsCharError(const Token *tok);
     void terminateStrncpyError(const Token *tok);
     void negativeIndexError(const Token *tok, MathLib::bigint index);
     void cmdLineArgsError(const Token *tok);
-    void pointerOutOfBounds(const Token *tok, const std::string &object);	// UB when result of calculation is out of bounds
+    void pointerOutOfBoundsError(const Token *tok, const std::string &object);	// UB when result of calculation is out of bounds
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckBufferOverrun c(0, settings, errorLogger);
-        c.arrayIndexOutOfBounds(0, 2, 2);
-        c.bufferOverrun(0, std::string("buffer"));
-        c.strncatUsage(0);
-        c.outOfBounds(0, "index");
-        c.sizeArgumentAsChar(0);
+        c.arrayIndexOutOfBoundsError(0, 2, 2);
+        c.bufferOverrunError(0, std::string("buffer"));
+        c.strncatUsageError(0);
+        c.outOfBoundsError(0, "index");
+        c.sizeArgumentAsCharError(0);
         c.terminateStrncpyError(0);
         c.negativeIndexError(0, -1);
         c.cmdLineArgsError(0);
-        c.pointerOutOfBounds(0, "array");
+        c.pointerOutOfBoundsError(0, "array");
         c.arrayIndexThenCheckError(0, "index");
         c.possibleBufferOverrunError(0, "source", "destination", false);
     }
