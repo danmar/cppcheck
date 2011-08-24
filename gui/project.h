@@ -42,10 +42,23 @@ public:
     ~Project();
 
     /**
+      * @brief Return the filename of the project.
+      * @return Project's filename.
+      */
+    QString Filename() const;
+
+    /**
     * @brief Set filename for the project file.
     * @param filename Filename.
     */
     void SetFilename(const QString &filename);
+
+    /**
+      * @brief Is the project open?
+      * The project is considered to be open if it has an opened project file.
+      * @return true if the project is open, false otherwise.
+      */
+    bool IsOpen() const;
 
     /**
     * @brief Open existing project file.

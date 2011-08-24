@@ -47,9 +47,19 @@ Project::~Project()
     delete mPFile;
 }
 
+QString Project::Filename() const
+{
+    return mFilename;
+}
+
 void Project::SetFilename(const QString &filename)
 {
     mFilename = filename;
+}
+
+bool Project::IsOpen() const
+{
+    return mPFile != NULL;
 }
 
 bool Project::Open()

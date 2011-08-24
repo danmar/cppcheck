@@ -170,6 +170,12 @@ public slots:
     void Save();
 
     /**
+      * @brief Check the project.
+      * @param project Pointer to the project to check.
+      */
+    void CheckProject(Project *project);
+
+    /**
     * @brief Slot to create new project file..
     *
     */

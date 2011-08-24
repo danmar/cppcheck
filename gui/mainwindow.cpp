@@ -856,8 +856,16 @@ void MainWindow::LoadProjectFile(const QString &filePath)
     mUI.mActionEditProjectFile->setEnabled(true);
     delete mProject;
     mProject = new Project(filePath, this);
-    mProject->Open();
-    const QString rootpath = mProject->GetProjectFile()->GetRootPath();
+    CheckProject(mProject);
+}
+
+void MainWindow::CheckProject(Project *project)
+{
+    if (!project->IsOpen())
+        project->Open();
+
+    QFileInfo inf(project->Filename());
+    const QString rootpath = project->GetProjectFile()->GetRootPath();
 
     // If the root path is not given or is not "current dir", use project
     // file's location directory as root path
@@ -866,7 +874,7 @@ void MainWindow::LoadProjectFile(const QString &filePath)
     else
         mCurrentDirectory = rootpath;
 
-    QStringList paths = mProject->GetProjectFile()->GetCheckPaths();
+    QStringList paths = project->GetProjectFile()->GetCheckPaths();
 
     // If paths not given then check the root path (which may be the project
     // file's location, see above). This is to keep the compatibility with
@@ -911,6 +919,7 @@ void MainWindow::NewProjectFile()
         mProject->Edit();
     }
     AddProjectMRU(filepath);
+    CheckProject(mProject);
 }
 
 void MainWindow::CloseProjectFile()
