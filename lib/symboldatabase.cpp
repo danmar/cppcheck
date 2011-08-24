@@ -591,7 +591,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 }
                 else if (tok->str() == "{")
                 {
-                    if (!Token::Match(tok->previous(), "=|,|{"))
+                    if (!Token::Match(tok->previous(), "=|,"))
                     {
                         scopeList.push_back(Scope(this, tok, scope, Scope::eUnconditional, tok));
                         scope = &scopeList.back();
