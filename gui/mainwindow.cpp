@@ -145,6 +145,7 @@ MainWindow::MainWindow() :
         connect(mRecentProjectActs[i], SIGNAL(triggered()),
                 this, SLOT(OpenRecentProject()));
     }
+    mRecentProjectActs[MaxRecentProjects] = NULL; // The separator
     mUI.mActionProjectMRU->setVisible(false);
     UpdateMRUMenuItems();
 }
@@ -1042,7 +1043,7 @@ void MainWindow::OpenRecentProject()
 
 void MainWindow::UpdateMRUMenuItems()
 {
-    for (int i = 0; i < MaxRecentProjects; i++)
+    for (int i = 0; i < MaxRecentProjects + 1; i++)
     {
         if (mRecentProjectActs[i] != NULL)
             mUI.mMenuFile->removeAction(mRecentProjectActs[i]);
@@ -1061,7 +1062,7 @@ void MainWindow::UpdateMRUMenuItems()
     }
 
     if (numRecentProjects > 1)
-        mUI.mMenuFile->insertSeparator(mUI.mActionProjectMRU);
+        mRecentProjectActs[numRecentProjects] = mUI.mMenuFile->insertSeparator(mUI.mActionProjectMRU);
 }
 
 void MainWindow::AddProjectMRU(const QString &project)

@@ -473,9 +473,10 @@ private:
     bool mExiting;
 
     /**
-    * @brief Project MRU menu actions.
-    */
-    QAction *mRecentProjectActs[MaxRecentProjects];
+     * @brief Project MRU menu actions.
+     * List of MRU menu actions. Needs also to store the separator.
+     */
+    QAction *mRecentProjectActs[MaxRecentProjects + 1];
 };
 /// @}
 #endif // MAINWINDOW_H
