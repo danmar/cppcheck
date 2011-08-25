@@ -179,6 +179,7 @@ private:
         TEST_CASE(const49); // ticket #2795
         TEST_CASE(const50); // ticket #2943
         TEST_CASE(const51); // ticket #3040
+        TEST_CASE(const52); // ticket #3049
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5656,6 +5657,23 @@ private:
                    "{\n"
                    "public:\n"
                    "    void SetSection(uint num) { pesdata()[6] = num; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const52() // ticket 3049
+    {
+        checkConst("class A {\n"
+                   "  public:\n"
+                   "    A() : foo(false) {};\n"
+                   "    virtual bool One(bool b = false) { foo = b; return false; }\n"
+                   "  private:\n"
+                   "    bool foo;\n"
+                   "};\n"
+                   "class B : public A {\n"
+                   "  public:\n"
+                   "    B() {};\n"
+                   "    bool One(bool b = false) { return false; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }

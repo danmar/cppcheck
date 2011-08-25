@@ -919,7 +919,12 @@ bool SymbolDatabase::argsMatch(const Scope *scope, const Token *first, const Tok
 
         // skip default value assignment
         else if (first->next()->str() == "=")
+        {
             first = first->tokAt(2);
+
+            if (second->next()->str() == "=")
+                second = second->tokAt(2);
+        }
 
         // definition missing variable name
         else if (first->next()->str() == "," && second->next()->str() != ",")
