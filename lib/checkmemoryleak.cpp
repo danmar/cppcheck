@@ -848,6 +848,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                     return ret;
                 }
             }
+            if (varid > 0 && Token::Match(tok, "[(,] %varid% . %var% [,)]", varid))
+                return "use";
         }
     }
     return NULL;
