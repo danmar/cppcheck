@@ -5537,7 +5537,14 @@ private:
                              "    void valueChanged(int newValue); "
                              "private: "
                              "    int m_value; "
-                             "};";
+                             "}; "
+                             "void Counter::setValue(int value) "
+                             "{ "
+                             "    if (value != m_value) { "
+                             "        m_value = value; "
+                             "        emit valueChanged(value); "
+                             "    } "
+                             "}";
 
         const char result1 [] = "class Counter : public QObject "
                                 "{ "
@@ -5550,7 +5557,14 @@ private:
                                 "void valueChanged ( int newValue ) ; "
                                 "private: "
                                 "int m_value ; "
-                                "} ;";
+                                "} ; "
+                                "void Counter :: setValue ( int value ) "
+                                "{ "
+                                "if ( value != m_value ) { "
+                                "m_value = value ; "
+                                "valueChanged ( value ) ; "
+                                "} "
+                                "}";
 
         ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
 
@@ -5566,7 +5580,14 @@ private:
                              "    void valueChanged(int newValue); "
                              "private: "
                              "    int m_value; "
-                             "};";
+                             "};"
+                             "void Counter::setValue(int value) "
+                             "{ "
+                             "    if (value != m_value) { "
+                             "        m_value = value; "
+                             "        emit valueChanged(value); "
+                             "    } "
+                             "}";
 
         const char result2 [] = "class Counter : public QObject "
                                 "{ "
@@ -5579,7 +5600,14 @@ private:
                                 "void valueChanged ( int newValue ) ; "
                                 "private: "
                                 "int m_value ; "
-                                "} ;";
+                                "} ; "
+                                "void Counter :: setValue ( int value ) "
+                                "{ "
+                                "if ( value != m_value ) { "
+                                "m_value = value ; "
+                                "valueChanged ( value ) ; "
+                                "} "
+                                "}";
 
         ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
     }

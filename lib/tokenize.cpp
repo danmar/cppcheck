@@ -9970,7 +9970,13 @@ void Tokenizer::simplifyQtSignalsSlots()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (!Token::Match(tok, "class %var% :"))
+        // check for emit which can be outside of class
+        if (Token::Match(tok, "emit|Q_EMIT %var% (") &&
+            Token::simpleMatch(tok->tokAt(2)->link(), ") ;"))
+        {
+            tok->deleteThis();
+        }
+        else if (!Token::Match(tok, "class %var% :"))
             continue;
 
         if (tok->previous() && tok->previous()->str() == "enum")
@@ -10013,6 +10019,11 @@ void Tokenizer::simplifyQtSignalsSlots()
             {
                 tok2 = tok2->next();
                 tok2->str("protected:");
+                tok2->deleteNext();
+            }
+            else if (Token::Match(tok2->next(), "emit|Q_EMIT %var% (") &&
+                     Token::simpleMatch(tok2->tokAt(3)->link(), ") ;"))
+            {
                 tok2->deleteNext();
             }
         }
