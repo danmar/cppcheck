@@ -447,13 +447,6 @@ Settings MainWindow::GetCppcheckSettings()
 {
     Settings result;
 
-    QString globalIncludes = mSettings->value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
-    if (!globalIncludes.isEmpty())
-    {
-        QStringList includes = globalIncludes.split(";");
-        AddIncludeDirs(includes, result);
-    }
-
     // If project file loaded, read settings from it
     if (mProject)
     {
@@ -469,6 +462,16 @@ Settings MainWindow::GetCppcheckSettings()
                 result.userDefines += ";";
             result.userDefines += define.toStdString();
         }
+    }
+
+    // Include directories (and files) are searched in listed order.
+    // Global include directories must be added AFTER the per project include
+    // directories so per project include directories can override global ones.
+    const QString globalIncludes = mSettings->value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
+    if (!globalIncludes.isEmpty())
+    {
+        QStringList includes = globalIncludes.split(";");
+        AddIncludeDirs(includes, result);
     }
 
     result.addEnabled("style");
