@@ -1162,10 +1162,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (_settings->isEnabled("style"))
         {
             // check for strncpy which is not terminated
-            if ((Token::Match(tok, "strncpy ( %varid% , %var% , %num% )", arrayInfo.varid())))
+            if ((Token::Match(tok, "strncpy ( %varid% , %var% , %num% )", arrayInfo.varid())) ||
+                (Token::Match(tok, "strncpy ( %varid% , %var% [ %any% ] , %num% )", arrayInfo.varid())))
             {
                 // strncpy takes entire variable length as input size
-                if ((unsigned int)MathLib::toLongNumber(tok->strAt(6)) >= total_size)
+                const int offset = tok->strAt(5) == "[" ? 9 : 6;
+                if ((unsigned int)MathLib::toLongNumber(tok->strAt(offset)) >= total_size)
                 {
                     const Token *tok2 = tok->next()->link()->next();
                     for (; tok2; tok2 = tok2->next())
