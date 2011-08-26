@@ -340,6 +340,10 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         // Goto the first token in this statement..
         ftok = ftok->next();
 
+        // skip "return"
+        if (ftok->str() == "return")
+            ftok = ftok->next();
+
         // Skip "( * this )"
         if (Token::simpleMatch(ftok, "( * this ) ."))
         {

@@ -66,6 +66,7 @@ private:
         TEST_CASE(uninitVar19); // ticket #2792
         TEST_CASE(uninitVar20); // ticket #2867
         TEST_CASE(uninitVar21); // ticket #2947
+        TEST_CASE(uninitVar22); // ticket #3043
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -2261,6 +2262,38 @@ private:
                        "    a[x::y] = 0;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar22() // ticket #3043
+    {
+        checkUninitVar("class Fred {\n"
+                       "  public:\n"
+                       "    Fred & operator=(const Fred &);\n"
+                       "    virtual Fred & clone(const Fred & other);\n"
+                       "    int x;\n"
+                       "};\n"
+                       "Fred & Fred::operator=(const Fred & other) {\n"
+                       "    return clone(other);\n"
+                       "}\n"
+                       "Fred & Fred::clone(const Fred & other) {\n"
+                       "    x = 0;\n"
+                       "    return *this;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class Fred {\n"
+                       "  public:\n"
+                       "    Fred & operator=(const Fred &);\n"
+                       "    virtual Fred & clone(const Fred & other);\n"
+                       "    int x;\n"
+                       "};\n"
+                       "Fred & Fred::operator=(const Fred & other) {\n"
+                       "    return clone(other);\n"
+                       "}\n"
+                       "Fred & Fred::clone(const Fred & other) {\n"
+                       "    return *this;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::x' is not assigned a value in 'Fred::operator='\n", errout.str());
     }
 
     void uninitVarArray1()
