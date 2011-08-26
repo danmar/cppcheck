@@ -4994,6 +4994,7 @@ private:
         TEST_CASE(function1);   // Deallocating in function
         TEST_CASE(function2);   // #2848: Taking address in function
         TEST_CASE(function3);   // #3024: kernel list
+        TEST_CASE(function4);   // #3038: Deallocating in function
 
         // Handle if-else
         TEST_CASE(ifelse);
@@ -5195,6 +5196,18 @@ private:
               "  struct ABC *abc = kmalloc(100);\n"
               "  abc.a = (char *) kmalloc(10);\n"
               "  list_add_tail(&abc->list, head);\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #3038: deallocating in function
+    void function4()
+    {
+        check("void a(char *p) { char *x = p; free(x); }\n"
+              "void b() {\n"
+              "  struct ABC abc;\n"
+              "  abc.a = (char *) malloc(10);\n"
+              "  a(abc.a);\n"
               "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
     }
