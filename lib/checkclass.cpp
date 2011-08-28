@@ -827,7 +827,17 @@ void CheckClass::operatorEq()
                 // use definition for check so we don't have to deal with qualification
                 if (!(Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
                       func->tokenDef->strAt(-2) == scope->className))
-                    operatorEqReturnError(func->tokenDef->tokAt(-1), scope->className);
+                {
+                    // make sure we really have a copy assignment operator
+                    if (Token::Match(func->tokenDef->tokAt(2), "const| %var% &"))
+                    {
+                        if (func->tokenDef->strAt(2) == "const" &&
+                            func->tokenDef->strAt(3) == scope->className)
+                            operatorEqReturnError(func->tokenDef->tokAt(-1), scope->className);
+                        else if (func->tokenDef->strAt(2) == scope->className)
+                            operatorEqReturnError(func->tokenDef->tokAt(-1), scope->className);
+                    }
+                }
             }
         }
     }
