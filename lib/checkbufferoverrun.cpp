@@ -155,9 +155,9 @@ void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
 }
 
 
-void CheckBufferOverrun::terminateStrncpyError(const Token *tok)
+void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "terminateStrncpy", "After a strncpy() the buffer should be zero-terminated");
+    reportError(tok, Severity::warning, "terminateStrncpy", "After a strncpy() the buffer '" + varname + "' should be zero-terminated");
 }
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
@@ -1159,15 +1159,18 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             checkFunctionCall(tok, arrayInfo);
         }
 
-        if (_settings->isEnabled("style"))
+        if ((Token::Match(tok, "strncpy|strncat ( %varid% , %var% , %num% )", arrayInfo.varid())) ||
+            (Token::Match(tok, "strncpy|strncat ( %varid% , %var% [ %any% ] , %num% )", arrayInfo.varid())))
         {
+            const int offset = tok->strAt(5) == "[" ? 3 : 0;
+
             // check for strncpy which is not terminated
-            if ((Token::Match(tok, "strncpy ( %varid% , %var% , %num% )", arrayInfo.varid())) ||
-                (Token::Match(tok, "strncpy ( %varid% , %var% [ %any% ] , %num% )", arrayInfo.varid())))
+            if (tok->str() == "strncpy")
             {
                 // strncpy takes entire variable length as input size
-                const int offset = tok->strAt(5) == "[" ? 9 : 6;
-                if ((unsigned int)MathLib::toLongNumber(tok->strAt(offset)) >= total_size)
+                unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6 + offset));
+
+                if (num >= total_size)
                 {
                     const Token *tok2 = tok->next()->link()->next();
                     for (; tok2; tok2 = tok2->next())
@@ -1176,9 +1179,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                         {
                             if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
                             {
-                                // this is currently 'experimental'. See TestBufferOverrun::terminateStrncpy3
-                                if (_settings->experimental)
-                                    terminateStrncpyError(tok);
+                                // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
+                                if (_settings->isEnabled("style") && _settings->inconclusive)
+                                    terminateStrncpyError(tok, tok->strAt(2));
                             }
 
                             break;
@@ -1186,24 +1189,21 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     }
                 }
             }
-        }
 
-        // Dangerous usage of strncat..
-        if (Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% )", arrayInfo.varid()))
-        {
+            // Dangerous usage of strncat..
             if (tok->str() == "strncat")
             {
-                const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6));
+                const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6 + offset));
                 if (n >= total_size)
                     strncatUsageError(tok);
             }
 
             // Dangerous usage of strncpy + strncat..
-            if (Token::Match(tok->tokAt(8), "; strncat ( %varid% , %any% , %num% )", arrayInfo.varid()))
+            if (Token::Match(tok->tokAt(8 + offset), "; strncat ( %varid% , %any% , %num% )", arrayInfo.varid()))
             {
-                const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6)) + MathLib::toLongNumber(tok->strAt(15));
+                const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6 + offset)) + MathLib::toLongNumber(tok->strAt(15 + offset));
                 if (n > total_size)
-                    strncatUsageError(tok->tokAt(9));
+                    strncatUsageError(tok->tokAt(9 + offset));
             }
         }
 
