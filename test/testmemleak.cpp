@@ -488,6 +488,7 @@ private:
         ASSERT_EQUALS(";{};;alloc;;use;", getcode("struct Foo { }; Foo *p; p = malloc(10); const Foo *q; q = p;", "p"));
         ASSERT_EQUALS(";;alloc;use;", getcode("Fred *fred; p.setFred(fred = new Fred);", "fred"));
         ASSERT_EQUALS(";;use;", getcode("struct AB *ab; f(ab->a);", "ab"));
+        ASSERT_EQUALS(";;use;", getcode("struct AB *ab; ab = pop(ab);", "ab"));
 
         // non-use..
         ASSERT_EQUALS(";;", getcode("char *s; s = s + 1;", "s"));

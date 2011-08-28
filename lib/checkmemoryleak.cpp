@@ -1113,6 +1113,11 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
                         if (Token::Match(tok2, "[=+(,] %varid%", varid))
                         {
+                            if (!rhs && Token::Match(tok2, "[(,]"))
+                            {
+                                addtoken(&rettail, tok, "use");
+                                addtoken(&rettail, tok, ";");
+                            }
                             rhs = true;
                         }
                     }
