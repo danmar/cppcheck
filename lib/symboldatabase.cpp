@@ -1324,7 +1324,7 @@ bool SymbolDatabase::arrayDimensions(std::vector<Dimension> &dimensions, const T
 
     const Token *dim = tok;
 
-    while (dim && dim->next() && dim->str() == "[" && dim->next()->str() != "]")
+    while (dim && dim->next() && dim->str() == "[")
     {
         Dimension dimension;
         dimension.num = 0;
