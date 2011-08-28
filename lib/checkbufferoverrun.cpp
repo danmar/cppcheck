@@ -157,7 +157,13 @@ void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
 
 void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "terminateStrncpy", "After a strncpy() the buffer '" + varname + "' should be zero-terminated");
+    reportError(tok, Severity::warning, "terminateStrncpy",
+                "The buffer '" + varname + "' may not be zero-terminated after the call to strncpy().\n"
+                "The use of strncpy() usually indicates that the programmer wants to ensure "
+                "the buffer is zero-terminated after the call. However if the (buffer) size given for "
+                "the strncpy() call matches the actual buffer size strncpy() does not add the "
+                "zero at the end of the buffer. This may cause bugs later in the code if "
+                "the code assumes buffer is zero-terminated.");
 }
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
