@@ -1413,6 +1413,10 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
         {
             return true;
         }
+        else if (Token::Match(tok->tokAt(-3), "( * this )"))
+        {
+            return true;
+        }
         else if (Token::Match(tok->tokAt(-2), "%var% . %var%"))
         {
             tok = tok->tokAt(-2);

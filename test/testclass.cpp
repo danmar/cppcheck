@@ -181,6 +181,7 @@ private:
         TEST_CASE(const50); // ticket #2943
         TEST_CASE(const51); // ticket #3040
         TEST_CASE(const52); // ticket #3049
+        TEST_CASE(const53); // ticket #3052
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5707,6 +5708,15 @@ private:
                    "  public:\n"
                    "    B() {};\n"
                    "    bool One(bool b = false) { return false; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const53() // ticket 3052
+    {
+        checkConst("class Example {\n"
+                   "  public:\n"
+                   "    void Clear(void) { Example tmp; (*this) = tmp; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
