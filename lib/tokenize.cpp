@@ -7765,6 +7765,7 @@ bool Tokenizer::simplifyCalculations()
                     tok->str(result);
                     tok->deleteNext();
                     tok->deleteNext();
+                    ret = true;
                 }
             }
 

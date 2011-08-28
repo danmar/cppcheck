@@ -1050,7 +1050,8 @@ private:
             ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A<2"));
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A==2"));
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A<1"));
-            TODO_ASSERT_EQUALS(true, false, Preprocessor::match_cfg_def(cfg, "A>=1&&B<=A"));
+            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A>=1&&B<=A"));
+            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A==1 && A==1"));
         }
     }
 
