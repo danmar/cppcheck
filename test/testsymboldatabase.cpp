@@ -102,6 +102,7 @@ private:
         TEST_CASE(hasGlobalVariables3);
 
         TEST_CASE(functionArgs1);
+        TEST_CASE(functionArgs2);
 
         TEST_CASE(symboldatabase1);
         TEST_CASE(symboldatabase2);
@@ -656,6 +657,16 @@ private:
         check("void f(std::map<std::string, std::vector<int> > m) { }\n");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void functionArgs2()
+    {
+        GET_SYMBOL_DB("void f(int a[][4]) { }");
+        const Variable *a = db->getVariableFromVarId(1);
+        ASSERT_EQUALS("a", a->nameToken()->str());
+        ASSERT_EQUALS(2UL, a->dimensions().size());
+        ASSERT_EQUALS(0UL, a->dimension(0));
+        ASSERT_EQUALS(4UL, a->dimension(1));
     }
 
     void symboldatabase1()

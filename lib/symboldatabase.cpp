@@ -813,7 +813,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             for (size_t j = 0; j < _variableList[i]->dimensions().size(); j++)
             {
                 // check for a single token dimension that is a variable
-                if ((_variableList[i]->dimensions()[j].start == _variableList[i]->dimensions()[j].end) &&
+                if (_variableList[i]->dimensions()[j].start &&
+                    (_variableList[i]->dimensions()[j].start == _variableList[i]->dimensions()[j].end) &&
                     _variableList[i]->dimensions()[j].start->varId())
                 {
                     Dimension &dimension = const_cast<Dimension &>(_variableList[i]->dimensions()[j]);
@@ -1261,7 +1262,7 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
             }
 
             base.name += tok2->str();
-            base.scope = 0;
+            base.scope = NULL;
 
             // add unhandled templates
             if (tok2->next() && tok2->next()->str() == "<")
@@ -1327,11 +1328,14 @@ bool SymbolDatabase::arrayDimensions(std::vector<Dimension> &dimensions, const T
     while (dim && dim->next() && dim->str() == "[")
     {
         Dimension dimension;
-        dimension.num = 0;
-        dimension.start = dim->next();
-        dimension.end = dim->link()->previous();
-        if (dimension.start == dimension.end && dimension.start->isNumber())
-            dimension.num = MathLib::toLongNumber(dimension.start->str());
+        // check for empty array dimension []
+        if (dim->next()->str() != "]")
+        {
+            dimension.start = dim->next();
+            dimension.end = dim->link()->previous();
+            if (dimension.start == dimension.end && dimension.start->isNumber())
+                dimension.num = MathLib::toLongNumber(dimension.start->str());
+        }
         dimensions.push_back(dimension);
         dim = dim->link()->next();
         isArray = true;
@@ -1388,6 +1392,11 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
                 else if (tok->str() == "[")
                 {
                     isArrayVar = symbolDatabase->arrayDimensions(dimensions, tok);
+
+                    // skip array dimension(s)
+                    tok = tok->link();
+                    while (tok->next()->str() == "[")
+                        tok = tok->next()->link();
                 }
                 else if (tok->str() == "<")
                 {
