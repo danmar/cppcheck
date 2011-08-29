@@ -720,6 +720,8 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                         ftok = ftok->next()->link()->next()->link();
                         if (Token::simpleMatch(ftok, "} else {"))
                             ftok = ftok->tokAt(2)->link();
+                        if (!ftok)
+                            break;
                         continue;
                     }
                 }

@@ -209,6 +209,7 @@ private:
 
         TEST_CASE(crash1);	// Ticket #1587 - crash
         TEST_CASE(crash2);  // Ticket #2607 - crash
+        TEST_CASE(crash3);  // Ticket #3034 - crash
 
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
@@ -2898,6 +2899,18 @@ private:
     void crash2()
     {
         check("struct C {} {} x");
+    }
+
+    void crash3()
+    {
+        check("void a(char *p) {\n"
+              "    f( { if(finally_arg); } );\n"
+              "}\n"
+              "\n"
+              "void b() {\n"
+              "    char arr[64];\n"
+              "    a(arr);\n"
+              "}");
     }
 
 
