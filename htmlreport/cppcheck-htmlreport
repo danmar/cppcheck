@@ -181,16 +181,26 @@ class CppCheckHandler(XmlContentHandler):
         if name != "error":
             return
 
-        if attributes["file"] == "":
-            sys.stderr.write("ERROR: cppcheck error reported without a file name.\n")
-        self.errors.append(
-            {
-                "file" : attributes["file"],
-                "line" : int(attributes["line"]),
-                "id" : attributes["id"],
-                "severity" : attributes["severity"],
-                "msg" : attributes["msg"]
-            })
+        if attributes["id"] == "missingInclude":
+            self.errors.append(
+                {
+                    "file" : "",
+                    "line" : 0,
+                    "id" : attributes["id"],
+                    "severity" : attributes["severity"],
+                    "msg" : attributes["msg"]
+                })
+        else:
+            if attributes["file"] == "":
+                sys.stderr.write("ERROR: cppcheck error reported without a file name.\n")
+            self.errors.append(
+                {
+                    "file" : attributes["file"],
+                    "line" : int(attributes["line"]),
+                    "id" : attributes["id"],
+                    "severity" : attributes["severity"],
+                    "msg" : attributes["msg"]
+                })
 
 if __name__ == '__main__':
     # Configure all the options this little utility is using.
@@ -257,6 +267,9 @@ if __name__ == '__main__':
             for error in errors:
                 lines.append(error["line"])
 
+            if filename == "":
+                continue
+
             source_file = os.path.join(source_dir, filename)
             if not os.path.isfile(source_file):
                 sys.stderr.write("ERROR: Source file '%s' not found.\n" % source_file)
@@ -290,9 +303,13 @@ if __name__ == '__main__':
     for filename, data in files.iteritems():
         stream.write("<tr><td colspan='4'><a href=\"%s\">%s</a></td></tr>" % (data["htmlfile"], filename))
         for error in data["errors"]:
-            stream.write("<tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td>%s</td></tr>" %
-                         (data["htmlfile"], error["line"], error["line"], error["id"],
-                          error["severity"], error["msg"]))
+            if error["id"] == "missingInclude":
+                stream.write("<tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>" %
+                             (error["id"], error["severity"], error["msg"]))
+            else:
+                stream.write("<tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td>%s</td></tr>" %
+                             (data["htmlfile"], error["line"], error["line"], error["id"],
+                              error["severity"], error["msg"]))
     stream.write("</table>")
     stream.write(HTML_FOOTER)
     stream.close()
