@@ -7072,6 +7072,19 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             }
         }
 
+        // Stop if there is a pointer alias and a shadow variable is
+        // declared in an inner scope (#3058)
+        if (valueIsPointer && tok3->varId() > 0 &&
+            tok3->previous() && tok3->previous()->isName() &&
+            valueToken->str() == "&" &&
+            valueToken->next() &&
+            valueToken->next()->isName() &&
+            tok3->str() == valueToken->next()->str() &&
+            tok3->varId() > valueToken->next()->varId())
+        {
+            break;
+        }
+
         // Stop if label is found
         if (Token::Match(tok3, "; %type% : ;"))
             break;
