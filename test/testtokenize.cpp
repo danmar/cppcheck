@@ -2162,15 +2162,29 @@ private:
 
     void simplifyKnownVariables43()
     {
-        const char code[] = "void f() {\n"
-                            "    int a, *p; p = &a;\n"
-                            "    { int a = *p; }\n"
-                            "}";
-        const char expected[] = "void f ( ) {\n"
-                                "int a ; int * p ; p = & a ;\n"
-                                "{ int a ; a = * p ; }\n"
+        {
+            const char code[] = "void f() {\n"
+                                "    int a, *p; p = &a;\n"
+                                "    { int a = *p; }\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+            const char expected[] = "void f ( ) {\n"
+                                    "int a ; int * p ; p = & a ;\n"
+                                    "{ int a ; a = * p ; }\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "void f() {\n"
+                                "    int *a, **p; p = &a;\n"
+                                "    { int *a = *p; }\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "int * a ; int * * p ; p = & a ;\n"
+                                    "{ int * a ; a = * p ; }\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
     }
 
     void simplifyKnownVariablesBailOutAssign1()
