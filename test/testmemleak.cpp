@@ -277,6 +277,7 @@ private:
         // * It is not ok to dereference a pointer to deallocated memory
         TEST_CASE(dealloc_use);
         TEST_CASE(dealloc_use_2);
+        TEST_CASE(dealloc_use_3);
 
         // free a free'd pointer
         TEST_CASE(freefree1);
@@ -2973,6 +2974,25 @@ private:
               "    strcpy(a, s=b());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void dealloc_use_3()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *str = malloc(10);\n"
+              "    realloc(str, 0);\n"
+              "    str[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *str = realloc(0, 10);\n"
+              "    realloc(str, 0);\n"
+              "    str[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
     }
 
     void freefree1()

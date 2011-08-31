@@ -247,7 +247,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         return NewArray;
 
     if (Token::Match(tok, "free|kfree ( %varid% ) ;", varid) ||
-        Token::Match(tok, "free|kfree ( %varid% -", varid))
+        Token::Match(tok, "free|kfree ( %varid% -", varid) ||
+        Token::Match(tok, "realloc ( %varid% , 0 ) ;", varid))
         return Malloc;
 
     if (Token::Match(tok, "g_free ( %varid% ) ;", varid) ||
@@ -285,7 +286,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         return NewArray;
 
     if (Token::simpleMatch(tok, std::string("free ( " + varname + " ) ;").c_str()) ||
-        Token::simpleMatch(tok, std::string("kfree ( " + varname + " ) ;").c_str()))
+        Token::simpleMatch(tok, std::string("kfree ( " + varname + " ) ;").c_str()) ||
+        Token::simpleMatch(tok, std::string("realloc ( " + varname + " , 0 ) ;").c_str()))
         return Malloc;
 
     if (Token::simpleMatch(tok, std::string("g_free ( " + varname + " ) ;").c_str()))
