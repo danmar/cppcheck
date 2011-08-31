@@ -2713,6 +2713,20 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
+                              "    char* ptr = new ( nothrow ) char[16];\n"
+                              "    delete[] ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char* ptr = new ( std::nothrow ) char[16];\n"
+                              "    delete[] ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
                               "    char* ptr = new char;\n"
                               "    delete ptr;\n"
                               "}\n");
@@ -2817,6 +2831,22 @@ private:
                               "void foo()\n"
                               "{\n"
                               "    Fred* ptr = new Fred();\n"
+                              "    delete ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("struct Fred { int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* ptr = new (nothrow ) Fred();\n"
+                              "    delete ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
+
+        functionVariableUsage("struct Fred { int i; };\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    Fred* ptr = new (std::nothrow) Fred();\n"
                               "    delete ptr;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ptr' is allocated memory that is never used\n", errout.str());
