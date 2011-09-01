@@ -1147,7 +1147,7 @@ void Tokenizer::simplifyTypedef()
             typeStart = tok->next();
             offset = 1;
 
-            while (Token::Match(tok->tokAt(offset), "const|signed|unsigned|struct|enum") ||
+            while (Token::Match(tok->tokAt(offset), "const|signed|unsigned|struct|enum %type%") ||
                    (tok->tokAt(offset + 1) && tok->tokAt(offset + 1)->isStandardType()))
                 offset++;
 

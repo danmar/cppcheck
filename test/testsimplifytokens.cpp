@@ -269,6 +269,7 @@ private:
         TEST_CASE(simplifyTypedef101); // ticket #3003 (segmentation fault)
         TEST_CASE(simplifyTypedef102); // ticket #3004
         TEST_CASE(simplifyTypedef103); // ticket #3007
+        TEST_CASE(simplifyTypedef104); // ticket #3070
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5415,6 +5416,13 @@ private:
                             "    Fred Fred;\n"
                             "}\n";
         sizeof_(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef104() // ticket #3070
+    {
+        const char code[] = "typedef int (*in_func) (void FAR *, unsigned char FAR * FAR *);\n";
+        ASSERT_EQUALS(";", sizeof_(code));
         ASSERT_EQUALS("", errout.str());
     }
 
