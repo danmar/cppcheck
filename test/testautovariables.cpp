@@ -98,6 +98,8 @@ private:
 
         // global namespace
         TEST_CASE(testglobalnamespace);
+
+        TEST_CASE(returnParameterAddress);
     }
 
 
@@ -562,6 +564,16 @@ private:
               "}");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnParameterAddress()
+    {
+        check("int* foo(int y)\n"
+              "{\n"
+              "  return &y;\n"
+              "}\n");
+
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return the address of function parameter 'y'\n", errout.str());
     }
 
 };

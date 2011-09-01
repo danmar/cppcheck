@@ -89,6 +89,7 @@ private:
     void errorReturnAutocstr(const Token *tok);
     void errorReturnTempPointer(const Token *tok);
     void errorInvalidDeallocation(const Token *tok);
+    void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -101,6 +102,7 @@ private:
         c.errorReturnAutocstr(0);
         c.errorReturnTempPointer(0);
         c.errorInvalidDeallocation(0);
+        c.errorReturnAddressOfFunctionParameter(0, "parameter");
     }
 
     std::string myName() const
@@ -114,7 +116,8 @@ private:
                "Check:\n"
                "* returning a pointer to auto or temporary variable\n"
                "* assigning address of an variable to an effective parameter of a function\n"
-               "* returning reference to local/temporary variable\n";
+               "* returning reference to local/temporary variable\n"
+               "* returning address of function parameter\n";
     }
 };
 /// @}

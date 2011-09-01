@@ -165,6 +165,12 @@ void CheckAutoVariables::autoVariables()
             {
                 errorReturnAddressToAutoVariable(tok);
             }
+            else if (Token::Match(tok, "return & %var% ;") && tok->tokAt(2)->varId())
+            {
+                const Variable * var1 = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
+                if (var1 && var1->isArgument() && var1->typeStartToken() == var1->typeEndToken())
+                    errorReturnAddressOfFunctionParameter(tok, tok->strAt(2));
+            }
             // Invalid pointer deallocation
             else if (Token::Match(tok, "free ( %var% ) ;") && isAutoVarArray(tok->tokAt(2)->varId()))
             {
@@ -262,6 +268,12 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
                                 "the function ends. The address is invalid after the function ends and it "
                                 "might 'leak' from the function through the parameter.");
     }
+}
+
+void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::error, "returnAddressOfFunctionParameter",
+                "Return the address of function parameter '" + varname + "'");
 }
 
 //---------------------------------------------------------------------------
