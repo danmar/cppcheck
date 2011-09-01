@@ -273,7 +273,9 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
 void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "returnAddressOfFunctionParameter",
-                "Return the address of function parameter '" + varname + "'");
+                "Return the address of function parameter '" + varname + "'\n"
+                "Address of the function parameter '" + varname + "' is invalid after the function exits. "
+                "Function parameters are created into the stack. When the function exits the stack is deleted.");
 }
 
 //---------------------------------------------------------------------------
