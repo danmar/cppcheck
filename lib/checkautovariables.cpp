@@ -168,7 +168,7 @@ void CheckAutoVariables::autoVariables()
             else if (Token::Match(tok, "return & %var% ;") && tok->tokAt(2)->varId())
             {
                 const Variable * var1 = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
-                if (var1 && var1->isArgument())
+                if (var1 && var1->isArgument() && var1->typeEndToken()->str() != "&")
                     errorReturnAddressOfFunctionParameter(tok, tok->strAt(2));
             }
             // Invalid pointer deallocation

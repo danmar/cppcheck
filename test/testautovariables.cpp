@@ -593,6 +593,13 @@ private:
               "}\n");
 
         ASSERT_EQUALS("[test.cpp:3]: (error) Return the address of function parameter 'y'\n", errout.str());
+
+        check("const int * foo(const int & y)\n"
+              "{\n"
+              "  return &y;\n"
+              "}\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
 };
