@@ -1146,8 +1146,25 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 {
                     arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
                 }
+                // Is any array index out of bounds?
+                else if (totalIndex != totalElements)
+                {
+                    // check each index for overflow
+                    for (unsigned int i = 0; i < indexes.size(); ++i)
+                    {
+                        if (indexes[i] >= arrayInfo.num(i))
+                        {
+                            // The access is still within the memory range for the array
+                            // so it may be intentional.
+                            if (_settings->inconclusive)
+                            {
+                                arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
+                                break; // only warn about the first one
+                            }
+                        }
+                    }
+                }
             }
-
         }
 
         // Loop..

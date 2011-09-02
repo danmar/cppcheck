@@ -109,6 +109,7 @@ private:
         TEST_CASE(array_index_31); // ticket #2120 - out of bounds in subfunction when type is unknown
         TEST_CASE(array_index_32);
         TEST_CASE(array_index_33); // ticket #3044
+        TEST_CASE(array_index_34); // ticket #3063
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1090,6 +1091,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void array_index_34() // ticket #3063
+    {
+        check("void foo() {\n"
+              "    int y[2][2][2];\n"
+              "    y[0][2][0] = 0;\n"
+              "    y[0][0][2] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'y[2][2][2]' index y[0][2][0] out of bounds\n"
+                      "[test.cpp:4]: (error) Array 'y[2][2][2]' index y[0][0][2] out of bounds\n", errout.str());
+    }
+
     void array_index_multidim()
     {
         check("void f()\n"
@@ -1153,7 +1165,7 @@ private:
               "  char a[10][10][10];\n"
               "  a[2*3][4*3][2] = 'a';\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][12][2] out of bounds\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][12][2] out of bounds\n", errout.str());
 
         check("void f()\n"
               "{\n"
