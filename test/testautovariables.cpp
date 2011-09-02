@@ -111,7 +111,7 @@ private:
               "    int num = 2;\n"
               "    *res = &num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
 
         check("void func1(int **res)\n"
               "{\n"
@@ -138,7 +138,7 @@ private:
               "    int num = 2;\n"
               "    *res = &num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
 
         check("class Fred {\n"
               "    void func1(int **res);\n"
@@ -168,7 +168,7 @@ private:
               "    int x[100];\n"
               "    *p = x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
     void testautovar4() // ticket #2928
@@ -195,7 +195,7 @@ private:
               "    char a;\n"
               "    ab->a = &a;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
     void testautovar6() // ticket #2931
@@ -212,7 +212,7 @@ private:
               "    char a[10];\n"
               "    x->str = a;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
     void testautovar_array1()

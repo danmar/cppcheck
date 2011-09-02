@@ -107,7 +107,7 @@ void CheckAutoVariables::autoVariables()
             {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId());
                 if (var && (!var->isClass() || var->type()))
-                    errorAutoVariableAssignment(tok, false);
+                    errorAutoVariableAssignment(tok->next(), false);
             }
             else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%"))
             {
@@ -119,7 +119,7 @@ void CheckAutoVariables::autoVariables()
                     {
                         const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(6)->varId());
                         if (var2 && var2->isLocal() && !var2->isStatic())
-                            errorAutoVariableAssignment(tok, _settings->inconclusive);
+                            errorAutoVariableAssignment(tok->next(), _settings->inconclusive);
                     }
                 }
                 tok = tok->tokAt(6);
@@ -134,7 +134,7 @@ void CheckAutoVariables::autoVariables()
                     {
                         const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId());
                         if (var2 && var2->isLocal() && var2->isArray() && !var2->isStatic())
-                            errorAutoVariableAssignment(tok, _settings->inconclusive);
+                            errorAutoVariableAssignment(tok->next(), _settings->inconclusive);
                     }
                 }
                 tok = tok->tokAt(5);
@@ -146,13 +146,13 @@ void CheckAutoVariables::autoVariables()
                 {
                     const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(4)->varId());
                     if (var2 && var2->isLocal() && var2->isArray() && !var2->isStatic())
-                        errorAutoVariableAssignment(tok, false);
+                        errorAutoVariableAssignment(tok->next(), false);
                 }
                 tok = tok->tokAt(4);
             }
             else if (Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(7)))
             {
-                errorAutoVariableAssignment(tok, false);
+                errorAutoVariableAssignment(tok->next(), false);
             }
             // Critical return
             else if (Token::Match(tok, "return & %var% ;") && isAutoVar(tok->tokAt(2)->varId()))
