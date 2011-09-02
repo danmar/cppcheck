@@ -73,6 +73,7 @@ private:
         TEST_CASE(testautovar4); // ticket #2928
         TEST_CASE(testautovar5); // ticket #2926
         TEST_CASE(testautovar6); // ticket #2931
+        TEST_CASE(testautovar7); // ticket #3066
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -213,6 +214,17 @@ private:
               "    x->str = a;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
+    }
+
+    void testautovar7() // ticket #3066
+    {
+        check("struct txt_scrollpane_s * TXT_NewScrollPane(struct txt_widget_s * target)\n"
+              "{\n"
+              "    struct txt_scrollpane_s * scrollpane;\n"
+              "    target->parent = &scrollpane->widget;\n"
+              "    return scrollpane;\n"
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar_array1()

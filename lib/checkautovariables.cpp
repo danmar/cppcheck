@@ -118,7 +118,7 @@ void CheckAutoVariables::autoVariables()
                     if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-2), "%type% *"))
                     {
                         const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(6)->varId());
-                        if (var2 && var2->isLocal() && !var2->isStatic())
+                        if (var2 && var2->isLocal() && !var2->isStatic() && !Token::simpleMatch(var2->typeEndToken(), "*"))
                             errorAutoVariableAssignment(tok->next(), _settings->inconclusive);
                     }
                 }
