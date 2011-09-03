@@ -376,6 +376,11 @@ private:
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
         TEST_CASE(simplifyVarDecl2); // ticket # 2834 segmentation fault
         TEST_CASE(return_strncat); // ticket # 2860 Returning value of strncat() reported as memory leak
+
+        // #3069 : for loop with 1 iteration
+        // for (x=0;x<1;x++) { .. }
+        // The for is redundant
+        TEST_CASE(removeRedundantFor);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -7384,6 +7389,27 @@ private:
                       "strncat ( temp , \"a\" , 1 ) ; "
                       "return temp ; "
                       "}", tok(code, true));
+    }
+
+    void removeRedundantFor() // ticket #3069
+    {
+        {
+            const char code[] = "void f() {"
+                                "    for(x=0;x<1;x++) {"
+                                "        y = 1;"
+                                "    }"
+                                "}";
+            ASSERT_EQUALS("void f ( ) { { y = 1 ; } x = 1 ; }", tok(code, true));
+        }
+
+        {
+            const char code[] = "void f() {"
+                                "    for(x=0;x<1;x++) {"
+                                "        y = 1 + x;"
+                                "    }"
+                                "}";
+            ASSERT_EQUALS("void f ( ) { x = 0 ; { y = 1 + x ; } x = 1 ; }", tok(code, true));
+        }
     }
 };
 

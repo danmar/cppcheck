@@ -4755,6 +4755,9 @@ bool Tokenizer::simplifyTokenList()
         modified |= simplifyCalculations();
     }
 
+    // simplify redundant for
+    removeRedundantFor();
+
     // Remove redundant parentheses in return..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -5002,6 +5005,105 @@ bool Tokenizer::removeReduntantConditions()
     }
 
     return ret;
+}
+
+void Tokenizer::removeRedundantFor()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "[;{}] for ( %var% = %num% ; %var% < %num% ; ++| %var% ++| ) {"))
+        {
+            // Same variable name..
+            const std::string varname(tok->tokAt(3)->str());
+            const unsigned int varid(tok->tokAt(3)->varId());
+            if (varname != tok->tokAt(7)->str())
+                continue;
+            const Token *vartok = tok->tokAt(11);
+            if (vartok->str() == "++")
+                vartok = vartok->next();
+            if (varname != vartok->str())
+                continue;
+
+            // Check that the difference of the numeric values is 1
+            const MathLib::bigint num1(MathLib::toLongNumber(tok->strAt(5)));
+            const MathLib::bigint num2(MathLib::toLongNumber(tok->strAt(9)));
+            if (num1 + 1 != num2)
+                continue;
+
+            // check how loop variable is used in loop..
+            bool read = false;
+            bool write = false;
+            unsigned int indentlevel = 0;
+            for (const Token *tok2 = tok->tokAt(2)->link(); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{")
+                    ++indentlevel;
+                else if (tok2->str() == "}")
+                {
+                    if (indentlevel <= 1)
+                        break;
+                    --indentlevel;
+                }
+
+                if (tok2->str() == varname)
+                {
+                    if (tok2->previous()->isArithmeticalOp() &&
+                        tok2->next() &&
+                        (tok2->next()->isArithmeticalOp() || tok2->next()->str() == ";"))
+                    {
+                        read = true;
+                    }
+                    else
+                    {
+                        read = write = true;
+                        break;
+                    }
+                }
+            }
+
+            // Simplify loop if loop variable isn't written
+            if (!write)
+            {
+                // remove "for ("
+                tok->deleteNext();
+                tok->deleteNext();
+
+                // If loop variable is read then keep assignment before
+                // loop body..
+                if (read)
+                {
+                    // goto ";"
+                    tok = tok->tokAt(4);
+                }
+                else
+                {
+                    // remove "x = 0 ;"
+                    tok->deleteNext();
+                    tok->deleteNext();
+                    tok->deleteNext();
+                    tok->deleteNext();
+                }
+
+                // remove "x < 1 ; x ++ )"
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+
+                // Add assignment after the loop body so the loop variable
+                // get the correct end value
+                Token *tok2 = tok->next()->link();
+                tok2->insertToken(";");
+                tok2->insertToken(MathLib::toString(num2));
+                tok2->insertToken("=");
+                tok2->insertToken(varname);
+                tok2->next()->varId(varid);
+            }
+        }
+    }
 }
 
 

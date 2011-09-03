@@ -360,6 +360,13 @@ public:
     bool removeReduntantConditions();
 
     /**
+     * Remove redundant for:
+     * "for (x=0;x<1;x++) { }" => "{ x = 1; }"
+     */
+    void removeRedundantFor();
+
+
+    /**
      * Reduces "; ;" to ";", except in "( ; ; )"
      */
     void removeRedundantSemicolons();
