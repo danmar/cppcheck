@@ -237,7 +237,7 @@ void CheckOther::checkBitwiseOnBoolean()
             {
                 const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->next()->varId());
                 if (var && (var->typeStartToken() == var->typeEndToken()) &&
-                    Token::Match(var->typeStartToken(), "bool|_Bool"))
+                    var->typeStartToken()->str() == "bool")
                 {
                     bitwiseOnBooleanError(tok->next(), tok->next()->str(), tok->strAt(2) == "&" ? "&&" : "||");
                 }

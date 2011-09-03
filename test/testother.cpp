@@ -2905,6 +2905,10 @@ private:
               "bValue++;\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) The use of a variable of type bool with the ++ postfix operator is always true and deprecated by the C++ Standard.\n", errout.str());
 
+        check("_Bool bValue = true;\n"
+              "bValue++;\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The use of a variable of type bool with the ++ postfix operator is always true and deprecated by the C++ Standard.\n", errout.str());
+
         check("void f(bool test){\n"
               "    test++;\n"
               "}");
