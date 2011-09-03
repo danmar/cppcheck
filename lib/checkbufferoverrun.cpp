@@ -1931,19 +1931,6 @@ void CheckBufferOverrun::negativeIndex()
                 const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->previous()->varId());
                 if (var && var->isArray())
                     negativeIndexError(tok, index);
-
-                // check if this variable is a member of a class/struct
-                else if (!var && Token::Match(tok2->tokAt(-3), "%var% ."))
-                {
-                    var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->tokAt(-3)->varId());
-                    if (var && var->type())
-                    {
-                        // get the variable type from the class/struct
-                        const Variable *var2 = var->type()->getVariable(tok2->previous()->str());
-                        if (var2 && var2->isArray())
-                            negativeIndexError(tok, index);
-                    }
-                }
             }
         }
     }
