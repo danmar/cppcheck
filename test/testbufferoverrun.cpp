@@ -114,7 +114,8 @@ private:
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
         TEST_CASE(array_index_calculation);
-        TEST_CASE(array_index_negative);
+        TEST_CASE(array_index_negative1);
+        TEST_CASE(array_index_negative2); // ticket #3063
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);   // FP: struct member. #1576
         TEST_CASE(array_index_for_break);  // FP: for,break
@@ -1278,7 +1279,7 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'arr[5]' index 11 out of bounds\n", errout.str());
     }
 
-    void array_index_negative()
+    void array_index_negative1()
     {
         // #948 - array index out of bound not detected 'a[-1] = 0'
         check("void f()\n"
@@ -1316,6 +1317,16 @@ private:
               "    return m[0][-1];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_negative2() // ticket #3063
+    {
+        check("struct TEST { char a[10]; };\n"
+              "void foo() {\n"
+              "    TEST test;\n"
+              "    test.a[-1] = 3;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 is out of bounds\n", errout.str());
     }
 
     void array_index_for_decr()

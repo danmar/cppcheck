@@ -1784,6 +1784,19 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     return tok;
 }
 
+const Variable *Scope::getVariable(const std::string &varname) const
+{
+    std::list<Variable>::const_iterator iter;
+
+    for (iter = varlist.begin(); iter != varlist.end(); ++iter)
+    {
+        if (iter->name() == varname)
+            return &*iter;
+    }
+
+    return NULL;
+}
+
 const Token* skipScopeIdentifiers(const Token* tok)
 {
     const Token* ret = tok;

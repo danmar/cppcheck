@@ -521,6 +521,13 @@ public:
      */
     const Token *checkVariable(const Token *tok, AccessControl varaccess);
 
+    /**
+     * @brief get variable from name
+     * @param varname name of variable
+     * @return pointer to variable
+     */
+    const Variable *getVariable(const std::string &varname) const;
+
 private:
     /**
      * @brief helper function for getVariableList()
