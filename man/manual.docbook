@@ -157,6 +157,14 @@ Checking path/file2.cpp...
         </varlistentry>
 
         <varlistentry>
+          <term>portability</term>
+
+          <listitem>
+            <para>portability warnings. 64-bit portability. code might work different on different compilers. etc.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
           <term>information</term>
 
           <listitem>
