@@ -510,7 +510,11 @@ private:
             // Used..
             if (Token::Match(tok.previous(), "[[(,+-*/|=] %var% ]|)|,|;|%op%"))
             {
-                use(checks, &tok);
+                // initialize reference variable
+                if (Token::Match(tok.tokAt(-3), "& %var% ="))
+                    bailOutVar(checks, tok.varId());
+                else
+                    use(checks, &tok);
                 return &tok;
             }
 

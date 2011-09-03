@@ -157,6 +157,13 @@ private:
 
         checkUninitVar("void foo()\n"
                        "{\n"
+                       "    int *x;\n"
+                       "    int *&y = x;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void foo()\n"
+                       "{\n"
                        "    int x = xyz::x;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
