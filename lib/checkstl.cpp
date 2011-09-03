@@ -848,7 +848,7 @@ bool CheckStl::isStlContainer(unsigned int varid)
 
 void CheckStl::size()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("performance"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())

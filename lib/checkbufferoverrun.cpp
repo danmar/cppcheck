@@ -1057,7 +1057,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         if (varid && Token::Match(tok, "= %varid% + %num% ;", varid))
         {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
-            if (index > size && _settings->isEnabled("style"))
+            if (index > size && _settings->isEnabled("portability"))
                 pointerOutOfBoundsError(tok->next(), "buffer");
             if (index >= size && Token::Match(tok->tokAt(-2), "[;{}] %varid% =", varid))
                 pointerIsOutOfBounds = true;
@@ -1276,7 +1276,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
-        if (_settings->isEnabled("style") && Token::Match(tok, "= %varid% + %num% ;", arrayInfo.varid()))
+        if (_settings->isEnabled("portability") && Token::Match(tok, "= %varid% + %num% ;", arrayInfo.varid()))
         {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
             if (index < 0 || index > arrayInfo.num(0))

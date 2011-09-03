@@ -45,7 +45,7 @@ private:
 
         Settings settings;
         settings.posix = true;
-        settings.addEnabled("style");
+        settings.addEnabled("portability");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

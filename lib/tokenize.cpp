@@ -10179,7 +10179,8 @@ void Tokenizer::removeUnnecessaryQualification()
                         continue;
                 }
 
-                unnecessaryQualificationError(tok, qualification);
+                if (_settings && _settings->isEnabled("portability"))
+                    unnecessaryQualificationError(tok, qualification);
 
                 tok->deleteThis();
                 tok->deleteThis();

@@ -120,6 +120,7 @@ private:
 
         Settings settings;
         settings.addEnabled("style");
+        settings.addEnabled("performance");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

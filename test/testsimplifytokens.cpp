@@ -383,6 +383,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.addEnabled("portability");
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);

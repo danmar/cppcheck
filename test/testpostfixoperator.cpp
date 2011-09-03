@@ -41,8 +41,8 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
-        settings.inconclusive = true;
+        settings.addEnabled("performance");
+        //settings.inconclusive = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

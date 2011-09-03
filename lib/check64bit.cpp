@@ -46,7 +46,7 @@ static bool isint(const Variable *var)
 
 void Check64BitPortability::pointerassignment()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("portability"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())

@@ -1576,7 +1576,7 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
 //---------------------------------------------------------------------------
 void CheckOther::checkConstantFunctionParameter()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("performance"))
         return;
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -2368,7 +2368,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
 //---------------------------------------------------------------------------
 void CheckOther::checkAlwaysTrueOrFalseStringCompare()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("style") && !_settings->isEnabled("performance"))
         return;
 
     const char pattern1[] = "strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% )";
@@ -2403,7 +2403,7 @@ void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::
                     "If the purpose is to compare these two strings, the comparison is unnecessary. "
                     "If the strings are supposed to be different, then there is a bug somewhere.");
     }
-    else
+    else if (_settings->isEnabled("performance"))
     {
         reportError(tok, Severity::performance, "staticStringCompare",
                     "Unnecessary comparison of static strings.\n"

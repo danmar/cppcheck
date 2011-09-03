@@ -213,6 +213,7 @@ private:
 
         Settings settings;
         settings.addEnabled("style");
+        settings.addEnabled("performance");
         settings.experimental = true;
 
         // Preprocess file..
@@ -840,7 +841,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
+        settings.addEnabled("performance");
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
