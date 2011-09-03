@@ -1064,6 +1064,14 @@ private:
 
         check("void foo(char *p) {\n"
               "    if (!p) {\n"
+              "        ab.abort();\n"
+              "    }\n"
+              "    *p = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char *p) {\n"
+              "    if (!p) {\n"
               "        switch (x) { }\n"
               "    }\n"
               "}\n");
