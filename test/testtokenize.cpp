@@ -53,6 +53,7 @@ private:
         TEST_CASE(tokenize17);  // #2759
         TEST_CASE(tokenize18);  // tokenize "(X&&Y)" into "( X && Y )" instead of "( X & & Y )"
         TEST_CASE(tokenize19);  // #3006 (segmentation fault)
+        TEST_CASE(tokenize20);  // replace C99 _Bool => bool
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -576,6 +577,11 @@ private:
     void tokenize19() // #3006 (segmentation fault)
     {
         tokenizeAndStringify("x < () <");
+    }
+
+    void tokenize20() // replace C99 _Bool => bool
+    {
+        ASSERT_EQUALS("bool a ; a = true ;", tokenizeAndStringify("_Bool a = true;"));
     }
 
     void wrong_syntax()

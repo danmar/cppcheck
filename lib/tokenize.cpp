@@ -145,6 +145,10 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     {
         str2 << std::strtoul(str + 2, NULL, 16);
     }
+    else if (strncmp(str, "_Bool", 5) == 0)
+    {
+        str2 << "bool";
+    }
     else
     {
         str2 << str;
