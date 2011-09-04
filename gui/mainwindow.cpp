@@ -475,6 +475,8 @@ Settings MainWindow::GetCppcheckSettings()
     }
 
     result.addEnabled("style");
+    result.addEnabled("performance");
+    result.addEnabled("portability");
     result.addEnabled("information");
     result.addEnabled("missingInclude");
     result.debug = false;
