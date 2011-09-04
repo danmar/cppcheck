@@ -111,6 +111,7 @@ private:
         TEST_CASE(array_index_32);
         TEST_CASE(array_index_33); // ticket #3044
         TEST_CASE(array_index_34); // ticket #3063
+        TEST_CASE(array_index_35); // ticket #2889
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -512,7 +513,9 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // This is not out of bounds because it is a variable length array and the index is within the memory allocated
+        // This is not out of bounds because it is a variable length array
+        // and the index is within the memory allocated.
+        /** @todo this works by accident because we ignore any access to this array */
         check("struct ABC\n"
               "{\n"
               "    char str[1];\n"
@@ -523,9 +526,10 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
               "    x->str[10] = 0;"
               "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:9]: (error) Array 'str[1]' index 10 out of bounds\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
-        // This is out of bounds because it is outside the memory allocated
+        // This is out of bounds because it is outside the memory allocated.
+        /** @todo this doesn't work because we ignore any access to this array */
         check("struct ABC\n"
               "{\n"
               "    char str[1];\n"
@@ -536,9 +540,10 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
               "    x->str[11] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' index 11 out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' index 11 out of bounds\n", "", errout.str());
 
         // This is out of bounds because it is outside the memory allocated
+        /** @todo this doesn't work because we ignore any access to this array */
         check("struct ABC\n"
               "{\n"
               "    char str[1];\n"
@@ -562,7 +567,7 @@ private:
               "    struct ABC x;\n"
               "    x.str[1] = 0;"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' index 1 out of bounds\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' index 1 out of bounds\n", errout.str());
 
         check("struct foo\n"
               "{\n"
@@ -1172,12 +1177,54 @@ private:
               "    ptest->b[10][2] = 4;\n"
               "    ptest->b[0][19] = 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'b[10][5]' index b[10][2] out of bounds\n"
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'a[10]' index 10 out of bounds\n"
+                      "[test.cpp:14]: (error) Array 'a[10]' index 10 out of bounds\n"
+                      "[test.cpp:10]: (error) Array 'b[10][5]' index b[10][2] out of bounds\n"
                       "[test.cpp:11]: (error) Array 'b[10][5]' index b[0][19] out of bounds\n"
                       "[test.cpp:15]: (error) Array 'b[10][5]' index b[10][2] out of bounds\n"
-                      "[test.cpp:16]: (error) Array 'b[10][5]' index b[0][19] out of bounds\n"
-                      "[test.cpp:9]: (error) Array 'a[10]' index 10 out of bounds\n"
-                      "[test.cpp:14]: (error) Array 'a[10]' index 10 out of bounds\n", errout.str());
+                      "[test.cpp:16]: (error) Array 'b[10][5]' index b[0][19] out of bounds\n", errout.str());
+
+        check("struct TEST\n"
+              "{\n"
+              "    char a[10][5];\n"
+              "};\n"
+              "void foo()\n"
+              "{\n"
+              "    TEST test;\n"
+              "    test.a[9][5] = 4;\n"
+              "    test.a[0][50] = 4;\n"
+              "    TEST *ptest;\n"
+              "    ptest = &test;\n"
+              "    ptest->a[9][5] = 4;\n"
+              "    ptest->a[0][50] = 4;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'a[10][5]' index a[9][5] out of bounds\n"
+                      "[test.cpp:9]: (error) Array 'a[10][5]' index a[0][50] out of bounds\n"
+                      "[test.cpp:12]: (error) Array 'a[10][5]' index a[9][5] out of bounds\n"
+                      "[test.cpp:13]: (error) Array 'a[10][5]' index a[0][50] out of bounds\n", errout.str());
+    }
+
+    void array_index_35() // ticket #2889
+    {
+        check("void f() {\n"
+              "    struct Struct { unsigned m_Var[1]; } s;\n"
+              "    s.m_Var[1] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'm_Var[1]' index 1 out of bounds\n", errout.str());
+
+        check("struct Struct { unsigned m_Var[1]; };\n"
+              "void f() {\n"
+              "    struct Struct s;\n"
+              "    s.m_Var[1] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'm_Var[1]' index 1 out of bounds\n", errout.str());
+
+        check("struct Struct { unsigned m_Var[1]; };\n"
+              "void f() {\n"
+              "    struct Struct * s = calloc(40);\n"
+              "    s->m_Var[1] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim()

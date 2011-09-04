@@ -1141,17 +1141,50 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 if (totalElements == 0)
                     continue;
 
+                // get the full variable name
+                std::string varname;
+                const Token *tok2 = tok->previous();
+                while (tok2 && Token::Match(tok2->tokAt(-1), "%var% ."))
+                {
+                    varname += (tok2->strAt(-1) + ".");
+                    tok2 = tok2->tokAt(-2);
+                }
+
                 // just taking the address?
-                const bool addr(Token::Match(tok->previous(), "[.&]") ||
-                                Token::simpleMatch(tok->tokAt(-2), "& ("));
+                const bool addr(Token::Match(tok2, "&") ||
+                                Token::simpleMatch(tok2->tokAt(-1), "& ("));
+
+                // is this a member variable?
+                if (varname.size() && tok2->next()->varId())
+                {
+                    // is this variable a pointer?
+                    const Variable *var1 =_tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->next()->varId());
+                    if (var1 && var1->typeEndToken()->str() == "*")
+                    {
+                        // is variable public struct member?
+                        if (var->scope()->type == Scope::eStruct && var->isPublic())
+                        {
+                            // last member of a struct with array size of 0 or 1 could be a variable struct
+                            if (var->dimensions().size() == 1 && var->dimension(0) < 2 &&
+                                var->index() == (var->scope()->varlist.size() - 1))
+                            {
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                // taking address of 1 past end?
+                if (addr && totalIndex == totalElements)
+                    continue;
 
                 // Is totalIndex in bounds?
-                if (totalIndex > totalElements || (!addr && totalIndex == totalElements))
+                if (totalIndex > totalElements)
                 {
                     arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
                 }
                 // Is any array index out of bounds?
-                else if (totalIndex != totalElements)
+                else
                 {
                     // check each index for overflow
                     for (unsigned int i = 0; i < indexes.size(); ++i)
