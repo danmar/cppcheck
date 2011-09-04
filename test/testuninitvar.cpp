@@ -322,6 +322,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int a(FArchive &arc) {\n"   // #3060 (initialization through operator<<)
+                       "    int *p;\n"
+                       "    arc << p;\n"
+                       "    return *p;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("int a()\n"
                        "{\n"
                        "    int ret;\n"
