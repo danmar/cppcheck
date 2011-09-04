@@ -60,6 +60,8 @@ private:
         TEST_CASE(includes2);
         TEST_CASE(enabledAll);
         TEST_CASE(enabledStyle);
+        TEST_CASE(enabledPerformance);
+        TEST_CASE(enabledPortability);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
         TEST_CASE(errorExitcode);
@@ -403,6 +405,38 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings.isEnabled("style"));
+        ASSERT(settings.isEnabled("performance"));
+        ASSERT(settings.isEnabled("portability"));
+        ASSERT(!settings.isEnabled("unusedFunction"));
+        ASSERT(!settings.isEnabled("missingInclude"));
+    }
+
+    void enabledPerformance()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--enable=performance", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(!settings.isEnabled("style"));
+        ASSERT(settings.isEnabled("performance"));
+        ASSERT(!settings.isEnabled("portability"));
+        ASSERT(!settings.isEnabled("unusedFunction"));
+        ASSERT(!settings.isEnabled("missingInclude"));
+    }
+
+    void enabledPortability()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--enable=portability", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(!settings.isEnabled("style"));
+        ASSERT(!settings.isEnabled("performance"));
+        ASSERT(settings.isEnabled("portability"));
+        ASSERT(!settings.isEnabled("unusedFunction"));
+        ASSERT(!settings.isEnabled("missingInclude"));
     }
 
     void enabledUnusedFunction()
