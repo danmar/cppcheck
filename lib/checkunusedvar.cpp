@@ -1144,8 +1144,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 variables.readAll(tok->next()->varId());
 
             // assignment
-            else if (Token::Match(tok, "*| (| ++|--| %var% ++|--| )| =") ||
-                     Token::Match(tok, "*| ( const| %type% *| ) %var% ="))
+            else if (!Token::Match(tok->tokAt(-2), "[;{}.] %var% (") &&
+                     (Token::Match(tok, "*| (| ++|--| %var% ++|--| )| =") ||
+                      Token::Match(tok, "*| ( const| %type% *| ) %var% =")))
             {
                 bool dereference = false;
                 bool pre = false;

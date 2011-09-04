@@ -84,6 +84,7 @@ private:
         TEST_CASE(localvar34); // ticket #2368
         TEST_CASE(localvar35); // ticket #2535
         TEST_CASE(localvar36); // ticket #2805
+        TEST_CASE(localvar37); // ticket #3078
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1396,6 +1397,15 @@ private:
                               "    int a, b;\n"
                               "    a = 2 * (b = 3);\n"
                               "    return a + b;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar37() // ticket #3078
+    {
+        functionVariableUsage("void f() {\n"
+                              "    int a = 2;\n"
+                              "    ints.at(a) = 0;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
