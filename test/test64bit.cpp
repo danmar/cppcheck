@@ -39,6 +39,7 @@ private:
         TEST_CASE(functionpar);
         TEST_CASE(structmember);
         TEST_CASE(ptrcompare);
+        TEST_CASE(ptrarithmetic);
     }
 
     void check(const char code[])
@@ -117,6 +118,28 @@ private:
               "    int a = (p != NULL);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void ptrarithmetic()
+    {
+        // #3073
+        check("void foo(int *p) {\n"
+              "    int x = 10;\n"
+              "    int *a = p + x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int *p) {\n"
+              "    int x = 10;\n"
+              "    int *a = x + p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int *p) {\n"
+              "    int x = 10;\n"
+              "    int *a = x * x;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 };
 
