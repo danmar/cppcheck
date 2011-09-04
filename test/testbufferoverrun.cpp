@@ -1102,6 +1102,30 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'y[2][2][2]' index y[0][2][0] out of bounds\n"
                       "[test.cpp:4]: (error) Array 'y[2][2][2]' index y[0][0][2] out of bounds\n", errout.str());
+
+        check("struct TEST\n"
+              "{\n"
+              "    char a[10];\n"
+              "    char b[10][5];\n"
+              "};\n"
+              "void foo()\n"
+              "{\n"
+              "    TEST test;\n"
+              "    test.a[10] = 3;\n"
+              "    test.b[10][2] = 4;\n"
+              "    test.b[0][19] = 4;\n"
+              "    TEST *ptest;\n"
+              "    ptest = &test;\n"
+              "    ptest->a[10] = 3;\n"
+              "    ptest->b[10][2] = 4;\n"
+              "    ptest->b[0][19] = 4;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'b[10][5]' index b[10][2] out of bounds\n"
+                      "[test.cpp:11]: (error) Array 'b[10][5]' index b[0][19] out of bounds\n"
+                      "[test.cpp:15]: (error) Array 'b[10][5]' index b[10][2] out of bounds\n"
+                      "[test.cpp:16]: (error) Array 'b[10][5]' index b[0][19] out of bounds\n"
+                      "[test.cpp:9]: (error) Array 'a[10]' index 10 out of bounds\n"
+                      "[test.cpp:14]: (error) Array 'a[10]' index 10 out of bounds\n", errout.str());
     }
 
     void array_index_multidim()
@@ -1988,9 +2012,7 @@ private:
               "        b[i] = b[i+1];\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("error",    // wanted result
-                           "",         // current result
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'b[7]' index 7 out of bounds\n", errout.str());
     }
 
     void buffer_overrun_19() // #2597 - class member with unknown type

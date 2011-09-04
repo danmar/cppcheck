@@ -1099,8 +1099,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             continue;
         }
 
-        else if (Token::Match(tok, "%varid% [ %num% ]", arrayInfo.varid()))
+        else if (Token::Match(tok, "%var% [ %num% ]") && tok->varId())
         {
+            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->varId());
+            if (!var || var->varId() != arrayInfo.varid())
+                continue;
+
             std::vector<MathLib::bigint> indexes;
             for (const Token *tok2 = tok->next(); Token::Match(tok2, "[ %num% ]"); tok2 = tok2->tokAt(3))
             {
@@ -1302,21 +1306,28 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         {
             ArrayInfo arrayInfo(var, _tokenizer);
             const Token *tok = var->nameToken();
-            while (tok && tok->str() != ";")
+            if (var->scope() && var->scope()->isClassOrStruct())
             {
-                if (tok->str() == "{")
-                {
-                    if (Token::simpleMatch(tok->previous(), "= {"))
-                        tok = tok->link();
-                    else
-                        break;
-                }
-                tok = tok->next();
+                tok = var->scope()->classEnd->next();
             }
-            if (!tok)
-                break;
-            if (tok->str() == "{")
-                tok = tok->next();
+            else
+            {
+                while (tok && tok->str() != ";")
+                {
+                    if (tok->str() == "{")
+                    {
+                        if (Token::simpleMatch(tok->previous(), "= {"))
+                            tok = tok->link();
+                        else
+                            break;
+                    }
+                    tok = tok->next();
+                }
+                if (!tok)
+                    break;
+                if (tok->str() == "{")
+                    tok = tok->next();
+            }
             checkScope(tok, arrayInfo);
         }
     }
