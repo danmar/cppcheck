@@ -44,7 +44,7 @@ class UninitVar : public ExecutionPath
 public:
     /** Startup constructor */
     UninitVar(Check *c)
-        : ExecutionPath(c, 0), pointer(false), array(false), alloc(false), strncpy_(false)
+        : ExecutionPath(c, 0), pointer(false), array(false), alloc(false), strncpy_(false), memset_nonzero(false)
     {
     }
 
@@ -60,7 +60,7 @@ private:
 
     /** internal constructor for creating extra checks */
     UninitVar(Check *c, unsigned int v, const std::string &name, bool p, bool a)
-        : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false), strncpy_(false)
+        : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false), strncpy_(false), memset_nonzero(false)
     {
     }
 
@@ -68,7 +68,7 @@ private:
     bool is_equal(const ExecutionPath *e) const
     {
         const UninitVar *c = static_cast<const UninitVar *>(e);
-        return (varname == c->varname && pointer == c->pointer && array == c->array && alloc == c->alloc && strncpy_ == c->strncpy_);
+        return (varname == c->varname && pointer == c->pointer && array == c->array && alloc == c->alloc && strncpy_ == c->strncpy_ && memset_nonzero == c->memset_nonzero);
     }
 
     /** variable name for this check */
@@ -85,6 +85,9 @@ private:
 
     /** is this variable initialized with strncpy (not always zero-terminated) */
     bool  strncpy_;
+
+    /** is this variable initialized but not zero-terminated (memset) */
+    bool  memset_nonzero;
 
     /** allocating pointer. For example : p = malloc(10); */
     static void alloc_pointer(std::list<ExecutionPath *> &checks, unsigned int varid)
@@ -224,6 +227,24 @@ private:
         }
     }
 
+    /** Initialize an array with memset (not zero). */
+    static void init_memset_nonzero(std::list<ExecutionPath *> &checks, const Token *tok)
+    {
+        const unsigned int varid(tok->varId());
+        if (!varid)
+            return;
+
+        std::list<ExecutionPath *>::const_iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            UninitVar *c = dynamic_cast<UninitVar *>(*it);
+            if (c && c->varId == varid)
+            {
+                c->memset_nonzero = true;
+            }
+        }
+    }
+
 
 
     /**
@@ -268,8 +289,8 @@ private:
                 CheckUninitVar *checkUninitVar = dynamic_cast<CheckUninitVar *>(c->owner);
                 if (checkUninitVar)
                 {
-                    if (c->strncpy_)
-                        checkUninitVar->uninitstringError(tok, c->varname);
+                    if (c->strncpy_ || c->memset_nonzero)
+                        checkUninitVar->uninitstringError(tok, c->varname, c->strncpy_);
                     else if (c->pointer && c->alloc)
                         checkUninitVar->uninitdataError(tok, c->varname);
                     else
@@ -677,6 +698,13 @@ private:
                     init_strncpy(checks, tok.tokAt(2));
                     return tok.next()->link();
                 }
+            }
+
+            // memset (not zero terminated)..
+            if (Token::Match(&tok, "memset ( %var% , !!0 , %num% )"))
+            {
+                init_memset_nonzero(checks, tok.tokAt(2));
+                return tok.next()->link();
             }
 
             if (Token::simpleMatch(&tok, "asm ( )"))
@@ -1131,9 +1159,9 @@ void CheckUninitVar::executionPaths()
     }
 }
 
-void CheckUninitVar::uninitstringError(const Token *tok, const std::string &varname)
+void CheckUninitVar::uninitstringError(const Token *tok, const std::string &varname, bool strncpy_)
 {
-    reportError(tok, Severity::error, "uninitstring", "Dangerous usage of '" + varname + "' (strncpy doesn't always 0-terminate it)");
+    reportError(tok, Severity::error, "uninitstring", "Dangerous usage of '" + varname + "'" + (strncpy_ ? " (strncpy doesn't always 0-terminate it)" : " (not 0-terminated)"));
 }
 
 void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varname)

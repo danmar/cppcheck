@@ -73,7 +73,7 @@ public:
     /** @brief new type of check: check execution paths */
     void executionPaths();
 
-    void uninitstringError(const Token *tok, const std::string &varname);
+    void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
 
@@ -82,7 +82,7 @@ public:
         CheckUninitVar c(0, settings, errorLogger);
 
         // error
-        c.uninitstringError(0, "varname");
+        c.uninitstringError(0, "varname", true);
         c.uninitdataError(0, "varname");
         c.uninitvarError(0, "varname");
     }
