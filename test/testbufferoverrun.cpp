@@ -2908,7 +2908,7 @@ private:
               " char c[6];\n"
               " strncpy(c,\"hello!\",sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'c' is not zero-terminated after the call to strncpy().\n", errout.str());
 
         check("void f()\n"
               "{\n"
