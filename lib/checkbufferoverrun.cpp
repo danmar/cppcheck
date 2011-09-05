@@ -155,22 +155,15 @@ void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
 }
 
 
-void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::string &varname, bool conclusive)
+void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::string &varname)
 {
-    if (conclusive)
-        reportError(tok, Severity::warning, "terminateStrncpy",
-                    "The buffer '" + varname + "' is not zero-terminated after the call to strncpy().\n"
-                    "The use of strncpy() usually indicates that the programmer wants to ensure "
-                    "the buffer is zero-terminated after the call. This will cause bugs later in the code if "
-                    "the code assumes buffer is zero-terminated.");
-    else
-        reportError(tok, Severity::warning, "terminateStrncpy",
-                    "The buffer '" + varname + "' may not be zero-terminated after the call to strncpy().\n"
-                    "The use of strncpy() usually indicates that the programmer wants to ensure "
-                    "the buffer is zero-terminated after the call. However if the (buffer) size given for "
-                    "the strncpy() call matches the actual buffer size strncpy() does not add the "
-                    "zero at the end of the buffer. This may cause bugs later in the code if "
-                    "the code assumes buffer is zero-terminated.");
+    reportError(tok, Severity::warning, "terminateStrncpy",
+                "The buffer '" + varname + "' may not be zero-terminated after the call to strncpy().\n"
+                "The use of strncpy() usually indicates that the programmer wants to ensure "
+                "the buffer is zero-terminated after the call. However if the (buffer) size given for "
+                "the strncpy() call matches the actual buffer size strncpy() does not add the "
+                "zero at the end of the buffer. This may cause bugs later in the code if "
+                "the code assumes buffer is zero-terminated.");
 }
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
@@ -178,10 +171,10 @@ void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
     reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long cmd-line args");
 }
 
-void CheckBufferOverrun::terminateMemcpyError(const Token *tok, const std::string &varname)
+void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function)
 {
-    reportError(tok, Severity::warning, "terminateMemcpy",
-                "The buffer '" + varname + "' is not zero-terminated after the call to memcpy().\n"
+    reportError(tok, Severity::warning, "bufferNotZeroTerminated",
+                "The buffer '" + varname + "' is not zero-terminated after the call to " + function + "().\n"
                 "This will cause bugs later in the code if the code assumes buffer is zero-terminated.");
 }
 
@@ -1234,18 +1227,13 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             checkFunctionCall(tok, arrayInfo);
         }
 
-        if (Token::Match(tok, "strncpy|memcpy ( %varid% , %str% , %num% )", arrayInfo.varid()))
+        if (Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", arrayInfo.varid()))
         {
             unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
             if (Token::getStrLength(tok->tokAt(4)) >= total_size && total_size == num)
             {
                 if (_settings->inconclusive)
-                {
-                    if (tok->str() == "strncpy")
-                        terminateStrncpyError(tok, tok->strAt(2), true);
-                    else
-                        terminateMemcpyError(tok, tok->strAt(2));
-                }
+                    bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
             }
         }
 
@@ -1271,7 +1259,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                             {
                                 // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
                                 if (_settings->isEnabled("style") && _settings->inconclusive)
-                                    terminateStrncpyError(tok, tok->strAt(2), false);
+                                    terminateStrncpyError(tok, tok->strAt(2));
                             }
 
                             break;

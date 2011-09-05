@@ -231,6 +231,8 @@ private:
 
         // Access array and then check if the used index is within bounds
         TEST_CASE(arrayIndexThenCheck);
+
+        TEST_CASE(bufferNotZeroTerminated);
     }
 
 
@@ -2583,13 +2585,6 @@ private:
               "    memchr(a, b, 10);\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", "", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    char c[6];\n"
-              "    memcpy(c,\"hello!\",sizeof(c));\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'c' is not zero-terminated after the call to memcpy().\n", errout.str());
     }
 
     // ticket #2121 - buffer access out of bounds when using uint32_t
@@ -3314,6 +3309,30 @@ private:
               "    }"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Array index i is used before limits check\n", errout.str());
+    }
+
+    void bufferNotZeroTerminated()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char c[6];\n"
+              "    strncpy(c,\"hello!\",sizeof(c));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'c' is not zero-terminated after the call to strncpy().\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char c[6];\n"
+              "    memcpy(c,\"hello!\",sizeof(c));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'c' is not zero-terminated after the call to memcpy().\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char c[6];\n"
+              "    memmove(c,\"hello!\",sizeof(c));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'c' is not zero-terminated after the call to memmove().\n", errout.str());
     }
 };
 
