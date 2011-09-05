@@ -1075,6 +1075,12 @@ private:
                        "        char *b = (a+2) & 7;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"   // Ticket #3050
+                       "    char a[2];\n"
+                       "    printf(\"%s\", a);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
     }
 
     // alloc..

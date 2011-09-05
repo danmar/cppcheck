@@ -118,6 +118,15 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         if (functionNames2.find(tok.str()) != functionNames2.end())
             var.push_back(tok.tokAt(4));
     }
+
+    // TODO: Handle sprintf/printf better.
+    if (Token::Match(&tok, "printf ( %str% , %var% ,|)") && tok.tokAt(4)->varId() > 0)
+    {
+        const std::string &formatstr(tok.tokAt(2)->str());
+        const std::string::size_type pos = formatstr.find("%");
+        if (pos != std::string::npos && formatstr.compare(pos,2,"%s") == 0)
+            var.push_back(tok.tokAt(4));
+    }
 }
 
 
