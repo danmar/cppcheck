@@ -2554,6 +2554,6 @@ void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varn
 {
     reportError(tok, Severity::style, "unsignedPositive",
                 "Checking if unsigned variable '" + varname + "' is positive is always true.\n"
-                "An unsigned variable will never be positive so it is either pointless or "
+                "An unsigned variable will always be positive so it is either pointless or "
                 "an error to check if it is.");
 }
