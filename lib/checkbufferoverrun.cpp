@@ -1002,7 +1002,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->tokAt(4)->varId());
             if (var && var->isArray() && var->dimensions().size() == 1)
             {
-                const std::size_t len = var->dimension(0);
+                const std::size_t len = (std::size_t)var->dimension(0);
                 if (total_size > 0 && len > (unsigned int)total_size)
                 {
                     if (_settings->inconclusive)
@@ -1230,7 +1230,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", arrayInfo.varid()))
         {
             unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
-            if (Token::getStrLength(tok->tokAt(4)) >= total_size && total_size == num)
+            if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size && (unsigned int)total_size == num)
             {
                 if (_settings->inconclusive)
                     bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
