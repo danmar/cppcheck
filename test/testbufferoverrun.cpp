@@ -1139,7 +1139,7 @@ private:
               "    }\n"
               "    int m_x[1];\n"
               "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_x[1]' index 1 out of bounds\n","", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_x[1]' index 1 out of bounds\n", errout.str());
     }
 
     void array_index_33()

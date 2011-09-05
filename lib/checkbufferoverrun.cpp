@@ -1473,6 +1473,41 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
 void CheckBufferOverrun::checkStructVariable()
 {
+    const SymbolDatabase * symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    // find every class and struct
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
+    {
+        // only check classes and structures
+        if (!scope->isClassOrStruct())
+            continue;
+
+        // check all variables
+        std::list<Variable>::const_iterator var;
+        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
+        {
+            // find all array variables
+            if (var->isArray())
+            {
+                ArrayInfo arrayInfo(&*var, _tokenizer);
+
+                // check each function for array variable usage
+                std::list<Function>::const_iterator func;
+                for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
+                {
+                    // check existing and non-empty function
+                    if (func->hasBody && func->start->next() != func->start->link())
+                    {
+                        const Token *tok = func->start->next();
+                        checkScope(tok, arrayInfo);
+                    }
+                }
+            }
+        }
+    }
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "{")
@@ -1518,29 +1553,6 @@ void CheckBufferOverrun::checkStructVariable()
             std::vector<std::string> varname;
             varname.push_back("");
             varname.push_back(arrayInfo.varname());
-
-            // Class member variable => Check functions
-            if (tok->str() == "class")
-            {
-                std::string func_pattern(structname + " :: %var% (");
-                const Token *tok3 = Token::findmatch(_tokenizer->tokens(), func_pattern.c_str());
-                while (tok3)
-                {
-                    for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
-                    {
-                        if (Token::Match(tok4, "[;{}]"))
-                            break;
-
-                        if (Token::simpleMatch(tok4, ") {"))
-                        {
-                            std::vector<std::string> v;
-                            checkScope(tok4->tokAt(2), v, static_cast<int>(arrayInfo.num(0)), static_cast<int>(arrayInfo.num(0) * arrayInfo.element_size()), arrayInfo.varid());
-                            break;
-                        }
-                    }
-                    tok3 = Token::findmatch(tok3->next(), func_pattern.c_str());
-                }
-            }
 
             for (const Token *tok3 = _tokenizer->tokens(); tok3; tok3 = tok3->next())
             {
