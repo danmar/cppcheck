@@ -178,6 +178,12 @@ void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
     reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long cmd-line args");
 }
 
+void CheckBufferOverrun::terminateMemcpyError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning, "terminateMemcpy",
+                "The buffer '" + varname + "' is not zero-terminated after the call to memcpy().\n"
+                "This will cause bugs later in the code if the code assumes buffer is zero-terminated.");
+}
 
 //---------------------------------------------------------------------------
 
@@ -1228,13 +1234,18 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             checkFunctionCall(tok, arrayInfo);
         }
 
-        if (Token::Match(tok, "strncpy ( %varid% , %str% , %num% )", arrayInfo.varid()))
+        if (Token::Match(tok, "strncpy|memcpy ( %varid% , %str% , %num% )", arrayInfo.varid()))
         {
             unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
             if (Token::getStrLength(tok->tokAt(4)) >= total_size && total_size == num)
             {
                 if (_settings->inconclusive)
-                    terminateStrncpyError(tok, tok->strAt(2), true);
+                {
+                    if (tok->str() == "strncpy")
+                        terminateStrncpyError(tok, tok->strAt(2), true);
+                    else
+                        terminateMemcpyError(tok, tok->strAt(2));
+                }
             }
         }
 

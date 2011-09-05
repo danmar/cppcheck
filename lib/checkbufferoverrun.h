@@ -217,6 +217,7 @@ public:
     void outOfBoundsError(const Token *tok, const std::string &what);
     void sizeArgumentAsCharError(const Token *tok);
     void terminateStrncpyError(const Token *tok, const std::string &varname, bool conclusive);
+    void terminateMemcpyError(const Token *tok, const std::string &varname);
     void negativeIndexError(const Token *tok, MathLib::bigint index);
     void cmdLineArgsError(const Token *tok);
     void pointerOutOfBoundsError(const Token *tok, const std::string &object);	// UB when result of calculation is out of bounds
@@ -232,6 +233,7 @@ public:
         c.outOfBoundsError(0, "index");
         c.sizeArgumentAsCharError(0);
         c.terminateStrncpyError(0, "buffer", false);
+        c.terminateMemcpyError(0, "buffer");
         c.negativeIndexError(0, -1);
         c.cmdLineArgsError(0);
         c.pointerOutOfBoundsError(0, "array");
