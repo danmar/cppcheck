@@ -2649,7 +2649,7 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
 
-        // ticket 2495
+        // ticket #2495
         check("void f() {\n"
               "    static float col[][3]={\n"
               "      {1,0,0},\n"
@@ -2664,14 +2664,14 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
 
-        // ticket 155
+        // ticket #155
         check("void f() {\n"
               "    char buff1[1024*64],buff2[sizeof(buff1)*2];\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
 
-        // ticket 2510
+        // ticket #2510
         check("void f( int a[], int b) {\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}\n"
@@ -2679,7 +2679,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
                       "function argument returns the size of pointer.\n", errout.str());
 
-        // ticket 2510
+        // ticket #2510
         check("void f( int a[3] , int b[2] ) {\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}\n"
@@ -2687,7 +2687,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof for array given as "
                       "function argument returns the size of pointer.\n", errout.str());
 
-        // ticket 2510
+        // ticket #2510
         check("void f() {\n"
               "    char buff1[1024*64],buff2[sizeof(buff1)*(2+1)];\n"
               "}\n"
@@ -2757,6 +2757,12 @@ private:
               "    int ab = a - b ? 2 : 3;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for - and ?\n", errout.str());
+
+        // ticket #195
+        check("int f(int x, int y) {\n"
+              "    return x >> ! y ? 8 : 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for >> and ?\n", errout.str());
     }
 
     // clarify conditions with = and comparison

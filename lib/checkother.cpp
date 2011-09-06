@@ -87,6 +87,12 @@ void CheckOther::clarifyCalculation()
             else
                 continue;
 
+            if (cond && cond->str() == "!")
+                cond = cond->previous();
+
+            if (!cond)
+                continue;
+
             // calculation
             if (!cond->isArithmeticalOp())
                 continue;
