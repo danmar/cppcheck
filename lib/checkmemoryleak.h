@@ -28,7 +28,7 @@
  *
  * %Check for memory leaks
  *
- * The checking is split up into two specialized classes.
+ * The checking is split up into three specialized classes.
  * - CheckMemoryLeakInFunction can detect when a function variable is allocated but not deallocated properly.
  * - CheckMemoryLeakInClass can detect when a class variable is allocated but not deallocated properly.
  * - CheckMemoryLeakStructMember checks allocation/deallocation of structs and struct members
@@ -124,12 +124,24 @@ public:
     /**
      * @brief Is a typename the name of a class?
      * @param _tokenizer tokenizer
-     * @param typestr type name
+     * @param tok type token
+     * @param varid variable id
      * @return true if the type name is the name of a class
      */
     bool isclass(const Tokenizer *_tokenizer, const Token *typestr, unsigned int varid) const;
 
+    /**
+     * Report that there is a memory leak (new/malloc/etc)
+     * @param tok token where memory is leaked
+     * @param varname name of variable
+     */
     void memleakError(const Token *tok, const std::string &varname);
+
+    /**
+     * Report that there is a resource leak (fopen/popen/etc)
+     * @param tok token where resource is leaked
+     * @param varname name of variable
+     */
     void resourceLeakError(const Token *tok, const std::string &varname);
 
     /**
