@@ -128,7 +128,7 @@ public:
      * @param varid variable id
      * @return true if the type name is the name of a class
      */
-    bool isclass(const Tokenizer *_tokenizer, const Token *typestr, unsigned int varid) const;
+    bool isclass(const Tokenizer *_tokenizer, const Token *tok, unsigned int varid) const;
 
     /**
      * Report that there is a memory leak (new/malloc/etc)
@@ -276,23 +276,23 @@ public:
      * @return Newly allocated token array. Caller needs to release reserved
      * memory by calling Tokenizer::deleteTokens(returnValue);
      * Returned tokens:
-     * - alloc : the variable is allocated
-     * - assign : the variable is assigned a new value
-     * - break : corresponds to "break"
-     * - callfunc : a function call with unknown side effects
-     * - continue : corresponds to "continue"
-     * - dealloc : the variable is deallocated
-     * - goto : corresponds to a "goto"
-     * - if : there is an "if"
-     * - if(var) : corresponds with "if ( var != 0 )"
-     * - if(!var) : corresponds with "if ( var == 0 )"
-     * - ifv : the variable is used in some way in a "if"
-     * - loop : corresponds to either a "for" or a "while"
-     * - realloc : the variable is reallocated
-     * - return : corresponds to a "return"
-     * - use : unknown usage -> bail out checking of this execution path
-     * - &use : the address of the variable is taken
-     * - ::use : calling member function of class
+     * - "alloc" : the variable is allocated
+     * - "assign" : the variable is assigned a new value
+     * - "break" : corresponds to "break"
+     * - "callfunc" : a function call with unknown side effects
+     * - "continue" : corresponds to "continue"
+     * - "dealloc" : the variable is deallocated
+     * - "goto" : corresponds to a "goto"
+     * - "if" : there is an "if"
+     * - "if(var)" : corresponds with "if ( var != 0 )"
+     * - "if(!var)" : corresponds with "if ( var == 0 )"
+     * - "ifv" : the variable is used in some way in a "if"
+     * - "loop" : corresponds to either a "for" or a "while"
+     * - "realloc" : the variable is reallocated
+     * - "return" : corresponds to a "return"
+     * - "use" : unknown usage -> bail out checking of this execution path
+     * - "&use" : the address of the variable is taken
+     * - "::use" : calling member function of class
      */
     Token *getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool classmember, unsigned int sz);
 

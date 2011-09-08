@@ -66,7 +66,7 @@ public:
 
     /**
      * @brief Remove quotation marks (") from the path.
-     * @param originalPath path to be cleaned.
+     * @param path path to be cleaned.
      * @return Cleaned path without quotation marks.
      */
     static std::string removeQuotationMarks(const std::string &path);
