@@ -1747,6 +1747,51 @@ private:
               "    strcpy( abc->str, \"abcdef\" );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
+
+        check("struct ABC\n"
+              "{\n"
+              "    char str[5];\n"
+              "};\n"
+              "\n"
+              "static void f()\n"
+              "{\n"
+              "    struct ABC abc;\n"
+              "    strcpy( abc.str, \"abcdef\" );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
+
+        check("struct ABC\n"
+              "{\n"
+              "    char str[5];\n"
+              "};\n"
+              "\n"
+              "static void f(struct ABC &abc)\n"
+              "{\n"
+              "    strcpy( abc.str, \"abcdef\" );\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", "", errout.str());
+
+        check("static void f()\n"
+              "{\n"
+              "    struct ABC\n"
+              "    {\n"
+              "        char str[5];\n"
+              "    } abc;\n"
+              "    strcpy( abc.str, \"abcdef\" );\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds: abc.str\n", "", errout.str());
+
+        check("static void f()\n"
+              "{\n"
+              "    struct ABC\n"
+              "    {\n"
+              "        char str[5];\n"
+              "    };\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    strcpy( abc->str, \"abcdef\" );\n"
+              "    free(abc);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", "", errout.str());
     }
 
 
