@@ -1500,125 +1500,116 @@ void CheckBufferOverrun::checkStructVariable()
         if (!scope->isClassOrStruct())
             continue;
 
-        // check all variables
+        // check all variables to see if they are arrays
         std::list<Variable>::const_iterator var;
         for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
         {
             // find all array variables
             if (var->isArray())
             {
+                // create ArrayInfo from the array variable
                 ArrayInfo arrayInfo(&*var, _tokenizer);
 
-                // check each function for array variable usage
-                std::list<Function>::const_iterator func;
-                for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
+                std::list<Scope>::const_iterator func_scope;
+
+                // find every function
+                for (func_scope = symbolDatabase->scopeList.begin(); func_scope != symbolDatabase->scopeList.end(); ++func_scope)
                 {
-                    // check existing and non-empty function
-                    if (func->hasBody && func->start->next() != func->start->link())
+                    // only check functions
+                    if (func_scope->type != Scope::eFunction)
+                        continue;
+
+                    // is this a member function of this class/struct?
+                    if (func_scope->functionOf == &*scope)
                     {
-                        const Token *tok = func->start->next();
-                        checkScope(tok, arrayInfo);
+                        // only check non-empty function
+                        if (func_scope->function->start->next() != func_scope->function->start->link())
+                        {
+                            // start checking after the {
+                            const Token *tok = func_scope->function->start->next();
+                            checkScope(tok, arrayInfo);
+                        }
+                    }
+
+                    // not a member function of this class/struct
+                    else
+                    {
+                        // skip inner scopes..
+                        /** @todo false negatives: handle inner scopes someday */
+                        if (scope->nestedIn->isClassOrStruct())
+                            continue;
+
+                        // Only handling 1-dimensional arrays yet..
+                        /** @todo false negatives: handle multi-dimension arrays someday */
+                        if (arrayInfo.num().size() > 1)
+                            continue;
+
+                        // Skip array with only 0/1 elements because those are
+                        // often overrun intentionally
+                        /** @todo false negatives: only true if last member of struct and
+                         *  dynamically allocated with size larger that struct */
+                        /** @todo false negatives: calculate real array size based on allocated size */
+                        if (arrayInfo.num(0) <= 1)
+                            continue;
+
+                        std::vector<std::string> varname;
+                        varname.push_back("");
+                        varname.push_back(arrayInfo.varname());
+
+                        // search the function and it's parameters
+                        for (const Token *tok3 = func_scope->classDef; tok3 && tok3 != func_scope->classEnd; tok3 = tok3->next())
+                        {
+                            // search for the class/struct name
+                            if (tok3->str() != scope->className)
+                                continue;
+
+                            // Declare variable: Fred fred1;
+                            if (Token::Match(tok3->next(), "%var% ;"))
+                                varname[0] = tok3->strAt(1);
+
+                            // Declare pointer or reference: Fred *fred1
+                            else if (Token::Match(tok3->next(), "*|& %var% [,);=]"))
+                                varname[0] = tok3->strAt(2);
+
+                            else
+                                continue;
+
+                            // Goto end of statement.
+                            const Token *CheckTok = NULL;
+                            while (tok3 && tok3 != func_scope->classEnd)
+                            {
+                                // End of statement.
+                                if (tok3->str() == ";")
+                                {
+                                    CheckTok = tok3;
+                                    break;
+                                }
+
+                                // End of function declaration..
+                                if (Token::simpleMatch(tok3, ") ;"))
+                                    break;
+
+                                // Function implementation..
+                                if (Token::simpleMatch(tok3, ") {"))
+                                {
+                                    CheckTok = tok3->tokAt(2);
+                                    break;
+                                }
+
+                                tok3 = tok3->next();
+                            }
+
+                            if (!tok3)
+                                break;
+
+                            if (!CheckTok)
+                                continue;
+
+                            // Check variable usage..
+                            checkScope(CheckTok, varname, static_cast<int>(arrayInfo.num(0)), static_cast<int>(arrayInfo.num(0) * arrayInfo.element_size()), 0);
+                        }
                     }
                 }
-            }
-        }
-    }
-
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (tok->str() == "{")
-        {
-            tok = tok->link();
-        }
-
-        if (!Token::Match(tok, "struct|class %var% {|:"))
-            continue;
-
-        const std::string &structname = tok->next()->str();
-        const Token *tok2 = tok;
-
-        while (tok2 && tok2->str() != "{")
-            tok2 = tok2->next();
-
-        // Found a struct declaration. Search for arrays..
-        for (; tok2; tok2 = tok2->next())
-        {
-            // skip inner scopes..
-            if (tok2->next() && tok2->next()->str() == "{")
-            {
-                tok2 = tok2->next()->link();
-                continue;
-            }
-
-            if (tok2->str() == "}")
-                break;
-
-            ArrayInfo arrayInfo;
-            if (!arrayInfo.declare(tok2->next(), *_tokenizer))
-                continue;
-
-            // Only handling 1-dimensional arrays yet..
-            if (arrayInfo.num().size() > 1)
-                continue;
-
-            // Skip array with only 0/1 elements because those are
-            // often overrun intentionally
-            if (arrayInfo.num(0) <= 1)
-                continue;
-
-            std::vector<std::string> varname;
-            varname.push_back("");
-            varname.push_back(arrayInfo.varname());
-
-            for (const Token *tok3 = _tokenizer->tokens(); tok3; tok3 = tok3->next())
-            {
-                if (tok3->str() != structname)
-                    continue;
-
-                // Declare variable: Fred fred1;
-                if (Token::Match(tok3->next(), "%var% ;"))
-                    varname[0] = tok3->strAt(1);
-
-                // Declare pointer or reference: Fred *fred1
-                else if (Token::Match(tok3->next(), "*|& %var% [,);=]"))
-                    varname[0] = tok3->strAt(2);
-
-                else
-                    continue;
-
-                // Goto end of statement.
-                const Token *CheckTok = NULL;
-                while (tok3)
-                {
-                    // End of statement.
-                    if (tok3->str() == ";")
-                    {
-                        CheckTok = tok3;
-                        break;
-                    }
-
-                    // End of function declaration..
-                    if (Token::simpleMatch(tok3, ") ;"))
-                        break;
-
-                    // Function implementation..
-                    if (Token::simpleMatch(tok3, ") {"))
-                    {
-                        CheckTok = tok3->tokAt(2);
-                        break;
-                    }
-
-                    tok3 = tok3->next();
-                }
-
-                if (!tok3)
-                    break;
-
-                if (!CheckTok)
-                    continue;
-
-                // Check variable usage..
-                checkScope(CheckTok, varname, static_cast<int>(arrayInfo.num(0)), static_cast<int>(arrayInfo.num(0) * arrayInfo.element_size()), 0);
             }
         }
     }

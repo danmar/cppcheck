@@ -1779,7 +1779,7 @@ private:
               "    } abc;\n"
               "    strcpy( abc.str, \"abcdef\" );\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds: abc.str\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
 
         check("static void f()\n"
               "{\n"
@@ -1791,7 +1791,7 @@ private:
               "    strcpy( abc->str, \"abcdef\" );\n"
               "    free(abc);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
     }
 
 
@@ -3322,6 +3322,18 @@ private:
               "    x.buf[10] = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "public:\n"
+              "    struct X { char buf[10]; };\n"
+              "}\n"
+              "\n"
+              "void f()\n"
+              "{\n"
+              "    A::X x;\n"
+              "    x.buf[10] = 0;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.buf[10]' index 10 out of bounds\n", "", errout.str());
     }
 
     void getErrorMessages()
