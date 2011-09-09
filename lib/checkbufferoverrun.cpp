@@ -1544,14 +1544,6 @@ void CheckBufferOverrun::checkStructVariable()
                         if (arrayInfo.num().size() > 1)
                             continue;
 
-                        // Skip array with only 0/1 elements because those are
-                        // often overrun intentionally
-                        /** @todo false negatives: only true if last member of struct and
-                         *  dynamically allocated with size larger that struct */
-                        /** @todo false negatives: calculate real array size based on allocated size */
-                        if (arrayInfo.num(0) <= 1)
-                            continue;
-
                         std::vector<std::string> varname;
                         varname.push_back("");
                         varname.push_back(arrayInfo.varname());
@@ -1573,6 +1565,23 @@ void CheckBufferOverrun::checkStructVariable()
 
                             else
                                 continue;
+
+                            // Skip array with only 0/1 elements because those are
+                            // often overrun intentionally
+                            // is variable public struct member?
+                            if (scope->type == Scope::eStruct && var->isPublic())
+                            {
+                                // last member of a struct with array size of 0 or 1 could be a variable struct
+                                if (var->dimensions().size() == 1 && var->dimension(0) < 2 &&
+                                    var->index() == (scope->varlist.size() - 1))
+                                {
+                                    // dynamically allocated so could be variable sized array
+                                    /** @todo false negatives: only true if dynamically allocated with size larger that struct */
+                                    /** @todo false negatives: calculate real array size based on allocated size */
+                                    if (tok3->next()->str() == "*")
+                                        continue;
+                                }
+                            }
 
                             // Goto end of statement.
                             const Token *CheckTok = NULL;

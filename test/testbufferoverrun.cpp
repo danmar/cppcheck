@@ -515,6 +515,20 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // This is not out of bounds because it is not a variable length array
+        check("struct ABC\n"
+              "{\n"
+              "    char str[1];\n"
+              "    int x;\n"
+              "};\n"
+              "\n"
+              "static void f()\n"
+              "{\n"
+              "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
+              "    x->str[1] = 0;"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'str[1]' index 1 out of bounds\n", errout.str());
+
         // This is not out of bounds because it is a variable length array
         // and the index is within the memory allocated.
         /** @todo this works by accident because we ignore any access to this array */
@@ -2416,6 +2430,15 @@ private:
               "  struct Foo x;\n"
               "  sprintf(x.a, \"aa\");\n"
               "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
+
+        check("struct Foo { char a[1]; };\n"
+              "void f()\n"
+              "{\n"
+              "  struct Foo *x = malloc(10);\n"
+              "  sprintf(x.a, \"aa\");\n"
+              "  free(x);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2497,6 +2520,15 @@ private:
               "{\n"
               "  struct Foo x;\n"
               "  snprintf(x.a, 2, \"aa\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds\n", errout.str());
+
+        check("struct Foo { char a[1]; };\n"
+              "void f()\n"
+              "{\n"
+              "  struct Foo *x = malloc(10);\n"
+              "  snprintf(x.a, 2, \"aa\");\n"
+              "  free(x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
