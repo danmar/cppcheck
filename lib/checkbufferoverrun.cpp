@@ -1579,8 +1579,8 @@ void CheckBufferOverrun::checkStructVariable()
                 if (Token::Match(tok3->next(), "%var% ;"))
                     varname[0] = tok3->strAt(1);
 
-                // Declare pointer: Fred *fred1
-                else if (Token::Match(tok3->next(), "* %var% [,);=]"))
+                // Declare pointer or reference: Fred *fred1
+                else if (Token::Match(tok3->next(), "*|& %var% [,);=]"))
                     varname[0] = tok3->strAt(2);
 
                 else

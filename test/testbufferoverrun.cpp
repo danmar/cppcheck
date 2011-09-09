@@ -1769,7 +1769,7 @@ private:
               "{\n"
               "    strcpy( abc.str, \"abcdef\" );\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
 
         check("static void f()\n"
               "{\n"
