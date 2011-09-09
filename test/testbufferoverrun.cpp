@@ -2435,7 +2435,16 @@ private:
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
               "{\n"
-              "  struct Foo *x = malloc(10);\n"
+              "  struct Foo *x = malloc(sizeof(Foo));\n"
+              "  sprintf(x.a, \"aa\");\n"
+              "  free(x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
+
+        check("struct Foo { char a[1]; };\n"
+              "void f()\n"
+              "{\n"
+              "  struct Foo *x = malloc(sizeof(Foo) + 10);\n"
               "  sprintf(x.a, \"aa\");\n"
               "  free(x);\n"
               "}\n");
@@ -2526,7 +2535,16 @@ private:
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
               "{\n"
-              "  struct Foo *x = malloc(10);\n"
+              "  struct Foo *x = malloc(sizeof(Foo));\n"
+              "  snprintf(x.a, 2, \"aa\");\n"
+              "  free(x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds\n", errout.str());
+
+        check("struct Foo { char a[1]; };\n"
+              "void f()\n"
+              "{\n"
+              "  struct Foo *x = malloc(sizeof(Foo) + 10);\n"
               "  snprintf(x.a, 2, \"aa\");\n"
               "  free(x);\n"
               "}\n");

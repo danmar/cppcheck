@@ -1571,15 +1571,38 @@ void CheckBufferOverrun::checkStructVariable()
                             // is variable public struct member?
                             if (scope->type == Scope::eStruct && var->isPublic())
                             {
-                                // last member of a struct with array size of 0 or 1 could be a variable struct
+                                // last member of a struct with array size of 0 or 1 could be a variable sized struct
                                 if (var->dimensions().size() == 1 && var->dimension(0) < 2 &&
                                     var->index() == (scope->varlist.size() - 1))
                                 {
                                     // dynamically allocated so could be variable sized array
-                                    /** @todo false negatives: only true if dynamically allocated with size larger that struct */
-                                    /** @todo false negatives: calculate real array size based on allocated size */
                                     if (tok3->next()->str() == "*")
-                                        continue;
+                                    {
+                                        if ((Token::Match(tok3->tokAt(3), "; %var% = malloc ( %num% ) ;") ||
+                                             (Token::Match(tok3->tokAt(3), "; %var% = (") &&
+                                              Token::Match(tok3->tokAt(6)->link(), ") malloc ( %num% ) ;"))) &&
+                                            (tok3->strAt(4) == tok3->strAt(2)))
+                                        {
+                                            MathLib::bigint size;
+
+                                            // find size of allocation
+                                            if (tok3->strAt(3) == "(") // has cast
+                                                size = MathLib::toLongNumber(tok3->tokAt(6)->link()->strAt(3));
+                                            else
+                                                size = MathLib::toLongNumber(tok3->strAt(8));
+
+                                            if (size != 100) // magic number for size of class or struct
+                                            {
+                                                /** @todo false negatives: only true if dynamically allocated with size larger that struct */
+                                                /** @todo false negatives: calculate real array size based on allocated size */
+                                                continue;
+                                            }
+                                        }
+
+                                        // size unknown so assume it is a dynamically sized struct
+                                        else
+                                            continue;
+                                    }
                                 }
                             }
 
