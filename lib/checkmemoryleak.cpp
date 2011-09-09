@@ -71,7 +71,7 @@ static const char * const call_func_white_list[] =
     , "setbuf", "setbuffer", "sethostname", "setlinebuf", "setlocale" ,"setvbuf", "sizeof" ,"snprintf", "sprintf", "sscanf"
     , "stat", "stpcpy", "strcasecmp", "strcat", "strchr", "strcmp", "strcoll"
     , "strcpy", "strcspn", "strdup", "stricmp", "strlen", "strncasecmp", "strncat", "strncmp"
-    , "strncpy", "strpbrk","strrchr", "strspn", "strstr", "strtod", "strtol", "strtoul", "strxfrm", "switch"
+    , "strncpy", "strpbrk","strrchr", "strspn", "strstr", "strtod", "strtok", "strtol", "strtoul", "strxfrm", "switch"
     , "symlink", "sync_file_range", "system", "telldir", "tempnam", "time", "typeid", "unlink"
     , "utime", "utimes", "vasprintf", "vfprintf", "vfscanf", "vprintf"
     , "vscanf", "vsnprintf", "vsprintf", "vsscanf", "while", "wordexp","write", "writev"

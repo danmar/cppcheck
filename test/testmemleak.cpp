@@ -599,11 +599,14 @@ private:
             , "getservbyname", "getservbyport", "glob", "index", "inet_addr", "inet_aton", "inet_network"
             , "initgroups", "link", "mblen", "mbstowcs", "mbtowc", "mkdir", "mkfifo", "mknod", "obstack_printf"
             , "obstack_vprintf", "opendir", "parse_printf_format", "pathconf", "popen", "psignal", "putenv"
-            , "readlink", "regcomp", "strxfrm", "wordexp", "sizeof"
+            , "readlink", "regcomp", "strxfrm", "wordexp", "sizeof", "strtok"
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
-            ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list(call_func_white_list[i]));
+        {
+            bool ret = CheckMemoryLeakInFunction::test_white_list(call_func_white_list[i]);
+            ASSERT_EQUALS("", ret ? "" : call_func_white_list[i]);
+        }
     }
 
 
