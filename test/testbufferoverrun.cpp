@@ -545,7 +545,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // This is out of bounds because it is outside the memory allocated.
-        /** @todo this doesn't work because we ignore any access to this array */
+        /** @todo this doesn't work because of a bug in sizeof(struct)  */
         check("struct ABC\n"
               "{\n"
               "    char str[1];\n"
@@ -558,8 +558,21 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' index 11 out of bounds\n", "", errout.str());
 
+        // This is out of bounds because it is outside the memory allocated.
+        check("struct ABC\n"
+              "{\n"
+              "    char str[1];\n"
+              "};\n"
+              "\n"
+              "static void f()\n"
+              "{\n"
+              "    struct ABC* x = (struct ABC *)malloc(sizeof(ABC) + 10);\n"
+              "    x->str[11] = 0;"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[11]' index 11 out of bounds\n", errout.str());
+
         // This is out of bounds because it is outside the memory allocated
-        /** @todo this doesn't work because we ignore any access to this array */
+        /** @todo this doesn't work because of a bug in sizeof(struct) */
         check("struct ABC\n"
               "{\n"
               "    char str[1];\n"
@@ -571,6 +584,19 @@ private:
               "    x->str[1] = 0;"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' index 1 out of bounds\n", "", errout.str());
+
+        // This is out of bounds because it is outside the memory allocated
+        check("struct ABC\n"
+              "{\n"
+              "    char str[1];\n"
+              "};\n"
+              "\n"
+              "static void f()\n"
+              "{\n"
+              "    struct ABC* x = (struct ABC *)malloc(sizeof(ABC));\n"
+              "    x->str[1] = 0;"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' index 1 out of bounds\n", errout.str());
 
         // This is out of bounds because it is not a variable array
         check("struct ABC\n"

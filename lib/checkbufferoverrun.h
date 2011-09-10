@@ -165,6 +165,10 @@ public:
         {
             return _num[index];
         }
+        void num(size_t index, MathLib::bigint number)
+        {
+            _num[index] = number;
+        }
 
         /** size of each element */
         MathLib::bigint element_size() const

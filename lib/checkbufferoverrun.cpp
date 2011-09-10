@@ -1566,18 +1566,17 @@ void CheckBufferOverrun::checkStructVariable()
                             else
                                 continue;
 
-                            // Skip array with only 0/1 elements because those are
-                            // often overrun intentionally
-                            // is variable public struct member?
+                            // check for variable sized structure
                             if (scope->type == Scope::eStruct && var->isPublic())
                             {
-                                // last member of a struct with array size of 0 or 1 could be a variable sized struct
+                                // last member of a struct with array size of 0 or 1 could be a variable sized structure
                                 if (var->dimensions().size() == 1 && var->dimension(0) < 2 &&
                                     var->index() == (scope->varlist.size() - 1))
                                 {
-                                    // dynamically allocated so could be variable sized array
+                                    // dynamically allocated so could be variable sized structure
                                     if (tok3->next()->str() == "*")
                                     {
+                                        // check for allocation
                                         if ((Token::Match(tok3->tokAt(3), "; %var% = malloc ( %num% ) ;") ||
                                              (Token::Match(tok3->tokAt(3), "; %var% = (") &&
                                               Token::Match(tok3->tokAt(6)->link(), ") malloc ( %num% ) ;"))) &&
@@ -1591,15 +1590,29 @@ void CheckBufferOverrun::checkStructVariable()
                                             else
                                                 size = MathLib::toLongNumber(tok3->strAt(8));
 
-                                            if (size != 100) // magic number for size of class or struct
+                                            // We don't calculate the size of a structure even when we know
+                                            // the size of the members.  We just assign a length of 100 for
+                                            // any struct.  If the size is less than 100, we assume the
+                                            // programmer knew the size and specified it rather than using
+                                            // sizeof(struct). If the size is greater than 100, we assume
+                                            // the programmer specified the size as sizeof(struct) + number.
+                                            // Either way, this is just a guess and could be wrong.  The
+                                            // information to make the right decision has been simplified
+                                            // away by the time we get here.
+                                            if (size != 100) // magic number for size of struct
                                             {
-                                                /** @todo false negatives: only true if dynamically allocated with size larger that struct */
-                                                /** @todo false negatives: calculate real array size based on allocated size */
-                                                continue;
+                                                // check if a real size was specified and give up
+                                                // malloc(10) rather than malloc(sizeof(struct))
+                                                if (size < 100)
+                                                    continue;
+
+                                                // calculate real array size based on allocated size
+                                                MathLib::bigint elements = (size - 100) / arrayInfo.element_size();
+                                                arrayInfo.num(0, arrayInfo.num(0) + elements);
                                             }
                                         }
 
-                                        // size unknown so assume it is a dynamically sized struct
+                                        // size unknown so assume it is a variable sized structure
                                         else
                                             continue;
                                     }
