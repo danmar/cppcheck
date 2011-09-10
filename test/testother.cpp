@@ -42,6 +42,7 @@ private:
         TEST_CASE(zeroDiv3);
         TEST_CASE(zeroDiv4);
         TEST_CASE(zeroDiv5);
+        TEST_CASE(zeroDiv6);
 
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
@@ -363,6 +364,15 @@ private:
         check("void f()\n"
               "{ { {\n"
               "   long a = b / 0;\n"
+              "} } }\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
+    }
+
+    void zeroDiv6()
+    {
+        check("void f()\n"
+              "{ { {\n"
+              "   int a = b % 0;\n"
               "} } }\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
     }
