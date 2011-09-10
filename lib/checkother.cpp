@@ -1870,8 +1870,7 @@ void CheckOther::checkZeroDivision()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-
-        if (Token::Match(tok, "/ %num%") &&
+        if (Token::Match(tok, "[/%] %num%") &&
             MathLib::isInt(tok->next()->str()) &&
             MathLib::toLongNumber(tok->next()->str()) == 0L)
         {
