@@ -7831,13 +7831,15 @@ bool Tokenizer::simplifyCalculations()
                     tok->deleteThis();
                     ret = true;
                 }
-                else if (Token::Match(tok->previous(), "[=([,] 0 [+|]"))
+                else if (Token::Match(tok->previous(), "[=([,] 0 [+|]") ||
+                         Token::Match(tok->previous(), "return|case 0 [+|]"))
                 {
                     tok->deleteThis();
                     tok->deleteThis();
                     ret = true;
                 }
-                else if (Token::Match(tok->previous(), "[=[(,] 0 * %any% ,|]|)|;|%op%"))
+                else if (Token::Match(tok->previous(), "[=[(,] 0 * %any% ,|]|)|;|=|%op%") ||
+                         Token::Match(tok->previous(), "return|case 0 * %any% ,|:|;|=|%op%"))
                 {
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
@@ -7939,7 +7941,8 @@ bool Tokenizer::simplifyCalculations()
                    Token::Match(tok, "[[,(=<>+-*|&^] %num% [+-*/] %num% <<|>>") ||
                    Token::Match(tok, "<< %num% [+-*/] %num% <<") ||
                    Token::Match(tok, "[(,[] %num% [|&^] %num% [];,);]") ||
-                   Token::Match(tok, "(|%op% %num% [+-*/] %num% )|%op%"))
+                   Token::Match(tok, "(|%op% %num% [+-*/] %num% )|%op%") ||
+                   Token::Match(tok,"return|case %num% [+-*/] %num% ;|,|=|:|%op%"))
             {
                 tok = tok->next();
 
