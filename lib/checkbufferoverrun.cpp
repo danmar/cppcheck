@@ -858,8 +858,17 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
 }
 
 
-void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const MathLib::bigint size, const MathLib::bigint total_size, unsigned int varid)
+void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &info)
 {
+    // Only handling 1-dimensional arrays yet..
+    /** @todo false negatives: handle multi-dimension arrays someday */
+    if (info.num().size() > 1)
+        return;
+
+    const MathLib::bigint size = info.num(0);
+    const MathLib::bigint total_size = info.element_size() * info.num(0);
+    unsigned int varid = info.varid();
+
     std::string varnames;
     for (unsigned int i = 0; i < varname.size(); ++i)
         varnames += (i == 0 ? "" : " . ") + varname[i];
@@ -1477,7 +1486,8 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             continue;
 
         std::vector<std::string> v;
-        checkScope(tok->tokAt(nextTok), v, size, total_size, varid);
+        ArrayInfo temp(varid, "", total_size / size, size);
+        checkScope(tok->tokAt(nextTok), v, temp);
     }
 }
 //---------------------------------------------------------------------------
@@ -1537,11 +1547,6 @@ void CheckBufferOverrun::checkStructVariable()
                         // skip inner scopes..
                         /** @todo false negatives: handle inner scopes someday */
                         if (scope->nestedIn->isClassOrStruct())
-                            continue;
-
-                        // Only handling 1-dimensional arrays yet..
-                        /** @todo false negatives: handle multi-dimension arrays someday */
-                        if (arrayInfo.num().size() > 1)
                             continue;
 
                         std::vector<std::string> varname;
@@ -1651,7 +1656,9 @@ void CheckBufferOverrun::checkStructVariable()
                                 continue;
 
                             // Check variable usage..
-                            checkScope(CheckTok, varname, static_cast<int>(arrayInfo.num(0)), static_cast<int>(arrayInfo.num(0) * arrayInfo.element_size()), 0);
+                            ArrayInfo temp = arrayInfo;
+                            temp.varid(0);
+                            checkScope(CheckTok, varname, temp);
                         }
                     }
                 }

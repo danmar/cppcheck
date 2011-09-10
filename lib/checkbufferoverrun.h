@@ -110,9 +110,6 @@ public:
     /** Check for negative index */
     void negativeIndex();
 
-    /** Check for buffer overruns */
-    void checkScope(const Token *tok, const std::vector<std::string> &varname, const MathLib::bigint size, const MathLib::bigint total_size, unsigned int varid);
-
     /** Information about N-dimensional array */
     class ArrayInfo
     {
@@ -181,6 +178,10 @@ public:
         {
             return _varid;
         }
+        void varid(unsigned int id)
+        {
+            _varid = id;
+        }
 
         /** Variable name */
         const std::string &varname() const
@@ -191,6 +192,9 @@ public:
 
     /** Check for buffer overruns (based on ArrayInfo) */
     void checkScope(const Token *tok, const ArrayInfo &arrayInfo);
+
+    /** Check for buffer overruns */
+    void checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo);
 
     /** Check scope helper function - parse for body */
     void checkScopeForBody(const Token *tok, const ArrayInfo &arrayInfo, bool &bailout);
