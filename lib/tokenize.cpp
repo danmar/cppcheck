@@ -3667,6 +3667,10 @@ void Tokenizer::setVarId()
         if (tok != _tokens && !Token::Match(tok, "[;{}(,] %type%") && !Token::Match(tok, "[;{}(,] ::"))
             continue;
 
+        // Ticket #3104 - "if (NOT x)"
+        if (tok->str() == "(" && tok->next()->str() == "NOT")
+            continue;
+
         if (_errorLogger)
             _errorLogger->reportProgress(_files[0], "Tokenize (set variable id)", tok->progressValue());
 

@@ -124,6 +124,7 @@ private:
         TEST_CASE(localvarClass);
         TEST_CASE(localvarUnused);
         TEST_CASE(localvarFunction); // ticket #1799
+        TEST_CASE(localvarIfNOT);    // #3104 - if ( NOT var )
     }
 
     void checkStructMemberUsage(const char code[])
@@ -2978,6 +2979,16 @@ private:
                               "    const bool b = true;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
+    }
+
+    // ticket #3104 - false positive when variable is read with "if (NOT var)"
+    void localvarIfNOT()
+    {
+        functionVariableUsage("void f() {\n"
+                              "    bool x = foo();\n"
+                              "    if (NOT x) { }\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
