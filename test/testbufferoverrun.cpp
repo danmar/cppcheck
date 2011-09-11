@@ -502,6 +502,18 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[10]' index 10 out of bounds\n", errout.str());
 
+        check("struct ABC\n"
+              "{\n"
+              "    char str[10];\n"
+              "};\n"
+              "\n"
+              "static char f()\n"
+              "{\n"
+              "    struct ABC abc;\n"
+              "    return abc.str[10];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[10]' index 10 out of bounds\n", errout.str());
+
         // This is not out of bounds because it is a variable length array
         check("struct ABC\n"
               "{\n"
@@ -2769,12 +2781,20 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' index 10 out of bounds\n", errout.str());
 
         // ticket #1670 - false negative when using return
-        check("void f()\n"
+        check("char f()\n"
               "{\n"
               "    char *s = new int[10];\n"
               "    return s[10];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' index 10 out of bounds\n", errout.str());
+
+        check("struct Fred { char c[10]; };\n"
+              "char f()\n"
+              "{\n"
+              "    Fred *f = new Fred;\n"
+              "    return f->c[10];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'c[10]' index 10 out of bounds\n", errout.str());
 
         check("void foo()\n"
               "{\n"

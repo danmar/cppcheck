@@ -872,20 +872,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     }
 
     // Array index..
-    if (varid > 0)
-    {
-        if (Token::Match(tok, "%varid% [ %num% ]", varid))
-        {
-            const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2));
-            if (index >= size)
-            {
-                std::vector<MathLib::bigint> indexes;
-                indexes.push_back(index);
-                arrayIndexOutOfBoundsError(tok, info, indexes);
-            }
-        }
-    }
-    else if (Token::Match(tok, (varnames + " [ %num% ]").c_str()))
+    if ((varid > 0 && Token::Match(tok, "%varid% [ %num% ]", varid)) ||
+        (varid == 0 && Token::Match(tok, (varnames + " [ %num% ]").c_str())))
     {
         const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2 + varc));
         if (index >= size)
@@ -929,33 +917,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             break;
 
         // Array index..
-        if (varid > 0)
-        {
-            if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%varid% [ %num% ]", varid))
-            {
-                const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
-                if (index < 0 || index >= size)
-                {
-                    if (index > size || !Token::simpleMatch(tok->previous(), "& ("))
-                    {
-                        std::vector<MathLib::bigint> indexes;
-                        indexes.push_back(index);
-                        arrayIndexOutOfBoundsError(tok->next(), info, indexes);
-                    }
-                }
-            }
-            if (Token::Match(tok, "return %varid% [ %num% ]", varid))
-            {
-                const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
-                if (index < 0 || index >= size)
-                {
-                    std::vector<MathLib::bigint> indexes;
-                    indexes.push_back(index);
-                    arrayIndexOutOfBoundsError(tok->next(), info, indexes);
-                }
-            }
-        }
-        else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), (varnames + " [ %num% ]").c_str()))
+        if ((varid > 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && Token::Match(tok->next(), "%varid% [ %num% ]", varid))) ||
+            (varid == 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && Token::Match(tok->next(), (varnames + " [ %num% ]").c_str()))))
+
         {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3 + varc));
             if (index >= size)
@@ -964,10 +928,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 indexes.push_back(index);
                 arrayIndexOutOfBoundsError(tok->tokAt(1 + varc), info, indexes);
             }
-            tok = tok->tokAt(4);
+            tok = tok->tokAt(4 + varc);
             continue;
         }
-
 
         // memset, memcmp, memcpy, strncpy, fgets..
         if (varid == 0 && size > 0)
