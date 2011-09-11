@@ -195,7 +195,7 @@ void CheckOther::clarifyCondition()
             if (Token::Match(tok2, "[&|^]"))
             {
                 // don't write false positives when templates are used
-                if (Token::Match(tok, "<|>") && !code_is_c() && tok2->str() == "&")
+                if (Token::Match(tok, "<|>") && Token::Match(tok2, "& ,|>"))
                     continue;
 
                 clarifyConditionError(tok,false,true);
