@@ -1330,7 +1330,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             else if (Token::Match(tok, "; %var% ;"))
                 variables.readAll(tok->next()->varId());
 
-            if (Token::Match(tok, "++|-- %var%"))
+            else if (Token::Match(tok, "++|-- %var%"))
             {
                 if (tok->strAt(-1) != ";")
                     variables.use(tok->next()->varId());
