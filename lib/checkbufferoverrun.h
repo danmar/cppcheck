@@ -217,7 +217,6 @@ public:
      */
     void checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo);
 
-    void arrayIndexOutOfBoundsError(const Token *tok, MathLib::bigint size, MathLib::bigint index);
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void bufferOverrunError(const Token *tok, const std::string &varnames = "");
@@ -235,7 +234,9 @@ public:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckBufferOverrun c(0, settings, errorLogger);
-        c.arrayIndexOutOfBoundsError(0, 2, 2);
+        std::vector<MathLib::bigint> indexes;
+        indexes.push_back(2);
+        c.arrayIndexOutOfBoundsError(0, ArrayInfo(0, "array", 1, 2), indexes);
         c.bufferOverrunError(0, std::string("buffer"));
         c.strncatUsageError(0);
         c.outOfBoundsError(0, "index");

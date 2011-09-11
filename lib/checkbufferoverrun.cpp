@@ -47,21 +47,6 @@ CheckBufferOverrun instance;
 
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, MathLib::bigint size, MathLib::bigint index)
-{
-    if (size >= 1)
-    {
-        std::ostringstream errmsg;
-        errmsg << "Array '";
-        if (tok)
-            errmsg << tok->str();
-        else
-            errmsg << "array";
-        errmsg << "[" << size << "]' index " << index << " out of bounds";
-        reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str().c_str());
-    }
-}
-
 void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
 {
     std::ostringstream oss;
@@ -557,11 +542,15 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
             //printf("min_index = %d, max_index = %d, size = %d\n", min_index, max_index, size);
             if (min_index < 0 || max_index < 0)
             {
-                arrayIndexOutOfBoundsError(tok2, (int)arrayInfo.num(0), std::min(min_index, max_index));
+                std::vector<MathLib::bigint> indexes;
+                indexes.push_back(std::min(min_index, max_index));
+                arrayIndexOutOfBoundsError(tok2, arrayInfo, indexes);
             }
             if (min_index >= (int)arrayInfo.num(0) || max_index >= (int)arrayInfo.num(0))
             {
-                arrayIndexOutOfBoundsError(tok2, (int)arrayInfo.num(0), std::max(min_index, max_index));
+                std::vector<MathLib::bigint> indexes;
+                indexes.push_back(std::max(min_index, max_index));
+                arrayIndexOutOfBoundsError(tok2, arrayInfo, indexes);
             }
         }
     }
@@ -890,7 +879,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2));
             if (index >= size)
             {
-                arrayIndexOutOfBoundsError(tok, size, index);
+                std::vector<MathLib::bigint> indexes;
+                indexes.push_back(index);
+                arrayIndexOutOfBoundsError(tok, info, indexes);
             }
         }
     }
@@ -899,7 +890,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2 + varc));
         if (index >= size)
         {
-            arrayIndexOutOfBoundsError(tok->tokAt(varc), size, index);
+            std::vector<MathLib::bigint> indexes;
+            indexes.push_back(index);
+            arrayIndexOutOfBoundsError(tok->tokAt(varc), info, indexes);
         }
     }
 
@@ -945,7 +938,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 {
                     if (index > size || !Token::simpleMatch(tok->previous(), "& ("))
                     {
-                        arrayIndexOutOfBoundsError(tok->next(), size, index);
+                        std::vector<MathLib::bigint> indexes;
+                        indexes.push_back(index);
+                        arrayIndexOutOfBoundsError(tok->next(), info, indexes);
                     }
                 }
             }
@@ -954,7 +949,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
                 if (index < 0 || index >= size)
                 {
-                    arrayIndexOutOfBoundsError(tok->next(), size, index);
+                    std::vector<MathLib::bigint> indexes;
+                    indexes.push_back(index);
+                    arrayIndexOutOfBoundsError(tok->next(), info, indexes);
                 }
             }
         }
@@ -963,7 +960,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3 + varc));
             if (index >= size)
             {
-                arrayIndexOutOfBoundsError(tok->tokAt(1 + varc), size, index);
+                std::vector<MathLib::bigint> indexes;
+                indexes.push_back(index);
+                arrayIndexOutOfBoundsError(tok->tokAt(1 + varc), info, indexes);
             }
             tok = tok->tokAt(4);
             continue;
@@ -1486,7 +1485,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             continue;
 
         std::vector<std::string> v;
-        ArrayInfo temp(varid, "", total_size / size, size);
+        ArrayInfo temp(varid, tok->next()->str(), total_size / size, size);
         checkScope(tok->tokAt(nextTok), v, temp);
     }
 }
