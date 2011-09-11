@@ -188,6 +188,10 @@ public:
         {
             return _varname;
         }
+        void varname(const std::string &name)
+        {
+            _varname = name;
+        }
     };
 
     /** Check for buffer overruns (based on ArrayInfo) */

@@ -847,16 +847,16 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
 }
 
 
-void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &info)
+void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo)
 {
     // Only handling 1-dimensional arrays yet..
     /** @todo false negatives: handle multi-dimension arrays someday */
-    if (info.num().size() > 1)
+    if (arrayInfo.num().size() > 1)
         return;
 
-    const MathLib::bigint size = info.num(0);
-    const MathLib::bigint total_size = info.element_size() * info.num(0);
-    unsigned int varid = info.varid();
+    const MathLib::bigint size = arrayInfo.num(0);
+    const MathLib::bigint total_size = arrayInfo.element_size() * arrayInfo.num(0);
+    unsigned int varid = arrayInfo.varid();
 
     std::string varnames;
     for (unsigned int i = 0; i < varname.size(); ++i)
@@ -880,7 +880,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         {
             std::vector<MathLib::bigint> indexes;
             indexes.push_back(index);
-            arrayIndexOutOfBoundsError(tok->tokAt(varc), info, indexes);
+            arrayIndexOutOfBoundsError(tok->tokAt(varc), arrayInfo, indexes);
         }
     }
 
@@ -926,7 +926,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             {
                 std::vector<MathLib::bigint> indexes;
                 indexes.push_back(index);
-                arrayIndexOutOfBoundsError(tok->tokAt(1 + varc), info, indexes);
+                arrayIndexOutOfBoundsError(tok->tokAt(1 + varc), arrayInfo, indexes);
             }
             tok = tok->tokAt(4 + varc);
             continue;
@@ -935,22 +935,22 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // memset, memcmp, memcpy, strncpy, fgets..
         if (varid == 0 && size > 0)
         {
-            ArrayInfo arrayInfo(0U,
-                                varnames,
-                                (unsigned int)(total_size / size),
-                                (unsigned int)size);
+            ArrayInfo arrayInfo1(0U,
+                                 varnames,
+                                 (unsigned int)(total_size / size),
+                                 (unsigned int)size);
             if (Token::Match(tok, ("%var% ( " + varnames + " ,").c_str()))
-                checkFunctionParameter(*tok, 1, arrayInfo);
+                checkFunctionParameter(*tok, 1, arrayInfo1);
             if (Token::Match(tok, ("%var% ( %var% , " + varnames + " ,").c_str()))
-                checkFunctionParameter(*tok, 2, arrayInfo);
+                checkFunctionParameter(*tok, 2, arrayInfo1);
         }
 
         // Loop..
         if (Token::simpleMatch(tok, "for ("))
         {
-            const ArrayInfo arrayInfo(varid, varnames, (unsigned int)size, (unsigned int)total_size);
+            const ArrayInfo arrayInfo1(varid, varnames, (unsigned int)size, (unsigned int)total_size);
             bool bailout = false;
-            checkScopeForBody(tok, arrayInfo, bailout);
+            checkScopeForBody(tok, arrayInfo1, bailout);
             if (bailout)
                 break;
             continue;
@@ -1026,8 +1026,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             if (varid == 0)
                 continue;
 
-            const ArrayInfo arrayInfo(varid, varnames, size, total_size / size);
-            checkFunctionCall(tok, arrayInfo);
+            const ArrayInfo arrayInfo1(varid, varnames, size, total_size / size);
+            checkFunctionCall(tok, arrayInfo1);
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
@@ -1328,7 +1328,12 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             const Token *tok = var->nameToken();
             if (var->scope() && var->scope()->isClassOrStruct())
             {
-                tok = var->scope()->classEnd->next();
+                // Only handle multi-dimension member arrays because single
+                // dimension arrays are handled in another check.
+                if (var->dimensions().size() > 1)
+                    tok = var->scope()->classEnd->next();
+                else
+                    continue;
             }
             else
             {
@@ -1617,9 +1622,19 @@ void CheckBufferOverrun::checkStructVariable()
                             if (!CheckTok)
                                 continue;
 
+                            // The version of checkScope below doesn't handle multi-dimension arrays
+                            // yet so the other version of checkScope which does is used in another check.
+                            // Ignore this variable because it is a mult-dimension array.
+                            if (arrayInfo.num().size() > 1)
+                                continue;
+
                             // Check variable usage..
                             ArrayInfo temp = arrayInfo;
-                            temp.varid(0);
+                            temp.varid(0); // do variable lookup by variable and member names rather than varid
+                            std::string varnames; // use class and member name for messages
+                            for (unsigned int i = 0; i < varname.size(); ++i)
+                                varnames += (i == 0 ? "" : ".") + varname[i];
+                            temp.varname(varnames);
                             checkScope(CheckTok, varname, temp);
                         }
                     }

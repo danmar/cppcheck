@@ -500,7 +500,7 @@ private:
               "    struct ABC abc;\n"
               "    abc.str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[10]' index 10 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'abc.str[10]' index 10 out of bounds\n", errout.str());
 
         check("struct ABC\n"
               "{\n"
@@ -512,7 +512,7 @@ private:
               "    struct ABC abc;\n"
               "    return abc.str[10];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[10]' index 10 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'abc.str[10]' index 10 out of bounds\n", errout.str());
 
         // This is not out of bounds because it is a variable length array
         check("struct ABC\n"
@@ -539,7 +539,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
               "    x->str[1] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'str[1]' index 1 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'x.str[1]' index 1 out of bounds\n", errout.str());
 
         // This is not out of bounds because it is a variable length array
         // and the index is within the memory allocated.
@@ -581,7 +581,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(ABC) + 10);\n"
               "    x->str[11] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[11]' index 11 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[11]' index 11 out of bounds\n", errout.str());
 
         // This is out of bounds because it is outside the memory allocated
         /** @todo this doesn't work because of a bug in sizeof(struct) */
@@ -608,7 +608,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(ABC));\n"
               "    x->str[1] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' index 1 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[1]' index 1 out of bounds\n", errout.str());
 
         // This is out of bounds because it is not a variable array
         check("struct ABC\n"
@@ -621,7 +621,7 @@ private:
               "    struct ABC x;\n"
               "    x.str[1] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' index 1 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[1]' index 1 out of bounds\n", errout.str());
 
         check("struct foo\n"
               "{\n"
@@ -649,7 +649,7 @@ private:
               "{\n"
               "    abc->str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'str[10]' index 10 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'abc.str[10]' index 10 out of bounds\n", errout.str());
     }
 
 
@@ -667,7 +667,7 @@ private:
               "    struct ABC abc;\n"
               "    abc.str[SIZE] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Array 'str[10]' index 10 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Array 'abc.str[10]' index 10 out of bounds\n", errout.str());
     }
 
     void array_index_9()
@@ -757,7 +757,7 @@ private:
               "        abc->str[10] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:13]: (error) Array 'str[10]' index 10 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (error) Array 'abc.str[10]' index 10 out of bounds\n", errout.str());
     }
 
 
@@ -1231,12 +1231,12 @@ private:
               "    ptest->b[10][2] = 4;\n"
               "    ptest->b[0][19] = 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'a[10]' index 10 out of bounds\n"
-                      "[test.cpp:14]: (error) Array 'a[10]' index 10 out of bounds\n"
-                      "[test.cpp:10]: (error) Array 'b[10][5]' index b[10][2] out of bounds\n"
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'b[10][5]' index b[10][2] out of bounds\n"
                       "[test.cpp:11]: (error) Array 'b[10][5]' index b[0][19] out of bounds\n"
                       "[test.cpp:15]: (error) Array 'b[10][5]' index b[10][2] out of bounds\n"
-                      "[test.cpp:16]: (error) Array 'b[10][5]' index b[0][19] out of bounds\n", errout.str());
+                      "[test.cpp:16]: (error) Array 'b[10][5]' index b[0][19] out of bounds\n"
+                      "[test.cpp:9]: (error) Array 'test.a[10]' index 10 out of bounds\n"
+                      "[test.cpp:14]: (error) Array 'ptest.a[10]' index 10 out of bounds\n", errout.str());
 
         check("struct TEST\n"
               "{\n"
@@ -1264,14 +1264,14 @@ private:
               "    struct Struct { unsigned m_Var[1]; } s;\n"
               "    s.m_Var[1] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'm_Var[1]' index 1 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 's.m_Var[1]' index 1 out of bounds\n", errout.str());
 
         check("struct Struct { unsigned m_Var[1]; };\n"
               "void f() {\n"
               "    struct Struct s;\n"
               "    s.m_Var[1] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'm_Var[1]' index 1 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's.m_Var[1]' index 1 out of bounds\n", errout.str());
 
         check("struct Struct { unsigned m_Var[1]; };\n"
               "void f() {\n"
@@ -2794,7 +2794,7 @@ private:
               "    Fred *f = new Fred;\n"
               "    return f->c[10];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'c[10]' index 10 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'f.c[10]' index 10 out of bounds\n", errout.str());
 
         check("void foo()\n"
               "{\n"
