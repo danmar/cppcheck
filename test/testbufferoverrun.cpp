@@ -1231,12 +1231,12 @@ private:
               "    ptest->b[10][2] = 4;\n"
               "    ptest->b[0][19] = 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'b[10][5]' index b[10][2] out of bounds\n"
-                      "[test.cpp:11]: (error) Array 'b[10][5]' index b[0][19] out of bounds\n"
-                      "[test.cpp:15]: (error) Array 'b[10][5]' index b[10][2] out of bounds\n"
-                      "[test.cpp:16]: (error) Array 'b[10][5]' index b[0][19] out of bounds\n"
-                      "[test.cpp:9]: (error) Array 'test.a[10]' index 10 out of bounds\n"
-                      "[test.cpp:14]: (error) Array 'ptest.a[10]' index 10 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'test.a[10]' index 10 out of bounds\n"
+                      "[test.cpp:14]: (error) Array 'ptest.a[10]' index 10 out of bounds\n"
+                      "[test.cpp:10]: (error) Array 'test.b[10][5]' index test.b[10][2] out of bounds\n"
+                      "[test.cpp:11]: (error) Array 'test.b[10][5]' index test.b[0][19] out of bounds\n"
+                      "[test.cpp:15]: (error) Array 'ptest.b[10][5]' index ptest.b[10][2] out of bounds\n"
+                      "[test.cpp:16]: (error) Array 'ptest.b[10][5]' index ptest.b[0][19] out of bounds\n", errout.str());
 
         check("struct TEST\n"
               "{\n"
@@ -1252,10 +1252,10 @@ private:
               "    ptest->a[9][5] = 4;\n"
               "    ptest->a[0][50] = 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'a[10][5]' index a[9][5] out of bounds\n"
-                      "[test.cpp:9]: (error) Array 'a[10][5]' index a[0][50] out of bounds\n"
-                      "[test.cpp:12]: (error) Array 'a[10][5]' index a[9][5] out of bounds\n"
-                      "[test.cpp:13]: (error) Array 'a[10][5]' index a[0][50] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'test.a[10][5]' index test.a[9][5] out of bounds\n"
+                      "[test.cpp:9]: (error) Array 'test.a[10][5]' index test.a[0][50] out of bounds\n"
+                      "[test.cpp:12]: (error) Array 'ptest.a[10][5]' index ptest.a[9][5] out of bounds\n"
+                      "[test.cpp:13]: (error) Array 'ptest.a[10][5]' index ptest.a[0][50] out of bounds\n", errout.str());
     }
 
     void array_index_35() // ticket #2889
@@ -1504,7 +1504,7 @@ private:
               "    TEST test;\n"
               "    test.a[-1] = 3;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'test.a[10]' index -1 out of bounds\n", errout.str());
     }
 
     void array_index_for_decr()

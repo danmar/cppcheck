@@ -803,34 +803,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
-    // search for member variables of record types and add them to the variable list
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::Match(tok, ". %var%") && tok->next()->varId())
-        {
-            unsigned int varid1 = tok->next()->varId();
-            if (_variableList[varid1] == NULL)
-            {
-                if (Token::Match(tok->previous(), "%var%") && tok->previous()->varId())
-                {
-                    unsigned int varid2 = tok->previous()->varId();
-                    if (_variableList[varid2])
-                    {
-                        // get the variable type from the class/struct
-                        const Scope * type = _variableList[varid2]->type();
-
-                        if (type)
-                        {
-                            const Variable *var = type->getVariable(tok->next()->str());
-                            if (var)
-                                _variableList[varid1] = _variableList[var->varId()];
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     /* set all unknown array dimensions that are set by a variable to the maximum size of that variable type */
     for (size_t i = 1; i <= _tokenizer->varIdCount(); i++)
     {
