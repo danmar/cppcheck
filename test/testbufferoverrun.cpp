@@ -112,6 +112,7 @@ private:
         TEST_CASE(array_index_33); // ticket #3044
         TEST_CASE(array_index_34); // ticket #3063
         TEST_CASE(array_index_35); // ticket #2889
+        TEST_CASE(array_index_36); // ticket #2960
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1279,6 +1280,20 @@ private:
               "    s->m_Var[1] = 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_36() // ticket #2960
+    {
+        check("class Fred {\n"
+              "    Fred(const Fred &);\n"
+              "private:\n"
+              "    bool m_b[2];\n"
+              "};\n"
+              "Fred::Fred(const Fred & rhs) {\n"
+              "    m_b[2] = rhs.m_b[2];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_b[2]' index 2 out of bounds\n"
+                      "[test.cpp:7]: (error) Array 'rhs.m_b[2]' index 2 out of bounds\n", errout.str());
     }
 
     void array_index_multidim()
