@@ -5689,9 +5689,6 @@ private:
                       tokenizeAndStringify("int f(int a) { return 0 * a; }", true));
         ASSERT_EQUALS("bool f ( int i ) { switch ( i ) { case 15 : ; return true ; } }",
                       tokenizeAndStringify("bool f(int i) { switch (i) { case 10 + 5: return true; } }", true));
-        TODO_ASSERT_EQUALS("bool f ( int i ) { ; switch ( i ) { case 15 : ; return true ; } }",
-                           "bool f ( int i ) { int a ; a = 10 ; int b ; b = 5 ; switch ( i ) { case a + b : return true ; } }",
-                           tokenizeAndStringify("bool f(int i) { int a = 10; int b = 5; switch (i) { case a + b: return true; } }", true));
     }
 
     void simplifyCompoundAssignment()
