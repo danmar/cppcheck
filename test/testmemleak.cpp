@@ -349,6 +349,7 @@ private:
         // #2662: segfault because of endless recursion (call_func -> getAllocationType -> functionReturnType -> call_func ..)
         TEST_CASE(trac2662);
 
+        TEST_CASE(redundantCodeAfterReturnGoto);
     }
 
 
@@ -3837,6 +3838,22 @@ private:
               "    return shl();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    //ticket # 3083
+    void redundantCodeAfterReturnGoto()
+    {
+        check("void foo()\n"
+              "{\n"
+              "   char * data;\n"
+              "   data = NULL;\n"
+              "   goto source;\n"
+              "   data = (char *)malloc((10+1)*sizeof(char));\n"
+              "source:\n"
+              "   data = (char *)malloc(10*sizeof(char));\n"
+              "   free(data);\n"
+              "}");
+        ASSERT_EQUALS("",errout.str());
     }
 };
 

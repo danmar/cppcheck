@@ -441,7 +441,7 @@ private:
                                 "}\n";
 
             const char expected[] = "static void crash ( ) "
-                                    "{ foo ( ) ; return ; foo ( ) ; }";
+                                    "{ foo ( ) ; return ; }";
 
             ASSERT_EQUALS(expected, tok(code));
         }

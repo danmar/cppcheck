@@ -355,6 +355,9 @@ private:
         TEST_CASE(multipleAssignment);
 
         TEST_CASE(simplifyIfAddBraces); // ticket # 2739 (segmentation fault)
+
+        //remove redundant code after the 'return ;' statement
+        TEST_CASE(removeRedundantCodeAfterReturn);
     }
 
 
@@ -1568,8 +1571,7 @@ private:
                 "{"
                 " int i ;"
                 " for ( i = 0 ; i < 10 ; ++ i ) { }"
-                " return ;"
-                " str [ i ] = 0 ; "
+                " return ; "
                 "}",
                 simplifyKnownVariables(code));
         }
@@ -5867,6 +5869,49 @@ private:
                                 "}";
             ASSERT_EQUALS("void f ( ) { ( { if ( * p ) { ( * p ) = x ( ) ; } } ) }",
                           tokenizeAndStringify(code));
+        }
+    }
+
+    void removeRedundantCodeAfterReturn()
+    {
+        ASSERT_EQUALS("void f ( ) { return ; }", tokenizeAndStringify("void f() { return; foo();}"));
+        ASSERT_EQUALS("void f ( int n ) { if ( n ) { return ; } foo ( ) ; }",tokenizeAndStringify("void f(int n) { if (n) return; foo();}"));
+
+        ASSERT_EQUALS("int f ( int n ) { switch ( n ) { case 0 : return 0 ; default : ; return n ; } return -1 ; }",
+                      tokenizeAndStringify("int f(int n) { switch (n) {case 0: return 0; n*=2; default: return n; n*=6;} return -1; foo();}"));
+
+        {
+            const char code[] = "void f(){ "
+                                "if (k>0) goto label; "
+                                "return; "
+                                "if (tnt) "
+                                "   { "
+                                "       { "
+                                "           check(); "
+                                "           k=0; "
+                                "       } "
+                                "       label: "
+                                "       bar(); "
+                                "   } "
+                                "}";
+            ASSERT_EQUALS("void f ( ) { if ( 0 < k ) { goto label ; } return ; { label : ; bar ( ) ; } }",simplifyKnownVariables(code));
+        }
+
+        {
+            const char code[] = "int f() { "
+                                "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return; "
+                                "case 2: return 2; { reere(); } tack(); "
+                                "switch(y) { case 1: return 0; case 2: return 7; } "
+                                "return 2; } return 3; }";
+            ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : return 1 ; case 2 : return 2 ; } return 3 ; }",simplifyKnownVariables(code));
+        }
+
+        {
+            const char code[] = "int f() { "
+                                "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return; "
+                                "case 2: switch(y) { case 1: return 0; bar2(); foo(); case 2: return 7; } "
+                                "return 2; } return 3; }";
+            ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : return 1 ; case 2 : switch ( y ) { case 1 : return 0 ; case 2 : return 7 ; } return 2 ; } return 3 ; }",simplifyKnownVariables(code));
         }
     }
 };

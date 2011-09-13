@@ -199,6 +199,9 @@ public:
     /** Remove redundant assignment */
     void removeRedundantAssignment();
 
+    /** Remove redudant code after return */
+    void removeRedundantCodeAfterReturn();
+
     /**
      * Replace sizeof() to appropriate size.
      */

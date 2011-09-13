@@ -2742,6 +2742,8 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    removeRedundantCodeAfterReturn();
+
     _tokens->assignProgressValues();
 
     removeRedundantSemicolons();
@@ -4543,6 +4545,8 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyGoto();
 
+    removeRedundantCodeAfterReturn();
+
     // Combine wide strings
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -4887,6 +4891,195 @@ void Tokenizer::removeRedundantAssignment()
         }
     }
 }
+
+void Tokenizer::removeRedundantCodeAfterReturn()
+{
+    unsigned int indentlevel = 0;
+    unsigned int indentcase = 0;
+    unsigned int indentret = 0;  //this is the indentation level when 'return ;' token is found;
+    unsigned int indentswitch = 0;
+    unsigned int indentlabel = 0;
+    bool ret = false; //is it already found a 'return' token?
+    bool switched = false; //is it there a switch code?
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "{")
+        {
+            ++indentlevel;
+            if (ret)
+            {
+                unsigned int indentlevel1 = indentlevel;
+                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "{")
+                        ++indentlevel1;
+                    else if (tok2->str() == "}")
+                    {
+                        if (indentlevel1 == indentlevel)
+                            break;
+                        --indentlevel1;
+                    }
+                    else if (Token::Match(tok2, "%var% : ;")
+                             && tok2->str()!="case" && tok2->str()!="default")
+                    {
+                        indentlabel = indentlevel1;
+                        break;
+                    }
+                }
+                if (indentlevel > indentlabel)
+                {
+                    tok = tok->previous();
+                    tok->deleteNext();
+                }
+            }
+        }
+
+        else if (tok->str() == "}")
+        {
+            if (indentlevel == 0)
+                break;  // break out - it seems the code is wrong
+            //there's already a 'return ;' and more indentation!
+            if (ret)
+            {
+                if (!switched || indentlevel > indentcase)
+                {
+                    if (indentlevel > indentret && indentlevel > indentlabel)
+                    {
+                        tok = tok->previous();
+                        tok->deleteNext();
+                    }
+                }
+                else
+                {
+                    if (indentcase >= indentret && indentlevel > indentlabel)
+                    {
+                        tok = tok->previous();
+                        tok->deleteNext();
+                    }
+                }
+            }
+            if (indentlevel == indentret)
+                ret = false;
+            --indentlevel;
+            if (indentlevel <= indentcase)
+            {
+                if (!indentswitch)
+                {
+                    indentcase = 0;
+                    switched = false;
+                }
+                else
+                {
+                    --indentswitch;
+                    indentcase = indentlevel-1;
+                }
+            }
+        }
+        else if (!ret)
+        {
+            if (tok->str() == "switch")
+            {
+                if (indentlevel == 0)
+                    break;
+                if (!switched)
+                {
+                    for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+                    {
+                        if (tok2->str() == "{")
+                        {
+                            switched = true;
+                            tok = tok2;
+                            break;
+                        }
+                        else if (tok2->str() == "}")
+                            break;  //bad code
+                    }
+                    if (!switched)
+                        break;
+                    ++indentlevel;
+                    indentcase = indentlevel;
+                }
+                else
+                {
+                    ++indentswitch;
+                    //todo this case
+                }
+            }
+            else if (switched
+                     && (tok->str() == "case" || tok->str() == "default"))
+            {
+                if (indentlevel > indentcase)
+                {
+                    --indentlevel;
+                }
+                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == ":" || Token::Match(tok2, ": ;"))
+                    {
+                        if (indentlevel == indentcase)
+                        {
+                            ++indentlevel;
+                        }
+                        tok = tok2;
+                        break;
+                    }
+                    else if (tok2->str() == "}" || tok2->str() == "{")
+                        break;  //bad code
+                }
+            }
+            else if (tok->str() == "return")
+            {
+                if (indentlevel == 0)
+                    break;  // break out - never seen a 'return' not inside a scope;
+
+                //catch the first ';' after the return
+                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == ";")
+                    {
+                        ret = true;
+                        tok = tok2;
+                        break;
+                    }
+                    else if (tok2->str() == "{" || tok2->str() == "}")
+                        break;  //I think this is an error code...
+                }
+                if (!ret)
+                    break;
+                indentret = indentlevel;
+            }
+        }
+        else if (ret) //there's already a "return;" declaration
+        {
+            if (!switched || indentlevel > indentcase+1)
+            {
+                if (indentlevel >= indentret && (!(Token::Match(tok, "%var% : ;")) || tok->str()=="case" || tok->str()=="default"))
+                {
+                    tok = tok->previous();
+                    tok->deleteNext();
+                }
+                else
+                {
+                    ret = false;
+                }
+            }
+            else
+            {
+                if (!(Token::Match(tok, "%var% : ;")) && tok -> str() != "case" && tok->str() != "default")
+                {
+                    tok = tok->previous();
+                    tok->deleteNext();
+                }
+                else
+                {
+                    ret = false;
+                    tok = tok->previous();
+                }
+            }
+        }
+    }
+}
+
 
 bool Tokenizer::removeReduntantConditions()
 {
