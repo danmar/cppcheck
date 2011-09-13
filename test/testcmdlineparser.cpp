@@ -82,6 +82,8 @@ private:
         TEST_CASE(suppressionsNoFile);
         TEST_CASE(suppressionSingle);
         TEST_CASE(suppressionSingleFile);
+        TEST_CASE(suppressionTwo);
+        TEST_CASE(suppressionTwoSeparate);
         TEST_CASE(templates);
         TEST_CASE(templatesGcc);
         TEST_CASE(templatesVs);
@@ -636,6 +638,28 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
+    }
+
+    void suppressionTwo()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--suppress=uninitvar,unnecessaryQualification", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(3, argv));
+        TODO_ASSERT_EQUALS(true, false, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
+        TODO_ASSERT_EQUALS(true, false, settings.nomsg.isSuppressed("unnecessaryQualification", "file.cpp", 1U));
+    }
+
+    void suppressionTwoSeparate()
+    {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--suppress=uninitvar", "--suppress=unnecessaryQualification", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS(true, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
+        ASSERT_EQUALS(true, settings.nomsg.isSuppressed("unnecessaryQualification", "file.cpp", 1U));
     }
 
     void templates()
