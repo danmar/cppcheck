@@ -120,6 +120,7 @@ private:
         TEST_CASE(clarifyCondition1);     // if (a = b() < 0)
         TEST_CASE(clarifyCondition2);     // if (a & b == c)
         TEST_CASE(clarifyCondition3);     // if (! a & b)
+        TEST_CASE(clarifyCondition4);     // ticket #3110
         TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
 
         TEST_CASE(incorrectStringCompare);
@@ -2833,6 +2834,22 @@ private:
 
         check("void f() {\n"
               "    if (result != (char *)&inline_result) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void clarifyCondition4() // ticket #3110
+    {
+        check("typedef double SomeType;\n"
+              "typedef std::pair<std::string,SomeType> PairType;\n"
+              "struct S\n"
+              "{\n"
+              "     bool operator()\n"
+              "         ( PairType const & left\n"
+              "         , PairType const & right) const\n"
+              "     {\n"
+              "         return (left.first < right.first);\n"
+              "     }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
