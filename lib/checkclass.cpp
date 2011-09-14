@@ -378,6 +378,15 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         else if (Token::simpleMatch(ftok, "operator= (") &&
                  ftok->previous()->str() != "::")
         {
+            // recursive call / calling overloaded function
+            // assume that all variables are initialized
+            if (std::find(callstack.begin(), callstack.end(), ftok->str()) != callstack.end())
+            {
+                /** @todo false negative: just bail */
+                assignAllVar(usage);
+                return;
+            }
+
             /** @todo check function parameters for overloaded function so we check the right one */
             // check if member function exists
             std::list<Function>::const_iterator it;
@@ -393,14 +402,10 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
                 // member function has implementation
                 if (it->hasBody)
                 {
-                    // check for recursion
-                    if ((&(*it) != &func))
-                    {
-                        // initialize variable use list using member function
-                        callstack.push_back(ftok->str());
-                        initializeVarList(*it, callstack, scope, usage);
-                        callstack.pop_back();
-                    }
+                    // initialize variable use list using member function
+                    callstack.push_back(ftok->str());
+                    initializeVarList(*it, callstack, scope, usage);
+                    callstack.pop_back();
                 }
 
                 // there is a called member function, but it has no implementation, so we assume it initializes everything
@@ -450,14 +455,10 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
                 // member function has implementation
                 if (it->hasBody)
                 {
-                    // check for recursion
-                    if ((&(*it) != &func))
-                    {
-                        // initialize variable use list using member function
-                        callstack.push_back(ftok->str());
-                        initializeVarList(*it, callstack, scope, usage);
-                        callstack.pop_back();
-                    }
+                    // initialize variable use list using member function
+                    callstack.push_back(ftok->str());
+                    initializeVarList(*it, callstack, scope, usage);
+                    callstack.pop_back();
                 }
 
                 // there is a called member function, but it has no implementation, so we assume it initializes everything
