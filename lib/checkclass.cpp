@@ -378,6 +378,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         else if (Token::simpleMatch(ftok, "operator= (") &&
                  ftok->previous()->str() != "::")
         {
+            /** @todo check function parameters for overloaded function so we check the right one */
             // check if member function exists
             std::list<Function>::const_iterator it;
             for (it = scope->functionList.begin(); it != scope->functionList.end(); ++it)
@@ -392,10 +393,14 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
                 // member function has implementation
                 if (it->hasBody)
                 {
-                    // initialize variable use list using member function
-                    callstack.push_back(ftok->str());
-                    initializeVarList(*it, callstack, scope, usage);
-                    callstack.pop_back();
+                    // check for recursion
+                    if ((&(*it) != &func))
+                    {
+                        // initialize variable use list using member function
+                        callstack.push_back(ftok->str());
+                        initializeVarList(*it, callstack, scope, usage);
+                        callstack.pop_back();
+                    }
                 }
 
                 // there is a called member function, but it has no implementation, so we assume it initializes everything
@@ -445,10 +450,14 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
                 // member function has implementation
                 if (it->hasBody)
                 {
-                    // initialize variable use list using member function
-                    callstack.push_back(ftok->str());
-                    initializeVarList(*it, callstack, scope, usage);
-                    callstack.pop_back();
+                    // check for recursion
+                    if ((&(*it) != &func))
+                    {
+                        // initialize variable use list using member function
+                        callstack.push_back(ftok->str());
+                        initializeVarList(*it, callstack, scope, usage);
+                        callstack.pop_back();
+                    }
                 }
 
                 // there is a called member function, but it has no implementation, so we assume it initializes everything

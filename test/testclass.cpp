@@ -108,6 +108,7 @@ private:
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEq2);
         TEST_CASE(operatorEq3); // ticket #3051
+        TEST_CASE(operatorEq4); // ticket #3114
         TEST_CASE(operatorEqRetRefThis1);
         TEST_CASE(operatorEqRetRefThis2); // ticket #1323
         TEST_CASE(operatorEqRetRefThis3); // ticket #1405
@@ -313,6 +314,15 @@ private:
                        "{\n"
                        "public:\n"
                        "    A * operator=(const A*);\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void operatorEq4() // ticket #3114 (infinite loop)
+    {
+        checkOpertorEq("struct A {\n"
+                       "    A& operator=(A const& a) { return operator=(&a); }\n"
+                       "    A& operator=(const A*) { return *this; }\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
     }
