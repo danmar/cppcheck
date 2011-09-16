@@ -184,6 +184,7 @@ private:
         TEST_CASE(const51); // ticket #3040
         TEST_CASE(const52); // ticket #3049
         TEST_CASE(const53); // ticket #3052
+        TEST_CASE(const54);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5738,6 +5739,17 @@ private:
         checkConst("class Example {\n"
                    "  public:\n"
                    "    void Clear(void) { Example tmp; (*this) = tmp; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const54()
+    {
+        checkConst("class MyObject {\n"
+                   "    int tmp;\n"
+                   "    MyObject() : tmp(0) {}\n"
+                   "public:\n"
+                   "    void set(std::stringstream &in) { in >> tmp; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }

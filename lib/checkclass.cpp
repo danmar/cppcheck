@@ -1606,6 +1606,13 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
             break;
         }
 
+        // streaming: >>
+        else if (tok1->str() == ">>" && isMemberVar(scope, tok1->next()))
+        {
+            isconst = false;
+            break;
+        }
+
         // increment/decrement (member variable?)..
         else if (Token::Match(tok1, "++|--"))
         {
