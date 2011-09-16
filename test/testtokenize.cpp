@@ -5646,6 +5646,24 @@ private:
                                 "}";
 
         ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
+
+        const char code3[] = "class MyObject : public QObject {"
+                             "    MyObject() {}"
+                             "    ~MyObject() {}"
+                             "    public slots:"
+                             "    signals:"
+                             "        void test() {}"
+                             "};";
+        const char result3 [] = "class MyObject : public QObject { "
+                                "MyObject ( ) { } "
+                                "~ MyObject ( ) { } "
+                                "public: "
+                                "protected: "
+                                "void test ( ) { } "
+                                "} ;";
+
+        ASSERT_EQUALS(result3, tokenizeAndStringify(code3,false));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sql()

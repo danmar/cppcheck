@@ -10357,6 +10357,7 @@ void Tokenizer::simplifyQtSignalsSlots()
                 tok2->str(tok2->str() + ":");
                 tok2->deleteNext();
                 tok2->deleteNext();
+                tok2 = tok2->previous();
             }
             else if (Token::Match(tok2->next(), "signals|Q_SIGNALS :"))
             {
