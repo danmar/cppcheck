@@ -75,7 +75,7 @@ private:
         TEST_CASE(jobs);
         TEST_CASE(jobsMissingCount);
         TEST_CASE(jobsInvalid);
-        TEST_CASE(reportprogress);
+        TEST_CASE(reportProgressTest); // "Test" suffix to avoid hiding the parent's reportProgress
         TEST_CASE(stdposix);
         TEST_CASE(suppressionsOld); // TODO: Create and test real suppression file
         TEST_CASE(suppressions);
@@ -570,7 +570,7 @@ private:
         ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
     }
 
-    void reportprogress()
+    void reportProgressTest()
     {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--report-progress", "file.cpp"};
