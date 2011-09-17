@@ -225,9 +225,9 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
     else if (type->isLong())
     {
         if (type->str() == "double")
-            return sizeof(long double);
+            return _settings->sizeof_long_double;
         else if (type->str() == "long")
-            return sizeof(long long);
+            return _settings->sizeof_long_long;
     }
 
     return it->second;
@@ -2146,6 +2146,18 @@ bool Tokenizer::tokenize(std::istream &code,
     // make sure settings specified
     assert(_settings);
 
+    // Fill the map _typeSize..
+    _typeSize.clear();
+    _typeSize["char"] = 1;
+    _typeSize["bool"] = _settings->sizeof_bool;
+    _typeSize["short"] = _settings->sizeof_short;
+    _typeSize["int"] = _settings->sizeof_int;
+    _typeSize["long"] = _settings->sizeof_long;
+    _typeSize["float"] = _settings->sizeof_float;
+    _typeSize["double"] = _settings->sizeof_double;
+    _typeSize["size_t"] = _settings->sizeof_size_t;
+    _typeSize["*"] = _settings->sizeof_pointer;
+
     _configuration = configuration;
 
     // The "_files" vector remembers what files have been tokenized..
@@ -3272,15 +3284,6 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         // TODO: this is a bit hardcoded. make a bit more generic
         if (Token::Match(tok2, "%var% < sizeof ( %type% ) >") && tok2->tokAt(4)->isStandardType())
         {
-            // make sure standard types have a known size..
-            _typeSize["char"] = sizeof(char);
-            _typeSize["short"] = sizeof(short);
-            _typeSize["int"] = sizeof(int);
-            _typeSize["long"] = sizeof(long);
-            _typeSize["float"] = sizeof(float);
-            _typeSize["double"] = sizeof(double);
-            _typeSize["size_t"] = sizeof(size_t);
-
             Token * const tok3 = tok2->next();
             const unsigned int sz = sizeOfType(tok3->tokAt(3));
             Token::eraseTokens(tok3, tok3->tokAt(5));
@@ -4230,17 +4233,6 @@ bool Tokenizer::createLinks()
 
 void Tokenizer::simplifySizeof()
 {
-    // Fill the map _typeSize..
-    _typeSize.clear();
-    _typeSize["char"] = sizeof(char);
-    _typeSize["short"] = sizeof(short);
-    _typeSize["int"] = sizeof(int);
-    _typeSize["long"] = sizeof(long);
-    _typeSize["float"] = sizeof(float);
-    _typeSize["double"] = sizeof(double);
-    _typeSize["size_t"] = sizeof(size_t);
-    _typeSize["*"] = sizeof(void *);
-
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "class|struct %var%"))

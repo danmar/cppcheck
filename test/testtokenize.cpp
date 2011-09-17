@@ -358,6 +358,11 @@ private:
 
         //remove redundant code after the 'return ;' statement
         TEST_CASE(removeRedundantCodeAfterReturn);
+
+        TEST_CASE(platformWin32);
+        TEST_CASE(platformWin64);
+        TEST_CASE(platformUnix32);
+        TEST_CASE(platformUnix64);
     }
 
 
@@ -373,12 +378,13 @@ private:
     }
 
 
-    std::string tokenizeAndStringify(const char code[], bool simplify = false)
+    std::string tokenizeAndStringify(const char code[], bool simplify = false, Settings::PlatformType platform = Settings::Host)
     {
         errout.str("");
 
         Settings settings;
         settings.debugwarnings = true;
+        settings.platform(platform);
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -5931,6 +5937,146 @@ private:
                                 "return 2; } return 3; }";
             ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : return 1 ; case 2 : switch ( y ) { case 1 : return 0 ; case 2 : return 7 ; } return 2 ; } return 3 ; }",simplifyKnownVariables(code));
         }
+    }
+
+    void platformWin32()
+    {
+        const char code[] = "unsigned int sizeof_short = sizeof(short);"
+                            "unsigned int sizeof_unsigned_short = sizeof(unsigned short);"
+                            "unsigned int sizeof_int = sizeof(int);"
+                            "unsigned int sizeof_unsigned_int = sizeof(unsigned int);"
+                            "unsigned int sizeof_long = sizeof(long);"
+                            "unsigned int sizeof_unsigned_long = sizeof(unsigned long);"
+                            "unsigned int sizeof_long_long = sizeof(long long);"
+                            "unsigned int sizeof_unsigned_long_long = sizeof(unsigned long long);"
+                            "unsigned int sizeof_float = sizeof(float);"
+                            "unsigned int sizeof_double = sizeof(double);"
+                            "unsigned int sizeof_long_double = sizeof(long double);"
+                            "unsigned int sizeof_bool = sizeof(bool);"
+                            "unsigned int sizeof_pointer = sizeof(void *);"
+                            "unsigned int sizeof_size_t = sizeof(size_t);";
+
+        const char expected[] = "int sizeof_short ; sizeof_short = 2 ; "
+                                "int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
+                                "int sizeof_int ; sizeof_int = 4 ; "
+                                "int sizeof_unsigned_int ; sizeof_unsigned_int = 4 ; "
+                                "int sizeof_long ; sizeof_long = 4 ; "
+                                "int sizeof_unsigned_long ; sizeof_unsigned_long = 4 ; "
+                                "int sizeof_long_long ; sizeof_long_long = 8 ; "
+                                "int sizeof_unsigned_long_long ; sizeof_unsigned_long_long = 8 ; "
+                                "int sizeof_float ; sizeof_float = 4 ; "
+                                "int sizeof_double ; sizeof_double = 8 ; "
+                                "int sizeof_long_double ; sizeof_long_double = 8 ; "
+                                "int sizeof_bool ; sizeof_bool = 1 ; "
+                                "int sizeof_pointer ; sizeof_pointer = 4 ; "
+                                "int sizeof_size_t ; sizeof_size_t = 4 ;";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Settings::Win32));
+    }
+
+    void platformWin64()
+    {
+        const char code[] = "unsigned int sizeof_short = sizeof(short);"
+                            "unsigned int sizeof_unsigned_short = sizeof(unsigned short);"
+                            "unsigned int sizeof_int = sizeof(int);"
+                            "unsigned int sizeof_unsigned_int = sizeof(unsigned int);"
+                            "unsigned int sizeof_long = sizeof(long);"
+                            "unsigned int sizeof_unsigned_long = sizeof(unsigned long);"
+                            "unsigned int sizeof_long_long = sizeof(long long);"
+                            "unsigned int sizeof_unsigned_long_long = sizeof(unsigned long long);"
+                            "unsigned int sizeof_float = sizeof(float);"
+                            "unsigned int sizeof_double = sizeof(double);"
+                            "unsigned int sizeof_long_double = sizeof(long double);"
+                            "unsigned int sizeof_bool = sizeof(bool);"
+                            "unsigned int sizeof_pointer = sizeof(void *);"
+                            "unsigned int sizeof_size_t = sizeof(size_t);";
+
+        const char expected[] = "int sizeof_short ; sizeof_short = 2 ; "
+                                "int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
+                                "int sizeof_int ; sizeof_int = 4 ; "
+                                "int sizeof_unsigned_int ; sizeof_unsigned_int = 4 ; "
+                                "int sizeof_long ; sizeof_long = 4 ; "
+                                "int sizeof_unsigned_long ; sizeof_unsigned_long = 4 ; "
+                                "int sizeof_long_long ; sizeof_long_long = 8 ; "
+                                "int sizeof_unsigned_long_long ; sizeof_unsigned_long_long = 8 ; "
+                                "int sizeof_float ; sizeof_float = 4 ; "
+                                "int sizeof_double ; sizeof_double = 8 ; "
+                                "int sizeof_long_double ; sizeof_long_double = 8 ; "
+                                "int sizeof_bool ; sizeof_bool = 1 ; "
+                                "int sizeof_pointer ; sizeof_pointer = 8 ; "
+                                "int sizeof_size_t ; sizeof_size_t = 8 ;";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Settings::Win64));
+    }
+
+    void platformUnix32()
+    {
+        const char code[] = "unsigned int sizeof_short = sizeof(short);"
+                            "unsigned int sizeof_unsigned_short = sizeof(unsigned short);"
+                            "unsigned int sizeof_int = sizeof(int);"
+                            "unsigned int sizeof_unsigned_int = sizeof(unsigned int);"
+                            "unsigned int sizeof_long = sizeof(long);"
+                            "unsigned int sizeof_unsigned_long = sizeof(unsigned long);"
+                            "unsigned int sizeof_long_long = sizeof(long long);"
+                            "unsigned int sizeof_unsigned_long_long = sizeof(unsigned long long);"
+                            "unsigned int sizeof_float = sizeof(float);"
+                            "unsigned int sizeof_double = sizeof(double);"
+                            "unsigned int sizeof_long_double = sizeof(long double);"
+                            "unsigned int sizeof_bool = sizeof(bool);"
+                            "unsigned int sizeof_pointer = sizeof(void *);"
+                            "unsigned int sizeof_size_t = sizeof(size_t);";
+
+        const char expected[] = "int sizeof_short ; sizeof_short = 2 ; "
+                                "int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
+                                "int sizeof_int ; sizeof_int = 4 ; "
+                                "int sizeof_unsigned_int ; sizeof_unsigned_int = 4 ; "
+                                "int sizeof_long ; sizeof_long = 4 ; "
+                                "int sizeof_unsigned_long ; sizeof_unsigned_long = 4 ; "
+                                "int sizeof_long_long ; sizeof_long_long = 8 ; "
+                                "int sizeof_unsigned_long_long ; sizeof_unsigned_long_long = 8 ; "
+                                "int sizeof_float ; sizeof_float = 4 ; "
+                                "int sizeof_double ; sizeof_double = 8 ; "
+                                "int sizeof_long_double ; sizeof_long_double = 12 ; "
+                                "int sizeof_bool ; sizeof_bool = 1 ; "
+                                "int sizeof_pointer ; sizeof_pointer = 4 ; "
+                                "int sizeof_size_t ; sizeof_size_t = 4 ;";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Settings::Unix32));
+    }
+
+    void platformUnix64()
+    {
+        const char code[] = "unsigned int sizeof_short = sizeof(short);"
+                            "unsigned int sizeof_unsigned_short = sizeof(unsigned short);"
+                            "unsigned int sizeof_int = sizeof(int);"
+                            "unsigned int sizeof_unsigned_int = sizeof(unsigned int);"
+                            "unsigned int sizeof_long = sizeof(long);"
+                            "unsigned int sizeof_unsigned_long = sizeof(unsigned long);"
+                            "unsigned int sizeof_long_long = sizeof(long long);"
+                            "unsigned int sizeof_unsigned_long_long = sizeof(unsigned long long);"
+                            "unsigned int sizeof_float = sizeof(float);"
+                            "unsigned int sizeof_double = sizeof(double);"
+                            "unsigned int sizeof_long_double = sizeof(long double);"
+                            "unsigned int sizeof_bool = sizeof(bool);"
+                            "unsigned int sizeof_pointer = sizeof(void *);"
+                            "unsigned int sizeof_size_t = sizeof(size_t);";
+
+        const char expected[] = "int sizeof_short ; sizeof_short = 2 ; "
+                                "int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
+                                "int sizeof_int ; sizeof_int = 4 ; "
+                                "int sizeof_unsigned_int ; sizeof_unsigned_int = 4 ; "
+                                "int sizeof_long ; sizeof_long = 8 ; "
+                                "int sizeof_unsigned_long ; sizeof_unsigned_long = 8 ; "
+                                "int sizeof_long_long ; sizeof_long_long = 8 ; "
+                                "int sizeof_unsigned_long_long ; sizeof_unsigned_long_long = 8 ; "
+                                "int sizeof_float ; sizeof_float = 4 ; "
+                                "int sizeof_double ; sizeof_double = 8 ; "
+                                "int sizeof_long_double ; sizeof_long_double = 12 ; "
+                                "int sizeof_bool ; sizeof_bool = 1 ; "
+                                "int sizeof_pointer ; sizeof_pointer = 8 ; "
+                                "int sizeof_size_t ; sizeof_size_t = 8 ;";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Settings::Unix64));
     }
 };
 

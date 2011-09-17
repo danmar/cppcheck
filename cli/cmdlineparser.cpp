@@ -591,6 +591,29 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->checkConfiguration = true;
         }
 
+        // Specify platform
+        else if (strncmp(argv[i], "--platform=", 11) == 0)
+        {
+            std::string platform(11+argv[i]);
+
+            if (platform == "win32")
+                _settings->platform(Settings::Win32);
+            else if (platform == "win64")
+                _settings->platform(Settings::Win64);
+            else if (platform == "unix32")
+                _settings->platform(Settings::Unix32);
+            else if (platform == "unix64")
+                _settings->platform(Settings::Unix64);
+            else
+            {
+                std::string message("cppcheck: error: unrecognized platform\"");
+                message += argv[i];
+                message +=  "\"";
+                PrintMessage(message);
+                return false;
+            }
+        }
+
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
@@ -710,6 +733,15 @@ void CmdLineParser::PrintHelp()
               "                         more comments, like: // cppcheck-suppress warningId\n"
               "                         on the lines before the warning to suppress.\n"
               "    -j <jobs>            Start [jobs] threads to do the checking simultaneously.\n"
+              "    --platform=<type>    Specifies platform specific types and sizes. The available platforms are:\n"
+              "                          * unix32\n"
+              "                                 32 bit unix variant\n"
+              "                          * unix64\n"
+              "                                 64 bit unix variant\n"
+              "                          * win32\n"
+              "                                 32 bit Windows\n"
+              "                          * win64\n"
+              "                                 64 bit Windows\n"
               "    -q, --quiet          Only print error messages.\n"
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES

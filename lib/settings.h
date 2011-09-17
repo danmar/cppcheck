@@ -190,6 +190,33 @@ public:
 
     /** Code is posix - it is not compatible with non-posix environments */
     bool posix;
+
+    /** size of standard types */
+    unsigned int sizeof_bool;
+    unsigned int sizeof_short;
+    unsigned int sizeof_int;
+    unsigned int sizeof_long;
+    unsigned int sizeof_long_long;
+    unsigned int sizeof_float;
+    unsigned int sizeof_double;
+    unsigned int sizeof_long_double;
+    unsigned int sizeof_size_t;
+    unsigned int sizeof_pointer;
+
+    enum PlatformType
+    {
+        Host, // whatever system this code was compiled on
+        Win32,
+        Win64,
+        Unix32,
+        Unix64
+    };
+
+    /** set the platform type for predefined platforms */
+    bool platform(PlatformType type);
+
+    /** set the platform type for user specified platforms */
+    bool platformFile(const std::string &filename);
 };
 
 /// @}
