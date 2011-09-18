@@ -27,6 +27,7 @@ class BenchmarkSimple: public QObject, public ErrorLogger
 private slots:
     void tokenize();
     void simplify();
+    void tokenizeAndSimplify();
 
 private:
     // Empty implementations of ErrorLogger methods.

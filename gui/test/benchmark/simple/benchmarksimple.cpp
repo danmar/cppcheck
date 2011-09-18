@@ -63,4 +63,22 @@ void BenchmarkSimple::simplify()
     }
 }
 
+void BenchmarkSimple::tokenizeAndSimplify()
+{
+    QFile file(QString(SRCDIR) + "/../../data/benchmark/simple.cpp");
+    QByteArray data = file.readAll();
+
+    Settings settings;
+    settings.debugwarnings = true;
+
+    // tokenize..
+    Tokenizer tokenizer(&settings, this);
+    std::istringstream istr(data.constData());
+    QBENCHMARK
+    {
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+    }
+}
+
 QTEST_MAIN(BenchmarkSimple)
