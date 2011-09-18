@@ -47,6 +47,8 @@ private:
         TEST_CASE(initializationIsNotAFunction);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
+
+        TEST_CASE(lineNumber); // Ticket 3059
     }
 
     void check(const char code[])
@@ -215,6 +217,15 @@ private:
         c.check(this);
 
         ASSERT_EQUALS("[test1.cpp:1]: (style) The function 'f' is never used\n",errout.str());
+    }
+
+    void lineNumber()
+    {
+        check("void foo() {}\n"
+              "void bar() {}\n"
+              "int main()\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'bar' is never used\n"
+                      "[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
     }
 };
 
