@@ -83,7 +83,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         {
             FunctionUsage &func = _functions[ funcname->str()];
 
-            if(!func.lineNumber)
+            if (!func.lineNumber)
                 func.lineNumber = funcname->linenr();
 
             // No filename set yet..
@@ -185,8 +185,8 @@ void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
 }
 
 void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
-                                               const std::string &filename, unsigned int lineNumber,
-                                               const std::string &funcname)
+        const std::string &filename, unsigned int lineNumber,
+        const std::string &funcname)
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (!filename.empty())
