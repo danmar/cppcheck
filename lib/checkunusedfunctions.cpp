@@ -74,7 +74,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
                     ! Token::simpleMatch(tok2, ") const {") &&
                     ! Token::simpleMatch(tok2, ") const throw ( ) {") &&
                     ! Token::simpleMatch(tok2, ") throw ( ) {"))
-                    funcname = NULL;
+                    funcname = 0;
                 break;
             }
         }
@@ -83,10 +83,14 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         {
             FunctionUsage &func = _functions[ funcname->str()];
 
+            if(!func.lineNumber)
+                func.lineNumber = funcname->linenr();
+
             // No filename set yet..
             if (func.filename.empty())
+            {
                 func.filename = tokenizer.getFiles()->at(0);
-
+            }
             // Multiple files => filename = "+"
             else if (func.filename != tokenizer.getFiles()->at(0))
             {
@@ -141,7 +145,6 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 
             if (func.filename.empty() || func.filename == "+")
                 func.usedOtherFile = true;
-
             else
                 func.usedSameFile = true;
         }
@@ -167,7 +170,7 @@ void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
                 filename = "";
             else
                 filename = func.filename;
-            unusedFunctionError(errorLogger, filename, it->first);
+            unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
         }
         else if (! func.usedOtherFile)
         {
@@ -181,14 +184,16 @@ void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
     }
 }
 
-void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger, const std::string &filename, const std::string &funcname)
+void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
+                                               const std::string &filename, unsigned int lineNumber,
+                                               const std::string &funcname)
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (!filename.empty())
     {
         ErrorLogger::ErrorMessage::FileLocation fileLoc;
         fileLoc.setfile(filename);
-        fileLoc.line = 1;
+        fileLoc.line = lineNumber;
         locationList.push_back(fileLoc);
     }
 

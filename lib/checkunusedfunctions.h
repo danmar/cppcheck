@@ -53,13 +53,15 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
         CheckUnusedFunctions c(0, settings, errorLogger);
-        c.unusedFunctionError(errorLogger, "", "funcName");
+        c.unusedFunctionError(errorLogger, "", 0, "funcName");
     }
 
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
-    void unusedFunctionError(ErrorLogger * const errorLogger, const std::string &filename, const std::string &funcname);
+    void unusedFunctionError(ErrorLogger * const errorLogger,
+                             const std::string &filename, unsigned int lineNumber,
+                             const std::string &funcname);
 
     /**
      * Dummy implementation, just to provide error for --errorlist
@@ -82,10 +84,11 @@ private:
     class FunctionUsage
     {
     public:
-        FunctionUsage() : usedSameFile(false), usedOtherFile(false)
+        FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false)
         { }
 
         std::string filename;
+        unsigned int lineNumber;
         bool   usedSameFile;
         bool   usedOtherFile;
     };
