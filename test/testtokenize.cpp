@@ -5961,7 +5961,25 @@ private:
                             "ssize_t b;"
                             "ptrdiff_t c;"
                             "intptr_t d;"
-                            "uintptr_t e;";
+                            "uintptr_t e;"
+                            "BOOL f;"
+                            "BOOLEAN g;"
+                            "BYTE h;"
+                            "CHAR i;"
+                            "DWORD j;"
+                            "FLOAT k;"
+                            "INT l;"
+                            "INT32 m;"
+                            "INT64 n;"
+                            "LONG o;"
+                            "SHORT p;"
+                            "UCHAR q;"
+                            "UINT r;"
+                            "ULONG s;"
+                            "USHORT t;"
+                            "WORD u;"
+                            "VOID * v;";
+
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
                                 "unsigned int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
@@ -5981,7 +5999,24 @@ private:
                                 "long b ; "
                                 "long c ; "
                                 "long d ; "
-                                "unsigned long e ;";
+                                "unsigned long e ; "
+                                "int f ; "
+                                "unsigned char g ; "
+                                "unsigned char h ; "
+                                "char i ; "
+                                "unsigned long j ; "
+                                "float k ; "
+                                "int l ; "
+                                "int m ; "
+                                "long long n ; "
+                                "long o ; "
+                                "short p ; "
+                                "unsigned char q ; "
+                                "unsigned int r ; "
+                                "unsigned long s ; "
+                                "unsigned short t ; "
+                                "unsigned short u ; "
+                                "void * v ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32));
     }

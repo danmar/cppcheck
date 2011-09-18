@@ -6638,6 +6638,56 @@ void Tokenizer::simplifyPlatformTypes()
             }
         }
     }
+
+    if (_settings->platformType == Settings::Win32 ||
+        _settings->platformType == Settings::Win64)
+    {
+        for (Token *tok = _tokens; tok; tok = tok->next())
+        {
+            if (Token::Match(tok, "BOOL|INT|INT32"))
+                tok->str("int");
+            else if (Token::Match(tok, "BOOLEAN|BYTE|UCHAR"))
+            {
+                tok->str("unsigned");
+                tok->insertToken("char");
+            }
+            else if (tok->str() == "CHAR")
+                tok->str("char");
+            else if (Token::Match(tok, "DWORD"))
+            {
+                tok->str("unsigned");
+                tok->insertToken("long");
+            }
+            else if (tok->str() == "FLOAT")
+                tok->str("float");
+            else if (tok->str() == "INT64")
+            {
+                tok->str("long");
+                tok->insertToken("long");
+            }
+            else if (tok->str() == "LONG")
+                tok->str("long");
+            else if (tok->str() == "SHORT")
+                tok->str("short");
+            else if (tok->str() == "UINT")
+            {
+                tok->str("unsigned");
+                tok->insertToken("int");
+            }
+            else if (tok->str() == "ULONG")
+            {
+                tok->str("unsigned");
+                tok->insertToken("long");
+            }
+            else if (Token::Match(tok, "USHORT|WORD"))
+            {
+                tok->str("unsigned");
+                tok->insertToken("short");
+            }
+            else if (tok->str() == "VOID")
+                tok->str("void");
+        }
+    }
 }
 
 void Tokenizer::simplifyStdType()

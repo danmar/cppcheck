@@ -212,6 +212,9 @@ public:
         Unix64
     };
 
+    /** platform type */
+    PlatformType platformType;
+
     /** set the platform type for predefined platforms */
     bool platform(PlatformType type);
 

@@ -52,16 +52,7 @@ Settings::Settings()
     posix = false;
 
     // This assumes the code you are checking is for the same architecture this is compiled on.
-    sizeof_bool = sizeof(bool);
-    sizeof_short = sizeof(short);
-    sizeof_int = sizeof(int);
-    sizeof_long = sizeof(long);
-    sizeof_long_long = sizeof(long long);
-    sizeof_float = sizeof(float);
-    sizeof_double = sizeof(double);
-    sizeof_long_double = sizeof(long double);
-    sizeof_size_t = sizeof(size_t);
-    sizeof_pointer = sizeof(void *);
+    platform(Host);
 }
 
 std::string Settings::addEnabled(const std::string &str)
@@ -144,8 +135,20 @@ bool Settings::platform(PlatformType type)
     switch (type)
     {
     case Host: // same as system this code was compile on
+        platformType = Host;
+        sizeof_bool = sizeof(bool);
+        sizeof_short = sizeof(short);
+        sizeof_int = sizeof(int);
+        sizeof_long = sizeof(long);
+        sizeof_long_long = sizeof(long long);
+        sizeof_float = sizeof(float);
+        sizeof_double = sizeof(double);
+        sizeof_long_double = sizeof(long double);
+        sizeof_size_t = sizeof(size_t);
+        sizeof_pointer = sizeof(void *);
         return true;
     case Win32:
+        platformType = Win32;
         sizeof_bool = 1; // 4 in Visual C++ 4.2
         sizeof_short = 2;
         sizeof_int = 4;
@@ -158,6 +161,7 @@ bool Settings::platform(PlatformType type)
         sizeof_pointer = 4;
         return true;
     case Win64:
+        platformType = Win64;
         sizeof_bool = 1;
         sizeof_short = 2;
         sizeof_int = 4;
@@ -170,6 +174,7 @@ bool Settings::platform(PlatformType type)
         sizeof_pointer = 8;
         return true;
     case Unix32:
+        platformType = Unix32;
         sizeof_bool = 1;
         sizeof_short = 2;
         sizeof_int = 4;
@@ -182,6 +187,7 @@ bool Settings::platform(PlatformType type)
         sizeof_pointer = 4;
         return true;
     case Unix64:
+        platformType = Unix64;
         sizeof_bool = 1;
         sizeof_short = 2;
         sizeof_int = 4;
