@@ -2619,6 +2619,11 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // convert platform dependent types to standard types
+    // 32 bits: size_t -> unsigned long
+    // 64 bits: size_t -> unsigned long long
+    simplifyPlatformTypes();
+
     // collapse compound standard types into a single token
     // unsigned long long int => long _isUnsigned=true,_isLong=true
     simplifyStdType();
@@ -6567,6 +6572,69 @@ void Tokenizer::simplifyVarDecl()
 
                     tok2 = tok2->next();
                 }
+            }
+        }
+    }
+}
+
+void Tokenizer::simplifyPlatformTypes()
+{
+    enum { isLongLong, isLong, isInt } type;
+
+    /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
+    if (_settings->sizeof_size_t == 8)
+        type = isLongLong;
+    else if (_settings->sizeof_size_t == 4 && _settings->sizeof_long == 4)
+        type = isLong;
+    else if (_settings->sizeof_size_t == 4)
+        type = isInt;
+    else
+        return;
+
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "std :: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t"))
+        {
+            tok->deleteNext();
+            tok->deleteThis();
+        }
+        else if (Token::simpleMatch(tok, ":: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t"))
+        {
+            tok->deleteThis();
+        }
+
+        if (Token::Match(tok, "size_t|uintptr_t"))
+        {
+            tok->str("unsigned");
+
+            switch (type)
+            {
+            case isLongLong:
+                tok->insertToken("long");
+                tok->insertToken("long");
+                break;
+            case isLong :
+                tok->insertToken("long");
+                break;
+            case isInt:
+                tok->insertToken("int");
+                break;
+            }
+        }
+        else if (Token::Match(tok, "ssize_t|ptrdiff_t|intptr_t"))
+        {
+            switch (type)
+            {
+            case isLongLong:
+                tok->str("long");
+                tok->insertToken("long");
+                break;
+            case isLong :
+                tok->str("long");
+                break;
+            case isInt:
+                tok->str("int");
+                break;
             }
         }
     }

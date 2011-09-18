@@ -222,6 +222,13 @@ public:
     Token * initVar(Token * tok);
 
     /**
+     * Convert platform dependent types to standard types.
+     * 32 bits: size_t -> unsigned long
+     * 64 bits: size_t -> unsigned long long
+     */
+    void simplifyPlatformTypes();
+
+    /**
      * Collapse compound standard types into a single token.
      * unsigned long long int => long _isUnsigned=true,_isLong=true
      */

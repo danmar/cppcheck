@@ -383,12 +383,13 @@ private:
         TEST_CASE(removeRedundantFor);
     }
 
-    std::string tok(const char code[], bool simplify = true)
+    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Host)
     {
         errout.str("");
 
         Settings settings;
         settings.addEnabled("portability");
+        settings.platform(type);
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
@@ -1141,9 +1142,9 @@ private:
         // ticket #809
         const char code[] = "int m ; "
                             "compat_ulong_t um ; "
-                            "size_t size ; size = sizeof ( m ) / sizeof ( um ) ;";
+                            "long size ; size = sizeof ( m ) / sizeof ( um ) ;";
 
-        ASSERT_EQUALS(code, tok(code));
+        ASSERT_EQUALS(code, tok(code, true, Settings::Win32));
     }
 
     void sizeof11()
@@ -2811,7 +2812,7 @@ private:
         {
             // Ticket #1997
             const char code[] = "void * operator new[](size_t);";
-            ASSERT_EQUALS("void * operatornew[] ( size_t ) ;", tok(code));
+            ASSERT_EQUALS("void * operatornew[] ( long ) ;", tok(code, true, Settings::Win32));
         }
 
         ASSERT_EQUALS("; a [ 0 ] ;", tok(";a[0*(*p)];"));
