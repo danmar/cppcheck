@@ -189,7 +189,7 @@ bool Settings::platform(PlatformType type)
         sizeof_long_long = 8;
         sizeof_float = 4;
         sizeof_double = 8;
-        sizeof_long_double = 12;
+        sizeof_long_double = 16;
         sizeof_size_t = 8;
         sizeof_pointer = 8;
         return true;

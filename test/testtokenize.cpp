@@ -6071,7 +6071,7 @@ private:
                                 "int sizeof_unsigned_long_long ; sizeof_unsigned_long_long = 8 ; "
                                 "int sizeof_float ; sizeof_float = 4 ; "
                                 "int sizeof_double ; sizeof_double = 8 ; "
-                                "int sizeof_long_double ; sizeof_long_double = 12 ; "
+                                "int sizeof_long_double ; sizeof_long_double = 16 ; "
                                 "int sizeof_bool ; sizeof_bool = 1 ; "
                                 "int sizeof_pointer ; sizeof_pointer = 8 ; "
                                 "int sizeof_size_t ; sizeof_size_t = 8 ;";
