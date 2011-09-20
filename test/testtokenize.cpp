@@ -5978,8 +5978,25 @@ private:
                             "ULONG s;"
                             "USHORT t;"
                             "WORD u;"
-                            "VOID * v;";
-
+                            "VOID *v;"
+                            "LPBOOL w;"
+                            "PBOOL x;"
+                            "LPBYTE y;"
+                            "PBOOLEAN z;"
+                            "PBYTE A;"
+                            "LPCSTR B;"
+                            "PCSTR C;"
+                            "LPCVOID D;"
+                            "LPDWORD E;"
+                            "LPINT F;"
+                            "PINT G;"
+                            "LPLONG H;"
+                            "PLONG I;"
+                            "LPSTR J;"
+                            "PSTR K;"
+                            "PCHAR L;"
+                            "LPVOID M;"
+                            "PVOID N;";
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
                                 "unsigned int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
@@ -6016,7 +6033,25 @@ private:
                                 "unsigned long s ; "
                                 "unsigned short t ; "
                                 "unsigned short u ; "
-                                "void * v ;";
+                                "void * v ; "
+                                "int * w ; "
+                                "int * x ; "
+                                "unsigned char * y ; "
+                                "unsigned char * z ; "
+                                "unsigned char * A ; "
+                                "const char * B ; "
+                                "const char * C ; "
+                                "const void * D ; "
+                                "unsigned long * E ; "
+                                "int * F ; "
+                                "int * G ; "
+                                "long * H ; "
+                                "long * I ; "
+                                "char * J ; "
+                                "char * K ; "
+                                "char * L ; "
+                                "void * M ; "
+                                "void * N ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32));
     }

@@ -6667,6 +6667,61 @@ void Tokenizer::simplifyPlatformTypes()
             }
             else if (tok->str() == "LONG")
                 tok->str("long");
+            else if (Token::Match(tok, "LPBOOL|PBOOL"))
+            {
+                tok->str("int");
+                tok->insertToken("*");
+            }
+            else if (Token::Match(tok, "LPBYTE|PBOOLEAN|PBYTE"))
+            {
+                tok->str("unsigned");
+                tok->insertToken("*");
+                tok->insertToken("char");
+            }
+            else if (Token::Match(tok, "LPCSTR|PCSTR"))
+            {
+                tok->str("const");
+                tok->insertToken("*");
+                tok->insertToken("char");
+            }
+            else if (tok->str() == "LPCVOID")
+            {
+                tok->str("const");
+                tok->insertToken("*");
+                tok->insertToken("void");
+            }
+            else if (tok->str() == "LPDWORD")
+            {
+                tok->str("unsigned");
+                tok->insertToken("*");
+                tok->insertToken("long");
+            }
+            else if (Token::Match(tok, "LPINT|PINT"))
+            {
+                tok->str("int");
+                tok->insertToken("*");
+            }
+            else if (Token::Match(tok, "LPLONG|PLONG"))
+            {
+                tok->str("long");
+                tok->insertToken("*");
+            }
+            else if (Token::Match(tok, "LPSTR|PSTR|PCHAR"))
+            {
+                tok->str("char");
+                tok->insertToken("*");
+            }
+            else if (Token::Match(tok, "LPVOID|PVOID"))
+            {
+                tok->str("void");
+                tok->insertToken("*");
+            }
+            else if (Token::Match(tok, "LPWORD|PWORD"))
+            {
+                tok->str("unsigned");
+                tok->insertToken("*");
+                tok->insertToken("short");
+            }
             else if (tok->str() == "SHORT")
                 tok->str("short");
             else if (tok->str() == "UINT")
