@@ -149,6 +149,7 @@ private:
         TEST_CASE(buffer_overrun_19); // #2597 - class member with unknown type
         TEST_CASE(buffer_overrun_20); // #2986 (segmentation fault)
         TEST_CASE(buffer_overrun_21);
+        TEST_CASE(buffer_overrun_22); // #3124
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(possible_buffer_overrun_1); // #3035
 
@@ -1170,7 +1171,7 @@ private:
               "    struct s1 obj;\n"
               "    x(obj.delay, 123);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (error) Array 'obj . delay[3]' index 4 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (error) Array 'obj.delay[3]' index 4 out of bounds\n", errout.str());
 
         check("struct s1 {\n"
               "    float a[0];\n"
@@ -2258,6 +2259,31 @@ private:
               "        dst[i] = src[i];\n"
               "} } }\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: dst\n", errout.str());
+    }
+
+    void buffer_overrun_22() // ticket #3124
+    {
+        check("class A {\n"
+              "public:\n"
+              "    char b[5][6];\n"
+              "};\n"
+              "int main() {\n"
+              "    A a;\n"
+              "    memset(a.b, 0, 5 * 6);\n"
+              "}\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "public:\n"
+              "    char b[5][6];\n"
+              "};\n"
+              "int main() {\n"
+              "    A a;\n"
+              "    memset(a.b, 0, 6 * 6);\n"
+              "}\n");
+
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds: a.b\n", errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch()

@@ -991,14 +991,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // memset, memcmp, memcpy, strncpy, fgets..
         if (varid == 0 && size > 0)
         {
-            ArrayInfo arrayInfo1(0U,
-                                 varnames,
-                                 (unsigned int)(total_size / size),
-                                 (unsigned int)size);
             if (Token::Match(tok, ("%var% ( " + varnames + " ,").c_str()))
-                checkFunctionParameter(*tok, 1, arrayInfo1);
+                checkFunctionParameter(*tok, 1, arrayInfo);
             if (Token::Match(tok, ("%var% ( %var% , " + varnames + " ,").c_str()))
-                checkFunctionParameter(*tok, 2, arrayInfo1);
+                checkFunctionParameter(*tok, 2, arrayInfo);
         }
 
         // Loop..
