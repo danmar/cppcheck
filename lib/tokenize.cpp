@@ -10393,6 +10393,11 @@ void Tokenizer::simplifyBuiltinExpect()
 // Remove Microsoft MFC 'DECLARE_MESSAGE_MAP()'
 void Tokenizer::simplifyMicrosoftMFC()
 {
+    // skip if not Windows
+    if (!(_settings->platformType == Settings::Win32 ||
+          _settings->platformType == Settings::Win64))
+        return;
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::simpleMatch(tok->next(), "DECLARE_MESSAGE_MAP ( )"))

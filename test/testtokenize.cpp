@@ -5544,16 +5544,16 @@ private:
     void microsoftMFC()
     {
         const char code1[] = "class MyDialog : public CDialog { DECLARE_MESSAGE_MAP() private: CString text; };";
-        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code1,false));
+        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code1,false,true,Settings::Win32));
 
         const char code2[] = "class MyDialog : public CDialog { DECLARE_DYNAMIC(MyDialog) private: CString text; };";
-        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code2,false));
+        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code2,false,true,Settings::Win32));
 
         const char code3[] = "class MyDialog : public CDialog { DECLARE_DYNCREATE(MyDialog) private: CString text; };";
-        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code3,false));
+        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code3,false,true,Settings::Win32));
 
         const char code4[] = "class MyDialog : public CDialog { DECLARE_DYNAMIC_CLASS(MyDialog) private: CString text; };";
-        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code4,false));
+        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code4,false,true,Settings::Win32));
     }
 
     void borland()
