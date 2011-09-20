@@ -214,14 +214,14 @@ static bool strisop(const char str[])
     }
     else if (str[2] == 0)
     {
-        if (strcmp(str, "&&")==0 ||
-            strcmp(str, "||")==0 ||
-            strcmp(str, "==")==0 ||
-            strcmp(str, "!=")==0 ||
-            strcmp(str, ">=")==0 ||
-            strcmp(str, "<=")==0 ||
-            strcmp(str, ">>")==0 ||
-            strcmp(str, "<<")==0)
+        if ((str[0] == '&' && str[1] == '&') ||
+            (str[0] == '|' && str[1] == '|') ||
+            (str[0] == '=' && str[1] == '=') ||
+            (str[0] == '!' && str[1] == '=') ||
+            (str[0] == '>' && str[1] == '=') ||
+            (str[0] == '<' && str[1] == '=') ||
+            (str[0] == '>' && str[1] == '>') ||
+            (str[0] == '<' && str[1] == '<'))
             return true;
     }
     return false;
@@ -229,21 +229,29 @@ static bool strisop(const char str[])
 
 int Token::multiCompare(const char *haystack, const char *needle)
 {
-    if (haystack[0] == '%' && haystack[1] != '|')
+    if (haystack[0] == '%' && haystack[1] == 'o')
     {
-        if (strncmp(haystack, "%op%|", 5) == 0)
+        if (haystack[2] == 'p' && // "%op%|"
+            haystack[3] == '%' &&
+            haystack[4] == '|')
         {
             haystack = haystack + 5;
             if (strisop(needle))
                 return 1;
         }
-        else if (strncmp(haystack, "%or%|", 5) == 0)
+        else if (haystack[2] == 'r' && // "%or%|"
+                 haystack[3] == '%' &&
+                 haystack[4] == '|')
         {
             haystack = haystack + 5;
             if (*needle == '|')
                 return 1;
         }
-        else if (strncmp(haystack, "%oror%|", 7) == 0)
+        else if (haystack[2] == 'r' && // "%oror%|"
+                 haystack[3] == 'o' &&
+                 haystack[4] == 'r' &&
+                 haystack[5] == '%' &&
+                 haystack[6] == '|')
         {
             haystack = haystack + 7;
             if (needle[0] == '|' && needle[1] == '|')
@@ -306,19 +314,27 @@ int Token::multiCompare(const char *haystack, const char *needle)
 
             if (haystack[0] == '%' && haystack[1] != '|')
             {
-                if (strncmp(haystack, "%op%", 4) == 0)
+                if (haystack[1] == 'o' && // "%op%"
+                    haystack[2] == 'p' &&
+                    haystack[3] == '%')
                 {
                     if (strisop(needle))
                         return 1;
                     haystack = haystack + 4;
                 }
-                else if (strncmp(haystack, "%or%", 4) == 0)
+                else if (haystack[1] == 'o' && // "%or%"
+                         haystack[2] == 'r' &&
+                         haystack[3] == '%')
                 {
                     if (*needle == '|')
                         return 1;
                     haystack = haystack + 4;
                 }
-                else if (strncmp(haystack, "%oror%", 6) == 0)
+                else if (haystack[1] == 'o' && // "%oror%"
+                         haystack[2] == 'r' &&
+                         haystack[3] == 'o' &&
+                         haystack[4] == 'r' &&
+                         haystack[5] == '%')
                 {
                     if (needle[0] == '|' && needle[1] == '|')
                         return 1;
