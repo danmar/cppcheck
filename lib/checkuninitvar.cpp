@@ -494,11 +494,11 @@ private:
 
         if (tok.str() == "return")
         {
-            // is there assignment in the return statement?
+            // is there assignment or ternary operator in the return statement?
             bool assignment = false;
             for (const Token *tok2 = tok.next(); tok2 && tok2->str() != ";"; tok2 = tok2->next())
             {
-                if (tok2->str() == "=" || tok2->str() == ">>")
+                if (tok2->str() == "=" || tok2->str() == ">>" || tok2->str() == "?")
                 {
                     assignment = true;
                     break;
