@@ -6653,13 +6653,22 @@ void Tokenizer::simplifyPlatformTypes()
             }
             else if (tok->str() == "CHAR")
                 tok->str("char");
-            else if (Token::Match(tok, "DWORD"))
+            else if (Token::Match(tok, "DWORD|ULONG"))
             {
                 tok->str("unsigned");
                 tok->insertToken("long");
             }
+            else if (Token::Match(tok, "DWORD_PTR|ULONG_PTR|SIZE_T"))
+            {
+                tok->str("unsigned");
+                tok->insertToken("long");
+                if (_settings->platformType == Settings::Win64)
+                    tok->insertToken("long");
+            }
             else if (tok->str() == "FLOAT")
                 tok->str("float");
+            else if (tok->str() == "HRESULT")
+                tok->str("long");
             else if (tok->str() == "INT64")
             {
                 tok->str("long");
@@ -6667,6 +6676,12 @@ void Tokenizer::simplifyPlatformTypes()
             }
             else if (tok->str() == "LONG")
                 tok->str("long");
+            else if (tok->str() == "LONG_PTR")
+            {
+                tok->str("long");
+                if (_settings->platformType == Settings::Win64)
+                    tok->insertToken("long");
+            }
             else if (Token::Match(tok, "LPBOOL|PBOOL"))
             {
                 tok->str("int");
@@ -6711,7 +6726,7 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->str("char");
                 tok->insertToken("*");
             }
-            else if (Token::Match(tok, "LPVOID|PVOID"))
+            else if (Token::Match(tok, "LPVOID|PVOID|HANDLE"))
             {
                 tok->str("void");
                 tok->insertToken("*");
@@ -6729,10 +6744,16 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->str("unsigned");
                 tok->insertToken("int");
             }
-            else if (tok->str() == "ULONG")
+            else if (tok->str() == "UINT_PTR")
             {
                 tok->str("unsigned");
-                tok->insertToken("long");
+                if (_settings->platformType == Settings::Win64)
+                {
+                    tok->insertToken("long");
+                    tok->insertToken("long");
+                }
+                else
+                    tok->insertToken("long");
             }
             else if (Token::Match(tok, "USHORT|WORD"))
             {

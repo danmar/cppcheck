@@ -5996,7 +5996,13 @@ private:
                             "PSTR K;"
                             "PCHAR L;"
                             "LPVOID M;"
-                            "PVOID N;";
+                            "PVOID N;"
+                            "DWORD_PTR O;"
+                            "ULONG_PTR P;"
+                            "SIZE_T Q;"
+                            "HRESULT R;"
+                            "LONG_PTR S;"
+                            "HANDLE T;";
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
                                 "unsigned int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
@@ -6051,7 +6057,13 @@ private:
                                 "char * K ; "
                                 "char * L ; "
                                 "void * M ; "
-                                "void * N ;";
+                                "void * N ; "
+                                "unsigned long O ; "
+                                "unsigned long P ; "
+                                "unsigned long Q ; "
+                                "long R ; "
+                                "long S ; "
+                                "void * T ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32));
     }
@@ -6076,7 +6088,13 @@ private:
                             "ssize_t b;"
                             "ptrdiff_t c;"
                             "intptr_t d;"
-                            "uintptr_t e;";
+                            "uintptr_t e;"
+                            "DWORD_PTR O;"
+                            "ULONG_PTR P;"
+                            "SIZE_T Q;"
+                            "HRESULT R;"
+                            "LONG_PTR S;"
+                            "HANDLE T;";
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
                                 "unsigned int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
@@ -6096,7 +6114,13 @@ private:
                                 "long long b ; "
                                 "long long c ; "
                                 "long long d ; "
-                                "unsigned long long e ;";
+                                "unsigned long long e ; "
+                                "unsigned long long O ; "
+                                "unsigned long long P ; "
+                                "unsigned long long Q ; "
+                                "long R ; "
+                                "long long S ; "
+                                "void * T ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win64));
     }
