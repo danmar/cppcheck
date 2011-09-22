@@ -862,11 +862,12 @@ private:
 
 
     // Simplify 'sizeof'..
-    std::string sizeof_(const char code[], bool simplify = true)
+    std::string sizeof_(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Host)
     {
         errout.str("");
 
         Settings settings;
+        settings.platform(type);
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -975,7 +976,8 @@ private:
     {
         const char code[] = ";INT32 i[10];\n"
                             "sizeof(i[0]);\n";
-        ASSERT_EQUALS("; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", sizeof_(code));
+        ASSERT_EQUALS("; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", sizeof_(code, true, Settings::Host));
+        ASSERT_EQUALS("; int i [ 10 ] ; 4 ;", sizeof_(code, true, Settings::Win32));
     }
 
     void sizeof8()

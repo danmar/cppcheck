@@ -619,8 +619,17 @@ public:
     void simplifyMicrosoftMFC();
 
     /**
-     * Remove Borland code
-     */
+    * Convert Microsoft memory functions
+    * CopyMemory(dst, src, len) -> memcpy(dst, src, len)
+    * FillMemory(dst, len, val) -> memset(dst, val, len)
+    * MoveMemory(dst, src, len) -> memmove(dst, src, len)
+    * ZeroMemory(dst, len) -> memset(dst, 0, len)
+    */
+    void simplifyMicrosoftMemoryFunctions();
+
+    /**
+      * Remove Borland code
+      */
     void simplifyBorland();
 
     /**

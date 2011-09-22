@@ -319,6 +319,7 @@ private:
         TEST_CASE(bitfields11); // ticket #2845 (segmentation fault)
 
         TEST_CASE(microsoftMFC);
+        TEST_CASE(microsoftMemory);
 
         TEST_CASE(borland);
 
@@ -5554,6 +5555,27 @@ private:
 
         const char code4[] = "class MyDialog : public CDialog { DECLARE_DYNAMIC_CLASS(MyDialog) private: CString text; };";
         ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code4,false,true,Settings::Win32));
+    }
+
+    void microsoftMemory()
+    {
+        const char code1[] = "void foo() { int a[10], b[10]; CopyMemory(a, b, sizeof(a)); }";
+        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; int b [ 10 ] ; memcpy ( a , b , sizeof ( a ) ) ; }", tokenizeAndStringify(code1,false,true,Settings::Win32));
+
+        const char code2[] = "void foo() { int a[10]; FillMemory(a, sizeof(a), 255); }";
+        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; memset ( a , 255 , sizeof ( a ) ) ; }", tokenizeAndStringify(code2,false,true,Settings::Win32));
+
+        const char code3[] = "void foo() { int a[10], b[10]; MoveMemory(a, b, sizeof(a)); }";
+        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; int b [ 10 ] ; memmove ( a , b , sizeof ( a ) ) ; }", tokenizeAndStringify(code3,false,true,Settings::Win32));
+
+        const char code4[] = "void foo() { int a[10]; ZeroMemory(a, sizeof(a)); }";
+        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; memset ( a , 0 , sizeof ( a ) ) ; }", tokenizeAndStringify(code4,false,true,Settings::Win32));
+
+        const char code5[] = "void foo() { ZeroMemory(f(1, g(a, b)), h(i, j(0, 1))); }";
+        ASSERT_EQUALS("void foo ( ) { memset ( f ( 1 , g ( a , b ) ) , 0 , h ( i , j ( 0 , 1 ) ) ) ; }", tokenizeAndStringify(code5,false,true,Settings::Win32));
+
+        const char code6[] = "void foo() { FillMemory(f(1, g(a, b)), h(i, j(0, 1)), 255); }";
+        ASSERT_EQUALS("void foo ( ) { memset ( f ( 1 , g ( a , b ) ) , 255 , h ( i , j ( 0 , 1 ) ) ) ; }", tokenizeAndStringify(code6,false,true,Settings::Win32));
     }
 
     void borland()

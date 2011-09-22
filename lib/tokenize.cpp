@@ -2547,6 +2547,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // remove Microsoft MFC..
     simplifyMicrosoftMFC();
 
+    // convert Microsoft memory functions
+    simplifyMicrosoftMemoryFunctions();
+
     // Remove Qt signals and slots
     simplifyQtSignalsSlots();
 
@@ -10437,6 +10440,95 @@ void Tokenizer::simplifyMicrosoftMFC()
     }
 }
 
+void Tokenizer::simplifyMicrosoftMemoryFunctions()
+{
+    // skip if not Windows
+    if (!(_settings->platformType == Settings::Win32 ||
+          _settings->platformType == Settings::Win64))
+        return;
+
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "CopyMemory ("))
+        {
+            tok->str("memcpy");
+        }
+        else if (Token::simpleMatch(tok, "MoveMemory ("))
+        {
+            tok->str("memmove");
+        }
+        else if (Token::simpleMatch(tok, "FillMemory ("))
+        {
+            // FillMemory(dst, len, val) -> memset(dst, val, len)
+            tok->str("memset");
+
+            // find first ','
+            Token *tok1 = tok->tokAt(2);
+            unsigned int level = 0;
+            while (tok1)
+            {
+                if (tok1->str() == "(")
+                    level++;
+                else if (tok1->str() == ")")
+                    level--;
+                else if (level == 0 && tok1->str() == ",")
+                    break;
+
+                tok1 = tok1->next();
+            }
+
+            // find second ','
+            if (tok1)
+            {
+                Token *tok2 = tok1->next();
+                level = 0;
+                while (tok2)
+                {
+                    if (tok2->str() == "(")
+                        level++;
+                    else if (tok2->str() == ")")
+                        level--;
+                    else if (level == 0 && tok2->str() == ",")
+                        break;
+
+                    tok2 = tok2->next();
+                }
+
+                // move second argument to third position
+                if (tok2)
+                {
+                    Token::move(tok1, tok2->previous(), tok->next()->link()->previous());
+                }
+            }
+        }
+        else if (Token::simpleMatch(tok, "ZeroMemory ("))
+        {
+            // ZeroMemory(dst, len) -> memset(dst, 0, len)
+            tok->str("memset");
+
+            Token *tok1 = tok->tokAt(2);
+            unsigned int level = 0;
+            while (tok1)
+            {
+                if (tok1->str() == "(")
+                    level++;
+                else if (tok1->str() == ")")
+                    level--;
+                else if (level == 0 && tok1->str() == ",")
+                    break;
+
+                tok1 = tok1->next();
+            }
+
+            if (tok1)
+            {
+                tok1->insertToken("0");
+                tok1 = tok1->next();
+                tok1->insertToken(",");
+            }
+        }
+    }
+}
 
 // Remove Borland code
 void Tokenizer::simplifyBorland()
