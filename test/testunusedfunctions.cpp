@@ -44,6 +44,7 @@ private:
         TEST_CASE(template1);
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
+        TEST_CASE(unusedMain);
         TEST_CASE(initializationIsNotAFunction);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
@@ -177,6 +178,18 @@ private:
         check("void foo() throw() {}\n"
               "int main()\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+    }
+
+    void unusedMain()
+    {
+        check("int main() { }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int _tmain() { }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int WinMain() { }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initializationIsNotAFunction()
