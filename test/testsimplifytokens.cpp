@@ -371,6 +371,7 @@ private:
         TEST_CASE(removeUnnecessaryQualification5);
         TEST_CASE(removeUnnecessaryQualification6); // ticket #2859
         TEST_CASE(removeUnnecessaryQualification7); // ticket #2970
+        TEST_CASE(removeUnnecessaryQualification8);
 
         TEST_CASE(simplifyIfNotNull);
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
@@ -7341,9 +7342,23 @@ private:
                             "    TProcedure::TProcedure(long endAddress) : m_lEndAddr(endAddress){}\n"
                             "private:\n"
                             "    long m_lEndAddr;\n"
-                            "}\n";
+                            "};\n";
         tok(code, false);
         ASSERT_EQUALS("[test.cpp:3]: (portability) Extra qualification 'TProcedure::' unnecessary and considered an error by many compilers.\n", errout.str());
+    }
+
+    void removeUnnecessaryQualification8()
+    {
+        const char code[] = "class Fred {\n"
+                            "public:\n"
+                            "    Fred & Fred::operator = (const Fred &);\n"
+                            "    void Fred::operator () (void);\n"
+                            "    void Fred::operator delete[](void* x);\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n"
+                      "[test.cpp:4]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n"
+                      "[test.cpp:5]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
     }
 
     void simplifyIfNotNull()

@@ -10748,32 +10748,54 @@ void Tokenizer::removeUnnecessaryQualification()
             if (tok == classInfo.back().classEnd)
                 classInfo.pop_back();
             else if (tok->str() == classInfo.back().className &&
-                     Token::Match(tok, "%type% :: %type% (") &&
-                     Token::Match(tok->tokAt(3)->link(), ") const| {|;|:") &&
-                     tok->previous()->str() != ":" && !classInfo.back().isNamespace)
+                     !classInfo.back().isNamespace && tok->previous()->str() != ":" &&
+                     (Token::Match(tok, "%type% :: %type% (") ||
+                      Token::Match(tok, "%type% :: operator")))
             {
-                std::string qualification = tok->str() + "::";
-
-                // check for extra qualification
-                /** @todo this should be made more generic to handle more levels */
-                if (Token::Match(tok->tokAt(-2), "%type% ::"))
+                int offset = 3;
+                if (tok->strAt(2) == "operator")
                 {
-                    if (classInfo.size() >= 2)
+                    const Token *tok1 = tok->tokAt(offset);
+
+                    // check for operator ()
+                    if (tok1->str() == "(")
                     {
-                        if (classInfo.at(classInfo.size() - 2).className != tok->strAt(-2))
-                            continue;
-                        else
-                            qualification = tok->strAt(-2) + "::" + qualification;
+                        tok1 = tok1->next();
+                        offset++;
                     }
-                    else
-                        continue;
+
+                    while (tok1 && tok1->str() != "(")
+                    {
+                        tok1 = tok1->next();
+                        offset++;
+                    }
                 }
 
-                if (_settings && _settings->isEnabled("portability"))
-                    unnecessaryQualificationError(tok, qualification);
+                if (Token::Match(tok->tokAt(offset)->link(), ") const| {|;|:"))
+                {
+                    std::string qualification = tok->str() + "::";
 
-                tok->deleteThis();
-                tok->deleteThis();
+                    // check for extra qualification
+                    /** @todo this should be made more generic to handle more levels */
+                    if (Token::Match(tok->tokAt(-2), "%type% ::"))
+                    {
+                        if (classInfo.size() >= 2)
+                        {
+                            if (classInfo.at(classInfo.size() - 2).className != tok->strAt(-2))
+                                continue;
+                            else
+                                qualification = tok->strAt(-2) + "::" + qualification;
+                        }
+                        else
+                            continue;
+                    }
+
+                    if (_settings && _settings->isEnabled("portability"))
+                        unnecessaryQualificationError(tok, qualification);
+
+                    tok->deleteThis();
+                    tok->deleteThis();
+                }
             }
         }
     }
