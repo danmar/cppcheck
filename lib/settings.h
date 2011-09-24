@@ -205,8 +205,9 @@ public:
 
     enum PlatformType
     {
-        Host, // whatever system this code was compiled on
-        Win32,
+        Unspecified, // whatever system this code was compiled on
+        Win32A,
+        Win32W,
         Win64,
         Unix32,
         Unix64

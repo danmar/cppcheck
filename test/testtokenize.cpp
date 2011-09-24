@@ -361,6 +361,8 @@ private:
         TEST_CASE(removeRedundantCodeAfterReturn);
 
         TEST_CASE(platformWin32);
+        TEST_CASE(platformWin32A);
+        TEST_CASE(platformWin32W);
         TEST_CASE(platformWin64);
         TEST_CASE(platformUnix32);
         TEST_CASE(platformUnix64);
@@ -379,7 +381,7 @@ private:
     }
 
 
-    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Host)
+    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified)
     {
         errout.str("");
 
@@ -4014,7 +4016,7 @@ private:
         const char code[] = "struct foo {\n"
                             "    void operator delete(void *obj, size_t sz);\n"
                             "}\n";
-        const std::string actual(tokenizeAndStringify(code, false, true, Settings::Win32));
+        const std::string actual(tokenizeAndStringify(code, false, true, Settings::Win32A));
 
         const char expected[] = "struct foo {\n"
                                 "void operatordelete ( void * obj , unsigned long sz ) ;\n"
@@ -5545,37 +5547,37 @@ private:
     void microsoftMFC()
     {
         const char code1[] = "class MyDialog : public CDialog { DECLARE_MESSAGE_MAP() private: CString text; };";
-        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code1,false,true,Settings::Win32));
+        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code1,false,true,Settings::Win32A));
 
         const char code2[] = "class MyDialog : public CDialog { DECLARE_DYNAMIC(MyDialog) private: CString text; };";
-        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code2,false,true,Settings::Win32));
+        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code2,false,true,Settings::Win32A));
 
         const char code3[] = "class MyDialog : public CDialog { DECLARE_DYNCREATE(MyDialog) private: CString text; };";
-        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code3,false,true,Settings::Win32));
+        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code3,false,true,Settings::Win32A));
 
         const char code4[] = "class MyDialog : public CDialog { DECLARE_DYNAMIC_CLASS(MyDialog) private: CString text; };";
-        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code4,false,true,Settings::Win32));
+        ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code4,false,true,Settings::Win32A));
     }
 
     void microsoftMemory()
     {
         const char code1[] = "void foo() { int a[10], b[10]; CopyMemory(a, b, sizeof(a)); }";
-        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; int b [ 10 ] ; memcpy ( a , b , sizeof ( a ) ) ; }", tokenizeAndStringify(code1,false,true,Settings::Win32));
+        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; int b [ 10 ] ; memcpy ( a , b , sizeof ( a ) ) ; }", tokenizeAndStringify(code1,false,true,Settings::Win32A));
 
         const char code2[] = "void foo() { int a[10]; FillMemory(a, sizeof(a), 255); }";
-        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; memset ( a , 255 , sizeof ( a ) ) ; }", tokenizeAndStringify(code2,false,true,Settings::Win32));
+        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; memset ( a , 255 , sizeof ( a ) ) ; }", tokenizeAndStringify(code2,false,true,Settings::Win32A));
 
         const char code3[] = "void foo() { int a[10], b[10]; MoveMemory(a, b, sizeof(a)); }";
-        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; int b [ 10 ] ; memmove ( a , b , sizeof ( a ) ) ; }", tokenizeAndStringify(code3,false,true,Settings::Win32));
+        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; int b [ 10 ] ; memmove ( a , b , sizeof ( a ) ) ; }", tokenizeAndStringify(code3,false,true,Settings::Win32A));
 
         const char code4[] = "void foo() { int a[10]; ZeroMemory(a, sizeof(a)); }";
-        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; memset ( a , 0 , sizeof ( a ) ) ; }", tokenizeAndStringify(code4,false,true,Settings::Win32));
+        ASSERT_EQUALS("void foo ( ) { int a [ 10 ] ; memset ( a , 0 , sizeof ( a ) ) ; }", tokenizeAndStringify(code4,false,true,Settings::Win32A));
 
         const char code5[] = "void foo() { ZeroMemory(f(1, g(a, b)), h(i, j(0, 1))); }";
-        ASSERT_EQUALS("void foo ( ) { memset ( f ( 1 , g ( a , b ) ) , 0 , h ( i , j ( 0 , 1 ) ) ) ; }", tokenizeAndStringify(code5,false,true,Settings::Win32));
+        ASSERT_EQUALS("void foo ( ) { memset ( f ( 1 , g ( a , b ) ) , 0 , h ( i , j ( 0 , 1 ) ) ) ; }", tokenizeAndStringify(code5,false,true,Settings::Win32A));
 
         const char code6[] = "void foo() { FillMemory(f(1, g(a, b)), h(i, j(0, 1)), 255); }";
-        ASSERT_EQUALS("void foo ( ) { memset ( f ( 1 , g ( a , b ) ) , 255 , h ( i , j ( 0 , 1 ) ) ) ; }", tokenizeAndStringify(code6,false,true,Settings::Win32));
+        ASSERT_EQUALS("void foo ( ) { memset ( f ( 1 , g ( a , b ) ) , 255 , h ( i , j ( 0 , 1 ) ) ) ; }", tokenizeAndStringify(code6,false,true,Settings::Win32A));
     }
 
     void borland()
@@ -6087,7 +6089,40 @@ private:
                                 "long S ; "
                                 "void * T ;";
 
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32A));
+    }
+
+    void platformWin32A()
+    {
+        const char code[] = "TCHAR c;"
+                            "PTSTR ptstr;"
+                            "LPTSTR lptstr;"
+                            "PCTSTR pctstr;"
+                            "LPCTSTR lpctstr;"
+                            "void foo() {"
+                            "    TCHAR src[10] = _T(\"123456789\");"
+                            "    TCHAR dst[10];"
+                            "    _tcscpy(dst, src);"
+                            "    dst[0] = 0;"
+                            "    _tcscat(dst, str);"
+                            "}";
+        const char expected[] = "char c ; "
+                                "char * ptstr ; "
+                                "char * lptstr ; "
+                                "const char * pctstr ; "
+                                "const char * lpctstr ; "
+                                "void foo ( ) { "
+                                "char src [ 10 ] = \"123456789\" ; "
+                                "char dst [ 10 ] ; "
+                                "strcpy ( dst , src ) ; "
+                                "dst [ 0 ] = 0 ; "
+                                "strcat ( dst , str ) ; "
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Win32A));
+    }
+
+    void platformWin32W()
+    {
     }
 
     void platformWin64()

@@ -628,6 +628,12 @@ public:
     void simplifyMicrosoftMemoryFunctions();
 
     /**
+    * Convert Microsoft string functions
+    * _tcscpy -> strcpy
+    */
+    void simplifyMicrosoftStringFunctions();
+
+    /**
       * Remove Borland code
       */
     void simplifyBorland();

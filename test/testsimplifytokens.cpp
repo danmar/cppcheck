@@ -384,7 +384,7 @@ private:
         TEST_CASE(removeRedundantFor);
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Host)
+    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified)
     {
         errout.str("");
 
@@ -863,7 +863,7 @@ private:
 
 
     // Simplify 'sizeof'..
-    std::string sizeof_(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Host)
+    std::string sizeof_(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified)
     {
         errout.str("");
 
@@ -977,8 +977,8 @@ private:
     {
         const char code[] = ";INT32 i[10];\n"
                             "sizeof(i[0]);\n";
-        ASSERT_EQUALS("; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", sizeof_(code, true, Settings::Host));
-        ASSERT_EQUALS("; int i [ 10 ] ; 4 ;", sizeof_(code, true, Settings::Win32));
+        ASSERT_EQUALS("; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", sizeof_(code, true, Settings::Unspecified));
+        ASSERT_EQUALS("; int i [ 10 ] ; 4 ;", sizeof_(code, true, Settings::Win32A));
     }
 
     void sizeof8()
@@ -1147,7 +1147,7 @@ private:
                             "compat_ulong_t um ; "
                             "long size ; size = sizeof ( m ) / sizeof ( um ) ;";
 
-        ASSERT_EQUALS(code, tok(code, true, Settings::Win32));
+        ASSERT_EQUALS(code, tok(code, true, Settings::Win32A));
     }
 
     void sizeof11()
@@ -2815,7 +2815,7 @@ private:
         {
             // Ticket #1997
             const char code[] = "void * operator new[](size_t);";
-            ASSERT_EQUALS("void * operatornew[] ( long ) ;", tok(code, true, Settings::Win32));
+            ASSERT_EQUALS("void * operatornew[] ( long ) ;", tok(code, true, Settings::Win32A));
         }
 
         ASSERT_EQUALS("; a [ 0 ] ;", tok(";a[0*(*p)];"));

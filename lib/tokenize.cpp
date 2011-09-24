@@ -2550,6 +2550,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // convert Microsoft memory functions
     simplifyMicrosoftMemoryFunctions();
 
+    // convert Microsoft string functions
+    simplifyMicrosoftStringFunctions();
+
     // Remove Qt signals and slots
     simplifyQtSignalsSlots();
 
@@ -6642,7 +6645,8 @@ void Tokenizer::simplifyPlatformTypes()
         }
     }
 
-    if (_settings->platformType == Settings::Win32 ||
+    if (_settings->platformType == Settings::Win32A ||
+        _settings->platformType == Settings::Win32W ||
         _settings->platformType == Settings::Win64)
     {
         for (Token *tok = _tokens; tok; tok = tok->next())
@@ -6765,6 +6769,28 @@ void Tokenizer::simplifyPlatformTypes()
             }
             else if (tok->str() == "VOID")
                 tok->str("void");
+            else if (tok->str() == "TCHAR")
+            {
+                if (_settings->platformType == Settings::Win32A)
+                    tok->str("char");
+            }
+            else if (Token::Match(tok, "PTSTR|LPTSTR"))
+            {
+                if (_settings->platformType == Settings::Win32A)
+                {
+                    tok->str("char");
+                    tok->insertToken("*");
+                }
+            }
+            else if (Token::Match(tok, "PCTSTR|LPCTSTR"))
+            {
+                if (_settings->platformType == Settings::Win32A)
+                {
+                    tok->str("const");
+                    tok->insertToken("*");
+                    tok->insertToken("char");
+                }
+            }
         }
     }
 }
@@ -10418,7 +10444,8 @@ void Tokenizer::simplifyBuiltinExpect()
 void Tokenizer::simplifyMicrosoftMFC()
 {
     // skip if not Windows
-    if (!(_settings->platformType == Settings::Win32 ||
+    if (!(_settings->platformType == Settings::Win32A ||
+          _settings->platformType == Settings::Win32W ||
           _settings->platformType == Settings::Win64))
         return;
 
@@ -10443,7 +10470,8 @@ void Tokenizer::simplifyMicrosoftMFC()
 void Tokenizer::simplifyMicrosoftMemoryFunctions()
 {
     // skip if not Windows
-    if (!(_settings->platformType == Settings::Win32 ||
+    if (!(_settings->platformType == Settings::Win32A ||
+          _settings->platformType == Settings::Win32W ||
           _settings->platformType == Settings::Win64))
         return;
 
@@ -10526,6 +10554,47 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
                 tok1 = tok1->next();
                 tok1->insertToken(",");
             }
+        }
+    }
+}
+
+void Tokenizer::simplifyMicrosoftStringFunctions()
+{
+    // skip if not Windows
+    if (_settings->platformType != Settings::Win32A)
+        return;
+
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "_tcscpy ("))
+        {
+            tok->str("strcpy");
+        }
+        else if (Token::simpleMatch(tok, "_tcscat ("))
+        {
+            tok->str("strcat");
+        }
+        else if (Token::simpleMatch(tok, "_tcsncpy ("))
+        {
+            tok->str("strncpy");
+        }
+        else if (Token::simpleMatch(tok, "_tcsncat ("))
+        {
+            tok->str("strncat");
+        }
+        else if (Token::simpleMatch(tok, "_tcslen ("))
+        {
+            tok->str("strlen");
+        }
+        else if (Token::simpleMatch(tok, "_tcsnlen ("))
+        {
+            tok->str("strnlen");
+        }
+        else if (Token::Match(tok, "_T ( %str% )"))
+        {
+            tok->deleteThis();
+            tok->deleteThis();
+            tok->deleteNext();
         }
     }
 }

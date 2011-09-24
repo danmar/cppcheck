@@ -596,8 +596,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         {
             std::string platform(11+argv[i]);
 
-            if (platform == "win32")
-                _settings->platform(Settings::Win32);
+            if (platform == "win32A")
+                _settings->platform(Settings::Win32A);
+            else if (platform == "win32W")
+                _settings->platform(Settings::Win32W);
             else if (platform == "win64")
                 _settings->platform(Settings::Win64);
             else if (platform == "unix32")
@@ -739,8 +741,10 @@ void CmdLineParser::PrintHelp()
               "                                 32 bit unix variant\n"
               "                          * unix64\n"
               "                                 64 bit unix variant\n"
-              "                          * win32\n"
-              "                                 32 bit Windows\n"
+              "                          * win32A\n"
+              "                                 32 bit Windows ASCII character encoding\n"
+              "                          * win32W\n"
+              "                                 32 bit Windows UNICODE character encoding\n"
               "                          * win64\n"
               "                                 64 bit Windows\n"
               "    -q, --quiet          Only print error messages.\n"
