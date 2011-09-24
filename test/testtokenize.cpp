@@ -6094,7 +6094,8 @@ private:
 
     void platformWin32A()
     {
-        const char code[] = "TCHAR c;"
+        const char code[] = "wchar_t wc;"
+                            "TCHAR c;"
                             "PTSTR ptstr;"
                             "LPTSTR lptstr;"
                             "PCTSTR pctstr;"
@@ -6104,9 +6105,10 @@ private:
                             "    TCHAR dst[10];"
                             "    _tcscpy(dst, src);"
                             "    dst[0] = 0;"
-                            "    _tcscat(dst, str);"
+                            "    _tcscat(dst, src);"
                             "}";
-        const char expected[] = "char c ; "
+        const char expected[] = "unsigned short wc ; "
+                                "char c ; "
                                 "char * ptstr ; "
                                 "char * lptstr ; "
                                 "const char * pctstr ; "
@@ -6116,13 +6118,40 @@ private:
                                 "char dst [ 10 ] ; "
                                 "strcpy ( dst , src ) ; "
                                 "dst [ 0 ] = 0 ; "
-                                "strcat ( dst , str ) ; "
+                                "strcat ( dst , src ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Win32A));
     }
 
     void platformWin32W()
     {
+        const char code[] = "wchar_t wc;"
+                            "TCHAR c;"
+                            "PTSTR ptstr;"
+                            "LPTSTR lptstr;"
+                            "PCTSTR pctstr;"
+                            "LPCTSTR lpctstr;"
+                            "void foo() {"
+                            "    TCHAR src[10] = _T(\"123456789\");"
+                            "    TCHAR dst[10];"
+                            "    _tcscpy(dst, src);"
+                            "    dst[0] = 0;"
+                            "    _tcscat(dst, src);"
+                            "}";
+        const char expected[] = "unsigned short wc ; "
+                                "unsigned short c ; "
+                                "unsigned short * ptstr ; "
+                                "unsigned short * lptstr ; "
+                                "const unsigned short * pctstr ; "
+                                "const unsigned short * lpctstr ; "
+                                "void foo ( ) { "
+                                "unsigned short src [ 10 ] = \"123456789\" ; "
+                                "unsigned short dst [ 10 ] ; "
+                                "wcscpy ( dst , src ) ; "
+                                "dst [ 0 ] = 0 ; "
+                                "wcscat ( dst , src ) ; "
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Win32W));
     }
 
     void platformWin64()

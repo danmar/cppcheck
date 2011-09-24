@@ -6762,7 +6762,7 @@ void Tokenizer::simplifyPlatformTypes()
                 else
                     tok->insertToken("long");
             }
-            else if (Token::Match(tok, "USHORT|WORD"))
+            else if (Token::Match(tok, "USHORT|WORD|WCHAR|wchar_t"))
             {
                 tok->str("unsigned");
                 tok->insertToken("short");
@@ -6773,6 +6773,11 @@ void Tokenizer::simplifyPlatformTypes()
             {
                 if (_settings->platformType == Settings::Win32A)
                     tok->str("char");
+                else
+                {
+                    tok->str("unsigned");
+                    tok->insertToken("short");
+                }
             }
             else if (Token::Match(tok, "PTSTR|LPTSTR"))
             {
@@ -6780,6 +6785,12 @@ void Tokenizer::simplifyPlatformTypes()
                 {
                     tok->str("char");
                     tok->insertToken("*");
+                }
+                else
+                {
+                    tok->str("unsigned");
+                    tok->insertToken("*");
+                    tok->insertToken("short");
                 }
             }
             else if (Token::Match(tok, "PCTSTR|LPCTSTR"))
@@ -6789,6 +6800,13 @@ void Tokenizer::simplifyPlatformTypes()
                     tok->str("const");
                     tok->insertToken("*");
                     tok->insertToken("char");
+                }
+                else
+                {
+                    tok->str("const");
+                    tok->insertToken("*");
+                    tok->insertToken("short");
+                    tok->insertToken("unsigned");
                 }
             }
         }
@@ -10561,40 +10579,77 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
 void Tokenizer::simplifyMicrosoftStringFunctions()
 {
     // skip if not Windows
-    if (_settings->platformType != Settings::Win32A)
-        return;
-
-    for (Token *tok = _tokens; tok; tok = tok->next())
+    if (_settings->platformType == Settings::Win32A)
     {
-        if (Token::simpleMatch(tok, "_tcscpy ("))
+        for (Token *tok = _tokens; tok; tok = tok->next())
         {
-            tok->str("strcpy");
+            if (Token::simpleMatch(tok, "_tcscpy ("))
+            {
+                tok->str("strcpy");
+            }
+            else if (Token::simpleMatch(tok, "_tcscat ("))
+            {
+                tok->str("strcat");
+            }
+            else if (Token::simpleMatch(tok, "_tcsncpy ("))
+            {
+                tok->str("strncpy");
+            }
+            else if (Token::simpleMatch(tok, "_tcsncat ("))
+            {
+                tok->str("strncat");
+            }
+            else if (Token::simpleMatch(tok, "_tcslen ("))
+            {
+                tok->str("strlen");
+            }
+            else if (Token::simpleMatch(tok, "_tcsnlen ("))
+            {
+                tok->str("strnlen");
+            }
+            else if (Token::Match(tok, "_T ( %str% )"))
+            {
+                tok->deleteThis();
+                tok->deleteThis();
+                tok->deleteNext();
+            }
         }
-        else if (Token::simpleMatch(tok, "_tcscat ("))
+    }
+    else if (_settings->platformType == Settings::Win32W ||
+             _settings->platformType == Settings::Win64)
+    {
+        for (Token *tok = _tokens; tok; tok = tok->next())
         {
-            tok->str("strcat");
-        }
-        else if (Token::simpleMatch(tok, "_tcsncpy ("))
-        {
-            tok->str("strncpy");
-        }
-        else if (Token::simpleMatch(tok, "_tcsncat ("))
-        {
-            tok->str("strncat");
-        }
-        else if (Token::simpleMatch(tok, "_tcslen ("))
-        {
-            tok->str("strlen");
-        }
-        else if (Token::simpleMatch(tok, "_tcsnlen ("))
-        {
-            tok->str("strnlen");
-        }
-        else if (Token::Match(tok, "_T ( %str% )"))
-        {
-            tok->deleteThis();
-            tok->deleteThis();
-            tok->deleteNext();
+            if (Token::simpleMatch(tok, "_tcscpy ("))
+            {
+                tok->str("wcscpy");
+            }
+            else if (Token::simpleMatch(tok, "_tcscat ("))
+            {
+                tok->str("wcscat");
+            }
+            else if (Token::simpleMatch(tok, "_tcsncpy ("))
+            {
+                tok->str("wcsncpy");
+            }
+            else if (Token::simpleMatch(tok, "_tcsncat ("))
+            {
+                tok->str("wcsncat");
+            }
+            else if (Token::simpleMatch(tok, "_tcslen ("))
+            {
+                tok->str("wcslen");
+            }
+            else if (Token::simpleMatch(tok, "_tcsnlen ("))
+            {
+                tok->str("wcsnlen");
+            }
+            else if (Token::Match(tok, "_T ( %str% )"))
+            {
+                tok->deleteThis();
+                tok->deleteThis();
+                tok->deleteNext();
+            }
         }
     }
 }
