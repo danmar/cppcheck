@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 
 #include "checkobsoletefunctions.h"
+#include "symboldatabase.h"
 
 //---------------------------------------------------------------------------
 
@@ -40,13 +41,19 @@ void CheckObsoleteFunctions::obsoleteFunctions()
     if (_tokenizer->isJavaOrCSharp())
         return;
 
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->isName() && tok->varId()==0 && tok->strAt(1) == "(" && !Token::Match(tok->previous(), ".|::|:|,"))
         {
             // function declaration?
-            if (tok->previous() && tok->previous()->isName())
+            if (symbolDatabase->findFunctionByToken(tok))
+            {
+                _obsoleteStandardFunctions.erase(tok->str());
+                _obsoletePosixFunctions.erase(tok->str());
                 continue;
+            }
 
             std::map<std::string,std::string>::const_iterator it = _obsoleteStandardFunctions.find(tok->str());
             if (it != _obsoleteStandardFunctions.end())

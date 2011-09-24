@@ -48,6 +48,9 @@ private:
 
         // dangerous function
         TEST_CASE(testgets);
+
+        // declared function ticket #3121
+        TEST_CASE(test_declared_function);
     }
 
     void check(const char code[])
@@ -213,8 +216,20 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (information) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n", errout.str());
     }
 
-
-
+    // ticket #3121
+    void test_declared_function()
+    {
+        check("ftime ( int a )\n"
+              "{\n"
+              "    return a;\n"
+              "}\n"
+              "int main ()\n"
+              "{\n"
+              "    int b ; b = ftime ( 1 ) ;\n"
+              "    return 0 ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestObsoleteFunctions)
