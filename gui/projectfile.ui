@@ -225,7 +225,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
-          <widget class="QListWidget" name="mListIgnoredPaths"/>
+          <widget class="QListWidget" name="mListExcludedPaths"/>
          </item>
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -298,7 +298,7 @@
   <tabstop>mBtnRemoveInclude</tabstop>
   <tabstop>mBtnIncludeUp</tabstop>
   <tabstop>mBtnIncludeDown</tabstop>
-  <tabstop>mListIgnoredPaths</tabstop>
+  <tabstop>mListExcludedPaths</tabstop>
   <tabstop>mBtnAddIgnorePath</tabstop>
   <tabstop>mBtnEditIgnorePath</tabstop>
   <tabstop>mBtnRemoveIgnorePath</tabstop>

@@ -68,10 +68,10 @@ public:
     QStringList GetPaths() const;
 
     /**
-    * @brief Return ignored paths from the dialog control.
-    * @return List of ignored paths.
+    * @brief Return excluded paths from the dialog control.
+    * @return List of excluded paths.
     */
-    QStringList GetIgnorePaths() const;
+    QStringList GetExcludedPaths() const;
 
     /**
     * @brief Set project root path to dialog control.
@@ -98,10 +98,10 @@ public:
     void SetPaths(const QStringList &paths);
 
     /**
-    * @brief Set ignored paths to dialog control.
+    * @brief Set excluded paths to dialog control.
     * @param paths List of path names to set to dialog control.
     */
-    void SetIgnorePaths(const QStringList &paths);
+    void SetExcludedPaths(const QStringList &paths);
 
 protected slots:
     /**
@@ -136,19 +136,19 @@ protected slots:
     void RemovePath();
 
     /**
-    * @brief Add new path to ignore.
+    * @brief Add new path to exclude.
     */
-    void AddIgnorePath();
+    void AddExcludePath();
 
     /**
-    * @brief Edit ignored path in the list.
+    * @brief Edit excluded path in the list.
     */
-    void EditIgnorePath();
+    void EditExcludePath();
 
     /**
-    * @brief Remove ignored path from the list.
+    * @brief Remove excluded path from the list.
     */
-    void RemoveIgnorePath();
+    void RemoveExcludePath();
 
     /**
       * @brief Move include path up in the list.
@@ -188,7 +188,7 @@ protected:
     * @brief Add new path to ignore list.
     * @param path Path to add.
     */
-    void AddIgnorePath(const QString &path);
+    void AddExcludePath(const QString &path);
 
 private:
     Ui::ProjectFile mUI;
