@@ -6106,6 +6106,11 @@ private:
                             "    _tcscpy(dst, src);"
                             "    dst[0] = 0;"
                             "    _tcscat(dst, src);"
+                            "    _tprintf(_T(\"Hello world!\n\"));"
+                            "    _stprintf(dst, _T(\"Hello!\n\"));"
+                            "    _sntprintf(dst, sizeof(dst) / sizeof(TCHAR), _T(\"Hello world!\n\"));"
+                            "    _tscanf(_T(\"%s\"), dst);"
+                            "    _stscanf(dst, _T(\"%s\"), dst);"
                             "}";
         const char expected[] = "unsigned short wc ; "
                                 "char c ; "
@@ -6119,6 +6124,11 @@ private:
                                 "strcpy ( dst , src ) ; "
                                 "dst [ 0 ] = 0 ; "
                                 "strcat ( dst , src ) ; "
+                                "printf ( \"Hello world!\n\" ) ; "
+                                "sprintf ( dst , \"Hello!\n\" ) ; "
+                                "snprintf ( dst , sizeof ( dst ) / sizeof ( char ) , \"Hello world!\n\" ) ; "
+                                "scanf ( \"%s\" , dst ) ; "
+                                "sscanf ( dst , \"%s\" , dst ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Win32A));
     }
@@ -6137,6 +6147,11 @@ private:
                             "    _tcscpy(dst, src);"
                             "    dst[0] = 0;"
                             "    _tcscat(dst, src);"
+                            "    _tprintf(_T(\"Hello world!\n\"));"
+                            "    _stprintf(dst, _T(\"Hello!\n\"));"
+                            "    _sntprintf(dst, sizeof(dst) / sizeof(TCHAR), _T(\"Hello world!\n\"));"
+                            "    _tscanf(_T(\"%s\"), dst);"
+                            "    _stscanf(dst, _T(\"%s\"), dst);"
                             "}";
         const char expected[] = "unsigned short wc ; "
                                 "unsigned short c ; "
@@ -6150,6 +6165,11 @@ private:
                                 "wcscpy ( dst , src ) ; "
                                 "dst [ 0 ] = 0 ; "
                                 "wcscat ( dst , src ) ; "
+                                "wprintf ( \"Hello world!\n\" ) ; "
+                                "swprintf ( dst , \"Hello!\n\" ) ; "
+                                "snwprintf ( dst , sizeof ( dst ) / sizeof ( unsigned short ) , \"Hello world!\n\" ) ; "
+                                "wscanf ( \"%s\" , dst ) ; "
+                                "swscanf ( dst , \"%s\" , dst ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Win32W));
     }
