@@ -18,13 +18,15 @@
 
 
 //---------------------------------------------------------------------------
-#include "checkother.h"
-#include "mathlib.h"
-#include "symboldatabase.h"
+// Remove includes from the benchmark run
+// Included files aren't found anyway
+//#include "checkother.h"
+//#include "mathlib.h"
+//#include "symboldatabase.h"
 
-#include <cctype> // std::isupper
-#include <cmath> // fabs()
-#include <stack>
+//#include <cctype> // std::isupper
+//#include <cmath> // fabs()
+//#include <stack>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
