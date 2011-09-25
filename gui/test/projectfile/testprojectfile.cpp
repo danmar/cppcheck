@@ -65,9 +65,9 @@ void TestProjectFile::loadSimpleWithIgnore()
     QCOMPARE(paths.size(), 2);
     QCOMPARE(paths[0], QString("gui/"));
     QCOMPARE(paths[1], QString("test/"));
-    QStringList ignores = pfile.GetExcludedPaths();
-    QCOMPARE(ignores.size(), 1);
-    QCOMPARE(ignores[0], QString("gui/temp/"));
+    QStringList excludes = pfile.GetExcludedPaths();
+    QCOMPARE(excludes.size(), 1);
+    QCOMPARE(excludes[0], QString("gui/temp/"));
     QStringList defines = pfile.GetDefines();
     QCOMPARE(defines.size(), 1);
     QCOMPARE(defines[0], QString("FOO"));
@@ -87,9 +87,9 @@ void TestProjectFile::loadSimpleNoroot()
     QCOMPARE(paths.size(), 2);
     QCOMPARE(paths[0], QString("gui/"));
     QCOMPARE(paths[1], QString("test/"));
-    QStringList ignores = pfile.GetExcludedPaths();
-    QCOMPARE(ignores.size(), 1);
-    QCOMPARE(ignores[0], QString("gui/temp/"));
+    QStringList excludes = pfile.GetExcludedPaths();
+    QCOMPARE(excludes.size(), 1);
+    QCOMPARE(excludes[0], QString("gui/temp/"));
     QStringList defines = pfile.GetDefines();
     QCOMPARE(defines.size(), 1);
     QCOMPARE(defines[0], QString("FOO"));
