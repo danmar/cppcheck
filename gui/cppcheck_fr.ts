@@ -620,10 +620,6 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Ignore</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Root:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -633,6 +629,10 @@ Do you want to remove the file from the recently used projects -list?</source>
     </message>
     <message>
         <source>Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exclude</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1061,48 +1061,55 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Project Settings
-	Project:	%1
-	Paths:	%2
-	Include paths:	%3
-	Defines:	%4
-Previous Scan
-	Path selected:	%5
-	Number of files scanned:	%6
-	Scan duration:	%7
-Statistics
-	Errors:	%8
-	Warnings:	%9
-	Style warnings:	%10
-	Portability warnings:	%11
-	Performance warnings:	%12
-	Information messages:	%13
-</source>
+        <source>Project Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;h3&gt;Project Settings&lt;h3&gt;
-&lt;table&gt;
- &lt;tr&gt;&lt;th&gt;Project:&lt;/th&gt;&lt;td&gt;%1&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;th&gt;Paths:&lt;/th&gt;&lt;td&gt;%2&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;th&gt;Include paths:&lt;/th&gt;&lt;td&gt;%3&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;th&gt;Defines:&lt;/th&gt;&lt;td&gt;%4&lt;/td&gt;&lt;/tr&gt;
-&lt;/table&gt;
-&lt;h3&gt;Previous Scan&lt;/h3&gt;
-&lt;table&gt;
- &lt;tr&gt;&lt;th&gt;Path selected:&lt;/th&gt;&lt;td&gt;%5&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;th&gt;Number of files scanned:&lt;/th&gt;&lt;td&gt;%6&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;th&gt;Scan duration:&lt;/th&gt;&lt;td&gt;%7&lt;/td&gt;&lt;/tr&gt;
-&lt;/table&gt;
-&lt;h3&gt;Statistics&lt;/h3&gt;
- &lt;tr&gt;&lt;th&gt;Errors:&lt;/th&gt;&lt;td&gt;%8&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;th&gt;Warnings:&lt;/th&gt;&lt;td&gt;%9&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;th&gt;Style warnings:&lt;/th&gt;&lt;td&gt;%10&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;th&gt;Portability warnings:&lt;/th&gt;&lt;td&gt;%11&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;th&gt;Performance warnings:&lt;/th&gt;&lt;td&gt;%12&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;th&gt;Information messages:&lt;/th&gt;&lt;td&gt;%13&lt;/td&gt;&lt;/tr&gt;
-&lt;/table&gt;
-</source>
+        <source>Paths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Include paths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Defines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Path selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of files scanned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scan duration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Errors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Style warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Portability warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Performance warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Information messages</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
