@@ -45,11 +45,21 @@ static void AddFilesToList(const std::string& FileList, std::vector<std::string>
     // xml is a bonus then, since we can easily extend it
     // we need a good parser then -> suggestion : TinyXml
     // drawback : creates a dependency
-    std::ifstream Files(FileList.c_str());
+    std::istream *Files;
+    std::ifstream Infile;
+    if (FileList.compare("-") == 0) // read from stdin
+    {
+        Files = &std::cin;
+    }
+    else
+    {
+        Infile.open(FileList.c_str());
+        Files = &Infile;
+    }
     if (Files)
     {
-        std::string FileName;
-        while (std::getline(Files, FileName)) // next line
+        std::cout << "Program is here" << std::endl;
+        while (std::getline(*Files, FileName)) // next line
         {
             if (!FileName.empty())
             {
