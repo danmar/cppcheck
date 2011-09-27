@@ -534,12 +534,13 @@ private:
     
     void fileListStdin()
     {
-        // TODO: Give it some stdin to read from
+        // TODO: Give it some stdin to read from, fails because the list of
+        // files in stdin (_pathnames) is empty
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--file-list", "-", "file.cpp"};
+        const char *argv[] = {"cppcheck", "--file-list=-", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(4, argv));
+        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(3, argv));
     }
 
     void inlineSuppr()
