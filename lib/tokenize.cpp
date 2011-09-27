@@ -10633,6 +10633,12 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->deleteThis();
                 tok->deleteNext();
             }
+            else if (Token::Match(tok, "_T ( %any% )") && tok->strAt(2)[0] == '\'')
+            {
+                tok->deleteThis();
+                tok->deleteThis();
+                tok->deleteNext();
+            }
         }
     }
     else if (_settings->platformType == Settings::Win32W ||
@@ -10685,6 +10691,12 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->str("swscanf");
             }
             else if (Token::Match(tok, "_T ( %str% )"))
+            {
+                tok->deleteThis();
+                tok->deleteThis();
+                tok->deleteNext();
+            }
+            else if (Token::Match(tok, "_T ( %any% )") && tok->strAt(2)[0] == '\'')
             {
                 tok->deleteThis();
                 tok->deleteThis();
