@@ -71,6 +71,7 @@ private:
         TEST_CASE(exitcodeSuppressions);
         TEST_CASE(exitcodeSuppressionsNoFile);
         TEST_CASE(fileList); // TODO: Create and test real file listing file
+        TEST_CASE(fileListStdin);
         TEST_CASE(inlineSuppr);
         TEST_CASE(jobs);
         TEST_CASE(jobsMissingCount);
@@ -526,6 +527,16 @@ private:
         // TODO: Fails since cannot open the file
         REDIRECT;
         const char *argv[] = {"cppcheck", "--file-list", "files.txt", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(4, argv));
+    }
+    
+    void fileListStdin()
+    {
+        // TODO: Give it some stdin to read from
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--file-list", "-", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
         TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(4, argv));
