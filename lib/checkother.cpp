@@ -2526,23 +2526,29 @@ void CheckOther::checkSignOfUnsignedVariable()
         // check all the code in the function
         for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next())
         {
-            if (Token::Match(tok, "( %var% <|<= 0 )") && tok->next()->varId())
+            if (Token::Match(tok, "(|&&|%oror% %var% <|<= 0 )|&&|%oror%") && tok->next()->varId())
             {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
                 if (var && var->typeEndToken()->isUnsigned())
                     unsignedLessThanZeroError(tok->next(), tok->next()->str());
             }
-            else if (Token::Match(tok, "( 0 > %var% )") && tok->tokAt(3)->varId())
+            else if (Token::Match(tok, "(|&&|%oror% 0 > %var% )|&&|%oror%") && tok->tokAt(3)->varId())
             {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
                     unsignedLessThanZeroError(tok->tokAt(3), tok->strAt(3));
             }
-            else if (Token::Match(tok, "( 0 <= %var% )") && tok->tokAt(3)->varId())
+            else if (Token::Match(tok, "(|&&|%oror% 0 <= %var% )|&&|%oror%") && tok->tokAt(3)->varId())
             {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
                     unsignedPositiveError(tok->tokAt(3), tok->strAt(3));
+            }
+            else if (Token::Match(tok, "(|&&|%oror% %var% >= 0 )|&&|%oror%") && tok->next()->varId())
+            {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                if (var && var->typeEndToken()->isUnsigned())
+                    unsignedPositiveError(tok->next(), tok->next()->str());
             }
         }
     }

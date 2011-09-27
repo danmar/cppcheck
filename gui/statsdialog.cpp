@@ -98,76 +98,141 @@ void StatsDialog::copyToClipboard()
     QClipboard *clipboard = QApplication::clipboard();
     if (clipboard)
     {
+        const QString projSettings(tr("Project Settings"));
+        const QString project(tr("Project"));
+        const QString paths(tr("Paths"));
+        const QString incPaths(tr("Include paths"));
+        const QString defines(tr("Defines"));
+        const QString prevScan(tr("Previous Scan"));
+        const QString selPath(tr("Path selected"));
+        const QString numFiles(tr("Number of files scanned"));
+        const QString duration(tr("Scan duration"));
+        const QString stats(tr("Statistics"));
+        const QString errors(tr("Errors"));
+        const QString warnings(tr("Warnings"));
+        const QString style(tr("Style warnings"));
+        const QString portability(tr("Portability warnings"));
+        const QString performance(tr("Performance warnings"));
+        const QString information(tr("Information messages"));
+
         // Plain text summary
-        QString textSummary = tr(
-                                  "Project Settings\n"
-                                  "\tProject:\t%1\n"
-                                  "\tPaths:\t%2\n"
-                                  "\tInclude paths:\t%3\n"
-                                  "\tDefines:\t%4\n"
-                                  "Previous Scan\n"
-                                  "\tPath selected:\t%5\n"
-                                  "\tNumber of files scanned:\t%6\n"
-                                  "\tScan duration:\t%7\n"
-                                  "Statistics\n"
-                                  "\tErrors:\t%8\n"
-                                  "\tWarnings:\t%9\n"
-                                  "\tStyle warnings:\t%10\n"
-                                  "\tPortability warnings:\t%11\n"
-                                  "\tPerformance warnings:\t%12\n"
-                                  "\tInformation messages:\t%13\n"
-                              )
-                              .arg(mUI.mProject->text())
-                              .arg(mUI.mPaths->text())
-                              .arg(mUI.mIncludePaths->text())
-                              .arg(mUI.mDefines->text())
-                              .arg(mUI.mPath->text())
-                              .arg(mUI.mNumberOfFilesScanned->text())
-                              .arg(mUI.mScanDuration->text())
-                              .arg(mStatistics->GetCount(SHOW_ERRORS))
-                              .arg(mStatistics->GetCount(SHOW_WARNINGS))
-                              .arg(mStatistics->GetCount(SHOW_STYLE))
-                              .arg(mStatistics->GetCount(SHOW_PORTABILITY))
-                              .arg(mStatistics->GetCount(SHOW_PERFORMANCE))
-                              .arg(mStatistics->GetCount(SHOW_INFORMATION));
+        const QString settings = QString(
+                                     "%1\n"
+                                     "\t%2:\t%3\n"
+                                     "\t%4:\t%5\n"
+                                     "\t%6:\t%7\n"
+                                     "\t%8:\t%9\n"
+                                 )
+                                 .arg(projSettings)
+                                 .arg(project)
+                                 .arg(mUI.mProject->text())
+                                 .arg(paths)
+                                 .arg(mUI.mPaths->text())
+                                 .arg(incPaths)
+                                 .arg(mUI.mIncludePaths->text())
+                                 .arg(defines)
+                                 .arg(mUI.mDefines->text());
+
+        const QString previous = QString(
+                                     "%1\n"
+                                     "\t%2:\t%3\n"
+                                     "\t%4:\t%5\n"
+                                     "\t%6:\t%7\n"
+                                 )
+                                 .arg(prevScan)
+                                 .arg(selPath)
+                                 .arg(mUI.mPath->text())
+                                 .arg(numFiles)
+                                 .arg(mUI.mNumberOfFilesScanned->text())
+                                 .arg(duration)
+                                 .arg(mUI.mScanDuration->text());
+
+        const QString statistics = QString(
+                                       "%1\n"
+                                       "\t%2:\t%3\n"
+                                       "\t%4:\t%5\n"
+                                       "\t%6:\t%7\n"
+                                       "\t%8:\t%9\n"
+                                       "\t%10:\t%11\n"
+                                       "\t%12:\t%13\n"
+                                   )
+                                   .arg(stats)
+                                   .arg(errors)
+                                   .arg(mStatistics->GetCount(SHOW_ERRORS))
+                                   .arg(warnings)
+                                   .arg(mStatistics->GetCount(SHOW_WARNINGS))
+                                   .arg(style)
+                                   .arg(mStatistics->GetCount(SHOW_STYLE))
+                                   .arg(portability)
+                                   .arg(mStatistics->GetCount(SHOW_PORTABILITY))
+                                   .arg(performance)
+                                   .arg(mStatistics->GetCount(SHOW_PERFORMANCE))
+                                   .arg(information)
+                                   .arg(mStatistics->GetCount(SHOW_INFORMATION));
+
+        const QString textSummary = settings + previous + statistics;
 
         // HTML summary
-        QString htmlSummary = tr(
-                                  "<h3>Project Settings<h3>\n"
-                                  "<table>\n"
-                                  " <tr><th>Project:</th><td>%1</td></tr>\n"
-                                  " <tr><th>Paths:</th><td>%2</td></tr>\n"
-                                  " <tr><th>Include paths:</th><td>%3</td></tr>\n"
-                                  " <tr><th>Defines:</th><td>%4</td></tr>\n"
-                                  "</table>\n"
-                                  "<h3>Previous Scan</h3>\n"
-                                  "<table>\n"
-                                  " <tr><th>Path selected:</th><td>%5</td></tr>\n"
-                                  " <tr><th>Number of files scanned:</th><td>%6</td></tr>\n"
-                                  " <tr><th>Scan duration:</th><td>%7</td></tr>\n"
-                                  "</table>\n"
-                                  "<h3>Statistics</h3>\n"
-                                  " <tr><th>Errors:</th><td>%8</td></tr>\n"
-                                  " <tr><th>Warnings:</th><td>%9</td></tr>\n"
-                                  " <tr><th>Style warnings:</th><td>%10</td></tr>\n"
-                                  " <tr><th>Portability warnings:</th><td>%11</td></tr>\n"
-                                  " <tr><th>Performance warnings:</th><td>%12</td></tr>\n"
-                                  " <tr><th>Information messages:</th><td>%13</td></tr>\n"
-                                  "</table>\n"
-                              )
-                              .arg(mUI.mProject->text())
-                              .arg(mUI.mPaths->text())
-                              .arg(mUI.mIncludePaths->text())
-                              .arg(mUI.mDefines->text())
-                              .arg(mUI.mPath->text())
-                              .arg(mUI.mNumberOfFilesScanned->text())
-                              .arg(mUI.mScanDuration->text())
-                              .arg(mStatistics->GetCount(SHOW_ERRORS))
-                              .arg(mStatistics->GetCount(SHOW_WARNINGS))
-                              .arg(mStatistics->GetCount(SHOW_STYLE))
-                              .arg(mStatistics->GetCount(SHOW_PORTABILITY))
-                              .arg(mStatistics->GetCount(SHOW_PERFORMANCE))
-                              .arg(mStatistics->GetCount(SHOW_INFORMATION));
+        const QString htmlSettings = QString(
+                                         "<h3>%1<h3>\n"
+                                         "<table>\n"
+                                         " <tr><th>%2:</th><td>%3</td></tr>\n"
+                                         " <tr><th>%4:</th><td>%5</td></tr>\n"
+                                         " <tr><th>%6:</th><td>%7</td></tr>\n"
+                                         " <tr><th>%8:</th><td>%9</td></tr>\n"
+                                         "</table>\n"
+                                     )
+                                     .arg(projSettings)
+                                     .arg(project)
+                                     .arg(mUI.mProject->text())
+                                     .arg(paths)
+                                     .arg(mUI.mPaths->text())
+                                     .arg(incPaths)
+                                     .arg(mUI.mIncludePaths->text())
+                                     .arg(defines)
+                                     .arg(mUI.mDefines->text());
+
+        const QString htmlPrevious = QString(
+                                         "<h3>%1</h3>\n"
+                                         "<table>\n"
+                                         " <tr><th>%2:</th><td>%3</td></tr>\n"
+                                         " <tr><th>%4:</th><td>%5</td></tr>\n"
+                                         " <tr><th>%6:</th><td>%7</td></tr>\n"
+                                         "</table>\n"
+                                     )
+                                     .arg(prevScan)
+                                     .arg(selPath)
+                                     .arg(mUI.mPath->text())
+                                     .arg(numFiles)
+                                     .arg(mUI.mNumberOfFilesScanned->text())
+                                     .arg(duration)
+                                     .arg(mUI.mScanDuration->text());
+
+        const QString htmlStatistics = QString(
+                                           "<h3>%1</h3>\n"
+                                           " <tr><th>%2:</th><td>%3</td></tr>\n"
+                                           " <tr><th>%4:</th><td>%5</td></tr>\n"
+                                           " <tr><th>%6:</th><td>%7</td></tr>\n"
+                                           " <tr><th>%8:</th><td>%9</td></tr>\n"
+                                           " <tr><th>%10:</th><td>%11</td></tr>\n"
+                                           " <tr><th>%12:</th><td>%13</td></tr>\n"
+                                           "</table>\n"
+                                       )
+                                       .arg(stats)
+                                       .arg(errors)
+                                       .arg(mStatistics->GetCount(SHOW_ERRORS))
+                                       .arg(warnings)
+                                       .arg(mStatistics->GetCount(SHOW_WARNINGS))
+                                       .arg(style)
+                                       .arg(mStatistics->GetCount(SHOW_STYLE))
+                                       .arg(portability)
+                                       .arg(mStatistics->GetCount(SHOW_PORTABILITY))
+                                       .arg(performance)
+                                       .arg(mStatistics->GetCount(SHOW_PERFORMANCE))
+                                       .arg(information)
+                                       .arg(mStatistics->GetCount(SHOW_INFORMATION));
+
+        const QString htmlSummary = htmlSettings + htmlPrevious + htmlStatistics;
 
         QMimeData *mimeData = new QMimeData();
         mimeData->setText(textSummary);

@@ -3241,6 +3241,153 @@ private:
             "  return false;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x, bool y) {\n"
+            "  if (x < 0 && y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x, bool y) {\n"
+            "  if (x < 0 && y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x, bool y) {\n"
+            "  if (0 > x && y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x, bool y) {\n"
+            "  if (0 > x && y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x, bool y) {\n"
+            "  if (x >= 0 && y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is positive is always true.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x, bool y) {\n"
+            "  if (x >= 0 && y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x, bool y) {\n"
+            "  if (y && x < 0)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x, bool y) {\n"
+            "  if (y && x < 0)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x, bool y) {\n"
+            "  if (y && 0 > x)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x, bool y) {\n"
+            "  if (y && 0 > x)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x, bool y) {\n"
+            "  if (y && x >= 0)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is positive is always true.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x, bool y) {\n"
+            "  if (y && x >= 0)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x, bool y) {\n"
+            "  if (x < 0 || y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x, bool y) {\n"
+            "  if (x < 0 || y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x, bool y) {\n"
+            "  if (0 > x || y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x, bool y) {\n"
+            "  if (0 > x || y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(unsigned int x, bool y) {\n"
+            "  if (x >= 0 || y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is positive is always true.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int x, bool y) {\n"
+            "  if (x >= 0 || y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
