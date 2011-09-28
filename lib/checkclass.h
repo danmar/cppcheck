@@ -63,6 +63,7 @@ public:
         checkClass.operatorEqRetRefThis();
         checkClass.thisSubtraction();
         checkClass.operatorEqToSelf();
+        checkClass.initializerList();
 
         checkClass.virtualDestructor();
         checkClass.checkConst();
@@ -104,6 +105,9 @@ public:
     /** @brief can member function be const? */
     void checkConst();
 
+    /** @brief Check initializer list order */
+    void initializerList();
+
 private:
     /**
      * @brief Create symbol database. For performance reasons, only call
@@ -126,6 +130,7 @@ private:
     void operatorEqToSelfError(const Token *tok);
     void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
+    void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -141,6 +146,7 @@ private:
         c.operatorEqRetRefThisError(0);
         c.operatorEqToSelfError(0);
         c.checkConstError(0, "class", "function");
+        c.initializerListError(0, 0, "class", "variable");
     }
 
     std::string myName() const

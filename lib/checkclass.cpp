@@ -1784,3 +1784,104 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
                 "sense conceptually. Think about your design and task of the function first - is "
                 "it a function that must not change object internal state?");
 }
+
+//---------------------------------------------------------------------------
+// ClassCheck: Check that initializer list is in declared order.
+//---------------------------------------------------------------------------
+
+struct VarInfo
+{
+    VarInfo(const Variable *_var, const Token *_tok)
+        : var(_var), tok(_tok) { }
+
+    const Variable *var;
+    const Token *tok;
+};
+
+void CheckClass::initializerList()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    // This check is not inconclusive.  However it only determines if the initialization
+    // order is incorrect.  It does not determine if being out of order causes
+    // a real error.  Out of order is not necessarily an error but you can never
+    // have an error if the list is in order so this enforces defensive programming.
+    if (!_settings->inconclusive)
+        return;
+
+    createSymbolDatabase();
+
+    std::list<Scope>::const_iterator info;
+
+    // iterate through all scopes looking for classes and structures
+    for (info = symbolDatabase->scopeList.begin(); info != symbolDatabase->scopeList.end(); ++info)
+    {
+        if (!info->isClassOrStruct())
+            continue;
+
+        std::list<Function>::const_iterator func;
+
+        // iterate through all member functions looking for constructors
+        for (func = info->functionList.begin(); func != info->functionList.end(); ++func)
+        {
+            if (func->type == Function::eConstructor && func->hasBody)
+            {
+                // check for initializer list
+                const Token *tok = func->arg->link()->next();
+
+                if (tok->str() == ":")
+                {
+                    std::vector<VarInfo> vars;
+                    tok = tok->next();
+
+                    // find all variable initializations in list
+                    while (tok && tok->str() != "{")
+                    {
+                        if (Token::Match(tok, "%var% ("))
+                        {
+                            const Variable *var = info->getVariable(tok->str());
+
+                            if (var)
+                                vars.push_back(VarInfo(var, tok));
+
+                            if (Token::Match(tok->tokAt(2), "%var% ="))
+                            {
+                                var = info->getVariable(tok->strAt(2));
+
+                                if (var)
+                                    vars.push_back(VarInfo(var, tok->tokAt(2)));
+                            }
+                        }
+                        tok = tok->next();
+                    }
+
+                    // need at least 2 members to have out of order initialization
+                    if (vars.size() > 1)
+                    {
+                        for (unsigned int i = 1; i < vars.size(); i++)
+                        {
+                            // check for out of order initialization
+                            if (vars[i].var->index() < vars[i - 1].var->index())
+                                initializerListError(vars[i].tok,vars[i].var->nameToken(), info->className, vars[i].var->name());
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckClass::initializerListError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &varname)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok1);
+    toks.push_back(tok2);
+    reportError(toks, Severity::style, "initializerList",
+                "Member variable '" + classname + "::" +
+                varname + "' is in the wrong order in the initializer list.\n"
+                "Members are initialized in the order they are declared, not the "
+                "order they are in the initializer list.  Keeping the initializer list "
+                "in the same order that the members were declared prevents order dependent "
+                "initialization errors.");
+}
