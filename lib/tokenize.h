@@ -709,6 +709,11 @@ public:
      */
     void simplifyReturn();
 
+    /**
+     * Output list of unknown types.
+     */
+    void printUnknownTypes();
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);

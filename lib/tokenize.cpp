@@ -4811,72 +4811,7 @@ bool Tokenizer::simplifyTokenList()
 
     if (_settings->debugwarnings)
     {
-        getSymbolDatabase();
-
-        std::set<std::string> unknowns;
-
-        for (size_t i = 1; i <= _varId; i++)
-        {
-            const Variable *var = _symbolDatabase->getVariableFromVarId(i);
-
-            // is unknown record type?
-            if (var && var->isClass() && !var->type())
-            {
-                std::string    name;
-
-                // single token type?
-                if (var->typeStartToken() == var->typeEndToken())
-                    name = var->typeStartToken()->str();
-
-                // complcated type
-                else
-                {
-                    const Token *tok = var->typeStartToken();
-                    int level = 0;
-
-                    while (tok)
-                    {
-                        // skip pointer and reference part of type
-                        if (level == 0 && (tok->str() ==  "*" || tok->str() == "&"))
-                            break;
-
-                        name += tok->str();
-
-                        if (Token::Match(tok, "struct|union"))
-                            name += " ";
-
-                        // pointers and referennces are OK in template
-                        else if (tok->str() == "<")
-                            level++;
-                        else if (tok->str() == ">")
-                            level--;
-
-                        if (tok == var->typeEndToken())
-                            break;
-
-                        tok = tok->next();
-                    }
-                }
-
-                unknowns.insert(name);
-            }
-        }
-
-        if (!unknowns.empty())
-        {
-            std::ostringstream ss;
-
-            ss << unknowns.size() << " unknown types:" << std::endl;
-
-            std::set<std::string>::const_iterator it;
-            size_t count = 1;
-
-            for (it = unknowns.begin(); it != unknowns.end(); ++it, ++count)
-                ss << count << ": " << *it << std::endl;
-
-            if (_errorLogger)
-                _errorLogger->reportOut(ss.str());
-        }
+        printUnknownTypes();
     }
 
     return true;
@@ -11148,3 +11083,72 @@ void Tokenizer::simplifyReturn()
     }
 }
 
+void Tokenizer::printUnknownTypes()
+{
+    getSymbolDatabase();
+
+    std::set<std::string> unknowns;
+
+    for (size_t i = 1; i <= _varId; i++)
+    {
+        const Variable *var = _symbolDatabase->getVariableFromVarId(i);
+
+        // is unknown record type?
+        if (var && var->isClass() && !var->type())
+        {
+            std::string    name;
+
+            // single token type?
+            if (var->typeStartToken() == var->typeEndToken())
+                name = var->typeStartToken()->str();
+
+            // complcated type
+            else
+            {
+                const Token *tok = var->typeStartToken();
+                int level = 0;
+
+                while (tok)
+                {
+                    // skip pointer and reference part of type
+                    if (level == 0 && (tok->str() ==  "*" || tok->str() == "&"))
+                        break;
+
+                    name += tok->str();
+
+                    if (Token::Match(tok, "struct|union"))
+                        name += " ";
+
+                    // pointers and referennces are OK in template
+                    else if (tok->str() == "<")
+                        level++;
+                    else if (tok->str() == ">")
+                        level--;
+
+                    if (tok == var->typeEndToken())
+                        break;
+
+                    tok = tok->next();
+                }
+            }
+
+            unknowns.insert(name);
+        }
+    }
+
+    if (!unknowns.empty())
+    {
+        std::ostringstream ss;
+
+        ss << unknowns.size() << " unknown types:" << std::endl;
+
+        std::set<std::string>::const_iterator it;
+        size_t count = 1;
+
+        for (it = unknowns.begin(); it != unknowns.end(); ++it, ++count)
+            ss << count << ": " << *it << std::endl;
+
+        if (_errorLogger)
+            _errorLogger->reportOut(ss.str());
+    }
+}
