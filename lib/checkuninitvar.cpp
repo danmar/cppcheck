@@ -651,7 +651,8 @@ private:
                 return tok.next()->link();
 
             // deallocate pointer
-            if (Token::Match(&tok, "free|kfree|fclose ( %var% )"))
+            if (Token::Match(&tok, "free|kfree|fclose ( %var% )") ||
+                Token::Match(&tok, "realloc ( %var%"))
             {
                 dealloc_pointer(checks, tok.tokAt(2));
                 return tok.tokAt(3);

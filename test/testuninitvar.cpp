@@ -85,6 +85,18 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
+        checkUninitVar("void foo() {\n"
+                       "    int *p;\n"
+                       "    realloc(p,10);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
+
+        checkUninitVar("void foo() {\n"
+                       "    int *p = NULL;\n"
+                       "    realloc(p,10);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // dereferencing uninitialized pointer..
         checkUninitVar("static void foo()\n"
                        "{\n"
