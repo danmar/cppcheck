@@ -531,7 +531,7 @@ private:
         CmdLineParser parser(&settings);
         TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(4, argv));
     }
-    
+
     void fileListStdin()
     {
         // TODO: Give it some stdin to read from, fails because the list of
