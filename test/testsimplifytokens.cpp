@@ -372,6 +372,7 @@ private:
         TEST_CASE(removeUnnecessaryQualification6); // ticket #2859
         TEST_CASE(removeUnnecessaryQualification7); // ticket #2970
         TEST_CASE(removeUnnecessaryQualification8);
+        TEST_CASE(removeUnnecessaryQualification9); // ticket #3151
 
         TEST_CASE(simplifyIfNotNull);
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
@@ -7359,6 +7360,16 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n"
                       "[test.cpp:4]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n"
                       "[test.cpp:5]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
+    }
+
+    void removeUnnecessaryQualification9()
+    {
+        const char code[] = "class Fred {\n"
+                            "public:\n"
+                            "    Fred::~Fred();\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
     }
 
     void simplifyIfNotNull()

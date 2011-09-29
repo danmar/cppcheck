@@ -10990,7 +10990,7 @@ void Tokenizer::removeUnnecessaryQualification()
                 classInfo.pop_back();
             else if (tok->str() == classInfo.back().className &&
                      !classInfo.back().isNamespace && tok->previous()->str() != ":" &&
-                     (Token::Match(tok, "%type% :: %type% (") ||
+                     (Token::Match(tok, "%type% :: ~| %type% (") ||
                       Token::Match(tok, "%type% :: operator")))
             {
                 int offset = 3;
@@ -11011,6 +11011,8 @@ void Tokenizer::removeUnnecessaryQualification()
                         offset++;
                     }
                 }
+                else if (tok->strAt(2) == "~")
+                    offset++;
 
                 if (Token::Match(tok->tokAt(offset)->link(), ") const| {|;|:"))
                 {
