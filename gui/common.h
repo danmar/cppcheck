@@ -91,5 +91,7 @@ ShowTypes;
 // The maximum value for the progress bar
 #define PROGRESS_MAX                    1024.0
 
+#define SETTINGS_CHECKED_PLATFORM       "Checked platform"
+
 /// @}
 #endif

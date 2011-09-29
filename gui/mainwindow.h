@@ -285,6 +285,38 @@ protected slots:
     */
     void OpenRecentProject();
 
+    /**
+    * @brief Selects "default" as the checked platform.
+    * Selects the platform as the "default", meaning whichever platform the
+    * GUI was compiled with.
+    */
+    void PlatformDefault();
+
+    /**
+    * @brief Selects 32-bit Unix as the checked platform.
+    */
+    void PlatformUnix32Bit();
+
+    /**
+    * @brief Selects 64-bit Unix as the checked platform.
+    */
+    void PlatformUnix64Bit();
+
+    /**
+    * @brief Selects 32-bit ANSI Windows as the checked platform.
+    */
+    void PlatformWin32ANSI();
+
+    /**
+    * @brief Selects 32-bit Unicode Windows as the checked platform.
+    */
+    void PlatformWin32Unicode();
+
+    /**
+    * @brief Selects 64-bit Windows as the checked platform.
+    */
+    void PlatformWin64();
+
 protected:
 
     /**

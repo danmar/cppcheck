@@ -117,6 +117,22 @@ MainWindow::MainWindow() :
 
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
 
+    QActionGroup* platformGroup = new QActionGroup(this);
+    mUI.mActionPlatformDefault->setActionGroup(platformGroup);
+    mUI.mActionPlatformUnix32Bit->setActionGroup(platformGroup);
+    mUI.mActionPlatformUnix64Bit->setActionGroup(platformGroup);
+    mUI.mActionPlatformWin32ANSI->setActionGroup(platformGroup);
+    mUI.mActionPlatformWin32Unicode->setActionGroup(platformGroup);
+    mUI.mActionPlatformWin64->setActionGroup(platformGroup);
+    mUI.mActionPlatformDefault->setChecked(true);
+
+    connect(mUI.mActionPlatformDefault, SIGNAL(triggered()), this, SLOT(PlatformDefault()));
+    connect(mUI.mActionPlatformUnix32Bit, SIGNAL(triggered()), this, SLOT(PlatformUnix32Bit()));
+    connect(mUI.mActionPlatformUnix64Bit, SIGNAL(triggered()), this, SLOT(PlatformUnix64Bit()));
+    connect(mUI.mActionPlatformWin32ANSI, SIGNAL(triggered()), this, SLOT(PlatformWin32ANSI()));
+    connect(mUI.mActionPlatformWin32Unicode, SIGNAL(triggered()), this, SLOT(PlatformWin32Unicode()));
+    connect(mUI.mActionPlatformWin64, SIGNAL(triggered()), this, SLOT(PlatformWin64()));
+
     LoadSettings();
 
     mThread->Initialize(mUI.mResults);
@@ -488,6 +504,7 @@ Settings MainWindow::GetCppcheckSettings()
     result._jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result._inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
+    result.platformType = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
 
     if (result._jobs <= 0)
     {
@@ -1089,4 +1106,35 @@ void MainWindow::RemoveProjectMRU(const QString &project)
 
     mSettings->setValue(SETTINGS_MRU_PROJECTS, files);
     UpdateMRUMenuItems();
+}
+
+
+void MainWindow::PlatformDefault()
+{
+    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Unspecified);
+}
+
+void MainWindow::PlatformUnix32Bit()
+{
+    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Unix32);
+}
+
+void MainWindow::PlatformUnix64Bit()
+{
+    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Unix64);
+}
+
+void MainWindow::PlatformWin32ANSI()
+{
+    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Win32A);
+}
+
+void MainWindow::PlatformWin32Unicode()
+{
+    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Win32W);
+}
+
+void MainWindow::PlatformWin64()
+{
+    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Win64);
 }

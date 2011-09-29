@@ -133,6 +133,13 @@
     <addaction name="mActionCheckDirectory"/>
     <addaction name="mActionRecheck"/>
     <addaction name="mActionStop"/>
+    <addaction name="separator"/>
+    <addaction name="mActionPlatformDefault"/>
+    <addaction name="mActionPlatformUnix32Bit"/>
+    <addaction name="mActionPlatformUnix64Bit"/>
+    <addaction name="mActionPlatformWin32ANSI"/>
+    <addaction name="mActionPlatformWin32Unicode"/>
+    <addaction name="mActionPlatformWin64"/>
    </widget>
    <widget class="QMenu" name="mMenuEdit">
     <property name="title">
@@ -547,6 +554,54 @@
    </property>
    <property name="visible">
     <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionPlatformWin32ANSI">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Windows 32-bit ANSI</string>
+   </property>
+  </action>
+  <action name="mActionPlatformWin32Unicode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Windows 32-bit Unicode</string>
+   </property>
+  </action>
+  <action name="mActionPlatformUnix32Bit">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Unix 32-bit</string>
+   </property>
+  </action>
+  <action name="mActionPlatformUnix64Bit">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Unix 64-bit</string>
+   </property>
+  </action>
+  <action name="mActionPlatformWin64">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Windows 64-bit</string>
+   </property>
+  </action>
+  <action name="mActionPlatformDefault">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Default</string>
    </property>
   </action>
  </widget>
