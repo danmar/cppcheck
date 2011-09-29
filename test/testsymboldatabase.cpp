@@ -41,6 +41,11 @@ public:
         ,isArray(false)
     {}
 
+    virtual void reportOut(const std::string &outmsg)
+    {
+        errout << outmsg << std::endl;
+    }
+
 private:
     const Scope si;
     const Token* vartok;
@@ -124,6 +129,7 @@ private:
         TEST_CASE(symboldatabase18); // ticket #2865
         TEST_CASE(symboldatabase19); // ticket #2991 (segmentation fault)
         TEST_CASE(symboldatabase20); // ticket #3013 (segmentation fault)
+        TEST_CASE(symboldatabase21);
     }
 
     void test_isVariableDeclarationCanHandleNull()
@@ -629,14 +635,14 @@ private:
         }
     }
 
-    void check(const char code[])
+    void check(const char code[], bool debug = true)
     {
         // Clear the error log
         errout.str("");
 
         // Check..
         Settings settings;
-        settings.debugwarnings = true;
+        settings.debugwarnings = debug;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -756,7 +762,7 @@ private:
               "template<class T> class Y { };\n"
               "Y<X<1>> x3;\n"
               "Y<X<6>>1>> x4;\n"
-              "Y<X<(6>>1)>> x5;\n");
+              "Y<X<(6>>1)>> x5;\n", false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -801,7 +807,7 @@ private:
               "        CString::operator=(lpsz);\n"
               "        return *this;\n"
               "    }\n"
-              "};\n");
+              "};\n", false);
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -903,6 +909,19 @@ private:
     {
         // ticket #3013 - segmentation fault
         check("struct x : virtual y\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase21()
+    {
+        check("class Fred {\n"
+              "    class Foo { };\n"
+              "    void func() const;\n"
+              "};\n"
+              "Fred::func() const {\n"
+              "    Foo foo;\n"
+              "}\n");
 
         ASSERT_EQUALS("", errout.str());
     }

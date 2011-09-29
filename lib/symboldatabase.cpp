@@ -1932,8 +1932,16 @@ const Scope *SymbolDatabase::findVariableType(const Scope *start, const Token *t
                 const Scope *parent = start;
 
                 // check if in same namespace
-                while (parent && parent != scope->nestedIn)
-                    parent = parent->nestedIn;
+                while (parent)
+                {
+                    // out of line class function belongs to class
+                    if (parent->type == Scope::eFunction && parent->functionOf)
+                        parent = parent->functionOf;
+                    else if (parent != scope->nestedIn)
+                        parent = parent->nestedIn;
+                    else
+                        break;
+                }
 
                 if (scope->nestedIn == parent)
                     return &(*scope);
