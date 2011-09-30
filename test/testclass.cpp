@@ -185,6 +185,7 @@ private:
         TEST_CASE(const52); // ticket #3049
         TEST_CASE(const53); // ticket #3052
         TEST_CASE(const54);
+        TEST_CASE(const55); // ticket #3149
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5754,6 +5755,17 @@ private:
                    "    void set(std::stringstream &in) { in >> tmp; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const55() // ticket #3149
+    {
+        checkConst("class MyObject {\n"
+                   "public:\n"
+                   "    void foo(int x) {\n"
+                   "    switch (x) { }\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation()
