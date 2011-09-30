@@ -5809,6 +5809,14 @@ private:
                    "    return RET_NOK;\n"
                    "}\n");
         ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (information) Technically the member function 'A::f' can be const.\n", errout.str());
+
+        checkConst("class MyObject {\n"
+                   "public:\n"
+                   "    void foo(int x) {\n"
+                   "    for (int i = 0; i < 5; i++) { }\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation()

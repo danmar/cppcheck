@@ -1663,7 +1663,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
 
         // function call..
         else if (Token::Match(tok1, "%var% (") &&
-                 !(Token::Match(tok1, "return|c_str|if|string|switch|while|catch") || tok1->isStandardType()))
+                 !(Token::Match(tok1, "return|c_str|if|string|switch|while|catch|for") || tok1->isStandardType()))
         {
             if (!isConstMemberFunc(scope, tok1))
             {
