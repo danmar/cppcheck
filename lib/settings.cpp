@@ -52,10 +52,10 @@ Settings::Settings()
     posix = false;
 
     // This assumes the code you are checking is for the same architecture this is compiled on.
-#if defined(_WIN32)
-    platform(Win32A);
-#elif defined(_WIN64)
+#if defined(_WIN64)
     platform(Win64);
+#elif defined(_WIN32)
+    platform(Win32A);
 #else
     platform(Unspecified);
 #endif
