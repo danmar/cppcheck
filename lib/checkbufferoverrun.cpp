@@ -1080,7 +1080,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             if (varid == 0)
                 continue;
 
-            const ArrayInfo arrayInfo1(varid, varnames, size, total_size / size);
+            const ArrayInfo arrayInfo1(varid, varnames, total_size / size, size);
             checkFunctionCall(tok, arrayInfo1);
         }
 

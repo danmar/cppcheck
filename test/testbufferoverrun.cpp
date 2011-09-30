@@ -151,6 +151,7 @@ private:
         TEST_CASE(buffer_overrun_20); // #2986 (segmentation fault)
         TEST_CASE(buffer_overrun_21);
         TEST_CASE(buffer_overrun_22); // #3124
+        TEST_CASE(buffer_overrun_23); // #3153
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(possible_buffer_overrun_1); // #3035
 
@@ -2297,6 +2298,25 @@ private:
               "}\n");
 
         ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds: a.b\n", errout.str());
+    }
+
+    void buffer_overrun_23() // ticket #3153
+    {
+        check("void foo() {\n"
+              "    double dest = 23.0;\n"
+              "    char* const source = (char*) malloc(sizeof(dest));\n"
+              "    memcpy(&dest, source + sizeof(double), sizeof(dest));\n"
+              "}\n");
+
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+
+        check("void foo() {\n"
+              "    double dest = 23.0;\n"
+              "    char* const source = (char*) malloc(2 * sizeof(dest));\n"
+              "    memcpy(&dest, source + sizeof(double), sizeof(dest));\n"
+              "}\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch()
