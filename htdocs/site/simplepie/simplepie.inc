@@ -1671,7 +1671,7 @@ class SimplePie
 								$this->data = array('url' => $this->feed_url, 'feed_url' => $file->url, 'build' => SIMPLEPIE_BUILD);
 								if (!$cache->save($this))
 								{
-									trigger_error("$this->cache_location is not writeable", E_USER_WARNING);
+									trigger_error("$this->cache_location is not writable", E_USER_WARNING);
 								}
 								$cache = call_user_func(array($this->cache_class, 'create'), $this->cache_location, call_user_func($this->cache_name_function, $file->url), 'spc');
 							}
@@ -1776,7 +1776,7 @@ class SimplePie
 							// Cache the file if caching is enabled
 							if ($cache && !$cache->save($this))
 							{
-								trigger_error("$cache->name is not writeable", E_USER_WARNING);
+								trigger_error("$cache->name is not writable", E_USER_WARNING);
 							}
 							return true;
 						}
@@ -1983,7 +1983,7 @@ class SimplePie
 							}
 							else
 							{
-								trigger_error("$cache->name is not writeable", E_USER_WARNING);
+								trigger_error("$cache->name is not writable", E_USER_WARNING);
 								return $this->sanitize($favicon, SIMPLEPIE_CONSTRUCT_IRI);
 							}
 						}
@@ -8652,7 +8652,7 @@ class SimplePie_Cache_File
 
 	function save($data)
 	{
-		if (file_exists($this->name) && is_writeable($this->name) || file_exists($this->location) && is_writeable($this->location))
+		if (file_exists($this->name) && is_writable($this->name) || file_exists($this->location) && is_writable($this->location))
 		{
 			if (is_a($data, 'SimplePie'))
 			{
@@ -14912,7 +14912,7 @@ class SimplePie_Sanitize
 									}
 									else
 									{
-										trigger_error("$this->cache_location is not writeable", E_USER_WARNING);
+										trigger_error("$this->cache_location is not writable", E_USER_WARNING);
 									}
 								}
 							}
