@@ -589,8 +589,23 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                 if (tok1->str() == "break")
                     break;
 
-                if (tok1->varId() == varid && !Token::Match(tok1->previous(), "[?:]"))
+                if (tok1->varId() == varid)
                 {
+                    // Don't write warning if the dereferencing is
+                    // guarded by ?:
+                    const Token *tok2 = tok1->previous();
+                    if (tok2 && (tok2->isArithmeticalOp() || tok2->str() == "("))
+                    {
+                        while (tok2 && !Token::Match(tok2, "[;{}?:]"))
+                        {
+                            if (tok2->str() == ")")
+                                tok2 = tok2->link();
+                            tok2 = tok2->previous();
+                        }
+                    }
+                    if (Token::Match(tok2, "[?:]"))
+                        continue;
+
                     // unknown : this is set by isPointerDeRef if it is
                     //           uncertain
                     bool unknown = false;

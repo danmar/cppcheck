@@ -481,6 +481,31 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo(int *p)\n"
+              "{\n"
+              "    int var1 = x ? *p : 5;\n"
+              "    if (!p)\n"
+              "        ;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        // Ticket #3125
+        check("void foo(ABC *p)\n"
+              "{\n"
+              "    int var1 = p ? (p->a) : 0;\n"
+              "    if (!p)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(ABC *p)\n"
+              "{\n"
+              "    int var1 = p ? (1 + p->a) : 0;\n"
+              "    if (!p)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo(P *p)\n"
               "{\n"
               "  while (p)\n"
