@@ -41,9 +41,11 @@ public:
     /**
      * @brief Match path against list of masks.
      * @param path Path to match.
+     * @param caseSensitive Match the case of the characters when
+     *   matching paths?
      * @return true if any of the masks match the path, false otherwise.
      */
-    bool Match(const std::string &path);
+    bool Match(const std::string &path, bool caseSensitive = true);
 
 protected:
 

@@ -37,6 +37,7 @@ private:
         TEST_CASE(emptymaskpath3);
         TEST_CASE(onemaskemptypath);
         TEST_CASE(onemasksamepath);
+        TEST_CASE(onemasksamepathdifferentcase);
         TEST_CASE(onemasksamepathwithfile);
         TEST_CASE(onemaskdifferentdir1);
         TEST_CASE(onemaskdifferentdir2);
@@ -46,6 +47,7 @@ private:
         TEST_CASE(onemasklongerpath2);
         TEST_CASE(onemasklongerpath3);
         TEST_CASE(filemask1);
+        TEST_CASE(filemaskdifferentcase);
         TEST_CASE(filemask2);
         TEST_CASE(filemask3);
         TEST_CASE(filemaskpath1);
@@ -96,6 +98,14 @@ private:
         masks.push_back("src/");
         PathMatch match(masks);
         ASSERT(match.Match("src/"));
+    }
+
+    void onemasksamepathdifferentcase()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("sRc/");
+        PathMatch match(masks);
+        ASSERT(match.Match("srC/", false));
     }
 
     void onemasksamepathwithfile()
@@ -204,6 +214,14 @@ private:
         masks.push_back("foo.cpp");
         PathMatch match(masks);
         ASSERT(match.Match("foo.cpp"));
+    }
+
+    void filemaskdifferentcase()
+    {
+        std::vector<std::string> masks;
+        masks.push_back("foo.cPp");
+        PathMatch match(masks);
+        ASSERT(match.Match("fOo.cpp", false));
     }
 
     void filemask2()

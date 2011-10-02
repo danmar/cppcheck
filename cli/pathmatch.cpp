@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include "pathmatch.h"
 
 PathMatch::PathMatch(const std::vector<std::string> &masks)
@@ -23,7 +24,7 @@ PathMatch::PathMatch(const std::vector<std::string> &masks)
 {
 }
 
-bool PathMatch::Match(const std::string &path)
+bool PathMatch::Match(const std::string &path, bool caseSensitive)
 {
     if (path.empty())
         return false;
@@ -31,34 +32,41 @@ bool PathMatch::Match(const std::string &path)
     std::vector<std::string>::const_iterator iterMask;
     for (iterMask = _masks.begin(); iterMask != _masks.end(); ++iterMask)
     {
+        std::string mask(*iterMask);
+        if (!caseSensitive)
+            std::transform(mask.begin(), mask.end(), mask.begin(), ::tolower);
+
+        std::string findpath(path);
+        if (!caseSensitive)
+            std::transform(findpath.begin(), findpath.end(), findpath.begin(), ::tolower);
+
         // Filtering directory name
-        if ((*iterMask)[(*iterMask).length() - 1] == '/')
+        if (mask[mask.length() - 1] == '/')
         {
-            std::string findpath(path);
             if (findpath[findpath.length() - 1] != '/')
                 findpath = RemoveFilename(findpath);
 
-            if ((*iterMask).length() > findpath.length())
+            if (mask.length() > findpath.length())
                 continue;
             // Match relative paths starting with mask
             // -isrc matches src/foo.cpp
-            if (findpath.compare(0, (*iterMask).size(), *iterMask) == 0)
+            if (findpath.compare(0, mask.size(), mask) == 0)
                 return true;
             // Match only full directory name in middle or end of the path
             // -isrc matches myproject/src/ but does not match
             // myproject/srcfiles/ or myproject/mysrc/
-            if (findpath.find("/" + *iterMask) != std::string::npos)
+            if (findpath.find("/" + mask) != std::string::npos)
                 return true;
         }
         // Filtering filename
         else
         {
-            if ((*iterMask).length() > path.length())
+            if (mask.length() > findpath.length())
                 continue;
             // Check if path ends with mask
             // -ifoo.cpp matches (./)foo.c, src/foo.cpp and proj/src/foo.cpp
             // -isrc/file.cpp matches src/foo.cpp and proj/src/foo.cpp
-            if (path.compare(path.size() - (*iterMask).size(), path.size(), *iterMask) == 0)
+            if (findpath.compare(findpath.size() - mask.size(), findpath.size(), mask) == 0)
                 return true;
 
         }
