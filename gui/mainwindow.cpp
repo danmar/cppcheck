@@ -164,10 +164,16 @@ MainWindow::MainWindow() :
         connect(act, SIGNAL(triggered()), this, SLOT(SelectPlatform()));
     }
 
-    // Set the "default" as selected initially
+    // For Windows platforms default to Win32 checked platform.
+    // For other platforms default to unspecified/default which means the
+    // platform Cppcheck GUI was compiled on.
+#if defined(_WIN32)
+    Platform &plat = mPlatforms.get(Settings::Win32A);
+#else
     Platform &plat = mPlatforms.get(Settings::Unspecified);
+#endif
     plat.mActMainWindow->setChecked(true);
-    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Unspecified);
+    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, plat.mType);
 }
 
 MainWindow::~MainWindow()
