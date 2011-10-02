@@ -117,22 +117,6 @@ MainWindow::MainWindow() :
 
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
 
-    QActionGroup* platformGroup = new QActionGroup(this);
-    mUI.mActionPlatformDefault->setActionGroup(platformGroup);
-    mUI.mActionPlatformUnix32Bit->setActionGroup(platformGroup);
-    mUI.mActionPlatformUnix64Bit->setActionGroup(platformGroup);
-    mUI.mActionPlatformWin32ANSI->setActionGroup(platformGroup);
-    mUI.mActionPlatformWin32Unicode->setActionGroup(platformGroup);
-    mUI.mActionPlatformWin64->setActionGroup(platformGroup);
-    mUI.mActionPlatformDefault->setChecked(true);
-
-    connect(mUI.mActionPlatformDefault, SIGNAL(triggered()), this, SLOT(PlatformDefault()));
-    connect(mUI.mActionPlatformUnix32Bit, SIGNAL(triggered()), this, SLOT(PlatformUnix32Bit()));
-    connect(mUI.mActionPlatformUnix64Bit, SIGNAL(triggered()), this, SLOT(PlatformUnix64Bit()));
-    connect(mUI.mActionPlatformWin32ANSI, SIGNAL(triggered()), this, SLOT(PlatformWin32ANSI()));
-    connect(mUI.mActionPlatformWin32Unicode, SIGNAL(triggered()), this, SLOT(PlatformWin32Unicode()));
-    connect(mUI.mActionPlatformWin64, SIGNAL(triggered()), this, SLOT(PlatformWin64()));
-
     LoadSettings();
 
     mThread->Initialize(mUI.mResults);
@@ -164,6 +148,26 @@ MainWindow::MainWindow() :
     mRecentProjectActs[MaxRecentProjects] = NULL; // The separator
     mUI.mActionProjectMRU->setVisible(false);
     UpdateMRUMenuItems();
+
+    QActionGroup* platformGroup = new QActionGroup(this);
+    for (int i = 0; i < mPlatforms.getCount(); i++)
+    {
+        Platform plat = mPlatforms.mPlatforms[i];
+        QAction *act = new QAction(this);
+        plat.mActMainWindow = act;
+        mPlatforms.mPlatforms[i] = plat;
+        act->setText(plat.mTitle);
+        act->setData(plat.mType);
+        act->setCheckable(true);
+        act->setActionGroup(platformGroup);
+        mUI.mMenuCheck->insertAction(mUI.mActionPlatforms, act);
+        connect(act, SIGNAL(triggered()), this, SLOT(SelectPlatform()));
+    }
+
+    // Set the "default" as selected initially
+    Platform &plat = mPlatforms.get(Settings::Unspecified);
+    plat.mActMainWindow->setChecked(true);
+    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Unspecified);
 }
 
 MainWindow::~MainWindow()
@@ -1108,33 +1112,12 @@ void MainWindow::RemoveProjectMRU(const QString &project)
     UpdateMRUMenuItems();
 }
 
-
-void MainWindow::PlatformDefault()
+void MainWindow::SelectPlatform()
 {
-    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Unspecified);
-}
-
-void MainWindow::PlatformUnix32Bit()
-{
-    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Unix32);
-}
-
-void MainWindow::PlatformUnix64Bit()
-{
-    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Unix64);
-}
-
-void MainWindow::PlatformWin32ANSI()
-{
-    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Win32A);
-}
-
-void MainWindow::PlatformWin32Unicode()
-{
-    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Win32W);
-}
-
-void MainWindow::PlatformWin64()
-{
-    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, Settings::Win64);
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (action)
+    {
+        const Settings::PlatformType platform = (Settings::PlatformType) action->data().toInt();
+        mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
+    }
 }

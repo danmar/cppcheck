@@ -63,6 +63,7 @@ HEADERS += aboutdialog.h \
            fileviewdialog.h \
            logview.h \
            mainwindow.h \
+           platforms.h \
            project.h \
            projectfile.h \
            projectfiledialog.h \
@@ -92,6 +93,7 @@ SOURCES += aboutdialog.cpp \
            logview.cpp \
            main.cpp \
            mainwindow.cpp\
+           platforms.cpp \
            project.cpp \
            projectfile.cpp \
            projectfiledialog.cpp \
