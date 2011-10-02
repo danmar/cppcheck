@@ -1568,6 +1568,19 @@ private:
                        "    buf[1] = buf[0];\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #3159 - initialization by function
+        checkUninitVar("static int isnumber(const char *arg) {\n"
+                       "    char *p;\n"
+                       "    return strtod(arg, &p) != 0 || p != arg;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("static int isnumber(const char *arg) {\n"
+                       "    char *p;\n"
+                       "    return strtod(&arg) != 0 || p != arg;\n"
+                       "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     // valid and invalid use of 'int a(int x) { return x + x; }'
