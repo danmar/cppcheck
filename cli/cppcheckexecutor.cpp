@@ -130,7 +130,13 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::vector<std::string>::iterator iterBegin = filenames.begin();
         for (int i = (int)filenames.size() - 1; i >= 0; i--)
         {
-            if (matcher.Match(filenames[(unsigned int)i]))
+#if defined(_WIN32)
+            // For Windows we want case-insensitive path matching
+            const bool caseSensitive = false;
+#else
+            const bool caseSensitive = true;
+#endif
+            if (matcher.Match(filenames[(unsigned int)i], caseSensitive))
                 filenames.erase(iterBegin + i);
         }
     }
