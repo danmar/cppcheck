@@ -1250,6 +1250,11 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Ticket #3126 - don't confuse member function with standard function
+        check("void f() {\n"
+              "    image1.fseek(0, SEEK_SET);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void gcc_statement_expression()

@@ -866,7 +866,7 @@ void CheckNullPointer::nullConstantDereference()
                 }
             }
 
-            else if (indentlevel > 0 && Token::Match(tok, "%var% ("))
+            else if (indentlevel > 0 && Token::Match(tok->previous(), "[={};] %var% ("))
             {
                 std::list<const Token *> var;
                 parseFunctionCall(*tok, var, 0);
