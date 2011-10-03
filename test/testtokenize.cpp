@@ -5929,6 +5929,8 @@ private:
 
         ASSERT_EQUALS("int f ( int n ) { switch ( n ) { case 0 : return 0 ; default : ; return n ; } return -1 ; }",
                       tokenizeAndStringify("int f(int n) { switch (n) {case 0: return 0; n*=2; default: return n; n*=6;} return -1; foo();}"));
+        //ticket #3132
+        ASSERT_EQUALS("void f ( int i ) { goto label ; switch ( i ) { label : ; return ; } }",tokenizeAndStringify("void f (int i) { goto label; switch(i) { label: return; } }"));
 
         {
             const char code[] = "void f(){ "

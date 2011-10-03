@@ -4963,7 +4963,7 @@ void Tokenizer::removeRedundantCodeAfterReturn()
                 }
                 else
                 {
-                    if (indentcase >= indentret && indentlevel > indentlabel)
+                    if (indentcase > indentret && indentlevel > indentlabel)
                     {
                         tok = tok->previous();
                         tok->deleteNext();
