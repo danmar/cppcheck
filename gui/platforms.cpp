@@ -56,6 +56,7 @@ Platform& Platforms::get(Settings::PlatformType platform)
         {
             return *iter;
         }
+        ++iter;
     }
     return mPlatforms.first();
 }
