@@ -103,6 +103,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg choice="opt"><option>--append=&lt;file&gt;</option></arg>
+      <arg choice="opt"><option>--check-config</option></arg>
       <arg choice="opt"><option>-D&lt;id&gt;</option></arg>
       <arg choice="opt"><option>--enable=&lt;id&gt;</option></arg>
       <arg choice="opt"><option>--error-exitcode=&lt;n&gt;</option></arg>
@@ -115,6 +116,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>-i&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--inline-suppr</option></arg>
       <arg choice="opt"><option>-j&lt;jobs&gt;</option></arg>
+      <arg choice="opt"><option>--platform=&lt;type&gt;</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--report-progress</option></arg>
       <arg choice="opt"><option>--rule=&lt;rule&gt;</option></arg>
@@ -155,6 +157,12 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </listitem>
       </varlistentry>      
       <varlistentry>
+        <term><option>--check-config</option></term>
+        <listitem>
+          <para>Check Cppcheck configuration. The normal code analysis is disabled by this flag.</para>
+        </listitem>
+      </varlistentry>      
+      <varlistentry>
         <term><option>-D&lt;id&gt;</option></term>
         <listitem>
           <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration. 
@@ -179,6 +187,18 @@ Example: -DDEBUG=1 -D__cplusplus</para>
                 </glossdef>
               </glossentry>
               <glossentry>
+                <glossterm>performance</glossterm>
+                <glossdef>
+                  <para>Enable performance messages</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>portability</glossterm>
+                <glossdef>
+                  <para>Enable portability messages</para>
+                </glossdef>
+              </glossentry>              
+              <glossentry>
                 <glossterm>information</glossterm>
                 <glossdef>
                   <para>Enable information messages</para>
@@ -193,7 +213,7 @@ Example: -DDEBUG=1 -D__cplusplus</para>
               <glossentry>
                 <glossterm>missingInclude</glossterm>
                 <glossdef>
-                  <para>Check for missing includes</para>
+                  <para>Warn if there are missing includes. For detailed information use --check-config</para>
                 </glossdef>
               </glossentry>              
             </glosslist>          
@@ -272,6 +292,46 @@ Directory name is matched to all parts of the path.</para>
           <para>Start &lt;jobs&gt; threads to do the checking work.</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term><option>--platform=&lt;type&gt;</option></term>
+        <listitem>
+          <para>Specifies platform specific types and sizes.The available platforms are:
+            <glosslist>
+              <glossentry>
+                <glossterm>unix32</glossterm>
+                <glossdef>
+                  <para>32 bit unix variant</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>unix64</glossterm>
+                <glossdef>
+                  <para>64 bit unix variant</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>win32A</glossterm>
+                <glossdef>
+                  <para>32 bit Windows ASCII character encoding</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>win32W</glossterm>
+                <glossdef>
+                  <para>32 bit Windows UNICODE character encoding</para>
+                </glossdef>
+              </glossentry>              
+              <glossentry>
+                <glossterm>win64</glossterm>
+                <glossdef>
+                  <para>64 bit Windows</para>
+                </glossdef>
+              </glossentry>
+            </glosslist>          
+            By default the platform which was used to compile Cppcheck is used.
+          </para>
+        </listitem>
+      </varlistentry>      
       <varlistentry>
         <term><option>-q</option></term>
         <term><option>--quiet</option></term>
