@@ -4911,14 +4911,12 @@ void Tokenizer::removeRedundantCodeAfterReturn()
     unsigned int indentret = 0;  //this is the indentation level when 'return ;' token is found;
     unsigned int indentswitch = 0;
     unsigned int indentlabel = 0;
-    bool ret = false; //is it already found a 'return' token?
-    bool switched = false; //is it there a switch code?
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->str() == "{")
         {
             ++indentlevel;
-            if (ret)
+            if (indentret)
             {
                 unsigned int indentlevel1 = indentlevel;
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
@@ -4951,9 +4949,9 @@ void Tokenizer::removeRedundantCodeAfterReturn()
             if (indentlevel == 0)
                 break;  // break out - it seems the code is wrong
             //there's already a 'return ;' and more indentation!
-            if (ret)
+            if (indentret)
             {
-                if (!switched || indentlevel > indentcase)
+                if (!indentswitch || indentlevel > indentcase)
                 {
                     if (indentlevel > indentret && indentlevel > indentlabel)
                     {
@@ -4971,14 +4969,15 @@ void Tokenizer::removeRedundantCodeAfterReturn()
                 }
             }
             if (indentlevel == indentret)
-                ret = false;
+            {
+                indentret = 0;
+            }
             --indentlevel;
             if (indentlevel <= indentcase)
             {
                 if (!indentswitch)
                 {
                     indentcase = 0;
-                    switched = false;
                 }
                 else
                 {
@@ -4987,37 +4986,29 @@ void Tokenizer::removeRedundantCodeAfterReturn()
                 }
             }
         }
-        else if (!ret)
+        else if (!indentret)
         {
             if (tok->str() == "switch")
             {
                 if (indentlevel == 0)
                     break;
-                if (!switched)
+                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
                 {
-                    for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+                    if (tok2->str() == "{")
                     {
-                        if (tok2->str() == "{")
-                        {
-                            switched = true;
-                            tok = tok2;
-                            break;
-                        }
-                        else if (tok2->str() == "}")
-                            break;  //bad code
-                    }
-                    if (!switched)
+                        tok = tok2;
+                        ++indentswitch;
                         break;
-                    ++indentlevel;
-                    indentcase = indentlevel;
+                    }
+                    else if (tok2->str() == "}")
+                        break;  //bad code
                 }
-                else
-                {
-                    ++indentswitch;
-                    //todo this case
-                }
+                if (!indentswitch)
+                    break;
+                ++indentlevel;
+                indentcase = indentlevel;
             }
-            else if (switched
+            else if (indentswitch
                      && (tok->str() == "case" || tok->str() == "default"))
             {
                 if (indentlevel > indentcase)
@@ -5049,21 +5040,20 @@ void Tokenizer::removeRedundantCodeAfterReturn()
                 {
                     if (tok2->str() == ";")
                     {
-                        ret = true;
+                        indentret = indentlevel;
                         tok = tok2;
                         break;
                     }
                     else if (tok2->str() == "{" || tok2->str() == "}")
                         break;  //I think this is an error code...
                 }
-                if (!ret)
+                if (!indentret)
                     break;
-                indentret = indentlevel;
             }
         }
-        else if (ret) //there's already a "return;" declaration
+        else if (indentret) //there's already a "return;" declaration
         {
-            if (!switched || indentlevel > indentcase+1)
+            if (!indentswitch || indentlevel > indentcase+1)
             {
                 if (indentlevel >= indentret && (!(Token::Match(tok, "%var% : ;")) || tok->str()=="case" || tok->str()=="default"))
                 {
@@ -5072,7 +5062,7 @@ void Tokenizer::removeRedundantCodeAfterReturn()
                 }
                 else
                 {
-                    ret = false;
+                    indentret = 0;
                 }
             }
             else
@@ -5084,7 +5074,7 @@ void Tokenizer::removeRedundantCodeAfterReturn()
                 }
                 else
                 {
-                    ret = false;
+                    indentret = 0;
                     tok = tok->previous();
                 }
             }

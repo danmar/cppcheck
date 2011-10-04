@@ -5959,11 +5959,29 @@ private:
         }
 
         {
-            const char code[] = "int f() { "
-                                "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return; "
-                                "case 2: switch(y) { case 1: return 0; bar2(); foo(); case 2: return 7; } "
+            const char code[] = "int f() {"
+                                "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return;"
+                                "case 2: switch(y) { case 1: return 0; bar2(); foo(); case 2: return 7; }"
                                 "return 2; } return 3; }";
-            ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : return 1 ; case 2 : switch ( y ) { case 1 : return 0 ; case 2 : return 7 ; } return 2 ; } return 3 ; }",simplifyKnownVariables(code));
+            const char expected[] = "int f ( ) {"
+                                    " switch ( x ) { case 1 : return 1 ;"
+                                    " case 2 : switch ( y ) { case 1 : return 0 ; case 2 : return 7 ; }"
+                                    " return 2 ; } return 3 ; }";
+            ASSERT_EQUALS(expected,simplifyKnownVariables(code));
+        }
+        //ticket #3146
+        {
+            const char code[] = "void foo () {"
+                                "    switch (i) { case 0: switch (j) { case 0: return -1; }"
+                                "        case 1: switch (j) { case -1: return -1; }"
+                                "        case 2: switch (j) { case -2: return -1; }"
+                                "        case 3: if (blah6) return -1; break; } }";
+            const char expected[] = "void foo ( ) {"
+                                    " switch ( i ) { case 0 : switch ( j ) { case 0 : return -1 ; }"
+                                    " case 1 : switch ( j ) { case -1 : return -1 ; }"
+                                    " case 2 : switch ( j ) { case -2 : return -1 ; }"
+                                    " case 3 : if ( blah6 ) { return -1 ; } break ; } }";
+            ASSERT_EQUALS(expected, simplifyKnownVariables(code));
         }
     }
 
