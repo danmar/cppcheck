@@ -121,9 +121,14 @@ void CheckBufferOverrun::strncatUsageError(const Token *tok)
                 "strncat is to calculate remaining space in the buffer and use it as 3rd parameter.");
 }
 
-void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &what)
+void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &what, const bool show_size_info, const MathLib::bigint &supplied_size, const MathLib::bigint &actual_size)
 {
-    reportError(tok, Severity::error, "outOfBounds", what + " is out of bounds");
+    std::ostringstream oss;
+
+    oss << what << " is out of bounds";
+    if (show_size_info)
+        oss << ": Supplied size " << supplied_size << " is larger than actual size of " << actual_size;
+    reportError(tok, Severity::error, "outOfBounds", oss.str());
 }
 
 void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const std::string &object)
@@ -1070,7 +1075,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         {
             const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4 + varc));
             if (n > total_size)
-                outOfBoundsError(tok->tokAt(4 + varc), "snprintf size");
+                outOfBoundsError(tok->tokAt(4 + varc), "snprintf size", true, n, total_size);
         }
 
         // Check function call..
@@ -1096,7 +1101,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
         if (pointerIsOutOfBounds && Token::Match(tok, "[;{}=] * %varid% [;=]", varid))
         {
-            outOfBoundsError(tok->tokAt(2), tok->strAt(2));
+            outOfBoundsError(tok->tokAt(2), tok->strAt(2), false, 0, 0);
         }
     }
 }
@@ -1321,7 +1326,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         {
             const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4));
             if (n > total_size)
-                outOfBoundsError(tok->tokAt(4), "snprintf size");
+                outOfBoundsError(tok->tokAt(4), "snprintf size", true, n, total_size);
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds

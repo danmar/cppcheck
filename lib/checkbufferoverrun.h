@@ -225,7 +225,7 @@ public:
     void arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void bufferOverrunError(const Token *tok, const std::string &varnames = "");
     void strncatUsageError(const Token *tok);
-    void outOfBoundsError(const Token *tok, const std::string &what);
+    void outOfBoundsError(const Token *tok, const std::string &what, const bool show_size_info, const MathLib::bigint &supplied_size, const MathLib::bigint &actual_size);
     void sizeArgumentAsCharError(const Token *tok);
     void terminateStrncpyError(const Token *tok, const std::string &varname);
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
@@ -243,7 +243,7 @@ public:
         c.arrayIndexOutOfBoundsError(0, ArrayInfo(0, "array", 1, 2), indexes);
         c.bufferOverrunError(0, std::string("buffer"));
         c.strncatUsageError(0);
-        c.outOfBoundsError(0, "index");
+        c.outOfBoundsError(0, "index", true, 2, 1);
         c.sizeArgumentAsCharError(0);
         c.terminateStrncpyError(0, "buffer");
         c.bufferNotZeroTerminatedError(0, "buffer", "strncpy");

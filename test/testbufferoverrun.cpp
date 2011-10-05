@@ -2601,7 +2601,7 @@ private:
               "    char str[5];\n"
               "    snprintf(str, 10, \"%s\", \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) snprintf size is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) snprintf size is out of bounds: Supplied size 10 is larger than actual size of 5\n", errout.str());
     }
 
     void snprintf2()
@@ -2642,7 +2642,7 @@ private:
               "  struct Foo x;\n"
               "  snprintf(x.a, 2, \"aa\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds: Supplied size 2 is larger than actual size of 1\n", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
@@ -2651,7 +2651,7 @@ private:
               "  snprintf(x.a, 2, \"aa\");\n"
               "  free(x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds: Supplied size 2 is larger than actual size of 1\n", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
