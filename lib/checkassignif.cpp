@@ -191,5 +191,5 @@ void CheckAssignIf::multiConditionError(const Token *tok, unsigned int line1)
     errmsg << "'else if' condition matches previous condition at line "
            << line1;
 
-    reportError(tok, Severity::information, "multiCondition", errmsg.str());
+    reportError(tok, Severity::style, "multiCondition", errmsg.str());
 }
