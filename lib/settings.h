@@ -120,6 +120,10 @@ public:
     /** @brief get append code (--append) */
     std::string append() const;
 
+    /** @brief Maximum number of configurations to check before bailing. 
+        Default is 12. (--max-configs=N) */
+    int _maxConfigs;
+
     /**
      * @brief Returns true if given id is in the list of
      * enabled extra checks (--enable)

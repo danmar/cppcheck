@@ -38,6 +38,7 @@ Settings::Settings()
     _showtime = 0; // TODO: use enum
     _append = "";
     _terminate = false;
+    _maxConfigs = 12;
     inconclusive = false;
     experimental = false;
     test_2_pass = false;

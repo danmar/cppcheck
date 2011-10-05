@@ -195,9 +195,9 @@ unsigned int CppCheck::processFile()
 
         int checkCount = 0;
         for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
-            // Check only 12 first configurations, after that bail out, unless --force
+            // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.
-            if (!_settings._force && checkCount > 11) {
+            if (!_settings._force && checkCount >= _settings._maxConfigs) {
 
                 const std::string fixedpath = Path::toNativeSeparators(_filename);
                 ErrorLogger::ErrorMessage::FileLocation location;

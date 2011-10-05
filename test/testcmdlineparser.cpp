@@ -74,6 +74,10 @@ private:
         TEST_CASE(jobs);
         TEST_CASE(jobsMissingCount);
         TEST_CASE(jobsInvalid);
+        TEST_CASE(maxConfigs);
+        TEST_CASE(maxConfigsMissingCount);
+        TEST_CASE(maxConfigsInvalid);
+        TEST_CASE(maxConfigsTooSmall);
         TEST_CASE(reportProgressTest); // "Test" suffix to avoid hiding the parent's reportProgress
         TEST_CASE(stdposix);
         TEST_CASE(stdc99);
@@ -536,6 +540,43 @@ private:
         // Fails since invalid count given for -j
         ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
     }
+
+    void maxConfigs() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-f", "--max-configs=12", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS(12, settings._maxConfigs);
+        ASSERT_EQUALS(false, settings._force);        
+    }
+
+    void maxConfigsMissingCount() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--max-configs=", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        // Fails since --max-configs= is missing limit
+        ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
+    }
+
+    void maxConfigsInvalid() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--max-configs=e", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        // Fails since invalid count given for --max-configs=
+        ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
+    }
+
+    void maxConfigsTooSmall() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--max-configs=0", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        // Fails since limit must be greater than 0
+        ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
+	}
 
     void reportProgressTest() {
         REDIRECT;
