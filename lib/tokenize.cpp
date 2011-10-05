@@ -4908,11 +4908,21 @@ void Tokenizer::removeRedundantCodeAfterReturn()
 {
     unsigned int indentlevel = 0;
     unsigned int indentcase = 0;
-    unsigned int indentret = 0;  //this is the indentation level when 'return ;' token is found;
+    unsigned int indentret = 0;
     unsigned int indentswitch = 0;
     unsigned int indentlabel = 0;
+    unsigned int roundbraces = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        if (tok->str() == "(")
+            ++roundbraces;
+        else if (tok->str() == ")")
+        {
+            if (!roundbraces)
+                break;  //too many ending round parenthesis
+            --roundbraces;
+        }
+
         if (tok->str() == "{")
         {
             ++indentlevel;
@@ -4929,8 +4939,7 @@ void Tokenizer::removeRedundantCodeAfterReturn()
                             break;
                         --indentlevel1;
                     }
-                    else if (Token::Match(tok2, "%var% : ;")
-                             && tok2->str()!="case" && tok2->str()!="default")
+                    else if (Token::Match(tok2, "%var% : ;") && !Token::Match(tok2, "case!default"))
                     {
                         indentlabel = indentlevel1;
                         break;
@@ -4943,12 +4952,10 @@ void Tokenizer::removeRedundantCodeAfterReturn()
                 }
             }
         }
-
         else if (tok->str() == "}")
         {
-            if (indentlevel == 0)
-                break;  // break out - it seems the code is wrong
-            //there's already a 'return ;' and more indentation!
+            if (!indentlevel)
+                break;  //too many closing parenthesis
             if (indentret)
             {
                 if (!indentswitch || indentlevel > indentcase)
@@ -4990,26 +4997,44 @@ void Tokenizer::removeRedundantCodeAfterReturn()
         {
             if (tok->str() == "switch")
             {
-                if (indentlevel == 0)
+                if (!indentlevel)
                     break;
+
+                // Don't care about unpreprocessed macros part of code
+                if (roundbraces)
+                    break;
+
+                unsigned int switchroundbraces = 0;
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
                 {
+                    if (tok2->str() == "(")
+                        ++switchroundbraces;
+                    else if (tok2->str() == ")")
+                    {
+                        if (!switchroundbraces)
+                            break;  //too many closing parenthesis
+                        --switchroundbraces;
+                    }
                     if (tok2->str() == "{")
                     {
+                        if (switchroundbraces)
+                        {
+                            tok = tok2->previous();
+                            break;  //too many opening parenthesis
+                        }
                         tok = tok2;
                         ++indentswitch;
                         break;
                     }
                     else if (tok2->str() == "}")
-                        break;  //bad code
+                        break;  //it's not expected, hence it's bad code
                 }
                 if (!indentswitch)
                     break;
                 ++indentlevel;
                 indentcase = indentlevel;
             }
-            else if (indentswitch
-                     && (tok->str() == "case" || tok->str() == "default"))
+            else if (indentswitch && Token::Match(tok, "case|default"))
             {
                 if (indentlevel > indentcase)
                 {
@@ -5017,7 +5042,7 @@ void Tokenizer::removeRedundantCodeAfterReturn()
                 }
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
                 {
-                    if (tok2->str() == ":" || Token::Match(tok2, ": ;"))
+                    if (Token::Match(tok2, ": ;| "))
                     {
                         if (indentlevel == indentcase)
                         {
@@ -5026,25 +5051,40 @@ void Tokenizer::removeRedundantCodeAfterReturn()
                         tok = tok2;
                         break;
                     }
-                    else if (tok2->str() == "}" || tok2->str() == "{")
+                    else if (Token::Match(tok2, "[{}]"))
                         break;  //bad code
                 }
             }
-            else if (tok->str() == "return")
+            else if (tok->str()=="return")
             {
-                if (indentlevel == 0)
-                    break;  // break out - never seen a 'return' not inside a scope;
+                if (!indentlevel)
+                    break;
+
+                // Don't care about unpreprocessed macros part of code
+                if (roundbraces)
+                    continue;
 
                 //catch the first ';' after the return
+                unsigned int returnroundbraces = 0;
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
                 {
-                    if (tok2->str() == ";")
+                    if (tok2->str() == "(")
+                        ++returnroundbraces;
+                    else if (tok2->str() == ")")
                     {
+                        if (!returnroundbraces)
+                            break;  //excessive closing parenthesis
+                        --returnroundbraces;
+                    }
+                    else if (tok2->str() == ";")
+                    {
+                        if (returnroundbraces)
+                            break;  //excessive opening parenthesis
                         indentret = indentlevel;
                         tok = tok2;
                         break;
                     }
-                    else if (tok2->str() == "{" || tok2->str() == "}")
+                    else if (Token::Match(tok2, "[{}]"))
                         break;  //I think this is an error code...
                 }
                 if (!indentret)
@@ -5055,7 +5095,7 @@ void Tokenizer::removeRedundantCodeAfterReturn()
         {
             if (!indentswitch || indentlevel > indentcase+1)
             {
-                if (indentlevel >= indentret && (!(Token::Match(tok, "%var% : ;")) || tok->str()=="case" || tok->str()=="default"))
+                if (indentlevel >= indentret && (!Token::Match(tok, "%var% : ;") || Token::Match(tok, "case|default")))
                 {
                     tok = tok->previous();
                     tok->deleteNext();
@@ -5067,7 +5107,7 @@ void Tokenizer::removeRedundantCodeAfterReturn()
             }
             else
             {
-                if (!(Token::Match(tok, "%var% : ;")) && tok -> str() != "case" && tok->str() != "default")
+                if (!Token::Match(tok, "%var% : ;") && !Token::Match(tok, "case|default"))
                 {
                     tok = tok->previous();
                     tok->deleteNext();

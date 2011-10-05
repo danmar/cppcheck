@@ -358,7 +358,11 @@ private:
         TEST_CASE(simplifyIfAddBraces); // ticket # 2739 (segmentation fault)
 
         //remove redundant code after the 'return ;' statement
-        TEST_CASE(removeRedundantCodeAfterReturn);
+        TEST_CASE(removeRedundantCodeAfterReturn1);
+        TEST_CASE(removeRedundantCodeAfterReturn2);
+        TEST_CASE(removeRedundantCodeAfterReturn3);
+        TEST_CASE(removeRedundantCodeAfterReturn4);
+        TEST_CASE(removeRedundantCodeAfterReturn5);
 
         TEST_CASE(platformWin32);
         TEST_CASE(platformWin32A);
@@ -5922,7 +5926,7 @@ private:
         }
     }
 
-    void removeRedundantCodeAfterReturn()
+    void removeRedundantCodeAfterReturn1()
     {
         ASSERT_EQUALS("void f ( ) { return ; }", tokenizeAndStringify("void f() { return; foo();}"));
         ASSERT_EQUALS("void f ( int n ) { if ( n ) { return ; } foo ( ) ; }",tokenizeAndStringify("void f(int n) { if (n) return; foo();}"));
@@ -5931,58 +5935,67 @@ private:
                       tokenizeAndStringify("int f(int n) { switch (n) {case 0: return 0; n*=2; default: return n; n*=6;} return -1; foo();}"));
         //ticket #3132
         ASSERT_EQUALS("void f ( int i ) { goto label ; switch ( i ) { label : ; return ; } }",tokenizeAndStringify("void f (int i) { goto label; switch(i) { label: return; } }"));
+        //ticket #3148
+        ASSERT_EQUALS("void f ( ) { MACRO ( return 0 ) }",tokenizeAndStringify("void f() { MACRO(return NULL) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( return ; , 0 ) }",tokenizeAndStringify("void f() { MACRO(return;, NULL) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , return 0 ) }",tokenizeAndStringify("void f() { MACRO(bar1, return NULL) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( return ; bar2 , foo ) }",tokenizeAndStringify("void f() { MACRO(return; bar2, foo) }"));
+    }
 
-        {
-            const char code[] = "void f(){ "
-                                "if (k>0) goto label; "
-                                "return; "
-                                "if (tnt) "
-                                "   { "
-                                "       { "
-                                "           check(); "
-                                "           k=0; "
-                                "       } "
-                                "       label: "
-                                "       bar(); "
-                                "   } "
-                                "}";
-            ASSERT_EQUALS("void f ( ) { if ( 0 < k ) { goto label ; } return ; { label : ; bar ( ) ; } }",simplifyKnownVariables(code));
-        }
+    void removeRedundantCodeAfterReturn2()
+    {
+        const char code[] = "void f(){ "
+                            "if (k>0) goto label; "
+                            "return; "
+                            "if (tnt) "
+                            "   { "
+                            "       { "
+                            "           check(); "
+                            "           k=0; "
+                            "       } "
+                            "       label: "
+                            "       bar(); "
+                            "   } "
+                            "}";
+        ASSERT_EQUALS("void f ( ) { if ( 0 < k ) { goto label ; } return ; { label : ; bar ( ) ; } }",simplifyKnownVariables(code));
+    }
 
-        {
-            const char code[] = "int f() { "
-                                "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return; "
-                                "case 2: return 2; { reere(); } tack(); "
-                                "switch(y) { case 1: return 0; case 2: return 7; } "
-                                "return 2; } return 3; }";
-            ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : return 1 ; case 2 : return 2 ; } return 3 ; }",simplifyKnownVariables(code));
-        }
+    void removeRedundantCodeAfterReturn3()
+    {
+        const char code[] = "int f() { "
+                            "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return; "
+                            "case 2: return 2; { random(); } tack(); "
+                            "switch(y) { case 1: return 0; case 2: return 7; } "
+                            "return 2; } return 3; }";
+        ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : return 1 ; case 2 : return 2 ; } return 3 ; }",simplifyKnownVariables(code));
+    }
 
-        {
-            const char code[] = "int f() {"
-                                "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return;"
-                                "case 2: switch(y) { case 1: return 0; bar2(); foo(); case 2: return 7; }"
-                                "return 2; } return 3; }";
-            const char expected[] = "int f ( ) {"
-                                    " switch ( x ) { case 1 : return 1 ;"
-                                    " case 2 : switch ( y ) { case 1 : return 0 ; case 2 : return 7 ; }"
-                                    " return 2 ; } return 3 ; }";
-            ASSERT_EQUALS(expected,simplifyKnownVariables(code));
-        }
-        //ticket #3146
-        {
-            const char code[] = "void foo () {"
-                                "    switch (i) { case 0: switch (j) { case 0: return -1; }"
-                                "        case 1: switch (j) { case -1: return -1; }"
-                                "        case 2: switch (j) { case -2: return -1; }"
-                                "        case 3: if (blah6) return -1; break; } }";
-            const char expected[] = "void foo ( ) {"
-                                    " switch ( i ) { case 0 : switch ( j ) { case 0 : return -1 ; }"
-                                    " case 1 : switch ( j ) { case -1 : return -1 ; }"
-                                    " case 2 : switch ( j ) { case -2 : return -1 ; }"
-                                    " case 3 : if ( blah6 ) { return -1 ; } break ; } }";
-            ASSERT_EQUALS(expected, simplifyKnownVariables(code));
-        }
+    void removeRedundantCodeAfterReturn4()
+    {
+        const char code[] = "int f() {"
+                            "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return;"
+                            "case 2: switch(y) { case 1: return 0; bar2(); foo(); case 2: return 7; }"
+                            "return 2; } return 3; }";
+        const char expected[] = "int f ( ) {"
+                                " switch ( x ) { case 1 : return 1 ;"
+                                " case 2 : switch ( y ) { case 1 : return 0 ; case 2 : return 7 ; }"
+                                " return 2 ; } return 3 ; }";
+        ASSERT_EQUALS(expected,simplifyKnownVariables(code));
+    }
+
+    void removeRedundantCodeAfterReturn5()
+    {
+        const char code[] = "void foo () {"
+                            "    switch (i) { case 0: switch (j) { case 0: return -1; }"
+                            "        case 1: switch (j) { case -1: return -1; }"
+                            "        case 2: switch (j) { case -2: return -1; }"
+                            "        case 3: if (blah6) return -1; break; } }";
+        const char expected[] = "void foo ( ) {"
+                                " switch ( i ) { case 0 : switch ( j ) { case 0 : return -1 ; }"
+                                " case 1 : switch ( j ) { case -1 : return -1 ; }"
+                                " case 2 : switch ( j ) { case -2 : return -1 ; }"
+                                " case 3 : if ( blah6 ) { return -1 ; } break ; } }";
+        ASSERT_EQUALS(expected, simplifyKnownVariables(code));
     }
 
     void platformWin32()
