@@ -219,7 +219,11 @@ void MainWindow::LoadSettings()
     mUI.mActionShowInformation->setChecked(mSettings->value(SETTINGS_SHOW_INFORMATION, true).toBool());
 
     mUI.mResults->ShowResults(SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
+    mUI.mResults->ShowResults(SHOW_WARNINGS, mUI.mActionShowWarnings->isChecked());
     mUI.mResults->ShowResults(SHOW_STYLE, mUI.mActionShowStyle->isChecked());
+    mUI.mResults->ShowResults(SHOW_PORTABILITY, mUI.mActionShowPortability->isChecked());
+    mUI.mResults->ShowResults(SHOW_PERFORMANCE, mUI.mActionShowPerformance->isChecked());
+    mUI.mResults->ShowResults(SHOW_INFORMATION, mUI.mActionShowInformation->isChecked());
 
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
