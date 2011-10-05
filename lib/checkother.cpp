@@ -228,39 +228,6 @@ void CheckOther::clarifyConditionError(const Token *tok, bool assign, bool boolo
 }
 
 //---------------------------------------------------------------------------
-// if (bool & bool) -> if (bool && bool)
-// if (bool | bool) -> if (bool || bool)
-//---------------------------------------------------------------------------
-void CheckOther::checkBitwiseOnBoolean()
-{
-    if (!_settings->isEnabled("style"))
-        return;
-
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "(|.|return %var% [&|]"))
-        {
-            if (tok->next()->varId())
-            {
-                const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->next()->varId());
-                if (var && (var->typeStartToken() == var->typeEndToken()) &&
-                    var->typeStartToken()->str() == "bool")
-                {
-                    bitwiseOnBooleanError(tok->next(), tok->next()->str(), tok->strAt(2) == "&" ? "&&" : "||");
-                }
-            }
-        }
-    }
-}
-
-void CheckOther::bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op)
-{
-    reportError(tok, Severity::style, "bitwiseOnBoolean",
-                "Boolean variable '" + varname + "' is used in bitwise operation. Did you mean " + op + " ?");
-}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 void CheckOther::warningOldStylePointerCast()
 {
     if (!_settings->isEnabled("style") ||

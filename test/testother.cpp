@@ -121,7 +121,6 @@ private:
         TEST_CASE(clarifyCondition2);     // if (a & b == c)
         TEST_CASE(clarifyCondition3);     // if (! a & b)
         TEST_CASE(clarifyCondition4);     // ticket #3110
-        TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
 
         TEST_CASE(incorrectStringCompare);
 
@@ -166,7 +165,6 @@ private:
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
-        checkOther.checkBitwiseOnBoolean();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -2855,63 +2853,6 @@ private:
               "     }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void bitwiseOnBoolean() // 3062
-    {
-        check("void f(_Bool a, _Bool b) {\n"
-              "    if(a & b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
-
-        check("void f(_Bool a, _Bool b) {\n"
-              "    if(a | b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
-
-        check("void f(bool a, bool b) {\n"
-              "    if(a & b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
-
-        check("void f(bool a, bool b) {\n"
-              "    if(a & !b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
-
-        check("void f(bool a, bool b) {\n"
-              "    if(a | b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
-
-        check("void f(bool a, bool b) {\n"
-              "    if(a | !b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
-
-        check("bool a, b;\n"
-              "void f() {\n"
-              "    if(a & b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
-
-        check("bool a, b;\n"
-              "void f() {\n"
-              "    if(a & !b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
-
-        check("bool a, b;\n"
-              "void f() {\n"
-              "    if(a | b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
-
-        check("bool a, b;\n"
-              "void f() {\n"
-              "    if(a | !b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
     }
 
     void incorrectStringCompare()
