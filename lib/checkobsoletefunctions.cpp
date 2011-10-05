@@ -60,7 +60,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
             {
                 // If checking an old code base it might be uninteresting to update obsolete functions.
                 // Therefore this is "information"
-                reportError(tok->tokAt(1), Severity::information, "obsoleteFunctions"+it->first, it->second);
+                reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
                 break;
             }
             else if (_settings->posix)
@@ -70,7 +70,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
                 {
                     // If checking an old code base it might be uninteresting to update obsolete functions.
                     // Therefore this is "information"
-                    reportError(tok->tokAt(1), Severity::information, "obsoleteFunctions"+it->first, it->second);
+                    reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
                     break;
                 }
             }

@@ -1558,7 +1558,7 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
 void CheckOther::variableScopeError(const Token *tok, const std::string &varname)
 {
     reportError(tok,
-                Severity::information,
+                Severity::style,
                 "variableScope",
                 "The scope of the variable '" + varname + "' can be reduced\n"
                 "The scope of the variable '" + varname + "' can be reduced. Warning: It can be unsafe "

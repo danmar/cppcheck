@@ -1762,7 +1762,7 @@ bool CheckClass::isVirtualFunc(const Scope *scope, const Token *functionToken) c
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
-    reportError(tok, Severity::information, "functionConst",
+    reportError(tok, Severity::style, "functionConst",
                 "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
                 "The member function '" + classname + "::" + funcname + "' can be made a const "
                 "function. Making this function const function should not cause compiler errors. "
@@ -1776,7 +1776,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
     std::list<const Token *> toks;
     toks.push_back(tok1);
     toks.push_back(tok2);
-    reportError(toks, Severity::information, "functionConst",
+    reportError(toks, Severity::style, "functionConst",
                 "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
                 "The member function '" + classname + "::" + funcname + "' can be made a const "
                 "function. Making this function const function should not cause compiler errors. "

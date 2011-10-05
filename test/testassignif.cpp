@@ -121,14 +121,14 @@ private:
               "    if (x & 7);\n"
               "    else if (x == 1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (information) 'else if' condition matches previous condition at line 3\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'else if' condition matches previous condition at line 3\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 7);\n"
               "    else if (x & 1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (information) 'else if' condition matches previous condition at line 3\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'else if' condition matches previous condition at line 3\n", errout.str());
     }
 };
 
