@@ -61,10 +61,10 @@ private:
         TEST_CASE(varScope6);
         TEST_CASE(varScope7);
         TEST_CASE(varScope8);
-        TEST_CASE(varScope9);		// classes may have extra side-effects
+        TEST_CASE(varScope9);       // classes may have extra side-effects
         TEST_CASE(varScope10);      // Undefined macro FOR
-        TEST_CASE(varScope11);		// #2475 - struct initialization is not inner scope
-        TEST_CASE(varScope12);		// variable usage in inner loop
+        TEST_CASE(varScope11);      // #2475 - struct initialization is not inner scope
+        TEST_CASE(varScope12);      // variable usage in inner loop
 
         TEST_CASE(oldStylePointerCast);
 
@@ -126,7 +126,10 @@ private:
         TEST_CASE(incorrectStringCompare);
 
         TEST_CASE(incrementBoolean);
-        TEST_CASE(comparisonOfBoolWithInt);
+        TEST_CASE(comparisonOfBoolWithInt1);
+        TEST_CASE(comparisonOfBoolWithInt2);
+        TEST_CASE(comparisonOfBoolWithInt3);
+        TEST_CASE(comparisonOfBoolWithInt4);
 
         TEST_CASE(duplicateIf);
         TEST_CASE(duplicateBranch);
@@ -2956,7 +2959,107 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt()
+    void comparisonOfBoolWithInt1()
+    {
+        check("void f(bool x) {\n"
+              "    if (x < 10) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(bool x) {\n"
+              "    if (10 >= x) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(bool x) {\n"
+              "    if (x != 0) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool x) {\n"
+              "    if (x != 10) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(bool x) {\n"
+              "    if (x == 10) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(bool x) {\n"
+              "    if (x == 0) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void comparisonOfBoolWithInt2()
+    {
+        check("void f(bool x, int y) {\n"
+              "    if (x == y) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(int x, bool y) {\n"
+              "    if (x == y) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(bool x, bool y) {\n"
+              "    if (x == y) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool x, fooClass y) {\n"
+              "    if (x == y) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void comparisonOfBoolWithInt3()
+    {
+        check("void f(int y) {\n"
+              "    if (y > false) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(int y) {\n"
+              "    if (true == y) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+
+        check("void f(bool y) {\n"
+              "    if (y == true) {\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void comparisonOfBoolWithInt4()
     {
         check("void f(int x) {\n"
               "    if (!x == 10) {\n"

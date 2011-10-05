@@ -22,7 +22,7 @@
 #include "mathlib.h"
 #include "symboldatabase.h"
 
-#include <cctype> // std::isupper
+#include <cctype>
 #include <cmath> // fabs()
 #include <stack>
 //---------------------------------------------------------------------------
@@ -1226,14 +1226,77 @@ void CheckOther::checkComparisonOfBoolWithInt()
     if (!_settings->isEnabled("style"))
         return;
 
+    std::map<unsigned int, bool> boolvars; // Contains all declarated standard type variables and indicates whether its a bool or not.
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "( ! %var% ==|!= %num% )"))
+        if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]") && tok->tokAt(1)->isStandardType()) // Declaration of standard type variable
+        {
+            boolvars[tok->tokAt(2)->varId()] = (tok->tokAt(1)->str() == "bool");
+        }
+        else if (Token::Match(tok, "%var% >|>=|==|!=|<=|< %num%")) // Comparing variable with number
+        {
+            const Token *varTok = tok;
+            const Token *numTok = tok->tokAt(2);
+            std::map<unsigned int, bool>::const_iterator iVar = boolvars.find(varTok->varId());
+            if (iVar != boolvars.end() && iVar->second && // Variable has to be a boolean
+                ((tok->tokAt(1)->str() != "==" && tok->tokAt(1)->str() != "!=") ||
+                 ((MathLib::toLongNumber(numTok->str()) != 0) && (!code_is_c() || MathLib::toLongNumber(numTok->str()) != 1)))) // == 0 and != 0 are allowed, for C also == 1 and != 1
+            {
+                comparisonOfBoolWithIntError(varTok, numTok->str());
+            }
+        }
+        else if (Token::Match(tok, "%num% >|>=|==|!=|<=|< %var%")) // Comparing number with variable
+        {
+            const Token *varTok = tok->tokAt(2);
+            const Token *numTok = tok;
+            std::map<unsigned int, bool>::const_iterator iVar = boolvars.find(varTok->varId());
+            if (iVar != boolvars.end() && iVar->second && // Variable has to be a boolean
+                ((tok->tokAt(1)->str() != "==" && tok->tokAt(1)->str() != "!=") ||
+                 ((MathLib::toLongNumber(numTok->str()) != 0) && (!code_is_c() || MathLib::toLongNumber(numTok->str()) != 1)))) // == 0 and != 0 are allowed, for C also == 1 and != 1
+            {
+                comparisonOfBoolWithIntError(varTok, numTok->str());
+            }
+        }
+        else if (Token::Match(tok, "true|false >|>=|==|!=|<=|< %var%")) // Comparing boolean constant with variable
+        {
+            const Token *varTok = tok->tokAt(2);
+            const Token *constTok = tok;
+            std::map<unsigned int, bool>::const_iterator iVar = boolvars.find(varTok->varId());
+            if (iVar != boolvars.end() && !iVar->second) // Variable has to be of non-boolean standard type
+            {
+                comparisonOfBoolWithIntError(varTok, constTok->str());
+            }
+        }
+        else if (Token::Match(tok, "%var% >|>=|==|!=|<=|< true|false")) // Comparing variable with boolean constant
+        {
+            const Token *varTok = tok;
+            const Token *constTok = tok->tokAt(2);
+            std::map<unsigned int, bool>::const_iterator iVar = boolvars.find(varTok->varId());
+            if (iVar != boolvars.end() && !iVar->second) // Variable has to be of non-boolean standard type
+            {
+                comparisonOfBoolWithIntError(varTok, constTok->str());
+            }
+        }
+        else if (Token::Match(tok, "%var% >|>=|==|!=|<=|< %var%")) // Comparing two variables, one of them boolean, one of them integer
+        {
+            const Token *var1Tok = tok->tokAt(2);
+            const Token *var2Tok = tok;
+            std::map<unsigned int, bool>::const_iterator iVar1 = boolvars.find(var1Tok->varId());
+            std::map<unsigned int, bool>::const_iterator iVar2 = boolvars.find(var2Tok->varId());
+            if (iVar1 != boolvars.end() && iVar2 != boolvars.end())
+            {
+                if (iVar1->second && !iVar2->second) // Comparing boolean with non-bool standard type
+                    comparisonOfBoolWithIntError(var2Tok, var1Tok->str());
+                else if (!iVar1->second && iVar2->second) // Comparing non-bool standard type with boolean
+                    comparisonOfBoolWithIntError(var2Tok, var2Tok->str());
+            }
+        }
+        else if (Token::Match(tok, "( ! %var% ==|!= %num% )"))
         {
             const Token *numTok = tok->tokAt(4);
             if (numTok && numTok->str() != "0")
             {
-                comparisonOfBoolWithIntError(numTok, tok->strAt(2));
+                comparisonOfBoolWithIntError(numTok, "!"+tok->strAt(2));
             }
         }
         else if (Token::Match(tok, "( %num% ==|!= ! %var% )"))
@@ -1241,17 +1304,17 @@ void CheckOther::checkComparisonOfBoolWithInt()
             const Token *numTok = tok->tokAt(1);
             if (numTok && numTok->str() != "0")
             {
-                comparisonOfBoolWithIntError(numTok, tok->strAt(4));
+                comparisonOfBoolWithIntError(numTok, "!"+tok->strAt(4));
             }
         }
     }
 }
 
-void CheckOther::comparisonOfBoolWithIntError(const Token *tok, const std::string &varname)
+void CheckOther::comparisonOfBoolWithIntError(const Token *tok, const std::string &expression)
 {
     reportError(tok, Severity::warning, "comparisonOfBoolWithInt",
                 "Comparison of a boolean with a non-zero integer\n"
-                "The expression \"!" + varname + "\" is of type 'bool' but is compared against a non-zero 'int'.");
+                "The expression \"" + expression + "\" is of type 'bool' but is compared against a non-zero 'int'.");
 }
 
 //---------------------------------------------------------------------------
