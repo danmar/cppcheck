@@ -2765,7 +2765,7 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
-    removeRedundantCodeAfterReturn();
+    simplifyDeadCode();
 
     _tokens->assignProgressValues();
 
@@ -4548,7 +4548,7 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyGoto();
 
-    removeRedundantCodeAfterReturn();
+    simplifyDeadCode();
 
     // Combine wide strings
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -4904,7 +4904,7 @@ void Tokenizer::removeRedundantAssignment()
     }
 }
 
-void Tokenizer::removeRedundantCodeAfterReturn()
+void Tokenizer::simplifyDeadCode()
 {
     unsigned int indentlevel = 0;
     unsigned int indentcase = 0;

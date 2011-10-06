@@ -199,8 +199,11 @@ public:
     /** Remove redundant assignment */
     void removeRedundantAssignment();
 
-    /** Remove redudant code after return */
-    void removeRedundantCodeAfterReturn();
+    /** 
+     * Remove redudant code placed after 'return ;' code.
+     * @todo Extend the functionality to code after 'break;' and 'continue;' code
+     */
+    void simplifyDeadCode();
 
     /**
      * Replace sizeof() to appropriate size.

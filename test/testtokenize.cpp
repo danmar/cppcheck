@@ -358,11 +358,11 @@ private:
         TEST_CASE(simplifyIfAddBraces); // ticket # 2739 (segmentation fault)
 
         //remove redundant code after the 'return ;' statement
-        TEST_CASE(removeRedundantCodeAfterReturn1);
-        TEST_CASE(removeRedundantCodeAfterReturn2);
-        TEST_CASE(removeRedundantCodeAfterReturn3);
-        TEST_CASE(removeRedundantCodeAfterReturn4);
-        TEST_CASE(removeRedundantCodeAfterReturn5);
+        TEST_CASE(simplifyDeadCodereturn1);
+        TEST_CASE(simplifyDeadCodereturn2);
+        TEST_CASE(simplifyDeadCodereturn3);
+        TEST_CASE(simplifyDeadCodereturn4);
+        TEST_CASE(simplifyDeadCodereturn5);
 
         TEST_CASE(platformWin32);
         TEST_CASE(platformWin32A);
@@ -5926,7 +5926,7 @@ private:
         }
     }
 
-    void removeRedundantCodeAfterReturn1()
+    void simplifyDeadCodereturn1()
     {
         ASSERT_EQUALS("void f ( ) { return ; }", tokenizeAndStringify("void f() { return; foo();}"));
         ASSERT_EQUALS("void f ( int n ) { if ( n ) { return ; } foo ( ) ; }",tokenizeAndStringify("void f(int n) { if (n) return; foo();}"));
@@ -5942,7 +5942,7 @@ private:
         ASSERT_EQUALS("void f ( ) { MACRO ( return ; bar2 , foo ) }",tokenizeAndStringify("void f() { MACRO(return; bar2, foo) }"));
     }
 
-    void removeRedundantCodeAfterReturn2()
+    void simplifyDeadCodereturn2()
     {
         const char code[] = "void f(){ "
                             "if (k>0) goto label; "
@@ -5960,7 +5960,7 @@ private:
         ASSERT_EQUALS("void f ( ) { if ( 0 < k ) { goto label ; } return ; { label : ; bar ( ) ; } }",simplifyKnownVariables(code));
     }
 
-    void removeRedundantCodeAfterReturn3()
+    void simplifyDeadCodereturn3()
     {
         const char code[] = "int f() { "
                             "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return; "
@@ -5970,7 +5970,7 @@ private:
         ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : return 1 ; case 2 : return 2 ; } return 3 ; }",simplifyKnownVariables(code));
     }
 
-    void removeRedundantCodeAfterReturn4()
+    void simplifyDeadCodereturn4()
     {
         const char code[] = "int f() {"
                             "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return;"
@@ -5983,7 +5983,7 @@ private:
         ASSERT_EQUALS(expected,simplifyKnownVariables(code));
     }
 
-    void removeRedundantCodeAfterReturn5()
+    void simplifyDeadCodereturn5()
     {
         const char code[] = "void foo () {"
                             "    switch (i) { case 0: switch (j) { case 0: return -1; }"
