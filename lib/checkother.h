@@ -102,6 +102,7 @@ public:
 
         checkOther.checkAssignBoolToPointer();
         checkOther.checkSignOfUnsignedVariable();
+        checkOther.checkBitwiseOnBoolean();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -225,6 +226,9 @@ public:
     /** @brief %Check for testing sign of unsigned variable */
     void checkSignOfUnsignedVariable();
 
+    /** @brief %Check for using bool in bitwise expression */
+    void checkBitwiseOnBoolean();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -261,6 +265,7 @@ public:
     void assignBoolToPointerError(const Token *tok);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname);
     void unsignedPositiveError(const Token *tok, const std::string &varname);
+    void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -309,6 +314,7 @@ public:
         c.duplicateBreakError(0);
         c.unsignedLessThanZeroError(0, "varname");
         c.unsignedPositiveError(0, "varname");
+        c.bitwiseOnBooleanError(0, "varname", "&&");
     }
 
     std::string myName() const
@@ -357,6 +363,7 @@ public:
                "* duplicate break statement\n"
                "* testing if unsigned variable is negative\n"
                "* testing is unsigned variable is positive\n"
+               "* using bool in bitwise expression\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
