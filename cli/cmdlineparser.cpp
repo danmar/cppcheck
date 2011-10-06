@@ -431,6 +431,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->posix = true;
         }
 
+        // --C99
+        else if (strcmp(argv[i], "--std=c99") == 0)
+        {
+            _settings->c99 = true;
+        }
+
         // Output formatter
         else if (strcmp(argv[i], "--template") == 0)
         {
@@ -767,6 +773,7 @@ void CmdLineParser::PrintHelp()
 #endif
               "    -s, --style          Deprecated, use --enable=style\n"
               "    --std=posix          Code is posix\n"
+              "    --std=c99            Code is C99 standard\n"
               "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
               "                         <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"

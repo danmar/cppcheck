@@ -63,6 +63,7 @@ private:
     /* function name / error message */
     std::map<std::string, std::string> _obsoleteStandardFunctions;
     std::map<std::string, std::string> _obsoletePosixFunctions;
+    std::map<std::string, std::string> _obsoleteC99Functions;
 
     /** init obsolete functions list ' */
     void initObsoleteFunctions()
@@ -111,6 +112,7 @@ private:
 
         _obsoleteStandardFunctions["gets"] = "Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n"
                                              "Found obsolete function 'gets'. With gets you'll get buffer overruns if the input data too big for the buffer. It is recommended to use the function 'fgets' instead.";
+        _obsoleteC99Functions["alloca"] = "Found obsolete function 'alloca'. It is recommended to use a variable length array.\nFound obsolete function 'alloca'. It is recommended to use a variable length array or a dynamically allocated array. The function 'alloca' is dangerous for many reasons (http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).";
 
     }
 

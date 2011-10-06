@@ -191,6 +191,9 @@ public:
     /** Code is posix - it is not compatible with non-posix environments */
     bool posix;
 
+    /** Code is C99 standard - it is not compatible with previous versions */
+    bool c99;
+
     /** size of standard types */
     unsigned int sizeof_bool;
     unsigned int sizeof_short;

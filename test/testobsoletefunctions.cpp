@@ -49,6 +49,8 @@ private:
         // dangerous function
         TEST_CASE(testgets);
 
+        TEST_CASE(testalloca);
+
         // declared function ticket #3121
         TEST_CASE(test_declared_function);
     }
@@ -61,6 +63,7 @@ private:
         Settings settings;
         settings.addEnabled("style");
         settings.posix = true;
+        settings.c99 = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -214,6 +217,15 @@ private:
               "    char *x = gets();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n", errout.str());
+    }
+
+    void testalloca()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *x = alloca(10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'alloca'. It is recommended to use a variable length array.\n", errout.str());
     }
 
     // ticket #3121
