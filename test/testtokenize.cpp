@@ -5085,6 +5085,9 @@ private:
     void labels()
     {
         ASSERT_EQUALS(" void f(){ ab:; a=0;}", labels_("void f() { ab: a=0; }"));
+        ASSERT_EQUALS(" void f(){ ab:;* b=0;}", labels_("void f() { ab: *b=0; }"));
+        ASSERT_EQUALS(" void f(){ ab:;& b=0;}", labels_("void f() { ab: &b=0; }"));
+        ASSERT_EQUALS(" void f(){ ab:;(* func)();}", labels_("void f() { ab: (*func)(); }"));
     }
 
     // Check simplifyInitVar

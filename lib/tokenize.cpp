@@ -2834,7 +2834,7 @@ void Tokenizer::labels()
                 }
 
                 // simplify label..
-                if (Token::Match(tok, "[;{}] %var% : %var%"))
+                if (Token::Match(tok, "[;{}] %var% : (| *|&| %var%"))
                 {
                     if (!Token::Match(tok->next(), "public|protected|private"))
                         tok->tokAt(2)->insertToken(";");
