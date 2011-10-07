@@ -8,9 +8,9 @@
 ]>
 <book>
   <bookinfo>
-    <title>Cppcheck 1.50</title>
+    <title>Cppcheck 1.51</title>
 
-    <date>2011-02-06</date>
+    <date>2011-10-07</date>
   </bookinfo>
 
   <chapter>
@@ -252,7 +252,12 @@ Checking path/file2.cpp...
     <section>
       <title>Multithreaded checking</title>
 
-      <para>To use 4 threads to check the files in a folder:</para>
+      <para>The command line client can only use threads in posix
+      environments. But it is the goal to be able to use threads on all
+      platforms.</para>
+
+      <para>The option -j is used to specify the number of threads you want to use.
+      For example, to use 4 threads to check the files in a folder:</para>
 
       <programlisting>cppcheck -j 4 path</programlisting>
     </section>
