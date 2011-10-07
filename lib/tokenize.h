@@ -199,7 +199,7 @@ public:
     /** Remove redundant assignment */
     void removeRedundantAssignment();
 
-    /** 
+    /**
      * Remove redudant code placed after 'return ;' code.
      * @todo Extend the functionality to code after 'break;' and 'continue;' code
      */
