@@ -3737,6 +3737,9 @@ void Tokenizer::setVarId()
             continue;
         }
 
+        if (Token::Match(tok, "goto %any% ;"))
+            continue;
+
         if (Token::Match(tok, "else|return|typedef|delete|sizeof"))
             continue;
 

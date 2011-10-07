@@ -1697,6 +1697,11 @@ void Scope::getVariableList()
             continue;
         else if (Token::Match(tok, ";|{|}"))
             continue;
+        else if (Token::Match(tok, "goto %var% ;"))
+        {
+            tok = tok->next()->next();
+            continue;
+        }
 
         tok = checkVariable(tok, varaccess);
 
