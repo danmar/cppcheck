@@ -385,6 +385,13 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #3128
+        check("void f(ABC *abc) {\n"
+              "    x(!abc || y(abc->a));\n"
+              "    if (abc) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing a pointer and then checking if it is null
@@ -521,6 +528,19 @@ private:
               "    if (!doc) {\n"
               "        return;\n"
               "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #3128 - false positive
+        check("void f(int *p) {\n"
+              "    assert(!p || (*p<=6));\n"
+              "    if (p) { *p = 0; }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p) {\n"
+              "    assert(p && (*p<=6));\n"
+              "    if (p) { *p = 0; }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 

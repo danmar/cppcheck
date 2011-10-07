@@ -367,6 +367,15 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             skipvar.insert(tok1->varId());
             continue;
         }
+        else if (Token::Match(tok1, "( ! %var% ||") ||
+                 Token::Match(tok1, "( %var% &&"))
+        {
+            tok1 = tok1->next();
+            if (tok1->str() == "!")
+                tok1 = tok1->next();
+            skipvar.insert(tok1->varId());
+            continue;
+        }
 
         /**
          * @todo There are lots of false negatives here. A dereference
@@ -562,6 +571,10 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                         break;
 
                     if (Token::Match(tok1->link()->previous(), "while ( %varid%", varid))
+                        break;
+
+                    if (Token::Match(tok1->link(), "( ! %varid% ||", varid) ||
+                        Token::Match(tok1->link(), "( %varid% &&", varid))
                         break;
 
                     if (Token::simpleMatch(tok1->link()->previous(), "sizeof ("))
