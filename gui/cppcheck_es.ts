@@ -165,16 +165,16 @@ Parameters: -l(line) (file)</source>
     <name>MainWindow</name>
     <message>
         <location filename="main.ui" line="26"/>
-        <location filename="mainwindow.cpp" line="221"/>
-        <location filename="mainwindow.cpp" line="280"/>
-        <location filename="mainwindow.cpp" line="311"/>
-        <location filename="mainwindow.cpp" line="379"/>
-        <location filename="mainwindow.cpp" line="406"/>
-        <location filename="mainwindow.cpp" line="652"/>
-        <location filename="mainwindow.cpp" line="782"/>
-        <location filename="mainwindow.cpp" line="803"/>
-        <location filename="mainwindow.cpp" line="945"/>
-        <location filename="mainwindow.cpp" line="1033"/>
+        <location filename="mainwindow.cpp" line="251"/>
+        <location filename="mainwindow.cpp" line="310"/>
+        <location filename="mainwindow.cpp" line="341"/>
+        <location filename="mainwindow.cpp" line="409"/>
+        <location filename="mainwindow.cpp" line="436"/>
+        <location filename="mainwindow.cpp" line="683"/>
+        <location filename="mainwindow.cpp" line="813"/>
+        <location filename="mainwindow.cpp" line="834"/>
+        <location filename="mainwindow.cpp" line="976"/>
+        <location filename="mainwindow.cpp" line="1064"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -204,346 +204,376 @@ Parameters: -l(line) (file)</source>
         <translation>&amp;Comprobar</translation>
     </message>
     <message>
-        <location filename="main.ui" line="139"/>
+        <location filename="main.ui" line="141"/>
         <source>&amp;Edit</source>
         <translation>&amp;Editar</translation>
     </message>
     <message>
-        <location filename="main.ui" line="152"/>
+        <location filename="main.ui" line="154"/>
         <source>Standard</source>
         <translation>Estándar</translation>
     </message>
     <message>
-        <location filename="main.ui" line="171"/>
+        <location filename="main.ui" line="173"/>
         <source>Categories</source>
         <translation>Categorías</translation>
     </message>
     <message>
-        <location filename="main.ui" line="199"/>
+        <location filename="main.ui" line="201"/>
         <source>&amp;License...</source>
         <translation>&amp;licencia...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="204"/>
+        <location filename="main.ui" line="206"/>
         <source>A&amp;uthors...</source>
         <translation>A&amp;utores...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="213"/>
+        <location filename="main.ui" line="215"/>
         <source>&amp;About...</source>
         <translation>&amp;sobre...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="218"/>
+        <location filename="main.ui" line="220"/>
         <source>&amp;Files...</source>
         <translation>&amp;Ficheros...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="221"/>
-        <location filename="main.ui" line="224"/>
+        <location filename="main.ui" line="223"/>
+        <location filename="main.ui" line="226"/>
         <source>Check files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="227"/>
+        <location filename="main.ui" line="229"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="main.ui" line="236"/>
+        <location filename="main.ui" line="238"/>
         <source>&amp;Directory...</source>
         <translation>&amp;Carpeta...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="239"/>
-        <location filename="main.ui" line="242"/>
+        <location filename="main.ui" line="241"/>
+        <location filename="main.ui" line="244"/>
         <source>Check directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="245"/>
+        <location filename="main.ui" line="247"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="main.ui" line="254"/>
+        <location filename="main.ui" line="256"/>
         <source>&amp;Recheck files</source>
         <translation>&amp;Volver a revisar ficheros</translation>
     </message>
     <message>
-        <location filename="main.ui" line="257"/>
+        <location filename="main.ui" line="259"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="main.ui" line="266"/>
+        <location filename="main.ui" line="268"/>
         <source>&amp;Stop</source>
         <translation>&amp;Parar</translation>
     </message>
     <message>
-        <location filename="main.ui" line="269"/>
-        <location filename="main.ui" line="272"/>
+        <location filename="main.ui" line="271"/>
+        <location filename="main.ui" line="274"/>
         <source>Stop checking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="275"/>
+        <location filename="main.ui" line="277"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="main.ui" line="284"/>
+        <location filename="main.ui" line="286"/>
         <source>&amp;Save results to file...</source>
         <translation>&amp;Guardar los resultados en el fichero...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="287"/>
+        <location filename="main.ui" line="289"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="main.ui" line="292"/>
+        <location filename="main.ui" line="294"/>
         <source>&amp;Quit</source>
         <translation>&amp;Salir</translation>
     </message>
     <message>
-        <location filename="main.ui" line="301"/>
+        <location filename="main.ui" line="303"/>
         <source>&amp;Clear results</source>
         <translation>&amp;Limpiar resultados</translation>
     </message>
     <message>
-        <location filename="main.ui" line="310"/>
+        <location filename="main.ui" line="312"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Preferencias</translation>
     </message>
     <message>
-        <location filename="main.ui" line="322"/>
+        <location filename="main.ui" line="324"/>
         <source>Style warnings</source>
         <translation>Estilos de advertencias</translation>
     </message>
     <message>
-        <location filename="main.ui" line="325"/>
-        <location filename="main.ui" line="328"/>
+        <location filename="main.ui" line="327"/>
+        <location filename="main.ui" line="330"/>
         <source>Show style warnings</source>
         <translation>Mostrar estilos de advertencias</translation>
     </message>
     <message>
-        <location filename="main.ui" line="340"/>
+        <location filename="main.ui" line="342"/>
         <source>Errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="343"/>
-        <location filename="main.ui" line="346"/>
+        <location filename="main.ui" line="345"/>
+        <location filename="main.ui" line="348"/>
         <source>Show errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="512"/>
+        <location filename="main.ui" line="514"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="515"/>
+        <location filename="main.ui" line="517"/>
         <source>Show information messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="527"/>
+        <location filename="main.ui" line="529"/>
         <source>Portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="530"/>
+        <location filename="main.ui" line="532"/>
         <source>Show portability warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="538"/>
+        <location filename="main.ui" line="540"/>
         <source>&amp;Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="541"/>
+        <location filename="main.ui" line="543"/>
         <source>Filter results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="546"/>
+        <location filename="main.ui" line="548"/>
         <source>Project MRU placeholder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="351"/>
+        <location filename="main.ui" line="559"/>
+        <source>Windows 32-bit ANSI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="567"/>
+        <source>Windows 32-bit Unicode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="575"/>
+        <source>Unix 32-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="583"/>
+        <source>Unix 64-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="591"/>
+        <source>Windows 64-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="599"/>
+        <source>Platforms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="353"/>
         <source>&amp;Check all</source>
         <translation>&amp;Seleccionar todo</translation>
     </message>
     <message>
-        <location filename="main.ui" line="188"/>
+        <location filename="main.ui" line="190"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="356"/>
+        <location filename="main.ui" line="358"/>
         <source>&amp;Uncheck all</source>
         <translation>&amp;Deseleccionar todo</translation>
     </message>
     <message>
-        <location filename="main.ui" line="361"/>
+        <location filename="main.ui" line="363"/>
         <source>Collapse &amp;all</source>
         <translation>Contraer &amp;todo</translation>
     </message>
     <message>
-        <location filename="main.ui" line="366"/>
+        <location filename="main.ui" line="368"/>
         <source>&amp;Expand all</source>
         <translation>&amp;Expandir todo</translation>
     </message>
     <message>
-        <location filename="main.ui" line="374"/>
+        <location filename="main.ui" line="376"/>
         <source>&amp;Standard</source>
         <translation>&amp;Estándar</translation>
     </message>
     <message>
-        <location filename="main.ui" line="377"/>
+        <location filename="main.ui" line="379"/>
         <source>Standard items</source>
         <translation>Elementos estándar</translation>
     </message>
     <message>
-        <location filename="main.ui" line="382"/>
+        <location filename="main.ui" line="384"/>
         <source>&amp;Contents</source>
         <translation>&amp;Contenidos</translation>
     </message>
     <message>
-        <location filename="main.ui" line="385"/>
+        <location filename="main.ui" line="387"/>
         <source>Open the help contents</source>
         <translation>Abrir la ayuda de contenidos</translation>
     </message>
     <message>
-        <location filename="main.ui" line="388"/>
+        <location filename="main.ui" line="390"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="main.ui" line="393"/>
+        <location filename="main.ui" line="395"/>
         <source>Toolbar</source>
         <translation>Barra de herramientas</translation>
     </message>
     <message>
-        <location filename="main.ui" line="401"/>
+        <location filename="main.ui" line="403"/>
         <source>&amp;Categories</source>
         <translation>&amp;Categorías</translation>
     </message>
     <message>
-        <location filename="main.ui" line="404"/>
+        <location filename="main.ui" line="406"/>
         <source>Error categories</source>
         <translation>Categorías de error</translation>
     </message>
     <message>
-        <location filename="main.ui" line="409"/>
+        <location filename="main.ui" line="411"/>
         <source>&amp;Open XML...</source>
         <translation>&amp;Abrir XML...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="418"/>
+        <location filename="main.ui" line="420"/>
         <source>Open P&amp;roject File...</source>
         <translation>Abrir P&amp;royecto...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="423"/>
+        <location filename="main.ui" line="425"/>
         <source>&amp;New Project File...</source>
         <translation>&amp;Nuevo Proyecto...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="428"/>
+        <location filename="main.ui" line="430"/>
         <source>&amp;Log View</source>
         <translation>&amp;Vista de log</translation>
     </message>
     <message>
-        <location filename="main.ui" line="431"/>
+        <location filename="main.ui" line="433"/>
         <source>Log View</source>
         <translation>Vista de log</translation>
     </message>
     <message>
-        <location filename="main.ui" line="439"/>
+        <location filename="main.ui" line="441"/>
         <source>C&amp;lose Project File</source>
         <translation>C&amp;errar Proyecto</translation>
     </message>
     <message>
-        <location filename="main.ui" line="447"/>
+        <location filename="main.ui" line="449"/>
         <source>&amp;Edit Project File...</source>
         <translation>&amp;Editar Proyecto...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="456"/>
+        <location filename="main.ui" line="458"/>
         <source>&amp;Statistics</source>
         <translation>&amp;Estadísticas</translation>
     </message>
     <message>
-        <location filename="main.ui" line="468"/>
+        <location filename="main.ui" line="470"/>
         <source>Warnings</source>
         <translation>Advertencias</translation>
     </message>
     <message>
-        <location filename="main.ui" line="471"/>
-        <location filename="main.ui" line="474"/>
+        <location filename="main.ui" line="473"/>
+        <location filename="main.ui" line="476"/>
         <source>Show warnings</source>
         <translation>Mostrar advertencias</translation>
     </message>
     <message>
-        <location filename="main.ui" line="486"/>
+        <location filename="main.ui" line="488"/>
         <source>Performance warnings</source>
         <translation>Ajustar advertencias</translation>
     </message>
     <message>
-        <location filename="main.ui" line="489"/>
-        <location filename="main.ui" line="492"/>
+        <location filename="main.ui" line="491"/>
+        <location filename="main.ui" line="494"/>
         <source>Show performance warnings</source>
         <translation>Mostrar ajustes de advertencias</translation>
     </message>
     <message>
-        <location filename="main.ui" line="500"/>
+        <location filename="main.ui" line="502"/>
         <source>Show &amp;hidden</source>
         <translation>Mostrar &amp;ocultas</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="216"/>
+        <location filename="mainwindow.cpp" line="246"/>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="281"/>
+        <location filename="mainwindow.cpp" line="311"/>
         <source>No suitable files found to check!</source>
         <translation>¡No se han encontrado ficheros para comprobar!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="312"/>
+        <location filename="mainwindow.cpp" line="342"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>¡Tienes que cerrar el fichero de proyecto antes de seleccionar nuevos ficheros o carpetas!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="327"/>
+        <location filename="mainwindow.cpp" line="357"/>
         <source>Select files to check</source>
         <translation>Selecciona ficheros para comprobar</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="341"/>
+        <location filename="mainwindow.cpp" line="371"/>
         <source>Select directory to check</source>
         <translation>Selecciona una carpeta para comprobar</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="574"/>
+        <location filename="mainwindow.cpp" line="605"/>
         <source>XML files (*.xml)</source>
         <translation>Ficheros XML(*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="576"/>
+        <location filename="mainwindow.cpp" line="607"/>
         <source>Open the report file</source>
         <translation>Abrir informe</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="648"/>
+        <location filename="mainwindow.cpp" line="679"/>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?.</source>
@@ -552,22 +582,22 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 ¿Quieres parar la comprobación y salir del Cppcheck?.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="695"/>
+        <location filename="mainwindow.cpp" line="726"/>
         <source>License</source>
         <translation>Licencia</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="702"/>
+        <location filename="mainwindow.cpp" line="733"/>
         <source>Authors</source>
         <translation>Autores</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="710"/>
+        <location filename="mainwindow.cpp" line="741"/>
         <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="797"/>
+        <location filename="mainwindow.cpp" line="828"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -576,7 +606,7 @@ The user interface language has been reset to English. Open the Preferences-dial
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="712"/>
+        <location filename="mainwindow.cpp" line="743"/>
         <source>Save the report file</source>
         <translation>Guardar informe</translation>
     </message>
@@ -586,73 +616,73 @@ The user interface language has been reset to English. Open the Preferences-dial
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="380"/>
+        <location filename="mainwindow.cpp" line="410"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="407"/>
+        <location filename="mainwindow.cpp" line="437"/>
         <source>Found project files from the directory.
 
 Do you want to proceed checking without using any of these project files?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="720"/>
+        <location filename="mainwindow.cpp" line="751"/>
         <source>XML files version 1 (*.xml)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="726"/>
+        <location filename="mainwindow.cpp" line="757"/>
         <source>XML files version 2 (*.xml)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="732"/>
+        <location filename="mainwindow.cpp" line="763"/>
         <source>Text files (*.txt)</source>
         <translation>Ficheros de texto (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="738"/>
+        <location filename="mainwindow.cpp" line="769"/>
         <source>CSV files (*.csv)</source>
         <translation>Ficheros CVS (*.cvs)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="784"/>
+        <location filename="mainwindow.cpp" line="815"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="842"/>
-        <location filename="mainwindow.cpp" line="909"/>
+        <location filename="mainwindow.cpp" line="873"/>
+        <location filename="mainwindow.cpp" line="940"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Ficheros de proyecto (*.cppcheck;;Todos los ficheros (*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="844"/>
+        <location filename="mainwindow.cpp" line="875"/>
         <source>Select Project File</source>
         <translation>Selecciona proyecto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="858"/>
-        <location filename="mainwindow.cpp" line="920"/>
+        <location filename="mainwindow.cpp" line="889"/>
+        <location filename="mainwindow.cpp" line="951"/>
         <source>Project:</source>
         <translation type="unfinished">Proyecto:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="911"/>
+        <location filename="mainwindow.cpp" line="942"/>
         <source>Select Project Filename</source>
         <translation>Selecciona el nombre del proyecto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="946"/>
+        <location filename="mainwindow.cpp" line="977"/>
         <source>No project file loaded</source>
         <translation>No hay ningún proyecto cargado</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1028"/>
+        <location filename="mainwindow.cpp" line="1059"/>
         <source>The project file
 
 %1
@@ -716,6 +746,39 @@ Do you want to remove the file from the recently used projects -list?</source>
         <location filename="translationhandler.cpp" line="40"/>
         <source>Serbian</source>
         <translation>Servio</translation>
+    </message>
+</context>
+<context>
+    <name>Platforms</name>
+    <message>
+        <location filename="platforms.cpp" line="37"/>
+        <source>Build-in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platforms.cpp" line="38"/>
+        <source>Unix 32-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platforms.cpp" line="39"/>
+        <source>Unix 64-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platforms.cpp" line="40"/>
+        <source>Windows 32-bit ANSI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platforms.cpp" line="41"/>
+        <source>Windows 32-bit Unicode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platforms.cpp" line="42"/>
+        <source>Windows 64-bit</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

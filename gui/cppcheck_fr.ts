@@ -565,6 +565,57 @@ Do you want to remove the file from the recently used projects -list?</source>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Windows 32-bit ANSI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Windows 32-bit Unicode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unix 32-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unix 64-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Windows 64-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Platforms</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Platforms</name>
+    <message>
+        <source>Build-in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unix 32-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unix 64-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Windows 32-bit ANSI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Windows 32-bit Unicode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Windows 64-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Project</name>
