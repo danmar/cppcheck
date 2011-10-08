@@ -6,7 +6,7 @@ ifndef HAVE_RULES
 endif
 
 ifndef CXXFLAGS
-    CXXFLAGS=-Wall -Wextra -Wshadow -pedantic -Wno-long-long -Wfloat-equal -Wcast-qual -D_GLIBCXX_DEBUG -g
+    CXXFLAGS=-O2 -DNDEBUG -Wall
 endif
 
 ifeq ($(HAVE_RULES),yes)
@@ -199,7 +199,7 @@ lib/checknonreentrantfunctions.o: lib/checknonreentrantfunctions.cpp lib/checkno
 lib/checknullpointer.o: lib/checknullpointer.cpp lib/checknullpointer.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/errorlogger.h lib/executionpath.h lib/mathlib.h lib/symboldatabase.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checknullpointer.o lib/checknullpointer.cpp
 
-lib/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/errorlogger.h
+lib/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkobsoletefunctions.o lib/checkobsoletefunctions.cpp
 
 lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/errorlogger.h lib/mathlib.h lib/symboldatabase.h
