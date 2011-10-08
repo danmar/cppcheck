@@ -370,6 +370,9 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         else if (Token::Match(tok1, "( ! %var% ||") ||
                  Token::Match(tok1, "( %var% &&"))
         {
+            // TODO: there are false negatives caused by this. The
+            // variable should be removed from skipvar after the
+            // condition
             tok1 = tok1->next();
             if (tok1->str() == "!")
                 tok1 = tok1->next();
@@ -573,6 +576,9 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     if (Token::Match(tok1->link()->previous(), "while ( %varid%", varid))
                         break;
 
+                    // TODO: there might be false negatives. perhaps
+                    // instead of bailing out it's ok to skip the condition.
+                    // this bailout is related to #3128
                     if (Token::Match(tok1->link(), "( ! %varid% ||", varid) ||
                         Token::Match(tok1->link(), "( %varid% &&", varid))
                         break;
