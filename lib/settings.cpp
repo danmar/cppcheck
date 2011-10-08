@@ -49,6 +49,7 @@ Settings::Settings()
     reportProgress = false;
     ifcfg = false;
     checkConfiguration = false;
+    c99 = false;
     posix = false;
 
     // This assumes the code you are checking is for the same architecture this is compiled on.
