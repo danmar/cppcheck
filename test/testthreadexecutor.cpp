@@ -92,6 +92,7 @@ private:
         for (int i = 0; i < 500; i++)
             oss << "  {char *a = malloc(10);}\n";
 
+        oss << "  return 0;\n";
         oss << "}\n";
         check(2, 3, 3, oss.str());
     }
@@ -101,6 +102,7 @@ private:
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
+        oss << "  return 0;\n";
         oss << "}\n";
         check(2, 3, 0, oss.str());
     }
@@ -110,6 +112,7 @@ private:
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
+        oss << "  return 0;\n";
         oss << "}\n";
         check(2, 1, 0, oss.str());
     }
@@ -119,6 +122,7 @@ private:
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
+        oss << "  return 0;\n";
         oss << "}\n";
         check(2, 2, 0, oss.str());
     }
@@ -129,6 +133,7 @@ private:
         oss << "int main()\n"
             << "{\n";
         oss << "  {char *a = malloc(10);}\n";
+        oss << "  return 0;\n";
         oss << "}\n";
         check(2, 1, 1, oss.str());
     }
@@ -139,6 +144,7 @@ private:
         oss << "int main()\n"
             << "{\n";
         oss << "  {char *a = malloc(10);}\n";
+        oss << "  return 0;\n";
         oss << "}\n";
         check(2, 20, 20, oss.str());
     }

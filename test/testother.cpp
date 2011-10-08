@@ -3191,7 +3191,7 @@ private:
 
     void duplicateExpression1()
     {
-        check("voif foo() {\n"
+        check("void foo() {\n"
               "    if (a == a) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
