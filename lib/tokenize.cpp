@@ -2821,9 +2821,9 @@ void Tokenizer::labels()
         {
             // Simplify labels in the executable scope..
             unsigned int indentlevel = 0;
+            unsigned int indentroundbraces = 0;
             while (0 != (tok = tok->next()))
             {
-                // indentations..
                 if (tok->str() == "{")
                     ++indentlevel;
                 else if (tok->str() == "}")
@@ -2833,11 +2833,29 @@ void Tokenizer::labels()
                     --indentlevel;
                 }
 
-                // simplify label..
-                if (Token::Match(tok, "[;{}] %var% : (| *|&| %var%"))
+                if (tok->str() == "(")
+                    ++indentroundbraces;
+                else if (tok->str() == ")")
                 {
-                    if (!Token::Match(tok->next(), "public|protected|private"))
-                        tok->tokAt(2)->insertToken(";");
+                    if (!indentroundbraces)
+                        break;
+                    --indentroundbraces;
+                }
+                // simplify label.. except for unhandled macro
+                if (!indentroundbraces && Token::Match(tok, "[;{}] %var% :")
+                    && !Token::Match(tok->next(), "public|protected|private")
+                    && tok->tokAt(3)->str() != ";")
+                {
+                    for (Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next())
+                    {
+                        if (Token::Match(tok2, "%var%"))
+                        {
+                            tok->tokAt(2)->insertToken(";");
+                            break;
+                        }
+                        else if (!Token::Match(tok2, "[(*&{]"))
+                            break;
+                    }
                 }
             }
         }

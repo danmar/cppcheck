@@ -5085,9 +5085,26 @@ private:
     void labels()
     {
         ASSERT_EQUALS(" void f(){ ab:; a=0;}", labels_("void f() { ab: a=0; }"));
-        ASSERT_EQUALS(" void f(){ ab:;* b=0;}", labels_("void f() { ab: *b=0; }"));
-        ASSERT_EQUALS(" void f(){ ab:;& b=0;}", labels_("void f() { ab: &b=0; }"));
+        //ticket #3176
         ASSERT_EQUALS(" void f(){ ab:;(* func)();}", labels_("void f() { ab: (*func)(); }"));
+        //with '*' operator
+        ASSERT_EQUALS(" void f(){ ab:;* b=0;}", labels_("void f() { ab: *b=0; }"));
+        ASSERT_EQUALS(" void f(){ ab:;** b=0;}", labels_("void f() { ab: **b=0; }"));
+        //with '&' operator
+        ASSERT_EQUALS(" void f(){ ab:;& b=0;}", labels_("void f() { ab: &b=0; }"));
+        ASSERT_EQUALS(" void f(){ ab:;&( b. x)=0;}", labels_("void f() { ab: &(b->x)=0; }"));
+        //with '(' parenthesis
+        ASSERT_EQUALS(" void f(){ ab:;*(* b). x=0;}", labels_("void f() { ab: *(* b)->x=0; }"));
+        ASSERT_EQUALS(" void f(){ ab:;(** b). x=0;}", labels_("void f() { ab: (** b).x=0; }"));
+        ASSERT_EQUALS(" void f(){ ab:;&(* b. x)=0;}", labels_("void f() { ab: &(*b.x)=0; }"));
+        //with '{' parenthesis
+        ASSERT_EQUALS(" void f(){ ab:;{ b=0;}}", labels_("void f() { ab: {b=0;} }"));
+        ASSERT_EQUALS(" void f(){ ab:;{* b=0;}}", labels_("void f() { ab: { *b=0;} }"));
+        ASSERT_EQUALS(" void f(){ ab:;{& b=0;}}", labels_("void f() { ab: { &b=0;} }"));
+        ASSERT_EQUALS(" void f(){ ab:;{&(* b. x)=0;}}", labels_("void f() { ab: {&(*b.x)=0;} }"));
+        //with unhandled MACRO() code
+        ASSERT_EQUALS(" void f(){ MACRO( ab: b=0;, foo)}", labels_("void f() { MACRO(ab: b=0;, foo)}"));
+        ASSERT_EQUALS(" void f(){ MACRO( bar, ab:{&(* b. x)=0;})}", labels_("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
     }
 
     // Check simplifyInitVar
