@@ -6,7 +6,7 @@ ifndef HAVE_RULES
 endif
 
 ifndef CXXFLAGS
-    CXXFLAGS=-O2 -DNDEBUG -Wall
+    CXXFLAGS=-Wall -Wextra -Wshadow -pedantic -Wno-long-long -Wfloat-equal -Wcast-qual -D_GLIBCXX_DEBUG -g
 endif
 
 ifeq ($(HAVE_RULES),yes)
