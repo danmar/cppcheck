@@ -56,8 +56,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,50,0,0
- PRODUCTVERSION 1,50,0,0
+ FILEVERSION 1,51,0,0
+ PRODUCTVERSION 1,51,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -73,12 +73,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "cppcheck Application"
-            VALUE "FileVersion", "1.50"
+            VALUE "FileVersion", "1.51"
             VALUE "InternalName", "cppcheck"
             VALUE "LegalCopyright", "Copyright (C) 2007-2011 Daniel Marjamäki and Cppcheck team."
             VALUE "OriginalFilename", "cppcheck.exe"
             VALUE "ProductName", "cppcheck Application"
-            VALUE "ProductVersion", "1.50"
+            VALUE "ProductVersion", "1.51"
         END
     END
     BLOCK "VarFileInfo"
