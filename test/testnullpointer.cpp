@@ -544,6 +544,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(int *p) {\n"
+              "    *p = 12;\n"
+              "    assert(p && (*p<=6));\n"
+              "    if (p) { *p = 0; }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 4\n", errout.str());
+
         check("void foo(x *p)\n"
               "{\n"
               "    p = p->next;\n"

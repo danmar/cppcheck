@@ -576,12 +576,12 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     if (Token::Match(tok1->link()->previous(), "while ( %varid%", varid))
                         break;
 
-                    // TODO: there might be false negatives. perhaps
-                    // instead of bailing out it's ok to skip the condition.
-                    // this bailout is related to #3128
                     if (Token::Match(tok1->link(), "( ! %varid% ||", varid) ||
                         Token::Match(tok1->link(), "( %varid% &&", varid))
-                        break;
+                    {
+                        tok1 = tok1->link();
+                        continue;
+                    }
 
                     if (Token::simpleMatch(tok1->link()->previous(), "sizeof ("))
                     {
