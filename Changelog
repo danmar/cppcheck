@@ -1,3 +1,1397 @@
+2011-10-08  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cppcheck.rc, cli/main.cpp, lib/cppcheck.cpp,
+	win_installer/productInfo.wxi: 1.51: Updated versions
+
+2011-10-08  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp: Added todo comments to fix false
+	negatives caused by my fix for #3128
+
+2011-10-07  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #3128
+	(False positive: null pointer dereference check does not handle
+	complex boolean logic properly)
+
+2011-10-07  Daniel Marjamäki <danielm77@spray.se>
+
+	* man/manual.docbook: Fixed #3115 (note windows limitation to
+	threading in the manual)
+
+2011-10-07  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/cppcheck_de.ts, gui/cppcheck_en.ts, gui/cppcheck_es.ts,
+	gui/cppcheck_fi.ts, gui/cppcheck_fr.ts, gui/cppcheck_ja.ts,
+	gui/cppcheck_nl.ts, gui/cppcheck_pl.ts, gui/cppcheck_ru.ts,
+	gui/cppcheck_sr.ts, gui/cppcheck_sv.ts: GUI: Update translation
+	files.
+
+2011-10-07  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp, lib/tokenize.cpp: fix tokenizer and symbol
+	database to not mistake goto statement for variable declaration
+
+2011-10-06  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.h: run astyle
+
+2011-10-07  Edoardo Prezioso <edo88@email.it>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Fixed ticket #3176
+	(cppcheck reports wrong unused variable) Label simplification didn't
+	take count of the '(' parenthesis or the '&' and '*' operators
+	inside or outside the parenthesis after the colon.
+
+2011-10-06  Edoardo Prezioso <edo88@email.it>
+
+	* lib/tokenize.cpp, lib/tokenize.h, test/testtokenize.cpp: Renamed
+	the function 'removeRedundantCodeAfterReturn' with
+	'simplifyDeadCode'.  This is a preparation in order to add new
+	features to this function (see the @todo in the tokenize header
+	file, ticket #3113 and #3175 for details).
+
+2011-10-06  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: Readded
+	CheckOther::bitwiseOnBoolean as inconclusive check
+
+2011-10-06  Marek Zmysłowski <marekzmyslowski@poczta.onet.pl>
+
+	* cli/cmdlineparser.cpp, lib/checkobsoletefunctions.cpp,
+	lib/checkobsoletefunctions.h, lib/settings.h,
+	test/testcmdlineparser.cpp, test/testobsoletefunctions.cpp: Fixed
+	#3072 (improve check: deprecated function alloca)
+
+2011-10-05  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: Removed
+	CheckOther::bitwiseOnBoolean check. The reasons can be seen in my
+	comments in ticket #3062.
+
+2011-10-05  PKEuS <philipp.kloke@web.de>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: Fixed
+	#1877 (Be more strict about int vs. bool, part II)
+
+2011-10-05  Thomas Jarosch <thomas.jarosch@intra2net.com>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: Fixed #3161 (Show buffers size info for
+	snprintf() buffer overruns)
+
+2011-10-05  Edoardo Prezioso <edo88@email.it>
+
+	* : commit 3cfe7ca1a7176690174ed6fccb0d929d68eceef1 Author: Kimmo
+	Varis <kimmov@gmail.com> Date:   Wed Oct 5 20:44:00 2011 +0300
+
+2011-10-05  Edoardo Prezioso <edo88@email.it>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Fixed ticket #3148
+	(Analysis failed on "Modules/mathmodule.c") Fix: Do not handle code
+	when 'return' is inside a macro. This is valid also for 'switch'
+	code inside a macro.
+
+2011-10-05  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/platforms.cpp: GUI: Rename default platform to "Build-in".  "default" as platform name/definition doesn't tell much and would
+	only confuse users. "Build-in" is not perfect either but it is best
+	I've can come with before the release.  Ticket: #3156 (GUI: "default" platform needs proper name)
+
+2011-10-05  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/mainwindow.cpp: GUI: Fix enabling/disabling visibilities of
+	errors When GUI was started not all the categories visibility statuses were
+	not preserved. I.e.  Ticket: #3087 (GUI does not show all reported files until a filter
+	button state is changed)
+
+2011-10-04  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* man/cppcheck.1.xml: Update man page
+
+2011-10-04  Edoardo Prezioso <edo88@email.it>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Fixed #3146 "Analysis
+	failed" error on softmagic.c: -Fixed: the code didn't check the
+	rightness of the switch syntax if it was inside another switch;
+	-Tweaked: removed the two bool variables, so now the conditions take
+	count of indentation unsigned variables.
+
+2011-10-03  Edoardo Prezioso <edo88@email.it>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Fixed #3132 (Analysis
+	failed. If the code is valid then please report this failure.)
+
+2011-10-03  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/platforms.cpp: GUI: Fix endless loop in previous commit.  The iterator was not advanced in the loop. So the code worked when I
+	ran it in Linux as the first item was matching.  Thanks for Robert for spotting and reporting it.
+
+2011-10-02  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/mainwindow.cpp: GUI: In Windows platforms default to Win32
+	ANSI.  When running in Windows platforms, set the GUI's checked platform
+	initially to Windows 32-bit ANSI. Other platforms are set initially
+	to default/unspecified which means the type sizes are from the
+	platform GUI was compiled on.  This was suggested by Rober in ticket #3119.
+
+2011-10-02  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/gui.pro, gui/main.ui, gui/mainwindow.cpp, gui/mainwindow.h,
+	gui/platforms.cpp, gui/platforms.h: GUI: Make platforms in GUI more
+	dynamic.  We have now one list for checked platforms, menu items are created
+	dynamically based on that list. This makes it much easier to alter
+	the platforms list later on.
+
+2011-10-02  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkuninitvar.cpp, test/testuninitvar.cpp: Fixed #3159
+	(Uninitialized variable false positive)
+
+2011-10-02  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #3125
+	(FP: Possible null pointer dereference in conditional operator)
+
+2011-10-02  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #3126
+	(false positive: Null pointer dereference)
+
+2011-10-02  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cppcheckexecutor.cpp: CLI: case-insensitive ignorepath
+	matching in Windows.
+
+2011-10-02  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/pathmatch.cpp, cli/pathmatch.h, test/testpathmatch.cpp: CLI:
+	Add support for ignoring case in PathMatch.  In Windows (or in Windows code?) we want to ignore case in the
+	paths. This patch implements the case ignore for the PathMatch-
+	class.
+
+2011-10-01  Stefan Weil <weil@mail.berlios.de>
+
+	* htdocs/site/simplepie/simplepie.inc: htdocs: fix typo in error
+	messages and php code (writeable -> writable)
+
+2011-09-30  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: fix #3153
+	(false positive buffer access out-of-bounds)
+
+2011-09-30  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: another variation of false
+	negative from #3149
+
+2011-09-30  Stefan Weil <weil@mail.berlios.de>
+
+	* lib/settings.cpp: test _WIN64 before _WIN32 (64-bit compiler
+	defines both macros)
+
+2011-09-30  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: really fix #3149 (false
+	negative: Technically the member function 'A::f' can be const.)
+
+2011-09-30  Kimmo Varis <kimmov@gmail.com>
+
+	* test/testcmdlineparser.cpp: Disable fileListStdin test from
+	testcmdlineparser.  That test hangs the test run.
+
+2011-09-29  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: fix #3149 (false negative:
+	Technically the member function 'A::f' can be const.)
+
+2011-09-29  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #3151 (missing
+	portability warning for extra qualifier on destructor)
+
+2011-09-29  Robert Reif <reif@earthlink.net>
+
+	* test/testcmdlineparser.cpp: run astyle
+
+2011-09-29  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/common.h, gui/main.ui, gui/mainwindow.cpp, gui/mainwindow.h: 
+	GUI: Add menu-selection for the checked platform.  This is quick and dirty patch to add the platform selection for the
+	GUI. It is simple menu selection in Check-menu. It always defaults
+	to "Default" at startup. And it forget the selection when the
+	application is closed.  Ticket: #3119 (GUI: add ability to specify platform type)
+
+2011-09-29  Kimmo Varis <kimmov@gmail.com>
+
+	* : Merge pull request #37 from joshbeck/master Added support for reading file lists from stdin, correctly this time
+
+2011-09-28  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* lib/checkuninitvar.cpp, test/testuninitvar.cpp: Fix #2813 (False
+	negative: Uninitialized variable not found for realloc)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/2813 Patch provided
+	by: marekzmyslowski
+
+2011-09-28  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, lib/tokenize.h: refactor last commit to move
+	unknown type output to seperate function
+
+2011-09-27  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp: show unknown variable types when debug-messages
+	flag is set
+
+2011-09-27  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, lib/checkclass.h, test/testclass.cpp: fix
+	#3008 (New check: Order of initialisation list)
+
+2011-09-27  Joshua Beck <jxb091000@utdallas.edu>
+
+	* : Merge remote-tracking branch 'upstream/master'
+
+2011-09-27  Joshua Beck <jxb091000@utdallas.edu>
+
+	* cli/cmdlineparser.cpp, test/testcmdlineparser.cpp: Fix test and
+	add info to -h output.
+
+2011-09-26  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: add support for Microsoft
+	TCHAR character constants
+
+2011-09-26  Joshua Beck <jxb091000@utdallas.edu>
+
+	* man/cppcheck.1.xml, test/testcmdlineparser.cpp: Updated manual and
+	added test for reading file list from stdin.
+
+2011-09-26  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, test/testother.cpp: reduce false negatives for
+	checking for CheckOther::checkSignOfUnsignedVariable()
+
+2011-09-26  Joshua Beck <jxb091000@utdallas.edu>
+
+	* cli/cmdlineparser.cpp: Added support for reading file lists from
+	stdin
+
+2011-09-26  Kimmo Varis <kimmov@gmail.com>
+
+	* cppcheck.sln, cppcheck_vs2010.sln: Update VS solution files for
+	test project name change.
+
+2011-09-26  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/cppcheck_de.ts, gui/cppcheck_en.ts, gui/cppcheck_es.ts,
+	gui/cppcheck_fi.ts, gui/cppcheck_fr.ts, gui/cppcheck_ja.ts,
+	gui/cppcheck_nl.ts, gui/cppcheck_pl.ts, gui/cppcheck_ru.ts,
+	gui/cppcheck_sr.ts, gui/cppcheck_sv.ts: GUI: Update translation
+	files.
+
+2011-09-26  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/statsdialog.cpp: GUI: Make statistics dialog text
+	translatable.  Refactor the code formatting statistics dialog content so that the
+	strings are easier to translate. Old formatting with embedded HTML
+	was practically impossible for translators to translate. New code
+	isn't very beautiful either but at least translating is now
+	possible.  Ticket: #2726 (GUI: HTML-formatted statistics report text hard to
+	translate)
+
+2011-09-25  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/project.cpp, gui/projectfile.ui, gui/projectfiledialog.cpp,
+	gui/projectfiledialog.h: GUI: Rename functions related to excluding.
+
+2011-09-25  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/projectfile/testprojectfile.cpp: GUITESTS: Rename
+	variable for consistency.
+
+2011-09-25  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/data/benchmark/simple.cpp: GUITESTS: Remove include lines
+	from test data.  The included files aren't found anyway so the lines are useless and
+	can add more variance (filesystem access) to the results.
+
+2011-09-25  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: add some Windows TCHAR
+	scanf and printf conversions
+
+2011-09-24  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: start adding Windows wide
+	character support
+
+2011-09-24  Robert Reif <reif@earthlink.net>
+
+	* cli/cmdlineparser.cpp, lib/settings.cpp, lib/settings.h,
+	lib/tokenize.cpp, lib/tokenize.h, test/testsimplifytokens.cpp,
+	test/testtokenize.cpp: start adding Windows ASCII TCHAR conversion
+	support
+
+2011-09-24  seb777 <sebastien.debrard@gmail.com>
+
+	* lib/checkobsoletefunctions.cpp, test/testobsoletefunctions.cpp: 
+	fix #3121 ([False Positive] Incorrect obsoleted functions)
+
+2011-09-23  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: add operator
+	support to ertra qualification check
+
+2011-09-22  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: fix for
+	loop false positives when zero length arrays present
+
+2011-09-22  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, lib/tokenize.h, test/testsimplifytokens.cpp,
+	test/testtokenize.cpp: add Microsoft memory function conversions to
+	standard cstring functions
+
+2011-09-21  Robert Reif <reif@earthlink.net>
+
+	* lib/checkunusedfunctions.cpp, test/testunusedfunctions.cpp: fix
+	#3127 ([False positive] _tmain function i VS 2010 project)
+
+2011-09-21  Robert Reif <reif@earthlink.net>
+
+	* test/testuninitvar.cpp: fix typo in last commit
+
+2011-09-21  Robert Reif <reif@earthlink.net>
+
+	* test/testuninitvar.cpp: add test case for false negatives
+	introduced by fix for 3106
+
+2011-09-20  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: add some more windows
+	type conversions
+
+2011-09-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkuninitvar.cpp, test/testuninitvar.cpp: Fixed #3106 (False
+	positive: Uninitialized variable check has inconsistent behavior
+	with ternary operator)
+
+2011-09-20  Johan Samuelson <stinsen@gmail.com>
+
+	* lib/token.cpp: Fixed #3118 (Tokenizer: str*cmp() in hot spot code)
+
+2011-09-20  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: only simplify Microsoft
+	MFC code when Windows platform is selected
+
+2011-09-19  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: add some common windows
+	pointer type conversions to standard types
+
+2011-09-19  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: fix #3124
+	(FP: Buffer access out-of-bounds when memset two dimension array
+	(a[5][6]))
+
+2011-09-19  Robert Reif <reif@earthlink.net>
+
+	* cli/cmdlineparser.cpp: fix width of platform help text
+
+2011-09-18  Robert Reif <reif@earthlink.net>
+
+	* lib/settings.cpp: set windows platform type to type executable was
+	compiled on
+
+2011-09-18  Robert Reif <reif@earthlink.net>
+
+	* lib/settings.cpp, lib/settings.h, lib/tokenize.cpp,
+	test/testtokenize.cpp: start adding conversions from common Windows
+	types to standard types
+
+2011-09-18  Robert Reif <reif@earthlink.net>
+
+	* lib/checkunusedfunctions.cpp: run astyle
+
+2011-09-18  Daniel Marjamäki <danielm77@spray.se>
+
+	* : Merge pull request #35 from simartin/ticket_3059 Ticket 3059: Report the correct line number in unused functions
+	warnings
+
+2011-09-18  Robert Reif <reif@earthlink.net>
+
+	* lib/settings.cpp, test/testtokenize.cpp: fix sizeof long double
+	for unix64 for #2888 (Allow defining sizes of base types)
+
+2011-09-18  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/benchmark/simple/benchmarksimple.cpp,
+	gui/test/benchmark/simple/benchmarksimple.h: GUITESTS: Add benchmark
+	for tokenize + simplify.
+
+2011-09-18  Simon Martin <simartin@users.sourceforge.net>
+
+	* lib/checkunusedfunctions.cpp, lib/checkunusedfunctions.h,
+	test/testunusedfunctions.cpp: Ticket 3059: Report the correct line
+	number in unused functions warnings
+
+2011-09-17  Robert Reif <reif@earthlink.net>
+
+	* cli/cmdlineparser.cpp, lib/settings.cpp, lib/settings.h,
+	lib/tokenize.cpp, test/testtokenize.cpp: fix #2888 (Allow defining
+	sizes of base types)
+
+2011-09-17  Kimmo Varis <kimmov@gmail.com>
+
+	* : Merge pull request #34 from simartin/clang_build Make the build warning clean with clang++
+
+2011-09-17  Simon Martin <simartin@users.sourceforge.net>
+
+	* test/testcmdlineparser.cpp: Make the build warning clean with
+	clang++
+
+2011-09-16  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: fix wrong information
+	about constness of function
+
+2011-09-16  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: fix a problem with Qt
+	slots immediately followed by signals
+
+2011-09-14  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp: better fix for #3114 (infinite recursion when
+	operator= is overloaded)
+
+2011-09-14  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: quick fix for #3114
+	(infinite recursion when operator= is overloaded)
+
+2011-09-13  Kimmo Varis <kimmov@gmail.com>
+
+	* test/testcmdlineparser.cpp: Tests: Add more commandlineparser
+	tests.  Add commandlineparser tests for giving two suppressions. Giving two
+	suppressions in one parameter is not yet supported so it is
+	todo-test.
+
+2011-09-13  Edoardo Prezioso <edo88@email.it>
+
+	* lib/tokenize.cpp, lib/tokenize.h, test/testclass.cpp,
+	test/testmemleak.cpp, test/testsimplifytokens.cpp,
+	test/testtokenize.cpp: Fixed #3075 (False positive => Improve
+	tokenizer: remove redundant code after a 'return' state)
+
+2011-09-12  Robert Reif <reif@earthlink.net>
+
+	* test/testother.cpp: add test for #3110 (false positve: style)
+	Boolean result is used in bitwise operation. Clarify expression with
+	parentheses)
+
+2011-09-12  seb777 <sebastien.debrard@gmail.com>
+
+	* test/testtokenize.cpp: Remove invalid test case.  The code does
+	not compile. In addition, it's a "todo test case".
+
+2011-09-12  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp: fix #3110 (false positve: style) Boolean
+	result is used in bitwise operation. Clarify expression with
+	parentheses)
+
+2011-09-11  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: partial
+	fix for #2960 (false negative: buffer access out of bounds)
+
+2011-09-11  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/symboldatabase.cpp,
+	test/testbufferoverrun.cpp: add multi-dimension array support to
+	second checkScope and use it for member arrays
+
+2011-09-11  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: use correct checkScope function in
+	CheckBufferOverrun for single dimension member arrays
+
+2011-09-11  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: refactor
+	to unify functionally identical code in
+	CheckBufferOverrun::checkScope()
+
+2011-09-11  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h: refactor
+	CheckBufferOverrun to only use multi-dimension array error messages
+	and remove single dimension array message
+
+2011-09-11  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, test/testother.cpp: Fixed #3086 (false
+	positive: Boolean result is used in bitwise operation.)
+
+2011-09-11  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testunusedvar.cpp: Fixed #3104 (unread
+	despite modified and used in IF statement)
+
+2011-09-11  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkunusedvar.cpp: unused var: use 'else if' instead of 'if'
+
+2011-09-11  seb777 <sebastien.debrard@gmail.com>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Revert "The case
+	statement requires constant-expression (C, C++, C# and Java." This reverts commit 5879fe419d72328d77ab9d6f717ffa81e4ab6e68.
+
+2011-09-10  seb777 <sebastien.debrard@gmail.com>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: The case statement
+	requires constant-expression (C, C++, C# and Java.  Needless to
+	simplify the calculation of a piece of code that can not compile.
+
+2011-09-10  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h: refactor
+	CheckBufferOverrun::checkScope to take an ArrayInfo parameter
+
+2011-09-10  Robert Reif <reif@earthlink.net>
+
+	* : commit 547a79d4feac46b7d3ba04a091838669618a9b20 Author: Robert
+	Reif <reif@earthlink.net> Date:   Sat Sep 10 10:14:32 2011 -0400
+
+2011-09-10  Philipp Kloke <philipp.kloke@web.de>
+
+	* lib/checkother.cpp, test/testother.cpp: Fixed #1740 (Undefined
+	Behavior: Divide by zero)
+
+2011-09-10  seb777 <sebastien.debrard@gmail.com>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: fix #3093 (Simplify code
+	(math expression) with keywords 'return' and 'case')
+
+2011-09-09  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: better
+	detection of variable sized structure in
+	CheckBufferOverrun::checkStructVariable()
+
+2011-09-09  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: fix some
+	CheckBufferOverrun::checkStructVariable() flase negatives for
+	possible variable length structs
+
+2011-09-09  Robert Reif <reif@earthlink.net>
+
+	* : commit 16924c7c7ad77a53b41e90f17cfe2ff75411f3f3 Author: Robert
+	Reif <reif@earthlink.net> Date:   Fri Sep 9 07:16:39 2011 -0400
+
+2011-09-09  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #3096 (false
+	negative: memory leak not found when passing string to strtok)
+
+2011-09-08  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: fix one of
+	the TODO testcases added for #3094 (Buffer access out-of-bounds in
+	struct variable)
+
+2011-09-08  Robert Reif <reif@earthlink.net>
+
+	* test/testbufferoverrun.cpp: add soem test cases for #3094 (Buffer
+	access out-of-bounds in struct variable)
+
+2011-09-08  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.h, lib/path.h: fixed a few doxygen warnings
+
+2011-09-08  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, lib/checkmemoryleak.h: updated comments
+
+2011-09-06  seb777 <sebastien.debrard@gmail.com>
+
+	* lib/checkother.cpp, test/testother.cpp: fix #195 Unusual shift
+	  operation - check this kind of code return x >> ! y ? 8 : 2;
+
+2011-09-05  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp: fix some -Wconversion
+	-Wsign-conversion warnings in checkbufferoverrun.cpp
+
+2011-09-05  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: warn when buffer is not zero terminated
+	after memmove
+
+2011-09-05  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: warn when buffer is not zero terminated
+	after memcpy
+
+2011-09-05  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: warn when buffer is not zero terminated
+	after strncpy
+
+2011-09-05  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testuninitvar.cpp: Uninitialized
+	vars: handle printf a little better. Ticket: #3050
+
+2011-09-05  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkuninitvar.cpp, lib/checkuninitvar.h,
+	test/testuninitvar.cpp: uninitstring: fix false negatives when
+	non-zero memset is used. Ticket: #3050
+
+2011-09-05  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp: really fix #3079 (Spelling error in unsigned
+	variable check 'never alwayw')
+
+2011-09-05  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp: fix #3079 (Spelling error in unsigned variable
+	check 'never alwayw')
+
+2011-09-04  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: fix #2528
+	(false negative: buffer access out of bounds)
+
+2011-09-04  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: fix #2889
+	(false negative: buffer access out of bounds on local struct member)
+
+2011-09-04  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkunusedvar.cpp, test/testunusedvar.cpp: Fixed #3078
+	(vector::at using int causes false positive)
+
+2011-09-04  Kimmo Varis <kimmov@gmail.com>
+
+	* test/testcmdlineparser.cpp: Tests: Add tests for new --enable
+	flags.  Adding tests for new --enable flafgs (performance, portability) to
+	CommandLineParser tests.
+
+2011-09-04  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/mainwindow.cpp: GUI: Enable performance- and portability
+	checks.  The CLI/LIB change earlier added own enable-flag for performance-
+	and portability-checks. This commit updates GUI to also enable those
+	new enable-flags.
+
+2011-09-04  Robert Reif <reif@earthlink.net>
+
+	* test/testbufferoverrun.cpp: add some variable length array tests
+
+2011-09-04  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/check64bit.cpp, test/test64bit.cpp: Fixed #3073 (False
+	positive: Assigning an integer (int/long/etc) to a pointer is not
+	portable)
+
+2011-09-04  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkuninitvar.cpp, test/testuninitvar.cpp: Fixed #3060 (False
+	positive: Uninitialized variable: fresh)
+
+2011-09-03  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: final fix
+	for #3063 (false negative: multi dimensional arrays not well
+	supported)
+
+2011-09-03  seb777 <sebastien.debrard@gmail.com>
+
+	* : commit 5c7ed46e0cb6ffeee17a9185d1ccaa9d9781b560 Author: seb777
+	<sebastien.debrard@gmail.com> Date:   Sat Sep 3 23:10:16 2011 +0200
+
+2011-09-03  seb777 <sebastien.debrard@gmail.com>
+
+	* lib/checkother.cpp, lib/tokenize.cpp, test/testother.cpp,
+	test/testtokenize.cpp: Replace the keyword C99 _Bool the bool
+	keyword in the process of tokenization See
+
+	https://github.com/danmar/cppcheck/commit/f29b7f9f087779d789e8bdc24745930623f314ca
+
+2011-09-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, lib/tokenize.h, test/testsimplifytokens.cpp: 
+	Fixed #3069 (False positive: Memory leak: data)
+
+2011-09-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #3065
+	(False positive: possible null pointer dereference: vi)
+
+2011-09-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkuninitvar.cpp, test/testuninitvar.cpp: Fixed #3058 (False
+	positive: Uninitialized variable: data)
+
+2011-09-03  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/symboldatabase.cpp: move member
+	variable lookup code from a check to the symbol database so it can
+	be reused by other checks
+
+2011-09-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cmdlineparser.cpp: CLI: --enable=style has always been the
+	same as --enable=style,portability,performance so keep it that way.
+	Ticket #3074
+
+2011-09-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cmdlineparser.cpp, lib/check64bit.cpp,
+	lib/checkbufferoverrun.cpp, lib/checknonreentrantfunctions.cpp,
+	lib/checkother.cpp, lib/checkpostfixoperator.cpp, lib/checkstl.cpp,
+	lib/settings.cpp, lib/tokenize.cpp, test/test64bit.cpp,
+	test/testbufferoverrun.cpp, test/testnonreentrantfunctions.cpp,
+	test/testother.cpp, test/testpostfixoperator.cpp,
+	test/testsimplifytokens.cpp, test/teststl.cpp: enable: break out
+	'performance' and 'portability' from the 'style' id. Ticket: #3074
+
+2011-09-03  Daniel Marjamäki <danielm77@spray.se>
+
+	* man/manual.docbook: manual: document the 'portability' severity.
+	Ticket #3074
+
+2011-09-02  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/symboldatabase.cpp,
+	lib/symboldatabase.h, test/testbufferoverrun.cpp: another partial
+	fix for #3063 (false negative: multi dimensional arrays not well
+	supported)
+
+2011-09-02  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: partial
+	fix for #3063 (false negative: multi dimensional arrays not well
+	supported)
+
+2011-09-02  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: fix
+	#3062 (false negative: Boolean variable is used in bitwise
+	operation)
+
+2011-09-02  Robert Reif <reif@earthlink.net>
+
+	* lib/checkautovariables.cpp, test/testautovariables.cpp: fix false
+	positive introduced by previous false negative fix commit
+
+2011-09-01  Robert Reif <reif@earthlink.net>
+
+	* lib/checkautovariables.cpp, test/testautovariables.cpp: fix #3066
+	(False positive: Inconclusive: Assigning address of local
+	auto-variable to a function parameter.)
+
+2011-09-01  Robert Reif <reif@earthlink.net>
+
+	* lib/checkautovariables.cpp, test/testautovariables.cpp: fix line
+	number in messagex for CheckAutoVariables::autoVariables
+
+2011-09-01  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #3070 (Other:
+	failed to parse a typedef string. Check continues anyway.)
+
+2011-09-01  Robert Reif <reif@earthlink.net>
+
+	* lib/checkautovariables.cpp, test/testautovariables.cpp: fix again
+	#3064 (false negative: returning address of stack variable)
+
+2011-09-01  Robert Reif <reif@earthlink.net>
+
+	* lib/checkautovariables.cpp: better error message for #3064 (false
+	negative: returning address of stack variable)
+
+2011-08-31  Robert Reif <reif@earthlink.net>
+
+	* lib/checkautovariables.cpp, lib/checkautovariables.h,
+	test/testautovariables.cpp: fix #3064 (false negative: returning
+	address of stack variable)
+
+2011-08-31  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Fixed #3058 (False
+	positive: Uninitialized variable: data)
+
+2011-08-31  Robert Reif <reif@earthlink.net>
+
+	* lib/checkunusedvar.cpp, test/testunusedvar.cpp: add new (nothrow)
+	support to CheckUnusedVar::checkFunctionVariableUsage
+
+2011-08-30  Robert Reif <reif@earthlink.net>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: add support for
+	deallocating memory with realloc
+
+2011-08-30  Daniel Marjamäki <danielm77@spray.se>
+
+	* htmlreport/cppcheck-htmlreport: Fixed #3057 (cppcheck-htmlreport
+	fails since 1.50)
+
+2011-08-30  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Fixed #3058 (False
+	positive: Uninitialized variable: data)
+
+2011-08-29  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fixed
+	#3034 (Cppcheck crash on specific file (truecrypt).)
+
+2011-08-28  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp, lib/symboldatabase.h,
+	test/testsymboldatabase.cpp: really fix multi-dimensional arrays
+	with undefined size
+
+2011-08-28  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testpreprocessor.cpp: Fixed #3016
+	(Preprocessor has incorrect precedence(?) for &&)
+
+2011-08-28  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp, test/testbufferoverrun.cpp: fix #3044
+	(Symbol database: handle multidim array with unknown dimension 'char
+	a[][4]')
+
+2011-08-28  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: fix #3051 (False positive:
+	operator= should return reference (when function takes pointer
+	argument))
+
+2011-08-28  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: fix #3052 (False Positive
+	- Technically the member function 'Example::Clear' can be const.)
+
+2011-08-28  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: better
+	message for strncpy zero-terminated check
+
+2011-08-28  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #3039 (False
+	Positive: Memory Leak 'p = pop(p);')
+
+2011-08-27  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: refactor CheckBufferOverrun::checkScope
+	strncpy check and change experimental to inconclusive
+
+2011-08-26  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #3038 (False
+	Positive - memory leak (struct member passed to subfunction))
+
+2011-08-26  unknown <kimmov@.Ajat.local>
+
+	* gui/mainwindow.cpp: GUI: Fix order of project/global include
+	directories.  Per project include directories must be added to the list before the
+	global include directories. Include directories are searched in
+	listed order. So placing per project include directories first we
+	ensure per project include file is found instead of the global
+	include file if same file exist in both.
+
+2011-08-25  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp: partial fix for #3050 (strncpy zero
+	termination check behaving flaky)
+
+2011-08-25  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: fix #3043 (False Positive
+	- Member variable 'ProgramRecPriorityInfo::profile' is not assigned
+	a value in 'ProgramRecPriorityInfo::operator=')
+
+2011-08-25  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: add support for
+	simplifying Qt emit in tokenizer
+
+2011-08-25  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp, test/testclass.cpp: fix #3049 (False
+	Positive - Technically the member function
+	'VideoOutputNull::SetupDeinterlace' can be const.)
+
+2011-08-25  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #3038 (False
+	Positive - memory leak)
+
+2011-08-24  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/mainwindow.cpp, gui/mainwindow.h: GUI: Fix extra menu
+	separator in File-menu.  The extra menu separator was added before the MRU menu items. When
+	updating the (menu) MRU items existing items were first removed and
+	new items added back. But the added separator was not removed.
+
+2011-08-24  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/mainwindow.cpp, gui/mainwindow.h, gui/project.cpp,
+	gui/project.h: GUI: Check the project after creation.  Earlier the GUI (project) went into some weird state after creating
+	a new project. The project could not be checked in any discoverable
+	way.  This commit fixes the above bug by automatically checking the new
+	project after the project dialog is closed. I think this is what
+	most users expect to happen.
+
+2011-08-24  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h: make all
+	functions that call reportError names in checkbufferoverrun end in
+	Error for consisentcy
+
+2011-08-24  Robert Reif <reif@earthlink.net>
+
+	* test/testbufferoverrun.cpp: better test for symbol database bug
+	fixed in last commit
+
+2011-08-23  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp, test/testother.cpp: fix a serious symbol
+	database bug where parts of a function could be skipped
+
+2011-08-23  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #3041 (false
+	positive reported for error with id='deallocuse')
+
+2011-08-23  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/test/data/projectfiles/simple.cppcheck,
+	gui/test/data/projectfiles/simple_ignore.cppcheck,
+	gui/test/filelist/testfilelist.cpp,
+	gui/test/projectfile/testprojectfile.cpp,
+	gui/test/projectfile/testprojectfile.h: GUI: Update projectfile
+	tests.
+
+2011-08-23  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/projectfile.txt: GUI: Update project file documentation.
+
+2011-08-23  Kimmo Varis <kimmov@gmail.com>
+
+	* cppcheck.cppcheck, gui/filelist.cpp, gui/filelist.h,
+	gui/mainwindow.cpp, gui/project.cpp, gui/projectfile.cpp,
+	gui/projectfile.h, gui/projectfile.ui: GUI: Rename Ignore-feature to
+	Exclude-feature.  Exclude is the correct term to use when removing paths from the list
+	of checked items. Ignore as a term was a poor choise to begin with.
+	XML file reading still recognizes and reads  the 'ignore' element
+	but writes 'exclude' element.  Ticket: #2995 (GUI: Rename ignore-feature to exclude-feature)
+
+2011-08-22  Robert Reif <reif@earthlink.net>
+
+	* lib/checkclass.cpp, test/testclass.cpp: fix #3040 (False positive
+	- Technically the member function 'PSIPTable::SetSection' can be
+	const.)
+
+2011-08-22  Robert Reif <reif@earthlink.net>
+
+	* gui/mainwindow.cpp: run astyle
+
+2011-08-22  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/mainwindow.cpp: GUI: Make few strings const strings.
+
+2011-08-22  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/cppcheck_de.ts, gui/cppcheck_en.ts, gui/cppcheck_es.ts,
+	gui/cppcheck_fi.ts, gui/cppcheck_fr.ts, gui/cppcheck_ja.ts,
+	gui/cppcheck_nl.ts, gui/cppcheck_pl.ts, gui/cppcheck_ru.ts,
+	gui/cppcheck_sr.ts, gui/cppcheck_sv.ts: GUI: Update translation
+	files.
+
+2011-08-22  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/projectfile.ui, gui/projectfiledialog.cpp,
+	gui/projectfiledialog.h: GUI: Allow reordering includes in project
+	dialog.  Since include dir order is important (Cppcheck uses the first file
+	it finds) user must be able to edit the order of include paths.
+	This commit adds "Up" and "Down" buttons to the Project-dialog's
+	inlude paths-tab. User can use those two buttons to re-order the
+	include directories.  Ticket: #3037 (GUI: Allow reordering include paths in project
+	dialog)
+
+2011-08-22  Kimmo Varis <kimmov@gmail.com>
+
+	* gui/projectfile.ui: GUI: Rename Project-label in Projects-dialog.  The 'Project' label in Project-dialog is confusing and users think
+	it is project's name. When it acutually is the root directory of the
+	project. So rename the lable and move it below the 'Defines'- field
+	to make it less important looking.  Ticket: #2997 (GUI: 'Project'-field in project file-dialog is
+	confusing)
+
+2011-08-22  Kimmo Varis <kimmov@gmail.com>
+
+	* lib/suppressions.h: Add doxygen grouping for the new file.
+
+2011-08-22  Kimmo Varis <kimmov@gmail.com>
+
+	* lib/suppressions.cpp: Compile fix.
+
+2011-08-22  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cppcheck.vcproj, cli/cppcheck.vcxproj,
+	cli/cppcheck.vcxproj.filters, test/testrunner.vcproj,
+	test/testrunner.vcxproj, test/testrunner.vcxproj.filters: Update
+	VS2008/2010 project files.
+
+2011-08-22  Kimmo Varis <kimmov@gmail.com>
+
+	* Makefile, lib/errorlogger.cpp, lib/errorlogger.h, lib/lib.pri,
+	lib/settings.cpp, lib/settings.h, lib/suppressions.cpp,
+	lib/suppressions.h, test/test.pro, test/testsettings.cpp,
+	test/testsuppressions.cpp: Move Suppressions class to own source
+	files.  I want to use Suppressions class also in GUI. And that is easier to
+	do when it is not internal class of Settings class. And in general
+	is it more natural that Settings class only contains list of
+	suppressions and implementation is separate.
+
+2011-08-21  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: improve message for #3035 (false
+	negative: strcpy(dst, src) where src is bigger than dst)
+
+2011-08-21  Robert Reif <reif@earthlink.net>
+
+	* lib/checkbufferoverrun.cpp, lib/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: partial fix for #3035 (false negative:
+	strcpy(dst, src) where src is bigger than dst)
+
+2011-08-21  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: Fixed #3032 (False
+	positive: possible null pointer dereference (assignment in
+	condition))
+
+2011-08-20  Robert Reif <reif@earthlink.net>
+
+	* test/testautovariables.cpp: add another test for #3030 (Improve
+	check: Returning pointer to local array variable with '&' pointer
+	operator)
+
+2011-08-20  Robert Reif <reif@earthlink.net>
+
+	* lib/checkautovariables.cpp, test/testautovariables.cpp: partial
+	fix for #3030 (Improve check: Returning pointer to local array
+	variable with '&' pointer operator)
+
+2011-08-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/preprocessor.cpp: Preprocessor: allow that 'missingInclude'
+	messages are suppressed with '--suppress=missingInclude'
+
+2011-08-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/cppcheck.cpp: Cppcheck: allow that 'toomanyconfigs' are
+	suppressed. show these messages by default even though 'information'
+	hasn't been enabled.
+
+2011-08-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checknullpointer.cpp, test/testnullpointer.cpp: Fixed #3023
+	(False positive: no possible null pointer dereference here:
+	'WARN_ON(!abc || abc->x == 0);')
+
+2011-08-20  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #3024 (False
+	positive: memory leak for 'rc.bitmap' when rc is added to linux
+	kernel list)
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/cppcheck.cpp, lib/settings.cpp, lib/settings.h: Cppcheck:
+	Don't show information messages about interrupted checking unless
+	--enable=information has been given.
+
+2011-08-19  Kimmo Varis <kimmov@gmail.com>
+
+	* : Merge pull request #32 from rpavlik/qmake-configure-rules Qmake configure rules
+
+2011-08-19  Kimmo Varis <kimmov@gmail.com>
+
+	* test/test.vcproj, test/test.vcxproj, test/test.vcxproj.filters,
+	test/testrunner.vcproj, test/testrunner.vcxproj,
+	test/testrunner.vcxproj.filters: Rename Test VC project files.  When the target name of the test runner binary changed to
+	'testrunner' also the filenames of the generated project files
+	changed.
+
+2011-08-19  Kimmo Varis <kimmov@gmail.com>
+
+	* cli/cppcheck.vcproj, cli/cppcheck.vcxproj,
+	cli/cppcheck.vcxproj.filters: Update VS2008/2010 project files.  Ticket: #3025 (Visual Studio projects needs updating for new
+	lib/checkunusedvar files)
+
+2011-08-19  Robert Reif <reif@earthlink.net>
+
+	* Makefile, lib/checkother.cpp, lib/checkother.h,
+	lib/checkunusedvar.cpp, lib/checkunusedvar.h, lib/lib.pri,
+	test/testunusedvar.cpp: move unused variable checks from checkother
+	to checkunusedvar
+
+2011-08-19  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: fix
+	#3011 (new check: when first comparison is true, the 2nd comparison
+	is always true)
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, test/testother.cpp: using boolean result in
+	bitwise operation. fix false positive for '.. != (char *) &x'
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: fixed
+	false positives for the 'bitwise operator / comparison operator'
+	check
+
+2011-08-19  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp, lib/checkother.h: refactor checkother to move
+	error messages to follow check and rename some error functions to
+	end in Error
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, test/testother.cpp: fixed false positive for
+	'using bitwise operation on boolean result'
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkassignif.cpp, test/testassignif.cpp: Improve check:
+	Tweaked the assignAndCompare to handle | also in addition to &
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, test/testother.cpp: Fixed #3018 (false
+	positive: (style) Suspicious condition (assignment+comparison), it
+	can be clarified with parentheses)
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: Improve
+	check: Clarify condition (using boolean result in bitwise operation)
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp: improved comment of previous commit
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, test/testother.cpp: Fixed #3001 (False
+	Positive: Redundant assignment to itself)
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, test/testother.cpp: Suspicious condition:
+	Better handling when rhs is non-numeric
+
+2011-08-19  Edoardo Prezioso <edo88@email.it>
+
+	* Makefile, tools/dmake.cpp: Fixed #3017 (set HAVE_RULES to yes only
+	if HAVE_RULES is undefined when executing make.)
+
+2011-08-19  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, lib/checkother.h, test/testother.cpp: New
+	check: warn about such suspicious conditions: '(a & b == c)'
+
+2011-08-18  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cmdlineparser.cpp: cmdlineparser: removed BOM
+
+2011-08-18  Kimmo Varis <kimmov@gmail.com>
+
+	* : Merge pull request #33 from rpavlik/handle-msvc-qt-cmdline Detect msvc qt command prompt in build.bat
+
+2011-08-18  Ryan Pavlik <rpavlik@iastate.edu>
+
+	* build-pcre.txt, build.bat: HAVE_RULES support for build.bat Let
+	the user's setting of the HAVE_RULES environment variable affect
+	build.bat's calls to qmake.
+
+2011-08-18  Ryan Pavlik <rpavlik@iastate.edu>
+
+	* build-pcre.txt: document the updated qmake/rules interaction
+
+2011-08-18  Ryan Pavlik <rpavlik@iastate.edu>
+
+	* lib/lib.pri, lib/pcrerules.pri, tools/dmake.cpp: put the rules
+	logic in its own .pri file, and allow easier override
+
+2011-08-18  Ryan Pavlik <rpavlik@iastate.edu>
+
+	* cli/cli.pro: cli pro doesn't force HAVE_RULES anymore.
+
+2011-08-18  Ryan Pavlik <rpavlik@iastate.edu>
+
+	* lib/lib.pri, tools/dmake.cpp: use the qmake config setting
+	HAVE_RULES to enable/disable pcre rules support, defaulting to on
+	except on Windows.
+
+2011-08-17  Daniel Marjamaki <danielm77@spray.se>
+
+	* cli/cmdlineparser.cpp: --std=posix : simplified help text. might
+	still need further updates
+
+2011-08-17  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cmdlineparser.cpp, lib/settings.h, test/testcmdlineparser.cpp: 
+	Command line: Added --std option. Right now only --std=posix is
+	possible but other options might be added later.
+
+2011-08-17  Tim Gerundt <tim@gerundt.de>
+
+	* htdocs/index.php: Web: Update download to version 1.50
+
+2011-08-16  Robert Reif <reif@earthlink.net>
+
+	* lib/symboldatabase.cpp, test/testsymboldatabase.cpp: fix #3013
+	(segmentation fault of cppcheck ( struct x : virtual y ))
+
+2011-08-16  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* cli/cmdlineparser.cpp, lib/cppcheck.cpp, lib/cppcheck.h,
+	lib/settings.cpp, lib/settings.h: Add command line option:
+	--debug-fp ... If used, cppcheck will print out the code generating
+	error into output stream.  This is ment to be used for debugging
+	false positive errors in Cppcheck.  Current implementation tries two
+	alternatives. Without all headers or with all headers and prints out
+	the option with less code. In future versions this could try with
+	individual headers or group of header files.
+
+2011-08-16  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #3012 (False
+	Pos Memory Leak with a Macro)
+
+2011-08-16  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/checkother.cpp, test/testincompletestatement.cpp: Fixed #3009
+	(Using numeric constants in kernel space code)
+
+2011-08-15  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testtokenize.cpp: fix #3006 (segmentation
+	fault of cppcheck ( x < () < ))
+
+2011-08-15  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #3005
+	(segmentation fault of cppcheck ( enum : x ))
+
+2011-08-15  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #3007 (false
+	positive: (style) Struct 'Fred' hides typedef with same name)
+
+2011-08-14  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #3004 (false
+	positive: (style) Struct 'Fred' hides typedef with same name)
+
+2011-08-14  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #3003
+	(segmentation fault of cppcheck (typedef a x[]; y = x ))
+
+2011-08-14  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, test/testsimplifytokens.cpp: fix #3000 (false
+	positive: (style) Struct 'Fred' hides typedef with same name)
+
+2011-08-14  Robert Reif <reif@earthlink.net>
+
+	* lib/tokenize.cpp, lib/tokenize.h, test/testsimplifytokens.cpp: fix
+	#2999 (false positive: (style) Struct 'Fred' hides typedef with same
+	name)
+
+2011-08-14  Daniel Marjamäki <danielm77@spray.se>
+
+	* Makefile, tools/dmake.cpp: Makefile: Added the -D_GLIBCXX_DEBUG
+	flag again to get checked stl during debug
+
+2011-08-14  Daniel Marjamäki <danielm77@spray.se>
+
+	* lib/preprocessor.cpp: Preprocessor: Added safety checks in case
+	the code is corrupt. Related to ticket #2998
+
+2011-08-14  Robert Reif <reif@earthlink.net>
+
+	* lib/checknullpointer.cpp: refactor
+	CheckNullPointer::nullPointerByDeRefAndChec() to pull variable type
+	lookup out of loop
+
+2011-08-14  Robert Reif <reif@earthlink.net>
+
+	* lib/checkstl.cpp: convert CheckStl::if_find() to use the symbol
+	database
+
+2011-08-14  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp: convert CheckOther::checkCharVariable() to use
+	symbol database
+
+2011-08-14  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp: convert
+	CheckOther::checkSizeofForNumericParameter() to use the symbol
+	database
+
+2011-08-14  Robert Reif <reif@earthlink.net>
+
+	* lib/checkother.cpp: convert CheckOther::checkIncrementBoolean() to
+	use the symbol database
+
+2011-08-14  Daniel Marjamäki <danielm77@spray.se>
+
+	* Makefile: Makefile: Set debug mode
+
+2011-08-14  Daniel Marjamäki <danielm77@spray.se>
+
+	* cli/cmdlineparser.cpp, lib/checknonreentrantfunctions.cpp,
+	lib/checkobsoletefunctions.cpp, lib/settings.cpp, lib/settings.h,
+	test/testcmdlineparser.cpp, test/testnonreentrantfunctions.cpp,
+	test/testobsoletefunctions.cpp: Settings: Removed the --enable=posix
+	option. Ticket: #2949
+
+2011-08-14  Daniel Marjamäki <danielm77@spray.se>
+
+	* Makefile: 1.50: Updated Makefile
+
+2011-08-14  Daniel Marjamäki <danielm77@spray.se>
+
+	* Changelog: 1.50: Updated Changelog
+
 2011-08-14  Daniel Marjamäki <danielm77@spray.se>
 
 	* cli/cppcheck.rc, cli/main.cpp, lib/cppcheck.cpp,
