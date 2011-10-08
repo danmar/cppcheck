@@ -48,6 +48,10 @@
 # sftp hyd_danmar,cppcheck@web.sourceforge.net
 #
 # save "cppcheck --doc" output on wiki
+#
+# To upload a file to the release system through scp:
+# scp readme.txt hyd_danmar,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/1.51/
+#
 
 # Tag to use
 tag=$1
