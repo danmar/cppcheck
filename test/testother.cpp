@@ -3298,6 +3298,20 @@ private:
     void checkSignOfUnsignedVariable()
     {
         check_signOfUnsignedVariable(
+            "void foo() {\n"
+            "  for(unsigned char i = 10; i >= 0; i--)"
+            "    printf(\"%u\", i);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'i' is positive is always true.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "void foo(bool b) {\n"
+            "  for(unsigned int i = 10; b || i >= 0; i--)"
+            "    printf(\"%u\", i);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'i' is positive is always true.\n", errout.str());
+
+        check_signOfUnsignedVariable(
             "bool foo(unsigned int x) {\n"
             "  if (x < 0)"
             "    return true;\n"
