@@ -108,6 +108,11 @@ protected:
 private:
 
     /**
+     * Used to filter out duplicate error messages.
+     */
+    std::list<std::string> _errorList;
+
+    /**
      * Report progress time
      */
     std::time_t time1;
