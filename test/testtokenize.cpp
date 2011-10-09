@@ -4582,6 +4582,16 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
 
+        // ok code (ticket #3183)
+        {
+            errout.str();
+            std::istringstream istr("MACRO(({ i < x }))");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT_EQUALS("", errout.str());
+        }
+
         // bad code.. missing ">"
         {
             errout.str("");

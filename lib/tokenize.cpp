@@ -2389,6 +2389,14 @@ bool Tokenizer::tokenize(std::istream &code,
                     break;
             }
 
+            // skip executing scopes (ticket #3183)..
+            if (Token::simpleMatch(tok, "( {"))
+            {
+                tok = tok->next()->link();
+                if (!tok)
+                    break;
+            }
+
             // skip executing scopes (ticket #1985)..
             if (Token::simpleMatch(tok, "try {"))
             {
