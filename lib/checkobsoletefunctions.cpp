@@ -45,10 +45,13 @@ void CheckObsoleteFunctions::obsoleteFunctions()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (tok->isName() && tok->varId()==0 && tok->strAt(1) == "(" && !Token::Match(tok->previous(), ".|::|:|,"))
+
+        if (tok->isName() && tok->varId()==0 && tok->strAt(1) == "(" &&
+            (!Token::Match(tok->previous(), ".|::|:|,") || Token::simpleMatch(tok->previous()->previous(), "std :: gets")))
         {
             // function declaration?
-            if (symbolDatabase->findFunctionByToken(tok))
+            if ((tok->previous() && (tok->previous()->str() == "*" || tok->previous()->isName()))
+                || symbolDatabase->findFunctionByToken(tok))
             {
                 _obsoleteStandardFunctions.erase(tok->str());
                 _obsoletePosixFunctions.erase(tok->str());
@@ -61,7 +64,6 @@ void CheckObsoleteFunctions::obsoleteFunctions()
                 // If checking an old code base it might be uninteresting to update obsolete functions.
                 // Therefore this is "information"
                 reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
-                break;
             }
             else
             {
@@ -73,7 +75,6 @@ void CheckObsoleteFunctions::obsoleteFunctions()
                         // If checking an old code base it might be uninteresting to update obsolete functions.
                         // Therefore this is "information"
                         reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
-                        break;
                     }
                 }
                 if (_settings->c99)
@@ -82,7 +83,6 @@ void CheckObsoleteFunctions::obsoleteFunctions()
                     if (it != _obsoleteC99Functions.end())
                     {
                         reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
-                        break;
                     }
                 }
             }

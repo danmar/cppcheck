@@ -53,6 +53,16 @@ private:
 
         // declared function ticket #3121
         TEST_CASE(test_declared_function);
+
+        // test std::gets
+        TEST_CASE(test_std_gets);
+
+        // multiple use of obsolete functions
+        TEST_CASE(test_multiple);
+
+        // c declared function
+        TEST_CASE(test_c_declaration);
+
     }
 
     void check(const char code[])
@@ -242,6 +252,46 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    // test std::gets
+    void test_std_gets()
+    {
+        check("void f(char * str)\n"
+              "{\n"
+              "    char *x = std::gets(str);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n", errout.str());
+    }
+
+    // multiple use
+    void test_multiple()
+    {
+        check("void f(char * str)\n"
+              "{\n"
+              "    char *x = std::gets(str);\n"
+              "    usleep( 1000 );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n[test.cpp:4]: (style) Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function\n", errout.str());
+    }
+
+    void test_c_declaration()
+    {
+        check("char * gets ( char * c ) ;\n"
+              "int main ()\n"
+              "{\n"
+              "    char s [ 10 ] ;\n"
+              "    gets ( s ) ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int getcontext(ucontext_t *ucp);\n"
+              "int f (ucontext_t *ucp)\n"
+              "{\n"
+              "    getcontext ( ucp ) ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestObsoleteFunctions)
