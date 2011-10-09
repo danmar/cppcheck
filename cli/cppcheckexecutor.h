@@ -23,6 +23,8 @@
 #include "settings.h"
 #include <ctime>
 #include <vector>
+#include <list>
+#include <string>
 
 class CppCheck;
 

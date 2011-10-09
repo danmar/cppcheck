@@ -25,6 +25,8 @@
 #include <iostream>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
+#include <algorithm>
+
 #include "cmdlineparser.h"
 #include "filelister.h"
 #include "path.h"
