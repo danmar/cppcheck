@@ -228,15 +228,38 @@ void CheckNullPointer::nullPointerAfterLoop()
         // Locate the end of the while loop body..
         const Token *tok2 = tok->next()->link()->next()->link();
 
+        // Is this checking inconclusive?
+        bool inconclusive = false;
+
         // Check if the variable is dereferenced after the while loop
         while (0 != (tok2 = tok2 ? tok2->next() : 0))
         {
-            // Don't check into inner scopes or outer scopes. Stop checking if "break" is found
-            if (tok2->str() == "{" || tok2->str() == "}" || tok2->str() == "break")
+            // inner and outer scopes
+            if (tok2->str() == "{" || tok2->str() == "}")
+            {
+                // Not inconclusive: bail out
+                if (!_settings->inconclusive)
+                    break;
+
+                inconclusive = true;
+
+                if (tok2->str() == "}")
+                {
+                    // "}" => leaving function? then break.
+                    const Token *tok3 = tok2->link()->previous();
+                    if (!tok3 || !Token::Match(tok3, "[);]"))
+                        break;
+                    if (tok3->str() == ")" && !Token::Match(tok3->link()->previous(), "if|for|while"))
+                        break;
+                }
+            }
+
+            // Stop checking if "break" is found
+            else if (tok2->str() == "break")
                 break;
 
             // loop variable is found..
-            if (tok2->varId() == varid)
+            else if (tok2->varId() == varid)
             {
                 // dummy variable.. is it unknown if pointer is dereferenced or not?
                 bool unknown = false;
@@ -244,7 +267,7 @@ void CheckNullPointer::nullPointerAfterLoop()
                 // Is the loop variable dereferenced?
                 if (CheckNullPointer::isPointerDeRef(tok2, unknown))
                 {
-                    nullPointerError(tok2, varname, tok->linenr());
+                    nullPointerError(tok2, varname, tok->linenr(), inconclusive);
                 }
                 break;
             }
@@ -1178,8 +1201,12 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname);
 }
 
-void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const unsigned int line)
+void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const unsigned int line, bool inconclusive)
 {
-    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<unsigned int>(line));
+    const std::string errmsg("Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<unsigned int>(line));
+    if (inconclusive)
+        reportInconclusiveError(tok, Severity::error, "nullPointer", errmsg);
+    else
+        reportError(tok, Severity::error, "nullPointer", errmsg);
 }
 

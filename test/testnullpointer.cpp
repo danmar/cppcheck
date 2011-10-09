@@ -34,6 +34,7 @@ private:
 
     void run()
     {
+        TEST_CASE(nullpointerAfterLoop);
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
         TEST_CASE(structDerefAndCheck);    // dereferencing struct and then checking if it's null
@@ -53,13 +54,14 @@ private:
         TEST_CASE(snprintf_with_non_zero_size);
     }
 
-    void check(const char code[])
+    void check(const char code[], bool inconclusive = false)
     {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -75,7 +77,7 @@ private:
     }
 
 
-    void nullpointer1()
+    void nullpointerAfterLoop()
     {
         check("int foo(const Token *tok)\n"
               "{\n"
@@ -151,6 +153,25 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // dereference in outer scope..
+        {
+            const char code[] = "void foo(int x, const Token *tok) {\n"
+                                "    if (x == 123) {\n"
+                                "        while (tok) tok = tok->next();\n"
+                                "    }\n"
+                                "    tok->str();\n"
+                                "}\n";
+
+            check(code, false);
+            ASSERT_EQUALS("", errout.str());
+
+            check(code, true);
+            ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
+        }
+    }
+
+    void nullpointer1()
+    {
         // ticket #1923 - no false positive when using else if
         check("void f(A *a)\n"
               "{\n"
