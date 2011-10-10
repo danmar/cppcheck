@@ -10001,10 +10001,11 @@ void Tokenizer::simplifyWhile0()
         // while (0)
         const bool while0(Token::Match(tok, "while ( 0|false )"));
 
-        // for (0)
-        const bool for0(Token::Match(tok, "for ( %var% = %num% ; %var% < %num% ;") &&
-                        tok->strAt(2) == tok->strAt(6) &&
-                        tok->strAt(4) == tok->strAt(8));
+        // for (0) - not banal, ticket #3140
+        const bool for0((Token::Match(tok, "for ( %var% = %num% ; %var% < %num% ;") &&
+                         tok->strAt(2) == tok->strAt(6) && tok->strAt(4) == tok->strAt(8)) ||
+                        (Token::Match(tok->tokAt(2), "%type% %var% = %num% ; %var% < %num% ;") &&
+                         tok->strAt(3) == tok->strAt(7) && tok->strAt(5) == tok->strAt(9)));
 
         if (!while0 && !for0)
             continue;

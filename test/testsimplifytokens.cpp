@@ -294,6 +294,8 @@ private:
 
         // simplify "while (0)"
         TEST_CASE(while0);
+        // ticket #3140
+        TEST_CASE(while0for);
         TEST_CASE(while1);
 
         TEST_CASE(enum1);
@@ -6344,9 +6346,17 @@ private:
         ASSERT_EQUALS("; do { continue ; } while ( false ) ;", tok("; do { continue ; } while (0);"));
         ASSERT_EQUALS("; do { break ; } while ( false ) ;", tok("; do { break; } while (0);"));
         ASSERT_EQUALS(";", tok("; while (false) { a; }"));
+    }
 
+    void while0for()
+    {
         // for (condition is always false)
         ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { int i; for (i = 0; i < 0; i++) { a; } }"));
+        //ticket #3140
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { for (int i = 0; i < 0; i++) { a; } }"));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { for (unsigned int i = 0; i < 0; i++) { a; } }"));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { for (long long i = 0; i < 0; i++) { a; } }"));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { for (signed long long i = 0; i < 0; i++) { a; } }"));
     }
 
     void while1()
