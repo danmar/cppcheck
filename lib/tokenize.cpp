@@ -4968,7 +4968,7 @@ void Tokenizer::simplifyDeadCode()
                             break;
                         --indentlevel1;
                     }
-                    else if (Token::Match(tok2, "%var% : ;") && !Token::Match(tok2, "case!default"))
+                    else if (Token::Match(tok2, "%var% : ;") && !Token::Match(tok2, "case|default"))
                     {
                         indentlabel = indentlevel1;
                         break;
@@ -10004,7 +10004,7 @@ void Tokenizer::simplifyWhile0()
         // for (0) - not banal, ticket #3140
         const bool for0((Token::Match(tok, "for ( %var% = %num% ; %var% < %num% ;") &&
                          tok->strAt(2) == tok->strAt(6) && tok->strAt(4) == tok->strAt(8)) ||
-                        (Token::Match(tok->tokAt(2), "%type% %var% = %num% ; %var% < %num% ;") &&
+                        (Token::Match(tok, "for ( %type% %var% = %num% ; %var% < %num% ;") &&
                          tok->strAt(3) == tok->strAt(7) && tok->strAt(5) == tok->strAt(9)));
 
         if (!while0 && !for0)
