@@ -2573,6 +2573,41 @@ void CheckOther::assignBoolToPointerError(const Token *tok)
                 "Assigning bool value to pointer (converting bool value to address)");
 }
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void CheckOther::checkComparisonOfBoolExpressionWithInt()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "&&|%oror% %any% ) ==|!=|>|< %num%"))
+        {
+            const std::string& op = tok->strAt(3);
+            const std::string& num = tok->strAt(4);
+            if ((op == "<" || num != "0") && (op == ">" || num != "1"))
+            {
+                comparisonOfBoolExpressionWithIntError(tok->next());
+            }
+        }
+
+        else if (Token::Match(tok, "%num% ==|!=|>|< ( %any% &&|%oror%"))
+        {
+            const std::string& op = tok->strAt(1);
+            const std::string& num = tok->str();
+            if ((op == ">" || num != "0") && (op == "<" || num != "1"))
+            {
+                comparisonOfBoolExpressionWithIntError(tok->next());
+            }
+        }
+    }
+}
+
+void CheckOther::comparisonOfBoolExpressionWithIntError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "compareBoolExpressionWithInt",
+                "Comparison of a boolean expression with an integer other than 0 or 1.");
+}
+
+
 //---------------------------------------------------------------------------
 // Check testing sign of unsigned variables.
 //---------------------------------------------------------------------------

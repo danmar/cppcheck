@@ -123,6 +123,8 @@ private:
         TEST_CASE(clarifyCondition4);     // ticket #3110
         TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
 
+        TEST_CASE(comparisonOfBoolExpressionWithInt);
+
         TEST_CASE(incorrectStringCompare);
 
         TEST_CASE(incrementBoolean);
@@ -167,6 +169,7 @@ private:
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
         checkOther.checkBitwiseOnBoolean();
+        checkOther.checkComparisonOfBoolExpressionWithInt();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -2463,6 +2466,142 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
     }
+
+
+    void comparisonOfBoolExpressionWithInt()
+    {
+        check("void f(int x) {\n"
+              "    if ((x && 0x0f)==6)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x && 0x0f)==0)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x || 0x0f)==6)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x || 0x0f)==0)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x & 0x0f)==6)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x | 0x0f)==6)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("void f(int x) {\n"
+              "    if ((5 && x)==3)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((5 && x)==3 || (8 && x)==9)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((5 && x)!=3)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+
+
+        check("void f(int x) {\n"
+              "    if ((5 && x) > 3)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((5 && x) > 0)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((5 && x) < 0)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((5 && x) < 1)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((5 && x) > 1)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+
+
+        check("void f(int x) {\n"
+              "    if (0 < (5 && x))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (0 > (5 && x))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (1 > (5 && x))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (1 < (5 && x))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+
+
+    }
+
 
     void catchExceptionByValue()
     {
