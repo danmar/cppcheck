@@ -140,6 +140,9 @@ private:
 
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(checkSignOfUnsignedVariable);
+
+        TEST_CASE(checkForSuspiciousSemicolon1);
+        TEST_CASE(checkForSuspiciousSemicolon2);
     }
 
     void check(const char code[], const char *filename = NULL)
@@ -170,6 +173,7 @@ private:
         checkOther.checkDuplicateExpression();
         checkOther.checkBitwiseOnBoolean();
         checkOther.checkComparisonOfBoolExpressionWithInt();
+        checkOther.checkSuspiciousSemicolon();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -3645,7 +3649,88 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void checkForSuspiciousSemicolon1()
+    {
+        check(
+            "void foo() {\n"
+            "  for(int i = 0; i < 10; ++i);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Empty block
+        check(
+            "void foo() {\n"
+            "  for(int i = 0; i < 10; ++i); {\n"
+            "  }\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+
+        // Block with some tokens to make sure the tokenizer output
+        // stays the same for "for(); {}"
+        check(
+            "void foo() {\n"
+            "  for(int i = 0; i < 10; ++i); {\n"
+            "  int j = 123;\n"
+            "  }\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+
+        check(
+            "void foo() {\n"
+            "  while (!quit); {\n"
+            "    do_something();\n"
+            "  }\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+    }
+
+    void checkForSuspiciousSemicolon2()
+    {
+        check(
+            "void foo() {\n"
+            "  if (i == 1); {\n"
+            "    do_something();\n"
+            "  }\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+
+        // Seen this in the wild
+        check(
+            "void foo() {\n"
+            "  if (Match());\n"
+            "  do_something();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo() {\n"
+            "  if (Match());\n"
+            "  else\n"
+            "    do_something();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo() {\n"
+            "  if (i == 1)\n"
+            "       ;\n"
+            "  {\n"
+            "    do_something();\n"
+            "  }\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo() {\n"
+            "  if (i == 1);\n"
+            "\n"
+            "  {\n"
+            "    do_something();\n"
+            "  }\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestOther)
-

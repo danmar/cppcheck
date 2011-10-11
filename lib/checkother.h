@@ -66,6 +66,7 @@ public:
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
         checkOther.checkDuplicateBreak();
+        checkOther.checkSuspiciousSemicolon();
 
         // information checks
         checkOther.checkVariableScope();
@@ -233,6 +234,9 @@ public:
     /** @brief %Check for comparing a bool expression with an integer other than 0 or 1 */
     void checkComparisonOfBoolExpressionWithInt();
 
+    /** @brief %Check for suspicious use of semicolon */
+    void checkSuspiciousSemicolon();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -271,6 +275,7 @@ public:
     void unsignedPositiveError(const Token *tok, const std::string &varname);
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok);
+    void SuspiciousSemicolonError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
     {
@@ -321,6 +326,7 @@ public:
         c.unsignedPositiveError(0, "varname");
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0);
+        c.SuspiciousSemicolonError(0);
     }
 
     std::string myName() const
@@ -371,6 +377,7 @@ public:
                "* testing if unsigned variable is negative\n"
                "* testing is unsigned variable is positive\n"
                "* using bool in bitwise expression\n"
+               "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
