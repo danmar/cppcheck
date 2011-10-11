@@ -158,17 +158,17 @@ void StatsDialog::copyToClipboard()
                                    )
                                    .arg(stats)
                                    .arg(errors)
-                                   .arg(mStatistics->GetCount(SHOW_ERRORS))
+                                   .arg(mStatistics->GetCount(ShowTypes::ShowErrors))
                                    .arg(warnings)
-                                   .arg(mStatistics->GetCount(SHOW_WARNINGS))
+                                   .arg(mStatistics->GetCount(ShowTypes::ShowWarnings))
                                    .arg(style)
-                                   .arg(mStatistics->GetCount(SHOW_STYLE))
+                                   .arg(mStatistics->GetCount(ShowTypes::ShowStyle))
                                    .arg(portability)
-                                   .arg(mStatistics->GetCount(SHOW_PORTABILITY))
+                                   .arg(mStatistics->GetCount(ShowTypes::ShowPortability))
                                    .arg(performance)
-                                   .arg(mStatistics->GetCount(SHOW_PERFORMANCE))
+                                   .arg(mStatistics->GetCount(ShowTypes::ShowPerformance))
                                    .arg(information)
-                                   .arg(mStatistics->GetCount(SHOW_INFORMATION));
+                                   .arg(mStatistics->GetCount(ShowTypes::ShowInformation));
 
         const QString textSummary = settings + previous + statistics;
 
@@ -220,17 +220,17 @@ void StatsDialog::copyToClipboard()
                                        )
                                        .arg(stats)
                                        .arg(errors)
-                                       .arg(mStatistics->GetCount(SHOW_ERRORS))
+                                       .arg(mStatistics->GetCount(ShowTypes::ShowErrors))
                                        .arg(warnings)
-                                       .arg(mStatistics->GetCount(SHOW_WARNINGS))
+                                       .arg(mStatistics->GetCount(ShowTypes::ShowWarnings))
                                        .arg(style)
-                                       .arg(mStatistics->GetCount(SHOW_STYLE))
+                                       .arg(mStatistics->GetCount(ShowTypes::ShowStyle))
                                        .arg(portability)
-                                       .arg(mStatistics->GetCount(SHOW_PORTABILITY))
+                                       .arg(mStatistics->GetCount(ShowTypes::ShowPortability))
                                        .arg(performance)
-                                       .arg(mStatistics->GetCount(SHOW_PERFORMANCE))
+                                       .arg(mStatistics->GetCount(ShowTypes::ShowPerformance))
                                        .arg(information)
-                                       .arg(mStatistics->GetCount(SHOW_INFORMATION));
+                                       .arg(mStatistics->GetCount(ShowTypes::ShowInformation));
 
         const QString htmlSummary = htmlSettings + htmlPrevious + htmlStatistics;
 
@@ -244,10 +244,10 @@ void StatsDialog::copyToClipboard()
 void StatsDialog::setStatistics(const CheckStatistics *stats)
 {
     mStatistics = const_cast<CheckStatistics*>(stats);
-    mUI.mLblErrors->setText(QString("%1").arg(stats->GetCount(SHOW_ERRORS)));
-    mUI.mLblWarnings->setText(QString("%1").arg(stats->GetCount(SHOW_WARNINGS)));
-    mUI.mLblStyle->setText(QString("%1").arg(stats->GetCount(SHOW_STYLE)));
-    mUI.mLblPortability->setText(QString("%1").arg(stats->GetCount(SHOW_PORTABILITY)));
-    mUI.mLblPerformance->setText(QString("%1").arg(stats->GetCount(SHOW_PERFORMANCE)));
-    mUI.mLblInformation->setText(QString("%1").arg(stats->GetCount(SHOW_INFORMATION)));
+    mUI.mLblErrors->setText(QString("%1").arg(stats->GetCount(ShowTypes::ShowErrors)));
+    mUI.mLblWarnings->setText(QString("%1").arg(stats->GetCount(ShowTypes::ShowWarnings)));
+    mUI.mLblStyle->setText(QString("%1").arg(stats->GetCount(ShowTypes::ShowStyle)));
+    mUI.mLblPortability->setText(QString("%1").arg(stats->GetCount(ShowTypes::ShowPortability)));
+    mUI.mLblPerformance->setText(QString("%1").arg(stats->GetCount(ShowTypes::ShowPerformance)));
+    mUI.mLblInformation->setText(QString("%1").arg(stats->GetCount(ShowTypes::ShowInformation)));
 }

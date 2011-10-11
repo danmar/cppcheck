@@ -24,22 +24,6 @@
 
 
 /**
-* @brief List of error types to show
-*
-*/
-typedef enum
-{
-    SHOW_STYLE = 0,
-    SHOW_WARNINGS,
-    SHOW_PERFORMANCE,
-    SHOW_PORTABILITY,
-    SHOW_INFORMATION,
-    SHOW_ERRORS, // Keep this as last real item
-    SHOW_NONE
-}
-ShowTypes;
-
-/**
 * QSetting value names
 */
 

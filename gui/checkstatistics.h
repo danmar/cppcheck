@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include "common.h"
+#include "showtypes.h"
 
 /// @addtogroup GUI
 /// @{
@@ -38,7 +39,7 @@ public:
     *
     * @param type Type of the item to add.
     */
-    void AddItem(ShowTypes type);
+    void AddItem(ShowTypes::ShowType type);
 
     /**
     * @brief Clear the statistics.
@@ -52,7 +53,7 @@ public:
     * @param type Type for which the statistics are returned.
     * @return Number of items of given type.
     */
-    unsigned GetCount(ShowTypes type) const;
+    unsigned GetCount(ShowTypes::ShowType type) const;
 
 private:
     unsigned mStyle;

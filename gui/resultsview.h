@@ -25,6 +25,7 @@
 #include "errorlogger.h"
 #include "common.h"
 #include "report.h"
+#include "showtypes.h"
 #include "ui_resultsview.h"
 
 class ErrorItem;
@@ -56,7 +57,7 @@ public:
     * @param type Type of error to show/hide
     * @param show Should specified errors be shown (true) or hidden (false)
     */
-    void ShowResults(ShowTypes type, bool show);
+    void ShowResults(ShowTypes::ShowType type, bool show);
 
     /**
     * @brief Clear results
@@ -143,13 +144,21 @@ public:
     void ReadErrorsXml(const QString &filename);
 
     /**
-    * @brief Return checking statistics.
-    * @param Pointer to checking statistics.
-    *
-    */
+     * @brief Return checking statistics.
+     * @return Pointer to checking statistics.
+     */
     CheckStatistics *GetStatistics() const
     {
         return mStatistics;
+    }
+
+    /**
+     * @brief Return Showtypes.
+     * @return Pointer to Showtypes.
+     */
+    ShowTypes * GetShowTypes() const
+    {
+        return &mUI.mTree->mShowSeverities;
     }
 
 signals:

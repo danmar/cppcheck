@@ -91,10 +91,10 @@ void ResultsView::Error(const ErrorItem &item)
     mErrorsFound = true;
     mUI.mTree->AddErrorItem(item);
     emit GotResults();
-    mStatistics->AddItem(ResultsTree::SeverityToShowType(item.severity));
+    mStatistics->AddItem(ShowTypes::SeverityToShowType(item.severity));
 }
 
-void ResultsView::ShowResults(ShowTypes type, bool show)
+void ResultsView::ShowResults(ShowTypes::ShowType type, bool show)
 {
     mUI.mTree->ShowResults(type, show);
 }

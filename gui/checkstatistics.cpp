@@ -26,29 +26,29 @@ CheckStatistics::CheckStatistics(QObject *parent)
     Clear();
 }
 
-void CheckStatistics::AddItem(ShowTypes type)
+void CheckStatistics::AddItem(ShowTypes::ShowType type)
 {
     switch (type)
     {
-    case SHOW_STYLE:
+    case ShowTypes::ShowStyle:
         mStyle++;
         break;
-    case SHOW_WARNINGS:
+    case ShowTypes::ShowWarnings:
         mWarning++;
         break;
-    case SHOW_PERFORMANCE:
+    case ShowTypes::ShowPerformance:
         mPerformance++;
         break;
-    case SHOW_PORTABILITY:
+    case ShowTypes::ShowPortability:
         mPortability++;
         break;
-    case SHOW_ERRORS:
+    case ShowTypes::ShowErrors:
         mError++;
         break;
-    case SHOW_INFORMATION:
+    case ShowTypes::ShowInformation:
         mInformation++;
         break;
-    case SHOW_NONE:
+    case ShowTypes::ShowNone:
     default:
         qDebug() << "Unknown error type - not added to statistics.";
         break;
@@ -65,30 +65,30 @@ void CheckStatistics::Clear()
     mError = 0;
 }
 
-unsigned CheckStatistics::GetCount(ShowTypes type) const
+unsigned CheckStatistics::GetCount(ShowTypes::ShowType type) const
 {
     unsigned count = 0;
     switch (type)
     {
-    case SHOW_STYLE:
+    case ShowTypes::ShowStyle:
         count = mStyle;
         break;
-    case SHOW_WARNINGS:
+    case ShowTypes::ShowWarnings:
         count = mWarning;
         break;
-    case SHOW_PERFORMANCE:
+    case ShowTypes::ShowPerformance:
         count = mPerformance;
         break;
-    case SHOW_PORTABILITY:
+    case ShowTypes::ShowPortability:
         count = mPortability;
         break;
-    case SHOW_ERRORS:
+    case ShowTypes::ShowErrors:
         count = mError;
         break;
-    case SHOW_INFORMATION:
+    case ShowTypes::ShowInformation:
         count = mInformation;
         break;
-    case SHOW_NONE:
+    case ShowTypes::ShowNone:
     default:
         qDebug() << "Unknown error type - returning zero statistics.";
         break;

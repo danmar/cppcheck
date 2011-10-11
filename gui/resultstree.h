@@ -29,6 +29,7 @@
 #include "common.h"
 #include "applicationlist.h"
 #include "errorlogger.h" // Severity
+#include "showtypes.h"
 
 class Report;
 class ErrorItem;
@@ -73,7 +74,7 @@ public:
     * @param type Type of error to show/hide
     * @param show Should specified errors be shown (true) or hidden (false)
     */
-    void ShowResults(ShowTypes type, bool show);
+    void ShowResults(ShowTypes::ShowType type, bool show);
 
     /**
     * @brief Function to filter the displayed list of errors.
@@ -136,11 +137,10 @@ public:
     void Translate();
 
     /**
-    * @brief Convert severity string to ShowTypes value
-    * @param severity Error severity
-    * @return Severity converted to ShowTypes value
-    */
-    static ShowTypes SeverityToShowType(Severity::SeverityType severity);
+     * @brief GUI severities.
+     */
+    ShowTypes mShowSeverities;
+
 
 signals:
     /**
@@ -290,21 +290,6 @@ protected:
     void RefreshTree();
 
     /**
-    * @brief Convert QVariant (that contains an int) to Showtypes value
-    *
-    * @param data QVariant (that contains an int) to be converted
-    * @return data converted to ShowTypes
-    */
-    ShowTypes VariantToShowType(const QVariant &data);
-
-    /**
-    * @brief Convert ShowType to severity string
-    * @param type ShowType to convert
-    * @return ShowType converted to severity
-    */
-    Severity::SeverityType ShowTypeToSeverity(ShowTypes type);
-
-    /**
     * @brief Convert Severity to translated string for GUI.
     * @param type Severity to convert
     * @return Severity as translated string
@@ -378,13 +363,6 @@ protected:
     *
     */
     QSettings *mSettings;
-
-    /**
-    * @brief List of bools to determine which of ShowTypes to display on the tree
-    * (true) and which of them should be hidden (false)
-    *
-    */
-    bool mShowTypes[SHOW_NONE];
 
     /**
     * @brief A string used to filter the results for display.

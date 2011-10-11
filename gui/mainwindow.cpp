@@ -38,6 +38,7 @@
 #include "statsdialog.h"
 #include "logview.h"
 #include "filelist.h"
+#include "showtypes.h"
 
 static const QString OnlineHelpURL("http://cppcheck.sourceforge.net/manual.html");
 
@@ -210,20 +211,13 @@ void MainWindow::LoadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
-    // Show * states
-    mUI.mActionShowStyle->setChecked(mSettings->value(SETTINGS_SHOW_STYLE, true).toBool());
-    mUI.mActionShowErrors->setChecked(mSettings->value(SETTINGS_SHOW_ERRORS, true).toBool());
-    mUI.mActionShowWarnings->setChecked(mSettings->value(SETTINGS_SHOW_WARNINGS, true).toBool());
-    mUI.mActionShowPortability->setChecked(mSettings->value(SETTINGS_SHOW_PORTABILITY, true).toBool());
-    mUI.mActionShowPerformance->setChecked(mSettings->value(SETTINGS_SHOW_PERFORMANCE, true).toBool());
-    mUI.mActionShowInformation->setChecked(mSettings->value(SETTINGS_SHOW_INFORMATION, true).toBool());
-
-    mUI.mResults->ShowResults(SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
-    mUI.mResults->ShowResults(SHOW_WARNINGS, mUI.mActionShowWarnings->isChecked());
-    mUI.mResults->ShowResults(SHOW_STYLE, mUI.mActionShowStyle->isChecked());
-    mUI.mResults->ShowResults(SHOW_PORTABILITY, mUI.mActionShowPortability->isChecked());
-    mUI.mResults->ShowResults(SHOW_PERFORMANCE, mUI.mActionShowPerformance->isChecked());
-    mUI.mResults->ShowResults(SHOW_INFORMATION, mUI.mActionShowInformation->isChecked());
+    ShowTypes *types = mUI.mResults->GetShowTypes();
+    mUI.mActionShowStyle->setChecked(types->isShown(ShowTypes::ShowStyle));
+    mUI.mActionShowErrors->setChecked(types->isShown(ShowTypes::ShowErrors));
+    mUI.mActionShowWarnings->setChecked(types->isShown(ShowTypes::ShowWarnings));
+    mUI.mActionShowPortability->setChecked(types->isShown(ShowTypes::ShowPortability));
+    mUI.mActionShowPerformance->setChecked(types->isShown(ShowTypes::ShowPerformance));
+    mUI.mActionShowInformation->setChecked(types->isShown(ShowTypes::ShowInformation));
 
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
@@ -628,32 +622,32 @@ void MainWindow::EnableCheckButtons(bool enable)
 
 void MainWindow::ShowStyle(bool checked)
 {
-    mUI.mResults->ShowResults(SHOW_STYLE, checked);
+    mUI.mResults->ShowResults(ShowTypes::ShowStyle, checked);
 }
 
 void MainWindow::ShowErrors(bool checked)
 {
-    mUI.mResults->ShowResults(SHOW_ERRORS, checked);
+    mUI.mResults->ShowResults(ShowTypes::ShowErrors, checked);
 }
 
 void MainWindow::ShowWarnings(bool checked)
 {
-    mUI.mResults->ShowResults(SHOW_WARNINGS, checked);
+    mUI.mResults->ShowResults(ShowTypes::ShowWarnings, checked);
 }
 
 void MainWindow::ShowPortability(bool checked)
 {
-    mUI.mResults->ShowResults(SHOW_PORTABILITY, checked);
+    mUI.mResults->ShowResults(ShowTypes::ShowPortability, checked);
 }
 
 void MainWindow::ShowPerformance(bool checked)
 {
-    mUI.mResults->ShowResults(SHOW_PERFORMANCE, checked);
+    mUI.mResults->ShowResults(ShowTypes::ShowPerformance, checked);
 }
 
 void MainWindow::ShowInformation(bool checked)
 {
-    mUI.mResults->ShowResults(SHOW_INFORMATION, checked);
+    mUI.mResults->ShowResults(ShowTypes::ShowInformation, checked);
 }
 
 void MainWindow::CheckAll()

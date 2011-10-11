@@ -45,6 +45,7 @@
 #include "report.h"
 #include "xmlreport.h"
 #include "application.h"
+#include "showtypes.h"
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
@@ -52,9 +53,6 @@ ResultsTree::ResultsTree(QWidget * parent) :
     mVisibleErrors(false),
     mSelectionModel(0)
 {
-    for (int i = 0; i < SHOW_NONE; i++)
-        mShowTypes[i] = false;
-
     setModel(&mModel);
     QStringList labels;
     labels << tr("File") << tr("Severity") << tr("Line") << tr("Summary");
@@ -110,7 +108,8 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
         realfile = tr("Undefined file");
     }
 
-    bool hide = !mShowTypes[SeverityToShowType(item.severity)];
+    bool hide = !mShowSeverities.isShown(item.severity);
+    //bool hide = !mShowTypes[SeverityToShowType(item.severity)];
 
     //If specified, filter on summary, message, filename, and id
     if (!hide && !mFilter.isEmpty())
@@ -151,7 +150,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     //Add user data to that item
     QMap<QString, QVariant> data;
     data["hide"] = false;
-    data["severity"]  = SeverityToShowType(item.severity);
+    data["severity"]  = ShowTypes::SeverityToShowType(item.severity);
     data["summary"] = item.summary;
     data["message"]  = item.message;
     data["file"]  = item.files[0];
@@ -173,7 +172,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
 
         //Add user data to that item
         QMap<QString, QVariant> child_data;
-        child_data["severity"]  = SeverityToShowType(line.severity);
+        child_data["severity"]  = ShowTypes::SeverityToShowType(line.severity);
         child_data["summary"] = line.summary;
         child_data["message"]  = line.message;
         child_data["file"]  = item.files[i];
@@ -265,77 +264,6 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     return list[0];
 }
 
-ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
-{
-    int value = data.toInt();
-    if (value < SHOW_STYLE || value > SHOW_ERRORS)
-    {
-        return SHOW_NONE;
-    }
-    return (ShowTypes)value;
-}
-
-ShowTypes ResultsTree::SeverityToShowType(Severity::SeverityType severity)
-{
-    switch (severity)
-    {
-    case Severity::none:
-        return SHOW_NONE;
-    case Severity::error:
-        return SHOW_ERRORS;
-    case Severity::style:
-        return SHOW_STYLE;
-    case Severity::warning:
-        return SHOW_WARNINGS;
-    case Severity::performance:
-        return SHOW_PERFORMANCE;
-    case Severity::portability:
-        return SHOW_PORTABILITY;
-    case Severity::information:
-        return SHOW_INFORMATION;
-    default:
-        return SHOW_NONE;
-    }
-
-    return SHOW_NONE;
-}
-
-Severity::SeverityType ResultsTree::ShowTypeToSeverity(ShowTypes type)
-{
-    switch (type)
-    {
-    case SHOW_STYLE:
-        return Severity::style;
-        break;
-
-    case SHOW_ERRORS:
-        return Severity::error;
-        break;
-
-    case SHOW_WARNINGS:
-        return Severity::warning;
-        break;
-
-    case SHOW_PERFORMANCE:
-        return Severity::performance;
-        break;
-
-    case SHOW_PORTABILITY:
-        return Severity::portability;
-        break;
-
-    case SHOW_INFORMATION:
-        return Severity::information;
-        break;
-
-    case SHOW_NONE:
-        return Severity::none;
-        break;
-    }
-
-    return Severity::none;
-}
-
 QString ResultsTree::SeverityToTranslatedString(Severity::SeverityType severity)
 {
     switch (severity)
@@ -414,11 +342,11 @@ void ResultsTree::SaveSettings()
     }
 }
 
-void ResultsTree::ShowResults(ShowTypes type, bool show)
+void ResultsTree::ShowResults(ShowTypes::ShowType type, bool show)
 {
-    if (type != SHOW_NONE && mShowTypes[type] != show)
+    if (type != ShowTypes::ShowNone && mShowSeverities.isShown(type) != show)
     {
-        mShowTypes[type] = show;
+        mShowSeverities.show(type, show);
         RefreshTree();
     }
 }
@@ -496,7 +424,7 @@ void ResultsTree::RefreshTree()
             QVariantMap data = userdata.toMap();
 
             //Check if this error should be hidden
-            bool hide = (data["hide"].toBool() || !mShowTypes[VariantToShowType(data["severity"])]);
+            bool hide = (data["hide"].toBool() || !mShowSeverities.isShown(ShowTypes::VariantToShowType(data["severity"])));
 
             //If specified, filter on summary, message, filename, and id
             if (!hide && !mFilter.isEmpty())
@@ -961,7 +889,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         QVariantMap data = userdata.toMap();
 
         ErrorItem item;
-        item.severity = ShowTypeToSeverity(VariantToShowType(data["severity"]));
+        item.severity = ShowTypes::ShowTypeToSeverity(ShowTypes::VariantToShowType(data["severity"]));
         item.summary = data["summary"].toString();
         item.message = data["message"].toString();
         item.id = data["id"].toString();
