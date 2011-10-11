@@ -2562,7 +2562,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
         const Token *tok = scope->classStart;
         const Token *startOfFunction = tok;
 
-        // Search for the "var = realloc(var, 100);" pattern within this function
+        // Search for the "var = realloc(var, 100" pattern within this function
         unsigned int indentlevel = 1;
         for (tok = tok->next(); tok; tok = tok->next())
         {
@@ -2576,7 +2576,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
             }
 
             if (tok->varId() > 0 &&
-                Token::Match(tok, "%var% = realloc|g_try_realloc ( %var% , %any% ) ;|}") &&
+                Token::Match(tok, "%var% = realloc|g_try_realloc ( %var% , %any%") &&
                 tok->varId() == tok->tokAt(4)->varId() &&
                 parameterVarIds.find(tok->varId()) == parameterVarIds.end())
             {
@@ -2585,16 +2585,38 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                     Token::findmatch(startOfFunction, "[{};] %varid% = %var% [;=]", tok->varId()))
                     continue;
 
+                const Token* tokEndRealloc = tok->tokAt(3)->link();
                 // Check that the allocation isn't followed immediately by an 'if (!var) { error(); }' that might handle failure
-                if (Token::Match(tok->tokAt(9), "if ( ! %varid% ) {", tok->varId()))
+                if (Token::Match(tokEndRealloc->tokAt(1), "; if ( ! %varid% ) {", tok->varId()))
                 {
-                    const Token* tokEndBrace = tok->tokAt(14)->link();
+                    const Token* tokEndBrace = tokEndRealloc->tokAt(7)->link();
                     if (tokEndBrace && Token::simpleMatch(tokEndBrace->tokAt(-2), ") ;") &&
                         Token::Match(tokEndBrace->tokAt(-2)->link()->tokAt(-2), "{|}|; %var% ("))
                         continue;
                 }
 
                 memleakUponReallocFailureError(tok, tok->str());
+            }
+            else if (tok->tokAt(1)->varId() > 0 &&
+                     (Token::Match(tok, "* %var% = realloc|g_try_realloc ( * %var% , %any%") &&
+                      tok->tokAt(1)->varId() == tok->tokAt(6)->varId())&&
+                     parameterVarIds.find(tok->tokAt(1)->varId()) == parameterVarIds.end())
+            {
+                // Check that another copy of the pointer wasn't saved earlier in the function
+                if (Token::findmatch(startOfFunction, "%var% = * %varid% ;", tok->tokAt(1)->varId()) ||
+                    Token::findmatch(startOfFunction, "[{};] * %varid% = %var% [;=]", tok->tokAt(1)->varId()))
+                    continue;
+
+                const Token* tokEndRealloc = tok->tokAt(4)->link();
+                // Check that the allocation isn't followed immediately by an 'if (!var) { error(); }' that might handle failure
+                if (Token::Match(tokEndRealloc->tokAt(1), "; if ( ! * %varid% ) {", tok->tokAt(1)->varId()))
+                {
+                    const Token* tokEndBrace = tokEndRealloc->tokAt(8)->link();
+                    if (tokEndBrace && Token::simpleMatch(tokEndBrace->tokAt(-2), ") ;") &&
+                        Token::Match(tokEndBrace->tokAt(-2)->link()->tokAt(-2), "{|}|; %var% ("))
+                        continue;
+                }
+                memleakUponReallocFailureError(tok->tokAt(1), tok->tokAt(1)->str());
             }
         }
     }

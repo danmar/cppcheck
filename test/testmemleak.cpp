@@ -264,6 +264,9 @@ private:
         TEST_CASE(realloc9);
         TEST_CASE(realloc10);
         TEST_CASE(realloc11);
+        TEST_CASE(realloc12);
+        TEST_CASE(realloc13);
+        TEST_CASE(realloc14);
 
         TEST_CASE(assign1);
         TEST_CASE(assign2);   // #2806 - FP when using redundant assignment
@@ -2791,6 +2794,41 @@ private:
         check("void foo() {\n"
               "    char *p;\n"
               "    p = realloc(p, size);\n"
+              "    if (!p)\n"
+              "        error();\n"
+              "    usep(p);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc12()
+    {
+        check("void foo(int x)\n"
+              "{\n"
+              "    char *a = 0;\n"
+              "    if ((a = realloc(a, x + 100)) == NULL)\n"
+              "        return;\n"
+              "    free(a);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc13()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char **str;\n"
+              "    *str = realloc(*str,100);\n"
+              "    free (*str);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'str\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc14()
+    {
+        check("void foo() {\n"
+              "    char *p;\n"
+              "    p = realloc(p, size + 1);\n"
               "    if (!p)\n"
               "        error();\n"
               "    usep(p);\n"
