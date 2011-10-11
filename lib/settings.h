@@ -21,9 +21,9 @@
 
 #include <list>
 #include <string>
-#include <istream>
 #include <set>
 #include "suppressions.h"
+#include "standards.h"
 
 /// @addtogroup Core
 /// @{
@@ -34,8 +34,7 @@
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
-class Settings
-{
+class Settings {
 private:
     /** @brief Code to append in the checks */
     std::string _append;
@@ -79,14 +78,12 @@ public:
     bool _verbose;
 
     /** @brief Request termination of checking */
-    void terminate()
-    {
+    void terminate() {
         _terminate = true;
     }
 
     /** @brief termination requested? */
-    bool terminated() const
-    {
+    bool terminated() const {
         return _terminate;
     }
 
@@ -119,10 +116,14 @@ public:
     std::list<std::string> _includePaths;
 
     /** @brief assign append code (--append) */
-    void append(const std::string &filename);
+    bool append(const std::string &filename);
 
     /** @brief get append code (--append) */
-    std::string append() const;
+    const std::string &append() const;
+
+    /** @brief Maximum number of configurations to check before bailing.
+        Default is 12. (--max-configs=N) */
+    int _maxConfigs;
 
     /**
      * @brief Returns true if given id is in the list of
@@ -149,6 +150,9 @@ public:
     /** @brief defines given by the user */
     std::string userDefines;
 
+    /** @brief undefs given by the user */
+    std::set<std::string> userUndefs;
+
     /** @brief Experimental 2 pass checking of files */
     bool test_2_pass;
 
@@ -162,11 +166,9 @@ public:
     bool ifcfg;
 
     /** Rule */
-    class Rule
-    {
+    class Rule {
     public:
-        Rule()
-        {
+        Rule() {
             // default id
             id = "rule";
 
@@ -188,11 +190,8 @@ public:
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
 
-    /** Code is posix - it is not compatible with non-posix environments */
-    bool posix;
-
-    /** Code is C99 standard - it is not compatible with previous versions */
-    bool c99;
+    /** Struct contains standards settings */
+    Standards standards;
 
     /** size of standard types */
     unsigned int sizeof_bool;
@@ -206,8 +205,7 @@ public:
     unsigned int sizeof_size_t;
     unsigned int sizeof_pointer;
 
-    enum PlatformType
-    {
+    enum PlatformType {
         Unspecified, // whatever system this code was compiled on
         Win32A,
         Win32W,

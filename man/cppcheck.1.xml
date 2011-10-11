@@ -113,9 +113,11 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>--help</option></arg>
       <arg choice="opt"><option>-I&lt;dir&gt;</option></arg>
+      <arg choice="opt"><option>--includes-file=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>-i&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--inline-suppr</option></arg>
       <arg choice="opt"><option>-j&lt;jobs&gt;</option></arg>
+      <arg choice="opt"><option>--max-configs=&lt;limit&gt;</option></arg>
       <arg choice="opt"><option>--platform=&lt;type&gt;</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--report-progress</option></arg>
@@ -124,7 +126,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--suppress=&lt;spec&gt;</option></arg>
       <arg choice="opt"><option>--suppressions-list=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--template '&lt;text&gt;'</option></arg>
+      <arg choice="opt"><option>--template='&lt;text&gt;'</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>--version</option></arg>
       <arg choice="opt"><option>--xml</option></arg>
@@ -168,8 +170,17 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
           <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration. 
 Example: -DDEBUG=1 -D__cplusplus</para>
         </listitem>
-      </varlistentry>      
-      <varlistentry>
+      </varlistentry>
+        <varlistentry>
+            <term>
+                <option>-U&lt;id&gt;</option>
+            </term>
+            <listitem>
+                <para>By default Cppcheck checks all configurations. Use '-U' to explicitely hide certain #ifdef &lt;id&gt; code paths from checking.
+Example: '-UDEBUG'</para>
+            </listitem>
+        </varlistentry>
+        <varlistentry>
         <term><option>--enable=&lt;id&gt;</option></term>
         <listitem>
           <para>Enable additional checks. The available ids are:
@@ -253,7 +264,7 @@ Example: -DDEBUG=1 -D__cplusplus</para>
         <term><option>--force</option></term>
         <listitem>
           <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by
-default.</para>
+default. If used together with --max-ifdefs=, the last option is the one that is effective.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -264,13 +275,24 @@ default.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-I &lt;dir&gt;</option></term>
+        <term>
+          <option>-I &lt;dir&gt;</option>
+        </term>
         <listitem>
-          <para>Give include path. Give several -I parameters to give several paths. First given path is checked first. If paths are relative to source
-files, this is not needed.</para>
+          <para>Give path to search for include files. Give several -I parameters to give several paths. First given path is
+searched for contained header files first. If paths are relative to source files, this is not needed.</para>
         </listitem>
       </varlistentry>
-      
+      <varlistentry>
+        <term>
+          <option>--includes-file=&lt;file&gt;</option>
+        </term>
+        <listitem>
+          <para>Specify directory paths to search for included header files in a text file. Add one include path per line.
+First given path is searched for contained header files first. If paths are relative to source files, this is not needed.</para>
+        </listitem>
+      </varlistentry>
+
       <varlistentry>
         <term><option>-i &lt;dir&gt;</option></term>
         <listitem>
@@ -290,6 +312,13 @@ Directory name is matched to all parts of the path.</para>
         <term><option>-j &lt;jobs&gt;</option></term>
         <listitem>
           <para>Start &lt;jobs&gt; threads to do the checking work.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--max-configs=&lt;limit&gt;</option></term>
+        <listitem>
+          <para>Maximum number of configurations to check in a file before skipping it. Default is 12. If used together with --force, the last option is
+          the one that is effective.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -381,7 +410,7 @@ Directory name is matched to all parts of the path.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--template '&lt;text&gt;'</option></term>
+        <term><option>--template='&lt;text&gt;'</option></term>
         <listitem>
           <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'. Pre-defined templates: gcc, vs</para>
         </listitem>

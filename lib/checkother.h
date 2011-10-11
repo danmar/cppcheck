@@ -26,6 +26,7 @@
 #include "settings.h"
 
 class Token;
+class Function;
 
 /// @addtogroup Checks
 /// @{
@@ -33,8 +34,7 @@ class Token;
 
 /** @brief Various small checks */
 
-class CheckOther : public Check
-{
+class CheckOther : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckOther() : Check(myName())
@@ -46,8 +46,7 @@ public:
     { }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Coding style checks
@@ -60,12 +59,14 @@ public:
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
+        checkOther.checkSizeofForStrncmpSize();
         checkOther.checkSizeofForNumericParameter();
         checkOther.checkSelfAssignment();
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
         checkOther.checkDuplicateBreak();
+        checkOther.checkSuspiciousSemicolon();
 
         // information checks
         checkOther.checkVariableScope();
@@ -75,8 +76,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         checkOther.clarifyCalculation();
@@ -88,9 +88,12 @@ public:
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
+        checkOther.checkCCTypeFunctions();
         checkOther.checkFflushOnInputStream();
         checkOther.invalidScanf();
+        checkOther.checkWrongPrintfScanfArguments();
 
+        checkOther.checkCoutCerrMisusage();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
         checkOther.checkCatchExceptionByValue();
@@ -150,6 +153,9 @@ public:
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
 
+    /** @brief %Check for parameters given to cctype function that do make error*/
+    void checkCCTypeFunctions();
+
     void lookupVar(const Token *tok1, const std::string &varname);
 
     /** @brief %Check for using fflush() on an input stream*/
@@ -167,11 +173,21 @@ public:
     void invalidScanf();
     void invalidScanfError(const Token *tok);
 
+    /** @brief %Checks type and number of arguments given to functions like printf or scanf*/
+    void checkWrongPrintfScanfArguments();
+    void wrongPrintfScanfArgumentsError(const Token* tok,
+                                        const std::string &function,
+                                        unsigned int numFormat,
+                                        unsigned int numFunction);
+
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
 
     /** @brief %Check for switch case fall through without comment */
     void checkSwitchCaseFallThrough();
+
+    /** @brief %Check for missusage of std::cout */
+    void checkCoutCerrMisusage();
 
     /** @brief %Check for assigning a variable to itself*/
     void checkSelfAssignment();
@@ -193,6 +209,9 @@ public:
 
     /** @brief %Check for using sizeof with array given as function argument */
     void checkSizeofForArrayParameter();
+
+    /** @brief %Check for using sizeof with a char pointer */
+    void checkSizeofForStrncmpSize();
 
     /** @brief %Check for using sizeof with numeric given as function argument */
     void checkSizeofForNumericParameter();
@@ -233,6 +252,9 @@ public:
     /** @brief %Check for comparing a bool expression with an integer other than 0 or 1 */
     void checkComparisonOfBoolExpressionWithInt();
 
+    /** @brief %Check for suspicious use of semicolon */
+    void checkSuspiciousSemicolon();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -245,9 +267,12 @@ public:
     void variableScopeError(const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
     void zerodivError(const Token *tok);
+    void coutCerrMisusageError(const Token* tok, const std::string& streamName);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
+    void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
+    void redundantStrcpyInSwitchError(const Token *tok, const std::string &varname);
     void switchCaseFallThrough(const Token *tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
@@ -257,23 +282,26 @@ public:
     void catchExceptionByValueError(const Token *tok);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
+    void sizeofForStrncmpError(const Token *tok);
     void sizeofForNumericParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
+    void incorrectStringBooleanError(const Token *tok, const std::string& string);
     void incrementBooleanError(const Token *tok);
     void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression);
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
+    void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok);
     void assignBoolToPointerError(const Token *tok);
-    void unsignedLessThanZeroError(const Token *tok, const std::string &varname);
-    void unsignedPositiveError(const Token *tok, const std::string &varname);
+    void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
+    void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok);
+    void SuspiciousSemicolonError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckOther c(0, settings, errorLogger);
 
         // error
@@ -285,7 +313,9 @@ public:
         c.fflushOnInputStreamError(0, "stdin");
         c.misusedScopeObjectError(NULL, "varname");
         c.sizeofForArrayParameterError(0);
+        c.sizeofForStrncmpError(0);
         c.sizeofForNumericParameterError(0);
+        c.coutCerrMisusageError(0, "cout");
 
         // style/warning
         c.cstyleCastError(0);
@@ -310,30 +340,33 @@ public:
         c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0, true, false);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
+        c.incorrectStringBooleanError(0, "\"Hello World\"");
         c.incrementBooleanError(0);
         c.comparisonOfBoolWithIntError(0, "varname");
         c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
         c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
+        c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
         c.duplicateBreakError(0);
-        c.unsignedLessThanZeroError(0, "varname");
-        c.unsignedPositiveError(0, "varname");
+        c.unsignedLessThanZeroError(0, "varname", false);
+        c.unsignedPositiveError(0, "varname", false);
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0);
+        c.SuspiciousSemicolonError(0);
+        c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
+        c.cctypefunctionCallError(0, "funname", "value");
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "Other";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Other checks\n"
 
                // error
-               "* Assigning bool value to pointer (converting bool value to address)"
+               "* Assigning bool value to pointer (converting bool value to address)\n"
                "* [[OverlappingData|bad usage of the function 'sprintf' (overlapping data)]]\n"
                "* division with zero\n"
                "* using fflush() on an input stream\n"
@@ -342,6 +375,8 @@ public:
                "* sizeof for array given as function argument\n"
                "* sizeof for numeric given as function argument\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
+               "* invalid usage of output stream. For example: std::cout << std::cout;'\n"
+               "* wrong number of arguments given to 'printf' or 'scanf;'\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
@@ -356,6 +391,7 @@ public:
                "* condition that is always true/false\n"
                "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
                "* redundant assignment in a switch statement\n"
+               "* redundant strcpy in a switch statement\n"
                "* look for 'sizeof sizeof ..'\n"
                "* look for calculations inside sizeof()\n"
                "* assignment of a variable to itself\n"
@@ -367,10 +403,13 @@ public:
                "* comparison of a boolean expression with an integer other than 0 or 1\n"
                "* suspicious condition (assignment+comparison)\n"
                "* suspicious condition (runtime comparison of string literals)\n"
+               "* suspicious condition (string literals as boolean)\n"
                "* duplicate break statement\n"
                "* testing if unsigned variable is negative\n"
                "* testing is unsigned variable is positive\n"
                "* using bool in bitwise expression\n"
+               "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
+               "* incorrect usage of functions from ctype library.\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
@@ -382,11 +421,9 @@ private:
      * @brief Used in warningRedundantCode()
      * Iterates through the %var% tokens in a fully qualified name and concatenates them.
      */
-    std::string concatNames(const Token **tok) const
-    {
+    std::string concatNames(const Token **tok) const {
         std::string varname;
-        while (Token::Match(*tok, "%var% ::|."))
-        {
+        while (Token::Match(*tok, "%var% ::|.")) {
             varname.append((*tok)->str());
             varname.append((*tok)->next()->str());
             *tok = (*tok)->tokAt(2);
@@ -398,7 +435,15 @@ private:
         return varname;
     }
 
-    bool code_is_c() const;
+    void checkExpressionRange(const std::list<Function> &constFunctions,
+                              const Token *start,
+                              const Token *end,
+                              const std::string &toCheck);
+
+    void complexDuplicateExpressionCheck(const std::list<Function> &constFunctions,
+                                         const Token *classStart,
+                                         const std::string &toCheck,
+                                         const std::string &alt);
 };
 /// @}
 //---------------------------------------------------------------------------
