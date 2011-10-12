@@ -293,7 +293,7 @@ void CheckOther::checkSuspiciousSemicolon()
 void CheckOther::SuspiciousSemicolonError(const Token* tok)
 {
     reportInconclusiveError(tok, Severity::warning, "suspiciousSemicolon",
-                "Suspicious use of ; at the end of 'if/for/while' statement.");
+                            "Suspicious use of ; at the end of 'if/for/while' statement.");
 }
 
 
