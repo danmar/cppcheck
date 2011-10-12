@@ -22,6 +22,7 @@
 #include "executionpath.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include <cctype>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -78,6 +79,9 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1.insert("fgetpos");
         functionNames1.insert("fsetpos");
         functionNames1.insert("rewind");
+        functionNames1.insert("scanf");
+        functionNames1.insert("fscanf");
+        functionNames1.insert("sscanf");
     }
 
     // standard functions that dereference second parameter..
@@ -95,6 +99,10 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames2.insert("strcpy");
         functionNames2.insert("strncpy");
         functionNames2.insert("strstr");
+        functionNames2.insert("sprintf");
+        functionNames2.insert("fprintf");
+        functionNames2.insert("fscanf");
+        functionNames2.insert("sscanf");
     }
 
     // 1st parameter..
@@ -103,9 +111,9 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     {
         if (functionNames1.find(tok.str()) != functionNames1.end())
             var.push_back(tok.tokAt(2));
-        else if (value == 0 && Token::Match(&tok, "memchr|memcmp|memcpy|memmove|memset|strcpy|printf|sprintf"))
+        else if (value == 0 && Token::Match(&tok, "memcpy|memmove|memset|strcpy|printf|sprintf|vsprintf|vprintf|fprintf|vfprintf"))
             var.push_back(tok.tokAt(2));
-        else if (value == 0 && Token::simpleMatch(&tok, "snprintf") && tok.strAt(4) != "0")
+        else if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && tok.strAt(4) != "0")
             var.push_back(tok.tokAt(2));
         else if (value != 0 && Token::simpleMatch(&tok, "fflush"))
             var.push_back(tok.tokAt(2));
@@ -119,13 +127,57 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             var.push_back(tok.tokAt(4));
     }
 
-    // TODO: Handle sprintf/printf better.
-    if (Token::Match(&tok, "printf ( %str% , %var% ,|)") && tok.tokAt(4)->varId() > 0)
+    if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf"))
     {
-        const std::string &formatstr(tok.tokAt(2)->str());
-        const std::string::size_type pos = formatstr.find("%");
-        if (pos != std::string::npos && formatstr.compare(pos,2,"%s") == 0)
-            var.push_back(tok.tokAt(4));
+        const Token* argListTok = 0; // Points to first va_list argument
+        std::string formatString;
+        bool scan = Token::Match(&tok, "scanf|sscanf|fscanf");
+        if (Token::Match(&tok, "printf|scanf ( %str% , %any%"))
+        {
+            formatString = tok.strAt(2);
+            argListTok = tok.tokAt(4);
+        }
+        else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf ( %var% , %str% , %any%"))
+        {
+            formatString = tok.strAt(4);
+            argListTok = tok.tokAt(6);
+        }
+        else if (Token::Match(&tok, "snprintf|fnprintf ( %var% , %any% , %str% , %any%"))
+        {
+            formatString = tok.strAt(6);
+            argListTok = tok.tokAt(8);
+        }
+        if (argListTok)
+        {
+            bool percent = false;
+            for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i)
+            {
+                if (*i == '%')
+                {
+                    percent = !percent;
+                }
+                else if (percent && std::isalpha(*i))
+                {
+                    if (*i == 'n' || *i == 's' || scan)
+                    {
+                        if ((value == 0 && argListTok->str() == "0") || (Token::Match(argListTok, "%var%") && argListTok->varId() > 0))
+                        {
+                            var.push_back(argListTok);
+                        }
+                    }
+
+                    for (; argListTok; argListTok = argListTok->next()) // Find next argument
+                    {
+                        if (argListTok->str() == ",")
+                        {
+                            argListTok = argListTok->next();
+                            break;
+                        }
+                    }
+                    percent = false;
+                }
+            }
+        }
     }
 }
 
