@@ -912,11 +912,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             break;
         }
 
-        // reassign buffer => bailout
-        if (varid > 0 &&
-            Token::Match(tok, "[;{}] %varid% =", varid) &&
-            !Token::Match(tok->tokAt(3), "%varid%", varid))
-            break;
+        // reassign buffer
+        if (varid > 0 && Token::Match(tok, "[;{}] %varid% =", varid))
+        {
+			// using varid .. bailout
+			if (!Token::Match(tok->tokAt(3), "%varid%", varid))
+			    break;
+			pointerIsOutOfBounds = false;
+		}
 
         // Array index..
         if ((varid > 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && Token::Match(tok->next(), "%varid% [ %num% ]", varid))) ||

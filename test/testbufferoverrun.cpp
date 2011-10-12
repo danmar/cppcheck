@@ -2449,6 +2449,15 @@ private:
         check("void f() {\n"
               "    char *p = malloc(10);\n"
               "    p += 10;\n"
+              "    p -= 10;\n"
+              "    *p = 0;\n"
+              "    free(p);"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    p += 10;\n"
               "    p = p - 1\n"
               "    *p = 0;\n"
               "    free(p);"
