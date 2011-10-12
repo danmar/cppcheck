@@ -62,7 +62,14 @@ void Check64BitPortability::pointerassignment()
                 assignmentIntegerToAddressError(tok->next());
 
             else if (isint(var1) && isaddr(var2) && !tok->tokAt(3)->isPointerCompare())
+            {
+                // assigning address => warning
+                // some trivial addition => warning
+                if (Token::Match(tok->tokAt(4), "+ %any% !!;"))
+                    continue;
+
                 assignmentAddressToIntegerError(tok->next());
+            }
         }
     }
 }

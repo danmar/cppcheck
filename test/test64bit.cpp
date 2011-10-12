@@ -140,6 +140,12 @@ private:
               "    int *a = x * x;\n"
               "}\n");
         TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("void foo(int *start, int *end) {\n"
+              "    int len;\n"
+              "    int len = end + 10 - start;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
