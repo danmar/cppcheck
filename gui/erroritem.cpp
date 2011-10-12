@@ -29,7 +29,7 @@ ErrorItem::ErrorItem(const ErrorItem &item)
     file = item.file;
     files = item.files;
     lines = item.lines;
-    id = item.id;
+    errorId = item.errorId;
     inconclusive = item.inconclusive;
     severity = item.severity;
     summary = item.summary;
@@ -41,7 +41,7 @@ ErrorItem::ErrorItem(const ErrorLine &line)
     file = line.file;
     files.append(line.file);
     lines.append(line.line);
-    id = line.id;
+    errorId = line.errorId;
     inconclusive = line.inconclusive;
     severity = line.severity;
     summary = line.summary;
@@ -50,7 +50,7 @@ ErrorItem::ErrorItem(const ErrorLine &line)
 
 QString ErrorItem::ToString() const
 {
-    QString str = file + " - " + id + " - ";
+    QString str = file + " - " + errorId + " - ";
     if (inconclusive)
         str += "inconclusive ";
     str += GuiSeverity::toString(severity) +"\n";

@@ -111,7 +111,7 @@ public:
     QString file;
     QStringList files;
     QList<unsigned int> lines;
-    QString id;
+    QString errorId;
     Severity::SeverityType severity;
     bool inconclusive;
     QString summary;
@@ -128,7 +128,7 @@ class ErrorLine
 public:
     QString file;
     unsigned int line;
-    QString id;
+    QString errorId;
     bool inconclusive;
     Severity::SeverityType severity;
     QString summary;

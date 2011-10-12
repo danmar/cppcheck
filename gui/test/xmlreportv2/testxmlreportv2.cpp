@@ -37,7 +37,7 @@ void TestXmlReportV2::readXml()
     QCOMPARE(item.lines.size(), 1);
     QCOMPARE(item.files[0], QString("test.cxx"));
     QCOMPARE(item.lines[0], (unsigned int)11);
-    QCOMPARE(item.id, QString("unreadVariable"));
+    QCOMPARE(item.errorId, QString("unreadVariable"));
     QCOMPARE(GuiSeverity::toString(item.severity), QString("style"));
     QCOMPARE(item.summary, QString("Variable 'a' is assigned a value that is never used"));
     QCOMPARE(item.message, QString("Variable 'a' is assigned a value that is never used"));
@@ -50,7 +50,7 @@ void TestXmlReportV2::readXml()
     QCOMPARE(item2.lines[0], (unsigned int)32);
     QCOMPARE(item2.files[1], QString("test.cxx"));
     QCOMPARE(item2.lines[1], (unsigned int)16);
-    QCOMPARE(item2.id, QString("mismatchAllocDealloc"));
+    QCOMPARE(item2.errorId, QString("mismatchAllocDealloc"));
     QCOMPARE(GuiSeverity::toString(item2.severity), QString("error"));
     QCOMPARE(item2.summary, QString("Mismatching allocation and deallocation: k"));
     QCOMPARE(item2.message, QString("Mismatching allocation and deallocation: k"));

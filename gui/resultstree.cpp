@@ -117,7 +117,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
         if (!item.summary.contains(mFilter, Qt::CaseInsensitive) &&
             !item.message.contains(mFilter, Qt::CaseInsensitive) &&
             !item.file.contains(mFilter, Qt::CaseInsensitive) &&
-            !item.id.contains(mFilter, Qt::CaseInsensitive))
+            !item.errorId.contains(mFilter, Qt::CaseInsensitive))
         {
             hide = true;
         }
@@ -131,7 +131,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
 
     ErrorLine line;
     line.file = realfile;
-    line.id = item.id;
+    line.errorId = item.errorId;
     line.inconclusive = item.inconclusive;
     line.line = item.lines[0];
     line.summary = item.summary;
@@ -155,7 +155,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     data["message"]  = item.message;
     data["file"]  = item.files[0];
     data["line"]  = item.lines[0];
-    data["id"]  = item.id;
+    data["id"]  = item.errorId;
     data["inconclusive"] = item.inconclusive;
     stditem->setData(QVariant(data));
 
@@ -177,7 +177,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
         child_data["message"]  = line.message;
         child_data["file"]  = item.files[i];
         child_data["line"]  = line.line;
-        child_data["id"]  = line.id;
+        child_data["id"]  = line.errorId;
         child_data["inconclusive"] = line.inconclusive;
         child_item->setData(QVariant(child_data));
     }
@@ -892,7 +892,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         item.severity = ShowTypes::ShowTypeToSeverity(ShowTypes::VariantToShowType(data["severity"]));
         item.summary = data["summary"].toString();
         item.message = data["message"].toString();
-        item.id = data["id"].toString();
+        item.errorId = data["id"].toString();
         item.inconclusive = data["inconclusive"].toBool();
         QString file = StripPath(data["file"].toString(), true);
         unsigned int line = data["line"].toUInt();

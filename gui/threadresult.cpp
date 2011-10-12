@@ -76,7 +76,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
     ErrorItem item;
     item.file = QString(callStackToString(msg._callStack).c_str());
     item.files = files;
-    item.id = QString(msg._id.c_str());
+    item.errorId = QString(msg._id.c_str());
     item.lines = lines;
     item.summary = QString::fromStdString(msg.shortMessage());
     item.message = QString::fromStdString(msg.verboseMessage());

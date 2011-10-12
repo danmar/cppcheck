@@ -103,7 +103,7 @@ void XmlReportV1::WriteError(const ErrorItem &error)
     mXmlWriter->writeAttribute(FilenameAttribute, file);
     const QString line = QString::number(error.lines[error.lines.size() - 1]);
     mXmlWriter->writeAttribute(LineAttribute, line);
-    mXmlWriter->writeAttribute(IdAttribute, error.id);
+    mXmlWriter->writeAttribute(IdAttribute, error.errorId);
 
     // Don't localize severity so we can read these files
     mXmlWriter->writeAttribute(SeverityAttribute, GuiSeverity::toString(error.severity));
@@ -170,7 +170,7 @@ ErrorItem XmlReportV1::ReadError(QXmlStreamReader *reader)
         item.files.push_back(file);
         const int line = attribs.value("", LineAttribute).toString().toUInt();
         item.lines.push_back(line);
-        item.id = attribs.value("", IdAttribute).toString();
+        item.errorId = attribs.value("", IdAttribute).toString();
         item.severity = GuiSeverity::fromString(attribs.value("", SeverityAttribute).toString());
 
         // NOTE: This dublicates the message to Summary-field. But since
