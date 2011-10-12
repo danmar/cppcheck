@@ -10985,7 +10985,7 @@ void Tokenizer::simplifyOperatorName()
                     par = par->next();
                     done = false;
                 }
-                if (Token::Match(par, "=|.|%op%"))
+                if (Token::Match(par, "=|.|++|--|%op%"))
                 {
                     op += par->str();
                     par = par->next();
