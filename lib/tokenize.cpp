@@ -4854,7 +4854,8 @@ void Tokenizer::removeMacrosInGlobalScope()
         if (tok->str() == "(")
         {
             tok = tok->link();
-            if (Token::Match(tok, ") %type% {") && tok->strAt(1) != "const")
+            if (Token::Match(tok, ") %type% {") &&
+                !Token::Match(tok->next(), "const|namespace|class|struct|union"))
                 tok->deleteNext();
         }
 
