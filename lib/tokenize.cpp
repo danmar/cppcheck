@@ -819,7 +819,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
 /* This function is called when processing function related typedefs.
  * If simplifyTypedef generates an "Internal Error" message and the
  * code that generated it deals in some way with functions, then this
- * fucntion will probably need to be extended to handle a new function
+ * function will probably need to be extended to handle a new function
  * related pattern */
 static Token *processFunc(Token *tok2, bool inOperator)
 {
@@ -2817,7 +2817,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         std::set<std::string> &expandedtemplates)
 {
     // this variable is not used at the moment. the intention was to
-    // allow continous instantiations until all templates has been expanded
+    // allow continuous instantiations until all templates has been expanded
     bool done = false;
 
     std::vector<const Token *> type;
