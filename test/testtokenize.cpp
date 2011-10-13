@@ -358,13 +358,6 @@ private:
 
         TEST_CASE(simplifyIfAddBraces); // ticket # 2739 (segmentation fault)
 
-        //remove redundant code after the 'return ;' statement
-        TEST_CASE(simplifyDeadCodereturn1);
-        TEST_CASE(simplifyDeadCodereturn2);
-        TEST_CASE(simplifyDeadCodereturn3);
-        TEST_CASE(simplifyDeadCodereturn4);
-        TEST_CASE(simplifyDeadCodereturn5);
-
         TEST_CASE(platformWin32);
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32W);
@@ -1587,7 +1580,8 @@ private:
                 "{"
                 " int i ;"
                 " for ( i = 0 ; i < 10 ; ++ i ) { }"
-                " return ; "
+                " return ;"
+                " str [ i ] = 0 ; "
                 "}",
                 simplifyKnownVariables(code));
         }
@@ -5967,78 +5961,6 @@ private:
             ASSERT_EQUALS("void f ( ) { ( { if ( * p ) { ( * p ) = x ( ) ; } } ) }",
                           tokenizeAndStringify(code));
         }
-    }
-
-    void simplifyDeadCodereturn1()
-    {
-        ASSERT_EQUALS("void f ( ) { return ; }", tokenizeAndStringify("void f() { return; foo();}"));
-        ASSERT_EQUALS("void f ( int n ) { if ( n ) { return ; } foo ( ) ; }",tokenizeAndStringify("void f(int n) { if (n) return; foo();}"));
-
-        ASSERT_EQUALS("int f ( int n ) { switch ( n ) { case 0 : return 0 ; default : ; return n ; } return -1 ; }",
-                      tokenizeAndStringify("int f(int n) { switch (n) {case 0: return 0; n*=2; default: return n; n*=6;} return -1; foo();}"));
-        //ticket #3132
-        ASSERT_EQUALS("void f ( int i ) { goto label ; switch ( i ) { label : ; return ; } }",tokenizeAndStringify("void f (int i) { goto label; switch(i) { label: return; } }"));
-        //ticket #3148
-        ASSERT_EQUALS("void f ( ) { MACRO ( return 0 ) }",tokenizeAndStringify("void f() { MACRO(return NULL) }"));
-        ASSERT_EQUALS("void f ( ) { MACRO ( return ; , 0 ) }",tokenizeAndStringify("void f() { MACRO(return;, NULL) }"));
-        ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , return 0 ) }",tokenizeAndStringify("void f() { MACRO(bar1, return NULL) }"));
-        ASSERT_EQUALS("void f ( ) { MACRO ( return ; bar2 , foo ) }",tokenizeAndStringify("void f() { MACRO(return; bar2, foo) }"));
-    }
-
-    void simplifyDeadCodereturn2()
-    {
-        const char code[] = "void f(){ "
-                            "if (k>0) goto label; "
-                            "return; "
-                            "if (tnt) "
-                            "   { "
-                            "       { "
-                            "           check(); "
-                            "           k=0; "
-                            "       } "
-                            "       label: "
-                            "       bar(); "
-                            "   } "
-                            "}";
-        ASSERT_EQUALS("void f ( ) { if ( 0 < k ) { goto label ; } return ; { label : ; bar ( ) ; } }",simplifyKnownVariables(code));
-    }
-
-    void simplifyDeadCodereturn3()
-    {
-        const char code[] = "int f() { "
-                            "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return; "
-                            "case 2: return 2; { random(); } tack(); "
-                            "switch(y) { case 1: return 0; case 2: return 7; } "
-                            "return 2; } return 3; }";
-        ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : return 1 ; case 2 : return 2 ; } return 3 ; }",simplifyKnownVariables(code));
-    }
-
-    void simplifyDeadCodereturn4()
-    {
-        const char code[] = "int f() {"
-                            "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return;"
-                            "case 2: switch(y) { case 1: return 0; bar2(); foo(); case 2: return 7; }"
-                            "return 2; } return 3; }";
-        const char expected[] = "int f ( ) {"
-                                " switch ( x ) { case 1 : return 1 ;"
-                                " case 2 : switch ( y ) { case 1 : return 0 ; case 2 : return 7 ; }"
-                                " return 2 ; } return 3 ; }";
-        ASSERT_EQUALS(expected,simplifyKnownVariables(code));
-    }
-
-    void simplifyDeadCodereturn5()
-    {
-        const char code[] = "void foo () {"
-                            "    switch (i) { case 0: switch (j) { case 0: return -1; }"
-                            "        case 1: switch (j) { case -1: return -1; }"
-                            "        case 2: switch (j) { case -2: return -1; }"
-                            "        case 3: if (blah6) return -1; break; } }";
-        const char expected[] = "void foo ( ) {"
-                                " switch ( i ) { case 0 : switch ( j ) { case 0 : return -1 ; }"
-                                " case 1 : switch ( j ) { case -1 : return -1 ; }"
-                                " case 2 : switch ( j ) { case -2 : return -1 ; }"
-                                " case 3 : if ( blah6 ) { return -1 ; } break ; } }";
-        ASSERT_EQUALS(expected, simplifyKnownVariables(code));
     }
 
     void platformWin32()

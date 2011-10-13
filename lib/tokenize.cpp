@@ -2773,8 +2773,6 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
-    simplifyDeadCode();
-
     _tokens->assignProgressValues();
 
     removeRedundantSemicolons();

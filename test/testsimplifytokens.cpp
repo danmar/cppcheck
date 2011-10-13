@@ -157,6 +157,13 @@ private:
         TEST_CASE(goto1);
         TEST_CASE(goto2);
 
+        //remove redundant code after the 'return ;' statement
+        TEST_CASE(return1);
+        TEST_CASE(return2);
+        TEST_CASE(return3);
+        TEST_CASE(return4);
+        TEST_CASE(return5);
+
         // Simplify nested strcat() calls
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
@@ -2982,6 +2989,78 @@ private:
         // Don't simplify goto inside function call (macro)
         const char code[] = "void f ( ) { slist_iter ( if ( a ) { goto dont_write ; } dont_write : ; x ( ) ; ) ; }";
         ASSERT_EQUALS(code, tok(code));
+    }
+
+    void return1()
+    {
+        ASSERT_EQUALS("void f ( ) { return ; }", tok("void f() { return; foo();}"));
+        ASSERT_EQUALS("void f ( int n ) { if ( n ) { return ; } foo ( ) ; }",tok("void f(int n) { if (n) return; foo();}"));
+
+        ASSERT_EQUALS("int f ( int n ) { switch ( n ) { case 0 : ; return 0 ; default : ; return n ; } return -1 ; }",
+                      tok("int f(int n) { switch (n) {case 0: return 0; n*=2; default: return n; n*=6;} return -1; foo();}"));
+        //ticket #3132
+        ASSERT_EQUALS("void f ( int i ) { goto label ; switch ( i ) { label : ; return ; } }",tok("void f (int i) { goto label; switch(i) { label: return; } }"));
+        //ticket #3148
+        ASSERT_EQUALS("void f ( ) { MACRO ( return 0 ) }",tok("void f() { MACRO(return NULL) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( return ; , 0 ) }",tok("void f() { MACRO(return;, NULL) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , return 0 ) }",tok("void f() { MACRO(bar1, return NULL) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( return ; bar2 , foo ) }",tok("void f() { MACRO(return; bar2, foo) }"));
+    }
+
+    void return2()
+    {
+        const char code[] = "void f(){ "
+                            "if (k>0) goto label; "
+                            "return; "
+                            "if (tnt) "
+                            "   { "
+                            "       { "
+                            "           check(); "
+                            "           k=0; "
+                            "       } "
+                            "       label: "
+                            "       bar(); "
+                            "   } "
+                            "}";
+        ASSERT_EQUALS("void f ( ) { if ( 0 < k ) { goto label ; } return ; { label : ; bar ( ) ; } }",tok(code));
+    }
+
+    void return3()
+    {
+        const char code[] = "int f() { "
+                            "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return; "
+                            "case 2: return 2; { random(); } tack(); "
+                            "switch(y) { case 1: return 0; case 2: return 7; } "
+                            "return 2; } return 3; }";
+        ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : ; return 1 ; case 2 : ; return 2 ; } return 3 ; }",tok(code));
+    }
+
+    void return4()
+    {
+        const char code[] = "int f() {"
+                            "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return;"
+                            "case 2: switch(y) { case 1: return 0; bar2(); foo(); case 2: return 7; }"
+                            "return 2; } return 3; }";
+        const char expected[] = "int f ( ) {"
+                                " switch ( x ) { case 1 : ; return 1 ;"
+                                " case 2 : ; switch ( y ) { case 1 : ; return 0 ; case 2 : ; return 7 ; }"
+                                " return 2 ; } return 3 ; }";
+        ASSERT_EQUALS(expected,tok(code));
+    }
+
+    void return5()
+    {
+        const char code[] = "void foo () {"
+                            "    switch (i) { case 0: switch (j) { case 0: return -1; }"
+                            "        case 1: switch (j) { case -1: return -1; }"
+                            "        case 2: switch (j) { case -2: return -1; }"
+                            "        case 3: if (blah6) return -1; break; } }";
+        const char expected[] = "void foo ( ) {"
+                                " switch ( i ) { case 0 : ; switch ( j ) { case 0 : ; return -1 ; }"
+                                " case 1 : ; switch ( j ) { case -1 : ; return -1 ; }"
+                                " case 2 : ; switch ( j ) { case -2 : ; return -1 ; }"
+                                " case 3 : ; if ( blah6 ) { return -1 ; } break ; } }";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void strcat1()
