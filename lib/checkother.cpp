@@ -482,6 +482,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 
         // Check the contents of the switch statement
         std::map<unsigned int, const Token*> varsAssigned;
+        std::map<unsigned int, const Token*> stringsCopied;
         int indentLevel = 0;
         for (const Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next())
         {
@@ -496,9 +497,17 @@ void CheckOther::checkRedundantAssignmentInSwitch()
                     for (const Token* tok3 = tok2; tok3 != endOfConditional; tok3 = tok3->next())
                     {
                         if (tok3->varId() != 0)
+                        {
                             varsAssigned.erase(tok3->varId());
+                            stringsCopied.erase(tok3->varId());
+                        }
                         else if (Token::Match(tok3, functionPattern) || Token::Match(tok3, breakPattern))
+                        {
                             varsAssigned.clear();
+
+                            if (tok3->str() != "strcpy" && tok3->str() != "strncpy")
+                                stringsCopied.clear();
+                        }
                     }
                     tok2 = endOfConditional;
                 }
@@ -524,6 +533,19 @@ void CheckOther::checkRedundantAssignmentInSwitch()
                     varsAssigned[tok2->varId()] = tok2;
                 else
                     redundantAssignmentInSwitchError(i->second, i->second->str());
+
+                stringsCopied.erase(tok2->varId());
+            }
+            // String copy. Report an error if it's copied to twice before a break. E.g.:
+            //    case 3: strcpy(str, "a");    // <== redundant
+            //    case 4: strcpy(str, "b");
+            else if (Token::Match(tok2->previous(), ";|{|}|: strcpy|strncpy ( %var% ,") && tok2->tokAt(2)->varId() != 0)
+            {
+                std::map<unsigned int, const Token*>::iterator i = stringsCopied.find(tok2->tokAt(2)->varId());
+                if (i == stringsCopied.end())
+                    stringsCopied[tok2->tokAt(2)->varId()] = tok2->tokAt(2);
+                else
+                    redundantStrcpyInSwitchError(i->second, i->second->str());
             }
             // Not a simple assignment so there may be good reason if this variable is assigned to twice. E.g.:
             //    case 3: b = 1;
@@ -534,7 +556,12 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             // Reset our record of assignments if there is a break or function call. E.g.:
             //    case 3: b = 1; break;
             if (Token::Match(tok2, functionPattern) || Token::Match(tok2, breakPattern))
+            {
                 varsAssigned.clear();
+
+                if (tok2->str() != "strcpy" && tok2->str() != "strncpy")
+                    stringsCopied.clear();
+            }
 
         }
 
@@ -546,6 +573,14 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::s
 {
     reportError(tok, Severity::warning,
                 "redundantAssignInSwitch", "Redundant assignment of \"" + varname + "\" in switch");
+}
+
+void CheckOther::redundantStrcpyInSwitchError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning,
+                "redundantStrcpyInSwitch",
+                "Switch case fall-through. Redundant strcpy of \"" + varname + "\".\n"
+                "Switch case fall-through. Redundant strcpy of \"" + varname + "\". The string is overwritten in a later case block.");
 }
 
 //---------------------------------------------------------------------------

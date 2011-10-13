@@ -1305,6 +1305,72 @@ private:
               "        }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char *str, int a)\n"
+              "{\n"
+              "        switch (a)\n"
+              "        {\n"
+              "        case 2:\n"
+              "          strcpy(str, \"a'\");\n"
+              "        case 3:\n"
+              "          strcpy(str, \"b'\");\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Switch case fall-through. Redundant strcpy of \"str\".\n", errout.str());
+
+        check("void foo(char *str, int a)\n"
+              "{\n"
+              "        switch (a)\n"
+              "        {\n"
+              "        case 2:\n"
+              "          strncpy(str, \"a'\");\n"
+              "        case 3:\n"
+              "          strncpy(str, \"b'\");\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Switch case fall-through. Redundant strcpy of \"str\".\n", errout.str());
+
+        check("void foo(char *str, int a)\n"
+              "{\n"
+              "		   int z = 0;\n"
+              "        switch (a)\n"
+              "        {\n"
+              "        case 2:\n"
+              "          strcpy(str, \"a'\");\n"
+              "			 z++;\n"
+              "        case 3:\n"
+              "          strcpy(str, \"b'\");\n"
+              "			 z++;\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Switch case fall-through. Redundant strcpy of \"str\".\n", errout.str());
+
+        check("void foo(char *str, int a)\n"
+              "{\n"
+              "        switch (a)\n"
+              "        {\n"
+              "        case 2:\n"
+              "          strcpy(str, \"a'\");\n"
+              "			 break;\n"
+              "        case 3:\n"
+              "          strcpy(str, \"b'\");\n"
+              "			 break;\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char *str, int a)\n"
+              "{\n"
+              "        switch (a)\n"
+              "        {\n"
+              "        case 2:\n"
+              "          strcpy(str, \"a'\");\n"
+              "			 printf(str);\n"
+              "        case 3:\n"
+              "          strcpy(str, \"b'\");\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchFallThroughCase()
