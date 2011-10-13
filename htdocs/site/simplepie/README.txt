@@ -10,7 +10,7 @@ WHAT COMES IN THE PACKAGE?
 2) README.txt - This document.
 3) LICENSE.txt - A copy of the BSD license.
 4) compatibility_test - The SimplePie compatibility test that checks your server for required settings.
-5) demo - A basic feed reader demo that shows off some of SimplePie's more noticable features.
+5) demo - A basic feed reader demo that shows off some of SimplePie's more noticeable features.
 6) idn - A third-party library that SimplePie can optionally use to understand Internationalized Domain Names (IDNs).
 7) test - SimplePie's unit test suite. This is only available in SVN builds.
 
