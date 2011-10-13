@@ -10036,7 +10036,7 @@ void Tokenizer::simplifyWhile0()
         if (Token::simpleMatch(tok->next()->link(), ") {"))
         {
             const Token *end = tok->next()->link()->next()->link();
-            if (!findmatch(tok, end, "continue|break"))
+            if (!findmatch(tok, end, "%var% : ;"))
             {
                 Token::eraseTokens(tok, end ? end->next() : 0);
                 tok->deleteThis();  // delete "while"
