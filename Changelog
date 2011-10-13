@@ -236,7 +236,7 @@
 2011-09-28  Robert Reif <reif@earthlink.net>
 
 	* lib/tokenize.cpp, lib/tokenize.h: refactor last commit to move
-	unknown type output to seperate function
+	unknown type output to separate function
 
 2011-09-27  Robert Reif <reif@earthlink.net>
 
@@ -610,7 +610,7 @@
 
 2011-09-08  Robert Reif <reif@earthlink.net>
 
-	* test/testbufferoverrun.cpp: add soem test cases for #3094 (Buffer
+	* test/testbufferoverrun.cpp: add some test cases for #3094 (Buffer
 	access out-of-bounds in struct variable)
 
 2011-09-08  Daniel Marjamäki <danielm77@spray.se>
@@ -1665,7 +1665,7 @@
 
 2011-08-04  Robert Reif <reif@earthlink.net>
 
-	* lib/checkstl.cpp, test/teststl.cpp: fix #2887 (infinit loop with (
+	* lib/checkstl.cpp, test/teststl.cpp: fix #2887 (infinite loop with (
 	A::A(std::auto_ptr<X> e){} ))
 
 2011-08-04  Kimmo Varis <kimmov@gmail.com>
@@ -4455,7 +4455,7 @@
 	possible.  And application path and command line parameters are clearly
 	different settings anyway. So make them separate settings. It has
 	bunch of other positive sides too. Like one can now browse new path
-	for the application without loosing the parameters.  When starting Cppcheck version with these new settings user is
+	for the application without losing the parameters.  When starting Cppcheck version with these new settings user is
 	warned that loading settings had problems and asked to check and fix
 	the settings.
 
@@ -6236,7 +6236,7 @@
 2011-02-14  Robert Reif <reif@earthlink.net>
 
 	* lib/symboldatabase.cpp, test/testunusedprivfunc.cpp: fix #2580
-	(false postive with Unused private function)
+	(false positive with Unused private function)
 
 2011-02-14  Daniel Marjamäki <danielm77@spray.se>
 
@@ -7084,7 +7084,7 @@
 	Add CLI support for ignoring paths.  Add support for giving list of ignored paths from CLI. This way user
 	can define paths one doesn't want to check (like generated code).
 	This first simple implementation only does exact matching, no
-	support for wildcards etc. And matching is always agains dir names.  If the filtered dir name is part of the checked filename then the
+	support for wildcards etc. And matching is always against dir names.  If the filtered dir name is part of the checked filename then the
 	file is ignored.  Ticket #1690 (Ability to exclude files and directories from checks)
 
 2011-02-02  Kimmo Varis <kimmov@gmail.com>
@@ -10272,7 +10272,7 @@
 2010-11-15  Daniel Marjamäki <danielm77@spray.se>
 
 	* lib/checkuninitvar.cpp, test/testuninitvar.cpp: Fixed #2202 (false
-	postive: Data is allocated but not initialized: rbdc)
+	positive: Data is allocated but not initialized: rbdc)
 
 2010-11-14  Zachary Blair <zack_blair@hotmail.com>
 
@@ -13252,7 +13252,7 @@
 2010-08-12  Ettl Martin <ettl.martin@gmx.de>
 
 	* Makefile, lib/checkbufferoverrun.cpp, lib/preprocessor.cpp: 
-	actived Wconversion flag in Makefile and fixed almost all Warnings
+	activated Wconversion flag in Makefile and fixed almost all Warnings
 	from gcc-4.4
 
 2010-08-12  Robert Reif <reif@earthlink.net>
@@ -13500,7 +13500,7 @@
 
 2010-08-05  Daniel Marjamäki <danielm77@spray.se>
 
-	* lib/token.h: suppress visual studio warnings about loosing data
+	* lib/token.h: suppress visual studio warnings about losing data
 	when calculating Token::progressValue
 
 2010-08-05  Daniel Marjamäki <danielm77@spray.se>
@@ -16513,7 +16513,7 @@
 2010-04-13  firewave <oliverst@online.de>
 
 	* cli/cppcheck.vcproj, cppcheck.sln, lib/lib.vcproj,
-	test/test.vcproj: Moved shared files to seperate lib project
+	test/test.vcproj: Moved shared files to separate lib project
 
 2010-04-13  firewave <oliverst@online.de>
 
@@ -18326,7 +18326,7 @@
 2010-02-12  Reijo Tomperi <aggro80@users.sourceforge.net>
 
 	* lib/token.cpp, lib/token.h: Added %name% pattern to Token.
-	Currenly same as %var%, but in the future %var% is supposed to match
+	Currently same as %var%, but in the future %var% is supposed to match
 	only tokens that have varid != 0.
 
 2010-02-12  Reijo Tomperi <aggro80@users.sourceforge.net>
@@ -18338,7 +18338,7 @@
 	* lib/checkother.cpp, lib/tokenize.cpp, test/testdivision.cpp: Fix
 	#1385 (False positive: unsigned division)
 	http://sourceforge.net/apps/trac/cppcheck/ticket/1385 This also
-	fixes a bug in setVarId(). "unsigned int a" didn't get varid, untill
+	fixes a bug in setVarId(). "unsigned int a" didn't get varid, until
 	later when unsigned was simplified away.
 
 2010-02-12  Daniel Marjamäki <danielm77@spray.se>
@@ -19205,7 +19205,7 @@
 2010-01-12  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
 	* lib/checkclass.cpp, test/testclass.cpp: Fixed #1259 (false
-	postive: Member variable 'A::b' is not assigned a value in
+	positive: Member variable 'A::b' is not assigned a value in
 	'A::operator=')
 
 2010-01-12  Henrik Nilsson <henrik.nilsson@tvaaker.se>
@@ -21689,7 +21689,7 @@
 2009-10-18  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
 	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #449 (false
-	postive:: resource leak when using errno)
+	positive:: resource leak when using errno)
 
 2009-10-18  Reijo Tomperi <aggro80@users.sourceforge.net>
 
@@ -23457,7 +23457,7 @@
 
 	* src/tokenize.cpp: Revert "Fixed #616 (cppcheck crashes with
 	Eigen/src/Cholesky/CholeskyInstantiations.cpp)" This reverts commit 89f96451742fcab458650581e01895acb7e1de07.  This change not fully and properly fixes a problem but just work
-	arround it. The root of problem is because
+	around it. The root of problem is because
 	Tokenizer::simplifyTemplates() inserts new tokens with brackets
 	which not link()-ed.
 
@@ -25054,7 +25054,7 @@
 
 	* gui/cppcheck_de.ts, gui/cppcheck_en.ts, gui/cppcheck_fi.ts,
 	gui/cppcheck_ru.ts, gui/cppcheck_se.ts, gui/translationhandler.cpp: 
-	I reverted back the translation file checking.  Allthough I put it
+	I reverted back the translation file checking.  Although I put it
 	after QTranslator had failed to load the translation.  This still
 	allows QTranslator to try and open the file with several variations
 	of the file. To user we'll tell that the default file is missing.
@@ -25220,13 +25220,13 @@
 	gui/cppcheck_fi.ts, gui/cppcheck_ru.ts, gui/cppcheck_se.ts,
 	gui/gui.pro, gui/settings.ui: Added ui files for Settings and
 	Application dialogs.  The code doesn't use those at the moment
-	though.  Updated the translation files aswell.
+	though.  Updated the translation files as well.
 
 2009-07-02  Vesa Pikki <spyree@gmail.com>
 
 	* gui/cppcheck_de.ts, gui/cppcheck_en.ts, gui/cppcheck_fi.ts,
 	gui/cppcheck_ru.ts, gui/cppcheck_se.ts, gui/mainwindow.cpp,
-	gui/resultstree.cpp: Error types are now translated aswell.
+	gui/resultstree.cpp: Error types are now translated as well.
 
 2009-07-02  Vesa Pikki <spyree@gmail.com>
 
@@ -25986,7 +25986,7 @@
 
 2009-06-07  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
-	* Changelog: Added a Changelog file that is generated automaticly by
+	* Changelog: Added a Changelog file that is generated automatically by
 	git2cl
 
 2009-06-07  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
@@ -26497,7 +26497,7 @@
 2009-05-27  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
 	* src/tokenize.cpp, test/testtokenize.cpp: Fix ticket 308 (cppcheck
-	msg:: invalid number of ((). Cant process file)
+	msg:: invalid number of ((). Can't process file)
 
 2009-05-27  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
@@ -26688,7 +26688,7 @@
 	gui/mainwindow.cpp, gui/mainwindow.h, gui/settingsdialog.cpp,
 	gui/settingsdialog.h: Added the ability to add/remove/modify
 	applications to open errors with.  Only the list of applications
-	added, errors cant be opened yet.
+	added, errors can't be opened yet.
 
 2009-05-23  Slava Semushin <php-coder@altlinux.ru>
 
@@ -26707,7 +26707,7 @@
 	gui/resultsview.h, gui/test.cpp, gui/threadhandler.cpp,
 	gui/threadresult.cpp, gui/threadresult.h: Results tree now uses only
 	QStandardItemModel for data storage.  Items are now hidden from the
-	tree and the tree is not recreated everytime it is refreshed.  Also
+	tree and the tree is not recreated every time it is refreshed.  Also
 	added test.cpp as a sample data for GUI testing.  Added Check all
 	and uncheck all buttons to menu to show/hide all errors more easily.
 
@@ -28190,7 +28190,7 @@
 
 	* src/checkmemoryleak.cpp, src/settings.cpp, src/settings.h,
 	test/testmemleak.cpp: added internal support for handling list of
-	classes that are automaticly deallocated
+	classes that are automatically deallocated
 
 2009-03-06  Reijo Tomperi <aggro80@users.sourceforge.net>
 
@@ -28404,7 +28404,7 @@
 	gui/resultsview.cpp, gui/resultsview.h, gui/settingsdialog.cpp,
 	gui/settingsdialog.h, runastyle, runastyle.bat: Began implementing a
 	simple Qt based GUI.  Also modified astyle scripts to format gui
-	code aswell.
+	code as well.
 
 2009-02-28  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
@@ -29418,7 +29418,7 @@
 2009-01-26  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
 	* src/tokenize.cpp, src/tokenize.h, test/testtokenize.cpp: 
-	tokenizer: simplify redundant paranthesis
+	tokenizer: simplify redundant parenthesis
 
 2009-01-25  Leandro Penz <lpenz@users.sourceforge.net>
 
@@ -30511,7 +30511,7 @@
 2009-01-08  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
 	* src/errormessage.cpp, src/errormessage.h: errormessage: updated
-	the files. the errormessage.h is automaticly generated by the
+	the files. the errormessage.h is automatically generated by the
 	tools/errmsg program
 
 2009-01-08  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
@@ -30585,7 +30585,7 @@
 2009-01-06  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
 	* Makefile, tools/dmake.cpp: tools/dmake: A few simple fixes.
-	Commited the new Makefile
+	Committed the new Makefile
 
 2009-01-06  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
