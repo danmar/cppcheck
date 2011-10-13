@@ -43,7 +43,7 @@ namespace {
 /** List of functions that can be ignored when searching for memory leaks.
  * These functions don't take the address of the given pointer
  * This list needs to be alphabetically sorted so we can run bsearch on it.
- * This list contains function names whith const parameters e.g.: atof(const char *)
+ * This list contains function names with const parameters e.g.: atof(const char *)
  * Reference: http://www.aquaphoenix.com/ref/gnu_c_library/libc_492.html#SEC492
  */
 static const char * const call_func_white_list[] = {

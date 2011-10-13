@@ -858,7 +858,7 @@ private:
 
 
     void simple7() {
-        // A garbage collector may delete f automaticly
+        // A garbage collector may delete f automatically
         check("class Fred;\n"
               "void foo()\n"
               "{\n"
