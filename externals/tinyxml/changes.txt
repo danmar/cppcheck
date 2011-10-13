@@ -20,10 +20,10 @@ Changes in version 1.0.3
 
 Changes in version 1.1.0
 - Added the	TiXmlAttributeSet class to pull the attributes into
-  a seperate container.
+  a separate container.
 - Moved the doubly liked list out of XmlBase. Now XmlBase only
   requires the Print() function and defines some utility functions.
-- Moved errors into a seperate file. (With the idea of internationalization
+- Moved errors into a separate file. (With the idea of internationalization
   to the other latin-1 languages.)
 - Added the "NodeType"
 - Fixed white space parsing in text to conform with the standard. 
@@ -53,7 +53,7 @@ Changes in version 1.2.3
   Thanks to Ephi Sinowitz.
 
 Changes in version 1.2.4
-- ReplaceChild() was almost guarenteed to fail. Should be fixed,
+- ReplaceChild() was almost guaranteed to fail. Should be fixed,
   thanks to Joe Smith. Joe also pointed out that the Print() functions
   should take stream references: I agree, and would like to overload
   the Print() method to take either format, but I don't want to do 
@@ -124,7 +124,7 @@ Changes in version 2.1.5
 - A patch from  hermitgeek ( James ) and wasteland for improper error reporting
 - Reviewed by Lee, with the following changes:
 	- Got sick of fighting the STL/non-STL thing in the windows build. Broke
-	  them out as seperate projects.
+	  them out as separate projects.
 	- I have too long not included the dsw. Added.
 	- TinyXmlText had a protected Print. Odd.
 	- Made LinkEndChild public, with docs and appropriate warnings.
@@ -226,7 +226,7 @@ Changes in version 2.1.5
 - Added some asserts for multiply adding a node, regardng bug [1391937] suggested by Paco Arjonilla.
 
 2.4.4
-- Bug find thanks to andre-gross found a memory leak that occured when a document failed to load.
+- Bug find thanks to andre-gross found a memory leak that occurred when a document failed to load.
 - Bug find (and good analysis) by VirtualJim who found a case where attribute parsing 
   should be throwing an error and wasn't.
 - Steve Hyatt suggested the QueryValueAttribute method, which is now implemented.
