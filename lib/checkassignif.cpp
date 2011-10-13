@@ -26,9 +26,8 @@
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
-namespace
-{
-CheckAssignIf instance;
+namespace {
+    CheckAssignIf instance;
 }
 
 
@@ -37,13 +36,11 @@ void CheckAssignIf::assignIf()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() != "=")
             continue;
 
-        if (Token::Match(tok->tokAt(-2), "[;{}] %var% = %var% [&|] %num% ;"))
-        {
+        if (Token::Match(tok->tokAt(-2), "[;{}] %var% = %var% [&|] %num% ;")) {
             const unsigned int varid(tok->previous()->varId());
             if (varid == 0)
                 continue;
@@ -54,12 +51,10 @@ void CheckAssignIf::assignIf()
             if (num < 0)
                 continue;
 
-            for (const Token *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next())
-            {
+            for (const Token *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(" || tok2->str() == "}" || tok2->str() == "=")
                     break;
-                if (Token::Match(tok2,"if ( %varid% %any% %num% &&|%oror%|)", varid))
-                {
+                if (Token::Match(tok2,"if ( %varid% %any% %num% &&|%oror%|)", varid)) {
                     const std::string op(tok2->strAt(3));
                     const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
                     if (op == "==" && (num & num2) != ((bitop=='&') ? num2 : num))
@@ -89,20 +84,17 @@ void CheckAssignIf::comparison()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() != "&")
             continue;
 
-        if (Token::Match(tok, "& %num% )| ==|!= %num% &&|%oror%|)"))
-        {
+        if (Token::Match(tok, "& %num% )| ==|!= %num% &&|%oror%|)")) {
             const MathLib::bigint num1 = MathLib::toLongNumber(tok->strAt(1));
             if (num1 < 0)
                 continue;
 
             const Token *compareToken = tok->tokAt(2);
-            if (compareToken->str() == ")")
-            {
+            if (compareToken->str() == ")") {
                 if (!Token::Match(compareToken->link()->previous(), "(|%oror%|&&"))
                     continue;
                 compareToken = compareToken->next();
@@ -112,8 +104,7 @@ void CheckAssignIf::comparison()
             if (num2 < 0)
                 continue;
 
-            if ((num1 & num2) != num2)
-            {
+            if ((num1 & num2) != num2) {
                 const std::string op(compareToken->str());
                 comparisonError(tok, op=="==" ? false : true);
             }
@@ -145,10 +136,8 @@ void CheckAssignIf::multiCondition()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "if ( %var% & %num% ) {"))
-        {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "if ( %var% & %num% ) {")) {
             const unsigned int varid(tok->tokAt(2)->varId());
             if (varid == 0)
                 continue;
@@ -158,8 +147,7 @@ void CheckAssignIf::multiCondition()
                 continue;
 
             const Token *tok2 = tok->tokAt(6)->link();
-            while (Token::simpleMatch(tok2, "} else { if ("))
-            {
+            while (Token::simpleMatch(tok2, "} else { if (")) {
                 // Goto '('
                 const Token * const opar = tok2->tokAt(4);
 
@@ -169,14 +157,12 @@ void CheckAssignIf::multiCondition()
                     tok2 = tok2->next()->link();
 
                 // check condition..
-                if (Token::Match(opar, "( %varid% ==|& %num% &&|%oror%|)", varid))
-                {
+                if (Token::Match(opar, "( %varid% ==|& %num% &&|%oror%|)", varid)) {
                     const MathLib::bigint num2 = MathLib::toLongNumber(opar->strAt(3));
                     if (num2 < 0)
                         continue;
 
-                    if ((num1 & num2) == num2)
-                    {
+                    if ((num1 & num2) == num2) {
                         multiConditionError(opar, tok->linenr());
                     }
                 }

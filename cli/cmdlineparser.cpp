@@ -47,22 +47,16 @@ static void AddFilesToList(const std::string& FileList, std::vector<std::string>
     // drawback : creates a dependency
     std::istream *Files;
     std::ifstream Infile;
-    if (FileList.compare("-") == 0) // read from stdin
-    {
+    if (FileList.compare("-") == 0) { // read from stdin
         Files = &std::cin;
-    }
-    else
-    {
+    } else {
         Infile.open(FileList.c_str());
         Files = &Infile;
     }
-    if (Files)
-    {
+    if (Files) {
         std::string FileName;
-        while (std::getline(*Files, FileName)) // next line
-        {
-            if (!FileName.empty())
-            {
+        while (std::getline(*Files, FileName)) { // next line
+            if (!FileName.empty()) {
                 PathNames.push_back(FileName);
             }
         }
@@ -85,10 +79,8 @@ void CmdLineParser::PrintMessage(const std::string &message)
 
 bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 {
-    for (int i = 1; i < argc; i++)
-    {
-        if (strcmp(argv[i], "--version") == 0)
-        {
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--version") == 0) {
             _showVersion = true;
             _exitAfterPrint = true;
             return true;
@@ -107,8 +99,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->debugFalsePositive = true;
 
         // Enable all checks - will be removed in future
-        else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0)
-        {
+        else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0) {
             PrintMessage("cppcheck: -a/--all option is deprecated and will be removed in 1.55 release.");
             PrintMessage("cppcheck:   please use --enable=all instead.");
         }
@@ -118,66 +109,56 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->inconclusive = true;
 
         // Checking coding style - will be removed in the future
-        else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--style") == 0)
-        {
+        else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--style") == 0) {
             PrintMessage("cppcheck: -s/--style option is deprecated and will be removed in 1.55 release.");
             PrintMessage("cppcheck:   please use --enable=style instead.");
 
             const std::string errmsg = _settings->addEnabled("style");
-            if (!errmsg.empty())
-            {
+            if (!errmsg.empty()) {
                 PrintMessage(errmsg);
                 return false;
             }
         }
 
         // Filter errors
-        else if (strncmp(argv[i], "--exitcode-suppressions", 23) == 0)
-        {
+        else if (strncmp(argv[i], "--exitcode-suppressions", 23) == 0) {
             std::string filename;
 
             // exitcode-suppressions filename.txt
             // Deprecated
-            if (strcmp(argv[i], "--exitcode-suppressions") == 0)
-            {
+            if (strcmp(argv[i], "--exitcode-suppressions") == 0) {
                 ++i;
 
                 if (i >= argc || strncmp(argv[i], "-", 1) == 0 ||
-                    strncmp(argv[i], "--", 2) == 0)
-                {
+                    strncmp(argv[i], "--", 2) == 0) {
                     PrintMessage("cppcheck: No filename specified for the --exitcode-suppressions option");
                     return false;
                 }
                 filename = argv[i];
             }
             // exitcode-suppressions=filename.txt
-            else
-            {
+            else {
                 filename = 24 + argv[i];
             }
 
             std::ifstream f(filename.c_str());
-            if (!f.is_open())
-            {
+            if (!f.is_open()) {
                 PrintMessage("cppcheck: Couldn't open the file \"" + std::string(filename) + "\"");
                 return false;
             }
             const std::string errmsg(_settings->nofail.parseFile(f));
-            if (!errmsg.empty())
-            {
+            if (!errmsg.empty()) {
                 PrintMessage(errmsg);
                 return false;
             }
         }
 
         // Filter errors
-        else if (strncmp(argv[i], "--suppressions-list=", 20) == 0)
-        {
+        else if (strncmp(argv[i], "--suppressions-list=", 20) == 0) {
             std::string filename = argv[i];
             filename = filename.substr(20);
             std::ifstream f(filename.c_str());
-            if (!f.is_open())
-            {
+            if (!f.is_open()) {
                 std::string message("cppcheck: Couldn't open the file \"");
                 message += std::string(filename);
                 message += "\"";
@@ -185,8 +166,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 return false;
             }
             const std::string errmsg(_settings->nomsg.parseFile(f));
-            if (!errmsg.empty())
-            {
+            if (!errmsg.empty()) {
                 PrintMessage(errmsg);
                 return false;
             }
@@ -195,19 +175,16 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // Filter errors
         // This is deprecated, see --supressions-list above
         else if (strcmp(argv[i], "--suppressions") == 0 &&
-                 strlen(argv[i]) == 14)
-        {
+                 strlen(argv[i]) == 14) {
             ++i;
 
-            if (i >= argc)
-            {
+            if (i >= argc) {
                 PrintMessage("cppcheck: No file specified for the --suppressions option");
                 return false;
             }
 
             std::ifstream f(argv[i]);
-            if (!f.is_open())
-            {
+            if (!f.is_open()) {
                 std::string message("cppcheck: Couldn't open the file \"");
                 message += std::string(argv[i]);
                 message += "\"";
@@ -215,20 +192,17 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 return false;
             }
             const std::string errmsg(_settings->nomsg.parseFile(f));
-            if (!errmsg.empty())
-            {
+            if (!errmsg.empty()) {
                 PrintMessage(errmsg);
                 return false;
             }
         }
 
-        else if (strncmp(argv[i], "--suppress=", 11) == 0)
-        {
+        else if (strncmp(argv[i], "--suppress=", 11) == 0) {
             std::string suppression = argv[i];
             suppression = suppression.substr(11);
             const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));
-            if (!errmsg.empty())
-            {
+            if (!errmsg.empty()) {
                 PrintMessage(errmsg);
                 return false;
             }
@@ -251,20 +225,17 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->_xml = true;
 
         // Define the XML file version (and enable XML output)
-        else if (strncmp(argv[i], "--xml-version=", 14) == 0)
-        {
+        else if (strncmp(argv[i], "--xml-version=", 14) == 0) {
             std::string numberString(argv[i]);
             numberString = numberString.substr(14);
 
             std::istringstream iss(numberString);
-            if (!(iss >> _settings->_xml_version))
-            {
+            if (!(iss >> _settings->_xml_version)) {
                 PrintMessage("cppcheck: argument to '--xml-version' is not a number");
                 return false;
             }
 
-            if (_settings->_xml_version < 0 || _settings->_xml_version > 2)
-            {
+            if (_settings->_xml_version < 0 || _settings->_xml_version > 2) {
                 // We only have xml versions 1 and 2
                 PrintMessage("cppcheck: --xml-version can only be 1 or 2.");
                 return false;
@@ -282,30 +253,25 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strncmp(argv[i], "--append=", 9) == 0)
             _settings->append(9 + argv[i]);
 
-        else if (strncmp(argv[i], "--enable=", 9) == 0)
-        {
+        else if (strncmp(argv[i], "--enable=", 9) == 0) {
             const std::string errmsg = _settings->addEnabled(argv[i] + 9);
-            if (!errmsg.empty())
-            {
+            if (!errmsg.empty()) {
                 PrintMessage(errmsg);
                 return false;
             }
             // when "style" is enabled, also enable "performance" and "portability"
-            else if (strstr(argv[i]+9, "style"))
-            {
+            else if (strstr(argv[i]+9, "style")) {
                 _settings->addEnabled("performance");
                 _settings->addEnabled("portability");
             }
         }
 
         // --error-exitcode=1
-        else if (strncmp(argv[i], "--error-exitcode=", 17) == 0)
-        {
+        else if (strncmp(argv[i], "--error-exitcode=", 17) == 0) {
             std::string temp = argv[i];
             temp = temp.substr(17);
             std::istringstream iss(temp);
-            if (!(iss >> _settings->_exitCode))
-            {
+            if (!(iss >> _settings->_exitCode)) {
                 _settings->_exitCode = 0;
                 PrintMessage("cppcheck: Argument must be an integer. Try something like '--error-exitcode=1'");
                 return false;
@@ -313,17 +279,14 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // User define
-        else if (strncmp(argv[i], "-D", 2) == 0)
-        {
+        else if (strncmp(argv[i], "-D", 2) == 0) {
             std::string define;
 
             // "-D define"
-            if (strcmp(argv[i], "-D") == 0)
-            {
+            if (strcmp(argv[i], "-D") == 0) {
                 ++i;
                 if (i >= argc || strncmp(argv[i], "-", 1) == 0 ||
-                    strncmp(argv[i], "--", 2) == 0)
-                {
+                    strncmp(argv[i], "--", 2) == 0) {
                     PrintMessage("cppcheck: argument to '-D' is missing");
                     return false;
                 }
@@ -331,8 +294,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 define = argv[i];
             }
             // "-Ddefine"
-            else
-            {
+            else {
                 define = 2 + argv[i];
             }
 
@@ -342,16 +304,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Include paths
-        else if (strncmp(argv[i], "-I", 2) == 0)
-        {
+        else if (strncmp(argv[i], "-I", 2) == 0) {
             std::string path;
 
             // "-I path/"
-            if (strcmp(argv[i], "-I") == 0)
-            {
+            if (strcmp(argv[i], "-I") == 0) {
                 ++i;
-                if (i >= argc)
-                {
+                if (i >= argc) {
                     PrintMessage("cppcheck: argument to '-I' is missing");
                     return false;
                 }
@@ -359,8 +318,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
 
             // "-Ipath/"
-            else
-            {
+            else {
                 path = 2 + argv[i];
             }
             path = Path::fromNativeSeparators(path);
@@ -374,23 +332,19 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // file list specified
-        else if (strncmp(argv[i], "--file-list=", 12) == 0)
-        {
+        else if (strncmp(argv[i], "--file-list=", 12) == 0) {
             // open this file and read every input file (1 file name per line)
             AddFilesToList(12 + argv[i], _pathnames);
         }
 
         // Ignored paths
-        else if (strncmp(argv[i], "-i", 2) == 0)
-        {
+        else if (strncmp(argv[i], "-i", 2) == 0) {
             std::string path;
 
             // "-i path/"
-            if (strcmp(argv[i], "-i") == 0)
-            {
+            if (strcmp(argv[i], "-i") == 0) {
                 ++i;
-                if (i >= argc)
-                {
+                if (i >= argc) {
                     PrintMessage("cppcheck: argument to '-i' is missing");
                     return false;
                 }
@@ -398,19 +352,16 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
 
             // "-ipath/"
-            else
-            {
+            else {
                 path = 2 + argv[i];
             }
 
-            if (!path.empty())
-            {
+            if (!path.empty()) {
                 path = Path::fromNativeSeparators(path);
                 path = Path::simplifyPath(path.c_str());
                 path = Path::removeQuotationMarks(path);
 
-                if (!FileLister::fileExists(path) && FileLister::isDirectory(path))
-                {
+                if (!FileLister::fileExists(path) && FileLister::isDirectory(path)) {
                     // If directory name doesn't end with / or \, add it
                     if (path[path.length()-1] != '/')
                         path += '/';
@@ -420,30 +371,25 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Report progress
-        else if (strcmp(argv[i], "--report-progress") == 0)
-        {
+        else if (strcmp(argv[i], "--report-progress") == 0) {
             _settings->reportProgress = true;
         }
 
         // --std
-        else if (strcmp(argv[i], "--std=posix") == 0)
-        {
+        else if (strcmp(argv[i], "--std=posix") == 0) {
             _settings->posix = true;
         }
 
         // --C99
-        else if (strcmp(argv[i], "--std=c99") == 0)
-        {
+        else if (strcmp(argv[i], "--std=c99") == 0) {
             _settings->c99 = true;
         }
 
         // Output formatter
-        else if (strcmp(argv[i], "--template") == 0)
-        {
+        else if (strcmp(argv[i], "--template") == 0) {
             // "--template path/"
             ++i;
-            if (i >= argc)
-            {
+            if (i >= argc) {
                 PrintMessage("cppcheck: argument to '--template' is missing");
                 return false;
             }
@@ -457,16 +403,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // Checking threads
         else if (strcmp(argv[i], "-j") == 0 ||
-                 strncmp(argv[i], "-j", 2) == 0)
-        {
+                 strncmp(argv[i], "-j", 2) == 0) {
             std::string numberString;
 
             // "-j 3"
-            if (strcmp(argv[i], "-j") == 0)
-            {
+            if (strcmp(argv[i], "-j") == 0) {
                 ++i;
-                if (i >= argc)
-                {
+                if (i >= argc) {
                     PrintMessage("cppcheck: argument to '-j' is missing");
                     return false;
                 }
@@ -475,21 +418,18 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
 
             // "-j3"
-            else if (strncmp(argv[i], "-j", 2) == 0)
-            {
+            else if (strncmp(argv[i], "-j", 2) == 0) {
                 numberString = argv[i];
                 numberString = numberString.substr(2);
             }
 
             std::istringstream iss(numberString);
-            if (!(iss >> _settings->_jobs))
-            {
+            if (!(iss >> _settings->_jobs)) {
                 PrintMessage("cppcheck: argument to '-j' is not a number");
                 return false;
             }
 
-            if (_settings->_jobs > 10000)
-            {
+            if (_settings->_jobs > 10000) {
                 // This limit is here just to catch typos. If someone has
                 // need for more jobs, this value should be increased.
                 PrintMessage("cppcheck: argument for '-j' is allowed to be 10000 at max");
@@ -498,27 +438,23 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // deprecated: auto deallocated classes..
-        else if (strcmp(argv[i], "--auto-dealloc") == 0)
-        {
+        else if (strcmp(argv[i], "--auto-dealloc") == 0) {
             ++i;
             PrintMessage("cppcheck: --auto-dealloc option is deprecated and will be removed in 1.55 release.");
         }
 
         // print all possible error messages..
-        else if (strcmp(argv[i], "--errorlist") == 0)
-        {
+        else if (strcmp(argv[i], "--errorlist") == 0) {
             _showErrorMessages = true;
             _settings->_xml = true;
             _exitAfterPrint = true;
         }
 
         // documentation..
-        else if (strcmp(argv[i], "--doc") == 0)
-        {
+        else if (strcmp(argv[i], "--doc") == 0) {
             std::ostringstream doc;
             // Get documentation..
-            for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-            {
+            for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
                 doc << "===" << (*it)->name() << "===\n"
                     << (*it)->classInfo() << "\n\n";
             }
@@ -533,14 +469,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // --test-2-pass Experimental 2-pass checking of files
         // This command line flag will be removed
-        else if (strcmp(argv[i], "--test-2-pass") == 0)
-        {
+        else if (strcmp(argv[i], "--test-2-pass") == 0) {
             _settings->test_2_pass = true;
         }
 
         // show timing information..
-        else if (strncmp(argv[i], "--showtime=", 11) == 0)
-        {
+        else if (strncmp(argv[i], "--showtime=", 11) == 0) {
             const std::string showtimeMode = argv[i] + 11;
             if (showtimeMode == "file")
                 _settings->_showtime = SHOWTIME_FILE;
@@ -554,33 +488,27 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
 #ifdef HAVE_RULES
         // Rule given at command line
-        else if (strncmp(argv[i], "--rule=", 7) == 0)
-        {
+        else if (strncmp(argv[i], "--rule=", 7) == 0) {
             Settings::Rule rule;
             rule.pattern = 7 + argv[i];
             _settings->rules.push_back(rule);
         }
 
         // Rule file
-        else if (strncmp(argv[i], "--rule-file=", 12) == 0)
-        {
+        else if (strncmp(argv[i], "--rule-file=", 12) == 0) {
             TiXmlDocument doc;
-            if (doc.LoadFile(12+argv[i]))
-            {
+            if (doc.LoadFile(12+argv[i])) {
                 TiXmlElement *node = doc.FirstChildElement();
-                for (; node && node->ValueStr() == "rule"; node = node->NextSiblingElement())
-                {
+                for (; node && node->ValueStr() == "rule"; node = node->NextSiblingElement()) {
                     Settings::Rule rule;
 
                     TiXmlElement *pattern = node->FirstChildElement("pattern");
-                    if (pattern)
-                    {
+                    if (pattern) {
                         rule.pattern = pattern->GetText();
                     }
 
                     TiXmlElement *message = node->FirstChildElement("message");
-                    if (message)
-                    {
+                    if (message) {
                         TiXmlElement *severity = message->FirstChildElement("severity");
                         if (severity)
                             rule.severity = severity->GetText();
@@ -602,14 +530,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 #endif
 
         // Check configuration
-        else if (strcmp(argv[i], "--check-config") == 0)
-        {
+        else if (strcmp(argv[i], "--check-config") == 0) {
             _settings->checkConfiguration = true;
         }
 
         // Specify platform
-        else if (strncmp(argv[i], "--platform=", 11) == 0)
-        {
+        else if (strncmp(argv[i], "--platform=", 11) == 0) {
             std::string platform(11+argv[i]);
 
             if (platform == "win32A")
@@ -622,8 +548,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->platform(Settings::Unix32);
             else if (platform == "unix64")
                 _settings->platform(Settings::Unix64);
-            else
-            {
+            else {
                 std::string message("cppcheck: error: unrecognized platform\"");
                 message += argv[i];
                 message +=  "\"";
@@ -633,16 +558,14 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Print help
-        else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
-        {
+        else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             _pathnames.clear();
             _showHelp = true;
             _exitAfterPrint = true;
             break;
         }
 
-        else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
-        {
+        else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0) {
             std::string message("cppcheck: error: unrecognized command line option \"");
             message += argv[i];
             message +=  "\"";
@@ -650,37 +573,32 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             return false;
         }
 
-        else
-        {
+        else {
             std::string path = Path::fromNativeSeparators(argv[i]);
             path = Path::removeQuotationMarks(path);
             _pathnames.push_back(path);
         }
     }
 
-    if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1)
-    {
+    if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1) {
         PrintMessage("cppcheck: unusedFunction check can't be used with -j option, so it was disabled.");
     }
 
     // FIXME: Make the _settings.test_2_pass thread safe
-    if (_settings->test_2_pass && _settings->_jobs > 1)
-    {
+    if (_settings->test_2_pass && _settings->_jobs > 1) {
         PrintMessage("cppcheck: --test-2-pass doesn't work with -j option yet.");
     }
 
     if (argc <= 1)
         _showHelp = true;
 
-    if (_showHelp)
-    {
+    if (_showHelp) {
         PrintHelp();
         return true;
     }
 
     // Print error only if we have "real" command and expect files
-    if (!_exitAfterPrint && _pathnames.empty())
-    {
+    if (!_exitAfterPrint && _pathnames.empty()) {
         PrintMessage("cppcheck: No C or C++ source files found.");
         return false;
     }

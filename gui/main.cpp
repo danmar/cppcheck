@@ -58,8 +58,7 @@ int main(int argc, char *argv[])
 // Rest of the arguments are handled in MainWindow::HandleCLIParams()
 bool CheckArgs(const QStringList &args)
 {
-    if (args.contains("-h") || args.contains("--help"))
-    {
+    if (args.contains("-h") || args.contains("--help")) {
         ShowUsage();
         return false;
     }

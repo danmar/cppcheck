@@ -30,8 +30,7 @@
 /**
 * @brief List of applications user has specified to open errors with.
 */
-class ApplicationList : public QObject
-{
+class ApplicationList : public QObject {
     Q_OBJECT
 public:
 
@@ -70,8 +69,7 @@ public:
     * @brief Return the default application.
     * @return Index of the default application.
     */
-    int GetDefaultApplication() const
-    {
+    int GetDefaultApplication() const {
         return mDefaultApplicationIndex;
     }
 

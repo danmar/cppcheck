@@ -36,8 +36,7 @@
 * easy to import to many other programs.
 * @todo This class should be inherited from TxtReport?
 */
-class CsvReport : public Report
-{
+class CsvReport : public Report {
 public:
     CsvReport(const QString &filename, QObject * parent = 0);
     virtual ~CsvReport();

@@ -108,8 +108,7 @@ void SettingsDialog::InitIncludepathsList()
     QSettings settings;
     const QString allPaths = settings.value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
     const QStringList paths = allPaths.split(";", QString::SkipEmptyParts);
-    foreach(QString path, paths)
-    {
+    foreach(QString path, paths) {
         AddIncludePath(path);
     }
 }
@@ -118,8 +117,7 @@ void SettingsDialog::InitTranslationsList()
 {
     const QString current = mTranslator->GetCurrentLanguage();
     QList<TranslationInfo> translations = mTranslator->GetTranslations();
-    foreach(TranslationInfo translation, translations)
-    {
+    foreach(TranslationInfo translation, translations) {
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(translation.mName);
         item->setData(LangCodeRole, QVariant(translation.mCode));
@@ -131,8 +129,7 @@ void SettingsDialog::InitTranslationsList()
 
 Qt::CheckState SettingsDialog::BoolToCheckState(bool yes) const
 {
-    if (yes)
-    {
+    if (yes) {
         return Qt::Checked;
     }
     return Qt::Unchecked;
@@ -140,8 +137,7 @@ Qt::CheckState SettingsDialog::BoolToCheckState(bool yes) const
 
 bool SettingsDialog::CheckStateToBool(Qt::CheckState state) const
 {
-    if (state == Qt::Checked)
-    {
+    if (state == Qt::Checked) {
         return true;
     }
     return false;
@@ -165,8 +161,7 @@ void SettingsDialog::SaveSettings()
 void SettingsDialog::SaveSettingValues()
 {
     int jobs = mUI.mJobs->text().toInt();
-    if (jobs <= 0)
-    {
+    if (jobs <= 0) {
         jobs = 1;
     }
 
@@ -187,8 +182,7 @@ void SettingsDialog::SaveSettingValues()
 
     const int count = mUI.mListIncludePaths->count();
     QString includePaths;
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
         QListWidgetItem *item = mUI.mListIncludePaths->item(i);
         includePaths += item->text();
         includePaths += ";";
@@ -207,8 +201,7 @@ void SettingsDialog::AddApplication()
     Application app;
     ApplicationDialog dialog(tr("Add a new application"), app, this);
 
-    if (dialog.exec() == QDialog::Accepted)
-    {
+    if (dialog.exec() == QDialog::Accepted) {
         const Application app = dialog.GetApplication();
         mTempApplications->AddApplication(app);
         mUI.mListWidget->addItem(app.getName());
@@ -218,8 +211,7 @@ void SettingsDialog::AddApplication()
 void SettingsDialog::RemoveApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    foreach(QListWidgetItem *item, selected)
-    {
+    foreach(QListWidgetItem *item, selected) {
         const int removeIndex = mUI.mListWidget->row(item);
         const int currentDefault = mTempApplications->GetDefaultApplication();
         mTempApplications->RemoveApplication(removeIndex);
@@ -238,14 +230,12 @@ void SettingsDialog::EditApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
     QListWidgetItem *item = 0;
-    foreach(item, selected)
-    {
+    foreach(item, selected) {
         int row = mUI.mListWidget->row(item);
         const Application app = mTempApplications->GetApplication(row);
         ApplicationDialog dialog(tr("Modify an application"), app, this);
 
-        if (dialog.exec() == QDialog::Accepted)
-        {
+        if (dialog.exec() == QDialog::Accepted) {
             const Application app2 = dialog.GetApplication();
             mTempApplications->SetApplication(row, app2);
             item->setText(app2.getName());
@@ -256,8 +246,7 @@ void SettingsDialog::EditApplication()
 void SettingsDialog::DefaultApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    if (selected.size() > 0)
-    {
+    if (selected.size() > 0) {
         int index = mUI.mListWidget->row(selected[0]);
         mTempApplications->SetDefault(index);
         mUI.mListWidget->clear();
@@ -268,12 +257,10 @@ void SettingsDialog::DefaultApplication()
 void SettingsDialog::PopulateApplicationList()
 {
     const int defapp = mTempApplications->GetDefaultApplication();
-    for (int i = 0; i < mTempApplications->GetApplicationCount(); i++)
-    {
+    for (int i = 0; i < mTempApplications->GetApplicationCount(); i++) {
         Application app = mTempApplications->GetApplication(i);
         QString name = app.getName();
-        if (i == defapp)
-        {
+        if (i == defapp) {
             name += " ";
             name += tr("[Default]");
         }
@@ -284,8 +271,7 @@ void SettingsDialog::PopulateApplicationList()
     // first item.
     if (defapp == -1)
         mUI.mListWidget->setCurrentRow(0);
-    else
-    {
+    else {
         if (mTempApplications->GetApplicationCount() > defapp)
             mUI.mListWidget->setCurrentRow(defapp);
         else
@@ -325,8 +311,7 @@ void SettingsDialog::AddIncludePath()
                           tr("Select include directory"),
                           QString());
 
-    if (!selectedDir.isEmpty())
-    {
+    if (!selectedDir.isEmpty()) {
         AddIncludePath(selectedDir);
     }
 }

@@ -29,25 +29,21 @@ std::ostringstream output;
  * TestRegistry
  **/
 
-class TestRegistry
-{
+class TestRegistry {
 private:
     std::list<TestFixture *> _tests;
 
 public:
-    static TestRegistry &theInstance()
-    {
+    static TestRegistry &theInstance() {
         static TestRegistry testreg;
         return testreg;
     }
 
-    void addTest(TestFixture *t)
-    {
+    void addTest(TestFixture *t) {
         _tests.push_back(t);
     }
 
-    const std::list<TestFixture *> &tests() const
-    {
+    const std::list<TestFixture *> &tests() const {
         return _tests;
     }
 };
@@ -76,15 +72,11 @@ TestFixture::TestFixture(const std::string &_name)
 
 bool TestFixture::runTest(const char testname[])
 {
-    if (testToRun.empty() || testToRun == testname)
-    {
+    if (testToRun.empty() || testToRun == testname) {
         ++countTests;
-        if (quiet_tests)
-        {
+        if (quiet_tests) {
             std::cout << '.';
-        }
-        else
-        {
+        } else {
             std::cout << classname << "::" << testname << "\n";
         }
         return true;
@@ -96,8 +88,7 @@ static std::string writestr(const std::string &str)
 {
     std::ostringstream ostr;
     ostr << "\"";
-    for (unsigned int i = 0; i < str.length(); ++i)
-    {
+    for (unsigned int i = 0; i < str.length(); ++i) {
         char ch = str[i];
         if (ch == '\n')
             ostr << "\\n";
@@ -114,15 +105,11 @@ static std::string writestr(const std::string &str)
 
 void TestFixture::assert_(const char *filename, int linenr, bool condition)
 {
-    if (!condition)
-    {
+    if (!condition) {
         ++fails_counter;
-        if (gcc_style_errors)
-        {
+        if (gcc_style_errors) {
             errmsg << filename << ':' << linenr << ": Assertion failed." << std::endl;
-        }
-        else
-        {
+        } else {
             errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl;
         }
     }
@@ -130,11 +117,9 @@ void TestFixture::assert_(const char *filename, int linenr, bool condition)
 
 void TestFixture::assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual, const std::string &msg)
 {
-    if (expected != actual)
-    {
+    if (expected != actual) {
         ++fails_counter;
-        if (gcc_style_errors)
-        {
+        if (gcc_style_errors) {
             errmsg << filename << ':' << linenr << ": Assertion failed. "
                    << "Expected: "
                    << writestr(expected)
@@ -142,17 +127,14 @@ void TestFixture::assertEquals(const char *filename, int linenr, const std::stri
                    << writestr(actual)
                    << "."
                    << std::endl;
-        }
-        else
-        {
+        } else {
             errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
                    << "Expected:" << std::endl
                    << writestr(expected) << std::endl
                    << "Actual:" << std::endl
                    << writestr(actual) << std::endl;
         }
-        if (!msg.empty())
-        {
+        if (!msg.empty()) {
             errmsg << msg << std::endl;
         }
     }
@@ -182,12 +164,9 @@ void TestFixture::todoAssertEquals(const char *filename, int linenr,
                                    const std::string &actual)
 {
     assertEquals(filename, linenr, current, actual);
-    if (wanted == actual)
-    {
+    if (wanted == actual) {
         assertEquals(filename, linenr, "TODO assertion", "The assertion succeeded");
-    }
-    else
-    {
+    } else {
         ++todos_counter;
     }
 }
@@ -204,13 +183,10 @@ void TestFixture::todoAssertEquals(const char *filename, int linenr, unsigned in
 void TestFixture::assertThrowFail(const char *filename, int linenr)
 {
     ++fails_counter;
-    if (gcc_style_errors)
-    {
+    if (gcc_style_errors) {
         errmsg << filename << ':' << linenr << " Assertion failed. "
                << "The expected exception was not thrown" << std::endl;
-    }
-    else
-    {
+    } else {
         errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
                << "The expected exception was not thrown" << std::endl;
     }
@@ -220,8 +196,7 @@ void TestFixture::printTests()
 {
     const std::list<TestFixture *> &tests = TestRegistry::theInstance().tests();
 
-    for (std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it)
-    {
+    for (std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it) {
         std::cout << (*it)->classname << std::endl;
     }
 }
@@ -229,8 +204,7 @@ void TestFixture::printTests()
 void TestFixture::run(const std::string &str)
 {
     testToRun = str;
-    if (quiet_tests)
-    {
+    if (quiet_tests) {
         std::cout << '\n' << classname << ':';
     }
     run();
@@ -246,8 +220,7 @@ size_t TestFixture::runTests(const options& args)
 {
     std::string classname(args.which_test());
     std::string testname("");
-    if (classname.find("::") != std::string::npos)
-    {
+    if (classname.find("::") != std::string::npos) {
         testname = classname.substr(classname.find("::") + 2);
         classname.erase(classname.find("::"));
     }
@@ -257,10 +230,8 @@ size_t TestFixture::runTests(const options& args)
 
     const std::list<TestFixture *> &tests = TestRegistry::theInstance().tests();
 
-    for (std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it)
-    {
-        if (classname.empty() || (*it)->classname == classname)
-        {
+    for (std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it) {
+        if (classname.empty() || (*it)->classname == classname) {
             (*it)->processOptions(args);
             (*it)->run(testname);
         }

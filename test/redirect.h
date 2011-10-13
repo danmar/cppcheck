@@ -26,12 +26,10 @@ extern std::ostringstream output;
   * for later use. Uses RAII to stop redirection when the object goes out of
   * scope.
   */
-class RedirectOutputError
-{
+class RedirectOutputError {
 public:
     /** Set up redirection, flushing anything in the pipes. */
-    RedirectOutputError()
-    {
+    RedirectOutputError() {
         // flush all old output
         std::cout.flush();
         std::cerr.flush();
@@ -44,8 +42,7 @@ public:
     }
 
     /** Revert cout and cerr behaviour */
-    ~RedirectOutputError()
-    {
+    ~RedirectOutputError() {
         std::cout.rdbuf(_oldCout); // restore cout's original streambuf
         std::cerr.rdbuf(_oldCerr); // restore cerrs's original streambuf
 

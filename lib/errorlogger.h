@@ -33,14 +33,12 @@ class Tokenizer;
 /// @{
 
 /** @brief enum class for severity. Used when reporting errors. */
-class Severity
-{
+class Severity {
 public:
     /**
      * Message severities.
      */
-    enum SeverityType
-    {
+    enum SeverityType {
         /**
          * No severity (default value).
          */
@@ -92,10 +90,8 @@ public:
         debug
     };
 
-    static std::string toString(SeverityType severity)
-    {
-        switch (severity)
-        {
+    static std::string toString(SeverityType severity) {
+        switch (severity) {
         case none:
             return "";
         case error:
@@ -115,8 +111,7 @@ public:
         };
         return "???";
     }
-    static SeverityType fromString(const std::string &severity)
-    {
+    static SeverityType fromString(const std::string &severity) {
         if (severity.empty())
             return none;
         if (severity == "none")
@@ -143,32 +138,27 @@ public:
  * @brief This is an interface, which the class responsible of error logging
  * should implement.
  */
-class ErrorLogger
-{
+class ErrorLogger {
 public:
 
     /**
      * Wrapper for error messages, provided by reportErr()
      */
-    class ErrorMessage
-    {
+    class ErrorMessage {
     public:
         /**
          * File name and line number.
          * Internally paths are stored with / separator. When getting the filename
          * it is by default converted to native separators.
          */
-        class FileLocation
-        {
+        class FileLocation {
         public:
-            FileLocation()
-            {
+            FileLocation() {
                 line = 0;
             }
 
             FileLocation(const std::string &file, unsigned int aline)
-                : line(aline), _file(file)
-            {
+                : line(aline), _file(file) {
             }
 
             /**
@@ -225,14 +215,12 @@ public:
         void setmsg(const std::string &msg);
 
         /** Short message (single line short message) */
-        const std::string &shortMessage() const
-        {
+        const std::string &shortMessage() const {
             return _shortMessage;
         }
 
         /** Verbose message (may be the same as the short message) */
-        const std::string &verboseMessage() const
-        {
+        const std::string &verboseMessage() const {
             return _verboseMessage;
         }
 
@@ -279,8 +267,7 @@ public:
      * @param stage for example preprocess / tokenize / simplify / check
      * @param value progress value (0-100)
      */
-    virtual void reportProgress(const std::string &filename, const char stage[], const unsigned int value)
-    {
+    virtual void reportProgress(const std::string &filename, const char stage[], const unsigned int value) {
         (void)filename;
         (void)stage;
         (void)value;

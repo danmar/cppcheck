@@ -32,8 +32,7 @@ class ProjectFile;
 * @brief A class that contains project data and manages projects.
 * Currently only project file creation and editing is implemented.
 */
-class Project : public QObject
-{
+class Project : public QObject {
     Q_OBJECT
 
 public:
@@ -79,8 +78,7 @@ public:
     * @brief Return current project file.
     * @return project file.
     */
-    ProjectFile * GetProjectFile() const
-    {
+    ProjectFile * GetProjectFile() const {
         return mPFile;
     }
 

@@ -56,8 +56,7 @@ QString ErrorItem::ToString() const
     str += GuiSeverity::toString(severity) +"\n";
     str += summary + "\n";
     str += message + "\n";
-    for (int i = 0; i < files.size(); i++)
-    {
+    for (int i = 0; i < files.size(); i++) {
         str += "  " + files[i] + ": " + QString::number(lines[i]) + "\n";
     }
     return str;

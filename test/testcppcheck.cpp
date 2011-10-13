@@ -37,54 +37,44 @@
 extern std::ostringstream errout;
 extern std::ostringstream output;
 
-class TestCppcheck : public TestFixture
-{
+class TestCppcheck : public TestFixture {
 public:
     TestCppcheck() : TestFixture("TestCppcheck")
     { }
 
 private:
 
-    class ErrorLogger2 : public ErrorLogger
-    {
+    class ErrorLogger2 : public ErrorLogger {
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/)
-        {
+        void reportOut(const std::string & /*outmsg*/) {
         }
 
-        void reportErr(const ErrorLogger::ErrorMessage &msg)
-        {
+        void reportErr(const ErrorLogger::ErrorMessage &msg) {
             id.push_back(msg._id);
         }
 
-        void reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/)
-        {
+        void reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/) {
         }
     };
 
-    void run()
-    {
+    void run() {
         TEST_CASE(instancesSorted);
         TEST_CASE(getErrorMessages);
     }
 
-    void instancesSorted()
-    {
-        for (std::list<Check *>::iterator i = Check::instances().begin(); i != Check::instances().end(); ++i)
-        {
+    void instancesSorted() {
+        for (std::list<Check *>::iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
             std::list<Check *>::iterator j = i;
             ++j;
-            if (j != Check::instances().end())
-            {
+            if (j != Check::instances().end()) {
                 ASSERT_EQUALS(true, (*i)->name() < (*j)->name());
             }
         }
     }
 
-    void getErrorMessages()
-    {
+    void getErrorMessages() {
         ErrorLogger2 errorLogger;
         CppCheck cppCheck(errorLogger, true);
         cppCheck.getErrorMessages();
@@ -94,10 +84,8 @@ private:
         std::string duplicate;
         for (std::list<std::string>::iterator it = errorLogger.id.begin();
              it != errorLogger.id.end();
-             ++it)
-        {
-            if (std::find(errorLogger.id.begin(), it, *it) != it)
-            {
+             ++it) {
+            if (std::find(errorLogger.id.begin(), it, *it) != it) {
                 duplicate = "Duplicate ID: " + *it;
                 break;
             }

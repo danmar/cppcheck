@@ -118,8 +118,7 @@ QStringList ProjectFileDialog::GetIncludePaths() const
 {
     const int count = mUI.mListIncludeDirs->count();
     QStringList includePaths;
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
         QListWidgetItem *item = mUI.mListIncludeDirs->item(i);
         includePaths << QDir::fromNativeSeparators(item->text());
     }
@@ -130,8 +129,7 @@ QStringList ProjectFileDialog::GetDefines() const
 {
     QString define = mUI.mEditDefines->text();
     QStringList defines;
-    if (!define.isEmpty())
-    {
+    if (!define.isEmpty()) {
         define = define.trimmed();
         if (define.indexOf(';') != -1)
             defines = define.split(";");
@@ -145,8 +143,7 @@ QStringList ProjectFileDialog::GetPaths() const
 {
     const int count = mUI.mListPaths->count();
     QStringList paths;
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
         QListWidgetItem *item = mUI.mListPaths->item(i);
         paths << QDir::fromNativeSeparators(item->text());
     }
@@ -157,8 +154,7 @@ QStringList ProjectFileDialog::GetExcludedPaths() const
 {
     const int count = mUI.mListExcludedPaths->count();
     QStringList paths;
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
         QListWidgetItem *item = mUI.mListExcludedPaths->item(i);
         paths << QDir::fromNativeSeparators(item->text());
     }
@@ -173,8 +169,7 @@ void ProjectFileDialog::SetRootPath(const QString &root)
 
 void ProjectFileDialog::SetIncludepaths(const QStringList &includes)
 {
-    foreach(QString dir, includes)
-    {
+    foreach(QString dir, includes) {
         AddIncludeDir(dir);
     }
 }
@@ -183,8 +178,7 @@ void ProjectFileDialog::SetDefines(const QStringList &defines)
 {
     QString definestr;
     QString define;
-    foreach(define, defines)
-    {
+    foreach(define, defines) {
         definestr += define;
         definestr += ";";
     }
@@ -196,16 +190,14 @@ void ProjectFileDialog::SetDefines(const QStringList &defines)
 
 void ProjectFileDialog::SetPaths(const QStringList &paths)
 {
-    foreach(QString path, paths)
-    {
+    foreach(QString path, paths) {
         AddPath(path);
     }
 }
 
 void ProjectFileDialog::SetExcludedPaths(const QStringList &paths)
 {
-    foreach(QString path, paths)
-    {
+    foreach(QString path, paths) {
         AddExcludePath(path);
     }
 }
@@ -218,8 +210,7 @@ void ProjectFileDialog::AddIncludeDir()
                           tr("Select include directory"),
                           rootpath);
 
-    if (!selectedDir.isEmpty())
-    {
+    if (!selectedDir.isEmpty()) {
         AddIncludeDir(selectedDir);
     }
 }
@@ -232,8 +223,7 @@ void ProjectFileDialog::AddPath()
                           tr("Select a directory to check"),
                           rootpath);
 
-    if (!selectedDir.isEmpty())
-    {
+    if (!selectedDir.isEmpty()) {
         AddPath(selectedDir);
     }
 }
@@ -273,8 +263,7 @@ void ProjectFileDialog::AddExcludePath()
                           tr("Select directory to ignore"),
                           rootpath);
 
-    if (!selectedDir.isEmpty())
-    {
+    if (!selectedDir.isEmpty()) {
         if (!selectedDir.endsWith('/'))
             selectedDir += '/';
         AddExcludePath(selectedDir);

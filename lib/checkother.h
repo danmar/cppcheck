@@ -33,8 +33,7 @@ class Token;
 
 /** @brief Various small checks */
 
-class CheckOther : public Check
-{
+class CheckOther : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckOther() : Check(myName())
@@ -46,8 +45,7 @@ public:
     { }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Coding style checks
@@ -76,8 +74,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         checkOther.clarifyCalculation();
@@ -278,8 +275,7 @@ public:
     void comparisonOfBoolExpressionWithIntError(const Token *tok);
     void SuspiciousSemicolonError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckOther c(0, settings, errorLogger);
 
         // error
@@ -330,13 +326,11 @@ public:
         c.SuspiciousSemicolonError(0);
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "Other";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Other checks\n"
 
                // error
@@ -391,11 +385,9 @@ private:
      * @brief Used in warningRedundantCode()
      * Iterates through the %var% tokens in a fully qualified name and concatenates them.
      */
-    std::string concatNames(const Token **tok) const
-    {
+    std::string concatNames(const Token **tok) const {
         std::string varname;
-        while (Token::Match(*tok, "%var% ::|."))
-        {
+        while (Token::Match(*tok, "%var% ::|.")) {
             varname.append((*tok)->str());
             varname.append((*tok)->next()->str());
             *tok = (*tok)->tokAt(2);

@@ -32,8 +32,7 @@ class CheckStatistics;
 * @brief A dialog that shows project and scan statistics.
 *
 */
-class StatsDialog : public QDialog
-{
+class StatsDialog : public QDialog {
     Q_OBJECT
 public:
     StatsDialog(QWidget *parent = 0);

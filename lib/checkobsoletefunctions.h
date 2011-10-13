@@ -34,24 +34,20 @@
  * @brief Using obsolete functions that are always insecure to use.
  */
 
-class CheckObsoleteFunctions : public Check
-{
+class CheckObsoleteFunctions : public Check {
 public:
     /** This constructor is used when registering the CheckObsoleteFunctions */
-    CheckObsoleteFunctions() : Check(myName())
-    {
+    CheckObsoleteFunctions() : Check(myName()) {
         initObsoleteFunctions();
     }
 
     /** This constructor is used when running checks. */
     CheckObsoleteFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
         initObsoleteFunctions();
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckObsoleteFunctions checkObsoleteFunctions(tokenizer, settings, errorLogger);
         checkObsoleteFunctions.obsoleteFunctions();
     }
@@ -66,8 +62,7 @@ private:
     std::map<std::string, std::string> _obsoleteC99Functions;
 
     /** init obsolete functions list ' */
-    void initObsoleteFunctions()
-    {
+    void initObsoleteFunctions() {
         _obsoletePosixFunctions["bsd_signal"] = "Found obsolete function 'bsd_signal'. It is recommended that new applications use the 'sigaction' function";
 
         _obsoletePosixFunctions["gethostbyaddr"] = "Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getnameinfo' function";
@@ -116,28 +111,23 @@ private:
 
     }
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckObsoleteFunctions c(0, settings, errorLogger);
 
         std::map<std::string,std::string>::const_iterator it(_obsoletePosixFunctions.begin()), itend(_obsoletePosixFunctions.end());
-        for (; it!=itend; ++it)
-        {
+        for (; it!=itend; ++it) {
             c.reportError(0, Severity::style, "obsoleteFunctions"+it->first, it->second);
         }
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "Obsolete functions";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         std::string info = "Warn if any of these obsolete functions are used:\n";
         std::map<std::string,std::string>::const_iterator it(_obsoletePosixFunctions.begin()), itend(_obsoletePosixFunctions.end());
-        for (; it!=itend; ++it)
-        {
+        for (; it!=itend; ++it) {
             info += "* " + it->first + "\n";
         }
         return info;

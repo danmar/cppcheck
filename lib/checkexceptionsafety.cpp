@@ -24,9 +24,8 @@
 //---------------------------------------------------------------------------
 
 // Register CheckExceptionSafety..
-namespace
-{
-CheckExceptionSafety instance;
+namespace {
+    CheckExceptionSafety instance;
 }
 
 
@@ -39,8 +38,7 @@ void CheckExceptionSafety::destructors()
         return;
 
     // Perform check..
-    for (const Token * tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token * tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Skip executable scopes
         if (Token::simpleMatch(tok, ") {"))
             tok = tok->next()->link();
@@ -51,23 +49,19 @@ void CheckExceptionSafety::destructors()
 
         // Inspect this destructor..
         unsigned int indentlevel = 0;
-        for (const Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next())
-        {
-            if (tok2->str() == "{")
-            {
+        for (const Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next()) {
+            if (tok2->str() == "{") {
                 ++indentlevel;
             }
 
-            else if (tok2->str() == "}")
-            {
+            else if (tok2->str() == "}") {
                 if (indentlevel <= 1)
                     break;
                 --indentlevel;
             }
 
             // throw found within a destructor
-            else if (tok2->str() == "throw")
-            {
+            else if (tok2->str() == "throw") {
                 destructorsError(tok2);
                 break;
             }
@@ -82,8 +76,7 @@ void CheckExceptionSafety::deallocThrow()
 {
     // Deallocate a global/member pointer and then throw exception
     // the pointer will be a dead pointer
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // only looking for delete now
         if (tok->str() != "delete")
             continue;
@@ -104,16 +97,13 @@ void CheckExceptionSafety::deallocThrow()
         {
             // TODO: Isn't it better to use symbol database instead?
             bool globalVar = false;
-            for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next())
-            {
-                if (tok2->varId() == varid)
-                {
+            for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next()) {
+                if (tok2->varId() == varid) {
                     globalVar = true;
                     break;
                 }
 
-                if (tok2->str() == "class")
-                {
+                if (tok2->str() == "class") {
                     while (tok2 && tok2->str() != ";" && tok2->str() != "{")
                         tok2 = tok2->next();
                     tok2 = tok2 ? tok2->next() : 0;
@@ -121,8 +111,7 @@ void CheckExceptionSafety::deallocThrow()
                         break;
                 }
 
-                if (tok2->str() == "{")
-                {
+                if (tok2->str() == "{") {
                     tok2 = tok2->link();
                     if (!tok2)
                         break;
@@ -141,12 +130,10 @@ void CheckExceptionSafety::deallocThrow()
         const Token *ThrowToken = 0;
 
         // is there a throw after the deallocation?
-        for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
-        {
+        for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
             if (tok2->str() == "{")
                 ++indentlevel;
-            else if (tok2->str() == "}")
-            {
+            else if (tok2->str() == "}") {
                 if (indentlevel == 0)
                     break;
                 --indentlevel;
@@ -157,8 +144,7 @@ void CheckExceptionSafety::deallocThrow()
 
             // if the variable is not assigned after the throw then it
             // is assumed that it is not the intention that it is a dead pointer.
-            else if (Token::Match(tok2, "%varid% =", varid))
-            {
+            else if (Token::Match(tok2, "%varid% =", varid)) {
                 if (ThrowToken)
                     deallocThrowError(ThrowToken, tok->str());
                 break;
@@ -180,15 +166,13 @@ void CheckExceptionSafety::checkRethrowCopy()
     const char catchPattern[] = "catch ( const| %type% &|*| %var% ) { %any%";
 
     const Token *tok = Token::findmatch(_tokenizer->tokens(), catchPattern);
-    while (tok)
-    {
+    while (tok) {
         const Token *startBlockTok = tok->next()->link()->next();
         const Token *endBlockTok = startBlockTok->link();
         const unsigned int varid = startBlockTok->tokAt(-2)->varId();
 
         const Token* rethrowTok = Token::findmatch(startBlockTok, "throw %varid%", endBlockTok, varid);
-        if (rethrowTok)
-        {
+        if (rethrowTok) {
             rethrowCopyError(rethrowTok, startBlockTok->tokAt(-2)->str());
         }
 

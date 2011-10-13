@@ -33,8 +33,7 @@ class Token;
 
 /** @brief Various small checks */
 
-class CheckUnusedVar : public Check
-{
+class CheckUnusedVar : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckUnusedVar() : Check(myName())
@@ -46,8 +45,7 @@ public:
     { }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckUnusedVar checkUnusedVar(tokenizer, settings, errorLogger);
 
         // Coding style checks
@@ -56,8 +54,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckUnusedVar checkUnusedVar(tokenizer, settings, errorLogger);
     }
 
@@ -74,8 +71,7 @@ public:
     void unreadVariableError(const Token *tok, const std::string &varname);
     void unassignedVariableError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckUnusedVar c(0, settings, errorLogger);
 
         // style/warning
@@ -86,13 +82,11 @@ public:
         c.unusedStructMemberError(0, "structname", "variable");
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "UnusedVar";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "UnusedVar checks\n"
 
                // style

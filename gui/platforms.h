@@ -31,8 +31,7 @@
 /**
  * @brief Checked platform GUI-data.
  */
-struct Platform
-{
+struct Platform {
     QString mTitle;  /**< Text visible in the GUI. */
     Settings::PlatformType mType; /**< Type in the core. */
     QAction *mActMainWindow; /**< Pointer to main window action item. */
@@ -41,8 +40,7 @@ struct Platform
 /**
   * @brief List of checked platforms.
   */
-class Platforms : public QObject
-{
+class Platforms : public QObject {
     Q_OBJECT
 
 public:

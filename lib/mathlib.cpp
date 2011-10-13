@@ -35,8 +35,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
     // hexadecimal numbers:
     if (str.compare(0, 2, "0x") == 0
         || str.compare(0, 3, "+0x") == 0
-        || str.compare(0, 3, "-0x") == 0)
-    {
+        || str.compare(0, 3, "-0x") == 0) {
         bigint ret = 0;
         std::istringstream istr(str.substr((str[0]=='0') ? 2U : 3U));
         istr >> std::hex >> ret;
@@ -46,8 +45,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
     // octal numbers:
     if (str.compare(0, 1, "0") == 0
         ||  str.compare(0, 2, "+0") == 0
-        ||  str.compare(0, 2, "-0") == 0)
-    {
+        ||  str.compare(0, 2, "-0") == 0) {
         bigint ret = 0;
         std::istringstream istr(str.substr((str[0]=='0') ? 1U : 2U));
         istr >> std::oct >> ret;
@@ -65,8 +63,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
-    if (str.compare(0, 2, "0x") == 0)
-    {
+    if (str.compare(0, 2, "0x") == 0) {
         return std::strtoul(str.c_str(), '\0', 16);
     }
     // nullcheck
@@ -117,8 +114,7 @@ bool MathLib::isInt(const std::string & s)
 
     // prechecking has nothing found,...
     // gather information
-    enum Representation
-    {
+    enum Representation {
         eScientific = 0  // NumberE+Number or NumberENumber
         , eOctal        // starts with 0
         , eHex          // starts with 0x
@@ -134,16 +130,11 @@ bool MathLib::isInt(const std::string & s)
     while (std::isspace(s[n])) ++n;
 
     // determine type
-    if (s.find("E", 0) != std::string::npos)
-    {
+    if (s.find("E", 0) != std::string::npos) {
         Mode = eScientific;
-    }
-    else if (s.find("0x", n, 2) != std::string::npos)
-    {
+    } else if (s.find("0x", n, 2) != std::string::npos) {
         Mode = eHex;
-    }
-    else if (s.length() > 1 && s[0] == '0' && std::isdigit(s[1]))
-    {
+    } else if (s.length() > 1 && s[0] == '0' && std::isdigit(s[1])) {
         Mode = eOctal;
     }
 
@@ -151,14 +142,12 @@ bool MathLib::isInt(const std::string & s)
     if (s[n] == '-' || s[n] == '+') ++n;
 
     // check scientific notation
-    if (Mode == eScientific)
-    {
+    if (Mode == eScientific) {
         // check digits
         while (std::isdigit(s[n])) ++n;
 
         // check scientific notation
-        if (std::tolower(s[n]) == 'e')
-        {
+        if (std::tolower(s[n]) == 'e') {
             ++n;
             // check positive exponent
             if (s[n] == '+') ++n;
@@ -169,25 +158,20 @@ bool MathLib::isInt(const std::string & s)
         }
     }
     // check hex notation
-    else if (Mode == eHex)
-    {
+    else if (Mode == eHex) {
         ++n; // 0
         ++n; // x
         while (std::isxdigit(s[n]))
             ++n;
     }
     // check octal notation
-    else if (Mode == eOctal)
-    {
+    else if (Mode == eOctal) {
         while (isOctalDigit(s[n]))
             ++n;
-    }
-    else if (Mode == eDefault)
-    {
+    } else if (Mode == eDefault) {
         // starts with digit
         bool bStartsWithDigit=false;
-        while (std::isdigit(s[n]))
-        {
+        while (std::isdigit(s[n])) {
             bStartsWithDigit=true;
             ++n;
         };
@@ -211,8 +195,7 @@ bool MathLib::isInt(const std::string & s)
 
 std::string MathLib::add(const std::string & first, const std::string & second)
 {
-    if (MathLib::isInt(first) && MathLib::isInt(second))
-    {
+    if (MathLib::isInt(first) && MathLib::isInt(second)) {
         return toString<bigint>(toLongNumber(first) + toLongNumber(second));
     }
     return toString<double>(toDoubleNumber(first) + toDoubleNumber(second));
@@ -220,8 +203,7 @@ std::string MathLib::add(const std::string & first, const std::string & second)
 
 std::string MathLib::subtract(const std::string &first, const std::string &second)
 {
-    if (MathLib::isInt(first) && MathLib::isInt(second))
-    {
+    if (MathLib::isInt(first) && MathLib::isInt(second)) {
         return toString<bigint>(toLongNumber(first) - toLongNumber(second));
     }
     return toString<double>(toDoubleNumber(first) - toDoubleNumber(second));
@@ -229,8 +211,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
 
 std::string MathLib::divide(const std::string &first, const std::string &second)
 {
-    if (MathLib::isInt(first) && MathLib::isInt(second))
-    {
+    if (MathLib::isInt(first) && MathLib::isInt(second)) {
         return toString<bigint>(toLongNumber(first) / toLongNumber(second));
     }
     return toString<double>(toDoubleNumber(first) / toDoubleNumber(second));
@@ -238,8 +219,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
 
 std::string MathLib::multiply(const std::string &first, const std::string &second)
 {
-    if (MathLib::isInt(first) && MathLib::isInt(second))
-    {
+    if (MathLib::isInt(first) && MathLib::isInt(second)) {
         return toString<bigint>(toLongNumber(first) * toLongNumber(second));
     }
     return toString<double>(toDoubleNumber(first) * toDoubleNumber(second));
@@ -249,8 +229,7 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
 {
     std::string result("0");
 
-    switch (action)
-    {
+    switch (action) {
     case '+':
         result = MathLib::add(first, second);
         break;

@@ -30,8 +30,7 @@
 /// @{
 
 
-class CheckAutoVariables : public Check
-{
+class CheckAutoVariables : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
     CheckAutoVariables() : Check(myName())
@@ -43,14 +42,12 @@ public:
     { }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.returnReference();
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();
@@ -91,8 +88,7 @@ private:
     void errorInvalidDeallocation(const Token *tok);
     void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckAutoVariables c(0,settings,errorLogger);
         c.errorAutoVariableAssignment(0, false);
         c.errorReturnAddressToAutoVariable(0);
@@ -105,13 +101,11 @@ private:
         c.errorReturnAddressOfFunctionParameter(0, "parameter");
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "Auto Variables";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "A pointer to a variable is only valid as long as the variable is in scope.\n"
                "Check:\n"
                "* returning a pointer to auto or temporary variable\n"

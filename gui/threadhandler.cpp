@@ -50,13 +50,11 @@ void ThreadHandler::SetFiles(const QStringList &files)
 
 void ThreadHandler::Check(const Settings &settings, bool recheck)
 {
-    if (recheck && mRunningThreadCount == 0)
-    {
+    if (recheck && mRunningThreadCount == 0) {
         mResults.SetFiles(mLastFiles);
     }
 
-    if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs <= 0)
-    {
+    if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs <= 0) {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
         emit Done();
         return;
@@ -66,13 +64,11 @@ void ThreadHandler::Check(const Settings &settings, bool recheck)
 
     mRunningThreadCount = mThreads.size();
 
-    if (mResults.GetFileCount() < mRunningThreadCount)
-    {
+    if (mResults.GetFileCount() < mRunningThreadCount) {
         mRunningThreadCount = mResults.GetFileCount();
     }
 
-    for (int i = 0; i < mRunningThreadCount; i++)
-    {
+    for (int i = 0; i < mRunningThreadCount; i++) {
         mThreads[i]->Check(settings);
     }
 
@@ -88,16 +84,14 @@ void ThreadHandler::SetThreadCount(const int count)
 {
     if (mRunningThreadCount > 0 ||
         count == mThreads.size() ||
-        count <= 0)
-    {
+        count <= 0) {
         return;
     }
 
     //Remove unused old threads
     RemoveThreads();
     //Create new threads
-    for (int i = mThreads.size(); i < count; i++)
-    {
+    for (int i = mThreads.size(); i < count; i++) {
         mThreads << new CheckThread(mResults);
         connect(mThreads.last(), SIGNAL(Done()),
                 this, SLOT(ThreadDone()));
@@ -110,8 +104,7 @@ void ThreadHandler::SetThreadCount(const int count)
 
 void ThreadHandler::RemoveThreads()
 {
-    for (int i = 0; i < mThreads.size(); i++)
-    {
+    for (int i = 0; i < mThreads.size(); i++) {
         mThreads[i]->terminate();
         disconnect(mThreads.last(), SIGNAL(Done()),
                    this, SLOT(ThreadDone()));
@@ -127,8 +120,7 @@ void ThreadHandler::RemoveThreads()
 void ThreadHandler::ThreadDone()
 {
     mRunningThreadCount--;
-    if (mRunningThreadCount == 0)
-    {
+    if (mRunningThreadCount == 0) {
         emit Done();
 
         mScanDuration = mTime.elapsed();
@@ -137,8 +129,7 @@ void ThreadHandler::ThreadDone()
 
 void ThreadHandler::Stop()
 {
-    for (int i = 0; i < mThreads.size(); i++)
-    {
+    for (int i = 0; i < mThreads.size(); i++) {
         mThreads[i]->stop();
     }
 }

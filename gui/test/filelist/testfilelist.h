@@ -19,8 +19,7 @@
 #include <QtTest>
 #include <QObject>
 
-class TestFileList: public QObject
-{
+class TestFileList: public QObject {
     Q_OBJECT
 
 private slots:

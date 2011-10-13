@@ -53,8 +53,7 @@ XmlReportV1::~XmlReportV1()
 bool XmlReportV1::Create()
 {
     bool success = false;
-    if (Report::Create())
-    {
+    if (Report::Create()) {
         mXmlWriter = new QXmlStreamWriter(Report::GetFile());
         success = true;
     }
@@ -64,8 +63,7 @@ bool XmlReportV1::Create()
 bool XmlReportV1::Open()
 {
     bool success = false;
-    if (Report::Open())
-    {
+    if (Report::Open()) {
         mXmlReader = new QXmlStreamReader(Report::GetFile());
         success = true;
     }
@@ -116,22 +114,18 @@ QList<ErrorItem> XmlReportV1::Read()
 {
     QList<ErrorItem> errors;
     bool insideResults = false;
-    if (!mXmlReader)
-    {
+    if (!mXmlReader) {
         qDebug() << "You must Open() the file before reading it!";
         return errors;
     }
-    while (!mXmlReader->atEnd())
-    {
-        switch (mXmlReader->readNext())
-        {
+    while (!mXmlReader->atEnd()) {
+        switch (mXmlReader->readNext()) {
         case QXmlStreamReader::StartElement:
             if (mXmlReader->name() == ResultElementName)
                 insideResults = true;
 
             // Read error element from inside result element
-            if (insideResults && mXmlReader->name() == ErrorElementName)
-            {
+            if (insideResults && mXmlReader->name() == ErrorElementName) {
                 ErrorItem item = ReadError(mXmlReader);
                 errors.append(item);
             }
@@ -161,8 +155,7 @@ QList<ErrorItem> XmlReportV1::Read()
 ErrorItem XmlReportV1::ReadError(QXmlStreamReader *reader)
 {
     ErrorItem item;
-    if (reader->name().toString() == ErrorElementName)
-    {
+    if (reader->name().toString() == ErrorElementName) {
         QXmlStreamAttributes attribs = reader->attributes();
         QString file = attribs.value("", FilenameAttribute).toString();
         file = XmlReport::unquoteMessage(file);

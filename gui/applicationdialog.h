@@ -36,8 +36,7 @@ class QWidget;
 * to modify/add an application to open errors with.
 *
 */
-class ApplicationDialog : public QDialog
-{
+class ApplicationDialog : public QDialog {
     Q_OBJECT
 
 public:

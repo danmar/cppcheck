@@ -22,9 +22,8 @@
 #include <sstream>
 
 // Register this check class (by creating a static instance of it)
-namespace
-{
-CheckStl instance;
+namespace {
+    CheckStl instance;
 }
 
 
@@ -49,8 +48,7 @@ void CheckStl::iterators()
 {
     // Using same iterator against different containers.
     // for (it = foo.begin(); it != bar.end(); ++it)
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Locate an iterator..
         if (!Token::Match(tok, "%var% = %var% . begin ( ) ;|+"))
             continue;
@@ -69,8 +67,7 @@ void CheckStl::iterators()
 
         // Scan through the rest of the code and see if the iterator is
         // used against other containers.
-        for (const Token *tok2 = tok->tokAt(7); tok2; tok2 = tok2->next())
-        {
+        for (const Token *tok2 = tok->tokAt(7); tok2; tok2 = tok2->next()) {
             // If a { is found then count it and continue
             if (tok2->str() == "{" && ++indent)
                 continue;
@@ -80,26 +77,22 @@ void CheckStl::iterators()
                 break;
 
             // Is iterator compared against different container?
-            if (Token::Match(tok2, "%varid% != %var% . end ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId)
-            {
+            if (Token::Match(tok2, "%varid% != %var% . end ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId) {
                 iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
                 tok2 = tok2->tokAt(6);
             }
 
             // Is the iterator used in a insert/erase operation?
-            else if (Token::Match(tok2, "%var% . insert|erase ( %varid% )|,", iteratorId))
-            {
+            else if (Token::Match(tok2, "%var% . insert|erase ( %varid% )|,", iteratorId)) {
                 // It is bad to insert/erase an invalid iterator
                 if (!validIterator)
                     invalidIteratorError(tok2, tok2->strAt(4));
 
                 // If insert/erase is used on different container then
                 // report an error
-                if (tok2->varId() != containerId && tok2->tokAt(5)->str() != ".")
-                {
+                if (tok2->varId() != containerId && tok2->tokAt(5)->str() != ".") {
                     // skip error message if container is a set..
-                    if (tok2->varId() > 0)
-                    {
+                    if (tok2->varId() > 0) {
                         const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
                         const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->varId());
                         const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
@@ -122,8 +115,7 @@ void CheckStl::iterators()
 
             // it = foo.erase(..
             // taking the result of an erase is ok
-            else if (Token::Match(tok2, "%varid% = %var% . erase (", iteratorId))
-            {
+            else if (Token::Match(tok2, "%varid% = %var% . erase (", iteratorId)) {
                 // the returned iterator is valid
                 validIterator = true;
 
@@ -134,8 +126,7 @@ void CheckStl::iterators()
             }
 
             // Reassign the iterator
-            else if (Token::Match(tok2, "%varid% = %var% ;", iteratorId))
-            {
+            else if (Token::Match(tok2, "%varid% = %var% ;", iteratorId)) {
                 // Assume that the iterator becomes valid.
                 // TODO: add checking that checks if the iterator becomes valid or not
                 validIterator = true;
@@ -145,32 +136,25 @@ void CheckStl::iterators()
             }
 
             // Dereferencing invalid iterator?
-            else if (!validIterator && Token::Match(tok2, "* %varid%", iteratorId))
-            {
+            else if (!validIterator && Token::Match(tok2, "* %varid%", iteratorId)) {
                 dereferenceErasedError(tok2, tok2->strAt(1));
                 tok2 = tok2->next();
-            }
-            else if (!validIterator && Token::Match(tok2, "%varid% . %var%", iteratorId))
-            {
+            } else if (!validIterator && Token::Match(tok2, "%varid% . %var%", iteratorId)) {
                 dereferenceErasedError(tok2, tok2->strAt(0));
                 tok2 = tok2->tokAt(2);
-            }
-            else if (Token::Match(tok2, "%var% . erase ( * %varid%", iteratorId) && tok2->varId() == containerId)
-            {
+            } else if (Token::Match(tok2, "%var% . erase ( * %varid%", iteratorId) && tok2->varId() == containerId) {
 //                eraseByValueError(tok2, tok2->strAt(0), tok2->strAt(5));
             }
 
             // bailout handling. Assume that the iterator becomes valid if we see return/break.
             // TODO: better handling
-            else if (Token::Match(tok2, "return|break"))
-            {
+            else if (Token::Match(tok2, "return|break")) {
                 validIterator = true;
             }
 
             // bailout handling. Assume that the iterator becomes valid if we see else.
             // TODO: better handling
-            else if (tok2->str() == "else")
-            {
+            else if (tok2->str() == "else") {
                 validIterator = true;
             }
         }
@@ -187,16 +171,13 @@ void CheckStl::mismatchingContainersError(const Token *tok)
 void CheckStl::mismatchingContainers()
 {
     // Check if different containers are used in various calls of standard functions
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() != "std")
             continue;
 
         // TODO: If iterator variables are used instead then there are false negatives.
-        if (Token::Match(tok, "std :: find|find_if|count|transform|replace|replace_if|sort ( %var% . begin|rbegin ( ) , %var% . end|rend ( ) ,"))
-        {
-            if (tok->tokAt(4)->str() != tok->tokAt(10)->str())
-            {
+        if (Token::Match(tok, "std :: find|find_if|count|transform|replace|replace_if|sort ( %var% . begin|rbegin ( ) , %var% . end|rend ( ) ,")) {
+            if (tok->tokAt(4)->str() != tok->tokAt(10)->str()) {
                 mismatchingContainersError(tok);
             }
         }
@@ -207,29 +188,25 @@ void CheckStl::mismatchingContainers()
 void CheckStl::stlOutOfBounds()
 {
     // Scan through all tokens..
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // only interested in "for" loops
         if (!Token::simpleMatch(tok, "for ("))
             continue;
 
         // check if the for loop condition is wrong
         unsigned int indent = 0;
-        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
-        {
+        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
 
             if (tok2->str() == "(")
                 ++indent;
 
-            else if (tok2->str() == ")")
-            {
+            else if (tok2->str() == ")") {
                 if (indent == 0)
                     break;
                 --indent;
             }
 
-            if (Token::Match(tok2, "; %var% <= %var% . size ( ) ;"))
-            {
+            if (Token::Match(tok2, "; %var% <= %var% . size ( ) ;")) {
                 // Count { and } for tok3
                 unsigned int indent3 = 0;
 
@@ -239,18 +216,14 @@ void CheckStl::stlOutOfBounds()
                 // variable id for the container variable
                 unsigned int varId = tok2->tokAt(3)->varId();
 
-                for (const Token *tok3 = tok2->tokAt(8); tok3; tok3 = tok3->next())
-                {
+                for (const Token *tok3 = tok2->tokAt(8); tok3; tok3 = tok3->next()) {
                     if (tok3->str() == "{")
                         ++indent3;
-                    else if (tok3->str() == "}")
-                    {
+                    else if (tok3->str() == "}") {
                         if (indent3 <= 1)
                             break;
                         --indent3;
-                    }
-                    else if (tok3->varId() == varId)
-                    {
+                    } else if (tok3->varId() == varId) {
                         if (Token::simpleMatch(tok3->next(), ". size ( )"))
                             break;
                         else if (Token::Match(tok3->next(), "[ %varid% ]", numId))
@@ -273,17 +246,14 @@ void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, con
 /**
  * @brief %Check for invalid iterator usage after erase/insert/etc
  */
-class EraseCheckLoop : public ExecutionPath
-{
+class EraseCheckLoop : public ExecutionPath {
 public:
-    static void checkScope(CheckStl *checkStl, const Token *it)
-    {
+    static void checkScope(CheckStl *checkStl, const Token *it) {
         const Token *tok = it;
 
         // Search for the start of the loop body..
         int indentlevel = 1;
-        while (indentlevel > 0 && 0 != (tok = tok->next()))
-        {
+        while (indentlevel > 0 && 0 != (tok = tok->next())) {
             if (tok->str() == "(")
                 tok = tok->link();
             else if (tok->str() == ")")
@@ -304,8 +274,7 @@ public:
 
         c.end(checks, tok->link());
 
-        while (!checks.empty())
-        {
+        while (!checks.empty()) {
             delete checks.back();
             checks.pop_back();
         }
@@ -314,22 +283,19 @@ public:
 private:
     /** Startup constructor */
     EraseCheckLoop(Check *o, unsigned int varid)
-        : ExecutionPath(o, varid), eraseToken(0)
-    {
+        : ExecutionPath(o, varid), eraseToken(0) {
     }
 
     /** @brief token where iterator is erased (non-zero => the iterator is invalid) */
     const Token *eraseToken;
 
     /** @brief Copy this check. Called from the ExecutionPath baseclass. */
-    ExecutionPath *copy()
-    {
+    ExecutionPath *copy() {
         return new EraseCheckLoop(*this);
     }
 
     /** @brief is another execution path equal? */
-    bool is_equal(const ExecutionPath *e) const
-    {
+    bool is_equal(const ExecutionPath *e) const {
         const EraseCheckLoop *c = static_cast<const EraseCheckLoop *>(e);
         return (eraseToken == c->eraseToken);
     }
@@ -338,29 +304,24 @@ private:
     void operator=(const EraseCheckLoop &);
 
     /** @brief parse tokens */
-    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
-    {
+    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const {
         // bail out if there are assignments. We don't check the assignments properly.
-        if (Token::Match(&tok, "[;{}] %var% =") || Token::Match(&tok, "= %var% ;"))
-        {
+        if (Token::Match(&tok, "[;{}] %var% =") || Token::Match(&tok, "= %var% ;")) {
             ExecutionPath::bailOutVar(checks, tok.next()->varId());
         }
 
         // the loop stops here. Bail out all execution checks that reach
         // this statement
-        if (Token::Match(&tok, "[;{}] break ;"))
-        {
+        if (Token::Match(&tok, "[;{}] break ;")) {
             ExecutionPath::bailOut(checks);
         }
 
         // erasing iterator => it is invalidated
-        if (Token::Match(&tok, "erase ( ++|--| %var% )"))
-        {
+        if (Token::Match(&tok, "erase ( ++|--| %var% )")) {
             // check if there is a "it = ints.erase(it);" pattern. if so
             // the it is not invalidated.
             const Token *token = &tok;
-            while (NULL != (token = token ? token->previous() : 0))
-            {
+            while (NULL != (token = token ? token->previous() : 0)) {
                 if (Token::Match(token, "[;{}]"))
                     break;
                 else if (token->str() == "=")
@@ -368,8 +329,7 @@ private:
             }
 
             // the it is invalidated by the erase..
-            if (token)
-            {
+            if (token) {
                 // get variable id for the iterator
                 unsigned int iteratorId = 0;
                 if (tok.tokAt(2)->isName())
@@ -378,11 +338,9 @@ private:
                     iteratorId = tok.tokAt(3)->varId();
 
                 // invalidate this iterator in the corresponding checks
-                for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
-                {
+                for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it) {
                     EraseCheckLoop *c = dynamic_cast<EraseCheckLoop *>(*it);
-                    if (c && c->varId == iteratorId)
-                    {
+                    if (c && c->varId == iteratorId) {
                         c->eraseToken = &tok;
                     }
                 }
@@ -399,8 +357,7 @@ private:
      * @param checks The execution paths. All execution paths in the list are executed in the current scope
      * @return true => bail out all checking
      **/
-    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
-    {
+    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) {
         // no checking of conditions.
         (void)tok;
         (void)checks;
@@ -408,17 +365,13 @@ private:
     }
 
     /** @brief going out of scope - all execution paths end */
-    void end(const std::list<ExecutionPath *> &checks, const Token * /*tok*/) const
-    {
+    void end(const std::list<ExecutionPath *> &checks, const Token * /*tok*/) const {
         // check if there are any invalid iterators. If so there is an error.
-        for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
-        {
+        for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it) {
             EraseCheckLoop *c = dynamic_cast<EraseCheckLoop *>(*it);
-            if (c && c->eraseToken)
-            {
+            if (c && c->eraseToken) {
                 CheckStl *checkStl = dynamic_cast<CheckStl *>(c->owner);
-                if (checkStl)
-                {
+                if (checkStl) {
                     checkStl->eraseError(c->eraseToken);
                 }
             }
@@ -429,16 +382,11 @@ private:
 
 void CheckStl::erase()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::simpleMatch(tok, "for ("))
-        {
-            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == ";")
-                {
-                    if (Token::Match(tok2, "; %var% !="))
-                    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "for (")) {
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == ";") {
+                    if (Token::Match(tok2, "; %var% !=")) {
                         // Get declaration token for var..
                         const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
                         const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->next()->varId());
@@ -458,16 +406,14 @@ void CheckStl::erase()
 
                 if (Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% != %var% . end ( )") &&
                     tok2->str() == tok2->tokAt(8)->str() &&
-                    tok2->tokAt(2)->str() == tok2->tokAt(10)->str())
-                {
+                    tok2->tokAt(2)->str() == tok2->tokAt(10)->str()) {
                     EraseCheckLoop::checkScope(this, tok2);
                     break;
                 }
             }
         }
 
-        if (Token::Match(tok, "while ( %var% !="))
-        {
+        if (Token::Match(tok, "while ( %var% !=")) {
             const unsigned int varid = tok->tokAt(2)->varId();
             if (varid > 0 && Token::findmatch(_tokenizer->tokens(), "> :: iterator %varid%", varid))
                 EraseCheckLoop::checkScope(this, tok->tokAt(2));
@@ -487,10 +433,8 @@ void CheckStl::eraseError(const Token *tok)
 void CheckStl::pushback()
 {
     // Pointer can become invalid after push_back or push_front..
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "%var% = & %var% ["))
-        {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%var% = & %var% [")) {
             // Variable id for pointer
             const unsigned int pointerId(tok->varId());
 
@@ -503,12 +447,10 @@ void CheckStl::pushback()
             // Count { , } and parentheses for tok2
             int indent = 0;
             bool invalidPointer = false;
-            for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next())
-            {
+            for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "{" || tok2->str() == "(")
                     ++indent;
-                else if (tok2->str() == "}" || tok2->str() == ")")
-                {
+                else if (tok2->str() == "}" || tok2->str() == ")") {
                     if (indent == 0 && Token::simpleMatch(tok2, ") {"))
                         tok2 = tok2->next();
                     else
@@ -520,8 +462,7 @@ void CheckStl::pushback()
                     invalidPointer = true;
 
                 // Using invalid pointer..
-                if (invalidPointer && tok2->varId() == pointerId)
-                {
+                if (invalidPointer && tok2->varId() == pointerId) {
                     if (tok2->previous()->str() == "*")
                         invalidPointerError(tok2, tok2->str());
                     else if (tok2->next()->str() == ".")
@@ -533,16 +474,14 @@ void CheckStl::pushback()
     }
 
     // Iterator becomes invalid after reserve, push_back or push_front..
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "vector <"))
             continue;
 
         // if iterator declaration inside for() loop
         bool iteratorDeclaredInsideLoop = false;
         if ((tok->tokAt(-2) && Token::simpleMatch(tok->tokAt(-2), "for (")) ||
-            (tok->tokAt(-4) && Token::simpleMatch(tok->tokAt(-4), "for ( std ::")))
-        {
+            (tok->tokAt(-4) && Token::simpleMatch(tok->tokAt(-4), "for ( std ::"))) {
             iteratorDeclaredInsideLoop = true;
         }
 
@@ -557,8 +496,7 @@ void CheckStl::pushback()
         if (iteratorid == 0)
             continue;
 
-        if (iteratorDeclaredInsideLoop && tok->tokAt(4)->str() == "=")
-        {
+        if (iteratorDeclaredInsideLoop && tok->tokAt(4)->str() == "=") {
             // skip "> :: iterator|const_iterator"
             tok = tok->tokAt(3);
         }
@@ -570,12 +508,10 @@ void CheckStl::pushback()
         int indent = 0;
 
         std::string invalidIterator;
-        for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next())
-        {
+        for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next()) {
             if (tok2->str() == "{" || tok2->str() == "(")
                 ++indent;
-            else if (tok2->str() == "}" || tok2->str() == ")")
-            {
+            else if (tok2->str() == "}" || tok2->str() == ")") {
                 if (indent == 0 && Token::simpleMatch(tok2, ") {"))
                     tok2 = tok2->next();
                 else
@@ -583,13 +519,11 @@ void CheckStl::pushback()
             }
 
             // Using push_back or push_front inside a loop..
-            if (Token::simpleMatch(tok2, "for ("))
-            {
+            if (Token::simpleMatch(tok2, "for (")) {
                 tok2 = tok2->tokAt(2);
             }
 
-            if (Token::Match(tok2, "%varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++| %varid% ++| ) {", iteratorid))
-            {
+            if (Token::Match(tok2, "%varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++| %varid% ++| ) {", iteratorid)) {
                 // variable id for the loop iterator
                 const unsigned int varId(tok2->tokAt(2)->varId());
                 if (varId == 0)
@@ -599,23 +533,17 @@ void CheckStl::pushback()
 
                 // Count { and } for tok3
                 unsigned int indent3 = 0;
-                for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next())
-                {
+                for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next()) {
                     if (tok3->str() == "{")
                         ++indent3;
-                    else if (tok3->str() == "}")
-                    {
+                    else if (tok3->str() == "}") {
                         if (indent3 <= 1)
                             break;
                         --indent3;
-                    }
-                    else if (tok3->str() == "break" || tok3->str() == "return")
-                    {
+                    } else if (tok3->str() == "break" || tok3->str() == "return") {
                         pushbackTok = 0;
                         break;
-                    }
-                    else if (Token::Match(tok3, "%varid% . push_front|push_back|insert|reserve (", varId))
-                    {
+                    } else if (Token::Match(tok3, "%varid% . push_front|push_back|insert|reserve (", varId)) {
                         pushbackTok = tok3->tokAt(2);
                     }
                 }
@@ -625,25 +553,19 @@ void CheckStl::pushback()
             }
 
             // Assigning iterator..
-            if (Token::Match(tok2, "%varid% =", iteratorid))
-            {
-                if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend ( )"))
-                {
+            if (Token::Match(tok2, "%varid% =", iteratorid)) {
+                if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend ( )")) {
                     vectorid = tok2->tokAt(2)->varId();
                     tok2 = tok2->tokAt(6);
-                }
-                else
-                {
+                } else {
                     vectorid = 0;
                 }
                 invalidIterator = "";
             }
 
             // push_back on vector..
-            if (vectorid > 0 && Token::Match(tok2, "%varid% . push_front|push_back|insert|reserve (", vectorid))
-            {
-                if (!invalidIterator.empty() && Token::Match(tok2->tokAt(2), "insert ( %varid% ,", iteratorid))
-                {
+            if (vectorid > 0 && Token::Match(tok2, "%varid% . push_front|push_back|insert|reserve (", vectorid)) {
+                if (!invalidIterator.empty() && Token::Match(tok2->tokAt(2), "insert ( %varid% ,", iteratorid)) {
                     invalidIteratorError(tok2, invalidIterator, tok2->strAt(4));
                     break;
                 }
@@ -653,14 +575,12 @@ void CheckStl::pushback()
             }
 
             // TODO: instead of bail out for 'else' try to check all execution paths.
-            else if (tok2->str() == "return" || tok2->str() == "break" || tok2->str() == "else")
-            {
+            else if (tok2->str() == "return" || tok2->str() == "break" || tok2->str() == "else") {
                 invalidIterator.clear();
             }
 
             // Using invalid iterator..
-            if (!invalidIterator.empty())
-            {
+            if (!invalidIterator.empty()) {
                 if (Token::Match(tok2, "++|--|*|+|-|(|,|=|!= %varid%", iteratorid))
                     invalidIteratorError(tok2, invalidIterator, tok2->strAt(1));
                 if (Token::Match(tok2, "%varid% ++|--|+|-", iteratorid))
@@ -692,37 +612,30 @@ void CheckStl::stlBoundries()
     // containers (not the vector)..
     static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set";
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Declaring iterator..
-        if (tok->str() == "<" && Token::Match(tok->previous(), STL_CONTAINER_LIST))
-        {
+        if (tok->str() == "<" && Token::Match(tok->previous(), STL_CONTAINER_LIST)) {
             const std::string container_name(tok->strAt(-1));
             while (tok && tok->str() != ">")
                 tok = tok->next();
             if (!tok)
                 break;
 
-            if (Token::Match(tok, "> :: iterator|const_iterator %var% =|;"))
-            {
+            if (Token::Match(tok, "> :: iterator|const_iterator %var% =|;")) {
                 const unsigned int iteratorid(tok->tokAt(3)->varId());
                 if (iteratorid == 0)
                     continue;
 
                 // Using "iterator < ..." is not allowed
                 unsigned int indentlevel = 0;
-                for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
-                {
+                for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "{")
                         ++indentlevel;
-                    else if (tok2->str() == "}")
-                    {
+                    else if (tok2->str() == "}") {
                         if (indentlevel == 0)
                             break;
                         --indentlevel;
-                    }
-                    else if (Token::Match(tok2, "!!* %varid% <", iteratorid))
-                    {
+                    } else if (Token::Match(tok2, "!!* %varid% <", iteratorid)) {
                         stlBoundriesError(tok2, container_name);
                     }
                 }
@@ -749,10 +662,8 @@ void CheckStl::if_find()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "if ( !| %var% . find ( %any% ) )"))
-        {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "if ( !| %var% . find ( %any% ) )")) {
             // goto %var%
             tok = tok->tokAt(2);
             if (!tok->isName())
@@ -760,8 +671,7 @@ void CheckStl::if_find()
 
             const unsigned int varid = tok->varId();
             const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-            if (var)
-            {
+            if (var) {
                 // Is the variable a std::string or STL container?
                 const Token * decl = var->nameToken();
                 while (decl && !Token::Match(decl, "[;{}(,]"))
@@ -778,16 +688,14 @@ void CheckStl::if_find()
             }
         }
 
-        if (Token::Match(tok, "if ( !| std :: find|find_if ("))
-        {
+        if (Token::Match(tok, "if ( !| std :: find|find_if (")) {
             // goto '(' for the find
             tok = tok->tokAt(4);
             if (tok->isName())
                 tok = tok->next();
 
             // check that result is checked properly
-            if (Token::simpleMatch(tok->link(), ") )"))
-            {
+            if (Token::simpleMatch(tok->link(), ") )")) {
                 if_findError(tok, false);
             }
         }
@@ -813,8 +721,7 @@ void CheckStl::if_findError(const Token *tok, bool str)
 bool CheckStl::isStlContainer(unsigned int varid)
 {
     // check if this token is defined
-    if (varid)
-    {
+    if (varid) {
         // find where this token is defined
         const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
 
@@ -851,50 +758,41 @@ void CheckStl::size()
     if (!_settings->isEnabled("performance"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%var% . size ( )") ||
-            Token::Match(tok, "%var% . %var% . size ( )"))
-        {
+            Token::Match(tok, "%var% . %var% . size ( )")) {
             int offset = 5;
             const Token *tok1 = tok;
             unsigned int varid = 0;
 
             // get the variable id
-            if (tok->strAt(2) != "size")
-            {
+            if (tok->strAt(2) != "size") {
                 offset = 7;
                 tok1 = tok1->tokAt(2);
 
                 // found a.b.size(), lookup class/struct variable
                 const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->varId());
-                if (var && var->type())
-                {
+                if (var && var->type()) {
                     // get class/struct variable type
                     const Scope *type = var->type();
 
                     // lookup variable member
                     std::list<Variable>::const_iterator it;
-                    for (it = type->varlist.begin(); it != type->varlist.end(); ++it)
-                    {
-                        if (it->name() == tok1->str())
-                        {
+                    for (it = type->varlist.begin(); it != type->varlist.end(); ++it) {
+                        if (it->name() == tok1->str()) {
                             // found member variable, save varid
                             varid = it->varId();
                             break;
                         }
                     }
                 }
-            }
-            else
+            } else
                 varid = tok1->varId();
 
-            if (varid)
-            {
+            if (varid) {
                 // check for comparison to zero
                 if (Token::Match(tok->tokAt(offset), "==|!=|> 0") ||
-                    Token::Match(tok->tokAt(-2), "0 ==|!=|<"))
-                {
+                    Token::Match(tok->tokAt(-2), "0 ==|!=|<")) {
                     if (isStlContainer(varid))
                         sizeError(tok1);
                 }
@@ -902,8 +800,7 @@ void CheckStl::size()
                 // check for using as boolean expression
                 else if ((Token::Match(tok->tokAt(-2), "if|while (") ||
                           Token::Match(tok->tokAt(-3), "if|while ( !")) &&
-                         tok->strAt(offset) == ")")
-                {
+                         tok->strAt(offset) == ")") {
                     if (isStlContainer(varid))
                         sizeError(tok1);
                 }
@@ -930,8 +827,7 @@ void CheckStl::redundantCondition()
                            "    %var% . remove ( %any% ) ; "
                            "}|}|";
     const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern);
-    while (tok)
-    {
+    while (tok) {
         bool b(tok->tokAt(15)->str() == "{");
 
         // Get tokens for the fields %var% and %any%
@@ -944,8 +840,7 @@ void CheckStl::redundantCondition()
         // Check if all the "%var%" fields are the same and if all the "%any%" are the same..
         if (var1->str() == var2->str() &&
             var2->str() == var3->str() &&
-            any1->str() == any2->str())
-        {
+            any1->str() == any2->str()) {
             redundantIfRemoveError(tok);
         }
 
@@ -963,12 +858,9 @@ void CheckStl::redundantIfRemoveError(const Token *tok)
 
 void CheckStl::missingComparison()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::simpleMatch(tok, "for ("))
-        {
-            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
-            {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "for (")) {
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";")
                     break;
 
@@ -985,8 +877,7 @@ void CheckStl::missingComparison()
 
                 // increment iterator
                 if (!Token::simpleMatch(tok2->tokAt(16), ("++ " + tok2->str() + " )").c_str()) &&
-                    !Token::simpleMatch(tok2->tokAt(16), (tok2->str() + " ++ )").c_str()))
-                {
+                    !Token::simpleMatch(tok2->tokAt(16), (tok2->str() + " ++ )").c_str())) {
                     continue;
                 }
 
@@ -1000,17 +891,14 @@ void CheckStl::missingComparison()
                 unsigned int indentlevel = 0;
 
                 // Parse loop..
-                for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next())
-                {
+                for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next()) {
                     if (tok3->str() == "{")
                         ++indentlevel;
-                    else if (tok3->str() == "}")
-                    {
+                    else if (tok3->str() == "}") {
                         if (indentlevel == 0)
                             break;
                         --indentlevel;
-                    }
-                    else if (Token::Match(tok3, "%varid% ++", iteratorId))
+                    } else if (Token::Match(tok3, "%varid% ++", iteratorId))
                         incrementToken = tok3;
                     else if (Token::Match(tok3->previous(), "++ %varid% !!.", iteratorId))
                         incrementToken = tok3;
@@ -1018,8 +906,7 @@ void CheckStl::missingComparison()
                         incrementToken = 0;
                     else if (tok3->str() == "break" || tok3->str() == "return")
                         incrementToken = 0;
-                    else if (Token::Match(tok3, "%varid% = %var% . insert ( ++| %varid% ++| ,", iteratorId))
-                    {
+                    else if (Token::Match(tok3, "%varid% = %var% . insert ( ++| %varid% ++| ,", iteratorId)) {
                         // skip insertion..
                         tok3 = tok3->tokAt(6)->link();
                         if (!tok3)
@@ -1050,22 +937,18 @@ void CheckStl::missingComparisonError(const Token *incrementToken1, const Token 
 void CheckStl::string_c_str()
 {
     // Try to detect common problems when using string::c_str()
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Locate executable scopes:
-        if (Token::Match(tok, ") const| {"))
-        {
+        if (Token::Match(tok, ") const| {")) {
             std::set<unsigned int> localvar;
             std::set<unsigned int> pointers;
 
             // scan through this executable scope:
             unsigned int indentlevel = 0;
-            while (NULL != (tok = tok->next()))
-            {
+            while (NULL != (tok = tok->next())) {
                 if (tok->str() == "{")
                     ++indentlevel;
-                else if (tok->str() == "}")
-                {
+                else if (tok->str() == "}") {
                     if (indentlevel <= 1)
                         break;
                     --indentlevel;
@@ -1084,22 +967,17 @@ void CheckStl::string_c_str()
                 // Invalid usage..
                 else if (Token::Match(tok, "throw %var% . c_str ( ) ;") &&
                          tok->next()->varId() > 0 &&
-                         localvar.find(tok->next()->varId()) != localvar.end())
-                {
+                         localvar.find(tok->next()->varId()) != localvar.end()) {
                     string_c_strError(tok);
-                }
-                else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
-                         tok->next()->varId() > 0 &&
-                         pointers.find(tok->next()->varId()) != pointers.end())
-                {
+                } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
+                           tok->next()->varId() > 0 &&
+                           pointers.find(tok->next()->varId()) != pointers.end()) {
                     string_c_strError(tok);
-                }
-                else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
-                         Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
-                         tok->next()->varId() > 0 &&
-                         pointers.find(tok->next()->varId()) != pointers.end() &&
-                         Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str()))
-                {
+                } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
+                           Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
+                           tok->next()->varId() > 0 &&
+                           pointers.find(tok->next()->varId()) != pointers.end() &&
+                           Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str())) {
                     string_c_strError(tok);
                 }
             }
@@ -1122,44 +1000,30 @@ void CheckStl::checkAutoPointer()
     std::set<int>::const_iterator iter;
     static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::simpleMatch(tok, "auto_ptr <"))
-        {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "auto_ptr <")) {
             if ((tok->previous() && tok->previous()->str() == "<" && Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) ||
-                (Token::Match(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST)))
-            {
+                (Token::Match(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST))) {
                 autoPointerContainerError(tok);
-            }
-            else
-            {
+            } else {
                 const Token *tok2 = tok->next()->next();
-                while (tok2)
-                {
-                    if (Token::Match(tok2, "> %var%"))
-                    {
+                while (tok2) {
+                    if (Token::Match(tok2, "> %var%")) {
                         const Token *tok3 = tok2->next()->next();
-                        while (tok3 && tok3->str() != ";")
-                        {
+                        while (tok3 && tok3->str() != ";") {
                             tok3 = tok3->next();
                         }
-                        if (tok3)
-                        {
+                        if (tok3) {
                             tok3 = tok3->previous()->previous();
-                            if (Token::simpleMatch(tok3->previous(), "[ ] )"))
-                            {
+                            if (Token::simpleMatch(tok3->previous(), "[ ] )")) {
                                 autoPointerArrayError(tok2->next());
-                            }
-                            else if (tok3->varId())
-                            {
+                            } else if (tok3->varId()) {
                                 const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type% [", tok3->varId());
-                                if (decltok)
-                                {
+                                if (decltok) {
                                     autoPointerArrayError(tok2->next());
                                 }
                             }
-                            if (tok2->next()->varId())
-                            {
+                            if (tok2->next()->varId()) {
                                 autoPtrVarId.insert(tok2->next()->varId());
                             }
                             break;
@@ -1168,25 +1032,17 @@ void CheckStl::checkAutoPointer()
                     tok2 = tok2->next();
                 }
             }
-        }
-        else
-        {
-            if (Token::Match(tok, "%var% = %var% ;"))
-            {
-                if (_settings->isEnabled("style"))
-                {
+        } else {
+            if (Token::Match(tok, "%var% = %var% ;")) {
+                if (_settings->isEnabled("style")) {
                     iter = autoPtrVarId.find(tok->next()->next()->varId());
-                    if (iter != autoPtrVarId.end())
-                    {
+                    if (iter != autoPtrVarId.end()) {
                         autoPointerError(tok->next()->next());
                     }
                 }
-            }
-            else if (Token::Match(tok, "%var% = new %type% [") || Token::Match(tok, "%var% . reset ( new %type% ["))
-            {
+            } else if (Token::Match(tok, "%var% = new %type% [") || Token::Match(tok, "%var% . reset ( new %type% [")) {
                 iter = autoPtrVarId.find(tok->varId());
-                if (iter != autoPtrVarId.end())
-                {
+                if (iter != autoPtrVarId.end()) {
                     autoPointerArrayError(tok);
                 }
             }

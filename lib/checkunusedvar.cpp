@@ -24,23 +24,20 @@
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
-namespace
-{
-CheckUnusedVar instance;
+namespace {
+    CheckUnusedVar instance;
 }
 
 /**
  * @brief This class is used to capture the control flow within a function.
  */
-class ScopeInfo
-{
+class ScopeInfo {
 public:
     ScopeInfo() : _token(NULL), _parent(NULL) { }
     ScopeInfo(const Token *token, ScopeInfo *parent_) : _token(token), _parent(parent_) { }
     ~ScopeInfo();
 
-    ScopeInfo *parent()
-    {
+    ScopeInfo *parent() {
         return _parent;
     }
     ScopeInfo *addChild(const Token *token);
@@ -54,8 +51,7 @@ private:
 
 ScopeInfo::~ScopeInfo()
 {
-    while (!_children.empty())
-    {
+    while (!_children.empty()) {
         delete *_children.begin();
         _children.pop_front();
     }
@@ -74,10 +70,8 @@ void ScopeInfo::remove(ScopeInfo *scope)
 {
     std::list<ScopeInfo *>::iterator it;
 
-    for (it = _children.begin(); it != _children.end(); ++it)
-    {
-        if (*it == scope)
-        {
+    for (it = _children.begin(); it != _children.end(); ++it) {
+        if (*it == scope) {
             delete *it;
             _children.erase(it);
             break;
@@ -88,14 +82,12 @@ void ScopeInfo::remove(ScopeInfo *scope)
 /**
  * @brief This class is used create a list of variables within a function.
  */
-class Variables
-{
+class Variables {
 public:
     enum VariableType { standard, array, pointer, reference, pointerArray, referenceArray, pointerPointer };
 
     /** Store information about variable usage */
-    class VariableUsage
-    {
+    class VariableUsage {
     public:
         VariableUsage(const Token *name = 0,
                       VariableType type = standard,
@@ -110,20 +102,17 @@ public:
             _read(read),
             _write(write),
             _modified(modified),
-            _allocateMemory(allocateMemory)
-        {
+            _allocateMemory(allocateMemory) {
         }
 
         /** variable is used.. set both read+write */
-        void use()
-        {
+        void use() {
             _read = true;
             _write = true;
         }
 
         /** is variable unused? */
-        bool unused() const
-        {
+        bool unused() const {
             return (_read == false && _write == false);
         }
 
@@ -140,12 +129,10 @@ public:
 
     typedef std::map<unsigned int, VariableUsage> VariableMap;
 
-    void clear()
-    {
+    void clear() {
         _varUsage.clear();
     }
-    VariableMap &varUsage()
-    {
+    VariableMap &varUsage() {
         return _varUsage;
     }
     void addVar(const Token *name, VariableType type, ScopeInfo *scope, bool write_);
@@ -160,8 +147,7 @@ public:
     void modified(unsigned int varid);
     VariableUsage *find(unsigned int varid);
     void alias(unsigned int varid1, unsigned int varid2, bool replace);
-    void erase(unsigned int varid)
-    {
+    void erase(unsigned int varid) {
         _varUsage.erase(varid);
     }
     void eraseAliases(unsigned int varid);
@@ -185,8 +171,7 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
     VariableUsage *var2 = find(varid2);
 
     // alias to self
-    if (varid1 == varid2)
-    {
+    if (varid1 == varid2) {
         if (var1)
             var1->use();
         return;
@@ -194,11 +179,9 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
 
     std::set<unsigned int>::iterator i;
 
-    if (replace)
-    {
+    if (replace) {
         // remove var1 from all aliases
-        for (i = var1->_aliases.begin(); i != var1->_aliases.end(); ++i)
-        {
+        for (i = var1->_aliases.begin(); i != var1->_aliases.end(); ++i) {
             VariableUsage *temp = find(*i);
 
             if (temp)
@@ -210,8 +193,7 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
     }
 
     // var1 gets all var2s aliases
-    for (i = var2->_aliases.begin(); i != var2->_aliases.end(); ++i)
-    {
+    for (i = var2->_aliases.begin(); i != var2->_aliases.end(); ++i) {
         if (*i != varid1)
             var1->_aliases.insert(*i);
     }
@@ -228,13 +210,11 @@ void Variables::clearAliases(unsigned int varid)
 {
     VariableUsage *usage = find(varid);
 
-    if (usage)
-    {
+    if (usage) {
         // remove usage from all aliases
         std::set<unsigned int>::iterator i;
 
-        for (i = usage->_aliases.begin(); i != usage->_aliases.end(); ++i)
-        {
+        for (i = usage->_aliases.begin(); i != usage->_aliases.end(); ++i) {
             VariableUsage *temp = find(*i);
 
             if (temp)
@@ -250,8 +230,7 @@ void Variables::eraseAliases(unsigned int varid)
 {
     VariableUsage *usage = find(varid);
 
-    if (usage)
-    {
+    if (usage) {
         std::set<unsigned int>::iterator aliases;
 
         for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
@@ -294,12 +273,10 @@ void Variables::readAliases(unsigned int varid)
 {
     VariableUsage *usage = find(varid);
 
-    if (usage)
-    {
+    if (usage) {
         std::set<unsigned int>::iterator aliases;
 
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
-        {
+        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased)
@@ -312,14 +289,12 @@ void Variables::readAll(unsigned int varid)
 {
     VariableUsage *usage = find(varid);
 
-    if (usage)
-    {
+    if (usage) {
         usage->_read = true;
 
         std::set<unsigned int>::iterator aliases;
 
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
-        {
+        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased)
@@ -340,12 +315,10 @@ void Variables::writeAliases(unsigned int varid)
 {
     VariableUsage *usage = find(varid);
 
-    if (usage)
-    {
+    if (usage) {
         std::set<unsigned int>::iterator aliases;
 
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
-        {
+        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased)
@@ -358,14 +331,12 @@ void Variables::writeAll(unsigned int varid)
 {
     VariableUsage *usage = find(varid);
 
-    if (usage)
-    {
+    if (usage) {
         usage->_write = true;
 
         std::set<unsigned int>::iterator aliases;
 
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
-        {
+        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased)
@@ -378,14 +349,12 @@ void Variables::use(unsigned int varid)
 {
     VariableUsage *usage = find(varid);
 
-    if (usage)
-    {
+    if (usage) {
         usage->use();
 
         std::set<unsigned int>::iterator aliases;
 
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
-        {
+        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased)
@@ -398,14 +367,12 @@ void Variables::modified(unsigned int varid)
 {
     VariableUsage *usage = find(varid);
 
-    if (usage)
-    {
+    if (usage) {
         usage->_modified = true;
 
         std::set<unsigned int>::iterator aliases;
 
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
-        {
+        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased)
@@ -416,8 +383,7 @@ void Variables::modified(unsigned int varid)
 
 Variables::VariableUsage *Variables::find(unsigned int varid)
 {
-    if (varid)
-    {
+    if (varid) {
         VariableMap::iterator i = _varUsage.find(varid);
         if (i != _varUsage.end())
             return &i->second;
@@ -430,8 +396,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
     int next = 0;
 
     // a = a + b;
-    if (Token::Match(tok, "%var% = %var% !!;") && tok->str() == tok->strAt(2))
-    {
+    if (Token::Match(tok, "%var% = %var% !!;") && tok->str() == tok->strAt(2)) {
         return 2;
     }
 
@@ -439,8 +404,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
     const unsigned int varid1 = tok->varId();
     Variables::VariableUsage *var1 = variables.find(varid1);
 
-    if (var1)
-    {
+    if (var1) {
         Variables::VariableUsage *var2 = 0;
         int start = 1;
 
@@ -453,8 +417,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
         if (Token::Match(tok->tokAt(start), "&| %var%") ||
             Token::Match(tok->tokAt(start), "( const| struct|union| %type% *| ) &| %var%") ||
             Token::Match(tok->tokAt(start), "( const| struct|union| %type% *| ) ( &| %var%") ||
-            Token::Match(tok->tokAt(start), "%any% < const| struct|union| %type% *| > ( &| %var%"))
-        {
+            Token::Match(tok->tokAt(start), "%any% < const| struct|union| %type% *| > ( &| %var%")) {
             unsigned char offset = 0;
             unsigned int varid2;
             bool addressOf = false;
@@ -463,8 +426,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                 variables.use(tok->tokAt(start)->varId());   // use = read + write
 
             // check for C style cast
-            if (tok->tokAt(start)->str() == "(")
-            {
+            if (tok->tokAt(start)->str() == "(") {
                 if (tok->tokAt(start + 1)->str() == "const")
                     offset++;
 
@@ -474,29 +436,22 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                 if (tok->tokAt(start + 2 + offset)->str() == "*")
                     offset++;
 
-                if (tok->tokAt(start + 3 + offset)->str() == "&")
-                {
+                if (tok->tokAt(start + 3 + offset)->str() == "&") {
                     addressOf = true;
                     next = start + 4 + offset;
-                }
-                else if (tok->tokAt(start + 3 + offset)->str() == "(")
-                {
-                    if (tok->tokAt(start + 4 + offset)->str() == "&")
-                    {
+                } else if (tok->tokAt(start + 3 + offset)->str() == "(") {
+                    if (tok->tokAt(start + 4 + offset)->str() == "&") {
                         addressOf = true;
                         next = start + 5 + offset;
-                    }
-                    else
+                    } else
                         next = start + 4 + offset;
-                }
-                else
+                } else
                     next = start + 3 + offset;
             }
 
             // check for C++ style cast
             else if (tok->tokAt(start)->str().find("cast") != std::string::npos &&
-                     tok->tokAt(start + 1)->str() == "<")
-            {
+                     tok->tokAt(start + 1)->str() == "<") {
                 if (tok->tokAt(start + 2)->str() == "const")
                     offset++;
 
@@ -506,30 +461,24 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                 if (tok->tokAt(start + 3 + offset)->str() == "*")
                     offset++;
 
-                if (tok->tokAt(start + 5 + offset)->str() == "&")
-                {
+                if (tok->tokAt(start + 5 + offset)->str() == "&") {
                     addressOf = true;
                     next = start + 6 + offset;
-                }
-                else
+                } else
                     next = start + 5 + offset;
             }
 
             // check for var ? ...
-            else if (Token::Match(tok->tokAt(start), "%var% ?"))
-            {
+            else if (Token::Match(tok->tokAt(start), "%var% ?")) {
                 next = start;
             }
 
             // no cast
-            else
-            {
-                if (tok->tokAt(start)->str() == "&")
-                {
+            else {
+                if (tok->tokAt(start)->str() == "&") {
                     addressOf = true;
                     next = start + 1;
-                }
-                else if (tok->tokAt(start)->str() == "new")
+                } else if (tok->tokAt(start)->str() == "new")
                     return 0;
                 else
                     next = start;
@@ -539,18 +488,14 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
             varid2 = tok->tokAt(next)->varId();
             var2 = variables.find(varid2);
 
-            if (var2) // local variable (alias or read it)
-            {
-                if (var1->_type == Variables::pointer)
-                {
+            if (var2) { // local variable (alias or read it)
+                if (var1->_type == Variables::pointer) {
                     if (dereference)
                         variables.read(varid2);
-                    else
-                    {
+                    else {
                         if (addressOf ||
                             var2->_type == Variables::array ||
-                            var2->_type == Variables::pointer)
-                        {
+                            var2->_type == Variables::pointer) {
                             bool    replace = true;
 
                             // check if variable declared in same scope
@@ -558,23 +503,20 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                                 replace = true;
 
                             // not in same scope as declaration
-                            else
-                            {
+                            else {
                                 std::set<ScopeInfo *>::iterator assignment;
 
                                 // check for an assignment in this scope
                                 assignment = var1->_assignments.find(scope);
 
                                 // no other assignment in this scope
-                                if (assignment == var1->_assignments.end())
-                                {
+                                if (assignment == var1->_assignments.end()) {
                                     // nothing to replace
                                     if (var1->_assignments.empty())
                                         replace = false;
 
                                     // this variable has previous assignments
-                                    else
-                                    {
+                                    else {
                                         /**
                                          * @todo determine if existing aliases should be replaced or merged
                                          */
@@ -584,8 +526,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                                 }
 
                                 // assignment in this scope
-                                else
-                                {
+                                else {
                                     // replace when only one other assignment
                                     if (var1->_assignments.size() == 1)
                                         replace = true;
@@ -597,53 +538,41 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                             }
 
                             variables.alias(varid1, varid2, replace);
-                        }
-                        else if (tok->tokAt(next + 1)->str() == "?")
-                        {
+                        } else if (tok->tokAt(next + 1)->str() == "?") {
                             if (var2->_type == Variables::reference)
                                 variables.readAliases(varid2);
                             else
                                 variables.read(varid2);
                         }
                     }
-                }
-                else if (var1->_type == Variables::reference)
-                {
+                } else if (var1->_type == Variables::reference) {
                     variables.alias(varid1, varid2, true);
-                }
-                else
-                {
+                } else {
                     if (var2->_type == Variables::pointer && tok->tokAt(next + 1)->str() == "[")
                         variables.readAliases(varid2);
 
                     variables.read(varid2);
                 }
-            }
-            else // not a local variable (or an unsupported local variable)
-            {
-                if (var1->_type == Variables::pointer && !dereference)
-                {
+            } else { // not a local variable (or an unsupported local variable)
+                if (var1->_type == Variables::pointer && !dereference) {
                     // check if variable declaration is in this scope
                     if (var1->_scope == scope)
                         variables.clearAliases(varid1);
-                    else
-                    {
+                    else {
                         std::set<ScopeInfo *>::iterator assignment;
 
                         // check for an assignment in this scope
                         assignment = var1->_assignments.find(scope);
 
                         // no other assignment in this scope
-                        if (assignment == var1->_assignments.end())
-                        {
+                        if (assignment == var1->_assignments.end()) {
                             /**
                              * @todo determine if existing aliases should be discarded
                              */
                         }
 
                         // this assignment replaces the last assignment in this scope
-                        else
-                        {
+                        else {
                             // aliased variables in a larger scope are not supported
                             // remove all aliases
                             variables.clearAliases(varid1);
@@ -658,17 +587,14 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
 
     // check for alias to struct member
     // char c[10]; a.b = c;
-    else if (Token::Match(tok->tokAt(-2), "%var% ."))
-    {
-        if (Token::Match(tok->tokAt(2), "%var%"))
-        {
+    else if (Token::Match(tok->tokAt(-2), "%var% .")) {
+        if (Token::Match(tok->tokAt(2), "%var%")) {
             unsigned int varid2 = tok->tokAt(2)->varId();
             Variables::VariableUsage *var2 = variables.find(varid2);
 
             // struct member aliased to local variable
             if (var2 && (var2->_type == Variables::array ||
-                         var2->_type == Variables::pointer))
-            {
+                         var2->_type == Variables::pointer)) {
                 // erase aliased variable and all variables that alias it
                 // to prevent false positives
                 variables.eraseAll(varid2);
@@ -730,8 +656,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
     std::list<Scope>::const_iterator scope;
 
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope)
-    {
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
@@ -747,10 +672,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         ScopeInfo *info = &scopes;
 
         unsigned int indentlevel = 0;
-        for (const Token *tok = tok1; tok; tok = tok->next())
-        {
-            if (tok->str() == "{")
-            {
+        for (const Token *tok = tok1; tok; tok = tok->next()) {
+            if (tok->str() == "{") {
                 // replace the head node when found
                 if (indentlevel == 0)
                     scopes = ScopeInfo(tok, NULL);
@@ -758,19 +681,15 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 else
                     info = info->addChild(tok);
                 ++indentlevel;
-            }
-            else if (tok->str() == "}")
-            {
+            } else if (tok->str() == "}") {
                 --indentlevel;
 
                 info = info->parent();
 
                 if (indentlevel == 0)
                     break;
-            }
-            else if (Token::Match(tok, "struct|union|class {") ||
-                     Token::Match(tok, "struct|union|class %type% {|:"))
-            {
+            } else if (Token::Match(tok, "struct|union|class {") ||
+                       Token::Match(tok, "struct|union|class %type% {|:")) {
                 while (tok->str() != "{")
                     tok = tok->next();
                 tok = tok->link();
@@ -778,8 +697,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     break;
             }
 
-            if (Token::Match(tok, "[;{}] asm ( ) ;"))
-            {
+            if (Token::Match(tok, "[;{}] asm ( ) ;")) {
                 variables.clear();
                 break;
             }
@@ -787,16 +705,14 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // standard type declaration with possible initialization
             // int i; int j = 0; static int k;
             if (Token::Match(tok, "[;{}] static| %type% %var% ;|=") &&
-                !Token::Match(tok->next(), "return|throw"))
-            {
+                !Token::Match(tok->next(), "return|throw")) {
                 tok = tok->next();
 
                 const bool isStatic = tok->str() == "static";
                 if (isStatic)
                     tok = tok->next();
 
-                if (tok->isStandardType() || isRecordTypeWithoutSideEffects(tok->next()))
-                {
+                if (tok->isStandardType() || isRecordTypeWithoutSideEffects(tok->next())) {
                     variables.addVar(tok->next(), Variables::standard, info,
                                      tok->tokAt(2)->str() == "=" || isStatic);
                 }
@@ -805,8 +721,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             // standard const type declaration
             // const int i = x;
-            else if (Token::Match(tok, "[;{}] const %type% %var% ="))
-            {
+            else if (Token::Match(tok, "[;{}] const %type% %var% =")) {
                 tok = tok->next()->next();
 
                 if (tok->isStandardType() || isRecordTypeWithoutSideEffects(tok->next()))
@@ -817,8 +732,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             // std::string declaration with possible initialization
             // std::string s; std::string s = "string";
-            else if (Token::Match(tok, "[;{}] static| std :: string %var% ;|="))
-            {
+            else if (Token::Match(tok, "[;{}] static| std :: string %var% ;|=")) {
                 tok = tok->next();
 
                 const bool isStatic = tok->str() == "static";
@@ -833,8 +747,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // standard struct type declaration with possible initialization
             // struct S s; struct S s = { 0 }; static struct S s;
             else if (Token::Match(tok, "[;{}] static| struct %type% %var% ;|=") &&
-                     (isRecordTypeWithoutSideEffects(tok->strAt(1) == "static" ? tok->tokAt(4) : tok->tokAt(3))))
-            {
+                     (isRecordTypeWithoutSideEffects(tok->strAt(1) == "static" ? tok->tokAt(4) : tok->tokAt(3)))) {
                 tok = tok->next();
 
                 bool isStatic = tok->str() == "static";
@@ -851,8 +764,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // standard type declaration and initialization using constructor
             // int i(0); static int j(0);
             else if (Token::Match(tok, "[;{}] static| %type% %var% ( %any% ) ;") &&
-                     nextIsStandardType(tok))
-            {
+                     nextIsStandardType(tok)) {
                 tok = tok->next();
 
                 if (tok->str() == "static")
@@ -869,8 +781,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // standard type declaration of array of with possible initialization
             // int i[10]; int j[2] = { 0, 1 }; static int k[2] = { 2, 3 };
             else if (Token::Match(tok, "[;{}] static| const| %type% *| %var% [ %any% ] ;|=") &&
-                     nextIsStandardType(tok))
-            {
+                     nextIsStandardType(tok)) {
                 tok = tok->next();
 
                 const bool isStatic = tok->str() == "static";
@@ -880,8 +791,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 if (tok->str() == "const")
                     tok = tok->next();
 
-                if (tok->str() != "return" && tok->str() != "throw")
-                {
+                if (tok->str() != "return" && tok->str() != "throw") {
                     bool isPointer = bool(tok->strAt(1) == "*");
                     const Token * const nametok = tok->tokAt(isPointer ? 2 : 1);
 
@@ -893,25 +803,21 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         variables.read(nametok->tokAt(2)->varId());
 
                     // look at initializers
-                    if (Token::simpleMatch(nametok->tokAt(4), "= {"))
-                    {
+                    if (Token::simpleMatch(nametok->tokAt(4), "= {")) {
                         tok = nametok->tokAt(6);
-                        while (tok->str() != "}")
-                        {
+                        while (tok->str() != "}") {
                             if (Token::Match(tok, "%var%"))
                                 variables.read(tok->varId());
                             tok = tok->next();
                         }
-                    }
-                    else
+                    } else
                         tok = nametok->tokAt(3);
                 }
             }
 
             // pointer or reference declaration with possible initialization
             // int * i; int * j = 0; static int * k = 0;
-            else if (Token::Match(tok, "[;{}] static| const| %type% *|& %var% ;|="))
-            {
+            else if (Token::Match(tok, "[;{}] static| const| %type% *|& %var% ;|=")) {
                 tok = tok->next();
 
                 const bool isStatic = tok->str() == "static";
@@ -924,8 +830,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 if (tok->strAt(1) == "::")
                     tok = tok->tokAt(2);
 
-                if (tok->str() != "return" && tok->str() != "throw")
-                {
+                if (tok->str() != "return" && tok->str() != "throw") {
                     Variables::VariableType type;
 
                     if (tok->next()->str() == "*")
@@ -949,8 +854,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             // pointer to pointer declaration with possible initialization
             // int ** i; int ** j = 0; static int ** k = 0;
-            else if (Token::Match(tok, "[;{}] static| const| %type% * * %var% ;|="))
-            {
+            else if (Token::Match(tok, "[;{}] static| const| %type% * * %var% ;|=")) {
                 tok = tok->next();
 
                 const bool isStatic = tok->str() == "static";
@@ -960,8 +864,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 if (tok->str() == "const")
                     tok = tok->next();
 
-                if (tok->str() != "return")
-                {
+                if (tok->str() != "return") {
                     bool written = tok->tokAt(4)->str() == "=";
 
                     variables.addVar(tok->tokAt(3), Variables::pointerPointer, info, written || isStatic);
@@ -978,8 +881,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             // pointer or reference of struct or union declaration with possible initialization
             // struct s * i; struct s * j = 0; static struct s * k = 0;
-            else if (Token::Match(tok, "[;{}] static| const| struct|union %type% *|& %var% ;|="))
-            {
+            else if (Token::Match(tok, "[;{}] static| const| struct|union %type% *|& %var% ;|=")) {
                 Variables::VariableType type;
 
                 tok = tok->next();
@@ -1012,8 +914,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // pointer or reference declaration with initialization using constructor
             // int * i(j); int * k(i); static int * l(i);
             else if (Token::Match(tok, "[;{}] static| const| %type% &|* %var% ( %any% ) ;") &&
-                     nextIsStandardTypeOrVoid(tok))
-            {
+                     nextIsStandardTypeOrVoid(tok)) {
                 Variables::VariableType type;
 
                 tok = tok->next();
@@ -1038,20 +939,16 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 variables.addVar(tok->tokAt(2), type, info, true);
 
                 // check if a local variable is used to initialize this variable
-                if (varid > 0)
-                {
+                if (varid > 0) {
                     Variables::VariableUsage	*var = variables.find(varid);
 
-                    if (type == Variables::pointer)
-                    {
+                    if (type == Variables::pointer) {
                         variables.use(tok->tokAt(4)->varId());
 
                         if (var && (var->_type == Variables::array ||
                                     var->_type == Variables::pointer))
                             var->_aliases.insert(tok->varId());
-                    }
-                    else
-                    {
+                    } else {
                         variables.readAll(tok->tokAt(4)->varId());
                         if (var)
                             var->_aliases.insert(tok->varId());
@@ -1062,8 +959,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             // array of pointer or reference declaration with possible initialization
             // int * p[10]; int * q[10] = { 0 }; static int * * r[10] = { 0 };
-            else if (Token::Match(tok, "[;{}] static| const| %type% *|& %var% [ %any% ] ;|="))
-            {
+            else if (Token::Match(tok, "[;{}] static| const| %type% *|& %var% [ %any% ] ;|=")) {
                 tok = tok->next();
 
                 const bool isStatic = tok->str() == "static";
@@ -1073,8 +969,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 if (tok->str() == "const")
                     tok = tok->next();
 
-                if (tok->str() != "return")
-                {
+                if (tok->str() != "return") {
                     variables.addVar(tok->tokAt(2),
                                      tok->next()->str() == "*" ? Variables::pointerArray : Variables::referenceArray, info,
                                      tok->tokAt(6)->str() == "=" || isStatic);
@@ -1089,8 +984,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             // array of pointer or reference of struct or union declaration with possible initialization
             // struct S * p[10]; struct T * q[10] = { 0 }; static struct S * r[10] = { 0 };
-            else if (Token::Match(tok, "[;{}] static| const| struct|union %type% *|& %var% [ %any% ] ;|="))
-            {
+            else if (Token::Match(tok, "[;{}] static| const| struct|union %type% *|& %var% [ %any% ] ;|=")) {
                 tok = tok->next();
 
                 const bool isStatic = tok->str() == "static";
@@ -1114,28 +1008,21 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // Freeing memory (not considered "using" the pointer if it was also allocated in this function)
             else if (Token::Match(tok, "free|g_free|kfree|vfree ( %var% )") ||
                      Token::Match(tok, "delete %var% ;") ||
-                     Token::Match(tok, "delete [ ] %var% ;"))
-            {
+                     Token::Match(tok, "delete [ ] %var% ;")) {
                 unsigned int varid = 0;
-                if (tok->str() != "delete")
-                {
+                if (tok->str() != "delete") {
                     varid = tok->tokAt(2)->varId();
                     tok = tok->tokAt(3);
-                }
-                else if (tok->strAt(1) == "[")
-                {
+                } else if (tok->strAt(1) == "[") {
                     varid = tok->tokAt(3)->varId();
                     tok = tok->tokAt(4);
-                }
-                else
-                {
+                } else {
                     varid = tok->next()->varId();
                     tok = tok->tokAt(2);
                 }
 
                 Variables::VariableUsage *var = variables.find(varid);
-                if (var && !var->_allocateMemory)
-                {
+                if (var && !var->_allocateMemory) {
                     variables.readAll(varid);
                 }
             }
@@ -1146,14 +1033,12 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // assignment
             else if (!Token::Match(tok->tokAt(-2), "[;{}.] %var% (") &&
                      (Token::Match(tok, "*| (| ++|--| %var% ++|--| )| =") ||
-                      Token::Match(tok, "*| ( const| %type% *| ) %var% =")))
-            {
+                      Token::Match(tok, "*| ( const| %type% *| ) %var% ="))) {
                 bool dereference = false;
                 bool pre = false;
                 bool post = false;
 
-                if (tok->str() == "*")
-                {
+                if (tok->str() == "*") {
                     dereference = true;
                     tok = tok->next();
                 }
@@ -1164,8 +1049,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 else if (tok->str() == "(")
                     tok = tok->next();
 
-                if (Token::Match(tok, "++|--"))
-                {
+                if (Token::Match(tok, "++|--")) {
                     pre = true;
                     tok = tok->next();
                 }
@@ -1181,30 +1065,24 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 if (pre || post)
                     variables.use(varid1);
 
-                if (dereference)
-                {
+                if (dereference) {
                     Variables::VariableUsage *var = variables.find(varid1);
                     if (var && var->_type == Variables::array)
                         variables.write(varid1);
                     variables.writeAliases(varid1);
                     variables.read(varid1);
-                }
-                else
-                {
+                } else {
                     Variables::VariableUsage *var = variables.find(varid1);
-                    if (var && var->_type == Variables::reference)
-                    {
+                    if (var && var->_type == Variables::reference) {
                         variables.writeAliases(varid1);
                         variables.read(varid1);
                     }
                     // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
                     else if (var && var->_type == Variables::pointer &&
-                             Token::Match(start, "%var% = new|malloc|calloc|g_malloc|kmalloc|vmalloc"))
-                    {
+                             Token::Match(start, "%var% = new|malloc|calloc|g_malloc|kmalloc|vmalloc")) {
                         bool allocate = true;
 
-                        if (start->strAt(2) == "new")
-                        {
+                        if (start->strAt(2) == "new") {
                             const Token *type = start->tokAt(3);
 
                             // skip nothrow
@@ -1213,8 +1091,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                                 type = type->link()->next();
 
                             // is it a user defined type?
-                            if (!type->isStandardType())
-                            {
+                            if (!type->isStandardType()) {
                                 if (!isRecordTypeWithoutSideEffects(start))
                                     allocate = false;
                             }
@@ -1224,25 +1101,18 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                             variables.allocateMemory(varid1);
                         else
                             variables.write(varid1);
-                    }
-                    else if (varid1 && Token::Match(tok, "%varid% .", varid1))
-                    {
+                    } else if (varid1 && Token::Match(tok, "%varid% .", varid1)) {
                         variables.use(varid1);
-                    }
-                    else
-                    {
+                    } else {
                         variables.write(varid1);
                     }
 
                     Variables::VariableUsage *var2 = variables.find(tok->varId());
-                    if (var2)
-                    {
-                        if (var2->_type == Variables::reference)
-                        {
+                    if (var2) {
+                        if (var2->_type == Variables::reference) {
                             variables.writeAliases(tok->varId());
                             variables.read(tok->varId());
-                        }
-                        else if (tok->varId() != varid1 && Token::Match(tok, "%var% ."))
+                        } else if (tok->varId() != varid1 && Token::Match(tok, "%var% ."))
                             variables.read(tok->varId());
                         else if (tok->varId() != varid1 &&
                                  var2->_type == Variables::standard &&
@@ -1257,8 +1127,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     equal = tok->tokAt(4);
 
                 // checked for chained assignments
-                if (tok != start && equal->str() == "=")
-                {
+                if (tok != start && equal->str() == "=") {
                     Variables::VariableUsage *var = variables.find(tok->varId());
 
                     if (var && var->_type != Variables::reference)
@@ -1269,25 +1138,19 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             }
 
             // assignment
-            else if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->next()->link(), "] ="))
-            {
+            else if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->next()->link(), "] =")) {
                 unsigned int varid = tok->varId();
                 const Variables::VariableUsage *var = variables.find(varid);
 
-                if (var)
-                {
+                if (var) {
                     // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
                     if (var->_type == Variables::pointer &&
-                        Token::Match(tok->next()->link(), "] = new|malloc|calloc|g_malloc|kmalloc|vmalloc"))
-                    {
+                        Token::Match(tok->next()->link(), "] = new|malloc|calloc|g_malloc|kmalloc|vmalloc")) {
                         variables.allocateMemory(varid);
-                    }
-                    else if (var->_type == Variables::pointer || var->_type == Variables::reference)
-                    {
+                    } else if (var->_type == Variables::pointer || var->_type == Variables::reference) {
                         variables.read(varid);
                         variables.writeAliases(varid);
-                    }
-                    else
+                    } else
                         variables.writeAll(varid);
                 }
             }
@@ -1307,8 +1170,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 variables.use(tok->next()->link()->next()->varId());   // use = read + write
 
             // function
-            else if (Token::Match(tok, "%var% ("))
-            {
+            else if (Token::Match(tok, "%var% (")) {
                 variables.read(tok->varId());
                 if (Token::Match(tok->tokAt(2), "%var% ="))
                     variables.read(tok->tokAt(2)->varId());
@@ -1330,28 +1192,23 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             else if (Token::Match(tok, "; %var% ;"))
                 variables.readAll(tok->next()->varId());
 
-            else if (Token::Match(tok, "++|-- %var%"))
-            {
+            else if (Token::Match(tok, "++|-- %var%")) {
                 if (tok->strAt(-1) != ";")
                     variables.use(tok->next()->varId());
                 else
                     variables.modified(tok->next()->varId());
             }
 
-            else if (Token::Match(tok, "%var% ++|--"))
-            {
+            else if (Token::Match(tok, "%var% ++|--")) {
                 if (tok->strAt(-1) != ";")
                     variables.use(tok->varId());
                 else
                     variables.modified(tok->varId());
             }
 
-            else if (tok->isAssignmentOp())
-            {
-                for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next())
-                {
-                    if (tok2->varId())
-                    {
+            else if (tok->isAssignmentOp()) {
+                for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
+                    if (tok2->varId()) {
                         variables.read(tok2->varId());
                         if (tok2->next()->isAssignmentOp())
                             variables.write(tok2->varId());
@@ -1362,8 +1219,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
         // Check usage of all variables in the current scope..
         Variables::VariableMap::const_iterator it;
-        for (it = variables.varUsage().begin(); it != variables.varUsage().end(); ++it)
-        {
+        for (it = variables.varUsage().begin(); it != variables.varUsage().end(); ++it) {
             const Variables::VariableUsage &usage = it->second;
             const std::string &varname = usage._name->str();
 
@@ -1430,13 +1286,11 @@ void CheckUnusedVar::checkStructMemberUsage()
         return;
 
     std::string structname;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->fileIndex() != 0)
             continue;
 
-        if (Token::Match(tok, "struct|union %type% {"))
-        {
+        if (Token::Match(tok, "struct|union %type% {")) {
             structname.clear();
             if (Token::simpleMatch(tok->previous(), "extern"))
                 continue;
@@ -1446,10 +1300,8 @@ void CheckUnusedVar::checkStructMemberUsage()
             structname = tok->strAt(1);
 
             // Bail out if struct/union contain any functions
-            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "(")
-                {
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(") {
                     structname.clear();
                     break;
                 }
@@ -1477,8 +1329,7 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (tok->str() == "}")
             structname.clear();
 
-        if (!structname.empty() && Token::Match(tok, "[{;]"))
-        {
+        if (!structname.empty() && Token::Match(tok, "[{;]")) {
             // Declaring struct variable..
             std::string varname;
 
@@ -1500,17 +1351,14 @@ void CheckUnusedVar::checkStructMemberUsage()
             // Check if the struct variable is used anywhere in the file
             const std::string usagePattern(". " + varname);
             bool used = false;
-            for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next())
-            {
-                if (Token::simpleMatch(tok2, usagePattern.c_str()))
-                {
+            for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next()) {
+                if (Token::simpleMatch(tok2, usagePattern.c_str())) {
                     used = true;
                     break;
                 }
             }
 
-            if (! used)
-            {
+            if (! used) {
                 unusedStructMemberError(tok->next(), structname, varname);
             }
         }

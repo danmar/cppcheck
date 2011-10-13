@@ -28,8 +28,7 @@ CheckStatistics::CheckStatistics(QObject *parent)
 
 void CheckStatistics::AddItem(ShowTypes::ShowType type)
 {
-    switch (type)
-    {
+    switch (type) {
     case ShowTypes::ShowStyle:
         mStyle++;
         break;
@@ -68,8 +67,7 @@ void CheckStatistics::Clear()
 unsigned CheckStatistics::GetCount(ShowTypes::ShowType type) const
 {
     unsigned count = 0;
-    switch (type)
-    {
+    switch (type) {
     case ShowTypes::ShowStyle:
         count = mStyle;
         break;

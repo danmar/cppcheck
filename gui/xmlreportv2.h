@@ -37,8 +37,7 @@
 * This report outputs XML-formatted report. The XML format must match command
 * line version's XML output.
 */
-class XmlReportV2 : public XmlReport
-{
+class XmlReportV2 : public XmlReport {
 public:
     XmlReportV2(const QString &filename, QObject * parent = 0);
     virtual ~XmlReportV2();

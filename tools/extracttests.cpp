@@ -15,8 +15,7 @@ static std::string str(unsigned int value)
 
 int main(const int argc, const char * const * const argv)
 {
-    if (argc != 2)
-    {
+    if (argc != 2) {
         std::cerr << "syntax: extracttests testfile" << std::endl;
         return 0;
     }
@@ -26,39 +25,33 @@ int main(const int argc, const char * const * const argv)
 
     std::ifstream f(argv[1]);
     std::string line;
-    while (std::getline(f, line))
-    {
+    while (std::getline(f, line)) {
         {
             std::string::size_type pos = line.find_first_not_of(" ");
             if (pos > 0 && pos != std::string::npos)
                 line.erase(0, pos);
         }
 
-        if (line.compare(0, 5, "void ") == 0)
-        {
+        if (line.compare(0, 5, "void ") == 0) {
             testname = line.substr(5, line.size() - 7);
             subcount = 0;
             continue;
         }
 
-        if (line == "}")
-        {
+        if (line == "}") {
             testname = "";
             subcount = 0;
             continue;
         }
 
-        if (!testname.empty() && line.compare(0, 5, "check") == 0 && line.find("(\"") != std::string::npos)
-        {
+        if (!testname.empty() && line.compare(0, 5, "check") == 0 && line.find("(\"") != std::string::npos) {
             std::ofstream fout((testname + str(++subcount) + ext).c_str());
             fout << "#include <string.h>" << std::endl;
             fout << "#include <stdio.h>" << std::endl;
             fout << "#include <stdlib.h>" << std::endl;
 
-            if (testname == "nullpointer1")
-            {
-                if (subcount < 6)
-                {
+            if (testname == "nullpointer1") {
+                if (subcount < 6) {
                     fout << "class Token\n"
                          << "{\n"
                          << "public:\n"
@@ -69,9 +62,7 @@ int main(const int argc, const char * const * const argv)
                          << "    operator bool() const;\n"
                          << "};\n"
                          << "static Token *tokens;\n";
-                }
-                else
-                {
+                } else {
                     fout << "struct A\n"
                          "{\n"
                          "    char b();\n"
@@ -80,8 +71,7 @@ int main(const int argc, const char * const * const argv)
                 }
             }
 
-            if (testname == "nullpointer2")
-            {
+            if (testname == "nullpointer2") {
                 fout << "class Fred\n"
                      << "{\n"
                      << "public:\n"
@@ -90,8 +80,7 @@ int main(const int argc, const char * const * const argv)
                      << "};\n";
             }
 
-            if (testname == "nullpointer3")
-            {
+            if (testname == "nullpointer3") {
                 fout << "struct DEF { };\n"
                      << "struct ABC : public DEF\n"
                      << "{\n"
@@ -101,8 +90,7 @@ int main(const int argc, const char * const * const argv)
                      << "void bar(int); void f(struct ABC **);\n";
             }
 
-            if (testname == "nullpointer4")
-            {
+            if (testname == "nullpointer4") {
                 fout << "void bar(int);\n"
                      << "int** f(int **p = 0);\n"
                      << "extern int x;\n"
@@ -112,16 +100,14 @@ int main(const int argc, const char * const * const argv)
                      << "};\n";
             }
 
-            if (testname == "nullpointer5")
-            {
+            if (testname == "nullpointer5") {
                 fout << "struct A {\n"
                      << "    char c() const;\n"
                      << "    operator bool() const;\n"
                      << "};\n";
             }
 
-            if (testname == "nullpointer6")
-            {
+            if (testname == "nullpointer6") {
                 fout << "struct Foo {\n"
                      << "    void abcd() const;\n"
                      << "};\n"
@@ -130,16 +116,14 @@ int main(const int argc, const char * const * const argv)
                      << "extern int a;\n";
             }
 
-            if (testname == "nullpointer7")
-            {
+            if (testname == "nullpointer7") {
                 fout << "struct wxLongLong {\n"
                      << "    wxLongLong(int) { }\n"
                      << "    long GetValue() const;\n"
                      << "};\n";
             }
 
-            do
-            {
+            do {
                 std::string::size_type pos = line.find("\"");
                 if (pos == std::string::npos)
                     break;
@@ -152,8 +136,7 @@ int main(const int argc, const char * const * const argv)
                 line.erase(pos);
 
                 pos = 0;
-                while ((pos = line.find("\\", pos)) != std::string::npos)
-                {
+                while ((pos = line.find("\\", pos)) != std::string::npos) {
                     line.erase(pos, 1);
                     if (line[pos] == 'n')
                         line.erase(pos, 1);
@@ -165,8 +148,7 @@ int main(const int argc, const char * const * const argv)
 
                 if (lastline)
                     break;
-            }
-            while (std::getline(f, line));
+            } while (std::getline(f, line));
             fout << std::endl;
             continue;
         }

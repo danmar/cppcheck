@@ -36,8 +36,7 @@ class QLineEdit;
 /**
 * @brief A dialog for editing project file data.
 */
-class ProjectFileDialog : public QDialog
-{
+class ProjectFileDialog : public QDialog {
     Q_OBJECT
 public:
     ProjectFileDialog(const QString &path, QWidget *parent = 0);

@@ -28,9 +28,8 @@
 
 
 // Register this check class (by creating a static instance of it)
-namespace
-{
-CheckPostfixOperator instance;
+namespace {
+    CheckPostfixOperator instance;
 }
 
 void CheckPostfixOperator::postfixOperator()
@@ -45,49 +44,36 @@ void CheckPostfixOperator::postfixOperator()
     if (Token::Match(tok, "++|--"))
         tok = tok->next();
 
-    for (; tok; tok = tok->next())
-    {
+    for (; tok; tok = tok->next()) {
         bool result = false;
-        if (Token::Match(tok, "++|--"))
-        {
-            if (Token::Match(tok->previous()->previous(), ";|{|}") && Token::Match(tok->next(), ";|)|,"))
-            {
+        if (Token::Match(tok, "++|--")) {
+            if (Token::Match(tok->previous()->previous(), ";|{|}") && Token::Match(tok->next(), ";|)|,")) {
                 result = true;
-            }
-            else if (tok->strAt(-2) == ",")
-            {
+            } else if (tok->strAt(-2) == ",") {
                 int i(1);
-                while (tok->strAt(i) != ")" && tok->tokAt(i) != 0)
-                {
-                    if (tok->strAt(i) == ";")
-                    {
+                while (tok->strAt(i) != ")" && tok->tokAt(i) != 0) {
+                    if (tok->strAt(i) == ";") {
                         result = true;
                         break;
                     }
                     ++i;
                 }
-            }
-            else if (tok->strAt(-2) == "<<" && tok->strAt(1) == "<<")
-            {
+            } else if (tok->strAt(-2) == "<<" && tok->strAt(1) == "<<") {
                 result = true;
             }
         }
 
-        if (result && tok->previous()->varId())
-        {
+        if (result && tok->previous()->varId()) {
             const Variable *var = symbolDatabase->getVariableFromVarId(tok->previous()->varId());
             if (!var || !Token::Match(var->typeEndToken(), "%type%"))
                 continue;
 
             const Token *decltok = var->nameToken();
 
-            if (Token::Match(decltok->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
-            {
+            if (Token::Match(decltok->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator")) {
                 // the variable is an iterator
                 postfixOperatorError(tok);
-            }
-            else if (var->type())
-            {
+            } else if (var->type()) {
                 // the variable is an instance of class
                 postfixOperatorError(tok);
             }

@@ -22,8 +22,7 @@
 #include "tokenize.h"
 #include "token.h"
 
-class givenACodeSampleToTokenize
-{
+class givenACodeSampleToTokenize {
 private:
     std::istringstream _sample;
     const Token* _tokens;
@@ -33,15 +32,13 @@ private:
 public:
     givenACodeSampleToTokenize(const std::string& sample)
         :_sample(sample)
-        ,_tokens(NULL)
-    {
+        ,_tokens(NULL) {
         _tokenizer.setSettings(&_settings);
         _tokenizer.tokenize(_sample, "test.cpp");
         _tokens = _tokenizer.tokens();
     }
 
-    const Token* tokens() const
-    {
+    const Token* tokens() const {
         return _tokens;
     }
 };

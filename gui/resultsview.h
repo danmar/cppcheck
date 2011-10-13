@@ -41,8 +41,7 @@ class CheckStatistics;
 * @brief Widget to show cppcheck progressbar and result
 *
 */
-class ResultsView : public QWidget
-{
+class ResultsView : public QWidget {
     Q_OBJECT
 public:
 
@@ -147,8 +146,7 @@ public:
      * @brief Return checking statistics.
      * @return Pointer to checking statistics.
      */
-    CheckStatistics *GetStatistics() const
-    {
+    CheckStatistics *GetStatistics() const {
         return mStatistics;
     }
 
@@ -156,8 +154,7 @@ public:
      * @brief Return Showtypes.
      * @return Pointer to Showtypes.
      */
-    ShowTypes * GetShowTypes() const
-    {
+    ShowTypes * GetShowTypes() const {
         return &mUI.mTree->mShowSeverities;
     }
 

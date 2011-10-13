@@ -29,8 +29,7 @@
 /**
  * A class for check statistics.
  */
-class CheckStatistics : public QObject
-{
+class CheckStatistics : public QObject {
 public:
     CheckStatistics(QObject *parent = NULL);
 

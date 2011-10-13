@@ -37,8 +37,7 @@
  * errors or places that could be improved.
  * Usage: See check() for more info.
  */
-class CppCheck : public ErrorLogger
-{
+class CppCheck : public ErrorLogger {
 public:
     /**
      * @brief Constructor.
@@ -118,8 +117,7 @@ public:
     /**
      * @brief Terminate checking. The checking will be terminated as soon as possible.
      */
-    void terminate()
-    {
+    void terminate() {
         _settings.terminate();
     }
 

@@ -32,23 +32,19 @@
  * @brief Check for assignment / condition mismatches
  */
 
-class CheckAssignIf : public Check
-{
+class CheckAssignIf : public Check {
 public:
     /** This constructor is used when registering the CheckAssignIf */
-    CheckAssignIf() : Check(myName())
-    {
+    CheckAssignIf() : Check(myName()) {
     }
 
     /** This constructor is used when running checks. */
     CheckAssignIf(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckAssignIf checkAssignIf(tokenizer, settings, errorLogger);
         checkAssignIf.assignIf();
         checkAssignIf.comparison();
@@ -70,21 +66,18 @@ private:
     void comparisonError(const Token *tok, bool result);
     void multiConditionError(const Token *tok, unsigned int line1);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckAssignIf c(0, settings, errorLogger);
         c.assignIfError(0, false);
         c.comparisonError(0, false);
         c.multiConditionError(0,1);
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "match assignments and conditions";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Match assignments and conditions:\n"
                " * Mismatching assignment and comparison => comparison is always true/false\n"
                " * Mismatching lhs and rhs in comparison => comparison is always true/false\n"

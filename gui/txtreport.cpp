@@ -34,8 +34,7 @@ TxtReport::~TxtReport()
 bool TxtReport::Create()
 {
     bool success = false;
-    if (Report::Create())
-    {
+    if (Report::Create()) {
         mTxtWriter.setDevice(Report::GetFile());
         success = true;
     }
@@ -61,23 +60,19 @@ void TxtReport::WriteError(const ErrorItem &error)
 
     QString line;
 
-    for (int i = 0; i < error.lines.size(); i++)
-    {
+    for (int i = 0; i < error.lines.size(); i++) {
         const QString file = QDir::toNativeSeparators(error.files[i]);
         line += QString("[%1:%2]").arg(file).arg(error.lines[i]);
-        if (i < error.lines.size() - 1 && error.lines.size() > 0)
-        {
+        if (i < error.lines.size() - 1 && error.lines.size() > 0) {
             line += " -> ";
         }
 
-        if (i == error.lines.size() - 1)
-        {
+        if (i == error.lines.size() - 1) {
             line += ": ";
         }
     }
     line += QString("(%1) ").arg(GuiSeverity::toString(error.severity));
-    if (error.inconclusive)
-    {
+    if (error.inconclusive) {
         line += tr("inconclusive");
         line += " ";
     }

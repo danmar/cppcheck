@@ -32,8 +32,7 @@ QStringList FileList::GetDefaultFilters()
 
 bool FileList::FilterMatches(const QFileInfo &inf)
 {
-    if (inf.isFile())
-    {
+    if (inf.isFile()) {
         const QStringList filters = FileList::GetDefaultFilters();
         QString ext("*.");
         ext += inf.suffix();
@@ -57,14 +56,11 @@ void FileList::AddDirectory(const QString &directory, bool recursive)
     const QStringList filters = FileList::GetDefaultFilters();
     const QStringList origNameFilters = dir.nameFilters();
     dir.setNameFilters(filters);
-    if (!recursive)
-    {
+    if (!recursive) {
         dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
         QFileInfoList items = dir.entryInfoList();
         mFileList += items;
-    }
-    else
-    {
+    } else {
         dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
         QFileInfoList items = dir.entryInfoList();
         mFileList += items;
@@ -73,8 +69,7 @@ void FileList::AddDirectory(const QString &directory, bool recursive)
         dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
         QFileInfoList list = dir.entryInfoList();
         QFileInfo item;
-        foreach(item, list)
-        {
+        foreach(item, list) {
             const QString path = item.canonicalFilePath();
             AddDirectory(path, recursive);
         }
@@ -84,8 +79,7 @@ void FileList::AddDirectory(const QString &directory, bool recursive)
 void FileList::AddPathList(const QStringList &paths)
 {
     QString path;
-    foreach(path, paths)
-    {
+    foreach(path, paths) {
         QFileInfo inf(path);
         if (inf.isFile())
             AddFile(path);
@@ -96,18 +90,14 @@ void FileList::AddPathList(const QStringList &paths)
 
 QStringList FileList::GetFileList() const
 {
-    if (mExcludedPaths.empty())
-    {
+    if (mExcludedPaths.empty()) {
         QStringList names;
-        foreach(QFileInfo item, mFileList)
-        {
+        foreach(QFileInfo item, mFileList) {
             QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
             names << name;
         }
         return names;
-    }
-    else
-    {
+    } else {
         return ApplyExcludeList();
     }
 }
@@ -120,8 +110,7 @@ void FileList::AddExcludeList(const QStringList &paths)
 QStringList FileList::ApplyExcludeList() const
 {
     QStringList paths;
-    foreach(QFileInfo item, mFileList)
-    {
+    foreach(QFileInfo item, mFileList) {
         QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
         if (!Match(name))
             paths << name;
@@ -131,16 +120,12 @@ QStringList FileList::ApplyExcludeList() const
 
 bool FileList::Match(const QString &path) const
 {
-    for (int i = 0; i < mExcludedPaths.size(); i++)
-    {
-        if (mExcludedPaths[i].endsWith('/'))
-        {
+    for (int i = 0; i < mExcludedPaths.size(); i++) {
+        if (mExcludedPaths[i].endsWith('/')) {
             const QString pathexclude("/" + mExcludedPaths[i]);
             if (path.indexOf(pathexclude) != -1)
                 return true;
-        }
-        else
-        {
+        } else {
             if (path.endsWith(mExcludedPaths[i]))
                 return true;
         }

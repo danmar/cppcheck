@@ -37,8 +37,7 @@ std::string Suppressions::parseFile(std::istream &istr)
 
     // Parse filedata..
     std::istringstream istr2(filedata);
-    while (std::getline(istr2, line))
-    {
+    while (std::getline(istr2, line)) {
         // Skip empty lines
         if (line.empty())
             continue;
@@ -61,10 +60,8 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
     std::string id;
     std::string file;
     unsigned int lineNumber = 0;
-    if (std::getline(lineStream, id, ':'))
-    {
-        if (std::getline(lineStream, file))
-        {
+    if (std::getline(lineStream, id, ':')) {
+        if (std::getline(lineStream, file)) {
             // If there is not a dot after the last colon in "file" then
             // the colon is a separator and the contents after the colon
             // is a line number..
@@ -74,21 +71,16 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
 
             // if a colon is found and there is no dot after it..
             if (pos != std::string::npos &&
-                file.find(".", pos) == std::string::npos)
-            {
+                file.find(".", pos) == std::string::npos) {
                 // Try to parse out the line number
-                try
-                {
+                try {
                     std::istringstream istr1(file.substr(pos+1));
                     istr1 >> lineNumber;
-                }
-                catch (...)
-                {
+                } catch (...) {
                     lineNumber = 0;
                 }
 
-                if (lineNumber > 0)
-                {
+                if (lineNumber > 0) {
                     file.erase(pos);
                 }
             }
@@ -109,44 +101,33 @@ bool Suppressions::FileMatcher::match(const std::string &pattern, const std::str
     const char *n = name.c_str();
     std::stack<std::pair<const char *, const char *> > backtrack;
 
-    for (;;)
-    {
+    for (;;) {
         bool matching = true;
-        while (*p != '\0' && matching)
-        {
-            switch (*p)
-            {
+        while (*p != '\0' && matching) {
+            switch (*p) {
             case '*':
                 // Step forward until we match the next character after *
-                while (*n != '\0' && *n != p[1])
-                {
+                while (*n != '\0' && *n != p[1]) {
                     n++;
                 }
-                if (*n != '\0')
-                {
+                if (*n != '\0') {
                     // If this isn't the last possibility, save it for later
                     backtrack.push(std::make_pair(p, n));
                 }
                 break;
             case '?':
                 // Any character matches unless we're at the end of the name
-                if (*n != '\0')
-                {
+                if (*n != '\0') {
                     n++;
-                }
-                else
-                {
+                } else {
                     matching = false;
                 }
                 break;
             default:
                 // Non-wildcard characters match literally
-                if (*n == *p)
-                {
+                if (*n == *p) {
                     n++;
-                }
-                else
-                {
+                } else {
                     matching = false;
                 }
                 break;
@@ -155,14 +136,12 @@ bool Suppressions::FileMatcher::match(const std::string &pattern, const std::str
         }
 
         // If we haven't failed matching and we've reached the end of the name, then success
-        if (matching && *n == '\0')
-        {
+        if (matching && *n == '\0') {
             return true;
         }
 
         // If there are no other paths to tray, then fail
-        if (backtrack.empty())
-        {
+        if (backtrack.empty()) {
             return false;
         }
 
@@ -178,27 +157,19 @@ bool Suppressions::FileMatcher::match(const std::string &pattern, const std::str
 
 std::string Suppressions::FileMatcher::addFile(const std::string &name, unsigned int line)
 {
-    if (name.find_first_of("*?") != std::string::npos)
-    {
-        for (std::string::const_iterator i = name.begin(); i != name.end(); ++i)
-        {
-            if (*i == '*')
-            {
+    if (name.find_first_of("*?") != std::string::npos) {
+        for (std::string::const_iterator i = name.begin(); i != name.end(); ++i) {
+            if (*i == '*') {
                 std::string::const_iterator j = i + 1;
-                if (j != name.end() && (*j == '*' || *j == '?'))
-                {
+                if (j != name.end() && (*j == '*' || *j == '?')) {
                     return "Failed to add suppression. Syntax error in glob.";
                 }
             }
         }
         _globs[name][line] = false;
-    }
-    else if (name.empty())
-    {
+    } else if (name.empty()) {
         _globs["*"][0U] = false;
-    }
-    else
-    {
+    } else {
         _files[Path::simplifyPath(name.c_str())][line] = false;
     }
     return "";
@@ -209,18 +180,14 @@ bool Suppressions::FileMatcher::isSuppressed(const std::string &file, unsigned i
     if (isSuppressedLocal(file, line))
         return true;
 
-    for (std::map<std::string, std::map<unsigned int, bool> >::iterator g = _globs.begin(); g != _globs.end(); ++g)
-    {
-        if (match(g->first, file))
-        {
-            if (g->second.find(0U) != g->second.end())
-            {
+    for (std::map<std::string, std::map<unsigned int, bool> >::iterator g = _globs.begin(); g != _globs.end(); ++g) {
+        if (match(g->first, file)) {
+            if (g->second.find(0U) != g->second.end()) {
                 g->second[0U] = true;
                 return true;
             }
             std::map<unsigned int, bool>::iterator l = g->second.find(line);
-            if (l != g->second.end())
-            {
+            if (l != g->second.end()) {
                 l->second = true;
                 return true;
             }
@@ -233,16 +200,13 @@ bool Suppressions::FileMatcher::isSuppressed(const std::string &file, unsigned i
 bool Suppressions::FileMatcher::isSuppressedLocal(const std::string &file, unsigned int line)
 {
     std::map<std::string, std::map<unsigned int, bool> >::iterator f = _files.find(file);
-    if (f != _files.end())
-    {
-        if (f->second.find(0U) != f->second.end())
-        {
+    if (f != _files.end()) {
+        if (f->second.find(0U) != f->second.end()) {
             f->second[0U] = true;
             return true;
         }
         std::map<unsigned int, bool>::iterator l = f->second.find(line);
-        if (l != f->second.end())
-        {
+        if (l != f->second.end()) {
             l->second = true;
             return true;
         }
@@ -254,20 +218,15 @@ bool Suppressions::FileMatcher::isSuppressedLocal(const std::string &file, unsig
 std::string Suppressions::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
 {
     // Check that errorId is valid..
-    if (errorId.empty())
-    {
+    if (errorId.empty()) {
         return "Failed to add suppression. No id.";
     }
-    if (errorId != "*")
-    {
-        for (std::string::size_type pos = 0; pos < errorId.length(); ++pos)
-        {
-            if (errorId[pos] < 0 || !std::isalnum(errorId[pos]))
-            {
+    if (errorId != "*") {
+        for (std::string::size_type pos = 0; pos < errorId.length(); ++pos) {
+            if (errorId[pos] < 0 || !std::isalnum(errorId[pos])) {
                 return "Failed to add suppression. Invalid id \"" + errorId + "\"";
             }
-            if (pos == 0 && std::isdigit(errorId[pos]))
-            {
+            if (pos == 0 && std::isdigit(errorId[pos])) {
                 return "Failed to add suppression. Invalid id \"" + errorId + "\"";
             }
         }
@@ -303,15 +262,11 @@ bool Suppressions::isSuppressedLocal(const std::string &errorId, const std::stri
 std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppressions(const std::string &file) const
 {
     std::list<SuppressionEntry> r;
-    for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i)
-    {
+    for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
         std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(file);
-        if (f != i->second._files.end())
-        {
-            for (std::map<unsigned int, bool>::const_iterator l = f->second.begin(); l != f->second.end(); ++l)
-            {
-                if (!l->second)
-                {
+        if (f != i->second._files.end()) {
+            for (std::map<unsigned int, bool>::const_iterator l = f->second.begin(); l != f->second.end(); ++l) {
+                if (!l->second) {
                     r.push_back(SuppressionEntry(i->first, f->first, l->first));
                 }
             }
@@ -323,14 +278,10 @@ std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppres
 std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedGlobalSuppressions() const
 {
     std::list<SuppressionEntry> r;
-    for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i)
-    {
-        for (std::map<std::string, std::map<unsigned int, bool> >::const_iterator g = i->second._globs.begin(); g != i->second._globs.end(); ++g)
-        {
-            for (std::map<unsigned int, bool>::const_iterator l = g->second.begin(); l != g->second.end(); ++l)
-            {
-                if (!l->second)
-                {
+    for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
+        for (std::map<std::string, std::map<unsigned int, bool> >::const_iterator g = i->second._globs.begin(); g != i->second._globs.end(); ++g) {
+            for (std::map<unsigned int, bool>::const_iterator l = g->second.begin(); l != g->second.end(); ++l) {
+                if (!l->second) {
                     r.push_back(SuppressionEntry(i->first, g->first, l->first));
                 }
             }

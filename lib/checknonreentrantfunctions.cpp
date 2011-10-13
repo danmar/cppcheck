@@ -26,9 +26,8 @@
 
 
 // Register this check class (by creating a static instance of it)
-namespace
-{
-CheckNonReentrantFunctions instance;
+namespace {
+    CheckNonReentrantFunctions instance;
 }
 
 void CheckNonReentrantFunctions::nonReentrantFunctions()
@@ -40,13 +39,10 @@ void CheckNonReentrantFunctions::nonReentrantFunctions()
     if (_tokenizer->isJavaOrCSharp())
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         std::list< std::pair<const std::string, const std::string> >::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
-        for (; it!=itend; ++it)
-        {
-            if (tok->strAt(1) == it->first && tok->strAt(2) == "(" && tok->tokAt(1)->varId() == 0 && !tok->tokAt(0)->isName() && !Token::Match(tok, ".|::|:|,"))
-            {
+        for (; it!=itend; ++it) {
+            if (tok->strAt(1) == it->first && tok->strAt(2) == "(" && tok->tokAt(1)->varId() == 0 && !tok->tokAt(0)->isName() && !Token::Match(tok, ".|::|:|,")) {
                 // If checking code that is single threaded, this might be not interesing for all.
                 // Therefore this is "portabiblity"
                 reportError(tok->tokAt(1), Severity::portability, "nonreentrantFunctions"+it->first, it->second);

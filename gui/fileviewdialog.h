@@ -36,8 +36,7 @@ class QTextEdit;
 * the authors list.
 *
 */
-class FileViewDialog : public QDialog
-{
+class FileViewDialog : public QDialog {
     Q_OBJECT
 public:
     FileViewDialog(const QString &file,

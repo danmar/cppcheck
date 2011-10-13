@@ -35,8 +35,7 @@
  * there is ignore filters then only paths not matching those filters are
  * returned.
  */
-class FileList
-{
+class FileList {
 public:
 
     /**

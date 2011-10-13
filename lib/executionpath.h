@@ -28,8 +28,7 @@ class Check;
  * Base class for Execution Paths checking
  * An execution path is a linear list of statements. There are no "if"/.. to worry about.
  **/
-class ExecutionPath
-{
+class ExecutionPath {
 private:
     /** No implementation */
     void operator=(const ExecutionPath &);
@@ -62,10 +61,8 @@ public:
      * bail out all execution paths
      * @param checks the execution paths to bail out on
      **/
-    static void bailOut(std::list<ExecutionPath *> &checks)
-    {
-        while (!checks.empty())
-        {
+    static void bailOut(std::list<ExecutionPath *> &checks) {
+        while (!checks.empty()) {
             delete checks.back();
             checks.pop_back();
         }
@@ -76,21 +73,16 @@ public:
      * @param checks the execution paths to bail out on
      * @param varid the specific variable id
      **/
-    static void bailOutVar(std::list<ExecutionPath *> &checks, const unsigned int varid)
-    {
+    static void bailOutVar(std::list<ExecutionPath *> &checks, const unsigned int varid) {
         if (varid == 0)
             return;
 
         std::list<ExecutionPath *>::iterator it = checks.begin();
-        while (it != checks.end())
-        {
-            if ((*it)->varId == varid)
-            {
+        while (it != checks.end()) {
+            if ((*it)->varId == varid) {
                 delete *it;
                 checks.erase(it++);
-            }
-            else
-            {
+            } else {
                 ++it;
             }
         }
@@ -117,8 +109,7 @@ public:
      * @param tok the first token in the loop body (the token after the {)
      * @param checks The execution paths
      */
-    virtual void parseLoopBody(const Token *tok, std::list<ExecutionPath *> &checks) const
-    {
+    virtual void parseLoopBody(const Token *tok, std::list<ExecutionPath *> &checks) const {
         (void)tok;
         (void)checks;
     }
@@ -127,8 +118,7 @@ public:
     virtual void end(const std::list<ExecutionPath *> & /*checks*/, const Token * /*tok*/) const
     { }
 
-    bool operator==(const ExecutionPath &e) const
-    {
+    bool operator==(const ExecutionPath &e) const {
         return bool(varId == e.varId && is_equal(&e));
     }
 

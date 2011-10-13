@@ -27,9 +27,8 @@
 
 
 // Register this check class (by creating a static instance of it)
-namespace
-{
-CheckObsoleteFunctions instance;
+namespace {
+    CheckObsoleteFunctions instance;
 }
 
 void CheckObsoleteFunctions::obsoleteFunctions()
@@ -43,45 +42,35 @@ void CheckObsoleteFunctions::obsoleteFunctions()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
 
         if (tok->isName() && tok->varId()==0 && tok->strAt(1) == "(" &&
-            (!Token::Match(tok->previous(), ".|::|:|,") || Token::simpleMatch(tok->previous()->previous(), "std :: gets")))
-        {
+            (!Token::Match(tok->previous(), ".|::|:|,") || Token::simpleMatch(tok->previous()->previous(), "std :: gets"))) {
             // function declaration?
             if ((tok->previous() && (tok->previous()->str() == "*" || tok->previous()->isName()))
-                || symbolDatabase->findFunctionByToken(tok))
-            {
+                || symbolDatabase->findFunctionByToken(tok)) {
                 _obsoleteStandardFunctions.erase(tok->str());
                 _obsoletePosixFunctions.erase(tok->str());
                 continue;
             }
 
             std::map<std::string,std::string>::const_iterator it = _obsoleteStandardFunctions.find(tok->str());
-            if (it != _obsoleteStandardFunctions.end())
-            {
+            if (it != _obsoleteStandardFunctions.end()) {
                 // If checking an old code base it might be uninteresting to update obsolete functions.
                 // Therefore this is "information"
                 reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
-            }
-            else
-            {
-                if (_settings->posix)
-                {
+            } else {
+                if (_settings->posix) {
                     it = _obsoletePosixFunctions.find(tok->str());
-                    if (it != _obsoletePosixFunctions.end())
-                    {
+                    if (it != _obsoletePosixFunctions.end()) {
                         // If checking an old code base it might be uninteresting to update obsolete functions.
                         // Therefore this is "information"
                         reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
                     }
                 }
-                if (_settings->c99)
-                {
+                if (_settings->c99) {
                     it = _obsoleteC99Functions.find(tok->str());
-                    if (it != _obsoleteC99Functions.end())
-                    {
+                    if (it != _obsoleteC99Functions.end()) {
                         reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
                     }
                 }

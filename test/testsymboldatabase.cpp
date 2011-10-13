@@ -28,8 +28,7 @@
     tokenizer.tokenize(istr, "test.cpp"); \
     const SymbolDatabase *db = tokenizer.getSymbolDatabase();
 
-class TestSymbolDatabase: public TestFixture
-{
+class TestSymbolDatabase: public TestFixture {
 public:
     TestSymbolDatabase()
         :TestFixture("TestSymbolDatabase")
@@ -41,8 +40,7 @@ public:
         ,isArray(false)
     {}
 
-    virtual void reportOut(const std::string &outmsg)
-    {
+    virtual void reportOut(const std::string &outmsg) {
         errout << outmsg << std::endl;
     }
 
@@ -54,8 +52,7 @@ private:
     bool found;
     bool isArray;
 
-    void reset()
-    {
+    void reset() {
         vartok = NULL;
         typetok = NULL;
         t = NULL;
@@ -63,8 +60,7 @@ private:
         isArray = false;
     }
 
-    void run()
-    {
+    void run() {
         TEST_CASE(test_isVariableDeclarationCanHandleNull);
         TEST_CASE(test_isVariableDeclarationIdentifiesSimpleDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedDeclaration);
@@ -132,8 +128,7 @@ private:
         TEST_CASE(symboldatabase21);
     }
 
-    void test_isVariableDeclarationCanHandleNull()
-    {
+    void test_isVariableDeclarationCanHandleNull() {
         reset();
         bool result = si.isVariableDeclaration(NULL, vartok, typetok, isArray);
         ASSERT_EQUALS(false, result);
@@ -142,8 +137,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesSimpleDeclaration()
-    {
+    void test_isVariableDeclarationIdentifiesSimpleDeclaration() {
         reset();
         givenACodeSampleToTokenize simpleDeclaration("int x;");
         bool result = si.isVariableDeclaration(simpleDeclaration.tokens(), vartok, typetok, isArray);
@@ -153,8 +147,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesScopedDeclaration()
-    {
+    void test_isVariableDeclarationIdentifiesScopedDeclaration() {
         reset();
         givenACodeSampleToTokenize ScopedDeclaration("::int x;");
         bool result = si.isVariableDeclaration(ScopedDeclaration.tokens(), vartok, typetok, isArray);
@@ -164,8 +157,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesStdDeclaration()
-    {
+    void test_isVariableDeclarationIdentifiesStdDeclaration() {
         reset();
         givenACodeSampleToTokenize StdDeclaration("std::string x;");
         bool result = si.isVariableDeclaration(StdDeclaration.tokens(), vartok, typetok, isArray);
@@ -175,8 +167,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesScopedStdDeclaration()
-    {
+    void test_isVariableDeclarationIdentifiesScopedStdDeclaration() {
         reset();
         givenACodeSampleToTokenize StdDeclaration("::std::string x;");
         bool result = si.isVariableDeclaration(StdDeclaration.tokens(), vartok, typetok, isArray);
@@ -186,8 +177,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesManyScopes()
-    {
+    void test_isVariableDeclarationIdentifiesManyScopes() {
         reset();
         givenACodeSampleToTokenize manyScopes("AA::BB::CC::DD::EE x;");
         bool result = si.isVariableDeclaration(manyScopes.tokens(), vartok, typetok, isArray);
@@ -197,8 +187,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesPointers()
-    {
+    void test_isVariableDeclarationIdentifiesPointers() {
         reset();
         givenACodeSampleToTokenize pointer("int* p;");
         bool result = si.isVariableDeclaration(pointer.tokens(), vartok, typetok, isArray);
@@ -208,8 +197,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationDoesNotIdentifyConstness()
-    {
+    void test_isVariableDeclarationDoesNotIdentifyConstness() {
         reset();
         givenACodeSampleToTokenize constness("const int* cp;");
         bool result = si.isVariableDeclaration(constness.tokens(), vartok, typetok, isArray);
@@ -219,8 +207,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesFirstOfManyVariables()
-    {
+    void test_isVariableDeclarationIdentifiesFirstOfManyVariables() {
         reset();
         givenACodeSampleToTokenize multipleDeclaration("int first, second;");
         bool result = si.isVariableDeclaration(multipleDeclaration.tokens(), vartok, typetok, isArray);
@@ -230,8 +217,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesScopedPointerDeclaration()
-    {
+    void test_isVariableDeclarationIdentifiesScopedPointerDeclaration() {
         reset();
         givenACodeSampleToTokenize manyScopes("AA::BB::CC::DD::EE* p;");
         bool result = si.isVariableDeclaration(manyScopes.tokens(), vartok, typetok, isArray);
@@ -241,8 +227,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesDeclarationWithIndirection()
-    {
+    void test_isVariableDeclarationIdentifiesDeclarationWithIndirection() {
         reset();
         givenACodeSampleToTokenize pointerToPointer("int** pp;");
         bool result = si.isVariableDeclaration(pointerToPointer.tokens(), vartok, typetok, isArray);
@@ -252,8 +237,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection()
-    {
+    void test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection() {
         reset();
         givenACodeSampleToTokenize pointerToPointer("int***** p;");
         bool result = si.isVariableDeclaration(pointerToPointer.tokens(), vartok, typetok, isArray);
@@ -263,8 +247,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesArray()
-    {
+    void test_isVariableDeclarationIdentifiesArray() {
         reset();
         givenACodeSampleToTokenize array("::std::string v[3];");
         bool result = si.isVariableDeclaration(array.tokens(), vartok, typetok, isArray);
@@ -274,8 +257,7 @@ private:
         ASSERT(true == isArray);
     }
 
-    void test_isVariableDeclarationIdentifiesOfArrayPointers()
-    {
+    void test_isVariableDeclarationIdentifiesOfArrayPointers() {
         reset();
         givenACodeSampleToTokenize array("A *a[5];");
         bool result = si.isVariableDeclaration(array.tokens(), vartok, typetok, isArray);
@@ -285,8 +267,7 @@ private:
         ASSERT(true == isArray);
     }
 
-    void isVariableDeclarationIdentifiesTemplatedPointerVariable()
-    {
+    void isVariableDeclarationIdentifiesTemplatedPointerVariable() {
         reset();
         givenACodeSampleToTokenize var("std::set<char>* chars;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok, isArray);
@@ -296,8 +277,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable()
-    {
+    void isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable() {
         reset();
         givenACodeSampleToTokenize var("std::deque<int>*** ints;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok, isArray);
@@ -307,8 +287,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void isVariableDeclarationIdentifiesTemplatedArrayVariable()
-    {
+    void isVariableDeclarationIdentifiesTemplatedArrayVariable() {
         reset();
         givenACodeSampleToTokenize var("std::deque<int> ints[3];");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok, isArray);
@@ -318,8 +297,7 @@ private:
         ASSERT(true == isArray);
     }
 
-    void isVariableDeclarationIdentifiesTemplatedVariable()
-    {
+    void isVariableDeclarationIdentifiesTemplatedVariable() {
         reset();
         givenACodeSampleToTokenize var("std::vector<int> ints;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok, isArray);
@@ -329,8 +307,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void isVariableDeclarationIdentifiesTemplatedVariableIterator()
-    {
+    void isVariableDeclarationIdentifiesTemplatedVariableIterator() {
         reset();
         givenACodeSampleToTokenize var("std::list<int>::const_iterator floats;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok, isArray);
@@ -340,8 +317,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void isVariableDeclarationIdentifiesNestedTemplateVariable()
-    {
+    void isVariableDeclarationIdentifiesNestedTemplateVariable() {
         reset();
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok, isArray);
@@ -351,8 +327,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void isVariableDeclarationDoesNotIdentifyTemplateClass()
-    {
+    void isVariableDeclarationDoesNotIdentifyTemplateClass() {
         reset();
         givenACodeSampleToTokenize var("template <class T> class SomeClass{};");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok, isArray);
@@ -360,8 +335,7 @@ private:
         ASSERT(false == isArray);
     }
 
-    void canFindMatchingBracketsNeedsOpen()
-    {
+    void canFindMatchingBracketsNeedsOpen() {
         reset();
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
@@ -370,8 +344,7 @@ private:
         ASSERT(! t);
     }
 
-    void canFindMatchingBracketsInnerPair()
-    {
+    void canFindMatchingBracketsInnerPair() {
         reset();
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
@@ -381,8 +354,7 @@ private:
         ASSERT_EQUALS(var.tokens()->strAt(9), t->str());
     }
 
-    void canFindMatchingBracketsOuterPair()
-    {
+    void canFindMatchingBracketsOuterPair() {
         reset();
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
@@ -393,8 +365,7 @@ private:
 
     }
 
-    void canFindMatchingBracketsWithTooManyClosing()
-    {
+    void canFindMatchingBracketsWithTooManyClosing() {
         reset();
         givenACodeSampleToTokenize var("X< 1>2 > x1;\n");
 
@@ -404,8 +375,7 @@ private:
         ASSERT_EQUALS(var.tokens()->strAt(3), t->str());
     }
 
-    void canFindMatchingBracketsWithTooManyOpening()
-    {
+    void canFindMatchingBracketsWithTooManyOpening() {
         reset();
         givenACodeSampleToTokenize var("X < (2 < 1) > x1;\n");
 
@@ -413,15 +383,13 @@ private:
         ASSERT(!found);
     }
 
-    void hasRegularFunction()
-    {
+    void hasRegularFunction() {
         GET_SYMBOL_DB("void func() { }\n")
 
         // 2 scopes: Global and Function
         ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("func"));
 
-        if (db)
-        {
+        if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(1));
 
             ASSERT(scope && scope->className == "func");
@@ -434,15 +402,13 @@ private:
         }
     }
 
-    void hasInlineClassFunction()
-    {
+    void hasInlineClassFunction() {
         GET_SYMBOL_DB("class Fred { void func() { } };\n")
 
         // 3 scopes: Global, Class, and Function
         ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
 
-        if (db)
-        {
+        if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(4));
 
             ASSERT(scope && scope->className == "func");
@@ -455,15 +421,13 @@ private:
         }
     }
 
-    void hasMissingInlineClassFunction()
-    {
+    void hasMissingInlineClassFunction() {
         GET_SYMBOL_DB("class Fred { void func(); };\n")
 
         // 2 scopes: Global and Class (no Function scope because there is no function implementation)
         ASSERT(db && db->scopeList.size() == 2 && !tokenizer.getFunctionTokenByName("func"));
 
-        if (db)
-        {
+        if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(4));
 
             ASSERT(scope == NULL);
@@ -476,15 +440,13 @@ private:
         }
     }
 
-    void hasClassFunction()
-    {
+    void hasClassFunction() {
         GET_SYMBOL_DB("class Fred { void func(); }; Fred::func() { }\n")
 
         // 3 scopes: Global, Class, and Function
         ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
 
-        if (db)
-        {
+        if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(12));
 
             ASSERT(scope && scope->className == "func");
@@ -497,15 +459,13 @@ private:
         }
     }
 
-    void hasRegularFunctionReturningFunctionPointer()
-    {
+    void hasRegularFunctionReturningFunctionPointer() {
         GET_SYMBOL_DB("void (*func(int f))(char) { }\n")
 
         // 2 scopes: Global and Function
         ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("func"));
 
-        if (db)
-        {
+        if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(3));
 
             ASSERT(scope && scope->className == "func");
@@ -518,15 +478,13 @@ private:
         }
     }
 
-    void hasInlineClassFunctionReturningFunctionPointer()
-    {
+    void hasInlineClassFunctionReturningFunctionPointer() {
         GET_SYMBOL_DB("class Fred { void (*func(int f))(char) { } };\n")
 
         // 3 scopes: Global, Class, and Function
         ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
 
-        if (db)
-        {
+        if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(6));
 
             ASSERT(scope && scope->className == "func");
@@ -539,15 +497,13 @@ private:
         }
     }
 
-    void hasMissingInlineClassFunctionReturningFunctionPointer()
-    {
+    void hasMissingInlineClassFunctionReturningFunctionPointer() {
         GET_SYMBOL_DB("class Fred { void (*func(int f))(char); };\n")
 
         // 2 scopes: Global and Class (no Function scope because there is no function implementation)
         ASSERT(db && db->scopeList.size() == 2 && !tokenizer.getFunctionTokenByName("func"));
 
-        if (db)
-        {
+        if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(6));
 
             ASSERT(scope == NULL);
@@ -560,15 +516,13 @@ private:
         }
     }
 
-    void hasClassFunctionReturningFunctionPointer()
-    {
+    void hasClassFunctionReturningFunctionPointer() {
         GET_SYMBOL_DB("class Fred { void (*func(int f))(char); }; void (*Fred::func(int f))(char) { }\n")
 
         // 3 scopes: Global, Class, and Function
         ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
 
-        if (db)
-        {
+        if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(23));
 
             ASSERT(scope && scope->className == "func");
@@ -581,17 +535,14 @@ private:
         }
     }
 
-    void hasGlobalVariables1()
-    {
+    void hasGlobalVariables1() {
         GET_SYMBOL_DB("int i;\n")
 
         ASSERT(db && db->scopeList.size() == 1);
-        if (db && db->scopeList.size() == 1)
-        {
+        if (db && db->scopeList.size() == 1) {
             std::list<Scope>::const_iterator it = db->scopeList.begin();
             ASSERT(it->varlist.size() == 1);
-            if (it->varlist.size() == 1)
-            {
+            if (it->varlist.size() == 1) {
                 std::list<Variable>::const_iterator var = it->varlist.begin();
                 ASSERT(var->name() == "i");
                 ASSERT(var->typeStartToken()->str() == "int");
@@ -599,17 +550,14 @@ private:
         }
     }
 
-    void hasGlobalVariables2()
-    {
+    void hasGlobalVariables2() {
         GET_SYMBOL_DB("int array[2][2];\n")
 
         ASSERT(db && db->scopeList.size() == 1);
-        if (db && db->scopeList.size() == 1)
-        {
+        if (db && db->scopeList.size() == 1) {
             std::list<Scope>::const_iterator it = db->scopeList.begin();
             ASSERT(it->varlist.size() == 1);
-            if (it->varlist.size() == 1)
-            {
+            if (it->varlist.size() == 1) {
                 std::list<Variable>::const_iterator var = it->varlist.begin();
                 ASSERT(var->name() == "array");
                 ASSERT(var->typeStartToken()->str() == "int");
@@ -617,17 +565,14 @@ private:
         }
     }
 
-    void hasGlobalVariables3()
-    {
+    void hasGlobalVariables3() {
         GET_SYMBOL_DB("int array[2][2] = { { 0, 0 }, { 0, 0 } };\n")
 
         ASSERT(db && db->scopeList.size() == 1);
-        if (db && db->scopeList.size() == 1)
-        {
+        if (db && db->scopeList.size() == 1) {
             std::list<Scope>::const_iterator it = db->scopeList.begin();
             ASSERT(it->varlist.size() == 1);
-            if (it->varlist.size() == 1)
-            {
+            if (it->varlist.size() == 1) {
                 std::list<Variable>::const_iterator var = it->varlist.begin();
                 ASSERT(var->name() == "array");
                 ASSERT(var->typeStartToken()->str() == "int");
@@ -635,8 +580,7 @@ private:
         }
     }
 
-    void check(const char code[], bool debug = true)
-    {
+    void check(const char code[], bool debug = true) {
         // Clear the error log
         errout.str("");
 
@@ -654,8 +598,7 @@ private:
         tokenizer.getSymbolDatabase();
     }
 
-    void functionArgs1()
-    {
+    void functionArgs1() {
         check("void f(std::vector<std::string s>, const std::vector<int> & v) { }\n");
 
         ASSERT_EQUALS("", errout.str());
@@ -665,8 +608,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void functionArgs2()
-    {
+    void functionArgs2() {
         GET_SYMBOL_DB("void f(int a[][4]) { }");
         const Variable *a = db->getVariableFromVarId(1);
         ASSERT_EQUALS("a", a->nameToken()->str());
@@ -675,8 +617,7 @@ private:
         ASSERT_EQUALS(4UL, a->dimension(1));
     }
 
-    void symboldatabase1()
-    {
+    void symboldatabase1() {
         check("namespace foo {\n"
               "    class bar;\n"
               "};");
@@ -687,8 +628,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase2()
-    {
+    void symboldatabase2() {
         check("class foo {\n"
               "public slots :\n"
               "foo() { }\n"
@@ -702,8 +642,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase3()
-    {
+    void symboldatabase3() {
         check("typedef void (func_type)();\n"
               "struct A {\n"
               "    friend func_type f : 2;\n"
@@ -711,8 +650,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase4()
-    {
+    void symboldatabase4() {
         check("static void function_declaration_before(void) __attribute__((__used__));\n"
               "static void function_declaration_before(void) {}\n"
               "static void function_declaration_after(void) {}\n"
@@ -744,8 +682,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase5()
-    {
+    void symboldatabase5() {
         // ticket #2178 - segmentation fault
         check("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
               "    return (sign ? cl_I() : 0);\n"
@@ -753,8 +690,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase6()
-    {
+    void symboldatabase6() {
         // ticket #2221 - segmentation fault
         check("template<int i> class X { };\n"
               "X< 1>2 > x1;\n"
@@ -766,8 +702,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase7()
-    {
+    void symboldatabase7() {
         // ticket #2230 - segmentation fault
         check("template<template<class> class E,class D> class C : E<D>\n"
               "{\n"
@@ -782,8 +717,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase8()
-    {
+    void symboldatabase8() {
         // ticket #2252 - segmentation fault
         check("struct PaletteColorSpaceHolder: public rtl::StaticWithInit<uno::Reference<rendering::XColorSpace>,\n"
               "                                                           PaletteColorSpaceHolder>\n"
@@ -797,8 +731,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase9()
-    {
+    void symboldatabase9() {
         // ticket #2425 - segmentation fault
         check("class CHyperlink : public CString\n"
               "{\n"
@@ -812,8 +745,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase10()
-    {
+    void symboldatabase10() {
         // ticket #2537 - segmentation fault
         check("class A {\n"
               "private:\n"
@@ -826,8 +758,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase11()
-    {
+    void symboldatabase11() {
         // ticket #2539 - segmentation fault
         check("int g ();\n"
               "struct S {\n"
@@ -837,8 +768,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase12()
-    {
+    void symboldatabase12() {
         // ticket #2547 - segmentation fault
         check("class foo {\n"
               "    void bar2 () = __null;\n"
@@ -847,8 +777,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase13()
-    {
+    void symboldatabase13() {
         // ticket #2577 - segmentation fault
         check("class foo {\n"
               "    void bar2 () = A::f;\n"
@@ -857,64 +786,56 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase14()
-    {
+    void symboldatabase14() {
         // ticket #2589 - segmentation fault
         check("struct B : A\n");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase15()
-    {
+    void symboldatabase15() {
         // ticket #2591 - segmentation fault
         check("struct A :\n");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase16()
-    {
+    void symboldatabase16() {
         // ticket #2637 - segmentation fault
         check("{} const const\n");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase17()
-    {
+    void symboldatabase17() {
         // ticket #2657 - segmentation fault
         check("return f(){}\n");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase18()
-    {
+    void symboldatabase18() {
         // ticket #2865 - segmentation fault
         check("char a[1]\n");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase19()
-    {
+    void symboldatabase19() {
         // ticket #2991 - segmentation fault
         check("::y(){x}\n");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase20()
-    {
+    void symboldatabase20() {
         // ticket #3013 - segmentation fault
         check("struct x : virtual y\n");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase21()
-    {
+    void symboldatabase21() {
         check("class Fred {\n"
               "    class Foo { };\n"
               "    void func() const;\n"

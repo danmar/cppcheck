@@ -24,8 +24,7 @@ options::options(int argc, const char* argv[])
 {
     _options.erase("-g");
     _options.erase("-q");
-    if (! _options.empty())
-    {
+    if (! _options.empty()) {
         _which_test = *_options.rbegin();
     }
 }

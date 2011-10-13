@@ -25,15 +25,13 @@
 
 extern std::ostringstream errout;
 
-class TestUnusedPrivateFunction : public TestFixture
-{
+class TestUnusedPrivateFunction : public TestFixture {
 public:
     TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction")
     { }
 
 private:
-    void run()
-    {
+    void run() {
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);
@@ -73,8 +71,7 @@ private:
     }
 
 
-    void check(const char code[])
-    {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -94,8 +91,7 @@ private:
 
 
 
-    void test1()
-    {
+    void test1() {
         check("class Fred\n"
               "{\n"
               "private:\n"
@@ -165,8 +161,7 @@ private:
     }
 
 
-    void test2()
-    {
+    void test2() {
         check("class A {\n"
               "public:\n"
               "    A();\n"
@@ -184,8 +179,7 @@ private:
     }
 
 
-    void test3()
-    {
+    void test3() {
         check("class A {\n"
               "public:\n"
               "    A() { }\n"
@@ -200,8 +194,7 @@ private:
     }
 
 
-    void test4()
-    {
+    void test4() {
         check("class A {\n"
               "public:\n"
               "    A();\n"
@@ -216,8 +209,7 @@ private:
     }
 
 
-    void test5()
-    {
+    void test5() {
         check("class A {\n"
               "private:\n"
               "    A() : lock(new Lock())\n"
@@ -227,8 +219,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test6() // ticket #2602 segmentation fault
-    {
+    void test6() { // ticket #2602 segmentation fault
         check("class A {\n"
               "    A& operator=(const A&);\n"
               "};\n");
@@ -239,8 +230,7 @@ private:
 
 
 
-    void func_pointer1()
-    {
+    void func_pointer1() {
         check("class Fred\n"
               "{\n"
               "private:\n"
@@ -266,8 +256,7 @@ private:
 
 
 
-    void func_pointer2()
-    {
+    void func_pointer2() {
         check("class UnusedPrivateFunctionMemberPointer\n"
               "{\n"
               "public:\n"
@@ -284,8 +273,7 @@ private:
     }
 
 
-    void func_pointer3()
-    {
+    void func_pointer3() {
         check("class c1\n"
               "{\n"
               "public:\n"
@@ -299,8 +287,7 @@ private:
     }
 
 
-    void func_pointer4() // ticket #2807
-    {
+    void func_pointer4() { // ticket #2807
         check("class myclass {\n"
               "public:\n"
               "    myclass();\n"
@@ -314,8 +301,7 @@ private:
     }
 
 
-    void ctor()
-    {
+    void ctor() {
         check("class PrivateCtor\n"
               "{\n"
               "private:\n"
@@ -331,8 +317,7 @@ private:
     }
 
 
-    void classInClass()
-    {
+    void classInClass() {
         check("class A\n"
               "{\n"
               "public:\n"
@@ -368,8 +353,7 @@ private:
     }
 
 
-    void sameFunctionNames()
-    {
+    void sameFunctionNames() {
         check("class A\n"
               "{\n"
               "public:\n"
@@ -385,8 +369,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incompleteImplementation()
-    {
+    void incompleteImplementation() {
         // The implementation for "A::a" is missing - so don't check if
         // "A::b" is used or not
         check("#file \"test.h\"\n"
@@ -404,8 +387,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void derivedClass()
-    {
+    void derivedClass() {
         // skip warning in derived classes in case the function is virtual
         check("class derived : public base\n"
               "{\n"
@@ -417,8 +399,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void friendClass()
-    {
+    void friendClass() {
         // ticket #2459 - friend class
         check("class Foo {\n"
               "private:\n"
@@ -428,8 +409,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void borland()
-    {
+    void borland() {
         // ticket #2034 - Borland C++ __property
         check("class Foo {\n"
               "private:\n"
@@ -443,8 +423,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void template1()
-    {
+    void template1() {
         // ticket #2067 - Template methods do not "use" private ones
         check("class A {\n"
               "public:\n"
@@ -462,8 +441,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void fp_operator()
-    {
+    void fp_operator() {
         // #2407 - FP when function is called from operator()
         check("class Fred\n"
               "{\n"
@@ -491,8 +469,7 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (style) Unused private function 'Fred::startListening'\n", errout.str());
     }
 
-    void testDoesNotIdentifyMethodAsFirstFunctionArgument()
-    {
+    void testDoesNotIdentifyMethodAsFirstFunctionArgument() {
         check("#include <iostream>"
               "void callback(void (*func)(int), int arg)"
               "{"
@@ -520,8 +497,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testDoesNotIdentifyMethodAsMiddleFunctionArgument()
-    {
+    void testDoesNotIdentifyMethodAsMiddleFunctionArgument() {
         check("#include <iostream>"
               "void callback(char, void (*func)(int), int arg)"
               "{"
@@ -549,8 +525,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testDoesNotIdentifyMethodAsLastFunctionArgument()
-    {
+    void testDoesNotIdentifyMethodAsLastFunctionArgument() {
         check("#include <iostream>"
               "void callback(int arg, void (*func)(int))"
               "{"
@@ -578,8 +553,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void multiFile() // ticket #2567
-    {
+    void multiFile() { // ticket #2567
         check("#file \"test.h\"\n"
               "struct Fred\n"
               "{\n"
@@ -598,8 +572,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void unknownBaseTemplate() // ticket #2580
-    {
+    void unknownBaseTemplate() { // ticket #2580
         check("class Bla : public Base2<Base> {\n"
               "public:\n"
               "    Bla() {}\n"

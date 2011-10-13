@@ -49,8 +49,7 @@ void ThreadResult::FileChecked(const QString &file)
     mProgress += QFile(file).size();
     mFilesChecked ++;
 
-    if (mMaxProgress > 0)
-    {
+    if (mMaxProgress > 0) {
         const int value = static_cast<int>(PROGRESS_MAX * mProgress / mMaxProgress);
         const QString description = tr("%1 of %2 files checked").arg(mFilesChecked).arg(mTotalFiles);
 
@@ -67,8 +66,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
 
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = msg._callStack.begin();
          tok != msg._callStack.end();
-         ++tok)
-    {
+         ++tok) {
         files << QString((*tok).getfile(false).c_str());
         lines << (*tok).line;
     }
@@ -92,8 +90,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
 QString ThreadResult::GetNextFile()
 {
     QMutexLocker locker(&mutex);
-    if (mFiles.size() == 0)
-    {
+    if (mFiles.size() == 0) {
         return "";
     }
 
@@ -111,8 +108,7 @@ void ThreadResult::SetFiles(const QStringList &files)
     // Determine the total size of all of the files to check, so that we can
     // show an accurate progress estimate
     quint64 sizeOfFiles = 0;
-    foreach(const QString& file, files)
-    {
+    foreach(const QString& file, files) {
         sizeOfFiles += QFile(file).size();
     }
     mMaxProgress = sizeOfFiles;

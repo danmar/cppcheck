@@ -35,8 +35,7 @@ class CppCheck;
  * just rewrite this class for your needs and possibly use other methods
  * from CppCheck class instead the ones used here.
  */
-class CppCheckExecutor : public ErrorLogger
-{
+class CppCheckExecutor : public ErrorLogger {
 public:
     /**
      * Constructor

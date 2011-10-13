@@ -121,8 +121,7 @@ void ResultsView::FilterResults(const QString& filter)
 
 void ResultsView::Save(const QString &filename, Report::Type type)
 {
-    if (!mErrorsFound)
-    {
+    if (!mErrorsFound) {
         QMessageBox msgBox;
         msgBox.setText(tr("No errors found, nothing to save."));
         msgBox.setIcon(QMessageBox::Critical);
@@ -131,8 +130,7 @@ void ResultsView::Save(const QString &filename, Report::Type type)
 
     Report *report = NULL;
 
-    switch (type)
-    {
+    switch (type) {
     case Report::CSV:
         report = new CsvReport(filename, this);
         break;
@@ -147,12 +145,10 @@ void ResultsView::Save(const QString &filename, Report::Type type)
         break;
     }
 
-    if (report)
-    {
+    if (report) {
         if (report->Create())
             mUI.mTree->SaveResults(report);
-        else
-        {
+        else {
             QMessageBox msgBox;
             msgBox.setText(tr("Failed to save the report."));
             msgBox.setIcon(QMessageBox::Critical);
@@ -160,9 +156,7 @@ void ResultsView::Save(const QString &filename, Report::Type type)
         }
         delete report;
         report = NULL;
-    }
-    else
-    {
+    } else {
         QMessageBox msgBox;
         msgBox.setText(tr("Failed to save the report."));
         msgBox.setIcon(QMessageBox::Critical);
@@ -198,11 +192,9 @@ void ResultsView::CheckingFinished()
     mUI.mProgress->setFormat("%p%");
 
     //Should we inform user of non visible/not found errors?
-    if (mShowNoErrorsMessage)
-    {
+    if (mShowNoErrorsMessage) {
         //Tell user that we found no errors
-        if (!mErrorsFound)
-        {
+        if (!mErrorsFound) {
             QMessageBox msg(QMessageBox::Information,
                             tr("Cppcheck"),
                             tr("No errors found."),
@@ -211,8 +203,7 @@ void ResultsView::CheckingFinished()
 
             msg.exec();
         } //If we have errors but they aren't visible, tell user about it
-        else if (!mUI.mTree->HasVisibleResults())
-        {
+        else if (!mUI.mTree->HasVisibleResults()) {
             QString text = tr("Errors were found, but they are configured to be hidden.\n"\
                               "To toggle what kind of errors are shown, open view menu.");
             QMessageBox msg(QMessageBox::Information,
@@ -257,8 +248,7 @@ void ResultsView::DisableProgressbar()
 void ResultsView::ReadErrorsXml(const QString &filename)
 {
     const int version = XmlReport::determineVersion(filename);
-    if (version == 0)
-    {
+    if (version == 0) {
         QMessageBox msgBox;
         msgBox.setText(tr("Failed to read the report."));
         msgBox.setIcon(QMessageBox::Critical);
@@ -273,12 +263,10 @@ void ResultsView::ReadErrorsXml(const QString &filename)
         report = new XmlReportV2(filename, this);
 
     QList<ErrorItem> errors;
-    if (report)
-    {
+    if (report) {
         if (report->Open())
             errors = report->Read();
-        else
-        {
+        else {
             QMessageBox msgBox;
             msgBox.setText(tr("Failed to read the report."));
             msgBox.setIcon(QMessageBox::Critical);
@@ -286,9 +274,7 @@ void ResultsView::ReadErrorsXml(const QString &filename)
         }
         delete report;
         report = NULL;
-    }
-    else
-    {
+    } else {
         QMessageBox msgBox;
         msgBox.setText(tr("Failed to read the report."));
         msgBox.setIcon(QMessageBox::Critical);
@@ -296,8 +282,7 @@ void ResultsView::ReadErrorsXml(const QString &filename)
     }
 
     ErrorItem item;
-    foreach(item, errors)
-    {
+    foreach(item, errors) {
         mUI.mTree->AddErrorItem(item);
     }
     mUI.mTree->SetCheckDirectory("");
@@ -308,8 +293,7 @@ void ResultsView::UpdateDetails(const QModelIndex &index)
     QStandardItemModel *model = qobject_cast<QStandardItemModel*>(mUI.mTree->model());
     QStandardItem *item = model->itemFromIndex(index);
 
-    if (!item)
-    {
+    if (!item) {
         mUI.mDetails->setText("");
         return;
     }
@@ -321,8 +305,7 @@ void ResultsView::UpdateDetails(const QModelIndex &index)
     QVariantMap data = item->data().toMap();
 
     // If there is no severity data then it is a parent item without summary and message
-    if (!data.contains("severity"))
-    {
+    if (!data.contains("severity")) {
         mUI.mDetails->setText("");
         return;
     }

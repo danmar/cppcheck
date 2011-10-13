@@ -38,8 +38,7 @@ FileViewDialog::FileViewDialog(const QString &file,
 void FileViewDialog::LoadTextFile(const QString &filename, QTextEdit *edit)
 {
     QFile file(filename);
-    if (!file.exists())
-    {
+    if (!file.exists()) {
         QString msg(tr("Could not find the file: %1"));
         msg = msg.arg(filename);
 
@@ -53,8 +52,7 @@ void FileViewDialog::LoadTextFile(const QString &filename, QTextEdit *edit)
     }
 
     file.open(QIODevice::ReadOnly | QIODevice::Text);
-    if (!file.isReadable())
-    {
+    if (!file.isReadable()) {
         QString msg(tr("Could not read the file: %1"));
         msg = msg.arg(filename);
 

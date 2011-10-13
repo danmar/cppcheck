@@ -65,10 +65,8 @@ bool Project::IsOpen() const
 bool Project::Open()
 {
     mPFile = new ProjectFile(mFilename, this);
-    if (QFile::exists(mFilename))
-    {
-        if (!mPFile->Read())
-        {
+    if (QFile::exists(mFilename)) {
+        if (!mPFile->Read()) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),
                             tr("Could not read the project file."),
@@ -99,8 +97,7 @@ void Project::Edit()
     dlg.SetExcludedPaths(ignorepaths);
 
     int rv = dlg.exec();
-    if (rv == QDialog::Accepted)
-    {
+    if (rv == QDialog::Accepted) {
         QString root = dlg.GetRootPath();
         mPFile->SetRootPath(root);
         QStringList includes = dlg.GetIncludePaths();
@@ -113,8 +110,7 @@ void Project::Edit()
         mPFile->SetExcludedPaths(excludedpaths);
 
         bool writeSuccess = mPFile->Write();
-        if (!writeSuccess)
-        {
+        if (!writeSuccess) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),
                             tr("Could not write the project file."),

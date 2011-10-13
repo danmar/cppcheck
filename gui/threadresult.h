@@ -35,8 +35,7 @@ class ErrorItem;
 * @brief Threads use this class to obtain new files to process and to publish results
 *
 */
-class ThreadResult : public QObject, public ErrorLogger
-{
+class ThreadResult : public QObject, public ErrorLogger {
     Q_OBJECT
 public:
     ThreadResult();

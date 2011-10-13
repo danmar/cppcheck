@@ -33,14 +33,12 @@
 void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 {
     // Function declarations..
-    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
         if (tok->fileIndex() != 0)
             continue;
 
         // token contains a ':' => skip to next ; or {
-        if (tok->str().find(":") != std::string::npos)
-        {
+        if (tok->str().find(":") != std::string::npos) {
             while (tok && tok->str().find_first_of(";{"))
                 tok = tok->next();
             if (tok)
@@ -66,10 +64,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
             funcname = 0;
 
         // Check that ") {" is found..
-        for (const Token *tok2 = funcname; tok2; tok2 = tok2->next())
-        {
-            if (tok2->str() == ")")
-            {
+        for (const Token *tok2 = funcname; tok2; tok2 = tok2->next()) {
+            if (tok2->str() == ")") {
                 if (! Token::simpleMatch(tok2, ") {") &&
                     ! Token::simpleMatch(tok2, ") const {") &&
                     ! Token::simpleMatch(tok2, ") const throw ( ) {") &&
@@ -79,21 +75,18 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
             }
         }
 
-        if (funcname)
-        {
+        if (funcname) {
             FunctionUsage &func = _functions[ funcname->str()];
 
             if (!func.lineNumber)
                 func.lineNumber = funcname->linenr();
 
             // No filename set yet..
-            if (func.filename.empty())
-            {
+            if (func.filename.empty()) {
                 func.filename = tokenizer.getFiles()->at(0);
             }
             // Multiple files => filename = "+"
-            else if (func.filename != tokenizer.getFiles()->at(0))
-            {
+            else if (func.filename != tokenizer.getFiles()->at(0)) {
                 //func.filename = "+";
                 func.usedOtherFile |= func.usedSameFile;
             }
@@ -101,12 +94,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
     }
 
     // Function usage..
-    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-    {
+    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
         const Token *funcname = 0;
 
-        if (Token::Match(tok->next(), "%var% ("))
-        {
+        if (Token::Match(tok->next(), "%var% (")) {
             funcname = tok->next();
         }
 
@@ -120,16 +111,13 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
             continue;
 
         // funcname ( => Assert that the end parenthesis isn't followed by {
-        if (Token::Match(funcname, "%var% ("))
-        {
+        if (Token::Match(funcname, "%var% (")) {
             int parlevel = 0;
-            for (const Token *tok2 = funcname; tok2; tok2 = tok2->next())
-            {
+            for (const Token *tok2 = funcname; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(")
                     ++parlevel;
 
-                else if (tok2->str() == ")")
-                {
+                else if (tok2->str() == ")") {
                     --parlevel;
                     if (parlevel == 0 && (Token::Match(tok2, ") const|{")))
                         funcname = NULL;
@@ -139,8 +127,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
             }
         }
 
-        if (funcname)
-        {
+        if (funcname) {
             FunctionUsage &func = _functions[ funcname->str()];
 
             if (func.filename.empty() || func.filename == "+")
@@ -156,24 +143,20 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 
 void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
 {
-    for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it)
-    {
+    for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it) {
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
         if (it->first == "main" || it->first == "WinMain" || it->first == "_tmain" || it->first == "if")
             continue;
-        if (! func.usedSameFile)
-        {
+        if (! func.usedSameFile) {
             std::string filename;
             if (func.filename == "+")
                 filename = "";
             else
                 filename = func.filename;
             unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
-        }
-        else if (! func.usedOtherFile)
-        {
+        } else if (! func.usedOtherFile) {
             /** @todo add error message "function is only used in <file> it can be static" */
             /*
             std::ostringstream errmsg;
@@ -189,8 +172,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
         const std::string &funcname)
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    if (!filename.empty())
-    {
+    if (!filename.empty()) {
         ErrorLogger::ErrorMessage::FileLocation fileLoc;
         fileLoc.setfile(filename);
         fileLoc.line = lineNumber;

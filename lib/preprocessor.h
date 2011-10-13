@@ -37,15 +37,13 @@ class Settings;
  * The preprocessor has special functionality for extracting the various ifdef
  * configurations that exist in a source file.
  */
-class Preprocessor
-{
+class Preprocessor {
 public:
 
     /**
      * Include file types.
      */
-    enum HeaderTypes
-    {
+    enum HeaderTypes {
         NoHeader = 0,
         UserHeader,
         SystemHeader

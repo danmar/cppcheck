@@ -28,8 +28,7 @@ class options;
 
 class Token;
 
-class TestFixture : public ErrorLogger
-{
+class TestFixture : public ErrorLogger {
 private:
     static std::ostringstream errmsg;
     static unsigned int countTests;

@@ -25,8 +25,7 @@
 
 extern std::ostringstream errout;
 
-class TestConstructors : public TestFixture
-{
+class TestConstructors : public TestFixture {
 public:
     TestConstructors() : TestFixture("TestConstructors")
     { }
@@ -34,8 +33,7 @@ public:
 private:
 
 
-    void check(const char code[], bool showAll = false)
-    {
+    void check(const char code[], bool showAll = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -54,8 +52,7 @@ private:
         checkClass.constructors();
     }
 
-    void run()
-    {
+    void run() {
         TEST_CASE(simple1);
         TEST_CASE(simple2);
         TEST_CASE(simple3);
@@ -87,8 +84,7 @@ private:
     }
 
 
-    void simple1()
-    {
+    void simple1() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -118,8 +114,7 @@ private:
     }
 
 
-    void simple2()
-    {
+    void simple2() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -167,8 +162,7 @@ private:
     }
 
 
-    void simple3()
-    {
+    void simple3() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -228,8 +222,7 @@ private:
     }
 
 
-    void simple4()
-    {
+    void simple4() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -260,8 +253,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
     }
 
-    void simple5() // ticket #2560
-    {
+    void simple5() { // ticket #2560
         check("namespace Nsp\n"
               "{\n"
               "    class B { };\n"
@@ -278,8 +270,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void initvar_with_this()
-    {
+    void initvar_with_this() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -298,8 +289,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void initvar_if()
-    {
+    void initvar_if() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -329,8 +319,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void initvar_operator_eq1()
-    {
+    void initvar_operator_eq1() {
         // Bug 2190376 - False positive, Uninitialized member variable with operator=
 
         check("class Fred\n"
@@ -406,8 +395,7 @@ private:
     }
 
 
-    void initvar_operator_eq2()
-    {
+    void initvar_operator_eq2() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -426,8 +414,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
     }
 
-    void initvar_operator_eq3()
-    {
+    void initvar_operator_eq3() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -450,8 +437,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void initvar_operator_eq4()
-    {
+    void initvar_operator_eq4() {
         check("class Fred\n"
               "{\n"
               "    int i;\n"
@@ -513,8 +499,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void initvar_same_classname()
-    {
+    void initvar_same_classname() {
         // Bug 2208157 - False positive: Uninitialized variable, same class name
 
         check("void func1()\n"
@@ -623,8 +608,7 @@ private:
                       "[test.cpp:16]: (warning) Member variable 'Fred::b' is not initialized in the constructor.\n", errout.str());
     }
 
-    void initvar_chained_assign()
-    {
+    void initvar_chained_assign() {
         // Bug 2270433 - Uninitialized variable false positive on chained assigns
 
         check("class c\n"
@@ -659,8 +643,7 @@ private:
     }
 
 
-    void initvar_2constructors()
-    {
+    void initvar_2constructors() {
         check("class c\n"
               "{\n"
               "    c();\n"
@@ -723,8 +706,7 @@ private:
     }
 
 
-    void initvar_constvar()
-    {
+    void initvar_constvar() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -784,8 +766,7 @@ private:
     }
 
 
-    void initvar_staticvar()
-    {
+    void initvar_staticvar() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -796,8 +777,7 @@ private:
     }
 
 
-    void initvar_union()
-    {
+    void initvar_union() {
         check("class Fred\n"
               "{\n"
               "    union\n"
@@ -829,8 +809,7 @@ private:
     }
 
 
-    void initvar_private_constructor()
-    {
+    void initvar_private_constructor() {
         check("class Fred\n"
               "{\n"
               "private:\n"
@@ -842,8 +821,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void initvar_copy_constructor() // ticket #1611
-    {
+    void initvar_copy_constructor() { // ticket #1611
         check("class Fred\n"
               "{\n"
               "private:\n"
@@ -867,8 +845,7 @@ private:
         ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'Fred::var' is not initialized in the constructor.\n", errout.str());
     }
 
-    void initvar_nested_constructor() // ticket #1375
-    {
+    void initvar_nested_constructor() { // ticket #1375
         check("class A {\n"
               "public:\n"
               "    A();\n"
@@ -958,8 +935,7 @@ private:
                       "[test.cpp:24]: (warning) Member variable 'D::d' is not initialized in the constructor.\n", errout.str());
     }
 
-    void initvar_nocopy1() // ticket #2474
-    {
+    void initvar_nocopy1() { // ticket #2474
         check("class B\n"
               "{\n"
               "    B (const B & Var);\n"
@@ -1004,8 +980,7 @@ private:
                       "[test.cpp:7]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='\n", errout.str());
     }
 
-    void initvar_nocopy2() // ticket #2484
-    {
+    void initvar_nocopy2() { // ticket #2484
         check("class B\n"
               "{\n"
               "    B (B & Var);\n"
@@ -1039,8 +1014,7 @@ private:
                       "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='\n", errout.str());
     }
 
-    void initvar_destructor()
-    {
+    void initvar_destructor() {
         check("class Fred\n"
               "{\n"
               "private:\n"
@@ -1052,8 +1026,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void operatorEqSTL()
-    {
+    void operatorEqSTL() {
         check("class Fred\n"
               "{\n"
               "private:\n"

@@ -32,8 +32,7 @@ class QWidget;
 * @brief About dialog
 *
 */
-class AboutDialog : public QDialog
-{
+class AboutDialog : public QDialog {
     Q_OBJECT
 public:
     AboutDialog(const QString &version, const QString &extraVersion,

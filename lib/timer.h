@@ -23,39 +23,33 @@
 #include <map>
 #include <ctime>
 
-enum
-{
+enum {
     SHOWTIME_NONE = 0,
     SHOWTIME_FILE,
     SHOWTIME_SUMMARY,
     SHOWTIME_TOP5
 };
 
-class TimerResultsIntf
-{
+class TimerResultsIntf {
 public:
     virtual ~TimerResultsIntf() { }
 
     virtual void AddResults(const std::string& str, std::clock_t clocks) = 0;
 };
 
-struct TimerResultsData
-{
+struct TimerResultsData {
     std::clock_t _clocks;
     long _numberOfResults;
 
     TimerResultsData()
         : _clocks(0)
-        , _numberOfResults(0)
-    {
+        , _numberOfResults(0) {
     }
 };
 
-class TimerResults : public TimerResultsIntf
-{
+class TimerResults : public TimerResultsIntf {
 public:
-    TimerResults()
-    {
+    TimerResults() {
     }
 
     void ShowResults();
@@ -65,8 +59,7 @@ private:
     std::map<std::string, struct TimerResultsData> _results;
 };
 
-class Timer
-{
+class Timer {
 public:
     Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults = NULL);
     ~Timer();

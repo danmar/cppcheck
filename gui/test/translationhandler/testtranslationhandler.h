@@ -19,8 +19,7 @@
 #include <QtTest>
 #include <QObject>
 
-class TestTranslationHandler: public QObject
-{
+class TestTranslationHandler: public QObject {
     Q_OBJECT
 
 private slots:

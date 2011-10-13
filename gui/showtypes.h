@@ -34,15 +34,13 @@
   * Notice that the "visibility" settings are automatically loaded when the
   * class is constructed and saved when the class is destroyed.
   */
-class ShowTypes
-{
+class ShowTypes {
 public:
 
     /**
       * @brief Show types we have (i.e. severities in the GUI).
       */
-    enum ShowType
-    {
+    enum ShowType {
         ShowStyle = 0,
         ShowWarnings,
         ShowPerformance,

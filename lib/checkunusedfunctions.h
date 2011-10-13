@@ -29,8 +29,7 @@
 /// @addtogroup Checks
 /// @{
 
-class CheckUnusedFunctions: public Check
-{
+class CheckUnusedFunctions: public Check {
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
     CheckUnusedFunctions() : Check(myName())
@@ -50,8 +49,7 @@ public:
 
 private:
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckUnusedFunctions c(0, settings, errorLogger);
         c.unusedFunctionError(errorLogger, "", 0, "funcName");
     }
@@ -66,23 +64,19 @@ private:
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
-    void runSimplifiedChecks(const Tokenizer *, const Settings *, ErrorLogger *)
-    {
+    void runSimplifiedChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
 
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "Unused functions";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Check for functions that are never called\n";
     }
 
-    class FunctionUsage
-    {
+    class FunctionUsage {
     public:
         FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false)
         { }

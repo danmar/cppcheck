@@ -30,8 +30,7 @@
 
 class Tokenizer;
 
-class MathLib
-{
+class MathLib {
 public:
     typedef long long bigint;
 
@@ -39,8 +38,7 @@ public:
     static double toDoubleNumber(const std::string & str);
 
     template<typename T>
-    static std::string toString(const T &d)
-    {
+    static std::string toString(const T &d) {
         std::ostringstream result;
         result << d;
         std::string strResult(result.str());

@@ -33,8 +33,7 @@ ShowTypes::~ShowTypes()
 
 ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity::SeverityType severity)
 {
-    switch (severity)
-    {
+    switch (severity) {
     case Severity::none:
         return ShowTypes::ShowNone;
     case Severity::error:
@@ -58,8 +57,7 @@ ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity::SeverityType severit
 
 Severity::SeverityType ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
 {
-    switch (type)
-    {
+    switch (type) {
     case ShowTypes::ShowStyle:
         return Severity::style;
         break;
@@ -95,8 +93,7 @@ Severity::SeverityType ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
 ShowTypes::ShowType ShowTypes::VariantToShowType(const QVariant &data)
 {
     const int value = data.toInt();
-    if (value < ShowTypes::ShowStyle || value > ShowTypes::ShowErrors)
-    {
+    if (value < ShowTypes::ShowStyle || value > ShowTypes::ShowErrors) {
         return ShowTypes::ShowNone;
     }
     return (ShowTypes::ShowType)value;

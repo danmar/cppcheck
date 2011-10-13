@@ -32,8 +32,7 @@
 * @brief Thread to run cppcheck
 *
 */
-class CheckThread : public QThread
-{
+class CheckThread : public QThread {
     Q_OBJECT
 public:
     CheckThread(ThreadResult &result);
@@ -73,8 +72,7 @@ protected:
     * has been completed. Thread must be stopped cleanly, just terminating thread
     * likely causes unpredictable side-effects.
     */
-    enum State
-    {
+    enum State {
         Running, /**< The thread is checking. */
         Stopping, /**< The thread will stop after current work. */
         Stopped, /**< The thread has been stopped. */

@@ -50,10 +50,8 @@ int Platforms::getCount() const
 Platform& Platforms::get(Settings::PlatformType platform)
 {
     QList<Platform>::iterator iter = mPlatforms.begin();
-    while (iter != mPlatforms.end())
-    {
-        if ((*iter).mType == platform)
-        {
+    while (iter != mPlatforms.end()) {
+        if ((*iter).mType == platform) {
             return *iter;
         }
         ++iter;

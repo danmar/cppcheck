@@ -38,15 +38,12 @@ StatsDialog::StatsDialog(QWidget *parent)
 void StatsDialog::setProject(const Project& project)
 {
     ProjectFile *projectFile = project.GetProjectFile();
-    if (projectFile)
-    {
+    if (projectFile) {
         mUI.mProject->setText(projectFile->GetRootPath());
         mUI.mPaths->setText(projectFile->GetCheckPaths().join(";"));
         mUI.mIncludePaths->setText(projectFile->GetIncludeDirs().join(";"));
         mUI.mDefines->setText(projectFile->GetDefines().join(";"));
-    }
-    else
-    {
+    } else {
         mUI.mProject->setText("");
         mUI.mPaths->setText("");
         mUI.mIncludePaths->setText("");
@@ -96,8 +93,7 @@ void StatsDialog::setScanDuration(double seconds)
 void StatsDialog::copyToClipboard()
 {
     QClipboard *clipboard = QApplication::clipboard();
-    if (clipboard)
-    {
+    if (clipboard) {
         const QString projSettings(tr("Project Settings"));
         const QString project(tr("Project"));
         const QString paths(tr("Paths"));

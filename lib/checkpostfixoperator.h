@@ -31,8 +31,7 @@
  * @brief Using postfix operators ++ or -- rather than postfix operator.
  */
 
-class CheckPostfixOperator : public Check
-{
+class CheckPostfixOperator : public Check {
 public:
     /** This constructor is used when registering the CheckPostfixOperator */
     CheckPostfixOperator() : Check(myName())
@@ -43,8 +42,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckPostfixOperator checkPostfixOperator(tokenizer, settings, errorLogger);
         checkPostfixOperator.postfixOperator();
     }
@@ -56,19 +54,16 @@ private:
     /** Report Error */
     void postfixOperatorError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckPostfixOperator c(0, settings, errorLogger);
         c.postfixOperatorError(0);
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "Using postfix operators";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Warn if using postfix operators ++ or -- rather than prefix operator\n";
     }
 };

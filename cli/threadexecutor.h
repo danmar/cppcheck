@@ -36,8 +36,7 @@
  * This class will take a list of filenames and settings and check then
  * all files using threads.
  */
-class ThreadExecutor : public ErrorLogger
-{
+class ThreadExecutor : public ErrorLogger {
 public:
     ThreadExecutor(const std::vector<std::string> &filenames, const std::map<std::string, long> &filesizes, Settings &settings, ErrorLogger &_errorLogger);
     virtual ~ThreadExecutor();
@@ -84,8 +83,7 @@ public:
     /**
      * @return true if support for threads exist.
      */
-    static bool isEnabled()
-    {
+    static bool isEnabled() {
         return true;
     }
 #else
@@ -93,8 +91,7 @@ public:
     /**
      * @return true if support for threads exist.
      */
-    static bool isEnabled()
-    {
+    static bool isEnabled() {
         return false;
     }
 #endif

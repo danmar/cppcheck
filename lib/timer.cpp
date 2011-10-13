@@ -38,8 +38,7 @@ void TimerResults::ShowResults()
     std::map<std::string, struct TimerResultsData>::const_iterator I = _results.begin();
     const std::map<std::string, struct TimerResultsData>::const_iterator E = _results.end();
 
-    while (I != E)
-    {
+    while (I != E) {
         const double sec = (double)I->second._clocks / CLOCKS_PER_SEC;
         const double secAverage = (double)(I->second._clocks / I->second._numberOfResults) / CLOCKS_PER_SEC;
         std::cout << I->first << ": " << sec << "s (avg. " << secAverage << "s - " << I->second._numberOfResults  << " result(s))" << std::endl;
@@ -77,18 +76,14 @@ Timer::~Timer()
 
 void Timer::Stop()
 {
-    if ((_showtimeMode != SHOWTIME_NONE) && !_stopped)
-    {
+    if ((_showtimeMode != SHOWTIME_NONE) && !_stopped) {
         const std::clock_t end = std::clock();
         const std::clock_t diff = end - _start;
 
-        if (_showtimeMode == SHOWTIME_FILE)
-        {
+        if (_showtimeMode == SHOWTIME_FILE) {
             double sec = (double)diff / CLOCKS_PER_SEC;
             std::cout << _str << ": " << sec << "s" << std::endl;
-        }
-        else
-        {
+        } else {
             if (_timerResults)
                 _timerResults->AddResults(_str, diff);
         }

@@ -32,30 +32,25 @@
  * @brief Check for 64-bit portability issues
  */
 
-class Check64BitPortability : public Check
-{
+class Check64BitPortability : public Check {
 public:
     /** This constructor is used when registering the Check64BitPortability */
-    Check64BitPortability() : Check(myName())
-    {
+    Check64BitPortability() : Check(myName()) {
     }
 
     /** This constructor is used when running checks. */
     Check64BitPortability(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         Check64BitPortability check64BitPortability(tokenizer, settings, errorLogger);
         check64BitPortability.pointerassignment();
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         (void)tokenizer;
         (void)settings;
         (void)errorLogger;
@@ -69,20 +64,17 @@ private:
     void assignmentAddressToIntegerError(const Token *tok);
     void assignmentIntegerToAddressError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         Check64BitPortability c(0, settings, errorLogger);
         c.assignmentAddressToIntegerError(0);
         c.assignmentIntegerToAddressError(0);
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "64-bit portability";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Check if there is 64-bit portability issues:\n"
                " * assign address to/from int/long";
     }

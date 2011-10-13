@@ -35,8 +35,7 @@
  * @brief Interface class that cppcheck uses to communicate with the checks.
  * All checking classes must inherit from this class
  */
-class Check
-{
+class Check {
 public:
     /** This constructor is used when registering the CheckClass */
     Check(const std::string &aname);
@@ -46,16 +45,14 @@ public:
         : _name(aname), _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
     { }
 
-    virtual ~Check()
-    {
+    virtual ~Check() {
 #ifndef DJGPP
         instances().remove(this);
 #endif
     }
 
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
-    static std::list<Check *> &instances()
-    {
+    static std::list<Check *> &instances() {
         static std::list<Check *> _instances;
         return _instances;
     }
@@ -65,8 +62,7 @@ public:
      * @param tokens The tokens to analyse
      * @param result container where results are stored
      */
-    virtual void analyse(const Token *tokens, std::set<std::string> &result) const
-    {
+    virtual void analyse(const Token *tokens, std::set<std::string> &result) const {
         // suppress compiler warnings
         (void)tokens;
         (void)result;
@@ -76,8 +72,7 @@ public:
      * Save analysis data - the caller ensures thread safety
      * @param data The data where the results are saved
      */
-    virtual void saveAnalysisData(const std::set<std::string> &data) const
-    {
+    virtual void saveAnalysisData(const std::set<std::string> &data) const {
         // suppress compiler warnings
         (void)data;
     }
@@ -93,8 +88,7 @@ public:
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) = 0;
 
     /** class name, used to generate documentation */
-    std::string name() const
-    {
+    std::string name() const {
         return _name;
     }
 
@@ -106,8 +100,7 @@ public:
      * This is for for printout out the error list with --errorlist
      * @param errmsg Error message to write
      */
-    static void reportError(const ErrorLogger::ErrorMessage &errmsg)
-    {
+    static void reportError(const ErrorLogger::ErrorMessage &errmsg) {
         std::cout << errmsg.toXML(true, 1) << std::endl;
     }
 
@@ -118,8 +111,7 @@ protected:
     ErrorLogger * const _errorLogger;
 
     /** report an error */
-    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg)
-    {
+    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {
         std::list<const Token *> callstack;
         if (tok)
             callstack.push_back(tok);
@@ -127,14 +119,12 @@ protected:
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg)
-    {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg) {
         reportError(callstack, severity, id, msg, false);
     }
 
     /** report an inconclusive error */
-    void reportInconclusiveError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg)
-    {
+    void reportInconclusiveError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {
         std::list<const Token *> callstack;
         if (tok)
             callstack.push_back(tok);
@@ -142,8 +132,7 @@ protected:
     }
 
     /** report an inconclusive error */
-    void reportInconclusiveError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg)
-    {
+    void reportInconclusiveError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg) {
         reportError(callstack, severity, id, msg, true);
     }
 
@@ -153,11 +142,9 @@ private:
     void operator=(const Check &);
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg, bool inconclusive)
-    {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg, bool inconclusive) {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
-        {
+        for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
             // --errorlist can provide null values here
             if (!(*it))
                 continue;
@@ -179,16 +166,13 @@ private:
 
 };
 
-namespace std
-{
-/** compare the names of Check classes, used when sorting the Check descendants */
-template <> struct less<Check *>
-{
-    bool operator()(const Check *p1, const Check *p2) const
-    {
-        return (p1->name() < p2->name());
-    }
-};
+namespace std {
+    /** compare the names of Check classes, used when sorting the Check descendants */
+    template <> struct less<Check *> {
+        bool operator()(const Check *p1, const Check *p2) const {
+            return (p1->name() < p2->name());
+        }
+    };
 }
 
 inline Check::Check(const std::string &aname)

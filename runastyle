@@ -13,7 +13,7 @@ if [[ "`astyle --version 2>&1`" != ${ASTYLE_VERSION}* ]]; then
 	exit 1;
 fi
 
-style="--style=ansi --lineend=linux --min-conditional-indent=0"
+style="--style=stroustrup --indent=spaces=4 --indent-namespaces --lineend=linux --min-conditional-indent=0"
 options="--pad-header --unpad-paren --suffix=none"
 
 astyle $style $options cli/*.cpp

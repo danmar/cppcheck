@@ -37,8 +37,7 @@ CsvReport::~CsvReport()
 bool CsvReport::Create()
 {
     bool success = false;
-    if (Report::Create())
-    {
+    if (Report::Create()) {
         mTxtWriter.setDevice(Report::GetFile());
         success = true;
     }

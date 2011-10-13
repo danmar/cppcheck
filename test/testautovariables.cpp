@@ -25,8 +25,7 @@
 
 extern std::ostringstream errout;
 
-class TestAutoVariables : public TestFixture
-{
+class TestAutoVariables : public TestFixture {
 public:
     TestAutoVariables() : TestFixture("TestAutoVariables")
     { }
@@ -35,8 +34,7 @@ private:
 
 
 
-    void check(const char code[], bool inconclusive=false)
-    {
+    void check(const char code[], bool inconclusive=false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -65,8 +63,7 @@ private:
         checkAutoVariables.returncstr();
     }
 
-    void run()
-    {
+    void run() {
         TEST_CASE(testautovar1);
         TEST_CASE(testautovar2);
         TEST_CASE(testautovar3); // ticket #2925
@@ -105,8 +102,7 @@ private:
 
 
 
-    void testautovar1()
-    {
+    void testautovar1() {
         check("void func1(int **res)\n"
               "{\n"
               "    int num = 2;\n"
@@ -129,8 +125,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar2()
-    {
+    void testautovar2() {
         check("class Fred {\n"
               "    void func1(int **res);\n"
               "}\n"
@@ -162,8 +157,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar3() // ticket #2925
-    {
+    void testautovar3() { // ticket #2925
         check("void foo(int **p)\n"
               "{\n"
               "    int x[100];\n"
@@ -172,8 +166,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
-    void testautovar4() // ticket #2928
-    {
+    void testautovar4() { // ticket #2928
         check("void foo(int **p)\n"
               "{\n"
               "    static int x[100];\n"
@@ -182,8 +175,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar5() // ticket #2926
-    {
+    void testautovar5() { // ticket #2926
         check("void foo(struct AB *ab)\n"
               "{\n"
               "    char a;\n"
@@ -199,8 +191,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
-    void testautovar6() // ticket #2931
-    {
+    void testautovar6() { // ticket #2931
         check("void foo(struct X *x)\n"
               "{\n"
               "    char a[10];\n"
@@ -216,8 +207,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
-    void testautovar7() // ticket #3066
-    {
+    void testautovar7() { // ticket #3066
         check("struct txt_scrollpane_s * TXT_NewScrollPane(struct txt_widget_s * target)\n"
               "{\n"
               "    struct txt_scrollpane_s * scrollpane;\n"
@@ -227,8 +217,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar_array1()
-    {
+    void testautovar_array1() {
         check("void func1(int* arr[2])\n"
               "{\n"
               "    int num=2;"
@@ -237,8 +226,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
-    void testautovar_array2()
-    {
+    void testautovar_array2() {
         check("class Fred {\n"
               "    void func1(int* arr[2]);\n"
               "}\n"
@@ -250,8 +238,7 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
-    void testautovar_return1()
-    {
+    void testautovar_return1() {
         check("int* func1()\n"
               "{\n"
               "    int num=2;"
@@ -260,8 +247,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Return of the address of an auto-variable\n", errout.str());
     }
 
-    void testautovar_return2()
-    {
+    void testautovar_return2() {
         check("class Fred {\n"
               "    int* func1()\n"
               "}\n"
@@ -273,8 +259,7 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Return of the address of an auto-variable\n", errout.str());
     }
 
-    void testautovar_return3()
-    {
+    void testautovar_return3() {
         // #2975 - FP
         check("void** f()\n"
               "{\n"
@@ -284,8 +269,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar_return4()
-    {
+    void testautovar_return4() {
         // #3030
         check("char *foo()\n"
               "{\n"
@@ -302,8 +286,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar_extern()
-    {
+    void testautovar_extern() {
         check("struct foo *f()\n"
               "{\n"
               "    extern struct foo f;\n"
@@ -312,8 +295,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testinvaliddealloc()
-    {
+    void testinvaliddealloc() {
         check("int* func1()\n"
               "{\n"
               "int a;\n"
@@ -334,8 +316,7 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
-    void testassign1() // Ticket #1819
-    {
+    void testassign1() { // Ticket #1819
         check("void f(EventPtr *eventP, ActionPtr **actionsP) {\n"
               "    EventPtr event = *eventP;\n"
               "    *actionsP = &event->actions;\n"
@@ -343,8 +324,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testassign2() // Ticket #2765
-    {
+    void testassign2() { // Ticket #2765
         check("static void function(unsigned long **datap) {\n"
               "    struct my_s *mr = global_structure_pointer;\n"
               "    *datap = &mr->value;\n"
@@ -352,8 +332,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnLocalVariable1()
-    {
+    void returnLocalVariable1() {
         check("char *foo()\n"
               "{\n"
               "    char str[100] = {0};\n"
@@ -372,8 +351,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Returning pointer to local array variable\n", errout.str());
     }
 
-    void returnLocalVariable2()
-    {
+    void returnLocalVariable2() {
         check("std::string foo()\n"
               "{\n"
               "    char str[100] = {0};\n"
@@ -392,8 +370,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReference1()
-    {
+    void returnReference1() {
         check("std::string &foo()\n"
               "{\n"
               "    std::string s;\n"
@@ -427,8 +404,7 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (error) Returning reference to temporary\n", errout.str());
     }
 
-    void returnReference2()
-    {
+    void returnReference2() {
         check("class Fred {\n"
               "    std::string &foo();\n"
               "}\n"
@@ -487,8 +463,7 @@ private:
         ASSERT_EQUALS("[test.cpp:11]: (error) Returning reference to temporary\n", errout.str());
     }
 
-    void returnReference3()
-    {
+    void returnReference3() {
         check("double & f(double & rd) {\n"
               "    double ret = getValue();\n"
               "    rd = ret;\n"
@@ -497,8 +472,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returncstr1()
-    {
+    void returncstr1() {
         check("const char *foo()\n"
               "{\n"
               "    std::string s;\n"
@@ -525,8 +499,7 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (error) Returning pointer to temporary\n", errout.str());
     }
 
-    void returncstr2()
-    {
+    void returncstr2() {
         check("class Fred {\n"
               "    const char *foo();\n"
               "};\n"
@@ -563,8 +536,7 @@ private:
     }
 
 
-    void testglobalnamespace()
-    {
+    void testglobalnamespace() {
         check("class SharedPtrHolder\n"
               "{\n"
               "   ::std::tr1::shared_ptr<int> pNum;\n"
@@ -578,8 +550,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnParameterAddress()
-    {
+    void returnParameterAddress() {
         check("int* foo(int y)\n"
               "{\n"
               "  return &y;\n"

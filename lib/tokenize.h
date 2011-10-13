@@ -37,8 +37,7 @@ class SymbolDatabase;
 /// @{
 
 /** @brief The main purpose is to tokenize the source code. It also has functions that simplify the token list */
-class Tokenizer
-{
+class Tokenizer {
 private:
     /** Deallocate lists */
     void deallocateTokens();
@@ -49,8 +48,7 @@ public:
     virtual ~Tokenizer();
 
     /** Is the code JAVA/C#. Used for bailouts */
-    bool isJavaOrCSharp() const
-    {
+    bool isJavaOrCSharp() const {
         if (_files.size() != 1)
             return false;
         const std::string::size_type pos = _files[0].rfind(".");
@@ -683,13 +681,11 @@ public:
     void unsupportedTypedef(const Token *tok) const;
 
     /** Was there templates in the code? */
-    bool codeWithTemplates() const
-    {
+    bool codeWithTemplates() const {
         return _codeWithTemplates;
     }
 
-    void setSettings(const Settings *settings)
-    {
+    void setSettings(const Settings *settings) {
         _settings = settings;
     }
 
@@ -701,8 +697,7 @@ public:
      * Get variable count.
      * @return number of variables
      */
-    unsigned int varIdCount() const
-    {
+    unsigned int varIdCount() const {
         return _varId;
     }
 

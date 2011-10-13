@@ -49,10 +49,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     bool success = parser.ParseFromArgs(argc, argv);
     cppcheck->settings(_settings);   // copy the settings
 
-    if (success)
-    {
-        if (parser.GetShowVersion() && !parser.GetShowErrorMessages())
-        {
+    if (success) {
+        if (parser.GetShowVersion() && !parser.GetShowErrorMessages()) {
             const char * extraVersion = cppcheck->extraVersion();
             if (strlen(extraVersion) > 0)
                 std::cout << "Cppcheck " << cppcheck->version() << " ("
@@ -61,8 +59,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
                 std::cout << "Cppcheck " << cppcheck->version() << std::endl;
         }
 
-        if (parser.GetShowErrorMessages())
-        {
+        if (parser.GetShowErrorMessages()) {
             errorlist = true;
             std::cout << ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version);
             cppcheck->getErrorMessages();
@@ -78,13 +75,11 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::list<std::string>::iterator iter;
         for (iter = _settings._includePaths.begin();
              iter != _settings._includePaths.end();
-            )
-        {
+            ) {
             const std::string path(Path::toNativeSeparators(*iter));
             if (FileLister::isDirectory(path))
                 ++iter;
-            else
-            {
+            else {
                 // If the include path is not found, warn user and remove the
                 // non-existing path from the list.
                 std::cout << "cppcheck: warning: Couldn't find path given by -I '" + path + "'" << std::endl;
@@ -97,30 +92,25 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     std::vector<std::string> filenames;
     std::map<std::string, long> filesizes;
 
-    if (!pathnames.empty())
-    {
+    if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
         for (iter = pathnames.begin(); iter != pathnames.end(); ++iter)
             FileLister::recursiveAddFiles(filenames, filesizes, Path::toNativeSeparators(*iter));
     }
 
-    if (!filenames.empty())
-    {
+    if (!filenames.empty()) {
         // Remove header files from the list of ignored files.
         // Also output a warning for the user.
         // TODO: Remove all unknown files? (use FileLister::acceptFile())
         bool warned = false;
         std::vector<std::string> ignored = parser.GetIgnoredPaths();
         std::vector<std::string>::iterator iterIgnored = ignored.begin();
-        for (int i = (int)ignored.size() - 1; i >= 0; i--)
-        {
+        for (int i = (int)ignored.size() - 1; i >= 0; i--) {
             const std::string extension = Path::getFilenameExtension(ignored[i]);
-            if (extension == ".h" || extension == ".hpp")
-            {
+            if (extension == ".h" || extension == ".hpp") {
                 ignored.erase(iterIgnored + i);
-                if (!warned)
-                {
+                if (!warned) {
                     std::cout << "cppcheck: filename exclusion does not apply to header (.h and .hpp) files." << std::endl;
                     std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
                     warned = true; // Warn only once
@@ -130,8 +120,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         PathMatch matcher(parser.GetIgnoredPaths());
         std::vector<std::string>::iterator iterBegin = filenames.begin();
-        for (int i = (int)filenames.size() - 1; i >= 0; i--)
-        {
+        for (int i = (int)filenames.size() - 1; i >= 0; i--) {
 #if defined(_WIN32)
             // For Windows we want case-insensitive path matching
             const bool caseSensitive = false;
@@ -141,26 +130,20 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             if (matcher.Match(filenames[(unsigned int)i], caseSensitive))
                 filenames.erase(iterBegin + i);
         }
-    }
-    else
-    {
+    } else {
         std::cout << "cppcheck: error: could not find or open any of the paths given." << std::endl;
         return false;
     }
 
-    if (!filenames.empty())
-    {
+    if (!filenames.empty()) {
         std::vector<std::string>::iterator iter;
-        for (iter = filenames.begin(); iter != filenames.end(); ++iter)
-        {
+        for (iter = filenames.begin(); iter != filenames.end(); ++iter) {
             _filenames.push_back(*iter);
             _filesizes[*iter] = filesizes[*iter];
         }
 
         return true;
-    }
-    else
-    {
+    } else {
         std::cout << "cppcheck: error: no files to check - all paths ignored." << std::endl;
         return false;
     }
@@ -171,8 +154,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     Preprocessor::missingIncludeFlag = false;
 
     CppCheck cppCheck(*this, true);
-    if (!parseFromArgs(&cppCheck, argc, argv))
-    {
+    if (!parseFromArgs(&cppCheck, argc, argv)) {
         return EXIT_FAILURE;
     }
 
@@ -180,28 +162,23 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         time1 = std::time(0);
 
     _settings = cppCheck.settings();
-    if (_settings._xml)
-    {
+    if (_settings._xml) {
         reportErr(ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version));
     }
 
     unsigned int returnValue = 0;
-    if (_settings._jobs == 1)
-    {
+    if (_settings._jobs == 1) {
         // Single process
 
         long totalfilesize = 0;
-        for (std::map<std::string, long>::const_iterator i = _filesizes.begin(); i != _filesizes.end(); ++i)
-        {
+        for (std::map<std::string, long>::const_iterator i = _filesizes.begin(); i != _filesizes.end(); ++i) {
             totalfilesize += i->second;
         }
 
         long processedsize = 0;
-        for (unsigned int c = 0; c < _filenames.size(); c++)
-        {
+        for (unsigned int c = 0; c < _filenames.size(); c++) {
             returnValue += cppCheck.check(_filenames[c]);
-            if (_filesizes.find(_filenames[c]) != _filesizes.end())
-            {
+            if (_filesizes.find(_filenames[c]) != _filesizes.end()) {
                 processedsize += _filesizes[_filenames[c]];
             }
             if (!_settings._errorsOnly)
@@ -209,26 +186,20 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         }
 
         cppCheck.checkFunctionUsage();
-    }
-    else if (!ThreadExecutor::isEnabled())
-    {
+    } else if (!ThreadExecutor::isEnabled()) {
         std::cout << "No thread support yet implemented for this platform." << std::endl;
-    }
-    else
-    {
+    } else {
         // Multiple processes
         Settings &settings = cppCheck.settings();
         ThreadExecutor executor(_filenames, _filesizes, settings, *this);
         returnValue = executor.check();
     }
 
-    if (!cppCheck.settings().checkConfiguration)
-    {
+    if (!cppCheck.settings().checkConfiguration) {
         if (!_settings._errorsOnly)
             reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
 
-        if (Preprocessor::missingIncludeFlag)
-        {
+        if (Preprocessor::missingIncludeFlag) {
             const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
             ErrorLogger::ErrorMessage msg(callStack,
                                           Severity::information,
@@ -244,8 +215,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         }
     }
 
-    if (_settings._xml)
-    {
+    if (_settings._xml) {
         reportErr(ErrorLogger::ErrorMessage::getXMLFooter(_settings._xml_version));
     }
 
@@ -279,8 +249,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 
     // Report progress messages every 10 seconds
     const std::time_t time2 = std::time(NULL);
-    if (time2 >= (time1 + 10))
-    {
+    if (time2 >= (time1 + 10)) {
         time1 = time2;
 
         // current time in the format "Www Mmm dd hh:mm:ss yyyy"
@@ -301,8 +270,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 
 void CppCheckExecutor::reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal)
 {
-    if (filecount > 1)
-    {
+    if (filecount > 1) {
         std::ostringstream oss;
         oss << fileindex << "/" << filecount
             << " files checked " <<
@@ -314,16 +282,11 @@ void CppCheckExecutor::reportStatus(unsigned int fileindex, unsigned int filecou
 
 void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    if (errorlist)
-    {
+    if (errorlist) {
         reportOut(msg.toXML(false, _settings._xml_version));
-    }
-    else if (_settings._xml)
-    {
+    } else if (_settings._xml) {
         reportErr(msg.toXML(_settings._verbose, _settings._xml_version));
-    }
-    else
-    {
+    } else {
         reportErr(msg.toString(_settings._verbose, _settings._outputFormat));
     }
 }

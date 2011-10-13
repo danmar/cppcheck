@@ -31,12 +31,10 @@
 /**
 * @brief A base class for reports.
 */
-class Report : public QObject
-{
+class Report : public QObject {
 public:
 
-    enum Type
-    {
+    enum Type {
         TXT,
         XML,
         XMLV2,

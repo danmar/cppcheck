@@ -44,8 +44,7 @@ enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Lo
 /**
  * @brief Array dimension information.
  */
-struct Dimension
-{
+struct Dimension {
     Dimension() : start(NULL), end(NULL), num(0) { }
 
     const Token *start;  // size start token
@@ -54,11 +53,9 @@ struct Dimension
 };
 
 /** @brief Information about a member variable. */
-class Variable
-{
+class Variable {
     /** @brief flags mask used to access specific bit. */
-    enum
-    {
+    enum {
         fIsMutable  = (1 << 0), /** @brief mutable variable */
         fIsStatic   = (1 << 1), /** @brief static variable */
         fIsConst    = (1 << 2), /** @brief const variable */
@@ -72,8 +69,7 @@ class Variable
      * @param flag_ flag to get state of
      * @return true if flag set or false in flag not set
      */
-    bool getFlag(int flag_) const
-    {
+    bool getFlag(int flag_) const {
         return bool((_flags & flag_) != 0);
     }
 
@@ -82,8 +78,7 @@ class Variable
      * @param flag_ flag to set state
      * @param state_ new state of flag
      */
-    void setFlag(int flag_, bool state_)
-    {
+    void setFlag(int flag_, bool state_) {
         _flags = state_ ? _flags | flag_ : _flags & ~flag_;
     }
 
@@ -100,8 +95,7 @@ public:
           _access(access_),
           _flags(0),
           _type(type_),
-          _scope(scope_)
-    {
+          _scope(scope_) {
         setFlag(fIsMutable, mutable_);
         setFlag(fIsStatic, static_);
         setFlag(fIsConst, const_);
@@ -115,8 +109,7 @@ public:
      * Get name token.
      * @return name token
      */
-    const Token *nameToken() const
-    {
+    const Token *nameToken() const {
         return _name;
     }
 
@@ -124,8 +117,7 @@ public:
      * Get type start token.
      * @return type start token
      */
-    const Token *typeStartToken() const
-    {
+    const Token *typeStartToken() const {
         return _start;
     }
 
@@ -133,8 +125,7 @@ public:
      * Get type end token.
      * @return type end token
      */
-    const Token *typeEndToken() const
-    {
+    const Token *typeEndToken() const {
         return _end;
     }
 
@@ -142,8 +133,7 @@ public:
      * Get name string.
      * @return name string
      */
-    const std::string &name() const
-    {
+    const std::string &name() const {
         static const std::string noname;
 
         // name may not exist for function arguments
@@ -157,8 +147,7 @@ public:
      * Get variable ID.
      * @return variable ID
      */
-    unsigned int varId() const
-    {
+    unsigned int varId() const {
         // name may not exist for function arguments
         if (_name)
             return _name->varId();
@@ -170,8 +159,7 @@ public:
      * Get index of variable in declared order.
      * @return varaible index
      */
-    std::size_t index() const
-    {
+    std::size_t index() const {
         return _index;
     }
 
@@ -179,8 +167,7 @@ public:
      * Is variable public.
      * @return true if public, false if not
      */
-    bool isPublic() const
-    {
+    bool isPublic() const {
         return _access == Public;
     }
 
@@ -188,8 +175,7 @@ public:
      * Is variable protected.
      * @return true if protected, false if not
      */
-    bool isProtected() const
-    {
+    bool isProtected() const {
         return _access == Protected;
     }
 
@@ -197,8 +183,7 @@ public:
      * Is variable private.
      * @return true if private, false if not
      */
-    bool isPrivate() const
-    {
+    bool isPrivate() const {
         return _access == Private;
     }
 
@@ -206,8 +191,7 @@ public:
      * Is variable global.
      * @return true if global, false if not
      */
-    bool isGlobal() const
-    {
+    bool isGlobal() const {
         return _access == Global;
     }
 
@@ -215,8 +199,7 @@ public:
      * Is variable in a namespace.
      * @return true if in a namespace, false if not
      */
-    bool isNamespace() const
-    {
+    bool isNamespace() const {
         return _access == Namespace;
     }
 
@@ -224,8 +207,7 @@ public:
      * Is variable a function argument.
      * @return true if a function argument, false if not
      */
-    bool isArgument() const
-    {
+    bool isArgument() const {
         return _access == Argument;
     }
 
@@ -233,8 +215,7 @@ public:
      * Is variable local.
      * @return true if local, false if not
      */
-    bool isLocal() const
-    {
+    bool isLocal() const {
         return _access == Local;
     }
 
@@ -242,8 +223,7 @@ public:
      * Is variable mutable.
      * @return true if mutable, false if not
      */
-    bool isMutable() const
-    {
+    bool isMutable() const {
         return getFlag(fIsMutable);
     }
 
@@ -251,8 +231,7 @@ public:
      * Is variable static.
      * @return true if static, false if not
      */
-    bool isStatic() const
-    {
+    bool isStatic() const {
         return getFlag(fIsStatic);
     }
 
@@ -260,8 +239,7 @@ public:
      * Is variable const.
      * @return true if const, false if not
      */
-    bool isConst() const
-    {
+    bool isConst() const {
         return getFlag(fIsConst);
     }
 
@@ -269,8 +247,7 @@ public:
      * Is variable a user defined (or unknown) type.
      * @return true if user defined type, false if not
      */
-    bool isClass() const
-    {
+    bool isClass() const {
         return getFlag(fIsClass);
     }
 
@@ -278,8 +255,7 @@ public:
      * Is variable an array.
      * @return true if array, false if not
      */
-    bool isArray() const
-    {
+    bool isArray() const {
         return getFlag(fIsArray);
     }
 
@@ -287,8 +263,7 @@ public:
      * Does variable have a default value.
      * @return true if has a default falue, false if not
      */
-    bool hasDefault() const
-    {
+    bool hasDefault() const {
         return getFlag(fHasDefault);
     }
 
@@ -296,8 +271,7 @@ public:
      * Get Scope pointer of known type.
      * @return pointer to type if known, NULL if not known
      */
-    const Scope *type() const
-    {
+    const Scope *type() const {
         return _type;
     }
 
@@ -305,8 +279,7 @@ public:
      * Get Scope pointer of enclosing scope.
      * @return pointer to enclosing scope
      */
-    const Scope *scope() const
-    {
+    const Scope *scope() const {
         return _scope;
     }
 
@@ -314,8 +287,7 @@ public:
      * Get array dimensions.
      * @return array dimensions vector
      */
-    const std::vector<Dimension> &dimensions() const
-    {
+    const std::vector<Dimension> &dimensions() const {
         return _dimensions;
     }
 
@@ -323,8 +295,7 @@ public:
      * Get array dimension length.
      * @return length of dimension
      */
-    MathLib::bigint dimension(size_t index_) const
-    {
+    MathLib::bigint dimension(size_t index_) const {
         return _dimensions[index_].num;
     }
 
@@ -357,8 +328,7 @@ private:
     std::vector<Dimension> _dimensions;
 };
 
-class Function
-{
+class Function {
 public:
     enum Type { eConstructor, eCopyConstructor, eOperatorEqual, eDestructor, eFunction };
 
@@ -380,12 +350,10 @@ public:
           isOperator(false),
           retFuncPtr(false),
           type(eFunction),
-          functionScope(NULL)
-    {
+          functionScope(NULL) {
     }
 
-    unsigned int argCount() const
-    {
+    unsigned int argCount() const {
         return argumentList.size();
     }
     unsigned int initializedArgCount() const;
@@ -412,22 +380,19 @@ public:
     std::list<Variable> argumentList; // argument list
 };
 
-class Scope
-{
+class Scope {
     // let tests access private function for testing
     friend class TestSymbolDatabase;
 
 public:
-    struct BaseInfo
-    {
+    struct BaseInfo {
         AccessControl access;  // public/protected/private
         bool isVirtual;
         std::string name;
         Scope *scope;
     };
 
-    struct FriendInfo
-    {
+    struct FriendInfo {
         std::string name;
         Scope *scope;
     };
@@ -459,13 +424,11 @@ public:
     Scope *functionOf; // scope this function belongs to
     Function *function; // function info for this function
 
-    bool isClassOrStruct() const
-    {
+    bool isClassOrStruct() const {
         return (type == eClass || type == eStruct);
     }
 
-    bool isLocal() const
-    {
+    bool isLocal() const {
         return (type == eIf || type == eElse || type == eElseIf ||
                 type == eFor || type == eWhile || type == eDo ||
                 type == eSwitch || type == eUnconditional);
@@ -489,8 +452,7 @@ public:
                      const Token *end_, AccessControl access_, bool mutable_,
                      bool static_, bool const_, bool class_, const Scope *type_,
                      const Scope *scope_, bool array_,
-                     const std::vector<Dimension> &dimensions_)
-    {
+                     const std::vector<Dimension> &dimensions_) {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
                                    access_, mutable_, static_, const_, class_,
                                    type_, scope_, array_, false, dimensions_));
@@ -543,8 +505,7 @@ private:
     bool findClosingBracket(const Token* tok, const Token*& close) const;
 };
 
-class SymbolDatabase
-{
+class SymbolDatabase {
 public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 
@@ -565,13 +526,11 @@ public:
 
     bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
 
-    bool isClassOrStruct(const std::string &type) const
-    {
+    bool isClassOrStruct(const std::string &type) const {
         return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
     }
 
-    const Variable *getVariableFromVarId(unsigned int varId) const
-    {
+    const Variable *getVariableFromVarId(unsigned int varId) const {
         return _variableList[varId];
     }
 

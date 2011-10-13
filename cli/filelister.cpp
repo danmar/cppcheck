@@ -44,8 +44,7 @@ bool FileLister::acceptFile(const std::string &filename)
         extension == ".c" ||
         extension == ".c++" ||
         extension == ".tpp" ||
-        extension == ".txx")
-    {
+        extension == ".txx") {
         return true;
     }
 
@@ -153,11 +152,9 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map
 
     oss << cleanedPath;
 
-    if (MyIsDirectory(cleanedPath.c_str()))
-    {
+    if (MyIsDirectory(cleanedPath.c_str())) {
         char c = cleanedPath[ cleanedPath.size()-1 ];
-        switch (c)
-        {
+        switch (c) {
         case '\\':
             oss << '*';
             bdir << cleanedPath;
@@ -170,13 +167,10 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map
             if (cleanedPath != ".")
                 bdir << cleanedPath << '\\';
         }
-    }
-    else
-    {
+    } else {
         std::string::size_type pos;
         pos = cleanedPath.find_last_of('\\');
-        if (std::string::npos != pos)
-        {
+        if (std::string::npos != pos) {
             bdir << cleanedPath.substr(0, pos + 1);
         }
     }
@@ -186,8 +180,7 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map
     if (INVALID_HANDLE_VALUE == hFind)
         return;
 
-    do
-    {
+    do {
         if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
             continue;
 
@@ -196,8 +189,7 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map
         TransformUcs2ToAnsi(ffd.cFileName, ansiFfd, wcslen(ffd.cFileName) + 1);
 #else // defined(UNICODE)
         const char * ansiFfd = &ffd.cFileName[0];
-        if (strchr(ansiFfd,'?'))
-        {
+        if (strchr(ansiFfd,'?')) {
             ansiFfd = &ffd.cAlternateFileName[0];
         }
 #endif // defined(UNICODE)
@@ -205,32 +197,26 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map
         std::ostringstream fname;
         fname << bdir.str().c_str() << ansiFfd;
 
-        if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
-        {
+        if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
             // File
 
             // If recursive is not used, accept all files given by user
-            if (Path::sameFileName(path,ansiFfd) || FileLister::acceptFile(ansiFfd))
-            {
+            if (Path::sameFileName(path,ansiFfd) || FileLister::acceptFile(ansiFfd)) {
                 const std::string nativename = Path::fromNativeSeparators(fname.str());
                 filenames.push_back(nativename);
                 // Limitation: file sizes are assumed to fit in a 'long'
                 filesizes[nativename] = ffd.nFileSizeLow;
             }
-        }
-        else
-        {
+        } else {
             // Directory
             FileLister::recursiveAddFiles(filenames, filesizes, fname.str());
         }
 #if defined(UNICODE)
         delete [] ansiFfd;
 #endif // defined(UNICODE)
-    }
-    while (FindNextFile(hFind, &ffd) != FALSE);
+    } while (FindNextFile(hFind, &ffd) != FALSE);
 
-    if (INVALID_HANDLE_VALUE != hFind)
-    {
+    if (INVALID_HANDLE_VALUE != hFind) {
         FindClose(hFind);
         hFind = INVALID_HANDLE_VALUE;
     }
@@ -274,14 +260,12 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
 
     glob_t glob_results;
     glob(oss.str().c_str(), GLOB_MARK, 0, &glob_results);
-    for (unsigned int i = 0; i < glob_results.gl_pathc; i++)
-    {
+    for (unsigned int i = 0; i < glob_results.gl_pathc; i++) {
         const std::string filename = glob_results.gl_pathv[i];
         if (filename == "." || filename == ".." || filename.length() == 0)
             continue;
 
-        if (filename[filename.length()-1] != '/')
-        {
+        if (filename[filename.length()-1] != '/') {
             // File
 #ifdef PATH_MAX
             char fname[PATH_MAX];
@@ -295,21 +279,18 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
             }
 
             // Does absolute path exist? then bail out
-            if (std::find(absolute.begin(), absolute.end(), std::string(fname)) != absolute.end())
-            {
+            if (std::find(absolute.begin(), absolute.end(), std::string(fname)) != absolute.end()) {
 #ifndef PATH_MAX
                 free(fname);
 #endif
                 continue;
             }
 
-            if (Path::sameFileName(path,filename) || FileLister::acceptFile(filename))
-            {
+            if (Path::sameFileName(path,filename) || FileLister::acceptFile(filename)) {
                 relative.push_back(filename);
                 absolute.push_back(fname);
                 struct stat sb;
-                if (stat(fname, &sb) == 0)
-                {
+                if (stat(fname, &sb) == 0) {
                     // Limitation: file sizes are assumed to fit in a 'long'
                     filesizes[filename] = static_cast<long>(sb.st_size);
                 }
@@ -318,9 +299,7 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
 #ifndef PATH_MAX
             free(fname);
 #endif
-        }
-        else
-        {
+        } else {
             // Directory
             recursiveAddFiles2(relative, absolute, filesizes, filename);
         }
@@ -341,11 +320,9 @@ bool FileLister::isDirectory(const std::string &path)
 
     glob_t glob_results;
     glob(path.c_str(), GLOB_MARK, 0, &glob_results);
-    if (glob_results.gl_pathc == 1)
-    {
+    if (glob_results.gl_pathc == 1) {
         const std::string glob_path = glob_results.gl_pathv[0];
-        if (!glob_path.empty() && glob_path[glob_path.size() - 1] == '/')
-        {
+        if (!glob_path.empty() && glob_path[glob_path.size() - 1] == '/') {
             ret = true;
         }
     }
@@ -359,8 +336,7 @@ bool FileLister::fileExists(const std::string &path)
     struct stat statinfo;
     int result = stat(path.c_str(), &statinfo);
 
-    if (result < 0)  // Todo: should check errno == ENOENT?
-    {
+    if (result < 0) { // Todo: should check errno == ENOENT?
         // File not found
         return false;
     }

@@ -21,16 +21,14 @@
 #include "testsuite.h"
 #include "errorlogger.h"
 
-class TestErrorLogger : public TestFixture
-{
+class TestErrorLogger : public TestFixture {
 public:
     TestErrorLogger() : TestFixture("TestErrorLogger")
     { }
 
 private:
 
-    void run()
-    {
+    void run() {
         TEST_CASE(FileLocationDefaults);
         TEST_CASE(FileLocationSetFile);
         TEST_CASE(ErrorMessageConstruct);
@@ -54,23 +52,20 @@ private:
         TEST_CASE(SerializeInconclusiveMessage);
     }
 
-    void FileLocationDefaults()
-    {
+    void FileLocationDefaults() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         ASSERT_EQUALS("", loc.getfile());
         ASSERT_EQUALS(0, loc.line);
     }
 
-    void FileLocationSetFile()
-    {
+    void FileLocationSetFile() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         ASSERT_EQUALS("foo.cpp", loc.getfile());
         ASSERT_EQUALS(0, loc.line);
     }
 
-    void ErrorMessageConstruct()
-    {
+    void ErrorMessageConstruct() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -84,8 +79,7 @@ private:
         ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(true));
     }
 
-    void ErrorMessageConstructLocations()
-    {
+    void ErrorMessageConstructLocations() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -103,8 +97,7 @@ private:
         ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(true));
     }
 
-    void ErrorMessageVerbose()
-    {
+    void ErrorMessageVerbose() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -118,8 +111,7 @@ private:
         ASSERT_EQUALS("[foo.cpp:5]: (error) Verbose error", msg.toString(true));
     }
 
-    void ErrorMessageVerboseLocations()
-    {
+    void ErrorMessageVerboseLocations() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -137,8 +129,7 @@ private:
         ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Verbose error", msg.toString(true));
     }
 
-    void CustomFormat()
-    {
+    void CustomFormat() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -152,8 +143,7 @@ private:
         ASSERT_EQUALS("foo.cpp:5,error,errorId,Verbose error", msg.toString(true, "{file}:{line},{severity},{id},{message}"));
     }
 
-    void CustomFormat2()
-    {
+    void CustomFormat2() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -167,8 +157,7 @@ private:
         ASSERT_EQUALS("Verbose error - foo.cpp(5):(error,errorId)", msg.toString(true, "{message} - {file}({line}):({severity},{id})"));
     }
 
-    void CustomFormatLocations()
-    {
+    void CustomFormatLocations() {
         // Check that first location from location stack is used in template
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
@@ -187,8 +176,7 @@ private:
         ASSERT_EQUALS("Verbose error - bar.cpp(8):(error,errorId)", msg.toString(true, "{message} - {file}({line}):({severity},{id})"));
     }
 
-    void ToXml()
-    {
+    void ToXml() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -200,8 +188,7 @@ private:
         ASSERT_EQUALS("<error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Programming error.\"/>", msg.toXML(false,1));
     }
 
-    void ToXmlLocations()
-    {
+    void ToXmlLocations() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -217,8 +204,7 @@ private:
         ASSERT_EQUALS("<error file=\"bar.cpp\" line=\"8\" id=\"errorId\" severity=\"error\" msg=\"Programming error.\"/>", msg.toXML(false,1));
     }
 
-    void ToVerboseXml()
-    {
+    void ToVerboseXml() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -230,8 +216,7 @@ private:
         ASSERT_EQUALS("<error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Verbose error\"/>", msg.toXML(true,1));
     }
 
-    void ToVerboseXmlLocations()
-    {
+    void ToVerboseXmlLocations() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -247,8 +232,7 @@ private:
         ASSERT_EQUALS("<error file=\"bar.cpp\" line=\"8\" id=\"errorId\" severity=\"error\" msg=\"Verbose error\"/>", msg.toXML(true,1));
     }
 
-    void ToXmlV2()
-    {
+    void ToXmlV2() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -267,8 +251,7 @@ private:
         ASSERT_EQUALS(message, msg.toXML(false, 2));
     }
 
-    void ToXmlV2Locations()
-    {
+    void ToXmlV2Locations() {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
         loc.line = 5;
@@ -292,8 +275,7 @@ private:
         ASSERT_EQUALS(message, msg.toXML(false, 2));
     }
 
-    void InconclusiveXml()
-    {
+    void InconclusiveXml() {
         // Location
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile("foo.cpp");
@@ -311,8 +293,7 @@ private:
         ASSERT_EQUALS("", msg.toXML(false, 2));
     }
 
-    void SerializeInconclusiveMessage()
-    {
+    void SerializeInconclusiveMessage() {
         // Inconclusive error message
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         ErrorMessage msg(locs, Severity::error, "Programming error", "errorId", true);

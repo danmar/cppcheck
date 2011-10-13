@@ -31,8 +31,7 @@
 * @brief Information for one translation.
 *
 */
-struct TranslationInfo
-{
+struct TranslationInfo {
     /**
     * @brief Readable name for the translation (e.g. "English").
     *
@@ -59,8 +58,7 @@ struct TranslationInfo
 * track which translation is the currently active translation.
 *
 */
-class TranslationHandler : QObject
-{
+class TranslationHandler : QObject {
     Q_OBJECT
 public:
     TranslationHandler(QObject *parent = 0);
@@ -78,8 +76,7 @@ public:
     * @return List of available translations.
     *
     */
-    QList<TranslationInfo> GetTranslations() const
-    {
+    QList<TranslationInfo> GetTranslations() const {
         return mTranslations;
     }
 

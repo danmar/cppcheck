@@ -33,8 +33,7 @@ class QObject;
 /**
 * @brief Base class for XML report classes.
 */
-class XmlReport : public Report
-{
+class XmlReport : public Report {
 public:
     XmlReport(const QString &filename, QObject * parent = 0);
 

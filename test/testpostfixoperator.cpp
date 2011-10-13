@@ -25,8 +25,7 @@
 
 extern std::ostringstream errout;
 
-class TestPostfixOperator : public TestFixture
-{
+class TestPostfixOperator : public TestFixture {
 public:
     TestPostfixOperator() : TestFixture("TestPostfixOperator")
     { }
@@ -35,8 +34,7 @@ private:
 
 
 
-    void check(const char code[])
-    {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -61,8 +59,7 @@ private:
         checkPostfixOperator.postfixOperator();
     }
 
-    void run()
-    {
+    void run() {
         TEST_CASE(testsimple);
         TEST_CASE(testfor);
         TEST_CASE(teststream);
@@ -73,14 +70,12 @@ private:
         TEST_CASE(testHangWithInvalidCode); // #2847 - cppcheck hangs with 100% cpu load
     }
 
-    void testHangWithInvalidCode()
-    {
+    void testHangWithInvalidCode() {
         check("a,b--\n");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testsimple()
-    {
+    void testsimple() {
         check("\n"
               "#include <iostream>\n"
               "int main(int argc, char *argv[])\n"
@@ -203,8 +198,7 @@ private:
 
     }
 
-    void testfor()
-    {
+    void testfor() {
         check("\n"
               "#include <iostream>\n"
               "int main(int argc, char *argv[])\n"
@@ -267,8 +261,7 @@ private:
 
     }
 
-    void teststream()
-    {
+    void teststream() {
         check("\n"
               "#include <iostream>\n"
               "int main(int argc, char *argv[])\n"
@@ -307,8 +300,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testvolatile()
-    {
+    void testvolatile() {
         check("\n"
               "#include <iostream>\n"
               "class K {};\n"
@@ -324,8 +316,7 @@ private:
                            "[test.cpp:8]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
     }
 
-    void testiterator()
-    {
+    void testiterator() {
         check("\n"
               "#include <vector>\n"
               "class Base {};\n"
@@ -393,15 +384,13 @@ private:
 
     }
 
-    void test2168()
-    {
+    void test2168() {
         check("--> declare allocator lock here\n"
               "int main(){}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void pointer()
-    {
+    void pointer() {
         check("static struct class * ab;\n"
               "int * p;\n"
               "p++;\n");

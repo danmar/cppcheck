@@ -46,8 +46,7 @@ class QItemSelectionModel;
 * @brief Cppcheck's results are shown in this tree
 *
 */
-class ResultsTree : public QTreeView
-{
+class ResultsTree : public QTreeView {
     Q_OBJECT
 public:
     ResultsTree(QWidget * parent = 0);

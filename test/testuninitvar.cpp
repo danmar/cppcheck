@@ -23,8 +23,7 @@
 
 extern std::ostringstream errout;
 
-class TestUninitVar : public TestFixture
-{
+class TestUninitVar : public TestFixture {
 public:
     TestUninitVar() : TestFixture("TestUninitVar")
     { }
@@ -32,8 +31,7 @@ public:
 private:
 
 
-    void run()
-    {
+    void run() {
         TEST_CASE(uninitvar1);
         TEST_CASE(uninitvar_bitop);		// using uninitialized operand in bit operation
         TEST_CASE(uninitvar_alloc);     // data is allocated but not initialized
@@ -52,8 +50,7 @@ private:
         TEST_CASE(uninitvar_typeof);    // typeof
     }
 
-    void checkUninitVar(const char code[])
-    {
+    void checkUninitVar(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -70,8 +67,7 @@ private:
         check.executionPaths();
     }
 
-    void uninitvar1()
-    {
+    void uninitvar1() {
         // Ticket #2207 - False negative
         checkUninitVar("void foo() {\n"
                        "    int a;\n"
@@ -530,8 +526,7 @@ private:
     }
 
 
-    void uninitvar_bitop()
-    {
+    void uninitvar_bitop() {
         checkUninitVar("void foo() {\n"
                        "    int b;\n"
                        "    c = a | b;\n"
@@ -546,8 +541,7 @@ private:
     }
 
     // if..
-    void uninitvar_if()
-    {
+    void uninitvar_if() {
         checkUninitVar("static void foo()\n"
                        "{\n"
                        "    Foo *p;\n"
@@ -781,8 +775,7 @@ private:
 
 
     // handling for/while loops..
-    void uninitvar_loops()
-    {
+    void uninitvar_loops() {
         // for..
         checkUninitVar("void f()\n"
                        "{\n"
@@ -905,8 +898,7 @@ private:
     }
 
     // switch..
-    void uninitvar_switch()
-    {
+    void uninitvar_switch() {
         checkUninitVar("void f(int x)\n"
                        "{\n"
                        "    short c;\n"
@@ -984,8 +976,7 @@ private:
     }
 
     // arrays..
-    void uninitvar_arrays()
-    {
+    void uninitvar_arrays() {
         checkUninitVar("int f()\n"
                        "{\n"
                        "    char a[10];\n"
@@ -1110,8 +1101,7 @@ private:
     }
 
     // alloc..
-    void uninitvar_alloc()
-    {
+    void uninitvar_alloc() {
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char *s = malloc(100);\n"
@@ -1229,8 +1219,7 @@ private:
     }
 
     // class / struct..
-    void uninitvar_class()
-    {
+    void uninitvar_class() {
         checkUninitVar("class Fred\n"
                        "{\n"
                        "    int i;\n"
@@ -1279,8 +1268,7 @@ private:
     }
 
     // enum..
-    void uninitvar_enum()
-    {
+    void uninitvar_enum() {
         checkUninitVar("void f()\n"
                        "{\n"
                        "    enum AB { a, b };\n"
@@ -1291,8 +1279,7 @@ private:
     }
 
     // references..
-    void uninitvar_references()
-    {
+    void uninitvar_references() {
         checkUninitVar("void f()\n"
                        "{\n"
                        "    int a;\n"
@@ -1319,8 +1306,7 @@ private:
     }
 
     // strncpy doesn't always 0-terminate..
-    void uninitvar_strncpy()
-    {
+    void uninitvar_strncpy() {
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char a[100];\n"
@@ -1347,8 +1333,7 @@ private:
     }
 
     // initialization with memset (not 0-terminating string)..
-    void uninitvar_memset()
-    {
+    void uninitvar_memset() {
         checkUninitVar("void f() {\n"
                        "    char a[20];\n"
                        "    memset(a, 'a', 20);\n"
@@ -1357,8 +1342,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of 'a' (not 0-terminated)\n", errout.str());
     }
 
-    std::string analyseFunctions(const char code[])
-    {
+    std::string analyseFunctions(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -1379,8 +1363,7 @@ private:
         return ret;
     }
 
-    void uninitvar_func()
-    {
+    void uninitvar_func() {
         // function analysis..
         ASSERT_EQUALS("foo", analyseFunctions("void foo(int x) { }"));
         ASSERT_EQUALS("foo", analyseFunctions("void foo(int x);"));
@@ -1584,8 +1567,7 @@ private:
     }
 
     // valid and invalid use of 'int a(int x) { return x + x; }'
-    void func_uninit_var()
-    {
+    void func_uninit_var() {
         const std::string funca("int a(int x) { return x + x; }\n");
 
         checkUninitVar((funca +
@@ -1605,8 +1587,7 @@ private:
 
 
     // valid and invalid use of 'void a(int *p) { *p = 0; }'
-    void func_uninit_pointer()
-    {
+    void func_uninit_pointer() {
         const std::string funca("void a(int *p) { *p = 0; }\n");
 
         // ok - initialized pointer
@@ -1626,8 +1607,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
     }
 
-    void uninitvar_typeof()
-    {
+    void uninitvar_typeof() {
         checkUninitVar("void f() {\n"
                        "    struct Fred *fred;\n"
                        "    typeof(fred->x);\n"

@@ -28,11 +28,9 @@
 /// @{
 
 /** @brief class for handling suppressions */
-class Suppressions
-{
+class Suppressions {
 private:
-    class FileMatcher
-    {
+    class FileMatcher {
         friend class Suppressions;
     private:
         /** @brief List of filenames suppressed, bool flag indicates whether suppression matched. */
@@ -119,8 +117,7 @@ public:
      */
     bool isSuppressedLocal(const std::string &errorId, const std::string &file, unsigned int line);
 
-    struct SuppressionEntry
-    {
+    struct SuppressionEntry {
         SuppressionEntry(const std::string &aid, const std::string &afile, const unsigned int &aline)
             : id(aid), file(afile), line(aline)
         { }

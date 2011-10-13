@@ -39,8 +39,7 @@ class Token;
  * that certain variable values are corrupt.
  */
 
-class CheckExceptionSafety : public Check
-{
+class CheckExceptionSafety : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
     CheckExceptionSafety() : Check(myName())
@@ -52,8 +51,7 @@ public:
     { }
 
     /** Checks that uses the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckExceptionSafety checkExceptionSafety(tokenizer, settings, errorLogger);
         checkExceptionSafety.destructors();
         checkExceptionSafety.deallocThrow();
@@ -71,18 +69,15 @@ public:
 
 private:
     /** Don't throw exceptions in destructors */
-    void destructorsError(const Token * const tok)
-    {
+    void destructorsError(const Token * const tok) {
         reportError(tok, Severity::error, "exceptThrowInDestructor", "Throwing exception in destructor");
     }
 
-    void deallocThrowError(const Token * const tok, const std::string &varname)
-    {
+    void deallocThrowError(const Token * const tok, const std::string &varname) {
         reportError(tok, Severity::error, "exceptDeallocThrow", "Throwing exception in invalid state, " + varname + " points at deallocated memory");
     }
 
-    void rethrowCopyError(const Token * const tok, const std::string &varname)
-    {
+    void rethrowCopyError(const Token * const tok, const std::string &varname) {
         reportError(tok, Severity::style, "exceptRethrowCopy",
                     "Throwing a copy of the caught exception instead of rethrowing the original exception\n"
                     "Rethrowing an exception with 'throw " + varname + ";' makes an unnecessary copy of '" + varname + "'.\n"
@@ -90,8 +85,7 @@ private:
     }
 
     /** Generate all possible errors (for --errorlist) */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckExceptionSafety c(0, settings, errorLogger);
         c.destructorsError(0);
         c.deallocThrowError(0, "p");
@@ -99,14 +93,12 @@ private:
     }
 
     /** Short description of class (for --doc) */
-    std::string myName() const
-    {
+    std::string myName() const {
         return "Exception Safety";
     }
 
     /** wiki formatted description of the class (for --doc) */
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Checking exception safety\n"
                "* Throwing exceptions in destructors\n"
                "* Throwing exception during invalid state\n"

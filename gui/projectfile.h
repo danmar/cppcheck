@@ -33,8 +33,7 @@
 * The project files contain project-specific settings for checking. For
 * example a list of include paths.
 */
-class ProjectFile : public QObject
-{
+class ProjectFile : public QObject {
     Q_OBJECT
 
 public:
@@ -51,8 +50,7 @@ public:
     * @brief Get project root path.
     * @return project root path.
     */
-    QString GetRootPath() const
-    {
+    QString GetRootPath() const {
         return mRootPath;
     }
 
@@ -84,8 +82,7 @@ public:
     * @brief Get filename for the project file.
     * @return file name.
     */
-    QString GetFilename()
-    {
+    QString GetFilename() {
         return mFilename;
     }
 
@@ -93,8 +90,7 @@ public:
     * @brief Set project root path.
     * @param rootpath new project root path.
     */
-    void SetRootPath(const QString &rootpath)
-    {
+    void SetRootPath(const QString &rootpath) {
         mRootPath = rootpath;
     }
 
@@ -132,8 +128,7 @@ public:
     * @brief Set filename for the project file.
     * @param filename Filename to use.
     */
-    void SetFilename(const QString &filename)
-    {
+    void SetFilename(const QString &filename) {
         mFilename = filename;
     }
 

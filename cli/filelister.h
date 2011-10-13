@@ -27,8 +27,7 @@
 /// @{
 
 /** @brief Cross-platform FileLister */
-class FileLister
-{
+class FileLister {
 public:
     /**
      * @brief Recursively add source files to a vector.

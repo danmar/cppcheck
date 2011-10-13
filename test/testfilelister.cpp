@@ -21,16 +21,14 @@
 #include <fstream>
 #include <algorithm>
 
-class TestFileLister: public TestFixture
-{
+class TestFileLister: public TestFixture {
 public:
     TestFileLister()
         :TestFixture("TestFileLister")
     {}
 
 private:
-    void run()
-    {
+    void run() {
         // bail out if the tests are not executed from the base folder
         {
             std::ifstream fin("test/testfilelister.cpp");
@@ -42,28 +40,24 @@ private:
         TEST_CASE(recursiveAddFiles);
     }
 
-    void isDirectory()
-    {
+    void isDirectory() {
         ASSERT_EQUALS(false, FileLister::isDirectory("readme.txt"));
         ASSERT_EQUALS(true, FileLister::isDirectory("lib"));
     }
 
-    void recursiveAddFiles()
-    {
+    void recursiveAddFiles() {
         // Recursively add add files..
         std::vector<std::string> filenames;
         std::map<std::string, long> filesizes;
         FileLister::recursiveAddFiles(filenames, filesizes, ".");
 
         // Ensure a size entry is present for each listed file
-        for (std::vector<std::string>::const_iterator i = filenames.begin(); i != filenames.end(); ++i)
-        {
+        for (std::vector<std::string>::const_iterator i = filenames.begin(); i != filenames.end(); ++i) {
             ASSERT(filesizes.find(*i) != filesizes.end());
         }
 
         // In case there are leading "./"..
-        for (unsigned int i = 0; i < filenames.size(); ++i)
-        {
+        for (unsigned int i = 0; i < filenames.size(); ++i) {
             if (filenames[i].compare(0,2,"./") == 0)
                 filenames[i].erase(0,2);
         }

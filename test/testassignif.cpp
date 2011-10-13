@@ -24,8 +24,7 @@
 
 extern std::ostringstream errout;
 
-class TestAssignIf : public TestFixture
-{
+class TestAssignIf : public TestFixture {
 public:
     TestAssignIf() : TestFixture("TestAssignIf")
     { }
@@ -33,15 +32,13 @@ public:
 private:
 
 
-    void run()
-    {
+    void run() {
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(compare);            // mismatching LHS/RHS in comparison
         TEST_CASE(multicompare);       // mismatching comparisons
     }
 
-    void check(const char code[])
-    {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -62,8 +59,7 @@ private:
         checkAssignIf.multiCondition();
     }
 
-    void assignAndCompare()
-    {
+    void assignAndCompare() {
         // &
         check("void foo(int x)\n"
               "{\n"
@@ -93,8 +89,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void compare()
-    {
+    void compare() {
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 4 == 3);\n"
@@ -114,8 +109,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Mismatching comparison, the result is always true\n", errout.str());
     }
 
-    void multicompare()
-    {
+    void multicompare() {
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 7);\n"

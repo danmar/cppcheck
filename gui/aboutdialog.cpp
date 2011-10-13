@@ -27,8 +27,7 @@ AboutDialog::AboutDialog(const QString &version, const QString &extraVersion, QW
     mUI.setupUi(this);
 
     QString fmtVersion(version);
-    if (!extraVersion.isEmpty())
-    {
+    if (!extraVersion.isEmpty()) {
         fmtVersion += " (" + extraVersion + ")";
     }
     mUI.mVersion->setText(mUI.mVersion->text().arg(fmtVersion));

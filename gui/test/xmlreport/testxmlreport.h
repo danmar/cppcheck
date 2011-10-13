@@ -19,8 +19,7 @@
 #include <QtTest>
 #include <QObject>
 
-class TestXmlReport: public QObject
-{
+class TestXmlReport: public QObject {
     Q_OBJECT
 
 private slots:

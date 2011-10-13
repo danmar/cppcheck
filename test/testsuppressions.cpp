@@ -26,16 +26,14 @@
 
 extern std::ostringstream errout;
 
-class TestSuppressions : public TestFixture
-{
+class TestSuppressions : public TestFixture {
 public:
     TestSuppressions() : TestFixture("TestSuppressions")
     { }
 
 private:
 
-    void run()
-    {
+    void run() {
         TEST_CASE(suppressionsBadId1);
         TEST_CASE(suppressionsDosFormat);     // Ticket #1836
         TEST_CASE(suppressionsFileNameWithColon);    // Ticket #1919 - filename includes colon
@@ -45,15 +43,13 @@ private:
         TEST_CASE(suppressionsMultiFile);
     }
 
-    void suppressionsBadId1()
-    {
+    void suppressionsBadId1() {
         Suppressions suppressions;
         std::istringstream s("123");
         ASSERT_EQUALS("Failed to add suppression. Invalid id \"123\"", suppressions.parseFile(s));
     }
 
-    void suppressionsDosFormat()
-    {
+    void suppressionsDosFormat() {
         Suppressions suppressions;
         std::istringstream s("abc\r\ndef\r\n");
         ASSERT_EQUALS("", suppressions.parseFile(s));
@@ -61,8 +57,7 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed("def", "test.cpp", 1));
     }
 
-    void suppressionsFileNameWithColon()
-    {
+    void suppressionsFileNameWithColon() {
         Suppressions suppressions;
         std::istringstream s("errorid:c:\\foo.cpp\nerrorid:c:\\bar.cpp:12");
         ASSERT_EQUALS("", suppressions.parseFile(s));
@@ -71,8 +66,7 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "c:\\bar.cpp", 12));
     }
 
-    void suppressionsGlob()
-    {
+    void suppressionsGlob() {
         // Check for syntax errors in glob
         {
             Suppressions suppressions;
@@ -106,8 +100,7 @@ private:
         }
     }
 
-    void suppressionsFileNameWithExtraPath()
-    {
+    void suppressionsFileNameWithExtraPath() {
         // Ticket #2797
         Suppressions suppressions;
         suppressions.addSuppression("errorid", "./a.c", 123);
@@ -115,15 +108,13 @@ private:
     }
 
     // Check the suppression
-    void checkSuppression(const char code[], const std::string &suppression = "")
-    {
+    void checkSuppression(const char code[], const std::string &suppression = "") {
         // Clear the error log
         errout.str("");
 
         Settings settings;
         settings._inlineSuppressions = true;
-        if (!suppression.empty())
-        {
+        if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
             ASSERT_EQUALS("", r);
         }
@@ -135,8 +126,7 @@ private:
         reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
     }
 
-    void checkSuppressionThreads(const char code[], const std::string &suppression = "")
-    {
+    void checkSuppressionThreads(const char code[], const std::string &suppression = "") {
         errout.str("");
         output.str("");
 
@@ -147,8 +137,7 @@ private:
         Settings settings;
         settings._jobs = 1;
         settings._inlineSuppressions = true;
-        if (!suppression.empty())
-        {
+        if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
             ASSERT_EQUALS("", r);
         }
@@ -162,8 +151,7 @@ private:
     }
 
     // Check the suppression for multiple files
-    void checkSuppression(const char *names[], const char *codes[], const std::string &suppression = "")
-    {
+    void checkSuppression(const char *names[], const char *codes[], const std::string &suppression = "") {
         // Clear the error log
         errout.str("");
 
@@ -180,8 +168,7 @@ private:
         reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
     }
 
-    void runChecks(void (TestSuppressions::*check)(const char[], const std::string &))
-    {
+    void runChecks(void (TestSuppressions::*check)(const char[], const std::string &)) {
         // check to make sure the appropriate error is present
         (this->*check)("void f() {\n"
                        "    int a;\n"
@@ -302,18 +289,15 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: uninitvar\n", errout.str());
     }
 
-    void suppressionsSettings()
-    {
+    void suppressionsSettings() {
         runChecks(&TestSuppressions::checkSuppression);
         if (ThreadExecutor::isEnabled())
             runChecks(&TestSuppressions::checkSuppressionThreads);
     }
 
-    void suppressionsMultiFile()
-    {
+    void suppressionsMultiFile() {
         const char *names[] = {"abc.cpp", "xyz.cpp", NULL};
-        const char *codes[] =
-        {
+        const char *codes[] = {
             "void f() {\n"
             "}\n",
             "void f() {\n"

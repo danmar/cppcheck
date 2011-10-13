@@ -29,8 +29,7 @@
 * @brief A tool window that shows checking log.
 *
 */
-class LogView : public QWidget
-{
+class LogView : public QWidget {
     Q_OBJECT
 public:
     LogView(QWidget *parent = 0);

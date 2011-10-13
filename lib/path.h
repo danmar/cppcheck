@@ -31,8 +31,7 @@
  * native separator for Unix-derived systems. When giving path to user
  * or for other functions we convert path separators back to native type.
  */
-class Path
-{
+class Path {
 public:
     /**
      * Convert path to use native separators.

@@ -21,16 +21,14 @@
 #include "mathlib.h"
 #include "testsuite.h"
 
-class TestMathLib : public TestFixture
-{
+class TestMathLib : public TestFixture {
 public:
     TestMathLib() : TestFixture("TestMathLib")
     { }
 
 private:
 
-    void run()
-    {
+    void run() {
         TEST_CASE(calculate);
         TEST_CASE(convert);
         TEST_CASE(isint);
@@ -44,49 +42,42 @@ private:
         TEST_CASE(isLessEqual)
     }
 
-    void isGreater()
-    {
+    void isGreater() {
         ASSERT_EQUALS(true , MathLib::isGreater("1.0", "0.001"));
         ASSERT_EQUALS(false, MathLib::isGreater("-1.0", "0.001"));
     }
 
-    void isGreaterEqual()
-    {
+    void isGreaterEqual() {
         ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.00", "1.0"));
         ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.001", "1.0"));
         ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.0", "0.001"));
         ASSERT_EQUALS(false, MathLib::isGreaterEqual("-1.0", "0.001"));
     }
 
-    void isEqual()
-    {
+    void isEqual() {
         ASSERT_EQUALS(true  , MathLib::isEqual("1.0", "1.0"));
         ASSERT_EQUALS(false , MathLib::isEqual("1.", "1.01"));
         ASSERT_EQUALS(true  , MathLib::isEqual("0.1","1.0E-1"));
     }
 
-    void isNotEqual()
-    {
+    void isNotEqual() {
         ASSERT_EQUALS(false , MathLib::isNotEqual("1.0", "1.0"));
         ASSERT_EQUALS(true  , MathLib::isNotEqual("1.", "1.01"));
     }
 
-    void isLess()
-    {
+    void isLess() {
         ASSERT_EQUALS(false , MathLib::isLess("1.0", "0.001"));
         ASSERT_EQUALS(true  , MathLib::isLess("-1.0", "0.001"));
     }
 
-    void isLessEqual()
-    {
+    void isLessEqual() {
         ASSERT_EQUALS(true  , MathLib::isLessEqual("1.00", "1.0"));
         ASSERT_EQUALS(false , MathLib::isLessEqual("1.001", "1.0"));
         ASSERT_EQUALS(false , MathLib::isLessEqual("1.0", "0.001"));
         ASSERT_EQUALS(true  , MathLib::isLessEqual("-1.0", "0.001"));
     }
 
-    void calculate()
-    {
+    void calculate() {
         // addition
         ASSERT_EQUALS("256", MathLib::add("0xff", "1"));
         ASSERT_EQUALS("249", MathLib::add("250", "-1"));
@@ -130,8 +121,7 @@ private:
 
     }
 
-    void convert()
-    {
+    void convert() {
         // ------------------
         // tolong conversion:
         // ------------------
@@ -195,8 +185,7 @@ private:
 
     }
 
-    void isint()
-    {
+    void isint() {
         // zero tests
         ASSERT_EQUALS(true , MathLib::isInt("0"));
         ASSERT_EQUALS(false, MathLib::isInt("0."));
@@ -273,8 +262,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isInt("LL"));
     }
 
-    void isnegative()
-    {
+    void isnegative() {
         ASSERT_EQUALS(true, MathLib::isNegative("-1"));
         ASSERT_EQUALS(true, MathLib::isNegative("-1."));
         ASSERT_EQUALS(true, MathLib::isNegative("-1.0"));
@@ -288,8 +276,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0E-2"));
     }
 
-    void isfloat()
-    {
+    void isfloat() {
         ASSERT_EQUALS(false, MathLib::isFloat("0"));
         ASSERT_EQUALS(true , MathLib::isFloat("0."));
         ASSERT_EQUALS(true , MathLib::isFloat("0.0"));

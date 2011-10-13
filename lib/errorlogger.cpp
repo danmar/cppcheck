@@ -52,13 +52,10 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     // If there is no newline then both the summary and verbose messages
     // are the given message
     const std::string::size_type pos = msg.find("\n");
-    if (pos == std::string::npos)
-    {
+    if (pos == std::string::npos) {
         _shortMessage = msg;
         _verboseMessage = msg;
-    }
-    else
-    {
+    } else {
         _shortMessage = msg.substr(0, pos);
         _verboseMessage = msg.substr(pos + 1);
     }
@@ -70,8 +67,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     std::ostringstream oss;
     oss << _id.length() << " " << _id;
     oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
-    if (_inconclusive)
-    {
+    if (_inconclusive) {
         const std::string inconclusive("inconclusive");
         oss << inconclusive.length() << " " << inconclusive;
     }
@@ -79,8 +75,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     oss << _verboseMessage.length() << " " << _verboseMessage;
     oss << _callStack.size() << " ";
 
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok)
-    {
+    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok) {
         std::ostringstream smallStream;
         smallStream << (*tok).line << ":" << (*tok).getfile();
         oss << smallStream.str().length() << " " << smallStream.str();
@@ -95,22 +90,19 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     _callStack.clear();
     std::istringstream iss(data);
     std::vector<std::string> results;
-    while (iss.good())
-    {
+    while (iss.good()) {
         unsigned int len = 0;
         if (!(iss >> len))
             return false;
 
         iss.get();
         std::string temp;
-        for (unsigned int i = 0; i < len && iss.good(); ++i)
-        {
+        for (unsigned int i = 0; i < len && iss.good(); ++i) {
             char c = static_cast<char>(iss.get());
             temp.append(1, c);
         }
 
-        if (temp == "inconclusive")
-        {
+        if (temp == "inconclusive") {
             _inconclusive = true;
             continue;
         }
@@ -129,16 +121,14 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     if (!(iss >> stackSize))
         return false;
 
-    while (iss.good())
-    {
+    while (iss.good()) {
         unsigned int len = 0;
         if (!(iss >> len))
             return false;
 
         iss.get();
         std::string temp;
-        for (unsigned int i = 0; i < len && iss.good(); ++i)
-        {
+        for (unsigned int i = 0; i < len && iss.good(); ++i) {
             char c = static_cast<char>(iss.get());
             temp.append(1, c);
         }
@@ -167,14 +157,12 @@ std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
     ostr << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
     // version 1 header
-    if (xml_version <= 1)
-    {
+    if (xml_version <= 1) {
         ostr << "<results>";
     }
 
     // version 2 header
-    else
-    {
+    else {
         ostr << "<results version=\"" << xml_version << "\">\n";
         ostr << "  <cppcheck version=\"" << CppCheck::version() << "\"/>\n";
         ostr << "  <errors>";
@@ -192,8 +180,7 @@ static std::string stringToXml(std::string s)
 {
     // convert a string so it can be save as xml attribute data
     std::string::size_type pos = 0;
-    while ((pos = s.find_first_of("<>&\"\n", pos)) != std::string::npos)
-    {
+    while ((pos = s.find_first_of("<>&\"\n", pos)) != std::string::npos) {
         if (s[pos] == '<')
             s.insert(pos + 1, "&lt;");
         else if (s[pos] == '>')
@@ -216,15 +203,13 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
     std::ostringstream xml;
 
     // The default xml format
-    if (version == 1)
-    {
+    if (version == 1) {
         // No inconclusive messages in the xml version 1
         if (_inconclusive)
             return "";
 
         xml << "<error";
-        if (!_callStack.empty())
-        {
+        if (!_callStack.empty()) {
             xml << " file=\"" << stringToXml(_callStack.back().getfile()) << "\"";
             xml << " line=\"" << _callStack.back().line << "\"";
         }
@@ -235,8 +220,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
     }
 
     // The xml format you get when you use --xml-version=2
-    else if (version == 2)
-    {
+    else if (version == 2) {
         // TODO: How should inconclusive messages be saved in the xml version 2?
         if (_inconclusive)
             return "";
@@ -248,8 +232,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
         xml << " verbose=\"" << stringToXml(_verboseMessage) << "\"";
         xml << ">" << std::endl;
 
-        for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it)
-        {
+        for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it) {
             xml << "    <location";
             xml << " file=\"" << stringToXml((*it).getfile()) << "\"";
             xml << " line=\"" << (*it).line << "\"";
@@ -265,8 +248,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
 void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
 {
     std::string::size_type index = 0;
-    while ((index = source.find(searchFor, index)) != std::string::npos)
-    {
+    while ((index = source.find(searchFor, index)) != std::string::npos) {
         source.replace(index, searchFor.length(), replaceWith);
         index += replaceWith.length() - searchFor.length() + 1;
     }
@@ -277,8 +259,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     // Save this ErrorMessage in plain text.
 
     // No template is given
-    if (outputFormat.length() == 0)
-    {
+    if (outputFormat.length() == 0) {
         std::ostringstream text;
         if (!_callStack.empty())
             text << callStackToString(_callStack) << ": ";
@@ -289,22 +270,18 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     }
 
     // template is given. Reformat the output according to it
-    else
-    {
+    else {
         std::string result = outputFormat;
         findAndReplace(result, "{id}", _id);
         findAndReplace(result, "{severity}", Severity::toString(_severity));
         findAndReplace(result, "{message}", verbose ? _verboseMessage : _shortMessage);
 
-        if (!_callStack.empty())
-        {
+        if (!_callStack.empty()) {
             std::ostringstream oss;
             oss << _callStack.back().line;
             findAndReplace(result, "{line}", oss.str());
             findAndReplace(result, "{file}", _callStack.back().getfile());
-        }
-        else
-        {
+        } else {
             findAndReplace(result, "{file}", "");
             findAndReplace(result, "{line}", "");
         }
@@ -315,8 +292,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
 
 void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched)
 {
-    for (std::list<Suppressions::SuppressionEntry>::const_iterator i = unmatched.begin(); i != unmatched.end(); ++i)
-    {
+    for (std::list<Suppressions::SuppressionEntry>::const_iterator i = unmatched.begin(); i != unmatched.end(); ++i) {
         std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
         callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(i->file, i->line));
         reportErr(ErrorLogger::ErrorMessage(callStack, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression", false));
@@ -326,8 +302,7 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
 std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack)
 {
     std::ostringstream ostr;
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok)
-    {
+    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok) {
         ostr << (tok == callStack.begin() ? "" : " -> ") << "[" << (*tok).getfile();
         if ((*tok).line != 0)
             ostr << ":" << (*tok).line;

@@ -20,21 +20,18 @@
 #include "testsuite.h"
 #include "path.h"
 
-class TestPath : public TestFixture
-{
+class TestPath : public TestFixture {
 public:
     TestPath() : TestFixture("TestPath")
     { }
 
 private:
 
-    void run()
-    {
+    void run() {
         TEST_CASE(simplify_path);
     }
 
-    void simplify_path()
-    {
+    void simplify_path() {
         // Path::simplifyPath()
         ASSERT_EQUALS("index.h", Path::simplifyPath("index.h"));
         ASSERT_EQUALS("index.h", Path::simplifyPath("./index.h"));

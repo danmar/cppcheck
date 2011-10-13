@@ -65,11 +65,9 @@ void LogView::SaveButtonClicked()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Log"),
                        "", tr("Text files (*.txt *.log);;All files (*.*)"));
-    if (!fileName.isEmpty())
-    {
+    if (!fileName.isEmpty()) {
         QFile file(fileName);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        {
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             QMessageBox::warning(this, tr("Cppcheck"),
                                  tr("Could not open file for writing: \"%1\"").arg(fileName));
             return;

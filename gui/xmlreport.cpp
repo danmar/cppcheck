@@ -62,20 +62,15 @@ int XmlReport::determineVersion(const QString &filename)
         return 0;
 
     QXmlStreamReader reader(&file);
-    while (!reader.atEnd())
-    {
-        switch (reader.readNext())
-        {
+    while (!reader.atEnd()) {
+        switch (reader.readNext()) {
         case QXmlStreamReader::StartElement:
-            if (reader.name() == ResultElementName)
-            {
+            if (reader.name() == ResultElementName) {
                 QXmlStreamAttributes attribs = reader.attributes();
-                if (attribs.hasAttribute(QString(VersionAttribute)))
-                {
+                if (attribs.hasAttribute(QString(VersionAttribute))) {
                     int ver = attribs.value("", VersionAttribute).toString().toInt();
                     return ver;
-                }
-                else
+                } else
                     return 1;
             }
             break;

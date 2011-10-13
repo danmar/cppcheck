@@ -85,8 +85,7 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
 std::string CppCheck::replaceAll(std::string code, const std::string &from, const std::string &to)
 {
     size_t pos = 0;
-    while ((pos = code.find(from, pos)) != std::string::npos)
-    {
+    while ((pos = code.find(from, pos)) != std::string::npos) {
         code.replace(pos, from.length(), to);
         pos += to.length();
     }
@@ -98,25 +97,20 @@ bool CppCheck::findError(std::string code, const char FileName[])
 {
     // First make sure that error occurs with the original code
     checkFile(code, FileName);
-    if (_errorList.empty())
-    {
+    if (_errorList.empty()) {
         // Error does not occur with this code
         return false;
     }
 
     std::string previousCode = code;
     std::string error = _errorList.front();
-    for (;;)
-    {
+    for (;;) {
 
         // Try to remove included files from the source
         size_t found=previousCode.rfind("\n#endfile");
-        if (found == std::string::npos)
-        {
+        if (found == std::string::npos) {
             // No modifications can be done to the code
-        }
-        else
-        {
+        } else {
             // Modify code and re-check it to see if error
             // is still there.
             code = previousCode.substr(found+9);
@@ -124,14 +118,11 @@ bool CppCheck::findError(std::string code, const char FileName[])
             checkFile(code, FileName);
         }
 
-        if (_errorList.empty())
-        {
+        if (_errorList.empty()) {
             // Latest code didn't fail anymore. Fall back
             // to previous code
             code = previousCode;
-        }
-        else
-        {
+        } else {
             error = _errorList.front();
         }
 
@@ -155,8 +146,7 @@ unsigned int CppCheck::processFile()
 
     // TODO: Should this be moved out to its own function so all the files can be
     // analysed before any files are checked?
-    if (_settings.test_2_pass && _settings._jobs == 1)
-    {
+    if (_settings.test_2_pass && _settings._jobs == 1) {
         const std::string printname = Path::toNativeSeparators(_filename);
         reportOut("Analysing " + printname + "...");
 
@@ -169,54 +159,45 @@ unsigned int CppCheck::processFile()
     if (_settings.terminated())
         return exitcode;
 
-    if (_settings._errorsOnly == false)
-    {
+    if (_settings._errorsOnly == false) {
         std::string fixedpath(_filename);
         fixedpath = Path::simplifyPath(fixedpath.c_str());
         fixedpath = Path::toNativeSeparators(fixedpath);
         _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string("..."));
     }
 
-    try
-    {
+    try {
         Preprocessor preprocessor(&_settings, this);
         std::list<std::string> configurations;
         std::string filedata = "";
 
-        if (!_fileContent.empty())
-        {
+        if (!_fileContent.empty()) {
             // File content was given as a string
             std::istringstream iss(_fileContent);
             preprocessor.preprocess(iss, filedata, configurations, _filename, _settings._includePaths);
-        }
-        else
-        {
+        } else {
             // Only file name was given, read the content from file
             std::ifstream fin(_filename.c_str());
             Timer t("Preprocessor::preprocess", _settings._showtime, &S_timerResults);
             preprocessor.preprocess(fin, filedata, configurations, _filename, _settings._includePaths);
         }
 
-        if (_settings.checkConfiguration)
-        {
+        if (_settings.checkConfiguration) {
             return 0;
         }
 
         _settings.ifcfg = bool(configurations.size() > 1);
 
-        if (!_settings.userDefines.empty())
-        {
+        if (!_settings.userDefines.empty()) {
             configurations.clear();
             configurations.push_back(_settings.userDefines);
         }
 
         int checkCount = 0;
-        for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it)
-        {
+        for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
             // Check only 12 first configurations, after that bail out, unless --force
             // was used.
-            if (!_settings._force && checkCount > 11)
-            {
+            if (!_settings._force && checkCount > 11) {
 
                 const std::string fixedpath = Path::toNativeSeparators(_filename);
                 ErrorLogger::ErrorMessage::FileLocation location;
@@ -234,8 +215,7 @@ unsigned int CppCheck::processFile()
                                                  "toomanyconfigs",
                                                  false);
 
-                if (!_settings.nomsg.isSuppressedLocal(errmsg._id, fixedpath, location.line))
-                {
+                if (!_settings.nomsg.isSuppressedLocal(errmsg._id, fixedpath, location.line)) {
                     reportErr(errmsg);
                 }
 
@@ -248,8 +228,7 @@ unsigned int CppCheck::processFile()
             t.Stop();
 
             // If only errors are printed, print filename after the check
-            if (_settings._errorsOnly == false && it != configurations.begin())
-            {
+            if (_settings._errorsOnly == false && it != configurations.begin()) {
                 std::string fixedpath = Path::simplifyPath(_filename.c_str());
                 fixedpath = Path::toNativeSeparators(fixedpath);
                 _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
@@ -259,23 +238,17 @@ unsigned int CppCheck::processFile()
             if (!appendCode.empty())
                 Preprocessor::preprocessWhitespaces(appendCode);
 
-            if (_settings.debugFalsePositive)
-            {
-                if (findError(codeWithoutCfg + appendCode, _filename.c_str()))
-                {
+            if (_settings.debugFalsePositive) {
+                if (findError(codeWithoutCfg + appendCode, _filename.c_str())) {
                     return exitcode;
                 }
-            }
-            else
-            {
+            } else {
                 checkFile(codeWithoutCfg + appendCode, _filename.c_str());
             }
 
             ++checkCount;
         }
-    }
-    catch (std::runtime_error &e)
-    {
+    } catch (std::runtime_error &e) {
         // Exception was thrown when checking this file..
         const std::string fixedpath = Path::toNativeSeparators(_filename);
         _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
@@ -293,8 +266,7 @@ unsigned int CppCheck::processFile()
 void CppCheck::checkFunctionUsage()
 {
     // This generates false positives - especially for libraries
-    if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
-    {
+    if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1) {
         const bool verbose_orig = _settings._verbose;
         _settings._verbose = false;
 
@@ -317,8 +289,7 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
     preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
     const std::string code = Preprocessor::getcode(filedata, "", filename, &_settings, &_errorLogger);
 
-    if (_settings.checkConfiguration)
-    {
+    if (_settings.checkConfiguration) {
         return;
     }
 
@@ -330,16 +301,14 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
 
     // Analyse the tokens..
     std::set<std::string> data;
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-    {
+    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
         (*it)->analyse(tokenizer.tokens(), data);
     }
 
     // Save analysis results..
     // TODO: This loop should be protected by a mutex or something like that
     //       The saveAnalysisData must _not_ be called from many threads at the same time.
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-    {
+    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
         (*it)->saveAnalysisData(data);
     }
 }
@@ -362,8 +331,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     Timer timer("Tokenizer::tokenize", _settings._showtime, &S_timerResults);
     result = _tokenizer.tokenize(istr, FileName, cfg);
     timer.Stop();
-    if (!result)
-    {
+    if (!result) {
         // File had syntax errors, abort
         return;
     }
@@ -373,8 +341,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     timer2.Stop();
 
     // call all "runChecks" in all registered Check classes
-    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-    {
+    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
         if (_settings.terminated())
             return;
 
@@ -396,8 +363,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         _checkUnusedFunctions.parseTokens(_tokenizer);
 
     // call all "runSimplifiedChecks" in all registered Check classes
-    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-    {
+    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
         if (_settings.terminated())
             return;
 
@@ -407,14 +373,12 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
 #ifdef HAVE_RULES
     // Are there extra rules?
-    if (!_settings.rules.empty())
-    {
+    if (!_settings.rules.empty()) {
         std::ostringstream ostr;
         for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         const std::string str(ostr.str());
-        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it)
-        {
+        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
             const Settings::Rule &rule = *it;
             if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty())
                 continue;
@@ -422,8 +386,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             const char *error = 0;
             int erroffset = 0;
             pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,NULL);
-            if (!re && error)
-            {
+            if (!re && error) {
                 ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
                                                  Severity::error,
                                                  error,
@@ -437,8 +400,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
             int pos = 0;
             int ovector[30];
-            while (0 <= pcre_exec(re, NULL, str.c_str(), (int)str.size(), pos, 0, ovector, 30))
-            {
+            while (0 <= pcre_exec(re, NULL, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
                 unsigned int pos1 = (unsigned int)ovector[0];
                 unsigned int pos2 = (unsigned int)ovector[1];
 
@@ -451,11 +413,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
                 loc.line = 0;
 
                 unsigned int len = 0;
-                for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next())
-                {
+                for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next()) {
                     len = len + 1 + tok->str().size();
-                    if (len > pos1)
-                    {
+                    if (len > pos1) {
                         loc.setfile(_tokenizer.getFiles()->at(tok->fileIndex()));
                         loc.line = tok->linenr();
                         break;
@@ -495,8 +455,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     if (errmsg.empty())
         return;
 
-    if (_settings.debugFalsePositive)
-    {
+    if (_settings.debugFalsePositive) {
         // Don't print out error
         _errorList.push_back(errmsg);
         return;
@@ -508,19 +467,15 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 
     std::string file;
     unsigned int line(0);
-    if (!msg._callStack.empty())
-    {
+    if (!msg._callStack.empty()) {
         file = msg._callStack.back().getfile(false);
         line = msg._callStack.back().line;
     }
 
-    if (_useGlobalSuppressions)
-    {
+    if (_useGlobalSuppressions) {
         if (_settings.nomsg.isSuppressed(msg._id, file, line))
             return;
-    }
-    else
-    {
+    } else {
         if (_settings.nomsg.isSuppressedLocal(msg._id, file, line))
             return;
     }
@@ -530,8 +485,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 
     _errorList.push_back(errmsg);
     std::string errmsg2(errmsg);
-    if (_settings._verbose)
-    {
+    if (_settings._verbose) {
         errmsg2 += "\n    Defines=\'" + cfg + "\'\n";
     }
 

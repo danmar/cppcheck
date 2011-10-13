@@ -36,8 +36,7 @@ Report::~Report()
 bool Report::Create()
 {
     bool succeed = false;
-    if (!mFile.isOpen())
-    {
+    if (!mFile.isOpen()) {
         mFile.setFileName(mFilename);
         succeed = mFile.open(QIODevice::WriteOnly | QIODevice::Text);
     }
@@ -47,8 +46,7 @@ bool Report::Create()
 bool Report::Open()
 {
     bool succeed = false;
-    if (!mFile.isOpen())
-    {
+    if (!mFile.isOpen()) {
         mFile.setFileName(mFilename);
         succeed = mFile.open(QIODevice::ReadOnly | QIODevice::Text);
     }

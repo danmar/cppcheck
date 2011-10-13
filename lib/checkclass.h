@@ -32,8 +32,7 @@ class Token;
 
 
 /** @brief %Check classes. Uninitialized member variables, non-conforming operators, missing virtual destructor, etc */
-class CheckClass : public Check
-{
+class CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckClass() : Check(myName()), symbolDatabase(NULL)
@@ -43,8 +42,7 @@ public:
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckClass checkClass(tokenizer, settings, errorLogger);
 
         // can't be a simplified check .. the 'sizeof' is used.
@@ -52,8 +50,7 @@ public:
     }
 
     /** @brief Run checks on the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckClass checkClass(tokenizer, settings, errorLogger);
 
         // Coding style checks
@@ -132,8 +129,7 @@ private:
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckClass c(0, settings, errorLogger);
         c.noConstructorError(0, "classname", false);
         c.uninitVarError(0, "classname", "varname");
@@ -149,13 +145,11 @@ private:
         c.initializerListError(0, 0, "class", "variable");
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "Class";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Check the code for each class.\n"
                "* Missing constructors\n"
                "* Are all variables initialized by the constructors?\n"
@@ -183,8 +177,7 @@ private:
 
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
-    struct Usage
-    {
+    struct Usage {
         Usage() : assign(false), init(false) { }
 
         /** @brief has this variable been assigned? */

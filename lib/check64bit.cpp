@@ -26,9 +26,8 @@
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
-namespace
-{
-Check64BitPortability instance;
+namespace {
+    Check64BitPortability instance;
 }
 
 /** Is given variable a pointer or array? */
@@ -49,10 +48,8 @@ void Check64BitPortability::pointerassignment()
     if (!_settings->isEnabled("portability"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "[;{}] %var% = %var% [;+]"))
-        {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "[;{}] %var% = %var% [;+]")) {
             const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
             const Variable *var1(symbolDatabase->getVariableFromVarId(tok->tokAt(1)->varId()));
@@ -61,8 +58,7 @@ void Check64BitPortability::pointerassignment()
             if (isaddr(var1) && isint(var2) && tok->strAt(4) != "+")
                 assignmentIntegerToAddressError(tok->next());
 
-            else if (isint(var1) && isaddr(var2) && !tok->tokAt(3)->isPointerCompare())
-            {
+            else if (isint(var1) && isaddr(var2) && !tok->tokAt(3)->isPointerCompare()) {
                 // assigning address => warning
                 // some trivial addition => warning
                 if (Token::Match(tok->tokAt(4), "+ %any% !!;"))

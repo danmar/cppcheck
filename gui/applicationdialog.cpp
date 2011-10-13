@@ -62,8 +62,7 @@ void ApplicationDialog::Browse()
                            QString(),
                            filter);
 
-    if (!selectedFile.isEmpty())
-    {
+    if (!selectedFile.isEmpty()) {
         QString path(QDir::toNativeSeparators(selectedFile));
         mUI.mPath->setText(path);
     }
@@ -81,8 +80,7 @@ Application ApplicationDialog::GetApplication() const
 void ApplicationDialog::Ok()
 {
     if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty() ||
-        mUI.mParameters->text().isEmpty())
-    {
+        mUI.mParameters->text().isEmpty()) {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
                         tr("You must specify a name, a path and parameters for the application!"),
@@ -91,9 +89,7 @@ void ApplicationDialog::Ok()
 
         msg.exec();
 
-    }
-    else
-    {
+    } else {
         // Convert possible native (Windows) path to internal presentation format
         mUI.mPath->setText(QDir::fromNativeSeparators(mUI.mPath->text()));
         accept();

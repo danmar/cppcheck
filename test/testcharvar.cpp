@@ -24,8 +24,7 @@
 
 extern std::ostringstream errout;
 
-class TestCharVar : public TestFixture
-{
+class TestCharVar : public TestFixture {
 public:
     TestCharVar() : TestFixture("TestCharVar")
     { }
@@ -33,8 +32,7 @@ public:
 private:
 
 
-    void run()
-    {
+    void run() {
         TEST_CASE(array_index);
         TEST_CASE(bitop1);
         TEST_CASE(bitop2);
@@ -44,8 +42,7 @@ private:
         TEST_CASE(pointer);
     }
 
-    void check(const char code[])
-    {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -63,8 +60,7 @@ private:
         checkOther.checkCharVariable();
     }
 
-    void array_index()
-    {
+    void array_index() {
         check("void foo()\n"
               "{\n"
               "    unsigned char ch = 0x80;\n"
@@ -100,8 +96,7 @@ private:
     }
 
 
-    void bitop1()
-    {
+    void bitop1() {
         check("void foo()\n"
               "{\n"
               "    int result = 0;\n"
@@ -111,8 +106,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
     }
 
-    void bitop2()
-    {
+    void bitop2() {
         check("void foo()\n"
               "{\n"
               "    char ch;\n"
@@ -121,8 +115,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void return1()
-    {
+    void return1() {
         check("void foo()\n"
               "{\n"
               "    char c;\n"
@@ -132,8 +125,7 @@ private:
     }
 
 
-    void assignChar()
-    {
+    void assignChar() {
         check("void foo()\n"
               "{\n"
               "    char c;\n"
@@ -142,8 +134,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void and03()
-    {
+    void and03() {
         check("void foo()\n"
               "{\n"
               "    char c;\n"
@@ -152,8 +143,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void pointer()
-    {
+    void pointer() {
         // ticket #2866
         check("void f(char *p) {\n"
               "    int ret = 0;\n"

@@ -25,8 +25,7 @@
  * Has getters for available switches and parameters.
  * See test/testoptions.cpp for sample usage.
  */
-class options
-{
+class options {
 public:
     /** Call from main() to populate object */
     options(int argc, const char* argv[]);

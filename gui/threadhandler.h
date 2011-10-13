@@ -37,8 +37,7 @@
 * @brief This class handles creating threadresult and starting threads
 *
 */
-class ThreadHandler : public QObject
-{
+class ThreadHandler : public QObject {
     Q_OBJECT
 public:
     ThreadHandler(QObject *parent = 0);

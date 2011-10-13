@@ -29,15 +29,13 @@
 
 extern std::ostringstream errout;
 
-class TestDivision : public TestFixture
-{
+class TestDivision : public TestFixture {
 public:
     TestDivision() : TestFixture("TestDivision")
     { }
 
 private:
-    void check(const char code[], bool style = true)
-    {
+    void check(const char code[], bool style = true) {
         // Clear the error buffer..
         errout.str("");
 
@@ -55,8 +53,7 @@ private:
         checkOther.checkUnsignedDivision();
     }
 
-    void run()
-    {
+    void run() {
         TEST_CASE(division1);
         TEST_CASE(division2);
         TEST_CASE(division4);
@@ -68,8 +65,7 @@ private:
         TEST_CASE(division10);
     }
 
-    void division1()
-    {
+    void division1() {
         check("void f()\n"
               "{\n"
               "    int ivar = -2;\n"
@@ -80,8 +76,7 @@ private:
                            "", errout.str());
     }
 
-    void division2()
-    {
+    void division2() {
         check("void f()\n"
               "{\n"
               "    int ivar = -2;\n"
@@ -92,8 +87,7 @@ private:
                            "", errout.str());
     }
 
-    void division4()
-    {
+    void division4() {
         check("void f1()\n"
               "{\n"
               "    int i1;\n"
@@ -118,8 +112,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void division5()
-    {
+    void division5() {
         check("#define USER_HASH (16)\n"
               "void foo()\n"
               "{\n"
@@ -129,8 +122,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void division6()
-    {
+    void division6() {
         check("void foo()\n"
               "{\n"
               "    unsigned int val = 32;\n"
@@ -139,8 +131,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Unsigned division. The result will be wrong.\n", errout.str());
     }
 
-    void division7()
-    {
+    void division7() {
         check("void foo()\n"
               "{\n"
               "    unsigned int val = 32;\n"
@@ -148,8 +139,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Unsigned division. The result will be wrong.\n", errout.str());
     }
 
-    void division8()
-    {
+    void division8() {
         check("void foo(int b)\n"
               "{\n"
               "    if (b > 0)\n"
@@ -180,8 +170,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void division9()
-    {
+    void division9() {
         check("void f()\n"
               "{\n"
               "    int ivar = -2;\n"
@@ -201,8 +190,7 @@ private:
                            "", errout.str());
     }
 
-    void division10()
-    {
+    void division10() {
         // Ticket: #2932 - don't segfault
         check("i / i");
         ASSERT_EQUALS("", errout.str());

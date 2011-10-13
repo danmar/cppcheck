@@ -35,13 +35,10 @@ class ErrorLine;
  * GUI needs its own versions of conversions since GUI uses Qt's QString
  * instead of the std::string used by lib/cli.
  */
-class GuiSeverity : Severity
-{
+class GuiSeverity : Severity {
 public:
-    static QString toString(SeverityType severity)
-    {
-        switch (severity)
-        {
+    static QString toString(SeverityType severity) {
+        switch (severity) {
         case none:
             return "";
         case error:
@@ -62,8 +59,7 @@ public:
         return "???";
     }
 
-    static SeverityType fromString(const QString &severity)
-    {
+    static SeverityType fromString(const QString &severity) {
         if (severity.isEmpty())
             return none;
         if (severity == "none")
@@ -94,8 +90,7 @@ public:
 * Full path is stored instead of relative path for flexibility. It is easy
 * to get the relative path from full path when needed.
 */
-class ErrorItem
-{
+class ErrorItem {
 public:
     ErrorItem();
     ErrorItem(const ErrorItem &item);
@@ -123,8 +118,7 @@ Q_DECLARE_METATYPE(ErrorItem);
 /**
 * @brief A class containing error data for one shown error line.
 */
-class ErrorLine
-{
+class ErrorLine {
 public:
     QString file;
     unsigned int line;

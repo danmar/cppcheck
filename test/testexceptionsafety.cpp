@@ -24,16 +24,14 @@
 
 extern std::ostringstream errout;
 
-class TestExceptionSafety : public TestFixture
-{
+class TestExceptionSafety : public TestFixture {
 public:
     TestExceptionSafety() : TestFixture("TestExceptionSafety")
     { }
 
 private:
 
-    void run()
-    {
+    void run() {
         TEST_CASE(destructors);
         TEST_CASE(deallocThrow1);
         TEST_CASE(deallocThrow2);
@@ -42,8 +40,7 @@ private:
         TEST_CASE(rethrowCopy3);
     }
 
-    void check(const std::string &code)
-    {
+    void check(const std::string &code) {
         // Clear the error buffer..
         errout.str("");
 
@@ -61,8 +58,7 @@ private:
         checkExceptionSafety.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void destructors()
-    {
+    void destructors() {
         check("x::~x()\n"
               "{\n"
               "    throw e;\n"
@@ -70,8 +66,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Throwing exception in destructor\n", errout.str());
     }
 
-    void deallocThrow1()
-    {
+    void deallocThrow1() {
         check("int * p;\n"
               "void f(int x)\n"
               "{\n"
@@ -83,8 +78,7 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Throwing exception in invalid state, p points at deallocated memory\n", errout.str());
     }
 
-    void deallocThrow2()
-    {
+    void deallocThrow2() {
         check("void f() {\n"
               "    int* p = 0;\n"
               "    delete p;\n"
@@ -94,8 +88,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void rethrowCopy1()
-    {
+    void rethrowCopy1() {
         check("void f() {\n"
               "    try\n"
               "    {\n"
@@ -109,8 +102,7 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception\n", errout.str());
     }
 
-    void rethrowCopy2()
-    {
+    void rethrowCopy2() {
         check("void f() {\n"
               "    try\n"
               "    {\n"
@@ -124,8 +116,7 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception\n", errout.str());
     }
 
-    void rethrowCopy3()
-    {
+    void rethrowCopy3() {
         check("void f() {\n"
               "    try\n"
               "    {\n"

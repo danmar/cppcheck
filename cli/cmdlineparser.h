@@ -36,8 +36,7 @@ class Settings;
  * based on options user has given. Couple of options are handled as
  * class internal options.
  */
-class CmdLineParser
-{
+class CmdLineParser {
 public:
     /**
      * The constructor.
@@ -55,48 +54,42 @@ public:
     /**
      * Return if user wanted to see program version.
      */
-    bool GetShowVersion() const
-    {
+    bool GetShowVersion() const {
         return _showVersion;
     }
 
     /**
      * Return if user wanted to see list of error messages.
      */
-    bool GetShowErrorMessages() const
-    {
+    bool GetShowErrorMessages() const {
         return _showErrorMessages;
     }
 
     /**
      * Return the path names user gave to command line.
      */
-    std::vector<std::string> GetPathNames() const
-    {
+    std::vector<std::string> GetPathNames() const {
         return _pathnames;
     }
 
     /**
      * Return if help is shown to user.
      */
-    bool GetShowHelp() const
-    {
+    bool GetShowHelp() const {
         return _showHelp;
     }
 
     /**
      * Return if we should exit after printing version, help etc.
      */
-    bool ExitAfterPrinting() const
-    {
+    bool ExitAfterPrinting() const {
         return _exitAfterPrint;
     }
 
     /**
      * Return a list of paths user wants to ignore.
      */
-    std::vector<std::string> GetIgnoredPaths() const
-    {
+    std::vector<std::string> GetIgnoredPaths() const {
         return _ignoredPaths;
     }
 

@@ -34,8 +34,7 @@
 * @brief Text file report.
 * This report mimics the output of the command line cppcheck.
 */
-class TxtReport : public Report
-{
+class TxtReport : public Report {
     Q_OBJECT
 
 public:

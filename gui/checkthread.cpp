@@ -47,8 +47,7 @@ void CheckThread::run()
     QString file;
     file = mResult.GetNextFile();
 
-    while (!file.isEmpty() && mState == Running)
-    {
+    while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
         mCppcheck.check(file.toStdString());
         emit FileChecked(file);

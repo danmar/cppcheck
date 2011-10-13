@@ -33,8 +33,7 @@ class Token;
 
 /** @brief Checking for uninitialized variables */
 
-class CheckUninitVar : public Check
-{
+class CheckUninitVar : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUninitVar */
     CheckUninitVar() : Check(myName())
@@ -46,16 +45,14 @@ public:
     { }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         (void)tokenizer;
         (void)settings;
         (void)errorLogger;
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
         checkUninitVar.executionPaths();
     }
@@ -77,8 +74,7 @@ public:
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckUninitVar c(0, settings, errorLogger);
 
         // error
@@ -87,13 +83,11 @@ public:
         c.uninitvarError(0, "varname");
     }
 
-    std::string myName() const
-    {
+    std::string myName() const {
         return "Uninitialized variables";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Uninitialized variables\n"
                "* using uninitialized variables and data\n";
     }

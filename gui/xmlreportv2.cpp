@@ -59,8 +59,7 @@ XmlReportV2::~XmlReportV2()
 bool XmlReportV2::Create()
 {
     bool success = false;
-    if (Report::Create())
-    {
+    if (Report::Create()) {
         mXmlWriter = new QXmlStreamWriter(Report::GetFile());
         success = true;
     }
@@ -70,8 +69,7 @@ bool XmlReportV2::Create()
 bool XmlReportV2::Open()
 {
     bool success = false;
-    if (Report::Open())
-    {
+    if (Report::Open()) {
         mXmlReader = new QXmlStreamReader(Report::GetFile());
         success = true;
     }
@@ -122,8 +120,7 @@ void XmlReportV2::WriteError(const ErrorItem &error)
     const QString message = XmlReport::quoteMessage(error.message);
     mXmlWriter->writeAttribute(VerboseAttribute, message);
 
-    for (int i = 0; i < error.files.count(); i++)
-    {
+    for (int i = 0; i < error.files.count(); i++) {
         mXmlWriter->writeStartElement(LocationElementName);
 
         QString file = QDir::toNativeSeparators(error.files[i]);
@@ -142,22 +139,18 @@ QList<ErrorItem> XmlReportV2::Read()
 {
     QList<ErrorItem> errors;
     bool insideResults = false;
-    if (!mXmlReader)
-    {
+    if (!mXmlReader) {
         qDebug() << "You must Open() the file before reading it!";
         return errors;
     }
-    while (!mXmlReader->atEnd())
-    {
-        switch (mXmlReader->readNext())
-        {
+    while (!mXmlReader->atEnd()) {
+        switch (mXmlReader->readNext()) {
         case QXmlStreamReader::StartElement:
             if (mXmlReader->name() == ResultElementName)
                 insideResults = true;
 
             // Read error element from inside result element
-            if (insideResults && mXmlReader->name() == ErrorElementName)
-            {
+            if (insideResults && mXmlReader->name() == ErrorElementName) {
                 ErrorItem item = ReadError(mXmlReader);
                 errors.append(item);
             }
@@ -198,8 +191,7 @@ ErrorItem XmlReportV2::ReadError(QXmlStreamReader *reader)
     ErrorItem item;
 
     // Read error element from inside errors element
-    if (mXmlReader->name() == ErrorElementName)
-    {
+    if (mXmlReader->name() == ErrorElementName) {
         QXmlStreamAttributes attribs = reader->attributes();
         item.errorId = attribs.value("", IdAttribute).toString();
         item.severity = GuiSeverity::fromString(attribs.value("", SeverityAttribute).toString());
@@ -210,15 +202,12 @@ ErrorItem XmlReportV2::ReadError(QXmlStreamReader *reader)
     }
 
     bool errorRead = false;
-    while (!errorRead && !mXmlReader->atEnd())
-    {
-        switch (mXmlReader->readNext())
-        {
+    while (!errorRead && !mXmlReader->atEnd()) {
+        switch (mXmlReader->readNext()) {
         case QXmlStreamReader::StartElement:
 
             // Read location element from inside error element
-            if (mXmlReader->name() == LocationElementName)
-            {
+            if (mXmlReader->name() == LocationElementName) {
                 QXmlStreamAttributes attribs = mXmlReader->attributes();
                 QString file = attribs.value("", FilenameAttribute).toString();
                 file = XmlReport::unquoteMessage(file);

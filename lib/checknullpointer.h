@@ -33,8 +33,7 @@ class Token;
 
 /** @brief check for null pointer dereferencing */
 
-class CheckNullPointer : public Check
-{
+class CheckNullPointer : public Check {
 public:
     /** @brief This constructor is used when registering the CheckNullPointer */
     CheckNullPointer() : Check(myName())
@@ -46,15 +45,13 @@ public:
     { }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckNullPointer checkNullPointer(tokenizer, settings, errorLogger);
         checkNullPointer.nullPointer();
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckNullPointer checkNullPointer(tokenizer, settings, errorLogger);
         checkNullPointer.nullConstantDereference();
         checkNullPointer.executionPaths();
@@ -105,21 +102,18 @@ public:
     void nullPointerError(const Token *tok, const std::string &varname, const unsigned int line, bool inconclusive = false);
 
     /** Get error messages. Used by --errorlist */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckNullPointer c(0, settings, errorLogger);
         c.nullPointerError(0, "pointer");
     }
 
     /** Name of check */
-    std::string myName() const
-    {
+    std::string myName() const {
         return "Null pointer";
     }
 
     /** class info in WIKI format. Used by --doc */
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Null pointers\n"
                "* null pointer dereferencing\n";
     }

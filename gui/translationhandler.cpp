@@ -43,12 +43,9 @@ TranslationHandler::TranslationHandler(QObject *parent) :
 
     //Load English as a fallback language
     QTranslator *english = new QTranslator();
-    if (english->load("cppcheck_en"))
-    {
+    if (english->load("cppcheck_en")) {
         qApp->installTranslator(english);
-    }
-    else
-    {
+    } else {
         qDebug() << "Failed to load English translation!";
         delete english;
     }
@@ -61,8 +58,7 @@ TranslationHandler::~TranslationHandler()
 const QStringList TranslationHandler::GetNames() const
 {
     QStringList names;
-    foreach(TranslationInfo translation, mTranslations)
-    {
+    foreach(TranslationInfo translation, mTranslations) {
         names.append(translation.mName);
     }
     return names;
@@ -71,11 +67,9 @@ const QStringList TranslationHandler::GetNames() const
 bool TranslationHandler::SetLanguage(const QString &code, QString &error)
 {
     //If English is the language
-    if (code == "en")
-    {
+    if (code == "en") {
         //Just remove all extra translators
-        if (mTranslator)
-        {
+        if (mTranslator) {
             qApp->removeTranslator(mTranslator);
         }
 
@@ -85,18 +79,15 @@ bool TranslationHandler::SetLanguage(const QString &code, QString &error)
 
     //Make sure the translator is otherwise valid
     int index = GetLanguageIndexByCode(code);
-    if (index == -1)
-    {
+    if (index == -1) {
         error = QObject::tr("Unknown language specified!");
         return false;
     }
 
     //Load the new language
-    if (!mTranslator->load(mTranslations[index].mFilename))
-    {
+    if (!mTranslator->load(mTranslations[index].mFilename)) {
         //If it failed, lets check if the default file exists
-        if (!QFile::exists(mTranslations[index].mFilename + ".qm"))
-        {
+        if (!QFile::exists(mTranslations[index].mFilename + ".qm")) {
             error = QObject::tr("Language file %1 not found!");
             error = error.arg(mTranslations[index].mFilename + ".qm");
             return false;
@@ -136,8 +127,7 @@ QString TranslationHandler::SuggestLanguage() const
     int index = GetLanguageIndexByCode(language);
 
     //If nothing found, return English
-    if (index < 0)
-    {
+    if (index < 0) {
         return "en";
     }
 
@@ -156,10 +146,8 @@ void TranslationHandler::AddTranslation(const char *name, const char *filename)
 int TranslationHandler::GetLanguageIndexByCode(const QString &code) const
 {
     int index = -1;
-    for (int i = 0; i < mTranslations.size(); i++)
-    {
-        if (mTranslations[i].mCode == code)
-        {
+    for (int i = 0; i < mTranslations.size(); i++) {
+        if (mTranslations[i].mCode == code) {
             index = i;
             break;
         }
