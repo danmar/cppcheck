@@ -50,7 +50,7 @@ void CheckStl::iterators()
     // for (it = foo.begin(); it != bar.end(); ++it)
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Locate an iterator..
-        if (!Token::Match(tok, "%var% = %var% . begin ( ) ;|+"))
+        if (!Token::Match(tok, "%var% = %var% . begin|rbegin ( ) ;|+"))
             continue;
 
         // Get variable ids for both the iterator and container
@@ -77,7 +77,7 @@ void CheckStl::iterators()
                 break;
 
             // Is iterator compared against different container?
-            if (Token::Match(tok2, "%varid% != %var% . end ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId) {
+            if (Token::Match(tok2, "%varid% != %var% . end|rend ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId) {
                 iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
                 tok2 = tok2->tokAt(6);
             }
@@ -404,7 +404,7 @@ void CheckStl::erase()
                     break;
                 }
 
-                if (Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% != %var% . end ( )") &&
+                if (Token::Match(tok2, "%var% = %var% . begin|rbegin ( ) ; %var% != %var% . end|rend ( )") &&
                     tok2->str() == tok2->tokAt(8)->str() &&
                     tok2->tokAt(2)->str() == tok2->tokAt(10)->str()) {
                     EraseCheckLoop::checkScope(this, tok2);
@@ -523,7 +523,7 @@ void CheckStl::pushback()
                 tok2 = tok2->tokAt(2);
             }
 
-            if (Token::Match(tok2, "%varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++| %varid% ++| ) {", iteratorid)) {
+            if (Token::Match(tok2, "%varid% = %var% . begin|rbegin ( ) ; %varid% != %var% . end|rend ( ) ; ++| %varid% ++| ) {", iteratorid)) {
                 // variable id for the loop iterator
                 const unsigned int varId(tok2->tokAt(2)->varId());
                 if (varId == 0)
@@ -822,7 +822,7 @@ void CheckStl::sizeError(const Token *tok)
 
 void CheckStl::redundantCondition()
 {
-    const char pattern[] = "if ( %var% . find ( %any% ) != %var% . end ( ) ) "
+    const char pattern[] = "if ( %var% . find ( %any% ) != %var% . end|rend ( ) ) "
                            "{|{|"
                            "    %var% . remove ( %any% ) ; "
                            "}|}|";
@@ -864,7 +864,7 @@ void CheckStl::missingComparison()
                 if (tok2->str() == ";")
                     break;
 
-                if (!Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% != %var% . end ( ) ; ++| %var% ++| ) {"))
+                if (!Token::Match(tok2, "%var% = %var% . begin|rbegin ( ) ; %var% != %var% . end|rend ( ) ; ++| %var% ++| ) {"))
                     continue;
 
                 // same iterator name

@@ -140,6 +140,16 @@ private:
               "    { }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with both l1 and l2\n", errout.str());
+
+        // Same check with reverse iterator
+        check("void f()\n"
+              "{\n"
+              "    list<int> l1;\n"
+              "    list<int> l2;\n"
+              "    for (list<int>::const_reverse_iterator it = l1.rbegin(); it != l2.rend(); ++it)\n"
+              "    { }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with both l1 and l2\n", errout.str());
     }
 
     void iterator2() {
@@ -290,6 +300,17 @@ private:
               "    std::map<int, int> ints;\n"
               "    std::map<int, int>::iterator iter;\n"
               "    iter = ints.begin();\n"
+              "    ints.erase(iter);\n"
+              "    std::cout << iter->first << std::endl;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Dereferenced iterator 'iter' has been erased\n", errout.str());
+
+        // Reverse iterator
+        check("void f()\n"
+              "{\n"
+              "    std::map<int, int> ints;\n"
+              "    std::map<int, int>::reverse_iterator iter;\n"
+              "    iter = ints.rbegin();\n"
               "    ints.erase(iter);\n"
               "    std::cout << iter->first << std::endl;\n"
               "}\n");
