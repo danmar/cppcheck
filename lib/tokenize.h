@@ -198,12 +198,6 @@ public:
     void removeRedundantAssignment();
 
     /**
-     * Remove redudant code placed after 'return ;' code.
-     * @todo Extend the functionality to code after 'break;' and 'continue;' code
-     */
-    void simplifyDeadCode();
-
-    /**
      * Replace sizeof() to appropriate size.
      */
     void simplifySizeof();
@@ -342,6 +336,11 @@ public:
 
     /** Replace a "goto" with the statements */
     void simplifyGoto();
+
+    /** Simplify redundant code placed after control flow statements :
+     * 'return', 'goto', 'break' and 'continue'
+     */
+    void simplifyDeadCode();
 
     /** Expand nested strcat() calls. */
     void simplifyNestedStrcat();

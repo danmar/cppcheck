@@ -4383,13 +4383,21 @@ void Tokenizer::simplifyDeadCode()
                     } else if (Token::Match(tok2, "[{}]"))
                         break;  //bad code
                 }
-            } else if (tok->str()=="return") {
+            } else if (Token::Match(tok,"return|goto|continue|break")) {
                 if (!indentlevel)
                     break;
 
                 // Don't care about unpreprocessed macros part of code
                 if (roundbraces)
                     continue;
+
+                if (Token::Match(tok,"continue|break ;")) {
+                    indentret = indentlevel;
+                    if (Token::Match(tok->tokAt(2),"continue|break ;")) {
+                        tok = tok->tokAt(3);
+                        continue;
+                    }
+                }
 
                 //catch the first ';' after the return
                 unsigned int returnroundbraces = 0;

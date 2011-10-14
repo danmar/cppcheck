@@ -155,12 +155,18 @@ private:
         TEST_CASE(goto1);
         TEST_CASE(goto2);
 
-        //remove redundant code after the 'return ;' statement
+        //remove redundant code after flow control statements
         TEST_CASE(return1);
         TEST_CASE(return2);
         TEST_CASE(return3);
         TEST_CASE(return4);
         TEST_CASE(return5);
+
+        TEST_CASE(break1);
+        TEST_CASE(break2);
+
+        TEST_CASE(continue1);
+        TEST_CASE(continue2);
 
         // Simplify nested strcat() calls
         TEST_CASE(strcat1);
@@ -2896,7 +2902,7 @@ private:
         ASSERT_EQUALS("int f ( int n ) { switch ( n ) { case 0 : ; return 0 ; default : ; return n ; } return -1 ; }",
                       tok("int f(int n) { switch (n) {case 0: return 0; n*=2; default: return n; n*=6;} return -1; foo();}"));
         //ticket #3132
-        ASSERT_EQUALS("void f ( int i ) { goto label ; switch ( i ) { label : ; return ; } }",tok("void f (int i) { goto label; switch(i) { label: return; } }"));
+        ASSERT_EQUALS("void f ( int i ) { goto label ; { label : ; return ; } }",tok("void f (int i) { goto label; switch(i) { label: return; } }"));
         //ticket #3148
         ASSERT_EQUALS("void f ( ) { MACRO ( return 0 ) }",tok("void f() { MACRO(return NULL) }"));
         ASSERT_EQUALS("void f ( ) { MACRO ( return ; , 0 ) }",tok("void f() { MACRO(return;, NULL) }"));
@@ -2954,6 +2960,72 @@ private:
                                 " case 2 : ; switch ( j ) { case -2 : ; return -1 ; }"
                                 " case 3 : ; if ( blah6 ) { return -1 ; } break ; } }";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void break1() {
+        ASSERT_EQUALS("void f ( ) { int i ; for ( i = 0 ; i < 10 ; i ++ ) { foo ( i ) ; break ; } }", tok("void f() { int i; for (i=0; i<10; i++) { foo(i); break; bar1(); } }"));
+        ASSERT_EQUALS("void f ( int n ) { int i ; for ( i = 0 ; i < 10 ; i ++ ) { if ( n ) { break ; } foo ( ) ; } }",tok("void f(int n) { int i; for(i=0; i<10; i++) { if (n) break; foo();}}"));
+
+        ASSERT_EQUALS("int f ( int n ) { switch ( n ) { case 0 : ; break ; default : ; break ; } }",
+                      tok("int f(int n) { switch (n) {case 0: break; n*=2; default: break; n*=6;}}"));
+
+        ASSERT_EQUALS("void f ( ) { MACRO ( break ) }",tok("void f() { MACRO(break) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( break ; , 0 ) }",tok("void f() { MACRO(break;, NULL) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , break ) }",tok("void f() { MACRO(bar1, break) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( break ; bar2 , foo ) }",tok("void f() { MACRO(break; bar2, foo) }"));
+    }
+
+    void break2() {
+        const char code[] = "void f()"
+                            "{ "
+                            "   while(tnt) "
+                            "   { "
+                            "       --tnt; "
+                            "       if (k>0) goto label; "
+                            "       break; "
+                            "       if (tnt) "
+                            "       { "
+                            "           { "
+                            "               check(); "
+                            "               k=0; "
+                            "           } "
+                            "           label: "
+                            "           bar(); "
+                            "       } "
+                            "   } "
+                            "}";
+        ASSERT_EQUALS("void f ( ) { while ( tnt ) { -- tnt ; if ( 0 < k ) { goto label ; } break ; { label : ; bar ( ) ; } } }",tok(code));
+    }
+
+    void continue1() {
+        ASSERT_EQUALS("void f ( int n ) { int i ; for ( i = 0 ; i < 10 ; i ++ ) { if ( n ) { continue ; } foo ( ) ; } }",tok("void f(int n) { int i; for(i=0; i<10; i++) { if (n) continue; foo();}}"));
+
+        ASSERT_EQUALS("void f ( ) { MACRO ( continue ) }",tok("void f() { MACRO(continue) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( continue ; , 0 ) }",tok("void f() { MACRO(continue;, NULL) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , continue ) }",tok("void f() { MACRO(bar1, continue) }"));
+        ASSERT_EQUALS("void f ( ) { MACRO ( continue ; bar2 , foo ) }",tok("void f() { MACRO(continue; bar2, foo) }"));
+    }
+
+    void continue2() {
+        const char code[] = "void f()"
+                            "{ "
+                            "   while(tnt) "
+                            "   { "
+                            "       --tnt; "
+                            "       if (k>0) goto label; "
+                            "       continue; "
+                            "       if (tnt) "
+                            "       { "
+                            "           { "
+                            "               check(); "
+                            "               k=0; "
+                            "           } "
+                            "           label: "
+                            "           bar(); "
+                            "       } "
+                            "   } "
+                            "}";
+        ASSERT_EQUALS("void f ( ) { while ( tnt ) { -- tnt ; if ( 0 < k ) { goto label ; } continue ; { label : ; bar ( ) ; } } }",tok(code));
     }
 
     void strcat1() {
