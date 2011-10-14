@@ -223,6 +223,7 @@ public:
     void pointerOutOfBoundsError(const Token *tok, const std::string &object);	// UB when result of calculation is out of bounds
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
+    void possibleReadlinkBufferOverrunError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckBufferOverrun c(0, settings, errorLogger);
@@ -240,6 +241,7 @@ public:
         c.pointerOutOfBoundsError(0, "array");
         c.arrayIndexThenCheckError(0, "index");
         c.possibleBufferOverrunError(0, "source", "destination", false);
+        c.possibleReadlinkBufferOverrunError(0, "buffer");
     }
 
     std::string myName() const {

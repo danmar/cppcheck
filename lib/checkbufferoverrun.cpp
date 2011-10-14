@@ -107,6 +107,15 @@ void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std:
                     "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
 }
 
+void CheckBufferOverrun::possibleReadlinkBufferOverrunError(const Token* tok, const std::string &varname)
+{
+    const std::string errmsg = "readlink() might return the full size of '" + varname + "'. Lower the supplied size by one.\n"
+                               "readlink() might return the full size of '" + varname + "'. Lower the supplied size by one. "
+                               "If a " + varname + "[len] = '\\0'; statement follows, it will overrun the buffer.";
+
+    reportInconclusiveError(tok, Severity::warning, "possibleReadlinkBufferOverrun", errmsg);
+}
+
 void CheckBufferOverrun::strncatUsageError(const Token *tok)
 {
     if (_settings && !_settings->isEnabled("style"))
@@ -160,9 +169,11 @@ void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
 
 void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function)
 {
-    reportError(tok, Severity::warning, "bufferNotZeroTerminated",
-                "The buffer '" + varname + "' is not zero-terminated after the call to " + function + "().\n"
-                "This will cause bugs later in the code if the code assumes buffer is zero-terminated.");
+    const std::string errmsg = "The buffer '" + varname + "' is not zero-terminated after the call to " + function + "().\n"
+                               "The buffer '" + varname + "' is not zero-terminated after the call to " + function + "(). "
+                               "This will cause bugs later in the code if the code assumes the buffer is zero-terminated.";
+
+    reportInconclusiveError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg);
 }
 
 //---------------------------------------------------------------------------
@@ -993,6 +1004,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 {
     const MathLib::bigint total_size = arrayInfo.num(0) * arrayInfo.element_size();
 
+    const Token *scope_begin = tok->previous();
+    assert(scope_begin != 0);
+
     // Count { and } for tok
     unsigned int indentlevel = 0;
     for (; tok; tok = tok->next()) {
@@ -1176,6 +1190,31 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4));
             if (n > total_size)
                 outOfBoundsError(tok->tokAt(4), "snprintf size", true, n, total_size);
+        }
+
+        // readlink()
+        if (_settings->posix && Token::Match(tok, "readlink ( %any% , %varid% , %num% )", arrayInfo.varid())) {
+            const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6));
+            if (total_size > 0 && n > total_size)
+                outOfBoundsError(tok->tokAt(4), "readlink() buf size", true, n, total_size);
+
+            if (_settings->inconclusive) {
+                // readlink() never terminates the buffer, check the end of the scope for buffer termination.
+                bool found_termination = false;
+                const Token *scope_end = scope_begin->link();
+                for (const Token *tok2 = tok->tokAt(8); tok2 && tok2 != scope_end; tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "%varid% [ %any% ] = 0 ;", tok->tokAt(4)->varId())) {
+                        found_termination = true;
+                        break;
+                    }
+                }
+
+                if (!found_termination) {
+                    bufferNotZeroTerminatedError(tok, tok->tokAt(4)->str(), "readlink");
+                } else if (n == total_size) {
+                    possibleReadlinkBufferOverrunError(tok, tok->tokAt(4)->str());
+                }
+            }
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds

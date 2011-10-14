@@ -41,6 +41,7 @@ private:
 
         Settings settings;
         settings.inconclusive = true;
+        settings.posix = true;
         settings.experimental = experimental;
         settings.addEnabled("style");
         settings.addEnabled("portability");
@@ -234,6 +235,7 @@ private:
         TEST_CASE(arrayIndexThenCheck);
 
         TEST_CASE(bufferNotZeroTerminated);
+        TEST_CASE(readlink);
     }
 
 
@@ -3424,8 +3426,51 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'c' is not zero-terminated after the call to memmove().\n", errout.str());
     }
+
+    void readlink() {
+        check("void f()\n"
+              "{\n"
+              "    char buf[255];\n"
+              "    ssize_t len = readlink(path, buf, sizeof(buf)-1);\n"
+              "    printf(\"%s\n\", buf);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'buf' is not zero-terminated after the call to readlink().\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char buf[255];\n"
+              "    ssize_t len = readlink(path, buf, sizeof(buf)-1);\n"
+              "    buf[len] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char buf[10];\n"
+              "    ssize_t len = readlink(path, buf, 255);\n"
+              "    buf[len] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) readlink() buf size is out of bounds: Supplied size 255 is larger than actual size of 10\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char buf[255];\n"
+              "    ssize_t len = readlink(path, buf, sizeof(buf));\n"
+              "    buf[len] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) readlink() might return the full size of 'buf'. Lower the supplied size by one.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char buf[255];\n"
+              "    ssize_t len = readlink(path, buf, sizeof(buf)-1);\n"
+              "    if (len == -1) {\n"
+              "        return;\n"
+              "    }\n"
+              "    buf[len] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestBufferOverrun)
-
-
