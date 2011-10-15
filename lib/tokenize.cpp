@@ -7333,30 +7333,39 @@ void Tokenizer::simplifyGoto()
 {
     std::list<Token *> gotos;
     unsigned int indentlevel = 0;
+    unsigned int indentspecial = 0;
     Token *beginfunction = 0;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (tok->str() == "{") {
-            if (beginfunction == 0 && indentlevel == 0 && tok->link())
+            if ((tok->tokAt(-2) && Token::Match(tok->tokAt(-2),"namespace|struct|class|union %var% {")) ||
+                (tok->previous() && Token::Match(tok->previous(),"namespace {")))
+                ++indentspecial;
+            else if (!beginfunction && !indentlevel)
                 tok = tok->link();
             else
                 ++indentlevel;
         }
 
         else if (tok->str() == "}") {
-            if (indentlevel == 0)
-                break;  // break out - it seems the code is wrong
-            --indentlevel;
-            if (indentlevel == 0) {
-                gotos.clear();
-                beginfunction = 0;
+            if (!indentlevel) {
+                if (indentspecial)
+                    --indentspecial;
+                else
+                    break;  // break out - it seems the code is wrong
+            } else {
+                --indentlevel;
+                if (!indentlevel) {
+                    gotos.clear();
+                    beginfunction = 0;
+                }
             }
         }
 
-        else if (indentlevel > 0 && tok->str() == "(") {
+        else if (indentlevel && tok->str() == "(") {
             tok = tok->link();
         }
 
-        else if (indentlevel == 0 && Token::Match(tok, ") const| {")) {
+        else if (!indentlevel && Token::Match(tok, ") const| {")) {
             gotos.clear();
             beginfunction = tok;
         }

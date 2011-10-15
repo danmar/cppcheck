@@ -154,6 +154,8 @@ private:
         // Simplify goto..
         TEST_CASE(goto1);
         TEST_CASE(goto2);
+        // ticket #3138
+        TEST_CASE(goto3);
 
         //remove redundant code after flow control statements
         TEST_CASE(return1);
@@ -2893,6 +2895,178 @@ private:
         // Don't simplify goto inside function call (macro)
         const char code[] = "void f ( ) { slist_iter ( if ( a ) { goto dont_write ; } dont_write : ; x ( ) ; ) ; }";
         ASSERT_EQUALS(code, tok(code));
+    }
+
+    void goto3() {
+        // Simplify goto inside the namespace|struct|class|union block
+        {
+            const char code[] = "namespace A1"
+                                "{"
+                                "    void foo()"
+                                "    {"
+                                "        goto source ;"
+                                "        bleeh;"
+                                "        source:"
+                                "        boo();"
+                                "    }"
+                                "}";
+            const char expected[] = "namespace A1 "
+                                    "{"
+                                    " void foo ( )"
+                                    " {"
+                                    " boo ( ) ; return ;"
+                                    " } "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+
+        {
+            const char code[] = "class A"
+                                "{"
+                                "    int n,m;"
+                                "    A()"
+                                "    {"
+                                "        goto source ;"
+                                "        bleeh;"
+                                "        source:"
+                                "        boo();"
+                                "    }"
+                                "    void boo();"
+                                "}";
+            const char expected[] = "class A "
+                                    "{"
+                                    " int n ; int m ;"
+                                    " A ( )"
+                                    " {"
+                                    " boo ( ) ; return ;"
+                                    " }"
+                                    " void boo ( ) ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+
+        {
+            const char code[] = "struct A"
+                                "{"
+                                "    int n,m;"
+                                "    A() : m(0)"
+                                "    {"
+                                "        goto source;"
+                                "        bleeh;"
+                                "        source:"
+                                "        n=10;"
+                                "    }"
+                                "}";
+            const char expected[] = "struct A "
+                                    "{"
+                                    " int n ; int m ;"
+                                    " A ( ) : m ( 0 )"
+                                    " {"
+                                    " n = 10 ; return ;"
+                                    " } "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+
+        {
+            const char code[] = "namespace A1"
+                                "{"
+                                "    class A"
+                                "    {"
+                                "        int n,m;"
+                                "        A()"
+                                "        {"
+                                "            goto source ;"
+                                "            bleeh;"
+                                "            source:"
+                                "            boo();"
+                                "        }"
+                                "        void boo();"
+                                "    }"
+                                "}";
+            const char expected[] = "namespace A1 "
+                                    "{"
+                                    " class A"
+                                    " {"
+                                    " int n ; int m ;"
+                                    " A ( )"
+                                    " {"
+                                    " boo ( ) ; return ;"
+                                    " }"
+                                    " void boo ( ) ;"
+                                    " } "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+
+        {
+            const char code[] = "namespace A1"
+                                "{"
+                                "    namespace AA1"
+                                "    {"
+                                "        void foo1()"
+                                "        {"
+                                "            goto source1 ;"
+                                "            bleeh;"
+                                "            source1:"
+                                "            boo1();"
+                                "        }"
+                                "    }"
+                                "    namespace AA2"
+                                "    {"
+                                "        void foo2()"
+                                "        {"
+                                "            goto source2 ;"
+                                "            bleeh;"
+                                "            source2:"
+                                "            boo2();"
+                                "        }"
+                                "    }"
+                                "}";
+            const char expected[] = "namespace A1 "
+                                    "{"
+                                    " namespace AA1"
+                                    " {"
+                                    " void foo1 ( )"
+                                    " {"
+                                    " boo1 ( ) ; return ;"
+                                    " }"
+                                    " }"
+                                    " namespace AA2"
+                                    " {"
+                                    " void foo2 ( )"
+                                    " {"
+                                    " boo2 ( ) ; return ;"
+                                    " }"
+                                    " } "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+
+        {
+            const char code[] = "union A1"
+                                "{"
+                                " int a; "
+                                " double b; "
+                                "    A1() : b(3.22)"
+                                "    {"
+                                "        goto source ;"
+                                "        bleeh;"
+                                "        source:"
+                                "        a = 322;"
+                                "    }"
+                                "}";
+            const char expected[] = "union A1 "
+                                    "{"
+                                    " int a ;"
+                                    " double b ;"
+                                    " A1 ( ) : b ( 3.22 )"
+                                    " {"
+                                    " a = 322 ; return ;"
+                                    " } "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
     void return1() {
