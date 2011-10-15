@@ -340,7 +340,7 @@ public:
     /** Simplify redundant code placed after control flow statements :
      * 'return', 'goto', 'break' and 'continue'
      */
-    void simplifyDeadCode();
+    void simplifyFlowControl();
 
     /** Expand nested strcat() calls. */
     void simplifyNestedStrcat();

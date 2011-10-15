@@ -3963,7 +3963,7 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyGoto();
 
-    simplifyDeadCode();
+    simplifyFlowControl();
 
     // Combine wide strings
     for (Token *tok = _tokens; tok; tok = tok->next()) {
@@ -4270,7 +4270,7 @@ void Tokenizer::removeRedundantAssignment()
     }
 }
 
-void Tokenizer::simplifyDeadCode()
+void Tokenizer::simplifyFlowControl()
 {
     unsigned int indentlevel = 0;
     unsigned int indentcase = 0;
