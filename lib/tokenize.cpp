@@ -38,6 +38,7 @@
 #include <cassert>
 #include <cctype>
 #include <stack>
+#include <cstdlib>
 
 //---------------------------------------------------------------------------
 
