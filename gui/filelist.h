@@ -79,7 +79,7 @@ protected:
 
     /**
     * @brief Test if filename matches the filename extensions filtering.
-    * @param true if filename matches filtering.
+    * @return true if filename matches filtering.
     */
     bool FilterMatches(const QFileInfo &inf);
 

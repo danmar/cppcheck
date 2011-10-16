@@ -82,7 +82,7 @@ public:
 
     /**
     * @brief Set active translation.
-    * @param ISO 639 language code for new selected translation.
+    * @param code ISO 639 language code for new selected translation.
     * @param error Returns error string if selection fails.
     * @return true if succeeds, false otherwise.
     *

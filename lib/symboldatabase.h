@@ -542,7 +542,7 @@ public:
     /**
      * @brief parse and save array dimension information
      * @param dimensions array dimensions vector
-     * @param tokenizer tokenizer pointer
+     * @param tok the first '[' token of array declaration
      * @return true if array, false if not
      */
     bool arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok) const;
