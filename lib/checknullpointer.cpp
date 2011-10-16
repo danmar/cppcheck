@@ -150,14 +150,14 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                     for (; argListTok; argListTok = argListTok->next()) { // Find next argument
                         if (argListTok->str() == "(")
                             argListTok = argListTok->link();
-                        if(argListTok == 0)
+                        if (argListTok == 0)
                             break;
                         if (argListTok->str() == ",") {
                             argListTok = argListTok->next();
                             break;
                         }
                     }
-                    if(!argListTok)
+                    if (!argListTok)
                         break;
                     percent = false;
                 }
