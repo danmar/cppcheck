@@ -21,7 +21,6 @@
 
 #include <list>
 #include <string>
-#include <istream>
 #include <set>
 #include "suppressions.h"
 
@@ -188,6 +187,9 @@ public:
 
     /** Code is C99 standard - it is not compatible with previous versions */
     bool c99;
+
+    /** Code follows C++11 standard - it is not compatible with previous versions */
+    bool cpp11;
 
     /** size of standard types */
     unsigned int sizeof_bool;

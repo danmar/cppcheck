@@ -31,18 +31,13 @@
 #include "path.h"
 #include "symboldatabase.h"
 
-#include <locale>
-#include <fstream>
 #include <string>
 #include <cstring>
-#include <iostream>
 #include <sstream>
 #include <list>
 #include <cassert>
-#include <algorithm>
 #include <cctype>
 #include <stack>
-#include <stdexcept>    // for std::runtime_error
 
 //---------------------------------------------------------------------------
 
@@ -2404,6 +2399,13 @@ bool Tokenizer::tokenize(std::istream &code,
     _tokens->assignProgressValues();
 
     removeRedundantSemicolons();
+
+    if (_settings->cpp11) {
+        for (Token *tok = _tokens; tok; tok = tok->next()) {
+            if (tok->str() == "nullptr")
+                tok->str("0");
+        }
+    }
 
     return validate();
 }

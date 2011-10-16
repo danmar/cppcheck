@@ -19,12 +19,7 @@
 #include "settings.h"
 #include "path.h"
 
-#include <algorithm>
 #include <fstream>
-#include <sstream>
-#include <stdexcept>
-#include <iostream>
-#include <cctype>   // std::isdigit, std::isalnum, etc
 #include <set>
 #include <stack>
 

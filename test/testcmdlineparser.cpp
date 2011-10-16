@@ -77,6 +77,7 @@ private:
         TEST_CASE(reportProgressTest); // "Test" suffix to avoid hiding the parent's reportProgress
         TEST_CASE(stdposix);
         TEST_CASE(stdc99);
+        TEST_CASE(stdcpp11);
         TEST_CASE(suppressionsOld); // TODO: Create and test real suppression file
         TEST_CASE(suppressions);
         TEST_CASE(suppressionsNoFile);
@@ -561,6 +562,15 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings.c99);
+    }
+
+    void stdcpp11() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--std=c++11", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings.cpp11);
     }
 
     void suppressionsOld() {

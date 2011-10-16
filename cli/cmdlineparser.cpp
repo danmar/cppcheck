@@ -385,6 +385,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->c99 = true;
         }
 
+        else if (strcmp(argv[i], "--std=c++11") == 0) {
+            _settings->cpp11 = true;
+        }
+
         // Output formatter
         else if (strcmp(argv[i], "--template") == 0) {
             // "--template path/"

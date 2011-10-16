@@ -45,6 +45,7 @@ private:
         TEST_CASE(nullpointer9);
         TEST_CASE(nullpointer10);
         TEST_CASE(nullpointer11); // ticket #2812
+        TEST_CASE(nullpointer12); // ticket #2470
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
         TEST_CASE(gcc_statement_expression); // Don't crash
@@ -54,13 +55,14 @@ private:
         TEST_CASE(scanf_with_invalid_va_argument);
     }
 
-    void check(const char code[], bool inconclusive = false) {
+    void check(const char code[], bool inconclusive = false, bool cpp11 = false) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
         settings.inconclusive = inconclusive;
+        settings.cpp11 = cpp11;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -1028,6 +1030,22 @@ private:
               "  return p->x;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
+    }
+
+    void nullpointer12() { // ticket #2470
+        check("int foo()\n"
+              "{\n"
+              "  int* i = nullptr;\n"
+              "  return *i;\n"
+              "}\n", false, true); // Check as C++11 code
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
+
+        check("int foo(int nullptr)\n"
+              "{\n"
+              "  int* i = nullptr;\n"
+              "  return *i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Check if pointer is null and the dereference it
