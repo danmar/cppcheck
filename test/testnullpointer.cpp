@@ -1406,8 +1406,38 @@ private:
               "    printf(\"%s\", s);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(char* foo) {\n"
+              "    char location[200];\n"
+              "    int width, height;\n"
+              "    sscanf(imgInfo, \"%s %d %d\", location, &width, &height);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str()); // ticket #3207
+
+        check("void f(char *dummy) {\n"
+              "    int iVal;\n"
+              "    sscanf(dummy, \"%d%c\", &iVal);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str()); // ticket #3211
+
+        check("void f(char *dummy) {\n"
+              "    int* iVal = 0;\n"
+              "    sscanf(dummy, \"%d\", iVal);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: iVal\n", errout.str());
+
+        check("void f(char *dummy) {\n"
+              "    int* iVal;\n"
+              "    sscanf(dummy, \"%d\", foo(iVal));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char *dummy) {\n"
+              "    int* iVal = 0;\n"
+              "    sscanf(dummy, \"%d%d\", foo(iVal), iVal);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: iVal\n", errout.str());
     }
 };
 
 REGISTER_TEST(TestNullPointer)
-

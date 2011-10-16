@@ -141,18 +141,24 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                 if (*i == '%') {
                     percent = !percent;
                 } else if (percent && std::isalpha(*i)) {
-                    if (*i == 'n' || *i == 's' || scan) {
+                    if ((*i == 'n' || *i == 's' || scan) && (!scan || value == 0)) {
                         if ((value == 0 && argListTok->str() == "0") || (Token::Match(argListTok, "%var%") && argListTok->varId() > 0)) {
                             var.push_back(argListTok);
                         }
                     }
 
                     for (; argListTok; argListTok = argListTok->next()) { // Find next argument
+                        if (argListTok->str() == "(")
+                            argListTok = argListTok->link();
+                        if(argListTok == 0)
+                            break;
                         if (argListTok->str() == ",") {
                             argListTok = argListTok->next();
                             break;
                         }
                     }
+                    if(!argListTok)
+                        break;
                     percent = false;
                 }
             }
