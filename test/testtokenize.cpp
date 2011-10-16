@@ -286,6 +286,7 @@ private:
         TEST_CASE(simplifyConst);
         TEST_CASE(switchCase);
 
+        TEST_CASE(simplifyPointerToStandardType);
         TEST_CASE(functionpointer1);
         TEST_CASE(functionpointer2);
         TEST_CASE(functionpointer3);
@@ -375,7 +376,7 @@ private:
     }
 
 
-    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified) {
+    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const std::string &filename="test.cpp") {
         errout.str("");
 
         Settings settings;
@@ -385,7 +386,7 @@ private:
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename.c_str());
         if (simplify)
             tokenizer.simplifyTokenList();
 
@@ -4667,6 +4668,21 @@ private:
     void switchCase() {
         ASSERT_EQUALS("void foo ( int i ) { switch ( i ) { case -1 : break ; } }",
                       tokenizeAndStringify("void foo (int i) { switch(i) { case -1: break; } }"));
+    }
+
+    void simplifyPointerToStandardType() {
+        // Pointer to standard type
+        ASSERT_EQUALS("char buf [ 100 ] ; readlink ( path , buf , 99 ) ;",
+                      tokenizeAndStringify("char buf[100] ; readlink(path, &buf[0], 99);",
+                                           false, true, Settings::Unspecified, "test.c"));
+
+        // Simplification of unknown type - C only
+        ASSERT_EQUALS("foo data [ 100 ] ; something ( foo ) ;",
+                      tokenizeAndStringify("foo data[100]; something(&foo[0]);", false, true, Settings::Unspecified, "test.c"));
+
+        // C++: No pointer simplification
+        ASSERT_EQUALS("foo data [ 100 ] ; something ( & foo [ 0 ] ) ;",
+                      tokenizeAndStringify("foo data[100]; something(&foo[0]);"));
     }
 
     std::string simplifyFunctionPointers(const char code[]) {

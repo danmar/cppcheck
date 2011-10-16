@@ -35,7 +35,7 @@ private:
 
 
 
-    void check(const char code[], bool experimental = true) {
+    void check(const char code[], bool experimental = true, const std::string &filename="test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -49,7 +49,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename.c_str());
 
         // Assign variable ids
         tokenizer.simplifyTokenList();
@@ -3435,6 +3435,15 @@ private:
               "    printf(\"%s\n\", buf);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'buf' is not zero-terminated after the call to readlink().\n", errout.str());
+
+        // C only: Primitive pointer simplification
+        check("void f()\n"
+              "{\n"
+              "    char buf[255];\n"
+              "    ssize_t len = readlink(path, &buf[0], sizeof(buf)-1);\n"
+              "    printf(\"%s\n\", buf);\n"
+              "}\n", true, "test.c");
+        ASSERT_EQUALS("[test.c:4]: (warning) The buffer 'buf' is not zero-terminated after the call to readlink().\n", errout.str());
 
         check("void f()\n"
               "{\n"

@@ -147,7 +147,7 @@ void CheckOther::clarifyCondition()
                     tok2 = tok2->link();
                 else if (Token::Match(tok2, "<|<=|==|!=|>|>=")) {
                     // This might be a template
-                    if (!code_is_c() && Token::Match(tok2->previous(), "%var% <"))
+                    if (!_tokenizer->code_is_c() && Token::Match(tok2->previous(), "%var% <"))
                         break;
 
                     clarifyConditionError(tok, tok->strAt(2) == "=", false);
@@ -1163,7 +1163,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
             std::map<unsigned int, bool>::const_iterator iVar = boolvars.find(varTok->varId());
             if (iVar != boolvars.end() && iVar->second && // Variable has to be a boolean
                 ((tok->tokAt(1)->str() != "==" && tok->tokAt(1)->str() != "!=") ||
-                 ((MathLib::toLongNumber(numTok->str()) != 0) && (!code_is_c() || MathLib::toLongNumber(numTok->str()) != 1)))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
+                 ((MathLib::toLongNumber(numTok->str()) != 0) && (!_tokenizer->code_is_c() || MathLib::toLongNumber(numTok->str()) != 1)))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
                 comparisonOfBoolWithIntError(varTok, numTok->str());
             }
         } else if (Token::Match(tok, "%num% >|>=|==|!=|<=|< %var%")) { // Comparing number with variable
@@ -1172,7 +1172,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
             std::map<unsigned int, bool>::const_iterator iVar = boolvars.find(varTok->varId());
             if (iVar != boolvars.end() && iVar->second && // Variable has to be a boolean
                 ((tok->tokAt(1)->str() != "==" && tok->tokAt(1)->str() != "!=") ||
-                 ((MathLib::toLongNumber(numTok->str()) != 0) && (!code_is_c() || MathLib::toLongNumber(numTok->str()) != 1)))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
+                 ((MathLib::toLongNumber(numTok->str()) != 0) && (!_tokenizer->code_is_c() || MathLib::toLongNumber(numTok->str()) != 1)))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
                 comparisonOfBoolWithIntError(varTok, numTok->str());
             }
         } else if (Token::Match(tok, "true|false >|>=|==|!=|<=|< %var%")) { // Comparing boolean constant with variable
@@ -1899,24 +1899,10 @@ static bool isFunction(const std::string &name, const Token *startToken)
     return false;
 }
 
-bool CheckOther::code_is_c() const
-{
-    const std::string fname = _tokenizer->getFiles()->at(0);
-    const size_t position   = fname.rfind(".");
-
-    if (position != std::string::npos) {
-        const std::string ext = fname.substr(position);
-        if (ext == ".c" || ext == ".C")
-            return true;
-    }
-
-    return false;
-}
-
 void CheckOther::checkMisusedScopedObject()
 {
     // Skip this check for .c files
-    if (code_is_c()) {
+    if (_tokenizer->code_is_c()) {
         return;
     }
 

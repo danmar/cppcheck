@@ -2338,6 +2338,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // operator = => operator=
     simplifyOperatorName();
 
+    // Simplify pointer to standard types (C only)
+    simplifyPointerToStandardType();
+
     // simplify function pointers
     simplifyFunctionPointers();
 
@@ -5390,6 +5393,22 @@ void Tokenizer::simplifyFunctionParameters()
     }
 }
 
+void Tokenizer::simplifyPointerToStandardType()
+{
+    if (!code_is_c())
+        return;
+
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (!Token::Match(tok, "& %var% [ 0 ]"))
+            continue;
+
+        // Remove '[ 0 ]' suffix
+        tok->next()->eraseTokens(tok->next(), tok->tokAt(5));
+        // Remove '&' prefix
+        tok = tok->previous();
+        tok->deleteNext();
+    }
+}
 
 void Tokenizer:: simplifyFunctionPointers()
 {
@@ -9598,4 +9617,18 @@ void Tokenizer::printUnknownTypes()
         if (_errorLogger)
             _errorLogger->reportOut(ss.str());
     }
+}
+
+bool Tokenizer::code_is_c() const
+{
+    const std::string fname = getFiles()->at(0);
+    const size_t position   = fname.rfind(".");
+
+    if (position != std::string::npos) {
+        const std::string ext = fname.substr(position);
+        if (ext == ".c" || ext == ".C")
+            return true;
+    }
+
+    return false;
 }
