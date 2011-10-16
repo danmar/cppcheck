@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <ctype.h>      // Borland: tolower
 #include "pathmatch.h"
 
 PathMatch::PathMatch(const std::vector<std::string> &masks)

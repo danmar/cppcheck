@@ -288,7 +288,7 @@ static bool isFallThroughComment(std::string comment)
     // convert comment to lower case without whitespace
     std::transform(comment.begin(), comment.end(), comment.begin(), tolowerWrapper);
     for (std::string::iterator i = comment.begin(); i != comment.end();) {
-        if (::isspace(static_cast<unsigned char>(*i)))
+        if (std::isspace(static_cast<unsigned char>(*i)))
             i = comment.erase(i);
         else
             ++i;

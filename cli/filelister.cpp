@@ -135,7 +135,14 @@ static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
 
 static BOOL MyFileExists(std::string path)
 {
+#ifdef __BORLANDC__
+    DWORD fa = GetFileAttributes(path.c_str());
+    BOOL result = FALSE;
+    if (fa != INVALID_FILE_ATTRIBUTES && !(fa & FILE_ATTRIBUTE_DIRECTORY))
+        result = TRUE;
+#else
     BOOL result = PathFileExists(path.c_str());
+#endif
     return result;
 }
 

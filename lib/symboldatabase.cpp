@@ -33,6 +33,11 @@
 #include <algorithm>
 #include <climits>
 
+// Define ULLONG_MAX and LLONG_MAX for Borland
+#ifdef __BORLANDC__
+#define ULLONG_MAX ULONG_MAX
+#define LLONG_MAX LONG_MAX
+#endif
 
 //---------------------------------------------------------------------------
 
