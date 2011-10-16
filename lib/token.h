@@ -320,9 +320,12 @@ public:
     std::string stringifyList(bool varid, const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
-     * This is intended to be used for the first token in the list
-     * Do not use this for the tokens at the end of the list unless the
-     * token is the last token in the list.
+     * Remove the contents for this token from the token list.
+     *
+     * The contents are replaced with the contents of the next token and
+     * the next token is unlinked and deleted from the token list.
+     *
+     * So this token will still be valid after the 'deleteThis()'.
      */
     void deleteThis();
 
@@ -339,6 +342,8 @@ public:
      * Return token where this token links to.
      * Supported links are:
      * "{" <-> "}"
+     * "(" <-> ")"
+     * "[" <-> "]"
      *
      * @return The token where this token links to.
      */
