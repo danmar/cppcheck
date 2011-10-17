@@ -209,6 +209,16 @@ public:
 
     static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 
+    /**
+     * handle includes for a specific configuration
+     * @param code code in string
+     * @param filePath filename of code
+     * @param includePaths Paths where headers might be
+     * @param defs defines (only values)
+     * \return resulting string
+     */
+    std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,int> &defs);
+
 private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, bool userheader);
 

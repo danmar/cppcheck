@@ -226,6 +226,9 @@ private:
         // Test Preprocessor::simplifyCondition
         TEST_CASE(simplifyCondition);
         TEST_CASE(invalidElIf); // #2942 segfault
+
+        // Test Preprocessor::handleIncludes (defines are given)
+        TEST_CASE(handleIncludes_def);
     }
 
 
@@ -2819,6 +2822,61 @@ private:
         const Settings settings;
         const std::string actual = Preprocessor::getcode(code, "TEST", "test.c", &settings, this);
         ASSERT_EQUALS("\n", actual);
+    }
+
+    void handleIncludes_def() {
+        const std::string filePath("test.c");
+        const std::list<std::string> includePaths;
+        std::map<std::string,int> defs;
+        Preprocessor preprocessor;
+
+        // ifdef
+        {
+            defs.clear();
+            defs["A"] = 1;
+            {
+                const std::string code("#ifdef A\n123\n#endif\n");
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n123\n\n", actual);
+            }{
+                const std::string code("#ifdef B\n123\n#endif\n");
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n\n\n", actual);
+            }
+        }
+
+        // ifndef
+        {
+            defs.clear();
+            defs["A"] = 1;
+            {
+                const std::string code("#ifndef A\n123\n#endif\n");
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n\n\n", actual);
+            }{
+                const std::string code("#ifndef B\n123\n#endif\n");
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n123\n\n", actual);
+            }
+        }
+
+        // define - ifndef
+        {
+            defs.clear();
+            const std::string code("#ifndef X\n#define X\n123\n#endif\n"
+                                   "#ifndef X\n#define X\n123\n#endif\n");
+            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+            ASSERT_EQUALS("\n\n123\n\n" "\n\n\n\n", actual);
+        }
+        /*
+                // define X 123 - #if
+                {
+                    defs.clear();
+                    const std::string code("#define X 123\n#if X==123\n456\n#endif\n");
+                    const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                    ASSERT_EQUALS("\n\n456\n\n", actual);
+                }
+        */
     }
 };
 

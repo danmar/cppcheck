@@ -1669,6 +1669,114 @@ Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
         return SystemHeader;
 }
 
+/**
+ * Try to open header
+ * @param filename header name (in/out)
+ * @param includePaths paths where to look for the file
+ * @param fin file input stream (in/out)
+ * @return if file is opened then true is returned
+ */
+static bool openHeader(std::string &filename, const std::list<std::string> &includePaths, const std::string &filePath, std::ifstream &fin)
+{
+    std::list<std::string> includePaths2(includePaths);
+    includePaths2.push_front("");
+
+    for (std::list<std::string>::const_iterator iter = includePaths2.begin(); iter != includePaths2.end(); ++iter) {
+        const std::string nativePath(Path::toNativeSeparators(*iter));
+        fin.open((nativePath + filename).c_str());
+        if (fin.is_open()) {
+            filename = nativePath + filename;
+            return true;
+        }
+        fin.clear();
+    }
+
+    fin.open(filePath + filename);
+    if (fin.is_open()) {
+        filename = filePath + filename;
+        return true;
+    }
+
+    return false;
+}
+
+
+std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,int> &defs)
+{
+    const std::string path(filePath.substr(0, 1 + filePath.find_last_of("\\/")));
+
+    unsigned int indent = 0;
+    unsigned int indentmatch = 0;
+
+    std::ostringstream ostr;
+    std::istringstream istr(code);
+    std::string line;
+    while (std::getline(istr,line)) {
+        if (line.compare(0,9,"#include ")==0) {
+            std::string filename(line.substr(9));
+
+            const HeaderTypes headerType = getHeaderFileName(filename);
+            if (headerType == NoHeader) {
+                ostr << std::endl;
+                continue;
+            }
+
+            // try to open file
+            std::ifstream fin;
+            if (!openHeader(filename, includePaths, headerType == UserHeader ? path : std::string(""), fin)) {
+                ostr << std::endl;
+                continue;
+            }
+
+            ostr << "#file " << filename << "\n"
+                 << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs) << std::endl
+                 << "#endfile";
+        } else if (line.compare(0,7,"#ifdef ") == 0) {
+            if (indent == indentmatch && defs.find(getdef(line,true)) != defs.end())
+                indentmatch++;
+            ++indent;
+        } else if (line.compare(0,8,"#ifndef ") == 0) {
+            if (indent == indentmatch && defs.find(getdef(line,false)) == defs.end())
+                indentmatch++;
+            ++indent;
+        } else if (line.compare(0,5,"#else") == 0) {
+            if (indentmatch == indent)
+                indentmatch = indent - 1;
+            else if (indentmatch == indent - 1)
+                indentmatch = indent;
+        } else if (line == "#endif") {
+            --indent;
+            if (indentmatch > indent)
+                indentmatch = indent;
+        } else if (indentmatch == indent) {
+            if (line.compare(0,8,"#define ")==0) {
+                // no value
+                if (line.find_first_of("( ", 8) == std::string::npos)
+                    defs[line.substr(8)] = 1;
+
+                // define value
+                else if (line.find("(") == std::string::npos) {
+                    const std::string::size_type pos = line.find(" ", 8);
+                    const std::string val(line.substr(pos + 1));
+                    int i;
+                    std::istringstream istr(val);
+                    istr >> i;
+                    defs[line.substr(8,pos-8)] = i;
+                }
+            }
+
+            else {
+                ostr << line;
+            }
+        }
+
+        // A line has been read..
+        ostr << "\n";
+    }
+
+    return ostr.str();
+}
+
 
 void Preprocessor::handleIncludes(std::string &code, const std::string &filePath, const std::list<std::string> &includePaths)
 {
@@ -1708,31 +1816,8 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
         // filename contains now a file name e.g. "menu.h"
         std::string processedFile;
-        bool fileOpened = false;
         std::ifstream fin;
-        {
-            std::list<std::string> includePaths2(includePaths);
-            includePaths2.push_front("");
-            for (std::list<std::string>::const_iterator iter = includePaths2.begin(); iter != includePaths2.end(); ++iter) {
-                const std::string nativePath(Path::toNativeSeparators(*iter));
-                fin.open((nativePath + filename).c_str());
-                if (fin.is_open()) {
-                    filename = nativePath + filename;
-                    fileOpened = true;
-                    break;
-                }
-
-                fin.clear();
-            }
-        }
-
-        if (headerType == UserHeader && !fileOpened) {
-            fin.open((paths.back() + filename).c_str());
-            if (fin.is_open()) {
-                filename = paths.back() + filename;
-                fileOpened = true;
-            }
-        }
+        const bool fileOpened(openHeader(filename, includePaths, headerType == UserHeader ? paths.back() : std::string(""), fin));
 
         if (fileOpened) {
             filename = Path::simplifyPath(filename.c_str());
