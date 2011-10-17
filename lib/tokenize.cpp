@@ -8613,16 +8613,6 @@ void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *setti
     t.unnecessaryQualificationError(0, "type");
 }
 
-/** find pattern */
-static bool findmatch(const Token *tok1, const Token *tok2, const char pattern[])
-{
-    for (const Token *tok = tok1; tok && tok != tok2; tok = tok->next()) {
-        if (Token::Match(tok, pattern))
-            return true;
-    }
-    return false;
-}
-
 void Tokenizer::simplifyWhile0()
 {
     for (Token *tok = _tokens; tok; tok = tok->next()) {
@@ -8642,7 +8632,7 @@ void Tokenizer::simplifyWhile0()
             // find "do"
             Token *tok2 = tok->previous()->link();
             tok2 = tok2 ? tok2->previous() : 0;
-            if (tok2 && tok2->str() == "do" && !findmatch(tok2, tok, "continue|break")) {
+            if (tok2 && tok2->str() == "do" && !Token::findmatch(tok2, "continue|break", tok)) {
                 // delete "do {"
                 tok2->deleteThis();
                 tok2->deleteThis();
@@ -8662,7 +8652,7 @@ void Tokenizer::simplifyWhile0()
         // remove "while (0) { .. }"
         if (Token::simpleMatch(tok->next()->link(), ") {")) {
             const Token *end = tok->next()->link()->next()->link();
-            if (!findmatch(tok, end, "%var% : ;")) {
+            if (!Token::findmatch(tok, "%var% : ;", end)) {
                 Token::eraseTokens(tok, end ? end->next() : 0);
                 tok->deleteThis();  // delete "while"
             }
