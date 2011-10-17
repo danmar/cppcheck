@@ -1691,7 +1691,7 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
         fin.clear();
     }
 
-    fin.open(filePath + filename);
+    fin.open((filePath + filename).c_str());
     if (fin.is_open()) {
         filename = filePath + filename;
         return true;
@@ -1759,8 +1759,8 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                     const std::string::size_type pos = line.find(" ", 8);
                     const std::string val(line.substr(pos + 1));
                     int i;
-                    std::istringstream istr(val);
-                    istr >> i;
+                    std::istringstream istr2(val);
+                    istr2 >> i;
                     defs[line.substr(8,pos-8)] = i;
                 }
             }
