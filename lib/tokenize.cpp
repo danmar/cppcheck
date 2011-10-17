@@ -4161,7 +4161,7 @@ bool Tokenizer::simplifyTokenList()
         modified |= simplifyConditions();
         modified |= simplifyFunctionReturn();
         modified |= simplifyKnownVariables();
-        modified |= removeReduntantConditions();
+        modified |= removeRedundantConditions();
         modified |= simplifyRedundantParenthesis();
         modified |= simplifyQuestionMark();
         modified |= simplifyCalculations();
@@ -4280,7 +4280,7 @@ void Tokenizer::simplifyFlowControl()
 {
     unsigned int indentlevel = 0;
     unsigned int indentcase = 0;
-    unsigned int indentret = 0;
+    unsigned int indentflow = 0;
     unsigned int indentswitch = 0;
     unsigned int indentlabel = 0;
     unsigned int roundbraces = 0;
@@ -4295,7 +4295,8 @@ void Tokenizer::simplifyFlowControl()
 
         if (tok->str() == "{") {
             ++indentlevel;
-            if (indentret) {
+            if (indentflow) {
+                indentlabel = 0;
                 unsigned int indentlevel1 = indentlevel;
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "{")
@@ -4317,21 +4318,21 @@ void Tokenizer::simplifyFlowControl()
         } else if (tok->str() == "}") {
             if (!indentlevel)
                 break;  //too many closing parenthesis
-            if (indentret) {
+            if (indentflow) {
                 if (!indentswitch || indentlevel > indentcase) {
-                    if (indentlevel > indentret && indentlevel > indentlabel) {
+                    if (indentlevel > indentflow && indentlevel > indentlabel) {
                         tok = tok->previous();
                         tok->deleteNext();
                     }
                 } else {
-                    if (indentcase > indentret && indentlevel > indentlabel) {
+                    if (indentcase > indentflow && indentlevel > indentlabel) {
                         tok = tok->previous();
                         tok->deleteNext();
                     }
                 }
             }
-            if (indentlevel == indentret) {
-                indentret = 0;
+            if (indentlevel == indentflow) {
+                indentflow = 0;
             }
             --indentlevel;
             if (indentlevel <= indentcase) {
@@ -4342,7 +4343,7 @@ void Tokenizer::simplifyFlowControl()
                     indentcase = indentlevel-1;
                 }
             }
-        } else if (!indentret) {
+        } else if (!indentflow) {
             if (tok->str() == "switch") {
                 if (!indentlevel)
                     break;
@@ -4398,7 +4399,7 @@ void Tokenizer::simplifyFlowControl()
                     continue;
 
                 if (Token::Match(tok,"continue|break ;")) {
-                    indentret = indentlevel;
+                    indentflow = indentlevel;
                     if (Token::Match(tok->tokAt(2),"continue|break ;")) {
                         tok = tok->tokAt(3);
                         continue;
@@ -4417,29 +4418,29 @@ void Tokenizer::simplifyFlowControl()
                     } else if (tok2->str() == ";") {
                         if (returnroundbraces)
                             break;  //excessive opening parenthesis
-                        indentret = indentlevel;
+                        indentflow = indentlevel;
                         tok = tok2;
                         break;
                     } else if (Token::Match(tok2, "[{}]"))
                         break;  //I think this is an error code...
                 }
-                if (!indentret)
+                if (!indentflow)
                     break;
             }
-        } else if (indentret) { //there's already a "return;" declaration
+        } else if (indentflow) { //there's already a "return;" declaration
             if (!indentswitch || indentlevel > indentcase+1) {
-                if (indentlevel >= indentret && (!Token::Match(tok, "%var% : ;") || Token::Match(tok, "case|default"))) {
+                if (indentlevel >= indentflow && (!Token::Match(tok, "%var% : ;") || Token::Match(tok, "case|default"))) {
                     tok = tok->previous();
                     tok->deleteNext();
                 } else {
-                    indentret = 0;
+                    indentflow = 0;
                 }
             } else {
                 if (!Token::Match(tok, "%var% : ;") && !Token::Match(tok, "case|default")) {
                     tok = tok->previous();
                     tok->deleteNext();
                 } else {
-                    indentret = 0;
+                    indentflow = 0;
                     tok = tok->previous();
                 }
             }
@@ -4448,7 +4449,7 @@ void Tokenizer::simplifyFlowControl()
 }
 
 
-bool Tokenizer::removeReduntantConditions()
+bool Tokenizer::removeRedundantConditions()
 {
     // Return value for function. Set to true if there are any simplifications
     bool ret = false;

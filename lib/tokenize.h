@@ -367,7 +367,7 @@ public:
      * @return true if something is modified
      *         false if nothing is done.
      */
-    bool removeReduntantConditions();
+    bool removeRedundantConditions();
 
     /**
      * Remove redundant for:

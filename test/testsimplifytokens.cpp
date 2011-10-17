@@ -163,6 +163,7 @@ private:
         TEST_CASE(return3);
         TEST_CASE(return4);
         TEST_CASE(return5);
+        TEST_CASE(return6);
 
         TEST_CASE(break1);
         TEST_CASE(break2);
@@ -3086,9 +3087,9 @@ private:
 
     void return2() {
         const char code[] = "void f(){ "
-                            "if (k>0) goto label; "
-                            "return; "
-                            "if (tnt) "
+                            "   if (k>0) goto label; "
+                            "   return; "
+                            "   if (tnt) "
                             "   { "
                             "       { "
                             "           check(); "
@@ -3102,6 +3103,21 @@ private:
     }
 
     void return3() {
+        const char code[] = "void foo () {"
+                            "    return;"
+                            "    {"
+                            "        boo();"
+                            "        while (n) { --n; }"
+                            "        {"
+                            "            label:"
+                            "            ok();"
+                            "        }"
+                            "    }"
+                            "}";
+        ASSERT_EQUALS("void foo ( ) { return ; { { label : ; ok ( ) ; } } }", tok(code));
+    }
+
+    void return4() {
         const char code[] = "int f() { "
                             "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return; "
                             "case 2: return 2; { random(); } tack(); "
@@ -3110,7 +3126,7 @@ private:
         ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : ; return 1 ; case 2 : ; return 2 ; } return 3 ; }",tok(code));
     }
 
-    void return4() {
+    void return5() {
         const char code[] = "int f() {"
                             "switch (x) { case 1: return 1; bar(); tack; { ticak(); return; } return;"
                             "case 2: switch(y) { case 1: return 0; bar2(); foo(); case 2: return 7; }"
@@ -3122,7 +3138,7 @@ private:
         ASSERT_EQUALS(expected,tok(code));
     }
 
-    void return5() {
+    void return6() {
         const char code[] = "void foo () {"
                             "    switch (i) { case 0: switch (j) { case 0: return -1; }"
                             "        case 1: switch (j) { case -1: return -1; }"
