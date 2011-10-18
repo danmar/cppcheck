@@ -40,6 +40,8 @@ private:
         TEST_CASE(iterator6);
         TEST_CASE(iterator7);
         TEST_CASE(iterator8);
+        TEST_CASE(iterator9);
+        TEST_CASE(iterator10);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_member);
@@ -214,6 +216,50 @@ private:
     }
 
     void iterator7() {
+        check("void foo()\n"
+              "{\n"
+              "    std::vector<int> ints1;\n"
+              "    std::vector<int> ints2;\n"
+              "    std::vector<int>::iterator it = std::inplace_merge(ints1.begin(), std:.advance(ints1.rbegin(), 5), ints2.end());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) mismatching containers\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::vector<int> ints1;\n"
+              "    std::vector<int> ints2;\n"
+              "    std::vector<int>::iterator it = std::inplace_merge(ints1.begin(), std::advance(ints2.rbegin(), 5), ints1.end());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator8() {
+        check("void foo()\n"
+              "{\n"
+              "    std::vector<int> ints1;\n"
+              "    std::vector<int> ints2;\n"
+              "    std::vector<int>::iterator it = std::find_first_of(ints1.begin(), ints2.end(), ints1.begin(), ints1.end());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) mismatching containers\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::vector<int> ints1;\n"
+              "    std::vector<int> ints2;\n"
+              "    std::vector<int>::iterator it = std::find_first_of(ints1.begin(), ints1.end(), ints2.begin(), ints1.end());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) mismatching containers\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::vector<int> ints1;\n"
+              "    std::vector<int> ints2;\n"
+              "    std::vector<int>::iterator it = std::find_first_of(ints1.begin(), ints1.end(), ints2.begin(), ints2.end());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator9() {
         // Ticket #1600
         check("void foo(std::vector<int> &r)\n"
               "{\n"
@@ -266,7 +312,7 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:14] (error) After insert, the iterator 'aI' may be invalid", "", errout.str());
     }
 
-    void iterator8() {
+    void iterator10() {
         // Ticket #1679
         check("void foo()\n"
               "{\n"

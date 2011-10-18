@@ -98,7 +98,7 @@ void CheckStl::iterators()
                         const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
 
                         if (Token::Match(decltok, "const| std :: set"))
-                            continue;	// No warning
+                            continue; // No warning
                     }
 
                     // Show error message, mismatching iterator is used.
@@ -170,16 +170,67 @@ void CheckStl::mismatchingContainersError(const Token *tok)
 
 void CheckStl::mismatchingContainers()
 {
+    static const char* const algorithm2_strings[] = { // func(begin1, end1
+        "adjacent_find", "binary_search", "count", "count_if", "equal", "equal_range", "find", "find_if", "for_each", "generate", "lower_bound", "make_heap",
+        "max_element", "min_element", "mismatch", "next_permutation", "partition", "pop_heap", "prev_permutation", "push_heap", "random_shuffle", "remove",
+        "remove_copy", "remove_copy_if", "remove_if", "replace", "replace_copy", "replace_copy_if", "replace_if", "reverse", "reverse_copy", "search_n",
+        "sort", "sort_heap", "stable_partition", "stable_sort",    "swap_ranges", "transform", "unique", "unique_copy", "upper_bound"
+    };
+    static const char* const algorithm22_strings[] = { // func(begin1, end1, begin2, end2
+        "find_end", "find_first_of", "includes", "lexicographical_compare", "merge", "partial_sort_copy",
+        "search", "set_difference", "set_intersection", "set_symmetric_difference", "set_union"
+    };
+    static const char* const algorithm1x1_strings[] = { // func(begin1, x, end1
+        "inplace_merge", "nth_element", "partial_sort", "rotate", "rotate_copy"
+    };
+
+    static const std::set<std::string> algorithm2(algorithm2_strings, &algorithm2_strings[sizeof(algorithm2_strings) / sizeof(*algorithm2_strings)]);
+    static const std::set<std::string> algorithm22(algorithm22_strings, &algorithm22_strings[sizeof(algorithm22_strings) / sizeof(*algorithm22_strings)]);
+    static const std::set<std::string> algorithm1x1(algorithm1x1_strings, &algorithm1x1_strings[sizeof(algorithm1x1_strings) / sizeof(*algorithm1x1_strings)]);
+
+    static const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
+    static const std::string iteratorEndFuncPattern = "end|cend|rend|crend";
+
+    static const std::string pattern2 = "std :: %type% ( %var% . " + iteratorBeginFuncPattern + " ( ) , %var% . " + iteratorEndFuncPattern + " ( ) ,|)";
+    static const std::string pattern22 = "std :: %type% ( %var% . " + iteratorBeginFuncPattern + " ( ) , %var% . " + iteratorEndFuncPattern + " ( ) , %var% . " + iteratorBeginFuncPattern + " ( ) , %var% . " + iteratorEndFuncPattern + " ( ) ,|)";
+    static const std::string pattern1x1_1 = "std :: %type% ( %var% . " + iteratorBeginFuncPattern + " ( ) , ";
+    static const std::string pattern1x1_2 = ", %var% . " + iteratorEndFuncPattern + " ( ) ,|)";
+
     // Check if different containers are used in various calls of standard functions
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() != "std")
             continue;
 
         // TODO: If iterator variables are used instead then there are false negatives.
-        if (Token::Match(tok, "std :: find|find_if|count|transform|replace|replace_if|sort ( %var% . begin|rbegin ( ) , %var% . end|rend ( ) ,")) {
+        if (Token::Match(tok, pattern2.c_str()) && algorithm2.find(tok->strAt(2)) != algorithm2.end()) {
             if (tok->tokAt(4)->str() != tok->tokAt(10)->str()) {
                 mismatchingContainersError(tok);
             }
+            tok = tok->tokAt(15);
+        } else if (Token::Match(tok, pattern22.c_str()) && algorithm22.find(tok->strAt(2)) != algorithm22.end()) {
+            if (tok->tokAt(4)->str() != tok->tokAt(10)->str() || tok->tokAt(16)->str() != tok->tokAt(22)->str()) {
+                mismatchingContainersError(tok);
+            }
+            tok = tok->tokAt(27);
+        } else if (Token::Match(tok, pattern1x1_1.c_str()) && algorithm1x1.find(tok->strAt(2)) != algorithm1x1.end()) {
+            // Find third parameter
+            const Token *tok2 = tok->tokAt(10);
+            int bracket = 0;
+            for (; tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    bracket++;
+                else if (tok2->str() == ")")
+                    bracket--;
+                else if (tok2->str() == "," && bracket == 0)
+                    break;
+            }
+            if (tok2 && Token::Match(tok2, pattern1x1_2.c_str())) {
+                if (tok->tokAt(4)->str() != tok2->tokAt(1)->str()) {
+                    mismatchingContainersError(tok);
+                }
+                tok = tok2->tokAt(6);
+            } else
+                tok = tok->tokAt(9);
         }
     }
 }
@@ -196,7 +247,6 @@ void CheckStl::stlOutOfBounds()
         // check if the for loop condition is wrong
         unsigned int indent = 0;
         for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-
             if (tok2->str() == "(")
                 ++indent;
 
