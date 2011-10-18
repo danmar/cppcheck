@@ -3063,6 +3063,51 @@ private:
               " return \"Hello\" == test.substr( 0 , 5 ) ? : 0 : 1 ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              " if (\"Hello\") { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) A boolean comparison with the string literal \"Hello\" is always true.\n", errout.str());
+
+        check("int f() {\n"
+              " if (\"Hello\" && 1) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) A boolean comparison with the string literal \"Hello\" is always true.\n", errout.str());
+
+        check("int f() {\n"
+              " if (1 && \"Hello\") { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) A boolean comparison with the string literal \"Hello\" is always true.\n", errout.str());
+
+        check("int f() {\n"
+              " while (\"Hello\") { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) A boolean comparison with the string literal \"Hello\" is always true.\n", errout.str());
+
+        check("int f() {\n"
+              " assert (test || \"Hello\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) A boolean comparison with the string literal \"Hello\" is always true.\n", errout.str());
+
+        check("int f() {\n"
+              " assert (test && \"Hello\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              " assert (\"Hello\" || test);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) A boolean comparison with the string literal \"Hello\" is always true.\n", errout.str());
+
+        check("int f() {\n"
+              " assert (\"Hello\" && test);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              " return f2(\"Hello\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

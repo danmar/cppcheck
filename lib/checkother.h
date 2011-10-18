@@ -261,6 +261,7 @@ public:
     void sizeofForArrayParameterError(const Token *tok);
     void sizeofForNumericParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
+    void incorrectStringBooleanError(const Token *tok, const std::string& string);
     void incrementBooleanError(const Token *tok);
     void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression);
     void duplicateIfError(const Token *tok1, const Token *tok2);
@@ -312,6 +313,7 @@ public:
         c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0, true, false);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
+        c.incorrectStringBooleanError(0, "\"Hello World\"");
         c.incrementBooleanError(0);
         c.comparisonOfBoolWithIntError(0, "varname");
         c.duplicateIfError(0, 0);
@@ -369,6 +371,7 @@ public:
                "* comparison of a boolean expression with an integer other than 0 or 1\n"
                "* suspicious condition (assignment+comparison)\n"
                "* suspicious condition (runtime comparison of string literals)\n"
+               "* suspicious condition (string literals as boolean)\n"
                "* duplicate break statement\n"
                "* testing if unsigned variable is negative\n"
                "* testing is unsigned variable is positive\n"

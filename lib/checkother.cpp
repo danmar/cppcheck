@@ -1963,12 +1963,29 @@ void CheckOther::checkIncorrectStringCompare()
                 incorrectStringCompareError(tok->next(), "substr", tok->str(), tok->tokAt(8)->str());
             }
         }
+        if (Token::Match(tok, "&&|%oror% %str% &&|%oror%|)")) {
+            // assert(condition && "debug message") would be considered a fp.
+            if (tok->str() == "&&" && tok->tokAt(2)->str() == ")" && tok->tokAt(2)->link()->previous()->str() == "assert")
+                continue;
+            incorrectStringBooleanError(tok->tokAt(1), tok->tokAt(1)->str());
+        }
+        if (Token::Match(tok, "if|while|assert ( %str% &&|%oror%|)")) {
+            // assert("debug message" && condition) would be considered a fp.
+            if (tok->tokAt(3)->str() == "&&" && tok->str() == "assert")
+                continue;
+            incorrectStringBooleanError(tok->tokAt(2), tok->tokAt(2)->str());
+        }
     }
 }
 
 void CheckOther::incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len)
 {
     reportError(tok, Severity::warning, "incorrectStringCompare", "String literal " + string + " doesn't match length argument for " + func + "(" + len + ").");
+}
+
+void CheckOther::incorrectStringBooleanError(const Token *tok, const std::string& string)
+{
+    reportError(tok, Severity::warning, "incorrectStringBooleanError", "A boolean comparison with the string literal " + string + " is always true.");
 }
 
 //-----------------------------------------------------------------------------
