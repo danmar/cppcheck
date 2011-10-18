@@ -104,6 +104,10 @@ public:
         std::cout << errmsg.toXML(true, 1) << std::endl;
     }
 
+    bool inconclusiveFlag() const {
+        return _settings && _settings->inconclusive;
+    }
+
 protected:
     const std::string _name;
     const Tokenizer * const _tokenizer;

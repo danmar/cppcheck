@@ -87,15 +87,22 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
 
         // #2681
-        check("void foo(const Token *tok)\n"
-              "{\n"
-              "    while (tok && tok->str() == \"=\")\n"
-              "        tok = tok->next();\n"
-              "\n"
-              "    if (tok->str() != \";\")\n"
-              "        ;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
+        {
+            const char code[] = "void foo(const Token *tok)\n"
+                                "{\n"
+                                "    while (tok && tok->str() == \"=\")\n"
+                                "        tok = tok->next();\n"
+                                "\n"
+                                "    if (tok->str() != \";\")\n"
+                                "        ;\n"
+                                "}\n";
+
+            check(code, false);   // inconclusive=false => no error
+            ASSERT_EQUALS("", errout.str());
+
+            check(code, true);    // inconclusive=true => error
+            ASSERT_EQUALS("[test.cpp:6]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
+        }
 
         check("void foo()\n"
               "{\n"
@@ -715,12 +722,21 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
 
-        check("static void foo(int x)\n"
-              "{\n"
-              "    Foo<int> *abc = 0;\n"
-              "    abc->a();\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: abc\n", errout.str());
+        {
+            const char code[] = "static void foo(int x)\n"
+                                "{\n"
+                                "    Foo<int> *abc = 0;\n"
+                                "    abc->a();\n"
+                                "}\n";
+
+            // inconclusive=false => no error
+            check(code,false);
+            ASSERT_EQUALS("", errout.str());
+
+            // inconclusive=true => error
+            check(code, true);
+            ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: abc\n", errout.str());
+        }
 
         check("static void foo()\n"
               "{\n"
@@ -897,6 +913,13 @@ private:
         check("void f() {\n"
               "    Fred *fred = 0;\n"
               "    int x = &fred->x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // ticket #3220: calling member function
+        check("void f() {\n"
+              "    Fred *fred = NULL;\n"
+              "    fred->do_something();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

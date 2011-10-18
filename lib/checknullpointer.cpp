@@ -184,8 +184,13 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     if (Token::Match(tok->tokAt(-3), "!!sizeof [;{}=+-/(,] * %var%") && Token::Match(tok->tokAt(-3), "!!decltype [;{}=+-/(,] * %var%"))
         return true;
 
-    if (!Token::simpleMatch(tok->tokAt(-2), "& (") && !Token::Match(tok->tokAt(-2), "sizeof|decltype (") && tok->strAt(-1) != "&"  && tok->strAt(-1) != "&&" && Token::Match(tok->next(), ". %var%"))
-        return true;
+    // read/write member variable
+    if (!Token::simpleMatch(tok->tokAt(-2), "& (") && !Token::Match(tok->tokAt(-2), "sizeof|decltype (") && tok->strAt(-1) != "&"  && tok->strAt(-1) != "&&" && Token::Match(tok->next(), ". %var%")) {
+        if (tok->strAt(3) != "(")
+            return true;
+        unknown = true;
+        return false;
+    }
 
     if (Token::Match(tok->previous(), "[;{}=+-/(,] %var% ["))
         return true;
@@ -299,6 +304,11 @@ void CheckNullPointer::nullPointerAfterLoop()
                 if (CheckNullPointer::isPointerDeRef(tok2, unknown)) {
                     nullPointerError(tok2, varname, tok->linenr(), inconclusive);
                 }
+
+                else if (unknown && _settings->inconclusive) {
+                    nullPointerError(tok2, varname, tok->linenr(), true);
+                }
+
                 break;
             }
         }
@@ -1049,6 +1059,8 @@ private:
             if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
                 setnull(checks, tok.varId());
             else if (CheckNullPointer::isPointerDeRef(&tok, unknown))
+                dereference(checks, &tok);
+            else if (unknown && owner->inconclusiveFlag())
                 dereference(checks, &tok);
             else
                 // TODO: Report debug warning that it's unknown if a
