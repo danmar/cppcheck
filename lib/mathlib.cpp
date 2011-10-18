@@ -115,10 +115,10 @@ bool MathLib::isInt(const std::string & s)
     // prechecking has nothing found,...
     // gather information
     enum Representation {
-        eScientific = 0  // NumberE+Number or NumberENumber
-        , eOctal        // starts with 0
-        , eHex          // starts with 0x
-        , eDefault      // Numbers with a (possible) trailing u or U or l or L for unsigned or long datatypes
+        eScientific = 0,  // NumberE+Number or NumberENumber
+        eOctal,        // starts with 0
+        eHex,          // starts with 0x
+        eDefault      // Numbers with a (possible) trailing u or U or l or L for unsigned or long datatypes
     };
     // create an instance
     Representation Mode = eDefault;

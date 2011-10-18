@@ -2896,6 +2896,9 @@ private:
         // Don't simplify goto inside function call (macro)
         const char code[] = "void f ( ) { slist_iter ( if ( a ) { goto dont_write ; } dont_write : ; x ( ) ; ) ; }";
         ASSERT_EQUALS(code, tok(code));
+
+        //ticket #3229 (segmentation fault)
+        ASSERT_EQUALS("void f ( ) { MACRO ( return ; ) return ; }",tok("void f ( ) {goto label; label: MACRO(return;)}"));
     }
 
     void goto3() {

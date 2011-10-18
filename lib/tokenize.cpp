@@ -3969,8 +3969,6 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyGoto();
 
-    simplifyFlowControl();
-
     // Combine wide strings
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         while (tok->str() == "L" && tok->next() && tok->next()->str()[0] == '"') {
@@ -4191,6 +4189,8 @@ bool Tokenizer::simplifyTokenList()
 
     removeRedundantSemicolons();
 
+    simplifyFlowControl();
+
     if (!validate())
         return false;
 
@@ -4285,15 +4285,25 @@ void Tokenizer::simplifyFlowControl()
     unsigned int indentlabel = 0;
     unsigned int roundbraces = 0;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (tok->str() == "(")
+        if (tok->str() == "(") {
             ++roundbraces;
-        else if (tok->str() == ")") {
+            if (indentflow) {
+                tok = tok->previous();
+                tok->deleteNext();
+                continue;
+            }
+        } else if (tok->str() == ")") {
             if (!roundbraces)
                 break;  //too many ending round parenthesis
             --roundbraces;
+            if (indentflow) {
+                tok = tok->previous();
+                tok->deleteNext();
+                continue;
+            }
         }
 
-        if (tok->str() == "{") {
+        if (!roundbraces && tok->str() == "{") {
             ++indentlevel;
             if (indentflow) {
                 indentlabel = 0;
@@ -4315,7 +4325,7 @@ void Tokenizer::simplifyFlowControl()
                     tok->deleteNext();
                 }
             }
-        } else if (tok->str() == "}") {
+        } else if (!roundbraces && tok->str() == "}") {
             if (!indentlevel)
                 break;  //too many closing parenthesis
             if (indentflow) {
@@ -4344,12 +4354,8 @@ void Tokenizer::simplifyFlowControl()
                 }
             }
         } else if (!indentflow) {
-            if (tok->str() == "switch") {
+            if (!roundbraces && tok->str() == "switch") {
                 if (!indentlevel)
-                    break;
-
-                // Don't care about unpreprocessed macros part of code
-                if (roundbraces)
                     break;
 
                 unsigned int switchroundbraces = 0;
@@ -4376,7 +4382,7 @@ void Tokenizer::simplifyFlowControl()
                     break;
                 ++indentlevel;
                 indentcase = indentlevel;
-            } else if (indentswitch && Token::Match(tok, "case|default")) {
+            } else if (!roundbraces && indentswitch && Token::Match(tok, "case|default")) {
                 if (indentlevel > indentcase) {
                     --indentlevel;
                 }
@@ -4390,13 +4396,9 @@ void Tokenizer::simplifyFlowControl()
                     } else if (Token::Match(tok2, "[{}]"))
                         break;  //bad code
                 }
-            } else if (Token::Match(tok,"return|goto|continue|break")) {
+            } else if (!roundbraces && Token::Match(tok,"return|goto|continue|break")) {
                 if (!indentlevel)
                     break;
-
-                // Don't care about unpreprocessed macros part of code
-                if (roundbraces)
-                    continue;
 
                 if (Token::Match(tok,"continue|break ;")) {
                     indentflow = indentlevel;
@@ -4407,16 +4409,16 @@ void Tokenizer::simplifyFlowControl()
                 }
 
                 //catch the first ';' after the return
-                unsigned int returnroundbraces = 0;
+                unsigned int flowroundbraces = 0;
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(")
-                        ++returnroundbraces;
+                        ++flowroundbraces;
                     else if (tok2->str() == ")") {
-                        if (!returnroundbraces)
+                        if (!flowroundbraces)
                             break;  //excessive closing parenthesis
-                        --returnroundbraces;
+                        --flowroundbraces;
                     } else if (tok2->str() == ";") {
-                        if (returnroundbraces)
+                        if (flowroundbraces)
                             break;  //excessive opening parenthesis
                         indentflow = indentlevel;
                         tok = tok2;
@@ -4429,14 +4431,14 @@ void Tokenizer::simplifyFlowControl()
             }
         } else if (indentflow) { //there's already a "return;" declaration
             if (!indentswitch || indentlevel > indentcase+1) {
-                if (indentlevel >= indentflow && (!Token::Match(tok, "%var% : ;") || Token::Match(tok, "case|default"))) {
+                if (indentlevel >= indentflow && (!Token::Match(tok, "%var% : ;") || Token::Match(tok, "case|default") || roundbraces)) {
                     tok = tok->previous();
                     tok->deleteNext();
                 } else {
                     indentflow = 0;
                 }
             } else {
-                if (!Token::Match(tok, "%var% : ;") && !Token::Match(tok, "case|default")) {
+                if (roundbraces || (!Token::Match(tok, "%var% : ;") && !Token::Match(tok, "case|default"))) {
                     tok = tok->previous();
                     tok->deleteNext();
                 } else {
@@ -7357,8 +7359,20 @@ void Tokenizer::simplifyGoto()
     std::list<Token *> gotos;
     unsigned int indentlevel = 0;
     unsigned int indentspecial = 0;
+    unsigned int roundbraces = 0;
     Token *beginfunction = 0;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (tok->str() == ")") {
+            if (!roundbraces)
+                break;
+            --roundbraces;
+        }
+        if (tok->str() == "(")
+            ++roundbraces;
+
+        if (roundbraces)
+            continue;
+
         if (tok->str() == "{") {
             if ((tok->tokAt(-2) && Token::Match(tok->tokAt(-2),"namespace|struct|class|union %var% {")) ||
                 (tok->previous() && Token::Match(tok->previous(),"namespace {")))
@@ -7384,10 +7398,6 @@ void Tokenizer::simplifyGoto()
             }
         }
 
-        else if (indentlevel && tok->str() == "(") {
-            tok = tok->link();
-        }
-
         else if (!indentlevel && Token::Match(tok, ") const| {")) {
             gotos.clear();
             beginfunction = tok;
@@ -7399,14 +7409,25 @@ void Tokenizer::simplifyGoto()
         else if (indentlevel == 1 && Token::Match(tok->previous(), "[};] %var% :")) {
             // Is this label at the end..
             bool end = false;
-            int level = 0;
+            unsigned int level = 0;
             for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == ")") {
+                    if (!roundbraces)
+                        break;
+                    --roundbraces;
+                }
+                if (tok2->str() == "(")
+                    ++roundbraces;
+
+                if (roundbraces)
+                    continue;
+
                 if (tok2->str() == "}") {
-                    --level;
-                    if (level < 0) {
+                    if (!level) {
                         end = true;
                         break;
                     }
+                    --level;
                 } else if (tok2->str() == "{") {
                     ++level;
                 }
@@ -7441,16 +7462,24 @@ void Tokenizer::simplifyGoto()
                     std::list<Token*> links;
                     std::list<Token*> links2;
                     std::list<Token*> links3;
-                    int lev = 0;
+                    unsigned int lev = 0;
                     for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                        if (tok2->str() == "}") {
-                            --lev;
-                            if (lev < 0)
+                        if (tok2->str() == ")") {
+                            if (!roundbraces)
                                 break;
+                            --roundbraces;
                         }
-                        if (tok2->str() == "{") {
+                        if (tok2->str() == "(")
+                            ++roundbraces;
+
+                        if (!roundbraces && tok2->str() == "}") {
+                            if (!lev)
+                                break;
+                            --lev;
+                        }
+                        if (!roundbraces && tok2->str() == "{") {
                             ++lev;
-                        } else if (tok2->str() == "return") {
+                        } else if (!roundbraces && tok2->str() == "return") {
                             ret = true;
                             if (indentlevel == 1 && lev == 0)
                                 ret2 = true;
