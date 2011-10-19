@@ -7409,7 +7409,7 @@ void Tokenizer::simplifyGoto()
         else if (Token::Match(tok, "goto %var% ;"))
             gotos.push_back(tok);
 
-        else if (indentlevel == 1 && Token::Match(tok->previous(), "[};] %var% : ;")) {
+        else if (indentlevel == 1 && Token::Match(tok->previous(), "[{};] %var% : ;") && tok->str() != "default") {
             // Is this label at the end..
             bool end = false;
             unsigned int level = 0;
@@ -7435,7 +7435,7 @@ void Tokenizer::simplifyGoto()
                     ++level;
                 }
 
-                if (Token::Match(tok2, "%var% : ;") || tok2->str() == "goto") {
+                if ((Token::Match(tok2->previous(), "[{};] %var% : ;") && tok2->str() != "default") || tok2->str() == "goto") {
                     break;
                 }
             }
@@ -8688,7 +8688,8 @@ void Tokenizer::simplifyWhile0()
         // remove "while (0) { .. }"
         if (Token::simpleMatch(tok->next()->link(), ") {")) {
             const Token *end = tok->next()->link()->next()->link();
-            if (!Token::findmatch(tok, "%var% : ;", end)) {
+            const Token *labelmatch = Token::findmatch(tok, "[{};] %var% : ;", end);
+            if (!labelmatch || labelmatch->next()->str() == "default") {
                 Token::eraseTokens(tok, end ? end->next() : 0);
                 tok->deleteThis();  // delete "while"
             }

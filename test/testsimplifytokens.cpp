@@ -6455,6 +6455,7 @@ private:
         ASSERT_EQUALS("; { continue ; }", tok("; do { continue ; } while (0);"));
         ASSERT_EQUALS("; { break ; }", tok("; do { break; } while (0);"));
         ASSERT_EQUALS(";", tok("; while (false) { a; }"));
+        ASSERT_EQUALS(";", tok("; while (false) { switch (n) { case 0: return; default: break; } n*=1; }"));
     }
 
     void while0for() {
