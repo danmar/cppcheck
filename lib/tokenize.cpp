@@ -2468,13 +2468,12 @@ void Tokenizer::labels()
                         break;
                     --indentroundbraces;
                 }
-                if (!indentroundbraces && tok->str() == "case")
-                {
+                if (!indentroundbraces && tok->str() == "case") {
                     while (0 != (tok = tok->next())) {
                         if (Token::Match(tok->previous(), "%any% :"))
                             break;
                     }
-                    if (!(tok->next()) || tok->next()->str() != ";"){
+                    if (!(tok->next()) || tok->next()->str() != ";") {
                         tok->insertToken(";");
                         tok = tok->next();
                     }
@@ -4391,7 +4390,7 @@ void Tokenizer::simplifyFlowControl()
                     --indentlevel;
                 }
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                    if (Token::Match(tok2, ": ;| ")) {
+                    if (Token::Match(tok2, ": ;")) {
                         if (indentlevel == indentcase) {
                             ++indentlevel;
                         }
@@ -7410,7 +7409,7 @@ void Tokenizer::simplifyGoto()
         else if (Token::Match(tok, "goto %var% ;"))
             gotos.push_back(tok);
 
-        else if (indentlevel == 1 && Token::Match(tok->previous(), "[};] %var% :")) {
+        else if (indentlevel == 1 && Token::Match(tok->previous(), "[};] %var% : ;")) {
             // Is this label at the end..
             bool end = false;
             unsigned int level = 0;
@@ -7436,7 +7435,7 @@ void Tokenizer::simplifyGoto()
                     ++level;
                 }
 
-                if (Token::Match(tok2, "%var% :") || tok2->str() == "goto") {
+                if (Token::Match(tok2, "%var% : ;") || tok2->str() == "goto") {
                     break;
                 }
             }
@@ -7447,8 +7446,7 @@ void Tokenizer::simplifyGoto()
 
             tok->deleteThis();
             tok->deleteThis();
-            if (Token::Match(tok, "; %any%"))
-                tok->deleteThis();
+            tok->deleteThis();
 
             // This label is at the end of the function.. replace all matching goto statements..
             for (std::list<Token *>::iterator it = gotos.begin(); it != gotos.end(); ++it) {
