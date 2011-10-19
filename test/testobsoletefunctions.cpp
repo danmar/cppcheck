@@ -61,6 +61,9 @@ private:
         // c declared function
         TEST_CASE(test_c_declaration);
 
+        // function with body
+        TEST_CASE(test_function_with_body);
+
     }
 
     void check(const char code[]) {
@@ -265,15 +268,26 @@ private:
               "    char s [ 10 ] ;\n"
               "    gets ( s ) ;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n", errout.str());
 
         check("int getcontext(ucontext_t *ucp);\n"
               "int f (ucontext_t *ucp)\n"
               "{\n"
               "    getcontext ( ucp ) ;\n"
               "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'getcontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads\n", errout.str());
+    }
+
+    void test_function_with_body() {
+        check("char * gets ( char * c ) { return c; }\n"
+              "int main ()\n"
+              "{\n"
+              "    char s [ 10 ] ;\n"
+              "    gets ( s ) ;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
 
 };
 

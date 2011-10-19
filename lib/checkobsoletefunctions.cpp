@@ -44,11 +44,16 @@ void CheckObsoleteFunctions::obsoleteFunctions()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
 
-        if (tok->isName() && tok->varId()==0 && tok->strAt(1) == "(" &&
+        if (tok->isName() && tok->varId()==0 && (tok->next() && tok->next()->str() == "(") &&
             (!Token::Match(tok->previous(), ".|::|:|,") || Token::simpleMatch(tok->previous()->previous(), "std :: gets"))) {
+            // c function declaration?
+            if ((tok->next()->link()->next() && tok->next()->link()->next()->str() == ";") && (tok->previous()->str() == "*" || tok->previous()->isName())) {
+                continue;
+            }
+
             // function declaration?
-            if ((tok->previous() && (tok->previous()->str() == "*" || tok->previous()->isName()))
-                || symbolDatabase->findFunctionByToken(tok)) {
+            const Function * function = symbolDatabase->findFunctionByToken(tok);
+            if (function && function->hasBody) {
                 _obsoleteStandardFunctions.erase(tok->str());
                 _obsoletePosixFunctions.erase(tok->str());
                 continue;
