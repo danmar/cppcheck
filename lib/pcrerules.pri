@@ -1,8 +1,3 @@
-# On non-Windows, if the variable HAVE_RULES is empty, default to using PCRE and enabling rules
-!win32:isEmpty(HAVE_RULES) {
-	CONFIG += use_pcre_rules
-}
-
 # If HAVE_RULES=yes is passed to qmake, use PCRE and enable rules
 contains(HAVE_RULES, [yY][eE][sS]) {
 	CONFIG += use_pcre_rules
