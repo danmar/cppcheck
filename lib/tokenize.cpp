@@ -8662,19 +8662,24 @@ void Tokenizer::simplifyWhile0()
         if (while0 && Token::simpleMatch(tok->previous(), "}")) {
             // find "do"
             Token *tok2 = tok->previous()->link();
-            tok2 = tok2 ? tok2->previous() : 0;
-            if (tok2 && tok2->str() == "do" && !Token::findmatch(tok2, "continue|break", tok)) {
-                // delete "do {"
+            tok2 = tok2->previous();
+            if (tok2 && tok2->str() == "do") {
+                bool flowmatch = Token::findmatch(tok2, "continue|break", tok) != NULL;
+                // delete "do ({)"
                 tok2->deleteThis();
-                tok2->deleteThis();
+                if (!flowmatch)
+                    tok2->deleteThis();
 
-                // delete "} while ( 0 )"
+                // delete "(}) while ( 0 ) (;)"
                 tok = tok->previous();
                 tok->deleteNext();  // while
                 tok->deleteNext();  // (
                 tok->deleteNext();  // 0
                 tok->deleteNext();  // )
-                tok->deleteThis();  // }
+                if (tok->next() && tok->next()->str() == ";")
+                    tok->deleteNext(); // ;
+                if (!flowmatch)
+                    tok->deleteThis(); // }
 
                 continue;
             }

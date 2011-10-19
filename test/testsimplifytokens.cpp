@@ -6450,8 +6450,10 @@ private:
 
     void while0() {
         ASSERT_EQUALS("; x = 1 ;", tok("; do { x = 1 ; } while (0);"));
-        ASSERT_EQUALS("; do { continue ; } while ( false ) ;", tok("; do { continue ; } while (0);"));
-        ASSERT_EQUALS("; do { break ; } while ( false ) ;", tok("; do { break; } while (0);"));
+        ASSERT_EQUALS("; return 0 ;", tok("; do { return 0; } while (0);"));
+        ASSERT_EQUALS("void foo ( ) { goto label ; }", tok("void foo() { do { goto label; } while (0); }"));
+        ASSERT_EQUALS("; { continue ; }", tok("; do { continue ; } while (0);"));
+        ASSERT_EQUALS("; { break ; }", tok("; do { break; } while (0);"));
         ASSERT_EQUALS(";", tok("; while (false) { a; }"));
     }
 
