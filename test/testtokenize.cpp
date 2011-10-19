@@ -4666,8 +4666,11 @@ private:
     }
 
     void switchCase() {
-        ASSERT_EQUALS("void foo ( int i ) { switch ( i ) { case -1 : break ; } }",
+        ASSERT_EQUALS("void foo ( int i ) { switch ( i ) { case -1 : ; break ; } }",
                       tokenizeAndStringify("void foo (int i) { switch(i) { case -1: break; } }"));
+        //ticket #3227
+        ASSERT_EQUALS("void foo ( ) { switch ( n ) { label : ; case 1 : ; label1 : ; label2 : ; break ; } }",
+                      tokenizeAndStringify("void foo(){ switch (n){ label: case 1: label1: label2: break; }}"));
     }
 
     void simplifyPointerToStandardType() {

@@ -1968,9 +1968,6 @@ bool Tokenizer::tokenize(std::istream &code,
     // specify array size..
     arraySize();
 
-    // simplify labels..
-    labels();
-
     simplifyDoWhileAddBraces();
 
     if (!simplifyIfAddBraces())
@@ -2030,6 +2027,9 @@ bool Tokenizer::tokenize(std::istream &code,
             }
         }
     }
+
+    // simplify labels..
+    labels();
 
     // ";a+=b;" => ";a=a+b;"
     simplifyCompoundAssignment();
@@ -2456,9 +2456,9 @@ void Tokenizer::labels()
                 if (tok->str() == "{")
                     ++indentlevel;
                 else if (tok->str() == "}") {
-                    if (indentlevel <= 1)
-                        break;
                     --indentlevel;
+                    if (!indentlevel)
+                        break;
                 }
 
                 if (tok->str() == "(")
@@ -2467,6 +2467,17 @@ void Tokenizer::labels()
                     if (!indentroundbraces)
                         break;
                     --indentroundbraces;
+                }
+                if (!indentroundbraces && tok->str() == "case")
+                {
+                    while (0 != (tok = tok->next())) {
+                        if (Token::Match(tok->previous(), "%any% :"))
+                            break;
+                    }
+                    if (!(tok->next()) || tok->next()->str() != ";"){
+                        tok->insertToken(";");
+                        tok = tok->next();
+                    }
                 }
                 // simplify label.. except for unhandled macro
                 if (!indentroundbraces && Token::Match(tok, "[;{}] %var% :")
@@ -4142,13 +4153,6 @@ bool Tokenizer::simplifyTokenList()
     simplifyFuncInWhile();
 
     simplifyIfAssign();    // could be affected by simplifyIfNot
-
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "case %any% : %var%"))
-            tok->tokAt(2)->insertToken(";");
-        if (Token::Match(tok, "default : %var%"))
-            tok->next()->insertToken(";");
-    }
 
     // In case variable declarations have been updated...
     setVarId();
