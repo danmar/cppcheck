@@ -27,6 +27,7 @@
 #include <list>
 #include <vector>
 #include <set>
+#include <iosfwd>
 
 class Token;
 class ErrorLogger;
