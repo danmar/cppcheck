@@ -2698,14 +2698,14 @@ private:
 
     void memsetZeroBytes() {
         check("void f() {\n"
-              "    memset(p, 10, 0)\n"
+              "    memset(p, 10, 0);\n"
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
                       " bytes of \'p\'\n", errout.str());
 
         check("void f() {\n"
-              "    memset(p, sizeof(p), 0)\n"
+              "    memset(p, sizeof(p), 0);\n"
               "}\n"
              );
         TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
