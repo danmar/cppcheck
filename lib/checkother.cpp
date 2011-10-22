@@ -665,6 +665,29 @@ void CheckOther::switchCaseFallThrough(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
+//    std::cout << std::cout;
+//---------------------------------------------------------------------------
+void CheckOther::checkCoutCerrMisusage()
+{
+    bool firstCout = false;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "std :: cout|cerr")) {
+            if (firstCout && tok->strAt(-1) == "<<" && tok->strAt(3) != ".") {
+                coutCerrMisusageError(tok, tok->strAt(2));
+                firstCout = false;
+            } else if (tok->strAt(3) == "<<")
+                firstCout = true;
+        } else if (firstCout && tok->str() == ";")
+            firstCout = false;
+    }
+}
+
+void CheckOther::coutCerrMisusageError(const Token* tok, const std::string& streamName)
+{
+    reportError(tok, Severity::error, "coutCerrMisusage", "Invalid usage of output stream: '<< std::" + streamName + "'.");
+}
+
+//---------------------------------------------------------------------------
 //    int x = 1;
 //    x = x;            // <- redundant assignment to self
 //

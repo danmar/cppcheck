@@ -81,6 +81,8 @@ private:
         TEST_CASE(switchFallThroughCase);
         TEST_CASE(duplicateBreak);
 
+        TEST_CASE(coutCerrMisusage);
+
         TEST_CASE(selfAssignment);
         TEST_CASE(testScanf1);
         TEST_CASE(testScanf2);
@@ -180,6 +182,7 @@ private:
         checkOther.checkFflushOnInputStream();
         checkOther.checkSelfAssignment();
         checkOther.invalidScanf();
+        checkOther.checkCoutCerrMisusage();
         checkOther.checkMisusedScopedObject();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkCatchExceptionByValue();
@@ -1286,15 +1289,15 @@ private:
 
         check("void foo(char *str, int a)\n"
               "{\n"
-              "		   int z = 0;\n"
+              "        int z = 0;\n"
               "        switch (a)\n"
               "        {\n"
               "        case 2:\n"
               "          strcpy(str, \"a'\");\n"
-              "			 z++;\n"
+              "          z++;\n"
               "        case 3:\n"
               "          strcpy(str, \"b'\");\n"
-              "			 z++;\n"
+              "          z++;\n"
               "        }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Switch case fall-through. Redundant strcpy of \"str\".\n", errout.str());
@@ -1305,10 +1308,10 @@ private:
               "        {\n"
               "        case 2:\n"
               "          strcpy(str, \"a'\");\n"
-              "			 break;\n"
+              "          break;\n"
               "        case 3:\n"
               "          strcpy(str, \"b'\");\n"
-              "			 break;\n"
+              "          break;\n"
               "        }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -1319,7 +1322,7 @@ private:
               "        {\n"
               "        case 2:\n"
               "          strcpy(str, \"a'\");\n"
-              "			 printf(str);\n"
+              "          printf(str);\n"
               "        case 3:\n"
               "          strcpy(str, \"b'\");\n"
               "        }\n"
@@ -3744,6 +3747,39 @@ private:
             "  {\n"
             "    do_something();\n"
             "  }\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void coutCerrMisusage() {
+        check(
+            "void foo() {\n"
+            "  std::cout << std::cout;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usage of output stream: '<< std::cout'.\n", errout.str());
+
+        check(
+            "void foo() {\n"
+            "  std::cout << \"xyz\" << std::cout;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usage of output stream: '<< std::cout'.\n", errout.str());
+
+        check(
+            "void foo(int i) {\n"
+            "  std::cout << i << std::cerr;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usage of output stream: '<< std::cerr'.\n", errout.str());
+
+        check(
+            "void foo() {\n"
+            "  std::cout << \"xyz\";\n"
+            "  std::cout << \"xyz\";\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo() {\n"
+            "  std::cout << std::cout.good();\n"
             "}");
         ASSERT_EQUALS("", errout.str());
     }

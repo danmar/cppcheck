@@ -89,6 +89,7 @@ public:
         checkOther.checkFflushOnInputStream();
         checkOther.invalidScanf();
 
+        checkOther.checkCoutCerrMisusage();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
         checkOther.checkCatchExceptionByValue();
@@ -171,6 +172,9 @@ public:
     /** @brief %Check for switch case fall through without comment */
     void checkSwitchCaseFallThrough();
 
+    /** @brief %Check for missusage of std::cout */
+    void checkCoutCerrMisusage();
+
     /** @brief %Check for assigning a variable to itself*/
     void checkSelfAssignment();
 
@@ -246,6 +250,7 @@ public:
     void variableScopeError(const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
     void zerodivError(const Token *tok);
+    void coutCerrMisusageError(const Token* tok, const std::string& streamName);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
@@ -289,6 +294,7 @@ public:
         c.misusedScopeObjectError(NULL, "varname");
         c.sizeofForArrayParameterError(0);
         c.sizeofForNumericParameterError(0);
+        c.coutCerrMisusageError(0, "cout");
 
         // style/warning
         c.cstyleCastError(0);
@@ -345,6 +351,7 @@ public:
                "* sizeof for array given as function argument\n"
                "* sizeof for numeric given as function argument\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
+               "* invalid usage of output stream. For example: std::cout << std::cout;'\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
