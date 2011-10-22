@@ -686,7 +686,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
     // create variable symbol table
     _variableList.resize(_tokenizer->varIdCount() + 1);
-    fill_n(_variableList.begin(), _variableList.size(), (const Variable*)NULL);
+    std::fill_n(_variableList.begin(), _variableList.size(), (const Variable*)NULL);
 
     // check all scopes for variables
     for (it = scopeList.begin(); it != scopeList.end(); ++it) {
