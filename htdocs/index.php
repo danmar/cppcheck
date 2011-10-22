@@ -43,7 +43,7 @@ bugs that the compilers normally do not detect. The goal is to detect only real
 errors in the code (i.e. have zero false positives).</p>
 
 <h2>Download</h2>
-<p><a class="downloadnow" href="http://downloads.sourceforge.net/cppcheck/cppcheck-1.50-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.50 for Windows</em></a></p>
+<p><a class="downloadnow" href="http://downloads.sourceforge.net/cppcheck/cppcheck-1.51-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.51 for Windows</em></a></p>
 <p>You can download the standalone Cppcheck from our
 <a href="http://sourceforge.net/projects/cppcheck/">project page</a> or add it
 as a plugin for your favorite IDE:</p>
