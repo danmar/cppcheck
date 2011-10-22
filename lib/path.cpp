@@ -96,7 +96,7 @@ std::string Path::simplifyPath(const char *originalPath)
 
 bool Path::sameFileName(const std::string &fname1, const std::string &fname2)
 {
-#if defined(__linux__) || defined(__sun)
+#if defined(__linux__) || defined(__sun) || defined(__hpux)
     return bool(fname1 == fname2);
 #elif defined(__GNUC__)
     return bool(strcasecmp(fname1.c_str(), fname2.c_str()) == 0);
