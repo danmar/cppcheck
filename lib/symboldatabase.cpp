@@ -1587,7 +1587,7 @@ const Variable *Scope::getVariable(const std::string &varname) const
     return NULL;
 }
 
-const Token* skipScopeIdentifiers(const Token* tok)
+inline const Token* skipScopeIdentifiers(const Token* tok)
 {
     const Token* ret = tok;
 
@@ -1601,7 +1601,7 @@ const Token* skipScopeIdentifiers(const Token* tok)
     return ret;
 }
 
-const Token* skipPointers(const Token* tok)
+inline const Token* skipPointers(const Token* tok)
 {
     const Token* ret = tok;
 

@@ -127,7 +127,6 @@ public:
 
 
 void checkExecutionPaths(const Token *tok, ExecutionPath *c);
-void checkExecutionPaths(const Token *tok, ExecutionPath *c);
 
 
 #endif
