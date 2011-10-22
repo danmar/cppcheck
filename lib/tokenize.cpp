@@ -7912,14 +7912,16 @@ void Tokenizer::simplifyEnum()
                             simplify = true;
                             hasClass = true;
                         } else if (inScope && !exitThisScope && tok2->str() == enumName->str()) {
-                            if (Token::simpleMatch(tok2->previous(), "::") ||
-                                Token::Match(tok2->next(), "::|[")) {
-                                // Don't replace this enum if:
-                                // * it's preceded or followed by "::"
-                                // * it's followed by "["
-                            } else if (!duplicateDefinition(&tok2, enumName)) {
-                                simplify = true;
-                                hasClass = false;
+                            if (!duplicateDefinition(&tok2, enumName)) {
+                                if (Token::simpleMatch(tok2->previous(), "::") ||
+                                    Token::Match(tok2->next(), "::|[")) {
+                                    // Don't replace this enum if:
+                                    // * it's preceded or followed by "::"
+                                    // * it's followed by "["
+                                } else {
+                                    simplify = true;
+                                    hasClass = false;
+                                }
                             } else {
                                 // something with the same name.
                                 exitScope = level;

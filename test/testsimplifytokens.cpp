@@ -339,6 +339,7 @@ private:
         TEST_CASE(enum25); // ticket #2966
         TEST_CASE(enum26); // ticket #2975 (segmentation fault)
         TEST_CASE(enum27); // ticket #3005 (segmentation fault)
+        TEST_CASE(enum28);
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6861,6 +6862,14 @@ private:
         const char code[] = "enum : x\n";
         tok(code, false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void enum28() {
+        const char code[] = "enum { x=0 };\n"
+                            "void f() { char x[4];  memset(x, 0, 4); \n"
+                            "{ x } };\n"
+                            "void g() { x; }";
+        ASSERT_EQUALS("; void f ( ) { char x [ 4 ] ; memset ( x , 0 , 4 ) ; { x } } ; void g ( ) { 0 ; }", tok(code, true));
     }
 
     void removestd() {
