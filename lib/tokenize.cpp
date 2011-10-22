@@ -454,7 +454,7 @@ void Tokenizer::createTokens(std::istream &code)
 
 void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string &type)
 {
-    if (tok1 && !(_settings->isEnabled("style")))
+    if (tok1 && !(_settings->isEnabled("style") && _settings->inconclusive))
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -476,7 +476,7 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
                                            std::string(type + " '" + tok2_str +
                                                    "' hides typedef with same name"),
                                            "variableHidingTypedef",
-                                           false);
+                                           true);
 
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
