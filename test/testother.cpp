@@ -2701,7 +2701,7 @@ private:
 
     void memsetZeroBytes() {
         check("void f() {\n"
-              "    memset(p, 10, 0);\n"
+              "    memset(p, 10, 0x0);\n"
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
@@ -2711,10 +2711,14 @@ private:
               "    memset(p, sizeof(p), 0);\n"
               "}\n"
              );
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
-                           " bytes of \"p\". Second and third arguments might be inverted.\n",
+        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0"
+                      " bytes of \'p\'\n", errout.str());
 
-                           "", errout.str());
+        check("void f() {\n"
+              "    memset(p, sizeof(p), i+0);\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sizeofForArrayParameter() {

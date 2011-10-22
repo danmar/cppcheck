@@ -1337,10 +1337,12 @@ void CheckOther::udivError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkMemsetZeroBytes()
 {
-    const Token *tok = _tokenizer->tokens();
-    while (tok && ((tok = Token::findmatch(tok, "memset ( %var% , %num% , 0 )")) != NULL)) {
-        memsetZeroBytesError(tok, tok->strAt(2));
-        tok = tok->tokAt(8);
+    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "memset (")) {
+            const Token* lastParamTok = tok->tokAt(1)->link()->tokAt(-1);
+            if (lastParamTok->str() == "0")
+                memsetZeroBytesError(tok, tok->strAt(2));
+        }
     }
 }
 
