@@ -51,8 +51,7 @@ void CheckNonReentrantFunctions::nonReentrantFunctions()
             continue;
 
         const Token *prev = tok->previous();
-        if (prev)
-        {
+        if (prev) {
             // Ignore function definitions, class members or class definitions
             if (prev->isName() || Token::Match(prev, ".|:"))
                 continue;

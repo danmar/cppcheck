@@ -870,7 +870,7 @@ void CheckOther::checkIncorrectLogicOperator()
             enum Position { First, Second, NA };
             enum Relation { Equal, NotEqual, Less, LessEqual, More, MoreEqual };
             enum LogicError { Exclusion, AlwaysTrue, AlwaysFalse, AlwaysFalseOr };
-            struct Condition {
+            static const struct Condition {
                 const char *before;
                 Position   position1;
                 const char *op1TokStr;
@@ -1794,40 +1794,21 @@ void CheckOther::zerodivError(const Token *tok)
 void CheckOther::checkMathFunctions()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        // case log(-2)
-        if (tok->varId() == 0 &&
-            Token::Match(tok, "log|log10 ( %num% )") &&
-            MathLib::isNegative(tok->tokAt(2)->str()) &&
-            MathLib::isInt(tok->tokAt(2)->str()) &&
-            MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0) {
-            mathfunctionCallError(tok);
-        }
-        // case log(-2.0)
-        else if (tok->varId() == 0 &&
-                 Token::Match(tok, "log|log10 ( %num% )") &&
-                 MathLib::isNegative(tok->tokAt(2)->str()) &&
-                 MathLib::isFloat(tok->tokAt(2)->str()) &&
-                 MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.) {
-            mathfunctionCallError(tok);
+        if (tok->varId() == 0 && Token::Match(tok, "log|log10 ( %num% )")) {
+            bool isNegative = MathLib::isNegative(tok->tokAt(2)->str());
+            bool isInt = MathLib::isInt(tok->tokAt(2)->str());
+            bool isFloat = MathLib::isFloat(tok->tokAt(2)->str());
+            if (isNegative && isInt && MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0) {
+                mathfunctionCallError(tok); // case log(-2)
+            } else if (isNegative && isFloat && MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.) {
+                mathfunctionCallError(tok); // case log(-2.0)
+            } else if (!isNegative && isFloat && MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.) {
+                mathfunctionCallError(tok); // case log(0.0)
+            } else if (!isNegative && isInt && MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0) {
+                mathfunctionCallError(tok); // case log(0)
+            }
         }
 
-        // case log(0.0)
-        else if (tok->varId() == 0 &&
-                 Token::Match(tok, "log|log10 ( %num% )") &&
-                 !MathLib::isNegative(tok->tokAt(2)->str()) &&
-                 MathLib::isFloat(tok->tokAt(2)->str()) &&
-                 MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.) {
-            mathfunctionCallError(tok);
-        }
-
-        // case log(0)
-        else if (tok->varId() == 0 &&
-                 Token::Match(tok, "log|log10 ( %num% )") &&
-                 !MathLib::isNegative(tok->tokAt(2)->str()) &&
-                 MathLib::isInt(tok->tokAt(2)->str()) &&
-                 MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0) {
-            mathfunctionCallError(tok);
-        }
         // acos( x ), asin( x )  where x is defined for intervall [-1,+1], but not beyound
         else if (tok->varId() == 0 &&
                  Token::Match(tok, "acos|asin ( %num% )") &&
