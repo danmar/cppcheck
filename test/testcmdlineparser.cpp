@@ -552,7 +552,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT(settings.posix);
+        ASSERT(settings.standards.posix);
     }
 
     void stdc99() {
@@ -561,7 +561,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT(settings.c99);
+        ASSERT(settings.standards.c99);
     }
 
     void stdcpp11() {
@@ -570,7 +570,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT(settings.cpp11);
+        ASSERT(settings.standards.cpp11);
     }
 
     void suppressionsOld() {

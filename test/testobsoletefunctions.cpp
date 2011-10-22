@@ -72,8 +72,8 @@ private:
 
         Settings settings;
         settings.addEnabled("style");
-        settings.posix = true;
-        settings.c99 = true;
+        settings.standards.posix = true;
+        settings.standards.c99 = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

@@ -23,6 +23,7 @@
 #include <string>
 #include <set>
 #include "suppressions.h"
+#include "standards.h"
 
 /// @addtogroup Core
 /// @{
@@ -182,14 +183,8 @@ public:
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
 
-    /** Code is posix - it is not compatible with non-posix environments */
-    bool posix;
-
-    /** Code is C99 standard - it is not compatible with previous versions */
-    bool c99;
-
-    /** Code follows C++11 standard - it is not compatible with previous versions */
-    bool cpp11;
+    /** Struct contains standards settings */
+    Standards standards;
 
     /** size of standard types */
     unsigned int sizeof_bool;

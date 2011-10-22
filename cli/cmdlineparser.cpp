@@ -377,16 +377,16 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // --std
         else if (strcmp(argv[i], "--std=posix") == 0) {
-            _settings->posix = true;
+            _settings->standards.posix = true;
         }
 
         // --C99
         else if (strcmp(argv[i], "--std=c99") == 0) {
-            _settings->c99 = true;
+            _settings->standards.c99 = true;
         }
 
         else if (strcmp(argv[i], "--std=c++11") == 0) {
-            _settings->cpp11 = true;
+            _settings->standards.cpp11 = true;
         }
 
         // Output formatter

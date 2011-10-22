@@ -62,7 +62,7 @@ private:
         Settings settings;
         settings.addEnabled("style");
         settings.inconclusive = inconclusive;
-        settings.cpp11 = cpp11;
+        settings.standards.cpp11 = cpp11;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

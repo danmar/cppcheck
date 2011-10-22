@@ -1193,7 +1193,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
         // readlink()
-        if (_settings->posix && Token::Match(tok, "readlink ( %any% , %varid% , %num% )", arrayInfo.varid())) {
+        if (_settings->standards.posix && Token::Match(tok, "readlink ( %any% , %varid% , %num% )", arrayInfo.varid())) {
             const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6));
             if (total_size > 0 && n > total_size)
                 outOfBoundsError(tok->tokAt(4), "readlink() buf size", true, n, total_size);

@@ -65,7 +65,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
                 // Therefore this is "information"
                 reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
             } else {
-                if (_settings->posix) {
+                if (_settings->standards.posix) {
                     it = _obsoletePosixFunctions.find(tok->str());
                     if (it != _obsoletePosixFunctions.end()) {
                         // If checking an old code base it might be uninteresting to update obsolete functions.
@@ -73,7 +73,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
                         reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
                     }
                 }
-                if (_settings->c99) {
+                if (_settings->standards.c99) {
                     it = _obsoleteC99Functions.find(tok->str());
                     if (it != _obsoleteC99Functions.end()) {
                         reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);

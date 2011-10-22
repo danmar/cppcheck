@@ -41,7 +41,7 @@ private:
 
         Settings settings;
         settings.inconclusive = true;
-        settings.posix = true;
+        settings.standards.posix = true;
         settings.experimental = experimental;
         settings.addEnabled("style");
         settings.addEnabled("portability");

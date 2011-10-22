@@ -41,7 +41,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.posix = true;
+        settings.standards.posix = true;
         settings.addEnabled("portability");
 
         // Tokenize..

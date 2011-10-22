@@ -2401,7 +2401,7 @@ bool Tokenizer::tokenize(std::istream &code,
 
     removeRedundantSemicolons();
 
-    if (_settings->cpp11) {
+    if (_settings->standards.cpp11) {
         for (Token *tok = _tokens; tok; tok = tok->next()) {
             if (tok->str() == "nullptr")
                 tok->str("0");
