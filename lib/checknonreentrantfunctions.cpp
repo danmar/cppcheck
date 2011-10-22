@@ -39,16 +39,31 @@ void CheckNonReentrantFunctions::nonReentrantFunctions()
     if (_tokenizer->isJavaOrCSharp())
         return;
 
+    std::map<std::string,std::string>::const_iterator nonReentrant_end = _nonReentrantFunctions.end();
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        std::list< std::pair<const std::string, const std::string> >::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
-        for (; it!=itend; ++it) {
-            if (tok->strAt(1) == it->first && tok->strAt(2) == "(" && tok->tokAt(1)->varId() == 0 && !tok->tokAt(0)->isName() && !Token::Match(tok, ".|::|:|,")) {
-                // If checking code that is single threaded, this might be not interesing for all.
-                // Therefore this is "portabiblity"
-                reportError(tok->tokAt(1), Severity::portability, "nonreentrantFunctions"+it->first, it->second);
-                break;
-            }
+        // Look for function invocations
+        if (!tok->isName() || tok->strAt(1) != "(" || tok->varId() != 0)
+            continue;
+
+        // Check for non-reentrant function name
+        std::map<std::string,std::string>::const_iterator it = _nonReentrantFunctions.find(tok->str());
+        if (it == nonReentrant_end)
+            continue;
+
+        const Token *prev = tok->previous();
+        if (prev)
+        {
+            // Ignore function definitions, class members or class definitions
+            if (prev->isName() || Token::Match(prev, ".|:"))
+                continue;
+
+            // Check for "std" or global namespace, ignore other namespaces
+            if (prev->str() == "::" && prev->previous() && prev->previous()->str() != "std" && prev->previous()->isName())
+                continue;
         }
+
+        // Only affecting multi threaded code, therefore this is "portability"
+        reportError(tok, Severity::portability, "nonreentrantFunctions"+it->first, it->second);
     }
 }
 //---------------------------------------------------------------------------
