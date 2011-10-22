@@ -64,6 +64,8 @@ private:
         // function with body
         TEST_CASE(test_function_with_body);
 
+        // null pointer dereference in obsoleteFunctions
+        TEST_CASE(ticket3238);
     }
 
     void check(const char code[]) {
@@ -288,6 +290,10 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void ticket3238() {
+        check("__FBSDID(\"...\");\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 };
 
