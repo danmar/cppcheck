@@ -67,13 +67,6 @@ static void AddInclPathsToList(const std::string& FileList, std::list<std::strin
 {
     // to keep things initially simple, if the file can't be opened, just be
     // silent and move on
-    // ideas : we could also require this should be an xml file, with the filenames
-    // specified in an xml structure
-    // we could elaborate this then, to also include the I-paths, ...
-    // basically for everything that makes the command line very long
-    // xml is a bonus then, since we can easily extend it
-    // we need a good parser then -> suggestion : TinyXml
-    // drawback : creates a dependency
     std::ifstream Files(FileList.c_str());
     if (Files)
     {
