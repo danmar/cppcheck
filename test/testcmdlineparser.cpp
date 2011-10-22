@@ -56,6 +56,7 @@ private:
         TEST_CASE(includesbackslash);
         TEST_CASE(includesnospace);
         TEST_CASE(includes2);
+        TEST_CASE(includesFile);
         TEST_CASE(enabledAll);
         TEST_CASE(enabledStyle);
         TEST_CASE(enabledPerformance);
@@ -363,6 +364,16 @@ private:
         ASSERT_EQUALS("include/", settings._includePaths.front());
         settings._includePaths.pop_front();
         ASSERT_EQUALS("framework/", settings._includePaths.front());
+    }
+
+    void includesFile()
+    {
+        // TODO: Fails since cannot open the file
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--includes-file=inclpaths.txt", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(3, argv));
     }
 
     void enabledAll() {
