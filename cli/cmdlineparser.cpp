@@ -63,6 +63,33 @@ static void AddFilesToList(const std::string& FileList, std::vector<std::string>
     }
 }
 
+static void AddInclPathsToList(const std::string& FileList, std::list<std::string>& PathNames)
+{
+    // to keep things initially simple, if the file can't be opened, just be
+    // silent and move on
+    // ideas : we could also require this should be an xml file, with the filenames
+    // specified in an xml structure
+    // we could elaborate this then, to also include the I-paths, ...
+    // basically for everything that makes the command line very long
+    // xml is a bonus then, since we can easily extend it
+    // we need a good parser then -> suggestion : TinyXml
+    // drawback : creates a dependency
+    std::ifstream Files(FileList.c_str());
+    if (Files)
+    {
+        std::string PathName;
+        while (std::getline(Files, PathName)) // next line
+        {
+            if (!PathName.empty())
+            {
+                PathName = Path::fromNativeSeparators(PathName);
+                PathName = Path::removeQuotationMarks(PathName);
+                PathNames.push_back(PathName);
+            }
+        }
+    }
+}
+
 CmdLineParser::CmdLineParser(Settings *settings)
     : _settings(settings)
     , _showHelp(false)
@@ -329,6 +356,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 path += '/';
 
             _settings->_includePaths.push_back(path);
+        }
+        else if (strncmp(argv[i], "--includes-file=", 16) == 0)
+        {
+            // open this file and read every input file (1 file name per line)
+            AddInclPathsToList(16 + argv[i], _settings->_includePaths);
         }
 
         // file list specified
