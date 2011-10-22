@@ -3782,6 +3782,12 @@ private:
             "  std::cout << std::cout.good();\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo() {\n"
+            "  MACRO(std::cout <<, << std::cout)\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
