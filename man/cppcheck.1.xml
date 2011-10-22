@@ -116,6 +116,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>-i&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--inline-suppr</option></arg>
       <arg choice="opt"><option>-j&lt;jobs&gt;</option></arg>
+      <arg choice="opt"><option>--max-configs=&lt;limit&gt;</option></arg>
       <arg choice="opt"><option>--platform=&lt;type&gt;</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--report-progress</option></arg>
@@ -253,7 +254,7 @@ Example: -DDEBUG=1 -D__cplusplus</para>
         <term><option>--force</option></term>
         <listitem>
           <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by
-default.</para>
+default. If used together with --max-ifdefs=, the last option is the one that is effective.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -290,6 +291,13 @@ Directory name is matched to all parts of the path.</para>
         <term><option>-j &lt;jobs&gt;</option></term>
         <listitem>
           <para>Start &lt;jobs&gt; threads to do the checking work.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--max-configs=&lt;limit&gt;</option></term>
+        <listitem>
+          <para>Maximum number of configurations to check in a file before skipping it. Default is 12. If used together with --force, the last option is
+          the one that is effective.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
