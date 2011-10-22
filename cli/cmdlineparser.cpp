@@ -562,19 +562,16 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Set maximum number of #ifdef configurations to check
-        else if (strncmp(argv[i], "--max-configs=", 14) == 0)
-        {
+        else if (strncmp(argv[i], "--max-configs=", 14) == 0) {
             _settings->_force = false;
 
             std::istringstream iss(14+argv[i]);
-            if (!(iss >> _settings->_maxConfigs))
-            {
+            if (!(iss >> _settings->_maxConfigs)) {
                 PrintMessage("cppcheck: argument to '--max-configs=' is not a number");
                 return false;
             }
 
-            if (_settings->_maxConfigs < 1)
-            {
+            if (_settings->_maxConfigs < 1) {
                 PrintMessage("cppcheck: argument to '--max-configs=' must be greater than 0");
                 return false;
             }
@@ -679,8 +676,8 @@ void CmdLineParser::PrintHelp()
               "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
               "                         filename per line. When file is -, the file list will\n"
               "                         be read from standard input.\n"
-              "    -f, --force          Force checking of all configurations in files. If used\n" 
-              "                         together with --max-ifdefs=, the last option is the one\n" 
+              "    -f, --force          Force checking of all configurations in files. If used\n"
+              "                         together with --max-ifdefs=, the last option is the one\n"
               "                         that is effective.\n"
               "    -h, --help           Print this help.\n"
               "    -I <dir>             Give include path. Give several -I parameters to give\n"
@@ -695,7 +692,7 @@ void CmdLineParser::PrintHelp()
               "                         on the lines before the warning to suppress.\n"
               "    -j <jobs>            Start [jobs] threads to do the checking simultaneously.\n"
               "    --max-configs=<limit>\n"
-              "                         Maximum number of configurations to check in a file\n"  
+              "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is 12. If used together\n"
               "                         with --force, the last option is the one that is\n"
               "                         effective.\n"

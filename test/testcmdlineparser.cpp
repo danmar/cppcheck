@@ -548,7 +548,7 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(4, argv));
         ASSERT_EQUALS(12, settings._maxConfigs);
-        ASSERT_EQUALS(false, settings._force);        
+        ASSERT_EQUALS(false, settings._force);
     }
 
     void maxConfigsMissingCount() {
@@ -576,7 +576,7 @@ private:
         CmdLineParser parser(&settings);
         // Fails since limit must be greater than 0
         ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
-	}
+    }
 
     void reportProgressTest() {
         REDIRECT;
