@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="7.00"
 	Name="testrunner"
-	ProjectGUID="{A1772A4C-E3F0-33FC-9A59-2189857FB799}"
+	ProjectGUID="{499B17DA-AB07-38BE-B1CD-F7370CA0E0EE}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -19,7 +19,7 @@
 			UseOfMfc="0">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\cli&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\Qt\VS4.7.0\mkspecs\win32-msvc2008"
+				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\cli&quot;,&quot;..\lib&quot;,&quot;..\externals\tinyxml&quot;,..\..\Qt\VS4.7.3\mkspecs\win32-msvc2008"
 				AdditionalOptions="-Zm200 -w34100 -w34189"
 				AssemblerListingLocation="temp\"
 				BufferSecurityCheck="false"
@@ -28,7 +28,7 @@
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="4"
-				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS"
 				ProgramDataBaseFileName=".\"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -39,8 +39,7 @@
 				Name="VCCustomBuildTool" />
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="shlwapi.lib ../externals\pcre.lib"
-				AdditionalLibraryDirectories="../externals"
+				AdditionalDependencies="shlwapi.lib"
 				GenerateDebugInformation="true"
 				IgnoreImportLibrary="true"
 				LinkTimeCodeGeneration="0"
@@ -61,7 +60,7 @@
 				Name="VCPreLinkEventTool" />
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS,_DEBUG" />
+				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS,_DEBUG" />
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -72,7 +71,7 @@
 			UseOfMfc="0">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\cli&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\Qt\VS4.7.0\mkspecs\win32-msvc2008"
+				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\cli&quot;,&quot;..\lib&quot;,&quot;..\externals\tinyxml&quot;,..\..\Qt\VS4.7.3\mkspecs\win32-msvc2008"
 				AdditionalOptions="-Zm200 -w34100 -w34189"
 				AssemblerListingLocation="temp\"
 				BufferSecurityCheck="false"
@@ -81,7 +80,7 @@
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="2"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS,NDEBUG"
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS,NDEBUG"
 				ProgramDataBaseFileName=".\"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -92,8 +91,7 @@
 				Name="VCCustomBuildTool" />
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="shlwapi.lib ../externals\pcre.lib"
-				AdditionalLibraryDirectories="../externals"
+				AdditionalDependencies="shlwapi.lib"
 				GenerateDebugInformation="false"
 				IgnoreImportLibrary="true"
 				LinkIncremental="1"
@@ -115,7 +113,7 @@
 				Name="VCPreLinkEventTool" />
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS" />
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS" />
 		</Configuration>
 	</Configurations>
 	<Files>
@@ -129,6 +127,8 @@
 				RelativePath="..\lib\checkassignif.cpp" />
 			<File
 				RelativePath="..\lib\checkautovariables.cpp" />
+			<File
+				RelativePath="..\lib\checkboost.cpp" />
 			<File
 				RelativePath="..\lib\checkbufferoverrun.cpp" />
 			<File
@@ -288,6 +288,8 @@
 				RelativePath="..\lib\checkassignif.h" />
 			<File
 				RelativePath="..\lib\checkautovariables.h" />
+			<File
+				RelativePath="..\lib\checkboost.h" />
 			<File
 				RelativePath="..\lib\checkbufferoverrun.h" />
 			<File
