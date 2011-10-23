@@ -366,8 +366,7 @@ private:
         ASSERT_EQUALS("framework/", settings._includePaths.front());
     }
 
-    void includesFile()
-    {
+    void includesFile() {
         // TODO: Fails since cannot open the file
         REDIRECT;
         const char *argv[] = {"cppcheck", "--includes-file=inclpaths.txt", "file.cpp"};
