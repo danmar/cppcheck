@@ -54,10 +54,8 @@ Token::~Token()
 
 }
 
-void Token::str(const std::string &s)
+void Token::update_property_info()
 {
-    _str = s;
-
     if (!_str.empty()) {
         _isName = bool(_str[0] == '_' || std::isalpha(_str[0]));
 
@@ -72,15 +70,27 @@ void Token::str(const std::string &s)
             _isBoolean = true;
         else
             _isBoolean = false;
+    } else {
+        _isName = false;
+        _isNumber = false;
+        _isBoolean = false;
     }
+}
 
+void Token::str(const std::string &s)
+{
+    _str = s;
     _varId = 0;
+
+    update_property_info();
 }
 
 void Token::concatStr(std::string const& b)
 {
     _str.erase(_str.length() - 1);
     _str.append(b.begin() + 1, b.end());
+
+    update_property_info();
 }
 
 std::string Token::strValue() const

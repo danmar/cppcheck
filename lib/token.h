@@ -440,6 +440,10 @@ private:
     unsigned int _fileIndex;
     unsigned int _linenr;
 
+    /** Updates internal property cache like _isName or _isBoolean.
+        Called after any _str() modification. */
+    void update_property_info();
+
     /**
      * A value from 0-100 that provides a rough idea about where in the token
      * list this token is located.
