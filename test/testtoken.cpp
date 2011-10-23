@@ -38,6 +38,7 @@ private:
         TEST_CASE(strValue);
 
         TEST_CASE(deleteLast);
+        TEST_CASE(nextArgument);
 
         TEST_CASE(matchAny);
         TEST_CASE(matchSingleChar);
@@ -127,6 +128,17 @@ private:
         ASSERT_EQUALS(true, tokensBack == tok.next());
         tok.deleteNext();
         ASSERT_EQUALS(true, tokensBack == &tok);
+    }
+
+    void nextArgument() {
+        givenACodeSampleToTokenize example1("foo(1, 2, 3, 4);");
+        ASSERT_EQUALS(true, Token::Match(example1.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
+
+        givenACodeSampleToTokenize example2("foo();");
+        ASSERT_EQUALS(true, example2.tokens()->tokAt(2)->nextArgument() == 0);
+
+        givenACodeSampleToTokenize example3("foo(bar(a, b), 2, 3);");
+        ASSERT_EQUALS(true, Token::Match(example3.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
     }
 
 
