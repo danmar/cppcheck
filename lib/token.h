@@ -48,6 +48,10 @@ public:
 
     void str(const std::string &s);
 
+    /**
+     * Concatenate two strings. "hello" "world" -> "hello world"
+     * Note: Automatically cuts of the last/first character.
+     */
     void concatStr(std::string const& b);
 
     const std::string &str() const {

@@ -48,6 +48,7 @@ private:
         TEST_CASE(matchOr);
 
         TEST_CASE(updateProperties)
+        TEST_CASE(updatePropertiesConcatStr)
         TEST_CASE(isNameGuarantees1)
         TEST_CASE(isNameGuarantees2)
         TEST_CASE(isNameGuarantees3)
@@ -272,6 +273,18 @@ private:
 
         ASSERT_EQUALS(false, tok.isName());
         ASSERT_EQUALS(true, tok.isNumber());
+    }
+
+    void updatePropertiesConcatStr() {
+        Token tok(NULL);
+        tok.str("true");
+
+        ASSERT_EQUALS(true, tok.isBoolean());
+
+        tok.concatStr("123");
+
+        ASSERT_EQUALS(false, tok.isBoolean());
+        ASSERT_EQUALS("tru23", tok.str());
     }
 
     void isNameGuarantees1() {
