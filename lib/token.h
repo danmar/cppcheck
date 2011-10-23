@@ -49,8 +49,8 @@ public:
     void str(const std::string &s);
 
     /**
-     * Concatenate two strings. "hello" "world" -> "hello world"
-     * Note: Automatically cuts of the last/first character.
+     * Concatenate two (quoted) strings. Automatically cuts of the last/first character.
+     * Example: "hello ""world" -> "hello world". Used by the token simplifier.
      */
     void concatStr(std::string const& b);
 
