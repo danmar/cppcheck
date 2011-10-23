@@ -160,39 +160,12 @@ private:
 
         // Check..
         CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.sizeofsizeof();
-        checkOther.sizeofCalculation();
-        checkOther.checkRedundantAssignmentInSwitch();
-        checkOther.checkAssignmentInAssert();
-        checkOther.checkSizeofForArrayParameter();
-        checkOther.checkSizeofForNumericParameter();
-        checkOther.clarifyCondition();
-        checkOther.checkDuplicateIf();
-        checkOther.checkDuplicateBranch();
-        checkOther.checkDuplicateExpression();
-        checkOther.checkBitwiseOnBoolean();
-        checkOther.checkComparisonOfBoolExpressionWithInt();
-        checkOther.checkSuspiciousSemicolon();
+        checkOther.runChecks(&tokenizer, &settings, this);
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
 
-        checkOther.checkZeroDivision();
-        checkOther.checkMathFunctions();
-        checkOther.checkFflushOnInputStream();
-        checkOther.checkSelfAssignment();
-        checkOther.invalidScanf();
-        checkOther.checkCoutCerrMisusage();
-        checkOther.checkMisusedScopedObject();
-        checkOther.checkIncorrectLogicOperator();
-        checkOther.checkCatchExceptionByValue();
-        checkOther.checkMemsetZeroBytes();
-        checkOther.clarifyCalculation();
-        checkOther.checkIncorrectStringCompare();
-        checkOther.checkIncrementBoolean();
-        checkOther.checkComparisonOfBoolWithInt();
-        checkOther.checkDuplicateBreak();
-        checkOther.checkAssignBoolToPointer();
+        checkOther.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
     class SimpleSuppressor: public ErrorLogger {
@@ -2794,14 +2767,14 @@ private:
 
         check("void f(int *p) {\n"
               "    p[0] = 0;\n"
-              "    sizeof(p);\n"
+              "    int unused = sizeof(p);\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    char p[] = \"test\";\n"
-              "    sizeof(p);\n"
+              "    int unused = sizeof(p);\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
