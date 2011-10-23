@@ -50,7 +50,7 @@ void CheckStl::iterators()
     // for (it = foo.begin(); it != bar.end(); ++it)
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Locate an iterator..
-        if (!Token::Match(tok, "%var% = %var% . begin|rbegin ( ) ;|+"))
+        if (!Token::Match(tok, "%var% = %var% . begin|rbegin|cbegin|crbegin ( ) ;|+"))
             continue;
 
         // Get variable ids for both the iterator and container
@@ -77,7 +77,7 @@ void CheckStl::iterators()
                 break;
 
             // Is iterator compared against different container?
-            if (Token::Match(tok2, "%varid% != %var% . end|rend ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId) {
+            if (Token::Match(tok2, "%varid% != %var% . end|rend|cend|crend ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId) {
                 iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
                 tok2 = tok2->tokAt(6);
             }
@@ -454,7 +454,7 @@ void CheckStl::erase()
                     break;
                 }
 
-                if (Token::Match(tok2, "%var% = %var% . begin|rbegin ( ) ; %var% != %var% . end|rend ( )") &&
+                if (Token::Match(tok2, "%var% = %var% . begin|rbegin|cbegin|crbegin ( ) ; %var% != %var% . end|rend|cend|crend ( )") &&
                     tok2->str() == tok2->tokAt(8)->str() &&
                     tok2->tokAt(2)->str() == tok2->tokAt(10)->str()) {
                     EraseCheckLoop::checkScope(this, tok2);
@@ -573,7 +573,7 @@ void CheckStl::pushback()
                 tok2 = tok2->tokAt(2);
             }
 
-            if (Token::Match(tok2, "%varid% = %var% . begin|rbegin ( ) ; %varid% != %var% . end|rend ( ) ; ++| %varid% ++| ) {", iteratorid)) {
+            if (Token::Match(tok2, "%varid% = %var% . begin|rbegin|cbegin|crbegin ( ) ; %varid% != %var% . end|rend|cend|crend ( ) ; ++| %varid% ++| ) {", iteratorid)) {
                 // variable id for the loop iterator
                 const unsigned int varId(tok2->tokAt(2)->varId());
                 if (varId == 0)
@@ -604,7 +604,7 @@ void CheckStl::pushback()
 
             // Assigning iterator..
             if (Token::Match(tok2, "%varid% =", iteratorid)) {
-                if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend ( )")) {
+                if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend|cbegin|cend|crbegin|crend ( )")) {
                     vectorid = tok2->tokAt(2)->varId();
                     tok2 = tok2->tokAt(6);
                 } else {
@@ -914,7 +914,7 @@ void CheckStl::missingComparison()
                 if (tok2->str() == ";")
                     break;
 
-                if (!Token::Match(tok2, "%var% = %var% . begin|rbegin ( ) ; %var% != %var% . end|rend ( ) ; ++| %var% ++| ) {"))
+                if (!Token::Match(tok2, "%var% = %var% . begin|rbegin|cbegin|crbegin ( ) ; %var% != %var% . end|rend|cend|crend ( ) ; ++| %var% ++| ) {"))
                     continue;
 
                 // same iterator name

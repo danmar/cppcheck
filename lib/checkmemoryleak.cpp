@@ -559,6 +559,9 @@ void CheckMemoryLeakInFunction::parse_noreturn()
     noreturn.insert("verr");
     noreturn.insert("errx");
     noreturn.insert("verrx");
+    noreturn.insert("ExitProcess");
+    noreturn.insert("ExitThread");
+    noreturn.insert("pthread_exit");
 
     std::list<Scope>::const_iterator scope;
 

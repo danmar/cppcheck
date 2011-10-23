@@ -115,26 +115,41 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     }
 
     // 2nd parameter..
-    if ((Token::Match(&tok, "%var% ( %any% , %var% ,|)") && tok.tokAt(4)->varId() > 0) ||
-        (value == 0 && Token::Match(&tok, "%var% ( %any% , 0 ,|)"))) {
-        if (functionNames2.find(tok.str()) != functionNames2.end())
-            var.push_back(tok.tokAt(4));
+    if (Token::Match(&tok, "%var% ( %any%")) {
+        const Token* secondParameter = tok.tokAt(2)->nextArgument();
+        if (secondParameter && ((value == 0 && secondParameter->str() == "0") || (Token::Match(secondParameter, "%var%") && secondParameter->varId() > 0)))
+            if (functionNames2.find(tok.str()) != functionNames2.end())
+                var.push_back(tok.tokAt(4));
     }
 
     if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf")) {
         const Token* argListTok = 0; // Points to first va_list argument
         std::string formatString;
         bool scan = Token::Match(&tok, "scanf|sscanf|fscanf");
-        if (Token::Match(&tok, "printf|scanf ( %str% , %any%")) {
+
+        if (Token::Match(&tok, "printf|scanf ( %str%")) {
             formatString = tok.strAt(2);
-            argListTok = tok.tokAt(4);
-        } else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf ( %var% , %str% , %any%")) {
-            formatString = tok.strAt(4);
-            argListTok = tok.tokAt(6);
-        } else if (Token::Match(&tok, "snprintf|fnprintf ( %var% , %any% , %str% , %any%")) {
-            formatString = tok.strAt(6);
-            argListTok = tok.tokAt(8);
+            if (tok.strAt(3) == ",")
+                argListTok = tok.tokAt(4);
+            else
+                argListTok = 0;
+        } else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf ( %any%")) {
+            const Token* formatStringTok = tok.tokAt(2)->nextArgument(); // Find second parameter (format string)
+            if (formatStringTok && Token::Match(formatStringTok, "%str%")) {
+                argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
+                formatString = formatStringTok->str();
+            }
+        } else if (Token::Match(&tok, "snprintf|fnprintf ( %any%")) {
+            const Token* formatStringTok = tok.tokAt(2);
+            for (int i = 0; i < 2 && formatStringTok; i++) {
+                formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
+            }
+            if (formatStringTok && Token::Match(formatStringTok, "%str%")) {
+                argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
+                formatString = formatStringTok->str();
+            }
         }
+
         if (argListTok) {
             bool percent = false;
             for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
@@ -147,18 +162,10 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                         }
                     }
 
-                    for (; argListTok; argListTok = argListTok->next()) { // Find next argument
-                        if (argListTok->str() == "(")
-                            argListTok = argListTok->link();
-                        if (argListTok == 0)
-                            break;
-                        if (argListTok->str() == ",") {
-                            argListTok = argListTok->next();
-                            break;
-                        }
-                    }
+                    argListTok = argListTok->nextArgument(); // Find next argument
                     if (!argListTok)
                         break;
+
                     percent = false;
                 }
             }

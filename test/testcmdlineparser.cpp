@@ -372,7 +372,7 @@ private:
         const char *argv[] = {"cppcheck", "--includes-file=inclpaths.txt", "file.cpp"};
         Settings settings;
         CmdLineParser parser(&settings);
-        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(true, parser.ParseFromArgs(3, argv));
     }
 
     void enabledAll() {

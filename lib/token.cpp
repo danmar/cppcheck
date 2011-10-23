@@ -429,8 +429,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         // Compare the first character of the string for optimization reasons
         // before doing more detailed checks.
-        bool patternUnderstood = false;
         if (p[0] == '%') {
+            bool patternUnderstood = false;
             switch (p[1]) {
             case 'v':
                 // TODO: %var% should match only for
@@ -694,6 +694,19 @@ void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
     // Update _progressValue
     for (Token *tok = srcStart; tok && tok != srcEnd; tok = tok->next())
         tok->_progressValue = newLocation->_progressValue;
+}
+
+const Token* Token::nextArgument() const
+{
+    for (const Token* tok = this; tok; tok = tok->next()) {
+        if (tok->str() == ",")
+            return(tok->next());
+        else if (tok->str() == "(" || tok->str() == "{" || tok->str() == "[")
+            tok = tok->link();
+        else if (tok->str() == ")")
+            return(0);
+    }
+    return(0);
 }
 
 //---------------------------------------------------------------------------

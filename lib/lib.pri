@@ -6,6 +6,7 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}check64bit.h \
            $${BASEPATH}checkassignif.h \
            $${BASEPATH}checkautovariables.h \
+           $${BASEPATH}checkboost.h \
            $${BASEPATH}checkbufferoverrun.h \
            $${BASEPATH}checkclass.h \
            $${BASEPATH}checkexceptionsafety.h \
@@ -35,6 +36,7 @@ HEADERS += $${BASEPATH}check.h \
 SOURCES += $${BASEPATH}check64bit.cpp \
            $${BASEPATH}checkassignif.cpp \
            $${BASEPATH}checkautovariables.cpp \
+           $${BASEPATH}checkboost.cpp \
            $${BASEPATH}checkbufferoverrun.cpp \
            $${BASEPATH}checkclass.cpp \
            $${BASEPATH}checkexceptionsafety.cpp \

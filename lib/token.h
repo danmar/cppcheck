@@ -388,6 +388,12 @@ public:
             tok->_progressValue = count++ * 100 / total_count;
     }
 
+    /**
+     * Returns the first token of the next argument. Does only work on argument
+     * lists. Returns 0, if there is no next argument
+     */
+    const Token* nextArgument() const;
+
 private:
     void next(Token *nextToken) {
         _next = nextToken;

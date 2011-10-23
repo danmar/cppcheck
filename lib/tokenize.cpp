@@ -4680,7 +4680,7 @@ bool Tokenizer::simplifyIfAddBraces()
             continue;
         }
 
-        if (Token::Match(tok, "if|for|while (")) {
+        if (Token::Match(tok, "if|for|while|BOOST_FOREACH (")) {
             // don't add "{}" around ";" in "do {} while();" (#609)
             const Token *prev = tok->previous();
             if (Token::simpleMatch(prev, "} while") &&
@@ -9446,6 +9446,11 @@ void Tokenizer::simplifyOperatorName()
                 if (par && par->isName()) {
                     op += par->str();
                     par = par->next();
+                    // merge namespaces eg. 'operator std :: string () const {'
+                    if (par && par->str() == "::" && par->next() && par->next()->isName()) {
+                        op += par->str();
+                        par = par->next();
+                    }
                     done = false;
                 }
                 if (Token::Match(par, "=|.|++|--|%op%")) {
