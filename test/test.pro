@@ -35,7 +35,7 @@ SOURCES += options.cpp \
            test64bit.cpp \
            testassignif.cpp \
            testautovariables.cpp \
-		   testboost.cpp \
+           testboost.cpp \
            testbufferoverrun.cpp \
            testcharvar.cpp \
            testclass.cpp \
