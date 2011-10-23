@@ -294,6 +294,8 @@ private:
         TEST_CASE(simplifyTypedefFunction7);
         TEST_CASE(simplifyTypedefFunction8);
 
+        TEST_CASE(simplifyOperator1);
+
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
         TEST_CASE(simplify_condition);
@@ -6166,6 +6168,21 @@ private:
                             "void f(f_expand   *(*get_fexp(int))){}\n";
         checkSimplifyTypedef(code);
         ASSERT_EQUALS("", errout.str());  // make sure that there is no internal error
+    }
+
+    void simplifyOperator1() {
+        // #3237 - error merging namespaces with operators
+        const char code[] = "class c {\n"
+                            "public:\n"
+                            "    operator std::string() const;\n"
+                            "    operator string() const;\n"
+                            "};\n";
+        const char expected[] = "class c { "
+                                "public: "
+                                "operatorstd::string ( ) const ; "
+                                "operatorstring ( ) const ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void reverseArraySyntax() {

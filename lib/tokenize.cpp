@@ -9446,6 +9446,11 @@ void Tokenizer::simplifyOperatorName()
                 if (par && par->isName()) {
                     op += par->str();
                     par = par->next();
+                    // merge namespaces eg. 'operator std :: string () const {'
+                    if (par && par->str() == "::" && par->next() && par->next()->isName()) {
+                        op += par->str();
+                        par = par->next();
+                    }
                     done = false;
                 }
                 if (Token::Match(par, "=|.|++|--|%op%")) {
