@@ -61,7 +61,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
             oss << "[" << index[i] << "]";
     }
     oss << " out of bounds";
-    reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str().c_str());
+    reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str());
 }
 
 void CheckBufferOverrun::arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
@@ -79,7 +79,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const std::list<const Token 
             oss << "[" << index[i] << "]";
     }
     oss << " out of bounds";
-    reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str().c_str());
+    reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str());
 }
 
 void CheckBufferOverrun::bufferOverrunError(const Token *tok, const std::string &varnames)
@@ -92,7 +92,7 @@ void CheckBufferOverrun::bufferOverrunError(const Token *tok, const std::string 
     if (!v.empty())
         errmsg += ": " + v;
 
-    reportError(tok, Severity::error, "bufferAccessOutOfBounds",  errmsg);
+    reportError(tok, Severity::error, "bufferAccessOutOfBounds", errmsg);
 }
 
 void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat)
@@ -526,7 +526,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
     // total_size : which parameter in function call takes the total size?
     std::map<std::string, unsigned int> total_size;
 
-    total_size["fgets"] = 2;	// The second argument for fgets can't exceed the total size of the array
+    total_size["fgets"] = 2; // The second argument for fgets can't exceed the total size of the array
     total_size["memcmp"] = 3;
     total_size["memcpy"] = 3;
     total_size["memmove"] = 3;
@@ -1625,58 +1625,25 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigin
     if (size == 0)
         return;
 
-    const Token *end = tok->next()->link();
-
-    // Count the number of tokens in the buffer variable's name
-    int varc = 0;
-    for (const Token *tok1 = tok->tokAt(3); tok1 != end; tok1 = tok1->next()) {
-        if (tok1->str() == ",")
-            break;
-        ++ varc;
-    }
-
     std::list<const Token*> parameters;
-    if (tok->tokAt(5 + varc)->str() == ",") {
-        for (const Token *tok2 = tok->tokAt(5 + varc); tok2 && tok2 != end; tok2 = tok2->next()) {
-            if (Token::Match(tok2, ", %any% [,)]")) {
-                if (Token::Match(tok2->next(), "%str%"))
-                    parameters.push_back(tok2->next());
+    const Token* vaArg = tok->tokAt(2)->nextArgument()->nextArgument();
+    while (vaArg) {
+        if (Token::Match(vaArg, "%any% [,)]")) {
+            if (Token::Match(vaArg, "%str%"))
+                parameters.push_back(vaArg);
 
-                else if (Token::Match(tok2->next(), "%num%"))
-                    parameters.push_back(tok2->next());
+            else if (Token::Match(vaArg, "%num%"))
+                parameters.push_back(vaArg);
 
-                else
-                    parameters.push_back(0);
-            } else {
-                // Parameter is more complex, than just a value or variable. Ignore it for now
-                // and skip to next token.
+            else
                 parameters.push_back(0);
+        } else // Parameter is more complex than just a value or variable. Ignore it for now and skip to next token.
+            parameters.push_back(0);
 
-                // count parentheses for tok3
-                int ind = 0;
-                for (const Token *tok3 = tok2->next(); tok3; tok3 = tok3->next()) {
-                    if (tok3->str() == "(")
-                        ++ind;
-
-                    else if (tok3->str() == ")") {
-                        --ind;
-                        if (ind < 0)
-                            break;
-                    }
-
-                    else if (ind == 0 && tok3->str() == ",") {
-                        tok2 = tok3->previous();
-                        break;
-                    }
-                }
-
-                if (ind < 0)
-                    break;
-            }
-        }
+        vaArg = vaArg->nextArgument();
     }
 
-    MathLib::bigint len = countSprintfLength(tok->tokAt(4 + varc)->strValue(), parameters);
+    MathLib::bigint len = countSprintfLength(tok->tokAt(2)->nextArgument()->strValue(), parameters);
     if (len > size) {
         bufferOverrunError(tok);
     }
