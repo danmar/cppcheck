@@ -1701,11 +1701,14 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
 }
 
 
-std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,int> &defs)
+std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs)
 {
     const std::string path(filePath.substr(0, 1 + filePath.find_last_of("\\/")));
 
+    // current #if indent level.
     unsigned int indent = 0;
+
+    // how deep does the #if match? this can never be bigger than "indent".
     unsigned int indentmatch = 0;
 
     std::ostringstream ostr;
@@ -1739,6 +1742,10 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
             if (indent == indentmatch && defs.find(getdef(line,false)) == defs.end())
                 indentmatch++;
             ++indent;
+        } else if (line.compare(0,4,"#if ") == 0) {
+            if (indent == indentmatch && match_cfg_def(defs, line.substr(4)))
+                indentmatch++;
+            ++indent;
         } else if (line.compare(0,5,"#else") == 0) {
             if (indentmatch == indent)
                 indentmatch = indent - 1;
@@ -1752,16 +1759,12 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
             if (line.compare(0,8,"#define ")==0) {
                 // no value
                 if (line.find_first_of("( ", 8) == std::string::npos)
-                    defs[line.substr(8)] = 1;
+                    defs[line.substr(8)] = "";
 
                 // define value
                 else if (line.find("(") == std::string::npos) {
                     const std::string::size_type pos = line.find(" ", 8);
-                    const std::string val(line.substr(pos + 1));
-                    int i;
-                    std::istringstream istr2(val);
-                    istr2 >> i;
-                    defs[line.substr(8,pos-8)] = i;
+                    defs[line.substr(8,pos-8)] = line.substr(pos+1);
                 }
             }
 

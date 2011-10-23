@@ -2827,13 +2827,13 @@ private:
     void handleIncludes_def() {
         const std::string filePath("test.c");
         const std::list<std::string> includePaths;
-        std::map<std::string,int> defs;
+        std::map<std::string,std::string> defs;
         Preprocessor preprocessor;
 
         // ifdef
         {
             defs.clear();
-            defs["A"] = 1;
+            defs["A"] = "";
             {
                 const std::string code("#ifdef A\n123\n#endif\n");
                 const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
@@ -2848,7 +2848,7 @@ private:
         // ifndef
         {
             defs.clear();
-            defs["A"] = 1;
+            defs["A"] = "";
             {
                 const std::string code("#ifndef A\n123\n#endif\n");
                 const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
@@ -2868,15 +2868,17 @@ private:
             const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
             ASSERT_EQUALS("\n\n123\n\n" "\n\n\n\n", actual);
         }
-        /*
-                // define X 123 - #if
-                {
-                    defs.clear();
-                    const std::string code("#define X 123\n#if X==123\n456\n#endif\n");
-                    const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
-                    ASSERT_EQUALS("\n\n456\n\n", actual);
-                }
-        */
+
+        // define X 123 - #if
+        {
+            defs.clear();
+            const std::string code("#define X 123\n"
+                                   "#if X==123\n"
+                                   "456\n"
+                                   "#endif\n");
+            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+            ASSERT_EQUALS("\n\n456\n\n", actual);
+        }
     }
 };
 
