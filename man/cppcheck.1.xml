@@ -275,7 +275,8 @@ files, this is not needed.</para>
       <varlistentry>
         <term><option>--includes-file=&lt;file&gt;</option></term>
         <listitem>
-          <para>Specify the include paths to check in a text file. Add one include path per line.</para>
+          <para>Specify directory paths to search for included header files in a text file. Add one include path per line. 
+First given path is checked for contained header files first. If paths are relative to source files, this is not needed.</para>
         </listitem>
       </varlistentry>
 
