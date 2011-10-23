@@ -53,6 +53,7 @@ private:
         TEST_CASE(snprintf_with_non_zero_size);
         TEST_CASE(printf_with_invalid_va_argument);
         TEST_CASE(scanf_with_invalid_va_argument);
+        TEST_CASE(nullpointer_in_return);
     }
 
     void check(const char code[], bool inconclusive = false, bool cpp11 = false) {
@@ -175,6 +176,19 @@ private:
             check(code, true);
             ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
         }
+
+        check("int foo(const Token *tok)\n"
+              "{\n"
+              "    while (tok){;}\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(const Token *tok)\n"
+              "{\n"
+              "    while (tok){;}\n"
+              "    char a[2] = {0,0};\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer1() {
@@ -1478,6 +1492,20 @@ private:
               "    sscanf(dummy, \"%d%d\", foo(iVal), iVal);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: iVal\n", errout.str());
+    }
+
+    void nullpointer_in_return() {
+        check("int foo() {\n"
+              "    int* iVal = 0;\n"
+              "    if(g()) iVal = g();\n"
+              "    return iVal[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: iVal\n", errout.str());
+
+        check("int foo(int* iVal) {\n"
+              "    return iVal[0];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
