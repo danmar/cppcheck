@@ -68,13 +68,10 @@ static void AddInclPathsToList(const std::string& FileList, std::list<std::strin
     // to keep things initially simple, if the file can't be opened, just be
     // silent and move on
     std::ifstream Files(FileList.c_str());
-    if (Files)
-    {
+    if (Files) {
         std::string PathName;
-        while (std::getline(Files, PathName)) // next line
-        {
-            if (!PathName.empty())
-            {
+        while (std::getline(Files, PathName)) { // next line
+            if (!PathName.empty()) {
                 PathName = Path::fromNativeSeparators(PathName);
                 PathName = Path::removeQuotationMarks(PathName);
                 PathNames.push_back(PathName);
@@ -349,9 +346,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 path += '/';
 
             _settings->_includePaths.push_back(path);
-        }
-        else if (strncmp(argv[i], "--includes-file=", 16) == 0)
-        {
+        } else if (strncmp(argv[i], "--includes-file=", 16) == 0) {
             // open this file and read every input file (1 file name per line)
             AddInclPathsToList(16 + argv[i], _settings->_includePaths);
         }
@@ -708,8 +703,8 @@ void CmdLineParser::PrintHelp()
               "    -I <dir>             Give include path. Give several -I parameters to give\n"
               "                         several paths. First given path is checked first. If\n"
               "                         paths are relative to source files, this is not needed.\n"
-			  "    --includes-file=<file>\n"
-			  "                         Specify the include paths to check in a text file. Add\n"
+              "    --includes-file=<file>\n"
+              "                         Specify the include paths to check in a text file. Add\n"
               "                         one include path per line.\n"
               "    -i <dir or file>     Give a source file or source file directory to exclude\n"
               "                         from the check. This applies only to source files so\n"
