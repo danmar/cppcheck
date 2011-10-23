@@ -51,6 +51,7 @@ MAN_SOURCE=man/cppcheck.1.xml
 LIBOBJ =      lib/check64bit.o \
               lib/checkassignif.o \
               lib/checkautovariables.o \
+              lib/checkboost.o \
               lib/checkbufferoverrun.o \
               lib/checkclass.o \
               lib/checkexceptionsafety.o \
@@ -88,6 +89,7 @@ TESTOBJ =     test/options.o \
               test/test64bit.o \
               test/testassignif.o \
               test/testautovariables.o \
+              test/testboost.o \
               test/testbufferoverrun.o \
               test/testcharvar.o \
               test/testclass.o \
@@ -180,6 +182,9 @@ lib/checkassignif.o: lib/checkassignif.cpp lib/checkassignif.h lib/check.h lib/t
 
 lib/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkautovariables.o lib/checkautovariables.cpp
+
+lib/checkboost.o: lib/checkboost.cpp lib/checkboost.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkboost.o lib/checkboost.cpp
 
 lib/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/mathlib.h lib/symboldatabase.h lib/executionpath.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkbufferoverrun.o lib/checkbufferoverrun.cpp
@@ -285,6 +290,9 @@ test/testassignif.o: test/testassignif.cpp lib/tokenize.h lib/checkassignif.h li
 
 test/testautovariables.o: test/testautovariables.cpp lib/tokenize.h lib/checkautovariables.h lib/check.h lib/token.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testautovariables.o test/testautovariables.cpp
+
+test/testboost.o: test/testboost.cpp lib/tokenize.h lib/checkboost.h lib/check.h lib/token.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h test/testsuite.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testboost.o test/testboost.cpp
 
 test/testbufferoverrun.o: test/testbufferoverrun.cpp lib/tokenize.h lib/checkbufferoverrun.h lib/check.h lib/token.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/mathlib.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testbufferoverrun.o test/testbufferoverrun.cpp
