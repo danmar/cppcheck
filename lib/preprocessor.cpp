@@ -854,13 +854,44 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    handleIncludes(processedFile, filename, includePaths);
+    if (_settings && _settings->userDefines.compare(0,14,"CPPCHECK-TEST;") == 0) {
+        std::map<std::string, std::string> defs;
 
-    processedFile = replaceIfDefined(processedFile);
+        // TODO: break out this code. There is other similar code.
+        std::string::size_type pos1 = 0;
+        while (pos1 != std::string::npos) {
+            const std::string::size_type pos2 = _settings->userDefines.find_first_of(";=", pos1);
+            const std::string::size_type pos3 = _settings->userDefines.find(";", pos1);
 
-    // Get all possible configurations..
-    if (!_settings || (_settings && _settings->userDefines.empty()))
-        resultConfigurations = getcfgs(processedFile, filename);
+            std::string name, value;
+            if (pos2 == std::string::npos)
+                name = _settings->userDefines.substr(pos1);
+            else
+                name = _settings->userDefines.substr(pos1, pos2 - pos1);
+            if (pos2 != pos3) {
+                if (pos3 == std::string::npos)
+                    value = _settings->userDefines.substr(pos2+1);
+                else
+                    value = _settings->userDefines.substr(pos2+1, pos3 - pos2 - 1);
+            }
+
+            defs[name] = value;
+
+            pos1 = pos3;
+            if (pos1 != std::string::npos)
+                pos1++;
+        }
+
+        processedFile = handleIncludes(processedFile, filename, includePaths, defs);
+    } else {
+        handleIncludes(processedFile, filename, includePaths);
+
+        processedFile = replaceIfDefined(processedFile);
+
+        // Get all possible configurations..
+        if (!_settings || (_settings && _settings->userDefines.empty()))
+            resultConfigurations = getcfgs(processedFile, filename);
+    }
 }
 
 
@@ -1701,12 +1732,19 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
 }
 
 
-std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,int> &defs)
+std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs)
 {
     const std::string path(filePath.substr(0, 1 + filePath.find_last_of("\\/")));
 
+    // current #if indent level.
     unsigned int indent = 0;
+
+    // how deep does the #if match? this can never be bigger than "indent".
     unsigned int indentmatch = 0;
+
+    // has there been a true #if condition at the current indentmatch level?
+    // then no more #elif or #else can be true before the #endif is seen.
+    bool elseIsTrue = true;
 
     std::ostringstream ostr;
     std::istringstream istr(code);
@@ -1728,46 +1766,74 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 continue;
             }
 
-            ostr << "#file " << filename << "\n"
+            ostr << "#file \"" << filename << "\"\n"
                  << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs) << std::endl
                  << "#endfile";
         } else if (line.compare(0,7,"#ifdef ") == 0) {
-            if (indent == indentmatch && defs.find(getdef(line,true)) != defs.end())
+            if (indent == indentmatch && defs.find(getdef(line,true)) != defs.end()) {
+                elseIsTrue = false;
                 indentmatch++;
+            }
             ++indent;
+
+            if (indent == indentmatch + 1)
+                elseIsTrue = true;
         } else if (line.compare(0,8,"#ifndef ") == 0) {
-            if (indent == indentmatch && defs.find(getdef(line,false)) == defs.end())
+            if (indent == indentmatch && defs.find(getdef(line,false)) == defs.end()) {
+                elseIsTrue = false;
                 indentmatch++;
+            }
             ++indent;
-        } else if (line.compare(0,5,"#else") == 0) {
-            if (indentmatch == indent)
-                indentmatch = indent - 1;
-            else if (indentmatch == indent - 1)
-                indentmatch = indent;
+
+            if (indent == indentmatch + 1)
+                elseIsTrue = true;
+        } else if (line.compare(0,4,"#if ") == 0) {
+            if (indent == indentmatch && match_cfg_def(defs, line.substr(4))) {
+                elseIsTrue = false;
+                indentmatch++;
+            }
+            ++indent;
+
+            if (indent == indentmatch + 1)
+                elseIsTrue = true;
+        } else if (line.compare(0,6,"#elif ") == 0 || line.compare(0,5,"#else") == 0) {
+            if (!elseIsTrue) {
+                if (indentmatch == indent)
+                    indentmatch = indent - 1;
+            } else {
+                if (indentmatch == indent)
+                    indentmatch = indent - 1;
+                else if (indentmatch == indent - 1) {
+                    if (line.compare(0,5,"#else")==0 || match_cfg_def(defs,line.substr(6))) {
+                        indentmatch = indent;
+                        elseIsTrue = false;
+                    }
+                }
+            }
         } else if (line == "#endif") {
             --indent;
-            if (indentmatch > indent)
+            if (indentmatch > indent) {
                 indentmatch = indent;
+                elseIsTrue = false;
+            }
         } else if (indentmatch == indent) {
             if (line.compare(0,8,"#define ")==0) {
                 // no value
                 if (line.find_first_of("( ", 8) == std::string::npos)
-                    defs[line.substr(8)] = 1;
+                    defs[line.substr(8)] = "";
 
                 // define value
                 else if (line.find("(") == std::string::npos) {
                     const std::string::size_type pos = line.find(" ", 8);
-                    const std::string val(line.substr(pos + 1));
-                    int i;
-                    std::istringstream istr2(val);
-                    istr2 >> i;
-                    defs[line.substr(8,pos-8)] = i;
+                    defs[line.substr(8,pos-8)] = line.substr(pos+1);
                 }
             }
 
-            else {
-                ostr << line;
+            else if (line.compare(0,7,"#undef ") == 0) {
+                defs.erase(line.substr(7));
             }
+
+            ostr << line;
         }
 
         // A line has been read..

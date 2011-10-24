@@ -728,33 +728,33 @@ private:
     /** Token list */
     Token *_tokens, *_tokensBack;
 
-    /** sizeof information for known types */
-    std::map<std::string, unsigned int> _typeSize;
-
-    /** filenames for the tokenized source code (source + included) */
-    std::vector<std::string> _files;
-
     /** settings */
     const Settings * _settings;
 
     /** errorlogger */
     ErrorLogger * const _errorLogger;
 
+    /** Symbol database that all checks etc can use */
+    mutable SymbolDatabase *_symbolDatabase;
+
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */
     std::string _configuration;
+
+    /** sizeof information for known types */
+    std::map<std::string, unsigned int> _typeSize;
+
+    /** filenames for the tokenized source code (source + included) */
+    std::vector<std::string> _files;
+
+    /** variable count */
+    unsigned int _varId;
 
     /**
      * was there any templates? templates that are "unused" are
      * removed from the token list
      */
     bool _codeWithTemplates;
-
-    /** Symbol database that all checks etc can use */
-    mutable SymbolDatabase *_symbolDatabase;
-
-    /** variable count */
-    unsigned int _varId;
 };
 
 /// @}

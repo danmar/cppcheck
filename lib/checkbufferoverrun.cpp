@@ -107,10 +107,10 @@ void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std:
                     "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
 }
 
-void CheckBufferOverrun::possibleReadlinkBufferOverrunError(const Token* tok, const std::string &varname)
+void CheckBufferOverrun::possibleReadlinkBufferOverrunError(const Token* tok, const std::string &funcname, const std::string &varname)
 {
-    const std::string errmsg = "readlink() might return the full size of '" + varname + "'. Lower the supplied size by one.\n"
-                               "readlink() might return the full size of '" + varname + "'. Lower the supplied size by one. "
+    const std::string errmsg = funcname + "() might return the full size of '" + varname + "'. Lower the supplied size by one.\n" +
+                               funcname + "() might return the full size of '" + varname + "'. Lower the supplied size by one. "
                                "If a " + varname + "[len] = '\\0'; statement follows, it will overrun the buffer.";
 
     reportInconclusiveError(tok, Severity::warning, "possibleReadlinkBufferOverrun", errmsg);
@@ -1192,29 +1192,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 outOfBoundsError(tok->tokAt(4), "snprintf size", true, n, total_size);
         }
 
-        // readlink()
-        if (_settings->standards.posix && Token::Match(tok, "readlink ( %any% , %varid% , %num% )", arrayInfo.varid())) {
-            const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6));
-            if (total_size > 0 && n > total_size)
-                outOfBoundsError(tok->tokAt(4), "readlink() buf size", true, n, total_size);
-
-            if (_settings->inconclusive) {
-                // readlink() never terminates the buffer, check the end of the scope for buffer termination.
-                bool found_termination = false;
-                const Token *scope_end = scope_begin->link();
-                for (const Token *tok2 = tok->tokAt(8); tok2 && tok2 != scope_end; tok2 = tok2->next()) {
-                    if (Token::Match(tok2, "%varid% [ %any% ] = 0 ;", tok->tokAt(4)->varId())) {
-                        found_termination = true;
-                        break;
-                    }
-                }
-
-                if (!found_termination) {
-                    bufferNotZeroTerminatedError(tok, tok->tokAt(4)->str(), "readlink");
-                } else if (n == total_size) {
-                    possibleReadlinkBufferOverrunError(tok, tok->tokAt(4)->str());
-                }
-            }
+        // readlink() / readlinkat() buffer usage
+        if (_settings->standards.posix) {
+            if (Token::Match(tok, "readlink ( %any% , %varid% , %num% )", arrayInfo.varid()))
+                checkReadlinkBufferUsage(tok, scope_begin, total_size, false);
+            else if (Token::Match(tok, "readlinkat ( %any , %any% , %varid% , %num% )", arrayInfo.varid()))
+                checkReadlinkBufferUsage(tok, scope_begin, total_size, true);
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
@@ -1227,6 +1210,34 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
     }
 }
 
+void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* tok, const Token *scope_begin, const MathLib::bigint total_size, const bool is_readlinkat)
+{
+    unsigned int param_offset = is_readlinkat ? 2 : 0;
+    const std::string funcname = is_readlinkat ? "readlinkat" : "readlink";
+
+    const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6 + param_offset));
+    if (total_size > 0 && n > total_size)
+        outOfBoundsError(tok->tokAt(4 + param_offset), funcname + "() buf size", true, n, total_size);
+
+    if (!_settings->inconclusive)
+        return;
+
+    // readlink()/readlinkat() never terminates the buffer, check the end of the scope for buffer termination.
+    bool found_termination = false;
+    const Token *scope_end = scope_begin->link();
+    for (const Token *tok2 = tok->tokAt(8 + param_offset); tok2 && tok2 != scope_end; tok2 = tok2->next()) {
+        if (Token::Match(tok2, "%varid% [ %any% ] = 0 ;", tok->tokAt(4 + param_offset)->varId())) {
+            found_termination = true;
+            break;
+        }
+    }
+
+    if (!found_termination) {
+        bufferNotZeroTerminatedError(tok, tok->tokAt(4 + param_offset)->str(), funcname);
+    } else if (n == total_size) {
+        possibleReadlinkBufferOverrunError(tok, funcname, tok->tokAt(4 + param_offset)->str());
+    }
+}
 
 //---------------------------------------------------------------------------
 // Checking local variables in a scope
