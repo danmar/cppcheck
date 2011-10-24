@@ -13,5 +13,5 @@ mv doxyoutput/html devinfo/doxyoutput
 # Detect duplicate code..
 ~/pmd-4.2.5/bin/cpd.sh lib/ > devinfo/cpd.txt
 
-#scp -r devinfo/ hyd_danmar,cppcheck@web.sourceforge.net:/home/groups/c/cp/cppcheck/htdocs
+#scp -r devinfo/ danielmarjamaki,cppcheck@web.sourceforge.net:/home/groups/c/cp/cppcheck/htdocs
 
