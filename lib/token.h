@@ -428,7 +428,10 @@ private:
     static int firstWordLen(const char *str);
 
 
-    std::string _str;
+    Token *_next;
+    Token *_previous;
+    Token *_link;
+
     bool _isName;
     bool _isNumber;
     bool _isBoolean;
@@ -438,9 +441,6 @@ private:
     bool _isLong;
     bool _isUnused;
     unsigned int _varId;
-    Token *_next;
-    Token *_previous;
-    Token *_link;
     unsigned int _fileIndex;
     unsigned int _linenr;
 
@@ -453,6 +453,8 @@ private:
      * list this token is located.
      */
     unsigned int _progressValue;
+
+    std::string _str;
 };
 
 /// @}

@@ -30,7 +30,9 @@
 
 Token::Token(Token **t) :
     tokensBack(t),
-    _str(""),
+    _next(0),
+    _previous(0),
+    _link(0),
     _isName(false),
     _isNumber(false),
     _isBoolean(false),
@@ -40,12 +42,10 @@ Token::Token(Token **t) :
     _isLong(false),
     _isUnused(false),
     _varId(0),
-    _next(0),
-    _previous(0),
-    _link(0),
     _fileIndex(0),
     _linenr(0),
-    _progressValue(0)
+    _progressValue(0),
+    _str("")
 {
 }
 
