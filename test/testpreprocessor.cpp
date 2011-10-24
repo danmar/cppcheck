@@ -2869,7 +2869,7 @@ private:
             ASSERT_EQUALS("\n\n123\n\n" "\n\n\n\n", actual);
         }
 
-        // define X 123 - #if
+        // #define => #if
         {
             defs.clear();
             const std::string code("#define X 123\n"
@@ -2878,6 +2878,19 @@ private:
                                    "#endif\n");
             const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
             ASSERT_EQUALS("\n\n456\n\n", actual);
+        }
+
+        // #elif
+        {
+            defs.clear();
+            defs["B"] = "";
+            const std::string code("#if defined(A)\n"
+                                   "123\n"
+                                   "#elif defined(B)\n"
+                                   "456\n"
+                                   "#endif");
+            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+            ASSERT_EQUALS("\n\n\n456\n\n", actual);
         }
     }
 };

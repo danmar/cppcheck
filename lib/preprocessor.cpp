@@ -1746,6 +1746,11 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
             if (indent == indentmatch && match_cfg_def(defs, line.substr(4)))
                 indentmatch++;
             ++indent;
+        } else if (line.compare(0,6,"#elif ") == 0) {
+            if (indentmatch == indent)
+                indentmatch = indent - 1;  // TODO: Make sure all remaining #elif and #else are skipped
+            else if (indentmatch == indent - 1 && match_cfg_def(defs, line.substr(6)))
+                indentmatch = indent;
         } else if (line.compare(0,5,"#else") == 0) {
             if (indentmatch == indent)
                 indentmatch = indent - 1;
