@@ -195,6 +195,9 @@ public:
     /** Helper function used when parsing for-loops */
     void parse_for_body(const Token *tok2, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value);
 
+    /** Check readlink or readlinkat() buffer usage */
+    void checkReadlinkBufferUsage(const Token *tok, const Token *scope_begin, const MathLib::bigint total_size, const bool is_readlinkat);
+
     /**
      * Helper function for checkFunctionCall - check a function parameter
      * \param tok token for the function name
@@ -223,7 +226,7 @@ public:
     void pointerOutOfBoundsError(const Token *tok, const std::string &object);	// UB when result of calculation is out of bounds
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
-    void possibleReadlinkBufferOverrunError(const Token *tok, const std::string &varname);
+    void possibleReadlinkBufferOverrunError(const Token *tok, const std::string &funcname, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckBufferOverrun c(0, settings, errorLogger);
@@ -241,7 +244,7 @@ public:
         c.pointerOutOfBoundsError(0, "array");
         c.arrayIndexThenCheckError(0, "index");
         c.possibleBufferOverrunError(0, "source", "destination", false);
-        c.possibleReadlinkBufferOverrunError(0, "buffer");
+        c.possibleReadlinkBufferOverrunError(0, "readlink", "buffer");
     }
 
     std::string myName() const {
