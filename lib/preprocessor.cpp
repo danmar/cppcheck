@@ -854,13 +854,44 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    handleIncludes(processedFile, filename, includePaths);
+    if (_settings && _settings->userDefines.compare(0,14,"CPPCHECK-TEST;") == 0) {
+        std::map<std::string, std::string> defs;
 
-    processedFile = replaceIfDefined(processedFile);
+        // TODO: break out this code. There is other similar code.
+        std::string::size_type pos1 = 0;
+        while (pos1 != std::string::npos) {
+            const std::string::size_type pos2 = _settings->userDefines.find_first_of(";=", pos1);
+            const std::string::size_type pos3 = _settings->userDefines.find(";", pos1);
 
-    // Get all possible configurations..
-    if (!_settings || (_settings && _settings->userDefines.empty()))
-        resultConfigurations = getcfgs(processedFile, filename);
+            std::string name, value;
+            if (pos2 == std::string::npos)
+                name = _settings->userDefines.substr(pos1);
+            else
+                name = _settings->userDefines.substr(pos1, pos2 - pos1);
+            if (pos2 != pos3) {
+                if (pos3 == std::string::npos)
+                    value = _settings->userDefines.substr(pos2+1);
+                else
+                    value = _settings->userDefines.substr(pos2+1, pos3 - pos2 - 1);
+            }
+
+            defs[name] = value;
+
+            pos1 = pos3;
+            if (pos1 != std::string::npos)
+                pos1++;
+        }
+
+        processedFile = handleIncludes(processedFile, filename, includePaths, defs);
+    } else {
+        handleIncludes(processedFile, filename, includePaths);
+
+        processedFile = replaceIfDefined(processedFile);
+
+        // Get all possible configurations..
+        if (!_settings || (_settings && _settings->userDefines.empty()))
+            resultConfigurations = getcfgs(processedFile, filename);
+    }
 }
 
 
@@ -1735,7 +1766,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 continue;
             }
 
-            ostr << "#file " << filename << "\n"
+            ostr << "#file \"" << filename << "\"\n"
                  << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs) << std::endl
                  << "#endfile";
         } else if (line.compare(0,7,"#ifdef ") == 0) {
@@ -1802,9 +1833,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 defs.erase(line.substr(7));
             }
 
-            else {
-                ostr << line;
-            }
+            ostr << line;
         }
 
         // A line has been read..
