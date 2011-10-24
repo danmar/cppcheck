@@ -111,6 +111,8 @@ private:
 
         TEST_CASE(autoPointer);
 
+        TEST_CASE(uselessCalls);
+
     }
 
     void check(const std::string &code) {
@@ -1187,7 +1189,7 @@ private:
     }
 
     void redundantCondition1() {
-        check("void f()\n"
+        check("void f(string haystack)\n"
               "{\n"
               "    if (haystack.find(needle) != haystack.end())\n"
               "        haystack.remove(needle);"
@@ -1211,7 +1213,7 @@ private:
     }
 
     void redundantCondition2() {
-        check("void f()\n"
+        check("void f(string haystack)\n"
               "{\n"
               "    if (haystack.find(needle) != haystack.end())\n"
               "    {\n"
@@ -1437,7 +1439,47 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void uselessCalls() {
+        check("void f()\n"
+              "{\n"
+              "    string s1, s2;\n"
+              "    s1.swap(s2);\n"
+              "    s2.swap(s2);\n"
+              "    \n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Function \'swap\' useless call. Using 'swap' function "
+                      "from \'s2\' against itself doesn't make any changes.\n", errout.str());
 
+        check("void f()\n"
+              "{\n"
+              "    string s1, s2;\n"
+              "    s1.compare(s2);\n"
+              "    s2.compare(s2);\n"
+              "    s1.compare(s2.c_str());\n"
+              "    s1.compare(0, s1.size(), s1);\n"
+              "    \n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Function 'compare' useless call. The variable 's2' is using "
+                      "function \'compare\' against itself. Return of this function depends only on the position.\n"
+                      "[test.cpp:7]: (warning) Function 'compare' useless call. The variable 's1' is using "
+                      "function \'compare\' against itself. Return of this function depends only on the position.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int x=1;\n"
+              "    string s1, s2;\n"
+              "    s1 = s1.substr();\n"
+              "    s2 = s1.substr(x);\n"
+              "    s1 = s2.substr(0, x);\n"
+              "	   s1 = s2.substr(0,std::string::npos);\n"
+              "    \n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Function \'substr\' useless call. Function create copy "
+                      "of the \'s1\' object.\n"
+                      "[test.cpp:8]: (performance) Function \'substr\' useless call. Function create copy "
+                      "of the \'s2\' object.\n",errout.str());
+
+    }
 };
 
 REGISTER_TEST(TestStl)

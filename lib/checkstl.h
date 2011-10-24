@@ -55,6 +55,7 @@ public:
         checkStl.if_find();
         checkStl.string_c_str();
         checkStl.checkAutoPointer();
+        checkStl.uselessCalls();
 
         // Style check
         checkStl.size();
@@ -137,6 +138,10 @@ public:
     /** @brief %Check for use and copy auto pointer */
     void checkAutoPointer();
 
+    /** @brief %Check calls that using them is useless */
+    void uselessCalls();
+
+
 
 private:
 
@@ -162,6 +167,10 @@ private:
     void autoPointerContainerError(const Token *tok);
     void autoPointerArrayError(const Token *tok);
 
+    void uselessCallsReturnValueError(const Token *tok, const Token *function);
+    void uselessCallsSwapError(const Token *tok);
+    void uselessCallsSubstrError(const Token *tok);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckStl c(0, settings, errorLogger);
         c.invalidIteratorError(0, "iterator");
@@ -181,6 +190,9 @@ private:
         c.autoPointerError(0);
         c.autoPointerContainerError(0);
         c.autoPointerArrayError(0);
+        c.uselessCallsReturnValueError(0, 0);
+        c.uselessCallsSwapError(0);
+        c.uselessCallsSubstrError(0);
     }
 
     std::string myName() const {
@@ -198,7 +210,8 @@ private:
                "* suspicious condition when using find\n"
                "* redundant condition\n"
                "* common mistakes when using string::c_str()\n"
-               "* using auto pointer (auto_ptr)";
+               "* using auto pointer (auto_ptr)\n"
+               "* useless calls of string functions";
     }
 
     bool isStlContainer(unsigned int varid);
