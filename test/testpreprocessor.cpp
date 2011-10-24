@@ -2866,7 +2866,7 @@ private:
             const std::string code("#ifndef X\n#define X\n123\n#endif\n"
                                    "#ifndef X\n#define X\n123\n#endif\n");
             const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
-            ASSERT_EQUALS("\n\n123\n\n" "\n\n\n\n", actual);
+            ASSERT_EQUALS("\n#define X\n123\n\n" "\n\n\n\n", actual);
         }
 
         // #define => #if
@@ -2877,7 +2877,7 @@ private:
                                    "456\n"
                                    "#endif\n");
             const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
-            ASSERT_EQUALS("\n\n456\n\n", actual);
+            ASSERT_EQUALS("#define X 123\n\n456\n\n", actual);
         }
 
         // #elif
@@ -2926,7 +2926,7 @@ private:
             defs.clear();
             const std::string actual(preprocessor.handleIncludes(code + "#undef X\n" + code, filePath, includePaths, defs));
 
-            ASSERT_EQUALS(actual1 + "\n" + actual1, actual);
+            ASSERT_EQUALS(actual1 + "#undef X\n" + actual1, actual);
         }
     }
 };
