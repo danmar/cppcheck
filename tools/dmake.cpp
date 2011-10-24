@@ -231,7 +231,7 @@ int main(int argc, char **argv)
                                 "-Wredundant-decls "
                                 "-Wshadow "
                                 "-Wsign-promo "
-                                "-Wunreachable-code "
+//                                "-Wunreachable-code "
 //                                "-Wsign-conversion "
 //                                "-Wconversion "
                                 "-D_GLIBCXX_DEBUG "
