@@ -1711,6 +1711,10 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
     // how deep does the #if match? this can never be bigger than "indent".
     unsigned int indentmatch = 0;
 
+    // has there been a true #if condition at the current indentmatch level?
+    // then no more #elif or #else can be true before the #endif is seen.
+    bool elseIsTrue = true;
+
     std::ostringstream ostr;
     std::istringstream istr(code);
     std::string line;
@@ -1735,31 +1739,52 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                  << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs) << std::endl
                  << "#endfile";
         } else if (line.compare(0,7,"#ifdef ") == 0) {
-            if (indent == indentmatch && defs.find(getdef(line,true)) != defs.end())
+            if (indent == indentmatch && defs.find(getdef(line,true)) != defs.end()) {
+                elseIsTrue = false;
                 indentmatch++;
+            }
             ++indent;
+
+            if (indent == indentmatch + 1)
+                elseIsTrue = true;
         } else if (line.compare(0,8,"#ifndef ") == 0) {
-            if (indent == indentmatch && defs.find(getdef(line,false)) == defs.end())
+            if (indent == indentmatch && defs.find(getdef(line,false)) == defs.end()) {
+                elseIsTrue = false;
                 indentmatch++;
+            }
             ++indent;
+
+            if (indent == indentmatch + 1)
+                elseIsTrue = true;
         } else if (line.compare(0,4,"#if ") == 0) {
-            if (indent == indentmatch && match_cfg_def(defs, line.substr(4)))
+            if (indent == indentmatch && match_cfg_def(defs, line.substr(4))) {
+                elseIsTrue = false;
                 indentmatch++;
+            }
             ++indent;
-        } else if (line.compare(0,6,"#elif ") == 0) {
-            if (indentmatch == indent)
-                indentmatch = indent - 1;  // TODO: Make sure all remaining #elif and #else are skipped
-            else if (indentmatch == indent - 1 && match_cfg_def(defs, line.substr(6)))
-                indentmatch = indent;
-        } else if (line.compare(0,5,"#else") == 0) {
-            if (indentmatch == indent)
-                indentmatch = indent - 1;
-            else if (indentmatch == indent - 1)
-                indentmatch = indent;
+
+            if (indent == indentmatch + 1)
+                elseIsTrue = true;
+        } else if (line.compare(0,6,"#elif ") == 0 || line.compare(0,5,"#else") == 0) {
+            if (!elseIsTrue) {
+                if (indentmatch == indent)
+                    indentmatch = indent - 1;
+            } else {
+                if (indentmatch == indent)
+                    indentmatch = indent - 1;
+                else if (indentmatch == indent - 1) {
+                    if (line.compare(0,5,"#else")==0 || match_cfg_def(defs,line.substr(6))) {
+                        indentmatch = indent;
+                        elseIsTrue = false;
+                    }
+                }
+            }
         } else if (line == "#endif") {
             --indent;
-            if (indentmatch > indent)
+            if (indentmatch > indent) {
                 indentmatch = indent;
+                elseIsTrue = false;
+            }
         } else if (indentmatch == indent) {
             if (line.compare(0,8,"#define ")==0) {
                 // no value

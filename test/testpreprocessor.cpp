@@ -2882,15 +2882,35 @@ private:
 
         // #elif
         {
-            defs.clear();
-            defs["B"] = "";
             const std::string code("#if defined(A)\n"
-                                   "123\n"
+                                   "1\n"
                                    "#elif defined(B)\n"
-                                   "456\n"
+                                   "2\n"
+                                   "#elif defined(C)\n"
+                                   "3\n"
+                                   "#else\n"
+                                   "4\n"
                                    "#endif");
-            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
-            ASSERT_EQUALS("\n\n\n456\n\n", actual);
+            {
+                defs.clear();
+                defs["A"] = "";
+                defs["C"] = "";
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n1\n\n\n\n\n\n\n\n", actual);
+            }
+
+            {
+                defs.clear();
+                defs["B"] = "";
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n\n\n2\n\n\n\n\n\n", actual);
+            }
+
+            {
+                defs.clear();
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n\n\n\n\n\n\n4\n\n", actual);
+            }
         }
     }
 };
