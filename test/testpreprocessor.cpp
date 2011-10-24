@@ -2912,6 +2912,22 @@ private:
                 ASSERT_EQUALS("\n\n\n\n\n\n\n4\n\n", actual);
             }
         }
+
+        // #undef
+        {
+            const std::string code("#ifndef X\n"
+                                   "#define X\n"
+                                   "123\n"
+                                   "#endif\n");
+
+            defs.clear();
+            const std::string actual1(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+
+            defs.clear();
+            const std::string actual(preprocessor.handleIncludes(code + "#undef X\n" + code, filePath, includePaths, defs));
+
+            ASSERT_EQUALS(actual1 + "\n" + actual1, actual);
+        }
     }
 };
 

@@ -1798,6 +1798,10 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 }
             }
 
+            else if (line.compare(0,7,"#undef ") == 0) {
+                defs.erase(line.substr(7));
+            }
+
             else {
                 ostr << line;
             }
