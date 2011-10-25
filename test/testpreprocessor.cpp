@@ -2828,7 +2828,7 @@ private:
         const std::string filePath("test.c");
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor(NULL, this);
 
         // ifdef
         {
@@ -2927,6 +2927,24 @@ private:
             const std::string actual(preprocessor.handleIncludes(code + "#undef X\n" + code, filePath, includePaths, defs));
 
             ASSERT_EQUALS(actual1 + "#undef X\n" + actual1, actual);
+        }
+
+        // missing include
+        {
+            errout.str("");
+            const std::string code("#include \"missing.h\"");
+            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+            ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing.h\" not found.\n", errout.str());
+        }
+
+        // #error
+        {
+            errout.str("");
+            defs.clear();
+            const std::string code("#ifndef X\n#error abc\n#endif");
+            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+            ASSERT_EQUALS("\n#error abc\n\n", actual);
+            ASSERT_EQUALS("[test.c:2]: (error) abc\n", errout.str());
         }
     }
 };

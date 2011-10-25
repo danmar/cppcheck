@@ -1838,6 +1838,10 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 defs.erase(line.substr(7));
             }
 
+            else if (line.compare(0,7,"#error ") == 0) {
+                error(filePath, linenr, line.substr(7));
+            }
+
             ostr << line;
         }
 
