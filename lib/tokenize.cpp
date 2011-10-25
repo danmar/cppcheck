@@ -42,41 +42,28 @@
 
 //---------------------------------------------------------------------------
 
-Tokenizer::Tokenizer()
-    : _settings(0), _errorLogger(0)
+Tokenizer::Tokenizer() :
+    _tokens(0), //no tokens to start with
+    _tokensBack(0),
+    _settings(0),
+    _errorLogger(0),
+    _symbolDatabase(0),
+    _varId(0),
+    _codeWithTemplates(false) //is there any templates?
 {
-    // No tokens to start with
-    _tokens = 0;
-    _tokensBack = 0;
-
-    // is there any templates?
-    _codeWithTemplates = false;
-
-    // symbol database
-    _symbolDatabase = NULL;
-
-    // variable count
-    _varId = 0;
 }
 
-Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
-    : _settings(settings), _errorLogger(errorLogger)
+Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
+    _tokens(0), //no tokens to start with
+    _tokensBack(0),
+    _settings(settings),
+    _errorLogger(errorLogger),
+    _symbolDatabase(0),
+    _varId(0),
+    _codeWithTemplates(false) //is there any templates?
 {
     // make sure settings are specified
     assert(_settings);
-
-    // No tokens to start with
-    _tokens = 0;
-    _tokensBack = 0;
-
-    // is there any templates?
-    _codeWithTemplates = false;
-
-    // symbol database
-    _symbolDatabase = NULL;
-
-    // variable count
-    _varId = 0;
 }
 
 Tokenizer::~Tokenizer()
@@ -738,9 +725,9 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 }
 
 struct Space {
-    bool isNamespace;
     std::string className;
     const Token * classEnd;
+    bool isNamespace;
 };
 
 static Token *splitDefinitionFromTypedef(Token *tok)

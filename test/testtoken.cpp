@@ -46,6 +46,14 @@ private:
         TEST_CASE(matchNumeric);
         TEST_CASE(matchBoolean);
         TEST_CASE(matchOr);
+
+        TEST_CASE(updateProperties)
+        TEST_CASE(updatePropertiesConcatStr)
+        TEST_CASE(isNameGuarantees1)
+        TEST_CASE(isNameGuarantees2)
+        TEST_CASE(isNameGuarantees3)
+        TEST_CASE(isNameGuarantees4)
+        TEST_CASE(isNameGuarantees5)
     }
 
     void nextprevious() {
@@ -252,6 +260,63 @@ private:
     void matchOp() {
         givenACodeSampleToTokenize op("+");
         ASSERT_EQUALS(true, Token::Match(op.tokens(), "%op%"));
+    }
+
+    void updateProperties() {
+        Token tok(NULL);
+        tok.str("foobar");
+
+        ASSERT_EQUALS(true, tok.isName());
+        ASSERT_EQUALS(false, tok.isNumber());
+
+        tok.str("123456");
+
+        ASSERT_EQUALS(false, tok.isName());
+        ASSERT_EQUALS(true, tok.isNumber());
+    }
+
+    void updatePropertiesConcatStr() {
+        Token tok(NULL);
+        tok.str("true");
+
+        ASSERT_EQUALS(true, tok.isBoolean());
+
+        tok.concatStr("123");
+
+        ASSERT_EQUALS(false, tok.isBoolean());
+        ASSERT_EQUALS("tru23", tok.str());
+    }
+
+    void isNameGuarantees1() {
+        Token tok(NULL);
+        tok.str("Name");
+        ASSERT_EQUALS(true, tok.isName());
+    }
+
+    void isNameGuarantees2() {
+        Token tok(NULL);
+        tok.str("_name");
+        ASSERT_EQUALS(true, tok.isName());
+    }
+
+    void isNameGuarantees3() {
+        Token tok(NULL);
+        tok.str("_123");
+        ASSERT_EQUALS(true, tok.isName());
+    }
+
+    void isNameGuarantees4() {
+        Token tok(NULL);
+        tok.str("123456");
+        ASSERT_EQUALS(false, tok.isName());
+        ASSERT_EQUALS(true, tok.isNumber());
+    }
+
+    void isNameGuarantees5() {
+        Token tok(NULL);
+        tok.str("a123456");
+        ASSERT_EQUALS(true, tok.isName());
+        ASSERT_EQUALS(false, tok.isNumber());
     }
 };
 

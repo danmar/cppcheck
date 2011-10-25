@@ -217,7 +217,7 @@ public:
      * @param defs defines (only values)
      * \return resulting string
      */
-    std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,int> &defs);
+    std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs);
 
 private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, bool userheader);

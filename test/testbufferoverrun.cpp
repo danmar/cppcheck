@@ -236,6 +236,7 @@ private:
 
         TEST_CASE(bufferNotZeroTerminated);
         TEST_CASE(readlink);
+        TEST_CASE(readlinkat);
     }
 
 
@@ -3473,6 +3474,56 @@ private:
               "{\n"
               "    char buf[255];\n"
               "    ssize_t len = readlink(path, buf, sizeof(buf)-1);\n"
+              "    if (len == -1) {\n"
+              "        return;\n"
+              "    }\n"
+              "    buf[len] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void readlinkat() {
+        check("void f()\n"
+              "{\n"
+              "    int dirfd = 42;\n"
+              "    char buf[255];\n"
+              "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf)-1);\n"
+              "    printf(\"%s\n\", buf);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) The buffer 'buf' is not zero-terminated after the call to readlinkat().\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int dirfd = 42;\n"
+              "    char buf[255];\n"
+              "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf)-1);\n"
+              "    buf[len] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int dirfd = 42;\n"
+              "    char buf[10];\n"
+              "    ssize_t len = readlinkat(dirf, path, buf, 255);\n"
+              "    buf[len] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) readlinkat() buf size is out of bounds: Supplied size 255 is larger than actual size of 10\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int dirfd = 42;\n"
+              "    char buf[255];\n"
+              "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf));\n"
+              "    buf[len] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) readlinkat() might return the full size of 'buf'. Lower the supplied size by one.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int dirfd = 42;\n"
+              "    char buf[255];\n"
+              "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf)-1);\n"
               "    if (len == -1) {\n"
               "        return;\n"
               "    }\n"

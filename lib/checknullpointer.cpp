@@ -119,7 +119,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         const Token* secondParameter = tok.tokAt(2)->nextArgument();
         if (secondParameter && ((value == 0 && secondParameter->str() == "0") || (Token::Match(secondParameter, "%var%") && secondParameter->varId() > 0)))
             if (functionNames2.find(tok.str()) != functionNames2.end())
-                var.push_back(tok.tokAt(4));
+                var.push_back(secondParameter);
     }
 
     if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf")) {

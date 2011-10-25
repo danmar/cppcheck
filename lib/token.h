@@ -48,6 +48,10 @@ public:
 
     void str(const std::string &s);
 
+    /**
+     * Concatenate two (quoted) strings. Automatically cuts of the last/first character.
+     * Example: "hello ""world" -> "hello world". Used by the token simplifier.
+     */
     void concatStr(std::string const& b);
 
     const std::string &str() const {
@@ -424,7 +428,10 @@ private:
     static int firstWordLen(const char *str);
 
 
-    std::string _str;
+    Token *_next;
+    Token *_previous;
+    Token *_link;
+
     bool _isName;
     bool _isNumber;
     bool _isBoolean;
@@ -434,17 +441,20 @@ private:
     bool _isLong;
     bool _isUnused;
     unsigned int _varId;
-    Token *_next;
-    Token *_previous;
-    Token *_link;
     unsigned int _fileIndex;
     unsigned int _linenr;
+
+    /** Updates internal property cache like _isName or _isBoolean.
+        Called after any _str() modification. */
+    void update_property_info();
 
     /**
      * A value from 0-100 that provides a rough idea about where in the token
      * list this token is located.
      */
     unsigned int _progressValue;
+
+    std::string _str;
 };
 
 /// @}
