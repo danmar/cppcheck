@@ -343,6 +343,9 @@ private:
 
         // #2662: segfault because of endless recursion (call_func -> getAllocationType -> functionReturnType -> call_func ..)
         TEST_CASE(trac2662);
+
+        // #1879 non regression test case
+        TEST_CASE(trac1879);
     }
 
 
@@ -3711,6 +3714,18 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void trac1879() {
+        // #1879 non regression test case
+        check("void test() {\n"
+              "int *a = new int[10];\n"
+              "try {}\n"
+              "catch(...) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n", errout.str());
+    }
+
+
 };
 
 static TestMemleakInFunction testMemleakInFunction;
