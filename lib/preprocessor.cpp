@@ -1746,10 +1746,14 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
     // then no more #elif or #else can be true before the #endif is seen.
     bool elseIsTrue = true;
 
+    unsigned int linenr = 0;
+
     std::ostringstream ostr;
     std::istringstream istr(code);
     std::string line;
     while (std::getline(istr,line)) {
+        ++linenr;
+
         if (line.compare(0,9,"#include ")==0) {
             std::string filename(line.substr(9));
 
@@ -1763,6 +1767,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
             std::ifstream fin;
             if (!openHeader(filename, includePaths, headerType == UserHeader ? path : std::string(""), fin)) {
                 ostr << std::endl;
+                missingInclude(filePath, linenr, filename, headerType == UserHeader);
                 continue;
             }
 
