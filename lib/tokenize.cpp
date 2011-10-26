@@ -3992,19 +3992,6 @@ bool Tokenizer::simplifyTokenList()
 
     simplifySizeof();
 
-    // replace strlen(str)
-    simplifyKnownVariables();
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "strlen ( %str% )")) {
-            std::ostringstream ostr;
-            ostr << Token::getStrLength(tok->tokAt(2));
-            tok->str(ostr.str());
-            tok->deleteNext();
-            tok->deleteNext();
-            tok->deleteNext();
-        }
-    }
-
     // change array to pointer..
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "%type% %var% [ ] [,;=]")) {
@@ -4153,6 +4140,18 @@ bool Tokenizer::simplifyTokenList()
         modified |= simplifyRedundantParenthesis();
         modified |= simplifyQuestionMark();
         modified |= simplifyCalculations();
+    }
+
+    // replace strlen(str)
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (Token::Match(tok, "strlen ( %str% )")) {
+            std::ostringstream ostr;
+            ostr << Token::getStrLength(tok->tokAt(2));
+            tok->str(ostr.str());
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+        }
     }
 
     // simplify redundant for
