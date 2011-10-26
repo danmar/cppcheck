@@ -276,9 +276,13 @@ void CheckOther::SuspiciousSemicolonError(const Token* tok)
 //---------------------------------------------------------------------------
 void CheckOther::warningOldStylePointerCast()
 {
-    if (!_settings->isEnabled("style") ||
-        (_tokenizer->tokens() && _tokenizer->fileLine(_tokenizer->tokens()).find(".cpp") == std::string::npos))
+    if (!_settings->isEnabled("style")) {
         return;
+    }
+
+    if (!_tokenizer->isCPP()) {
+        return;
+    }
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Old style pointer casting..

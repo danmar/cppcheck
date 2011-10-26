@@ -59,6 +59,21 @@ public:
         return false;
     }
 
+    /** Is the code C. Used for bailouts */
+    bool isC() const {
+        if (_files.size() != 1)
+            return false;
+        const std::string::size_type pos = _files[0].rfind(".");
+        if (pos != std::string::npos)
+            return (_files[0].substr(pos) == ".c");
+        return false;
+    }
+
+    /** Is the code CPP. Used for bailouts */
+    bool isCPP() const {
+ 	return !isJavaOrCSharp() && !isC();
+    }
+
     /**
      * Tokenize code
      * @param code input stream for code, e.g.
