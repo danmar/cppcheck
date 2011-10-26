@@ -1027,6 +1027,9 @@ void CheckStl::string_c_str()
                            tok->next()->varId() > 0 &&
                            localvar.find(tok->next()->varId()) != localvar.end()) {
                     string_c_strError(tok);
+                } else if (Token::simpleMatch(tok, "return std :: string (") &&
+                           Token::Match(tok->tokAt(4)->link(), ") . c_str ( ) ;")) {
+                    string_c_strError(tok);
                 } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
                            tok->next()->varId() > 0 &&
                            pointers.find(tok->next()->varId()) != pointers.end()) {
