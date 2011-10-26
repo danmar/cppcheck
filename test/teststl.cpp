@@ -1329,6 +1329,18 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
 
+        check("const char *get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return (\"ERROR: \" + errmsg).c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+
+        check("const char *get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return (\"ERROR: \" + std::string(\"crash me\")).c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+
         check("void f() {\n"
               "    std::ostringstream errmsg;\n"
               "    const char *c = errmsg.str().c_str();\n"

@@ -1030,6 +1030,24 @@ void CheckStl::string_c_str()
                 } else if (Token::simpleMatch(tok, "return std :: string (") &&
                            Token::Match(tok->tokAt(4)->link(), ") . c_str ( ) ;")) {
                     string_c_strError(tok);
+                } else if (Token::simpleMatch(tok, "return (") &&
+                           Token::Match(tok->next()->link(), ") . c_str ( ) ;")) {
+                    // Check for "+ localvar" or "+ std::string(" inside the bracket
+                    bool is_implicit_std_string = false;
+                    const Token *search_end = tok->next()->link();
+                    for (const Token *search_tok = tok->tokAt(2); search_tok != search_end; search_tok = search_tok->next()) {
+                        if (Token::Match(search_tok, "+ %var%") && search_tok->next()->varId() > 0 &&
+                            localvar.find(search_tok->next()->varId()) != localvar.end()) {
+                            is_implicit_std_string = true;
+                            break;
+                        } else if (Token::simpleMatch(search_tok, "+ std :: string (")) {
+                            is_implicit_std_string = true;
+                            break;
+                        }
+                    }
+
+                    if (is_implicit_std_string)
+                        string_c_strError(tok);
                 } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
                            tok->next()->varId() > 0 &&
                            pointers.find(tok->next()->varId()) != pointers.end()) {
