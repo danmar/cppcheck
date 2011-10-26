@@ -65,7 +65,7 @@ public:
             return false;
         const std::string::size_type pos = _files[0].rfind(".");
         if (pos != std::string::npos)
-            return (_files[0].substr(pos) == ".c");
+            return (_files[0].substr(pos) == ".c") || (_files[0].substr(pos) == ".C");
         return false;
     }
 
