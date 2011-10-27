@@ -342,7 +342,7 @@ public:
         return "Other checks\n"
 
                // error
-               "* Assigning bool value to pointer (converting bool value to address)"
+               "* Assigning bool value to pointer (converting bool value to address)\n"
                "* [[OverlappingData|bad usage of the function 'sprintf' (overlapping data)]]\n"
                "* division with zero\n"
                "* using fflush() on an input stream\n"
