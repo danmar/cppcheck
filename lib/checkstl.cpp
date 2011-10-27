@@ -1028,10 +1028,10 @@ void CheckStl::string_c_str()
                            localvar.find(tok->next()->varId()) != localvar.end()) {
                     string_c_strError(tok);
                 } else if (Token::simpleMatch(tok, "return std :: string (") &&
-                           Token::Match(tok->tokAt(4)->link(), ") . c_str ( ) ;")) {
+                           Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;")) {
                     string_c_strError(tok);
                 } else if (Token::simpleMatch(tok, "return (") &&
-                           Token::Match(tok->next()->link(), ") . c_str ( ) ;")) {
+                           Token::simpleMatch(tok->next()->link(), ") . c_str ( ) ;")) {
                     // Check for "+ localvar" or "+ std::string(" inside the bracket
                     bool is_implicit_std_string = false;
                     const Token *search_end = tok->next()->link();
@@ -1082,7 +1082,7 @@ void CheckStl::checkAutoPointer()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "auto_ptr <")) {
             if ((tok->previous() && tok->previous()->str() == "<" && Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) ||
-                (Token::Match(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST))) {
+                (Token::simpleMatch(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST))) {
                 autoPointerContainerError(tok);
             } else {
                 const Token *tok2 = tok->next()->next();

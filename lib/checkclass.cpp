@@ -814,7 +814,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         if (tok->str() == "return") {
             foundReturn = true;
             std::string cast("( " + scope->className + " & )");
-            if (Token::Match(tok->next(), cast.c_str()))
+            if (Token::simpleMatch(tok->next(), cast.c_str()))
                 tok = tok->tokAt(4);
 
             // check if a function is called
@@ -1277,7 +1277,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
 
         if (tok->str() == "this") {
             return true;
-        } else if (Token::Match(tok->tokAt(-3), "( * this )")) {
+        } else if (Token::simpleMatch(tok->tokAt(-3), "( * this )")) {
             return true;
         } else if (Token::Match(tok->tokAt(-2), "%var% . %var%")) {
             tok = tok->tokAt(-2);

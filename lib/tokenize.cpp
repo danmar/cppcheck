@@ -1198,7 +1198,7 @@ void Tokenizer::simplifyTypedef()
 
         // pointer to function returning pointer to function
         else if (Token::Match(tok->tokAt(offset), "( * ( * %type% ) (") &&
-                 Token::Match(tok->tokAt(offset + 6)->link(), ") ) (") &&
+                 Token::simpleMatch(tok->tokAt(offset + 6)->link(), ") ) (") &&
                  Token::Match(tok->tokAt(offset + 6)->link()->tokAt(2)->link(), ") ;|,")) {
             functionPtrRetFuncPtr = true;
 
@@ -3075,7 +3075,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                     // copy
                     addtoken(tok3, tok3->linenr(), tok3->fileIndex());
                     if (Token::Match(tok3, "%type% <")) {
-                        if (!Token::Match(tok3, (name + " <").c_str()))
+                        if (!Token::simpleMatch(tok3, (name + " <").c_str()))
                             done = false;
                         used.push_back(_tokensBack);
                     }
@@ -3280,7 +3280,7 @@ void Tokenizer::setVarId()
             if (tok->strAt(-1) == "return")
                 continue;
             if (tok->link() && !Token::Match(tok->link()->tokAt(1), "const| {") &&
-                !Token::Match(tok->link()->tokAt(1), ":"))
+                !Token::simpleMatch(tok->link()->tokAt(1), ":"))
                 continue;
         }
 
@@ -3325,7 +3325,7 @@ void Tokenizer::setVarId()
             tok = tok->next();
 
         // skip global namespace prefix
-        if (Token::Match(tok, "::"))
+        if (Token::simpleMatch(tok, "::"))
             tok = tok->next();
 
         while (Token::Match(tok, "%var% ::"))
@@ -4409,7 +4409,7 @@ void Tokenizer::simplifyFlowControl()
                     --indentlevel;
                 }
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                    if (Token::Match(tok2, ": ;")) {
+                    if (Token::simpleMatch(tok2, ": ;")) {
                         if (indentlevel == indentcase) {
                             ++indentlevel;
                         }
@@ -6203,8 +6203,8 @@ void Tokenizer::simplifyIfNotNull()
             if (Token::Match(tok->tokAt(-2), "[;{}] %var%")) {
                 const std::string varname(tok->previous()->str());
 
-                if (Token::Match(tok->tokAt(2), (varname + " != 0 ) ;").c_str()) ||
-                    Token::Match(tok->tokAt(2), ("0 != " + varname + " ) ;").c_str())) {
+                if (Token::simpleMatch(tok->tokAt(2), (varname + " != 0 ) ;").c_str()) ||
+                    Token::simpleMatch(tok->tokAt(2), ("0 != " + varname + " ) ;").c_str())) {
                     tok = tok->tokAt(-2);
                     Token::eraseTokens(tok, tok->tokAt(9));
                 }
@@ -7397,7 +7397,7 @@ void Tokenizer::simplifyGoto()
 
         if (tok->str() == "{") {
             if ((tok->tokAt(-2) && Token::Match(tok->tokAt(-2),"namespace|struct|class|union %var% {")) ||
-                (tok->previous() && Token::Match(tok->previous(),"namespace {")))
+                (tok->previous() && Token::simpleMatch(tok->previous(),"namespace {")))
                 ++indentspecial;
             else if (!beginfunction && !indentlevel)
                 tok = tok->link();

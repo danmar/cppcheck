@@ -1737,7 +1737,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             }
 
             // Reduce "; if(!var) exit ;" => ";"
-            if (Token::Match(tok2, "; if(!var) exit ;")) {
+            if (Token::simpleMatch(tok2, "; if(!var) exit ;")) {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
             }
@@ -1899,7 +1899,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             }
 
             // Delete if block in "alloc ; if(!var) return ;"
-            if (Token::Match(tok2, "alloc ; if(!var) return ;")) {
+            if (Token::simpleMatch(tok2, "alloc ; if(!var) return ;")) {
                 Token::eraseTokens(tok2, tok2->tokAt(4));
                 done = false;
             }
@@ -2505,7 +2505,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                 }
 
                 // Allocate..
-                if (indent == 0 || Token::Match(tok, (varname + " =").c_str())) {
+                if (indent == 0 || Token::simpleMatch(tok, (varname + " =").c_str())) {
                     // var1 = var2 = ...
                     // bail out
                     if (Token::simpleMatch(tok->previous(), "="))

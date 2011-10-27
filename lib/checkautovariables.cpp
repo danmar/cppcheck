@@ -139,7 +139,7 @@ void CheckAutoVariables::autoVariables()
             else if (Token::Match(tok, "return & %var% ;") && isAutoVar(tok->tokAt(2)->varId())) {
                 errorReturnAddressToAutoVariable(tok);
             } else if (Token::Match(tok, "return & %var% [") &&
-                       Token::Match(tok->tokAt(3)->link(), "] ;") &&
+                       Token::simpleMatch(tok->tokAt(3)->link(), "] ;") &&
                        isAutoVarArray(tok->tokAt(2)->varId())) {
                 errorReturnAddressToAutoVariable(tok);
             } else if (Token::Match(tok, "return & %var% ;") && tok->tokAt(2)->varId()) {
@@ -275,7 +275,7 @@ void CheckAutoVariables::returnReference()
 
         // have we reached a function that returns a reference?
         if (Token::Match(tok->tokAt(-2), "%type% &") ||
-            Token::Match(tok->tokAt(-2), "> &")) {
+            Token::simpleMatch(tok->tokAt(-2), "> &")) {
             // go to the '('
             const Token *tok2 = scope->classDef->next();
 

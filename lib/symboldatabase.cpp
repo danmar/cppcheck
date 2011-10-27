@@ -1438,7 +1438,7 @@ void Scope::getVariableList()
         } else if (Token::Match(tok, "struct|union {") && Token::Match(tok->next()->link(), "} %var% ;|[")) {
             tok = tok->next()->link()->next()->next();
             continue;
-        } else if (Token::Match(tok, "struct|union {") && Token::Match(tok->next()->link(), "} ;")) {
+        } else if (Token::Match(tok, "struct|union {") && Token::simpleMatch(tok->next()->link(), "} ;")) {
             level++;
             tok = tok->next();
             continue;
