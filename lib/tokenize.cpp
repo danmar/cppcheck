@@ -2428,6 +2428,11 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    for (Token* tok = _tokens; tok; tok = tok->next()) {
+        if (Token::Match(tok, "%var% ( void )"))
+            tok->next()->deleteNext();
+    }
+
     return validate();
 }
 //---------------------------------------------------------------------------
@@ -3280,7 +3285,7 @@ void Tokenizer::setVarId()
             if (tok->strAt(-1) == "return")
                 continue;
             if (tok->link() && !Token::Match(tok->link()->tokAt(1), "const| {") &&
-                !Token::simpleMatch(tok->link()->tokAt(1), ":"))
+                tok->link()->strAt(1) != ":")
                 continue;
         }
 
@@ -7742,9 +7747,7 @@ void Tokenizer::simplifyEnum()
             continue;
         } else if (Token::Match(tok, "enum class|struct| {|:") ||
                    Token::Match(tok, "enum class|struct| %type% {|:|;")) {
-            Token *tok1;
             Token *start = tok;
-            Token *end;
             Token *enumType = 0;
             Token *typeTokenStart = 0;
             Token *typeTokenEnd = 0;
@@ -7800,8 +7803,8 @@ void Tokenizer::simplifyEnum()
                 return;
             }
 
-            tok1 = tok->next();
-            end = tok1->link();
+            Token *tok1 = tok->next();
+            Token *end = tok1->link();
             tok1 = tok1->next();
 
             MathLib::bigint lastValue = -1;
