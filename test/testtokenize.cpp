@@ -82,8 +82,8 @@ private:
         TEST_CASE(ifAddBraces11);
         TEST_CASE(ifAddBraces12);
         TEST_CASE(ifAddBraces13);
-        TEST_CASE(ifAddBraces14);	// #2610 - segfault: if()<{}
-        TEST_CASE(ifAddBraces15);	// #2616 - unknown macro before if
+        TEST_CASE(ifAddBraces14); // #2610 - segfault: if()<{}
+        TEST_CASE(ifAddBraces15); // #2616 - unknown macro before if
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -142,7 +142,7 @@ private:
         TEST_CASE(simplifyKnownVariablesBailOutFor3);
         TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
         TEST_CASE(simplifyKnownVariablesBailOutConditionalIncrement);
-        TEST_CASE(simplifyKnownVariablesBailOutSwitchBreak);	// ticket #2324
+        TEST_CASE(simplifyKnownVariablesBailOutSwitchBreak); // ticket #2324
         TEST_CASE(simplifyKnownVariablesFloat);    // #2454 - float variable
         TEST_CASE(simplifyKnownVariablesClassMember);  // #2815 - value of class member may be changed by function call
 
@@ -174,7 +174,7 @@ private:
         TEST_CASE(varid24);
         TEST_CASE(varid25);
         TEST_CASE(varid26);   // ticket #1967 (list of function pointers)
-        TEST_CASE(varid27);	// Ticket #2280 (same name for namespace and variable)
+        TEST_CASE(varid27);   // Ticket #2280 (same name for namespace and variable)
         TEST_CASE(varid28);   // ticket #2630
         TEST_CASE(varid29);   // ticket #1974
         TEST_CASE(varid30);   // ticket #2614
@@ -5018,7 +5018,7 @@ private:
 
         {
             const char code[] = "class S { int function(void); };";
-            ASSERT_EQUALS("class S { int function ( void ) ; } ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("class S { int function ( ) ; } ;", tokenizeAndStringify(code));
             checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }
@@ -5032,7 +5032,7 @@ private:
 
         {
             const char code[] = "int function(void);";
-            ASSERT_EQUALS("int function ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("int function ( ) ;", tokenizeAndStringify(code));
             checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }
@@ -5046,14 +5046,14 @@ private:
 
         {
             const char code[] = "extern int function(void);";
-            ASSERT_EQUALS("extern int function ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("extern int function ( ) ;", tokenizeAndStringify(code));
             checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }
 
         {
             const char code[] = "int function1(void); int function2(void);";
-            ASSERT_EQUALS("int function1 ( void ) ; int function2 ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("int function1 ( ) ; int function2 ( ) ;", tokenizeAndStringify(code));
             checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }

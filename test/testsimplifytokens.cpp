@@ -383,6 +383,9 @@ private:
 
         TEST_CASE(simplifyFunctionReturn);
 
+        // void foo(void) -> void foo()
+        TEST_CASE(removeVoidFromFunction);
+
         TEST_CASE(removeUnnecessaryQualification1);
         TEST_CASE(removeUnnecessaryQualification2);
         TEST_CASE(removeUnnecessaryQualification3);
@@ -7344,6 +7347,10 @@ private:
                                 "void ( * get4 ( ) ) ( ) ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void removeVoidFromFunction() {
+        ASSERT_EQUALS("void foo ( ) ;", tok("void foo(void);"));
     }
 
     void removeUnnecessaryQualification1() {
