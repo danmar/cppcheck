@@ -5792,10 +5792,10 @@ void Tokenizer::simplifyPlatformTypes()
         return;
 
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "std :: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t")) {
+        if (Token::Match(tok, "std :: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t")) {
             tok->deleteNext();
             tok->deleteThis();
-        } else if (Token::simpleMatch(tok, ":: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t")) {
+        } else if (Token::Match(tok, ":: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t")) {
             tok->deleteThis();
         }
 
