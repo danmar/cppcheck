@@ -46,6 +46,7 @@ private:
         TEST_CASE(nullpointer10);
         TEST_CASE(nullpointer11); // ticket #2812
         TEST_CASE(nullpointer12); // ticket #2470
+        TEST_CASE(nullpointer13); // ticket #1708
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
         TEST_CASE(gcc_statement_expression); // Don't crash
@@ -1084,6 +1085,22 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+    void nullpointer13() { // ticket #1780
+        check("void foo()\n"
+              "{\n"
+              "  struct S\n"                                                        
+              "  {\n"
+              "    double *d;\n"
+              "  };\n"
+              "  S s;\n"
+              "    s.d=NULL;\n"
+              "  double *pd = s.d;\n"
+              "         *pd = 10;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Null pointer dereference\n", errout.str());  
+     }
 
     // Check if pointer is null and the dereference it
     void pointerCheckAndDeRef() {
