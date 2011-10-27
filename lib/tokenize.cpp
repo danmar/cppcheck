@@ -2282,36 +2282,77 @@ bool Tokenizer::tokenize(std::istream &code,
             tok = tok->link();
             continue;
         }
-        if (!Token::Match(tok->previous(),"[{};] for (") || Token::simpleMatch(tok, "for ( ;"))
+        if (!Token::Match(tok->previous(),"[{};] for ("))
             continue;
 
         //find the two needed semicolons inside the 'for'
         const Token *firstsemicolon = Token::findmatch(tok->next(), ";", tok->next()->link());
-        if (!firstsemicolon || !Token::findmatch(firstsemicolon->next(), ";", tok->next()->link()))
+        if (!firstsemicolon)
             continue;
+        const Token *secondsemicolon = Token::findmatch(firstsemicolon->next(), ";", tok->next()->link());
+        if (!secondsemicolon)
+            continue;
+        if (Token::findmatch(secondsemicolon->next(), ";", tok->next()->link()))
+            continue;       //no more than two semicolons!
+        if (!tok->next()->link()->next())
+            continue;       //there should be always something after 'for (...)'
 
-        tok = tok->previous();
-        tok->insertToken(";");
-        tok->insertToken("{");
-        tok = tok->next();
-        Token *end = tok->tokAt(3)->link();
-        if (Token::simpleMatch(end, ") {")) {
-            end = end->next()->link();
-            end->insertToken("}");
-            Token::createMutualLinks(tok, end->next());
-            end = end->link()->previous();
-        } else {
-            end->insertToken("}");
-            Token::createMutualLinks(tok, end->next());
+        Token *fortok = tok;
+        Token *begin = tok->tokAt(2);
+        Token *end = tok->next()->link();
+        if ( begin->str() != ";" ) {
+            tok = tok->previous();
+            tok->insertToken(";");
+            tok->insertToken("{");
+            tok = tok->next();
+            if (end->next()->str() =="{") {
+                end = end->next()->link();
+                end->insertToken("}");
+                Token::createMutualLinks(tok, end->next());
+                end = end->link()->previous();
+            } else {
+                if (end->next()->str() != ";")
+                    end->insertToken(";");
+                end = end->next();
+                end->insertToken("}");
+                Token::createMutualLinks(tok, end->next());
+            }
+            end = firstsemicolon->previous();
+            Token::move(begin, end, tok);
+            tok = fortok;
+            end = fortok->next()->link();
         }
-        Token *begin = tok->tokAt(4);
-        end = firstsemicolon->previous();
+        //every 'for' is changed to 'for(;b;c), now it's possible to convert the 'for' to a 'while'.
+        //precisely, 'for(;b;c){code}'-> 'while(b){code + c;}'
+        fortok->str("while");
+        begin = firstsemicolon->previous();
+        begin->deleteNext();
+        begin = secondsemicolon->previous();
+        begin->deleteNext();
+        begin = begin->next();
+        if (begin->str() == ")") {        //'for(;b;)' -> 'while(b)'
+            if (begin->previous()->str() == "(")    //'for(;;)' -> 'while(true)'
+                begin->previous()->insertToken("true");
+            tok = fortok;
+            continue;
+        }
+        if (end->next()->str() =="{") {
+            tok = end->next()->link()->previous();
+            tok->insertToken(";");
+        } else {
+            tok = end;
+            if (end->next()->str() != ";")
+                tok->insertToken(";");
+            tok->insertToken("{");
+            tok = tok->tokAt(2);
+            tok->insertToken("}");
+            Token::createMutualLinks(tok->previous(), tok->next());
+            tok = tok->previous();
+        }
+        end = end->previous();
         Token::move(begin, end, tok);
-     }*/
-    /**
-     * @todo simplify "for"
-     * - try to change "for" loop to a "while" loop instead
-     */
+        tok = fortok;
+    }*/
 
     simplifyConst();
 
