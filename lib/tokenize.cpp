@@ -2274,9 +2274,42 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyIfNot();
     simplifyIfNotNull();
 
+    //simplify for: move out start-statement "for (a;b;c);" => "{ a; for(;b;c); }"
+    //not enabled because it fails many tests with testrunner.
+    //@todo fix these fails before enabling this simplification
+    /*for (Token* tok = _tokens; tok; tok = tok->next()) {
+        if (tok->str() == "(" && ( !tok->previous() || tok->previous()->str() != "for")) {
+            tok = tok->link();
+            continue;
+        }
+        if (!Token::Match(tok->previous(),"[{};] for (") || Token::simpleMatch(tok, "for ( ;"))
+            continue;
+
+        //find the two needed semicolons inside the 'for'
+        const Token *firstsemicolon = Token::findmatch(tok->next(), ";", tok->next()->link());
+        if (!firstsemicolon || !Token::findmatch(firstsemicolon->next(), ";", tok->next()->link()))
+            continue;
+
+        tok = tok->previous();
+        tok->insertToken(";");
+        tok->insertToken("{");
+        tok = tok->next();
+        Token *end = tok->tokAt(3)->link();
+        if (Token::simpleMatch(end, ") {")) {
+            end = end->next()->link();
+            end->insertToken("}");
+            Token::createMutualLinks(tok, end->next());
+            end = end->link()->previous();
+        } else {
+            end->insertToken("}");
+            Token::createMutualLinks(tok, end->next());
+        }
+        Token *begin = tok->tokAt(4);
+        end = firstsemicolon->previous();
+        Token::move(begin, end, tok);
+     }*/
     /**
      * @todo simplify "for"
-     * - move out start-statement "for (a;b;c);" => "{ a; for(;b;c); }"
      * - try to change "for" loop to a "while" loop instead
      */
 
@@ -8636,18 +8669,18 @@ void Tokenizer::simplifyWhile0()
 {
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         // while (0)
-        const bool while0(Token::Match(tok, "while ( 0|false )"));
+        const bool while0(Token::Match(tok->previous(), "[{};] while ( 0|false )"));
 
         // for (0) - not banal, ticket #3140
-        const bool for0((Token::Match(tok, "for ( %var% = %num% ; %var% < %num% ;") &&
+        const bool for0((Token::Match(tok->previous(), "[{};] for ( %var% = %num% ; %var% < %num% ;") &&
                          tok->strAt(2) == tok->strAt(6) && tok->strAt(4) == tok->strAt(8)) ||
-                        (Token::Match(tok, "for ( %type% %var% = %num% ; %var% < %num% ;") &&
+                        (Token::Match(tok->previous(), "[{};] for ( %type% %var% = %num% ; %var% < %num% ;") &&
                          tok->strAt(3) == tok->strAt(7) && tok->strAt(5) == tok->strAt(9)));
 
         if (!while0 && !for0)
             continue;
 
-        if (while0 && Token::simpleMatch(tok->previous(), "}")) {
+        if (while0 && tok->previous()->str() == "}") {
             // find "do"
             Token *tok2 = tok->previous()->link();
             tok2 = tok2->previous();
