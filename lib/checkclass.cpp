@@ -530,7 +530,7 @@ void CheckClass::privateFunctions()
         return;
 
     // dont check borland classes with properties..
-    if (Token::findmatch(_tokenizer->tokens(), "; __property ;"))
+    if (Token::findsimplematch(_tokenizer->tokens(), "; __property ;"))
         return;
 
     createSymbolDatabase();

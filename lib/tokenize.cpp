@@ -2640,7 +2640,7 @@ std::set<std::string> Tokenizer::simplifyTemplatesExpandSpecialized()
         expandedtemplates.insert(name);
 
         // Rename template..
-        Token::eraseTokens(tok2, Token::findmatch(tok2, "("));
+        Token::eraseTokens(tok2, Token::findsimplematch(tok2, "("));
         tok2->str(name);
 
         // delete the "template < >"
@@ -2650,7 +2650,7 @@ std::set<std::string> Tokenizer::simplifyTemplatesExpandSpecialized()
 
         // Use this special template in the code..
         while (0 != (tok2 = const_cast<Token *>(Token::findmatch(tok2, pattern.c_str())))) {
-            Token::eraseTokens(tok2, Token::findmatch(tok2, "("));
+            Token::eraseTokens(tok2, Token::findsimplematch(tok2, "("));
             tok2->str(name);
         }
     }
@@ -2839,7 +2839,7 @@ static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::
         return false;
 
     if (patternAfter) {
-        const Token *tok = Token::findmatch(instance, ">");
+        const Token *tok = Token::findsimplematch(instance, ">");
         if (!tok || !Token::Match(tok->next(), patternAfter))
             return false;
     }
@@ -6678,7 +6678,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         // Stop if return or break is found ..
         if (tok3->str() == "break")
             break;
-        if ((indentlevel3 > 1 || !Token::simpleMatch(Token::findmatch(tok3,";"), "; }")) && tok3->str() == "return")
+        if ((indentlevel3 > 1 || !Token::simpleMatch(Token::findsimplematch(tok3,";"), "; }")) && tok3->str() == "return")
             ret3 = true;
         if (ret3 && tok3->str() == ";")
             break;

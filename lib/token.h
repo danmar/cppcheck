@@ -227,6 +227,8 @@ public:
     }
     bool isStandardType() const;
 
+    static const Token *findsimplematch(const Token *tok, const char pattern[]);
+    static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
     static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
     static const Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
 

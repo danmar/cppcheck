@@ -638,7 +638,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
             ftok = ftok->next()->link();
             if (!Token::Match(ftok, ") const| {"))
                 return;
-            ftok = Token::findmatch(ftok, "{");
+            ftok = Token::findsimplematch(ftok, "{");
             ftok = ftok->next();
 
             // Check the parameter usage in the function scope..
@@ -731,7 +731,7 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     {
         const Token *bodyStart = tok->next()->link()->next();
         const Token *bodyEnd = bodyStart->link();
-        if (Token::findmatch(bodyStart, "break ;", bodyEnd))
+        if (Token::findsimplematch(bodyStart, "break ;", bodyEnd))
             return;
     }
 

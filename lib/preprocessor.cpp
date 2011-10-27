@@ -2115,7 +2115,7 @@ private:
 
         // Is there an inner macro..
         {
-            const Token *tok = Token::findmatch(tokens(), ")");
+            const Token *tok = Token::findsimplematch(tokens(), ")");
             if (!Token::Match(tok, ") %var% ("))
                 return params1;
             innerMacroName = tok->strAt(1);

@@ -317,7 +317,7 @@ void CheckOther::cstyleCastError(const Token *tok)
 void CheckOther::checkFflushOnInputStream()
 {
     const Token *tok = _tokenizer->tokens();
-    while (tok && ((tok = Token::findmatch(tok, "fflush ( stdin )")) != NULL)) {
+    while (tok && ((tok = Token::findsimplematch(tok, "fflush ( stdin )")) != NULL)) {
         fflushOnInputStreamError(tok, tok->strAt(2));
         tok = tok->tokAt(4);
     }
@@ -603,12 +603,12 @@ void CheckOther::checkSwitchCaseFallThrough()
                 if (loopnest.empty()) {
                     justbreak = true;
                 }
-                tok2 = Token::findmatch(tok2, ";");
+                tok2 = Token::findsimplematch(tok2, ";");
             } else if (Token::Match(tok2, "case|default")) {
                 if (!justbreak && !firstcase) {
                     switchCaseFallThrough(tok2);
                 }
-                tok2 = Token::findmatch(tok2, ":");
+                tok2 = Token::findsimplematch(tok2, ":");
                 justbreak = true;
                 firstcase = false;
             } else if (tok2->str() == "{") {
