@@ -3428,6 +3428,16 @@ private:
             "  }"
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of always identical static strings.\n", errout.str());
+
+        check_preprocess_suppress(
+            "int foo(const char *buf)\n"
+            "{\n"
+            "  if (strcmp(buf, buf) == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of identical string variables.\n", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[]) {

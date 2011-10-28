@@ -2257,6 +2257,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
 
     const char pattern1[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% ";
     const char pattern2[] = "QString :: compare ( %str% , %str% )";
+    const char pattern3[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %var% , %var% ";
 
     const Token *tok = _tokenizer->tokens();
     while (tok && (tok = Token::findmatch(tok, pattern1)) != NULL) {
@@ -2268,6 +2269,14 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     while (tok && (tok = Token::findmatch(tok, pattern2)) != NULL) {
         alwaysTrueFalseStringCompareError(tok, tok->strAt(4), tok->strAt(6));
         tok = tok->tokAt(7);
+    }
+
+    tok = _tokenizer->tokens();
+    while (tok && (tok = Token::findmatch(tok, pattern3)) != NULL) {
+        const Token *var1 = tok->tokAt(2);
+        const Token *var2 = tok->tokAt(4);
+        alwaysTrueStringVariableCompareError(tok, var1->str(), var2->str());
+        tok = tok->tokAt(5);
     }
 }
 
@@ -2288,6 +2297,16 @@ void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::
                     "Unnecessary comparison of static strings.\n"
                     "The compared strings, '" + string1 + "' and '" + string2 + "', are static and always different. "
                     "If the purpose is to compare these two strings, the comparison is unnecessary.");
+    }
+}
+
+void CheckOther::alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2)
+{
+    if (str1 == str2) {
+        reportError(tok, Severity::warning, "stringCompare",
+                    "Comparison of identical string variables.\n"
+                    "The compared strings, '" + str1 + "' and '" + str2 + "', are identical. "
+                    "This could be a logic bug.");
     }
 }
 
