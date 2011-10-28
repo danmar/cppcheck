@@ -1962,7 +1962,7 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // Combine "- %num%" ..
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "?|:|,|(|[|=|return|case|%op% - %num%")) {
+        if (Token::Match(tok, "?|:|,|(|[|=|return|case|sizeof|%op% - %num%")) {
             tok->next()->str("-" + tok->strAt(2));
             tok->next()->deleteNext();
         }
