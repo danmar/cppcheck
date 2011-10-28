@@ -2286,13 +2286,13 @@ bool Tokenizer::tokenize(std::istream &code,
             continue;
 
         //find the two needed semicolons inside the 'for'
-        const Token *firstsemicolon = Token::findmatch(tok->next(), ";", tok->next()->link());
+        const Token *firstsemicolon = Token::findsimplematch(tok->next(), ";", tok->next()->link());
         if (!firstsemicolon)
             continue;
-        const Token *secondsemicolon = Token::findmatch(firstsemicolon->next(), ";", tok->next()->link());
+        const Token *secondsemicolon = Token::findsimplematch(firstsemicolon->next(), ";", tok->next()->link());
         if (!secondsemicolon)
             continue;
-        if (Token::findmatch(secondsemicolon->next(), ";", tok->next()->link()))
+        if (Token::findsimplematch(secondsemicolon->next(), ";", tok->next()->link()))
             continue;       //no more than two semicolons!
         if (!tok->next()->link()->next())
             continue;       //there should be always something after 'for (...)'
