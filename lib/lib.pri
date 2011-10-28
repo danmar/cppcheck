@@ -10,6 +10,7 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}checkbufferoverrun.h \
            $${BASEPATH}checkclass.h \
            $${BASEPATH}checkexceptionsafety.h \
+           $${BASEPATH}checkinternal.h \
            $${BASEPATH}checkmemoryleak.h \
            $${BASEPATH}checknonreentrantfunctions.h \
            $${BASEPATH}checknullpointer.h \
@@ -40,6 +41,7 @@ SOURCES += $${BASEPATH}check64bit.cpp \
            $${BASEPATH}checkbufferoverrun.cpp \
            $${BASEPATH}checkclass.cpp \
            $${BASEPATH}checkexceptionsafety.cpp \
+           $${BASEPATH}checkinternal.cpp \
            $${BASEPATH}checkmemoryleak.cpp \
            $${BASEPATH}checknonreentrantfunctions.cpp \
            $${BASEPATH}checknullpointer.cpp \

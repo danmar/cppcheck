@@ -55,6 +55,7 @@ LIBOBJ =      lib/check64bit.o \
               lib/checkbufferoverrun.o \
               lib/checkclass.o \
               lib/checkexceptionsafety.o \
+              lib/checkinternal.o \
               lib/checkmemoryleak.o \
               lib/checknonreentrantfunctions.o \
               lib/checknullpointer.o \
@@ -101,6 +102,7 @@ TESTOBJ =     test/options.o \
               test/testexceptionsafety.o \
               test/testfilelister.o \
               test/testincompletestatement.o \
+              test/testinternal.o \
               test/testmathlib.o \
               test/testmemleak.o \
               test/testnonreentrantfunctions.o \
@@ -194,6 +196,9 @@ lib/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/check.h lib/token.h li
 
 lib/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafety.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkexceptionsafety.o lib/checkexceptionsafety.cpp
+
+lib/checkinternal.o: lib/checkinternal.cpp lib/checkinternal.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkinternal.o lib/checkinternal.cpp
 
 lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h lib/executionpath.h lib/checkuninitvar.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkmemoryleak.o lib/checkmemoryleak.cpp
@@ -326,6 +331,9 @@ test/testfilelister.o: test/testfilelister.cpp test/testsuite.h lib/errorlogger.
 
 test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h lib/errorlogger.h lib/settings.h lib/suppressions.h lib/standards.h test/redirect.h lib/tokenize.h lib/checkother.h lib/check.h lib/token.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testincompletestatement.o test/testincompletestatement.cpp
+
+test/testinternal.o: test/testinternal.cpp lib/tokenize.h lib/checkinternal.h lib/check.h lib/token.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h test/testsuite.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testinternal.o test/testinternal.cpp
 
 test/testmathlib.o: test/testmathlib.cpp lib/mathlib.h test/testsuite.h lib/errorlogger.h lib/settings.h lib/suppressions.h lib/standards.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testmathlib.o test/testmathlib.cpp

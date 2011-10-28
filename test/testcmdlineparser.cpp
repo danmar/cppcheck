@@ -63,6 +63,7 @@ private:
         TEST_CASE(enabledPortability);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
+        TEST_CASE(enabledInternal);
         TEST_CASE(errorExitcode);
         TEST_CASE(errorExitcodeMissing);
         TEST_CASE(errorExitcodeStr);
@@ -384,6 +385,7 @@ private:
         ASSERT(settings.isEnabled("style"));
         ASSERT(settings.isEnabled("unusedFunction"));
         ASSERT(settings.isEnabled("missingInclude"));
+        ASSERT(!settings.isEnabled("internal"));
     }
 
     void enabledStyle() {
@@ -441,6 +443,15 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings.isEnabled("missingInclude"));
+    }
+
+    void enabledInternal() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--enable=internal", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings.isEnabled("internal"));
     }
 
     void errorExitcode() {

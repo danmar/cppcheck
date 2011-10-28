@@ -83,13 +83,18 @@ std::string Settings::addEnabled(const std::string &str)
     id.insert("performance");
     id.insert("portability");
     id.insert("information");
+    id.insert("internal");
     id.insert("missingInclude");
     id.insert("unusedFunction");
 
     if (str == "all") {
         std::set<std::string>::const_iterator it;
-        for (it = id.begin(); it != id.end(); ++it)
+        for (it = id.begin(); it != id.end(); ++it) {
+            if (*it == "internal")
+                continue;
+
             _enabled.insert(*it);
+        }
     } else if (id.find(str) != id.end()) {
         _enabled.insert(str);
     } else if (!handled) {
