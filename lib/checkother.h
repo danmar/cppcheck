@@ -58,6 +58,7 @@ public:
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
+        checkOther.checkSizeofForStrncmpSize();
         checkOther.checkSizeofForNumericParameter();
         checkOther.checkSelfAssignment();
         checkOther.checkDuplicateIf();
@@ -196,6 +197,9 @@ public:
     /** @brief %Check for using sizeof with array given as function argument */
     void checkSizeofForArrayParameter();
 
+    /** @brief %Check for using sizeof with a char pointer */
+    void checkSizeofForStrncmpSize();
+
     /** @brief %Check for using sizeof with numeric given as function argument */
     void checkSizeofForNumericParameter();
 
@@ -264,6 +268,7 @@ public:
     void catchExceptionByValueError(const Token *tok);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
+    void sizeofForStrncmpError(const Token *tok);
     void sizeofForNumericParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
@@ -294,6 +299,7 @@ public:
         c.fflushOnInputStreamError(0, "stdin");
         c.misusedScopeObjectError(NULL, "varname");
         c.sizeofForArrayParameterError(0);
+        c.sizeofForStrncmpError(0);
         c.sizeofForNumericParameterError(0);
         c.coutCerrMisusageError(0, "cout");
 

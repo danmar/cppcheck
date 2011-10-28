@@ -421,6 +421,37 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
                );
 }
 
+void CheckOther::checkSizeofForStrncmpSize()
+{
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const char pattern1[] = "strncmp ( %any , %any% , sizeof ( %var% ) )";
+    const char pattern2[] = "strncmp ( %any , %any% , sizeof %var% )";
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, pattern1) || Token::Match(tok, pattern2)) {
+            int tokIdx = 7;
+            if (tok->tokAt(tokIdx)->str() == "(")
+                ++tokIdx;
+            const Token *tokVar = tok->tokAt(tokIdx);
+            if (tokVar->varId() > 0) {
+                const Variable *var = symbolDatabase->getVariableFromVarId(tokVar->varId());
+                if (var && var->nameToken()->strAt(-1) == "*") {
+                    sizeofForStrncmpError(tokVar);
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::sizeofForStrncmpError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "strncmpLen",
+                "Passing sizeof(pointer) as the last argument to strncmp.\n"
+                "Passing a pointer to sizeof returns the size of the pointer, not "
+                "the number of characters pointed to by that pointer. This "
+                "means that only 4 or 8 (on 64-bit systems) characters are "
+                "compared, which is probably not what was expected.");
+}
+
 //---------------------------------------------------------------------------
 //    switch (x)
 //    {
