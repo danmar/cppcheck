@@ -1090,7 +1090,7 @@ private:
     void nullpointer13() { // ticket #1780
         check("void foo()\n"
               "{\n"
-              "  struct S\n"                                                        
+              "  struct S\n"
               "  {\n"
               "    double *d;\n"
               "  };\n"
@@ -1099,8 +1099,8 @@ private:
               "  double *pd = s.d;\n"
               "         *pd = 10;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Null pointer dereference\n", errout.str());  
-     }
+        ASSERT_EQUALS("[test.cpp:10]: (error) Null pointer dereference\n", errout.str());
+    }
 
     // Check if pointer is null and the dereference it
     void pointerCheckAndDeRef() {
