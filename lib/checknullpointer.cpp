@@ -927,7 +927,7 @@ void CheckNullPointer::nullConstantDereference()
 class Nullpointer : public ExecutionPath {
 public:
     /** Startup constructor */
-    Nullpointer(Check *c) : ExecutionPath(c, 0), null(false) {
+    explicit Nullpointer(Check *c) : ExecutionPath(c, 0), null(false) {
     }
 
 private:

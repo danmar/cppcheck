@@ -43,7 +43,7 @@ private:
     Token();
 
 public:
-    Token(Token **tokensBack);
+    explicit Token(Token **tokensBack);
     ~Token();
 
     void str(const std::string &s);

@@ -2167,7 +2167,7 @@ public:
      * @param macro The code after define, until end of line,
      * e.g. "A(x) foo(x);"
      */
-    PreprocessorMacro(const std::string &macro)
+    explicit PreprocessorMacro(const std::string &macro)
         : _macro(macro), _prefix("__cppcheck__") {
         tokenizer.setSettings(&settings);
 
