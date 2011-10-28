@@ -10,11 +10,11 @@ ifndef CXXFLAGS
 endif
 
 ifeq ($(HAVE_RULES),yes)
-    CXXFLAGS += -DHAVE_RULES
+    CXXFLAGS += -DHAVE_RULES $(shell pcre-config --cflags)
     ifdef LIBS
-        LIBS += -lpcre
+        LIBS += $(shell pcre-config --libs)
     else
-        LIBS=-lpcre
+        LIBS=$(shell pcre-config --libs)
     endif
 endif
 

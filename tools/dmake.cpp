@@ -239,11 +239,11 @@ int main(int argc, char **argv)
     }
 
     fout << "ifeq ($(HAVE_RULES),yes)\n"
-         << "    CXXFLAGS += -DHAVE_RULES\n"
+         << "    CXXFLAGS += -DHAVE_RULES $(shell pcre-config --cflags)\n"
          << "    ifdef LIBS\n"
-         << "        LIBS += -lpcre\n"
+         << "        LIBS += $(shell pcre-config --libs)\n"
          << "    else\n"
-         << "        LIBS=-lpcre\n"
+         << "        LIBS=$(shell pcre-config --libs)\n"
          << "    endif\n"
          << "endif\n\n";
 
