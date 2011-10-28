@@ -41,7 +41,7 @@ namespace {
 class UninitVar : public ExecutionPath {
 public:
     /** Startup constructor */
-    UninitVar(Check *c)
+    explicit UninitVar(Check *c)
         : ExecutionPath(c, 0), pointer(false), array(false), alloc(false), strncpy_(false), memset_nonzero(false) {
     }
 

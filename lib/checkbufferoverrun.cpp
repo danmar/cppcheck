@@ -191,7 +191,7 @@ public:
     /**
      * @param str Token::str() is compared against this.
      */
-    TokenStrEquals(const std::string &str)
+    explicit TokenStrEquals(const std::string &str)
         : value(str) {
     }
 
