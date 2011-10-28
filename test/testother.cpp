@@ -3418,6 +3418,16 @@ private:
             "  }"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "int main()\n"
+            "{\n"
+            "  if (strncmp(\"hotdog\",\"hotdog\", 6) == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of always identical static strings.\n", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[]) {

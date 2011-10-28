@@ -2255,7 +2255,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     if (!_settings->isEnabled("style") && !_settings->isEnabled("performance"))
         return;
 
-    const char pattern1[] = "strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% )";
+    const char pattern1[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% ";
     const char pattern2[] = "QString :: compare ( %str% , %str% )";
 
     const Token *tok = _tokenizer->tokens();
