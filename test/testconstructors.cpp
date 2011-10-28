@@ -81,6 +81,7 @@ private:
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
 
         TEST_CASE(operatorEqSTL);
+        TEST_CASE(explicit_constructor);
     }
 
 
@@ -1042,6 +1043,22 @@ private:
               "void Fred::operator=(const Fred &f)\n"
               "{ }", true);
         ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n", errout.str());
+    }
+
+    void explicit_constructor()
+    {
+        check("class Fred\n"
+              "{\n"
+              "    Fred(int i);\n"
+              "};\n"
+              "\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Constructor for 'Fred' should be explicit\n", errout.str());
+        check("class Fred\n"
+              "{\n"
+              "    explicit Fred(int a, int b);\n"
+              "};\n"
+              "\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Constructor for 'Fred' is marked explicit but takes more than one argument\n", errout.str());
     }
 };
 
