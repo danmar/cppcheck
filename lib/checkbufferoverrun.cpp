@@ -510,7 +510,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
             }
 
             // skip 0 length arrays
-            if (arrayInfo.num(0) && (min_index >= (int)arrayInfo.num(0) || max_index >= (int)arrayInfo.num(0))) {
+            if (arrayInfo.num(0) && (min_index >= arrayInfo.num(0) || max_index >= arrayInfo.num(0))) {
                 std::vector<MathLib::bigint> indexes;
                 indexes.push_back(std::max(min_index, max_index));
                 arrayIndexOutOfBoundsError(tok2, arrayInfo, indexes);
