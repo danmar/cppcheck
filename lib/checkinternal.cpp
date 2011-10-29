@@ -150,7 +150,7 @@ void CheckInternal::checkMissingPercentCharacter()
             const string broken_magic = (*magic).substr(0, (*magic).size()-1);
 
             string::size_type pos = 0;
-            while((pos = pattern.find(broken_magic, pos)) != string::npos) {
+            while ((pos = pattern.find(broken_magic, pos)) != string::npos) {
                 // Check if it's the full pattern
                 if (pattern.find(*magic, pos) != pos) {
                     // Known whitelist of substrings
