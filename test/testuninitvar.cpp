@@ -1330,6 +1330,23 @@ private:
                        "    strncat(a, \"world\", 20);\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #3245 - false positive
+        {
+            checkUninitVar("void f() {\n"
+                           "    char a[100];\n"
+                           "    strncpy(a,p,10);\n"
+                           "    memcmp(a,q,10);\n"
+                           "}");
+            ASSERT_EQUALS("", errout.str());
+
+            checkUninitVar("void f() {\n"
+                           "    char a[100];\n"
+                           "    strncpy(a,p,10);\n"
+                           "    if (memcmp(a,q,10)==0);\n"
+                           "}");
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     // initialization with memset (not 0-terminating string)..

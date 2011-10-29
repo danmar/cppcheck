@@ -240,17 +240,22 @@ private:
                 if (mode == 0 && (c->array || (c->pointer && c->alloc)))
                     continue;
 
-                // mode 2 : bad usage of pointer. if it's not a pointer then the usage is ok.
+                // mode 2 : reading array data with mem.. function. It's ok if the
+                //          array is not 0-terminated
+                if (mode == 2 && c->strncpy_)
+                    continue;
+
+                // mode 3 : bad usage of pointer. if it's not a pointer then the usage is ok.
                 // example: ptr->foo();
-                if (mode == 2 && !c->pointer)
+                if (mode == 3 && !c->pointer)
                     continue;
 
-                // mode 3 : using dead pointer is invalid.
-                if (mode == 3 && (!c->pointer || c->alloc))
+                // mode 4 : using dead pointer is invalid.
+                if (mode == 4 && (!c->pointer || c->alloc))
                     continue;
 
-                // mode 4 : reading uninitialized array or pointer is invalid.
-                if (mode == 4 && (!c->array && !c->pointer))
+                // mode 5 : reading uninitialized array or pointer is invalid.
+                if (mode == 5 && (!c->array && !c->pointer))
                     continue;
 
                 CheckUninitVar *checkUninitVar = dynamic_cast<CheckUninitVar *>(c->owner);
@@ -291,13 +296,22 @@ private:
     }
 
     /**
+     * Reading array elements with a "mem.." function. It's ok if the array is not 0-terminated.
+     * @param checks all available checks
+     * @param tok variable token
+     */
+    static void use_array_mem(std::list<ExecutionPath *> &checks, const Token *tok) {
+        use(checks, tok, 2);
+    }
+
+    /**
      * Bad pointer usage. If the variable is not a pointer then the usage is ok.
      * @param checks all available checks
      * @param tok variable token
      * @return if error is found, true is returned
      */
     static bool use_pointer(std::list<ExecutionPath *> &checks, const Token *tok) {
-        return use(checks, tok, 2);
+        return use(checks, tok, 3);
     }
 
     /**
@@ -307,7 +321,7 @@ private:
      * @return if error is found, true is returned
      */
     static bool use_dead_pointer(std::list<ExecutionPath *> &checks, const Token *tok) {
-        return use(checks, tok, 3);
+        return use(checks, tok, 4);
     }
 
     /**
@@ -318,9 +332,8 @@ private:
      * @return if error is found, true is returned
      */
     static bool use_array_or_pointer_data(std::list<ExecutionPath *> &checks, const Token *tok) {
-        return use(checks, tok, 4);
+        return use(checks, tok, 5);
     }
-
 
     /** declaring a variable */
     void declare(std::list<ExecutionPath *> &checks, const Token *vartok, const Token &tok, const bool p, const bool a) const {
@@ -576,7 +589,12 @@ private:
                 std::list<const Token *> var;
                 CheckNullPointer::parseFunctionCall(tok, var, 1);
                 for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
-                    use_array(checks, *it);
+                    // is function memset/memcpy/etc?
+                    if (tok.str().compare(0,3,"mem") == 0)
+                        use_array_mem(checks, *it);
+                    else
+                        use_array(checks, *it);
+
                     use_dead_pointer(checks, *it);
                 }
 
@@ -839,10 +857,16 @@ private:
             use_array_or_pointer_data(checks, tok.str() == "!" ? tok.next() : &tok);
 
         else if (Token::Match(&tok, "!| %var% (")) {
+            const Token * const ftok = (tok.str() == "!") ? tok.next() : &tok;
             std::list<const Token *> var;
-            CheckNullPointer::parseFunctionCall(tok.str() == "!" ? *tok.next() : tok, var, 1);
-            for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
-                use_array(checks, *it);
+            CheckNullPointer::parseFunctionCall(*ftok, var, 1);
+            for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
+                // is function memset/memcpy/etc?
+                if (ftok->str().compare(0,3,"mem") == 0)
+                    use_array_mem(checks, *it);
+                else
+                    use_array(checks, *it);
+            }
         }
 
         else if (Token::Match(&tok, "! %var% )")) {
