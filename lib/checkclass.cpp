@@ -528,11 +528,12 @@ void CheckClass::explicitConstructorError(const Token *tok, const std::string &c
     reportError(tok, Severity::style,
                 "explicitConstructorError", "Constructor for '" +
                 className + "' should be explicit.\n"
-                "A constructor that takes one argument can be used for automatic "
-                "conversion.  This is convenient but can also be a problem when "
-                "automatic conversion creates new objects when you were not "
-                "expecting it. Adding the explicit declaration to the "
-                "constructor prevents it being called for implicit conversions.");
+                "The single-argument constructor for '" + className + "' should "
+                "be explicit as it can be used for automatic conversion. This is "
+                "convenient but can also be a problem when automatic conversion "
+                "creates new objects when you were not expecting it. Adding the "
+                "explicit declaration to the constructor prevents it being called "
+                "for implicit conversions.");
 }
 
 void CheckClass::pointlessExplicitConstructorError(const Token *tok, const std::string &className)
@@ -541,10 +542,11 @@ void CheckClass::pointlessExplicitConstructorError(const Token *tok, const std::
                 "pointlessExplicitConstructorError", "Constructor for '" +
                 className + "' is marked explicit but"
                 " takes more than one argument.\n"
-                "The explicit keyword prevents constructor calls for "
-                "implicit conversions, but it is only needed for single-argument "
-                "constructors. Those that take more than one argument are not "
-                "affected by the explicit declaration.");
+                "The explicit keyword prevents constructor calls for implicit "
+                "conversions, but it is only needed for single-argument "
+                "constructors. The constructor for '" + className + "' takes "
+                "more than one argument so is not affected by the explicit "
+                "declaration.");
 }
 
 //---------------------------------------------------------------------------
