@@ -2625,8 +2625,7 @@ static void removeTemplates(Token *tok)
                 break;
             }
             // don't remove constructor
-            if (tok2->str() == "explicit")
-            {
+            if (tok2->str() == "explicit") {
                 Token::eraseTokens(tok, tok2);
                 tok->str(";");
                 break;
