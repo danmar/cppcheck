@@ -120,6 +120,7 @@ private:
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
         TEST_CASE(template_typename);
+        TEST_CASE(template_constructor);    // #3152 - template constructor is removed
 
         TEST_CASE(namespaces);
 
@@ -2253,6 +2254,15 @@ private:
             }
             ASSERT_EQUALS("void f(){x(sizeof typename);type=0;}", ostr.str());
         }
+    }
+
+    void template_constructor() {
+        // #3152 - if template constructor is removed then there might be
+        //         "no constructor" false positives
+        const char code[] = "class Fred {\n"
+                            "    template<class T> explicit Fred(T t) { }\n"
+                            "}";
+        ASSERT_EQUALS("class Fred { ; explicit Fred ( T t ) { } }", tok(code));
     }
 
     void namespaces() {
