@@ -1509,6 +1509,14 @@ private:
                       "[test.cpp:8]: (performance) Function \'substr\' useless call. Function create copy "
                       "of the \'s2\' object.\n",errout.str());
 
+        check("#include <string>\n"
+              "int main()\n"
+              "{\n"
+              "    std::string str = \"a1b1\";\n"
+              "    return str.find(str[1], 2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 };
 

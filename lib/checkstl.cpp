@@ -1162,13 +1162,7 @@ void CheckStl::uselessCalls()
         if (Token::Match(tok, "%var% . compare (") &&
             tok->varId() == tok->tokAt(3)->link()->tokAt(-1)->varId()) {
             uselessCallsReturnValueError(tok, tok->tokAt(2));
-        } else if ((Token::Match(tok, "%var% . compare ( %var%") ||
-                    Token::Match(tok, "%var% . find ( %var%") ||
-                    Token::Match(tok, "%var% . rfind ( %var%") ||
-                    Token::Match(tok, "%var% . find_first_not_of ( %var%") ||
-                    Token::Match(tok, "%var% . find_first_of ( %var%") ||
-                    Token::Match(tok, "%var% . find_last_not_of ( %var%") ||
-                    Token::Match(tok, "%var% . find_last_of ( %var%")) &&
+        } else if (Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% ,") &&
                    tok->varId() == tok->tokAt(4)->varId()) {
             uselessCallsReturnValueError(tok->tokAt(4), tok->tokAt(2));
         } else if (Token::Match(tok, "%var% . swap ( %var% )") &&
