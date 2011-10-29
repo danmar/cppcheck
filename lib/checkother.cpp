@@ -425,8 +425,8 @@ void CheckOther::checkSizeofForStrncmpSize()
     const char pattern1[] = "strncmp ( %any% , %any% , sizeof ( %var% ) )";
     const char pattern2[] = "strncmp ( %any% , %any% , sizeof %var% )";
 
-    // this check is inconclusive - it might be intentional to use
-    // sizeof(char *) as parameter
+    // danmar : this is inconclusive in case the size parameter is
+    //          sizeof(char *) by intention.
     if (!_settings->inconclusive)
         return;
 
@@ -2305,9 +2305,6 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
         alwaysTrueFalseStringCompareError(tok, tok->strAt(4), tok->strAt(6));
         tok = tok->tokAt(7);
     }
-
-    if (!_settings->inconclusive)
-        return;
 
     tok = _tokenizer->tokens();
     while (tok && (tok = Token::findmatch(tok, pattern3)) != NULL) {
