@@ -3474,6 +3474,13 @@ void Tokenizer::setVarId()
                 varname = tok2->str();
             else if (tok2->str() != "*" && tok2->str() != "&")
                 break;
+
+            // a type can't have varid
+            if (tok2->previous()->varId() > 0) {
+                tok2 = 0;
+                break;
+            }
+
             tok2 = tok2->next();
         }
 
@@ -3498,6 +3505,7 @@ void Tokenizer::setVarId()
                 Token::Match(tok2->next(), "%bool%") ||
                 tok2->next()->str()[0] == '"' ||
                 tok2->next()->str()[0] == '\'' ||
+                tok2->next()->str() == "*" ||
                 tok2->next()->varId() != 0) {
                 // This is not a function
             } else {
@@ -3557,7 +3565,7 @@ void Tokenizer::setVarId()
             while (NULL != (tok2 = tok2->next())) {
                 const char c = tok2->str()[0];
                 if (c == varname[0]) {
-                    if (tok2->str() == varname) {
+                    if (tok2->str() == varname && (className.empty() || tok2->varId() == 0)) {
                         const std::string &prev = tok2->previous()->str();
 
                         /** @todo better handling when classes in different scopes have the same name */
