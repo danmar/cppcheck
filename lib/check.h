@@ -38,7 +38,7 @@
 class Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    Check(const std::string &aname);
+    explicit Check(const std::string &aname);
 
     /** This constructor is used when running checks. */
     Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
