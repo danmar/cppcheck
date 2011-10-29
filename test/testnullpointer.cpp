@@ -1370,6 +1370,19 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        {
+            const char code[] = "void f(Fred *fred) {\n"
+                                "    if (fred == NULL) { }\n"
+                                "    fred->x();\n"
+                                "}";
+
+            check(code);    // non-inconclusive
+            ASSERT_EQUALS("", errout.str());
+
+            check(code, true);  // inconclusive
+            ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 2\n", errout.str());
+        }
     }
 
     // Test CheckNullPointer::nullConstantDereference

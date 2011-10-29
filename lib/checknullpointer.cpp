@@ -850,6 +850,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     else if (CheckNullPointer::isPointerDeRef(tok2, unknown))
                         nullPointerError(tok2, pointerName, linenr, inconclusive);
 
+                    else if (unknown && _settings->inconclusive)
+                        nullPointerError(tok2, pointerName, linenr, true);
+
                     else
                         break;
                 }
