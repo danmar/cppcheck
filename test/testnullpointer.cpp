@@ -1178,6 +1178,14 @@ private:
 
         check("void foo(char *p) {\n"
               "    if (!p) {\n"
+              "        abort();\n"
+              "    }\n"
+              "    *p = 0;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 2\n", errout.str());
+
+        check("void foo(char *p) {\n"
+              "    if (!p) {\n"
               "        (*bail)();\n"
               "    }\n"
               "    *p = 0;\n"

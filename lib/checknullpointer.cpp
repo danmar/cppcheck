@@ -817,9 +817,14 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 if (Token::simpleMatch(tok2, ") ;") &&
                     (Token::Match(tok2->link()->tokAt(-2), "[;{}.] %var% (") ||
                      Token::Match(tok2->link()->tokAt(-5), "[;{}] ( * %var% ) ("))) {
-                    // noreturn function?
-                    if (tok2->strAt(2) == "}")
-                        break;
+                    if (!_settings->inconclusive) {
+                        // noreturn function?
+                        // If inside null pointer check we unknown function call, we must
+                        // assume that it can terminate the program and possible null pointer
+                        // error wont ever happen.
+                        if (tok2->strAt(2) == "}")
+                            break;
+                    }
 
                     // init function (global variables)
                     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
