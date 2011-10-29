@@ -448,12 +448,12 @@ void CheckOther::checkSizeofForStrncmpSize()
 
 void CheckOther::sizeofForStrncmpError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "strncmpLen",
-                "Passing sizeof(pointer) as the last argument to strncmp.\n"
-                "Passing a pointer to sizeof returns the size of the pointer, not "
-                "the number of characters pointed to by that pointer. This "
-                "means that only 4 or 8 (on 64-bit systems) characters are "
-                "compared, which is probably not what was expected.");
+    reportInconclusiveError(tok, Severity::warning, "strncmpLen",
+                            "Passing sizeof(pointer) as the last argument to strncmp.\n"
+                            "Passing a pointer to sizeof returns the size of the pointer, not "
+                            "the number of characters pointed to by that pointer. This "
+                            "means that only 4 or 8 (on 64-bit systems) characters are "
+                            "compared, which is probably not what was expected.");
 }
 
 //---------------------------------------------------------------------------
@@ -2222,10 +2222,10 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
     toks.push_back(tok2);
     toks.push_back(tok1);
 
-    reportError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for if and else.\n"
-                "Finding the same code for an if branch and an else branch is suspicious and "
-                "might indicate a cut and paste or logic error. Please examine this code "
-                "carefully to determine if it is correct.");
+    reportInconclusiveError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for if and else.\n"
+                            "Finding the same code for an if branch and an else branch is suspicious and "
+                            "might indicate a cut and paste or logic error. Please examine this code "
+                            "carefully to determine if it is correct.");
 }
 
 //---------------------------------------------------------------------------
