@@ -276,8 +276,7 @@ std::string FileLister::getAbsolutePath(const std::string& path)
 }
 
 void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
-                                    std::vector<std::string> &absolute,
-                                    std::set<std::string> &seen_dirs,
+                                    std::set<std::string> &seen_paths,
                                     std::map<std::string, long> &filesizes,
                                     const std::string &path)
 {
@@ -298,16 +297,17 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
         if (absolute_path.empty())
             continue;
 
+        // Did we already process this entry?
+        if (seen_paths.find(absolute_path) != seen_paths.end())
+            continue;
+
         if (filename[filename.length()-1] != '/') {
             // File
 
-            // Did we already see this file? Then bail out
-            if (std::find(absolute.begin(), absolute.end(), absolute_path) != absolute.end())
-                continue;
-
             if (Path::sameFileName(path,filename) || FileLister::acceptFile(filename)) {
                 relative.push_back(filename);
-                absolute.push_back(absolute_path);
+                seen_paths.insert(absolute_path);
+
                 struct stat sb;
                 if (stat(absolute_path.c_str(), &sb) == 0) {
                     // Limitation: file sizes are assumed to fit in a 'long'
@@ -317,12 +317,8 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
         } else {
             // Directory
 
-            // Check if we already seen this part of the directory tree (cyclic symbolic links)
-            if (seen_dirs.find(absolute_path) != seen_dirs.end())
-                continue;
-
-            seen_dirs.insert(absolute_path);
-            recursiveAddFiles2(relative, absolute, seen_dirs, filesizes, filename);
+            seen_paths.insert(absolute_path);
+            recursiveAddFiles2(relative, seen_paths, filesizes, filename);
         }
     }
     globfree(&glob_results);
@@ -331,9 +327,8 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
 
 void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map<std::string, long> &filesizes, const std::string &path)
 {
-    std::vector<std::string> abs;
-    std::set<std::string> seen_dirs;
-    recursiveAddFiles2(filenames, abs, seen_dirs, filesizes, path);
+    std::set<std::string> seen_paths;
+    recursiveAddFiles2(filenames, seen_paths, filesizes, path);
 }
 
 bool FileLister::isDirectory(const std::string &path)

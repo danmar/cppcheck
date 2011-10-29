@@ -67,8 +67,7 @@ public:
     static std::string getAbsolutePath(const std::string& path);
 
     static void recursiveAddFiles2(std::vector<std::string> &relative,
-                                   std::vector<std::string> &absolute,
-                                   std::set<std::string> &seen_dirs,
+                                   std::set<std::string> &seen_paths,
                                    std::map<std::string, long> &filesizes,
                                    const std::string &path);
 #endif
