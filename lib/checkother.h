@@ -58,6 +58,7 @@ public:
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
+        checkOther.checkSizeofForStrncmpSize();
         checkOther.checkSizeofForNumericParameter();
         checkOther.checkSelfAssignment();
         checkOther.checkDuplicateIf();
@@ -196,6 +197,9 @@ public:
     /** @brief %Check for using sizeof with array given as function argument */
     void checkSizeofForArrayParameter();
 
+    /** @brief %Check for using sizeof with a char pointer */
+    void checkSizeofForStrncmpSize();
+
     /** @brief %Check for using sizeof with numeric given as function argument */
     void checkSizeofForNumericParameter();
 
@@ -264,6 +268,7 @@ public:
     void catchExceptionByValueError(const Token *tok);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
+    void sizeofForStrncmpError(const Token *tok);
     void sizeofForNumericParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
@@ -273,6 +278,7 @@ public:
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
+    void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok);
     void assignBoolToPointerError(const Token *tok);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname);
@@ -293,6 +299,7 @@ public:
         c.fflushOnInputStreamError(0, "stdin");
         c.misusedScopeObjectError(NULL, "varname");
         c.sizeofForArrayParameterError(0);
+        c.sizeofForStrncmpError(0);
         c.sizeofForNumericParameterError(0);
         c.coutCerrMisusageError(0, "cout");
 
@@ -326,6 +333,7 @@ public:
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
         c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
+        c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
         c.duplicateBreakError(0);
         c.unsignedLessThanZeroError(0, "varname");
         c.unsignedPositiveError(0, "varname");
