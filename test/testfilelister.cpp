@@ -21,6 +21,11 @@
 #include <fstream>
 #include <algorithm>
 
+#ifndef _WIN32
+#include <limits.h>
+#include <stdlib.h>
+#endif
+
 class TestFileLister: public TestFixture {
 public:
     TestFileLister()
@@ -37,6 +42,9 @@ private:
         }
 
         TEST_CASE(isDirectory);
+#ifndef _WIN32
+        TEST_CASE(absolutePath);
+#endif
         TEST_CASE(recursiveAddFiles);
     }
 
@@ -44,6 +52,16 @@ private:
         ASSERT_EQUALS(false, FileLister::isDirectory("readme.txt"));
         ASSERT_EQUALS(true, FileLister::isDirectory("lib"));
     }
+
+#ifndef _WIN32
+    void absolutePath() {
+        char current_dir[PATH_MAX];
+        getcwd(current_dir, sizeof(current_dir));
+
+        std::string absolute_path = FileLister::getAbsolutePath(".");
+        ASSERT_EQUALS(current_dir, absolute_path);
+    }
+#endif
 
     void recursiveAddFiles() {
         // Recursively add add files..

@@ -63,6 +63,8 @@ public:
     static bool fileExists(const std::string &path);
 
 #ifndef _WIN32
+    static std::string getAbsolutePath(const std::string& path);
+
     static void recursiveAddFiles2(std::vector<std::string> &relative,
                                    std::vector<std::string> &absolute,
                                    std::map<std::string, long> &filesizes,

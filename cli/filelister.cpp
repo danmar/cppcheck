@@ -255,6 +255,26 @@ bool FileLister::fileExists(const std::string &path)
 #include <limits.h>
 #include <sys/stat.h>
 
+// Get absolute path. Returns empty string if path does not exist or other error.
+std::string FileLister::getAbsolutePath(const std::string& path)
+{
+    std::string absolute_path;
+
+#ifdef PATH_MAX
+    char buf[PATH_MAX];
+    if (realpath(path.c_str(), buf) != NULL)
+        absolute_path = buf;
+#else
+    char *dynamic_buf;
+    if ((dynamic_buf = realpath(path.c_str(), NULL)) != NULL) {
+        absolute_path = dynamic_buf;
+        free(dynamic_buf);
+    }
+#endif
+
+    return absolute_path;
+}
+
 void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
                                     std::vector<std::string> &absolute,
                                     std::map<std::string, long> &filesizes,
@@ -274,38 +294,23 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
 
         if (filename[filename.length()-1] != '/') {
             // File
-#ifdef PATH_MAX
-            char fname[PATH_MAX];
-            if (realpath(filename.c_str(), fname) == NULL)
-#else
-            char *fname;
-            if ((fname = realpath(filename.c_str(), NULL)) == NULL)
-#endif
-            {
+            std::string absolute_path = getAbsolutePath(filename);
+            if (absolute_path.empty())
                 continue;
-            }
 
-            // Does absolute path exist? then bail out
-            if (std::find(absolute.begin(), absolute.end(), std::string(fname)) != absolute.end()) {
-#ifndef PATH_MAX
-                free(fname);
-#endif
+            // Did we already see this file? Then bail out
+            if (std::find(absolute.begin(), absolute.end(), absolute_path) != absolute.end())
                 continue;
-            }
 
             if (Path::sameFileName(path,filename) || FileLister::acceptFile(filename)) {
                 relative.push_back(filename);
-                absolute.push_back(fname);
+                absolute.push_back(absolute_path);
                 struct stat sb;
-                if (stat(fname, &sb) == 0) {
+                if (stat(absolute_path.c_str(), &sb) == 0) {
                     // Limitation: file sizes are assumed to fit in a 'long'
                     filesizes[filename] = static_cast<long>(sb.st_size);
                 }
             }
-
-#ifndef PATH_MAX
-            free(fname);
-#endif
         } else {
             // Directory
             recursiveAddFiles2(relative, absolute, filesizes, filename);
