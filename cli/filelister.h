@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <string>
+#include <set>
 #include <map>
 
 /// @addtogroup CLI
@@ -67,6 +68,7 @@ public:
 
     static void recursiveAddFiles2(std::vector<std::string> &relative,
                                    std::vector<std::string> &absolute,
+                                   std::set<std::string> &seen_dirs,
                                    std::map<std::string, long> &filesizes,
                                    const std::string &path);
 #endif

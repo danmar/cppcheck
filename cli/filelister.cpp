@@ -277,6 +277,7 @@ std::string FileLister::getAbsolutePath(const std::string& path)
 
 void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
                                     std::vector<std::string> &absolute,
+                                    std::set<std::string> &seen_dirs,
                                     std::map<std::string, long> &filesizes,
                                     const std::string &path)
 {
@@ -292,11 +293,13 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
         if (filename == "." || filename == ".." || filename.length() == 0)
             continue;
 
+        // Determine absolute path. Empty filename if path does not exist
+        const std::string absolute_path = getAbsolutePath(filename);
+        if (absolute_path.empty())
+            continue;
+
         if (filename[filename.length()-1] != '/') {
             // File
-            std::string absolute_path = getAbsolutePath(filename);
-            if (absolute_path.empty())
-                continue;
 
             // Did we already see this file? Then bail out
             if (std::find(absolute.begin(), absolute.end(), absolute_path) != absolute.end())
@@ -313,7 +316,13 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
             }
         } else {
             // Directory
-            recursiveAddFiles2(relative, absolute, filesizes, filename);
+
+            // Check if we already seen this part of the directory tree (cyclic symbolic links)
+            if (seen_dirs.find(absolute_path) != seen_dirs.end())
+                continue;
+
+            seen_dirs.insert(absolute_path);
+            recursiveAddFiles2(relative, absolute, seen_dirs, filesizes, filename);
         }
     }
     globfree(&glob_results);
@@ -323,7 +332,8 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
 void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map<std::string, long> &filesizes, const std::string &path)
 {
     std::vector<std::string> abs;
-    recursiveAddFiles2(filenames, abs, filesizes, path);
+    std::set<std::string> seen_dirs;
+    recursiveAddFiles2(filenames, abs, seen_dirs, filesizes, path);
 }
 
 bool FileLister::isDirectory(const std::string &path)
