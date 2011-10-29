@@ -210,6 +210,7 @@ private:
         TEST_CASE(varidclass11);  // variable declaration below usage
         TEST_CASE(varidclass12);
         TEST_CASE(varidclass13);
+        TEST_CASE(varidclass14);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -3580,6 +3581,35 @@ private:
                                    "4: } ;\n");
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varidclass14() {
+        // don't give friend classes varid
+        {
+            const std::string code("class A {\n"
+                                   "friend class B;\n"
+                                   "}");
+
+            const std::string expected("\n\n##file 0\n"
+                                       "1: class A {\n"
+                                       "2: friend class B ;\n"
+                                       "3: }\n");
+
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+        }
+
+        {
+            const std::string code("class A {\n"
+                                   "private: friend class B;\n"
+                                   "}");
+
+            const std::string expected("\n\n##file 0\n"
+                                       "1: class A {\n"
+                                       "2: private: friend class B ;\n"
+                                       "3: }\n");
+
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+        }
     }
 
     void file1() {

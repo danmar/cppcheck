@@ -3370,6 +3370,9 @@ void Tokenizer::setVarId()
         while (Token::Match(tok, "const|static|extern|public:|private:|protected:|;|mutable"))
             tok = tok->next();
 
+        if (tok && tok->str() == "friend")
+            continue;
+
         // skip global namespace prefix
         if (Token::simpleMatch(tok, "::"))
             tok = tok->next();
