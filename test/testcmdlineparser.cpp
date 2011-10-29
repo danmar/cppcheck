@@ -96,6 +96,7 @@ private:
         TEST_CASE(templates);
         TEST_CASE(templatesGcc);
         TEST_CASE(templatesVs);
+        TEST_CASE(templatesEdit);
         TEST_CASE(xml);
         TEST_CASE(xmlver1);
         TEST_CASE(xmlver2);
@@ -729,6 +730,15 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(4, argv));
         ASSERT_EQUALS("{file}({line}): {severity}: {message}", settings._outputFormat);
+    }
+
+    void templatesEdit() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--template", "edit", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS("{file} +{line}: {severity}: {message}", settings._outputFormat);
     }
 
     void xml() {
