@@ -419,6 +419,37 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
                );
 }
 
+void CheckOther::checkSizeofForStrncmpSize()
+{
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const char pattern1[] = "strncmp ( %any , %any% , sizeof ( %var% ) )";
+    const char pattern2[] = "strncmp ( %any , %any% , sizeof %var% )";
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, pattern1) || Token::Match(tok, pattern2)) {
+            int tokIdx = 7;
+            if (tok->tokAt(tokIdx)->str() == "(")
+                ++tokIdx;
+            const Token *tokVar = tok->tokAt(tokIdx);
+            if (tokVar->varId() > 0) {
+                const Variable *var = symbolDatabase->getVariableFromVarId(tokVar->varId());
+                if (var && var->nameToken()->strAt(-1) == "*") {
+                    sizeofForStrncmpError(tokVar);
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::sizeofForStrncmpError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "strncmpLen",
+                "Passing sizeof(pointer) as the last argument to strncmp.\n"
+                "Passing a pointer to sizeof returns the size of the pointer, not "
+                "the number of characters pointed to by that pointer. This "
+                "means that only 4 or 8 (on 64-bit systems) characters are "
+                "compared, which is probably not what was expected.");
+}
+
 //---------------------------------------------------------------------------
 //    switch (x)
 //    {
@@ -2253,8 +2284,9 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     if (!_settings->isEnabled("style") && !_settings->isEnabled("performance"))
         return;
 
-    const char pattern1[] = "strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% )";
+    const char pattern1[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% ";
     const char pattern2[] = "QString :: compare ( %str% , %str% )";
+    const char pattern3[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %var% , %var% ";
 
     const Token *tok = _tokenizer->tokens();
     while (tok && (tok = Token::findmatch(tok, pattern1)) != NULL) {
@@ -2266,6 +2298,20 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     while (tok && (tok = Token::findmatch(tok, pattern2)) != NULL) {
         alwaysTrueFalseStringCompareError(tok, tok->strAt(4), tok->strAt(6));
         tok = tok->tokAt(7);
+    }
+
+    if (!_settings->inconclusive)
+        return;
+
+    tok = _tokenizer->tokens();
+    while (tok && (tok = Token::findmatch(tok, pattern3)) != NULL) {
+        const Token *var1 = tok->tokAt(2);
+        const Token *var2 = tok->tokAt(4);
+        const std::string &str1 = var1->str();
+        const std::string &str2 = var2->str();
+        if (str1 == str2)
+            alwaysTrueStringVariableCompareError(tok, str1, str2);
+        tok = tok->tokAt(5);
     }
 }
 
@@ -2287,6 +2333,14 @@ void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::
                     "The compared strings, '" + string1 + "' and '" + string2 + "', are static and always different. "
                     "If the purpose is to compare these two strings, the comparison is unnecessary.");
     }
+}
+
+void CheckOther::alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2)
+{
+    reportError(tok, Severity::warning, "stringCompare",
+                "Comparison of identical string variables.\n"
+                "The compared strings, '" + str1 + "' and '" + str2 + "', are identical. "
+                "This could be a logic bug.");
 }
 
 //-----------------------------------------------------------------------------

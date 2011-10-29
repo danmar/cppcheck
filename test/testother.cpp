@@ -139,6 +139,7 @@ private:
         TEST_CASE(duplicateExpression2); // ticket #2730
 
         TEST_CASE(alwaysTrueFalseStringCompare);
+        TEST_CASE(checkStrncmpSizeof);
         TEST_CASE(checkSignOfUnsignedVariable);
 
         TEST_CASE(checkForSuspiciousSemicolon1);
@@ -3418,6 +3419,36 @@ private:
             "  }"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        check_preprocess_suppress(
+            "int main()\n"
+            "{\n"
+            "  if (strncmp(\"hotdog\",\"hotdog\", 6) == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of always identical static strings.\n", errout.str());
+
+        check_preprocess_suppress(
+            "int foo(const char *buf)\n"
+            "{\n"
+            "  if (strcmp(buf, buf) == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of identical string variables.\n", errout.str());
+    }
+
+    void checkStrncmpSizeof() {
+        check(
+            "int fun(const char *buf1)\n"
+            "{\n"
+            "  const char *buf1_ex = \"foobarbaz\";\n"
+            "  return strncmp(buf1, buf1_ex, sizeof(buf1_ex)) == 0;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Passing sizeof(pointer) as the last argument to strncmp.\n", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[]) {
