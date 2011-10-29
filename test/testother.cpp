@@ -3430,7 +3430,7 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of always identical static strings.\n", errout.str());
 
-        check_preprocess_suppress(
+        check(
             "int foo(const char *buf)\n"
             "{\n"
             "  if (strcmp(buf, buf) == 0)"
