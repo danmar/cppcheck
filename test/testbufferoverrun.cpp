@@ -1592,7 +1592,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
     void array_index_vla_for() {
         // #3221 - access VLA inside for
         check("void f(int len) {\n"
