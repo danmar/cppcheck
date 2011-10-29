@@ -147,7 +147,11 @@ void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
-        if (it->first == "main" || it->first == "WinMain" || it->first == "_tmain" || it->first == "if")
+        if (it->first == "main" ||
+            it->first == "WinMain" ||
+            it->first == "_tmain" ||
+            it->first == "if" ||
+            (it->first.compare(0, 8, "operator") == 0 && it->first.size() > 8 && !std::isalnum(it->first[8])))
             continue;
         if (! func.usedSameFile) {
             std::string filename;
