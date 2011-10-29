@@ -422,8 +422,14 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
 void CheckOther::checkSizeofForStrncmpSize()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const char pattern1[] = "strncmp ( %any , %any% , sizeof ( %var% ) )";
-    const char pattern2[] = "strncmp ( %any , %any% , sizeof %var% )";
+    const char pattern1[] = "strncmp ( %any% , %any% , sizeof ( %var% ) )";
+    const char pattern2[] = "strncmp ( %any% , %any% , sizeof %var% )";
+
+    // this check is inconclusive - it might be intentional to use
+    // sizeof(char *) as parameter
+    if (!_settings->inconclusive)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, pattern1) || Token::Match(tok, pattern2)) {
             int tokIdx = 7;
