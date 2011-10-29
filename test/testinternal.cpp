@@ -36,6 +36,7 @@ private:
         TEST_CASE(complexPatternInTokenSimpleMatch)
         TEST_CASE(simplePatternSquareBrackets)
         TEST_CASE(simplePatternAlternatives)
+        TEST_CASE(missingPercentCharacter);
     }
 
     void check(const std::string &code) {
@@ -168,6 +169,61 @@ private:
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"| 0 )\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void missingPercentCharacter() {
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"%type%\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"foo %type% bar\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Missing % at the end of string
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"%type\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"%type\"\n", errout.str());
+
+        // Missing % in the middle of a pattern
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"foo %type bar\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo %type bar\"\n", errout.str());
+
+        // Bei quiet on single %
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"foo % %type% bar\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"foo % %type % bar\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo % %type % bar\"\n", errout.str());
+
+        // Find missing % also in 'alternatives' pattern
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"foo|%type|bar\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo|%type|bar\"\n", errout.str());
+
+        // Make sure we don't take %or% for a broken %oror%
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"foo|%oror%|bar\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

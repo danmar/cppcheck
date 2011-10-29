@@ -51,6 +51,7 @@ public:
 
         checkInternal.checkTokenMatchPatterns();
         checkInternal.checkTokenSimpleMatchPatterns();
+        checkInternal.checkMissingPercentCharacter();
     }
 
     /** @brief %Check if a simple pattern is used inside Token::Match or Token::findmatch */
@@ -59,14 +60,19 @@ public:
     /** @brief %Check if a complex pattern is used inside Token::simpleMatch or Token::findsimplematch */
     void checkTokenSimpleMatchPatterns();
 
+    /** @brief %Check for missing % end character in Token::Match pattern */
+    void checkMissingPercentCharacter();
+
 private:
     void simplePatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void complexPatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
+    void missingPercentCharacterError(const Token *tok, const std::string &pattern, const std::string &funcname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckInternal c(0, settings, errorLogger);
         c.simplePatternError(0, "class {", "Match");
         c.complexPatternError(0, "%type% ( )", "Match");
+        c.missingPercentCharacterError(0, "%num", "Match");
     }
 
     std::string myName() const {
@@ -76,7 +82,8 @@ private:
     std::string classInfo() const {
         return "Check for wrong or unsuitable internal API usage:\n"
                "* Found simple pattern inside Token::Match() call: \"class {\"\n"
-               "* Found complex pattern inside Token::simpleMatch() call: \"%type\"\n";
+               "* Found complex pattern inside Token::simpleMatch() call: \"%type%\"\n"
+               "* Missing percent end character in Token::Match pattern: \"%num\"\n";
     }
 };
 /// @}
