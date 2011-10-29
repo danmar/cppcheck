@@ -1196,7 +1196,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (_settings->standards.posix) {
             if (Token::Match(tok, "readlink ( %any% , %varid% , %num% )", arrayInfo.varid()))
                 checkReadlinkBufferUsage(tok, scope_begin, total_size, false);
-            else if (Token::Match(tok, "readlinkat ( %any , %any% , %varid% , %num% )", arrayInfo.varid()))
+            else if (Token::Match(tok, "readlinkat ( %any% , %any% , %varid% , %num% )", arrayInfo.varid()))
                 checkReadlinkBufferUsage(tok, scope_begin, total_size, true);
         }
 
