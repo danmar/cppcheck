@@ -63,7 +63,9 @@ private:
         TEST_CASE(enabledPortability);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
+#ifndef NDEBUG
         TEST_CASE(enabledInternal);
+#endif
         TEST_CASE(errorExitcode);
         TEST_CASE(errorExitcodeMissing);
         TEST_CASE(errorExitcodeStr);
@@ -445,6 +447,7 @@ private:
         ASSERT(settings.isEnabled("missingInclude"));
     }
 
+#ifndef NDEBUG
     void enabledInternal() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--enable=internal", "file.cpp"};
@@ -453,6 +456,7 @@ private:
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings.isEnabled("internal"));
     }
+#endif
 
     void errorExitcode() {
         REDIRECT;

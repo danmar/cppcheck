@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef NDEBUG
+
 #include "checkinternal.h"
 #include "symboldatabase.h"
 #include <string>
@@ -23,7 +25,8 @@
 
 using namespace std;
 
-// Register this check class (by creating a static instance of it)
+// Register this check class (by creating a static instance of it).
+// Disabled in release builds
 namespace {
     CheckInternal instance;
 }
@@ -186,3 +189,5 @@ void CheckInternal::missingPercentCharacterError(const Token* tok, const std::st
                 "Missing percent end character in Token::" + funcname + "() pattern: \"" + pattern + "\""
                );
 }
+
+#endif // #ifndef NDEBUG
