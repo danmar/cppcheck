@@ -2302,6 +2302,9 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
         tok = tok->tokAt(7);
     }
 
+    if (!_settings->inconclusive)
+        return;
+
     tok = _tokenizer->tokens();
     while (tok && (tok = Token::findmatch(tok, pattern3)) != NULL) {
         const Token *var1 = tok->tokAt(2);
