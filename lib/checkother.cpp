@@ -2306,7 +2306,10 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     while (tok && (tok = Token::findmatch(tok, pattern3)) != NULL) {
         const Token *var1 = tok->tokAt(2);
         const Token *var2 = tok->tokAt(4);
-        alwaysTrueStringVariableCompareError(tok, var1->str(), var2->str());
+        const std::string &str1 = var1->str();
+        const std::string &str2 = var2->str();
+        if (str1 == str2)
+            alwaysTrueStringVariableCompareError(tok, str1, str2);
         tok = tok->tokAt(5);
     }
 }
@@ -2333,12 +2336,10 @@ void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::
 
 void CheckOther::alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2)
 {
-    if (str1 == str2) {
-        reportError(tok, Severity::warning, "stringCompare",
-                    "Comparison of identical string variables.\n"
-                    "The compared strings, '" + str1 + "' and '" + str2 + "', are identical. "
-                    "This could be a logic bug.");
-    }
+    reportError(tok, Severity::warning, "stringCompare",
+                "Comparison of identical string variables.\n"
+                "The compared strings, '" + str1 + "' and '" + str2 + "', are identical. "
+                "This could be a logic bug.");
 }
 
 //-----------------------------------------------------------------------------
