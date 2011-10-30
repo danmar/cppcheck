@@ -81,6 +81,7 @@ private:
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
 
         TEST_CASE(operatorEqSTL);
+        TEST_CASE(explicit_constructor);
     }
 
 
@@ -227,7 +228,7 @@ private:
               "{\n"
               "public:\n"
               "    Fred();\n"
-              "    Fred(int _i);\n"
+              "    explicit Fred(int _i);\n"
               "    int i;\n"
               "};\n"
               "Fred::Fred()\n"
@@ -241,7 +242,7 @@ private:
         check("struct Fred\n"
               "{\n"
               "    Fred();\n"
-              "    Fred(int _i);\n"
+              "    explicit Fred(int _i);\n"
               "    int i;\n"
               "};\n"
               "Fred::Fred()\n"
@@ -647,7 +648,7 @@ private:
         check("class c\n"
               "{\n"
               "    c();\n"
-              "    c(bool b);"
+              "    explicit c(bool b);"
               "\n"
               "    void InitInt();\n"
               "\n"
@@ -677,7 +678,7 @@ private:
         check("struct c\n"
               "{\n"
               "    c();\n"
-              "    c(bool b);"
+              "    explicit c(bool b);"
               "\n"
               "    void InitInt();\n"
               "\n"
@@ -850,12 +851,12 @@ private:
               "public:\n"
               "    A();\n"
               "    struct B {\n"
-              "        B(int x);\n"
+              "        explicit B(int x);\n"
               "        struct C {\n"
-              "            C(int y);\n"
+              "            explicit C(int y);\n"
               "            struct D {\n"
               "                int d;\n"
-              "                D(int z);\n"
+              "                explicit D(int z);\n"
               "            };\n"
               "            int c;\n"
               "        };\n"
@@ -879,9 +880,9 @@ private:
               "public:\n"
               "    A();\n"
               "    struct B {\n"
-              "        B(int x);\n"
+              "        explicit B(int x);\n"
               "        struct C {\n"
-              "            C(int y);\n"
+              "            explicit C(int y);\n"
               "            struct D {\n"
               "                D(const D &);\n"
               "                int d;\n"
@@ -908,13 +909,13 @@ private:
               "public:\n"
               "    A();\n"
               "    struct B {\n"
-              "        B(int x);\n"
+              "        explicit B(int x);\n"
               "        struct C {\n"
-              "            C(int y);\n"
+              "            explicit C(int y);\n"
               "            struct D {\n"
               "                struct E { int e; };\n"
               "                struct E d;\n"
-              "                D(const E &);\n"
+              "                explicit D(const E &);\n"
               "            };\n"
               "            int c;\n"
               "        };\n"
@@ -1042,6 +1043,22 @@ private:
               "void Fred::operator=(const Fred &f)\n"
               "{ }", true);
         ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n", errout.str());
+    }
+
+    void explicit_constructor()
+    {
+        check("class Fred\n"
+              "{\n"
+              "    Fred(int i);\n"
+              "};\n"
+              "\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Constructor for 'Fred' should be explicit.\n", errout.str());
+        check("class Fred\n"
+              "{\n"
+              "    explicit Fred(int a, int b);\n"
+              "};\n"
+              "\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Constructor for 'Fred' is marked explicit but takes more than one argument.\n", errout.str());
     }
 };
 

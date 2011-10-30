@@ -90,6 +90,14 @@ void CheckClass::constructors()
         std::vector<Usage> usage(scope->varlist.size());
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            // check for explicit
+            if (func->type == Function::eConstructor) {
+                if (!func->isExplicit && func->argumentList.size() == 1)
+                    explicitConstructorError(func->token, scope->className);
+                if (func->isExplicit && func->argumentList.size() > 1)
+                    pointlessExplicitConstructorError(func->token, scope->className);
+            }
+
             if (!func->hasBody || !(func->type == Function::eConstructor ||
                                     func->type == Function::eCopyConstructor ||
                                     func->type == Function::eOperatorEqual))
@@ -513,6 +521,32 @@ void CheckClass::uninitVarError(const Token *tok, const std::string &classname, 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
     reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
+}
+
+void CheckClass::explicitConstructorError(const Token *tok, const std::string &className)
+{
+    reportError(tok, Severity::style,
+                "explicitConstructorError", "Constructor for '" +
+                className + "' should be explicit.\n"
+                "The single-argument constructor for '" + className + "' should "
+                "be explicit as it can be used for automatic conversion. This is "
+                "convenient but can also be a problem when automatic conversion "
+                "creates new objects when you were not expecting it. Adding the "
+                "explicit declaration to the constructor prevents it being called "
+                "for implicit conversions.");
+}
+
+void CheckClass::pointlessExplicitConstructorError(const Token *tok, const std::string &className)
+{
+    reportError(tok, Severity::style,
+                "pointlessExplicitConstructorError", "Constructor for '" +
+                className + "' is marked explicit but"
+                " takes more than one argument.\n"
+                "The explicit keyword prevents constructor calls for implicit "
+                "conversions, but it is only needed for single-argument "
+                "constructors. The constructor for '" + className + "' takes "
+                "more than one argument so is not affected by the explicit "
+                "declaration.");
 }
 
 //---------------------------------------------------------------------------
