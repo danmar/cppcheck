@@ -1045,8 +1045,7 @@ private:
         ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n", errout.str());
     }
 
-    void explicit_constructor()
-    {
+    void explicit_constructor() {
         check("class Fred\n"
               "{\n"
               "    Fred(int i);\n"
