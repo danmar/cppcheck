@@ -436,6 +436,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             continue;
         }
 
+        bool inconclusive = false;
+
         /**
          * @todo There are lots of false negatives here. A dereference
          *  is only investigated if a few specific conditions are met.
@@ -444,6 +446,11 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         // dereference in assignment
         if (Token::Match(tok1, "[;{}] %var% . %var%")) {
             tok1 = tok1->next();
+            if (tok1->strAt(3) == "(") {
+                if (!_settings->inconclusive)
+                    continue;
+                inconclusive = true;
+            }
         }
 
         // dereference in assignment
@@ -559,7 +566,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             else if (Token::Match(tok2, "if ( !| %varid% )|&&", varid1)) {
                 // Is this variable a pointer?
                 if (isPointer(varid1))
-                    nullPointerError(tok1, varname, tok2->linenr());
+                    nullPointerError(tok1, varname, tok2->linenr(), inconclusive);
                 break;
             }
         }

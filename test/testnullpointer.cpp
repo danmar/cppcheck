@@ -257,13 +257,6 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", errout.str());
 
         check("void foo(ABC *abc) {\n"
-              "    abc->do_something();\n"
-              "    if (abc)\n"
-              "        ;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", errout.str());
-
-        check("void foo(ABC *abc) {\n"
               "    if (abc->a == 3) {\n"
               "        return;\n"
               "    }\n"
@@ -432,6 +425,18 @@ private:
               "    if (abc) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #3228 - calling function with null object
+        {
+            const char code[] = "void f(Fred *fred) {\n"
+                                "    fred->x();\n"
+                                "    if (fred) { }\n"
+                                "}";
+            check(code);
+            ASSERT_EQUALS("", errout.str());
+            check(code, true);
+            ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 3\n", errout.str());
+        }
     }
 
     // Dereferencing a pointer and then checking if it is null
