@@ -6297,7 +6297,7 @@ private:
                             "};";
 
         Settings settings;
-        settings.addEnabled("information");
+        settings.addEnabled("style");
 
         settings.ifcfg = false;
         checkConst(code, &settings);

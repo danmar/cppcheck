@@ -1083,6 +1083,7 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "        bar(y);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant assignment of \"y\" in switch\n", errout.str());
 
@@ -1098,6 +1099,7 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "        bar(y);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant assignment of \"y\" in switch\n", errout.str());
 
@@ -1114,6 +1116,7 @@ private:
               "                y = 3;\n"
               "            }\n"
               "        }\n"
+              "        bar(y);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1131,6 +1134,7 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "        bar(y);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1145,6 +1149,7 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "        bar(y);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1160,6 +1165,7 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "        bar(y);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1174,6 +1180,7 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "        bar(y);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1189,6 +1196,7 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "        bar(y);\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -1205,6 +1213,7 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "        bar(y);\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -1220,6 +1229,7 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "        bar(y);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1234,6 +1244,7 @@ private:
               "        case 3:\n"
               "            y = 3;\n"
               "        }\n"
+              "        bar(y);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
