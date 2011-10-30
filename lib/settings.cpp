@@ -85,11 +85,18 @@ std::string Settings::addEnabled(const std::string &str)
     id.insert("information");
     id.insert("missingInclude");
     id.insert("unusedFunction");
+#ifndef NDEBUG
+    id.insert("internal");
+#endif
 
     if (str == "all") {
         std::set<std::string>::const_iterator it;
-        for (it = id.begin(); it != id.end(); ++it)
+        for (it = id.begin(); it != id.end(); ++it) {
+            if (*it == "internal")
+                continue;
+
             _enabled.insert(*it);
+        }
     } else if (id.find(str) != id.end()) {
         _enabled.insert(str);
     } else if (!handled) {

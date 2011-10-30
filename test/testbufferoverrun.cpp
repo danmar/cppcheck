@@ -124,6 +124,7 @@ private:
         TEST_CASE(array_index_for);        // FN: for,if
         TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
         TEST_CASE(array_index_for_question);	// #2561: for, ?:
+        TEST_CASE(array_index_vla_for);    // #3221: access VLA inside for
         TEST_CASE(array_index_extern);      // FP when using 'extern'. #1684
         TEST_CASE(array_index_cast);       // FP after cast. #2841
 
@@ -1587,6 +1588,17 @@ private:
               "    int a[10];\n"
               "    for (int i = 0; i != 10; ++i) {\n"
               "        i == 0 ? 0 : a[i-1];\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_vla_for() {
+        // #3221 - access VLA inside for
+        check("void f(int len) {\n"
+              "    char a[len];\n"
+              "    for (int i=0; i<7; ++i) {\n"
+              "        a[0] = 0;\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());

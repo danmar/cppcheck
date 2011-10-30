@@ -120,6 +120,7 @@ private:
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
         TEST_CASE(template_typename);
+        TEST_CASE(template_constructor);    // #3152 - template constructor is removed
 
         TEST_CASE(namespaces);
 
@@ -382,6 +383,9 @@ private:
         TEST_CASE(redundant_semicolon);
 
         TEST_CASE(simplifyFunctionReturn);
+
+        // void foo(void) -> void foo()
+        TEST_CASE(removeVoidFromFunction);
 
         TEST_CASE(removeUnnecessaryQualification1);
         TEST_CASE(removeUnnecessaryQualification2);
@@ -2250,6 +2254,15 @@ private:
             }
             ASSERT_EQUALS("void f(){x(sizeof typename);type=0;}", ostr.str());
         }
+    }
+
+    void template_constructor() {
+        // #3152 - if template constructor is removed then there might be
+        //         "no constructor" false positives
+        const char code[] = "class Fred {\n"
+                            "    template<class T> explicit Fred(T t) { }\n"
+                            "}";
+        ASSERT_EQUALS("class Fred { ; explicit Fred ( T t ) { } }", tok(code));
     }
 
     void namespaces() {
@@ -7344,6 +7357,10 @@ private:
                                 "void ( * get4 ( ) ) ( ) ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void removeVoidFromFunction() {
+        ASSERT_EQUALS("void foo ( ) ;", tok("void foo(void);"));
     }
 
     void removeUnnecessaryQualification1() {

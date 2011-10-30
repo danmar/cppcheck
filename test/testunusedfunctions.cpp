@@ -44,6 +44,7 @@ private:
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
         TEST_CASE(initializationIsNotAFunction);
+        TEST_CASE(operator1);   // #3195
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -183,6 +184,11 @@ private:
         check("struct B: N::A {\n"
               "  B(): N::A() {};\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void operator1() {
+        check("struct Foo { void operator()(int a) {} };");
         ASSERT_EQUALS("", errout.str());
     }
 

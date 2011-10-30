@@ -191,7 +191,7 @@ public:
     /**
      * @param str Token::str() is compared against this.
      */
-    TokenStrEquals(const std::string &str)
+    explicit TokenStrEquals(const std::string &str)
         : value(str) {
     }
 
@@ -510,7 +510,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
             }
 
             // skip 0 length arrays
-            if (arrayInfo.num(0) && (min_index >= (int)arrayInfo.num(0) || max_index >= (int)arrayInfo.num(0))) {
+            if (arrayInfo.num(0) && (min_index >= arrayInfo.num(0) || max_index >= arrayInfo.num(0))) {
                 std::vector<MathLib::bigint> indexes;
                 indexes.push_back(std::max(min_index, max_index));
                 arrayIndexOutOfBoundsError(tok2, arrayInfo, indexes);
@@ -638,7 +638,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
             ftok = ftok->next()->link();
             if (!Token::Match(ftok, ") const| {"))
                 return;
-            ftok = Token::findmatch(ftok, "{");
+            ftok = Token::findsimplematch(ftok, "{");
             ftok = ftok->next();
 
             // Check the parameter usage in the function scope..
@@ -731,7 +731,7 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     {
         const Token *bodyStart = tok->next()->link()->next();
         const Token *bodyEnd = bodyStart->link();
-        if (Token::findmatch(bodyStart, "break ;", bodyEnd))
+        if (Token::findsimplematch(bodyStart, "break ;", bodyEnd))
             return;
     }
 
@@ -874,7 +874,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                     tok3 = tok3->tokAt(-2);
 
                 // just taking the address?
-                const bool addr(Token::Match(tok3, "&") ||
+                const bool addr(Token::simpleMatch(tok3, "&") ||
                                 Token::simpleMatch(tok3->tokAt(-1), "& ("));
 
                 // taking address of 1 past end?
@@ -1065,7 +1065,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     tok2 = tok2->tokAt(-2);
 
                 // just taking the address?
-                const bool addr(Token::Match(tok2, "&") ||
+                const bool addr(Token::simpleMatch(tok2, "&") ||
                                 Token::simpleMatch(tok2->tokAt(-1), "& ("));
 
                 // taking address of 1 past end?
@@ -1196,7 +1196,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (_settings->standards.posix) {
             if (Token::Match(tok, "readlink ( %any% , %varid% , %num% )", arrayInfo.varid()))
                 checkReadlinkBufferUsage(tok, scope_begin, total_size, false);
-            else if (Token::Match(tok, "readlinkat ( %any , %any% , %varid% , %num% )", arrayInfo.varid()))
+            else if (Token::Match(tok, "readlinkat ( %any% , %any% , %varid% , %num% )", arrayInfo.varid()))
                 checkReadlinkBufferUsage(tok, scope_begin, total_size, true);
         }
 
@@ -1212,7 +1212,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
 void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* tok, const Token *scope_begin, const MathLib::bigint total_size, const bool is_readlinkat)
 {
-    unsigned int param_offset = is_readlinkat ? 2 : 0;
+    unsigned char param_offset = is_readlinkat ? 2 : 0;
     const std::string funcname = is_readlinkat ? "readlinkat" : "readlink";
 
     const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6 + param_offset));

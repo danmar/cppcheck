@@ -973,6 +973,20 @@ private:
                        "    }\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #3231 - ({ switch .. })
+        checkUninitVar("void f() {\n"
+                       "    int a;\n"
+                       "    ({\n"
+                       "    switch(sizeof(int)) {\n"
+                       "    case 4:\n"
+                       "    default:\n"
+                       "        (a)=0;\n"
+                       "        break;\n"
+                       "    };\n"
+                       "    })\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // arrays..
@@ -1330,6 +1344,23 @@ private:
                        "    strncat(a, \"world\", 20);\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #3245 - false positive
+        {
+            checkUninitVar("void f() {\n"
+                           "    char a[100];\n"
+                           "    strncpy(a,p,10);\n"
+                           "    memcmp(a,q,10);\n"
+                           "}");
+            ASSERT_EQUALS("", errout.str());
+
+            checkUninitVar("void f() {\n"
+                           "    char a[100];\n"
+                           "    strncpy(a,p,10);\n"
+                           "    if (memcmp(a,q,10)==0);\n"
+                           "}");
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     // initialization with memset (not 0-terminating string)..
@@ -1483,6 +1514,14 @@ private:
                        "    INIT(x);\n"
                        "    return x;\n"
                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #3222 - calling function through function pointer
+        checkUninitVar("char f() {\n"
+                       "    char buffer[100];\n"
+                       "    (foo.init)(buffer);\n"
+                       "    return buffer[0];\n"
+                       "}");
         ASSERT_EQUALS("", errout.str());
 
         // using uninitialized function pointer..

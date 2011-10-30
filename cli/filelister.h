@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <string>
+#include <set>
 #include <map>
 
 /// @addtogroup CLI
@@ -63,8 +64,10 @@ public:
     static bool fileExists(const std::string &path);
 
 #ifndef _WIN32
+    static std::string getAbsolutePath(const std::string& path);
+
     static void recursiveAddFiles2(std::vector<std::string> &relative,
-                                   std::vector<std::string> &absolute,
+                                   std::set<std::string> &seen_paths,
                                    std::map<std::string, long> &filesizes,
                                    const std::string &path);
 #endif

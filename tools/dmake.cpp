@@ -210,9 +210,10 @@ int main(int argc, char **argv)
         makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall");
     } else {
         // TODO: add more compiler warnings.
-        // -Wlogical-op      : doesn't work on older GCC
-        // -Wconversion      : too many warnings
-        // -Wsign-conversion : too many warnings
+        // -Wlogical-op       : doesn't work on older GCC
+        // -Wconversion       : too many warnings
+        // -Wsign-conversion  : too many warnings
+        // -Wunreachable-code : some GCC versions report lots of warnings
 
         // The _GLIBCXX_DEBUG doesn't work in cygwin
         makeConditionalVariable(fout, "CXXFLAGS",
@@ -239,11 +240,11 @@ int main(int argc, char **argv)
     }
 
     fout << "ifeq ($(HAVE_RULES),yes)\n"
-         << "    CXXFLAGS += -DHAVE_RULES\n"
+         << "    CXXFLAGS += -DHAVE_RULES $(shell pcre-config --cflags)\n"
          << "    ifdef LIBS\n"
-         << "        LIBS += -lpcre\n"
+         << "        LIBS += $(shell pcre-config --libs)\n"
          << "    else\n"
-         << "        LIBS=-lpcre\n"
+         << "        LIBS=$(shell pcre-config --libs)\n"
          << "    endif\n"
          << "endif\n\n";
 

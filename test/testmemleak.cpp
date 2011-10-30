@@ -103,7 +103,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // there is no allocation
-        const Token *tok = Token::findmatch(tokenizer.tokens(), "ret =");
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "ret =");
         CheckMemoryLeak check(&tokenizer, 0);
         ASSERT_EQUALS(CheckMemoryLeak::No, check.getAllocationType(tok->tokAt(2), 1));
     }

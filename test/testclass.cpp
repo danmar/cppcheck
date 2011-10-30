@@ -1683,7 +1683,7 @@ private:
                        "    FILE *fp;\n"
                        "\n"
                        "public:\n"
-                       "    C(FILE *fp);\n"
+                       "    explicit C(FILE *fp);\n"
                        "};\n"
                        "\n"
                        "C::C(FILE *fp) {\n"
@@ -1761,7 +1761,7 @@ private:
         checkUninitVar("class Foo : public Bar\n"
                        "{\n"
                        "public:\n"
-                       "    Foo(int i) : Bar(mi=i) { }\n"
+                       "    explicit Foo(int i) : Bar(mi=i) { }\n"
                        "private:\n"
                        "    int mi;\n"
                        "};\n");
@@ -1811,7 +1811,7 @@ private:
                        "private:\n"
                        "    int xasd;\n"
                        "public:\n"
-                       "    Prefs(wxSize size);\n"
+                       "    explicit Prefs(wxSize size);\n"
                        "};\n"
                        "Prefs::Prefs(wxSize size)\n"
                        "{\n"
@@ -1835,7 +1835,7 @@ private:
     void uninitVar11() {
         checkUninitVar("class A {\n"
                        "public:\n"
-                       "        A(int a = 0);\n"
+                       "        explicit A(int a = 0);\n"
                        "private:\n"
                        "        int var;\n"
                        "};\n"
@@ -2138,7 +2138,7 @@ private:
     void uninitVar18() { // ticket #2465
         checkUninitVar("struct Altren\n"
                        "{\n"
-                       "    Altren(int _a = 0) : value(0) { }\n"
+                       "    explicit Altren(int _a = 0) : value(0) { }\n"
                        "    int value;\n"
                        "};\n"
                        "class A\n"
@@ -2152,7 +2152,7 @@ private:
 
         checkUninitVar("struct Altren\n"
                        "{\n"
-                       "    Altren(int _a) : value(0) { }\n"
+                       "    explicit Altren(int _a) : value(0) { }\n"
                        "    int value;\n"
                        "};\n"
                        "class A\n"
@@ -2171,7 +2171,7 @@ private:
                        "    char* m_str;\n"
                        "    int m_len;\n"
                        "public:\n"
-                       "    mystring(const char* str)\n"
+                       "    explicit mystring(const char* str)\n"
                        "    {\n"
                        "        m_len = strlen(str);\n"
                        "        m_str = (char*) malloc(m_len+1);\n"
@@ -2602,7 +2602,7 @@ private:
                        "private:\n"
                        "    int foo;\n"
                        "public:\n"
-                       "    Foo(std::istream &in)\n"
+                       "    explicit Foo(std::istream &in)\n"
                        "    {\n"
                        "        if(!(in >> foo))\n"
                        "            throw 0;\n"
@@ -2659,7 +2659,7 @@ private:
                        "    int foo;\n"
                        "    Foo() { }\n"
                        "public:\n"
-                       "    Foo(int _i) { }\n"
+                       "    explicit Foo(int _i) { }\n"
                        "};\n");
 
         ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Foo::foo' is not initialized in the constructor.\n", errout.str());
@@ -3517,7 +3517,7 @@ private:
         if (s)
             settings = *s;
         else
-            settings.addEnabled("information");
+            settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -6297,7 +6297,7 @@ private:
                             "};";
 
         Settings settings;
-        settings.addEnabled("information");
+        settings.addEnabled("style");
 
         settings.ifcfg = false;
         checkConst(code, &settings);

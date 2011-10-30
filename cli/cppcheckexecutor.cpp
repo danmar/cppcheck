@@ -26,6 +26,7 @@
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
 #include <algorithm>
+#include <climits>
 
 #include "cmdlineparser.h"
 #include "filelister.h"
@@ -106,7 +107,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         bool warned = false;
         std::vector<std::string> ignored = parser.GetIgnoredPaths();
         std::vector<std::string>::iterator iterIgnored = ignored.begin();
-        for (int i = (int)ignored.size() - 1; i >= 0; i--) {
+        for (unsigned int i = ignored.size() - 1; i != UINT_MAX; --i) {
             const std::string extension = Path::getFilenameExtension(ignored[i]);
             if (extension == ".h" || extension == ".hpp") {
                 ignored.erase(iterIgnored + i);
@@ -120,14 +121,14 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         PathMatch matcher(parser.GetIgnoredPaths());
         std::vector<std::string>::iterator iterBegin = filenames.begin();
-        for (int i = (int)filenames.size() - 1; i >= 0; i--) {
+        for (unsigned int i = filenames.size() - 1; i != UINT_MAX; i--) {
 #if defined(_WIN32)
             // For Windows we want case-insensitive path matching
             const bool caseSensitive = false;
 #else
             const bool caseSensitive = true;
 #endif
-            if (matcher.Match(filenames[(unsigned int)i], caseSensitive))
+            if (matcher.Match(filenames[i], caseSensitive))
                 filenames.erase(iterBegin + i);
         }
     } else {

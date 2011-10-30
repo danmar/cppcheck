@@ -46,6 +46,7 @@ private:
         TEST_CASE(nullpointer10);
         TEST_CASE(nullpointer11); // ticket #2812
         TEST_CASE(nullpointer12); // ticket #2470
+        TEST_CASE(nullpointer13); // ticket #1708
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
         TEST_CASE(gcc_statement_expression); // Don't crash
@@ -256,13 +257,6 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", errout.str());
 
         check("void foo(ABC *abc) {\n"
-              "    abc->do_something();\n"
-              "    if (abc)\n"
-              "        ;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 3\n", errout.str());
-
-        check("void foo(ABC *abc) {\n"
               "    if (abc->a == 3) {\n"
               "        return;\n"
               "    }\n"
@@ -431,6 +425,18 @@ private:
               "    if (abc) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #3228 - calling function with null object
+        {
+            const char code[] = "void f(Fred *fred) {\n"
+                                "    fred->x();\n"
+                                "    if (fred) { }\n"
+                                "}";
+            check(code);
+            ASSERT_EQUALS("", errout.str());
+            check(code, true);
+            ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 3\n", errout.str());
+        }
     }
 
     // Dereferencing a pointer and then checking if it is null
@@ -1085,6 +1091,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+
+    void nullpointer13() { // ticket #1780
+        check("void foo()\n"
+              "{\n"
+              "  struct S\n"
+              "  {\n"
+              "    double *d;\n"
+              "  };\n"
+              "  S s;\n"
+              "    s.d=NULL;\n"
+              "  double *pd = s.d;\n"
+              "         *pd = 10;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Null pointer dereference\n", errout.str());
+    }
+
     // Check if pointer is null and the dereference it
     void pointerCheckAndDeRef() {
         check("void foo(char *p) {\n"
@@ -1158,6 +1180,14 @@ private:
               "    *p = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char *p) {\n"
+              "    if (!p) {\n"
+              "        abort();\n"
+              "    }\n"
+              "    *p = 0;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 2\n", errout.str());
 
         check("void foo(char *p) {\n"
               "    if (!p) {\n"
@@ -1345,6 +1375,19 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        {
+            const char code[] = "void f(Fred *fred) {\n"
+                                "    if (fred == NULL) { }\n"
+                                "    fred->x();\n"
+                                "}";
+
+            check(code);    // non-inconclusive
+            ASSERT_EQUALS("", errout.str());
+
+            check(code, true);  // inconclusive
+            ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 2\n", errout.str());
+        }
     }
 
     // Test CheckNullPointer::nullConstantDereference

@@ -1311,6 +1311,36 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
 
+        check("const char *get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return errmsg.c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+
+        check("const char *get_msg() {\n"
+              "    std::ostringstream errmsg;\n"
+              "    return errmsg.str().c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+
+        check("const char *get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return std::string(\"ERROR: \" + errmsg).c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+
+        check("const char *get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return (\"ERROR: \" + errmsg).c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+
+        check("const char *get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return (\"ERROR: \" + std::string(\"crash me\")).c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+
         check("void f() {\n"
               "    std::ostringstream errmsg;\n"
               "    const char *c = errmsg.str().c_str();\n"
@@ -1478,6 +1508,14 @@ private:
                       "of the \'s1\' object.\n"
                       "[test.cpp:8]: (performance) Function \'substr\' useless call. Function create copy "
                       "of the \'s2\' object.\n",errout.str());
+
+        check("#include <string>\n"
+              "int main()\n"
+              "{\n"
+              "    std::string str = \"a1b1\";\n"
+              "    return str.find(str[1], 2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
     }
 };

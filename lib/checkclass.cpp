@@ -90,6 +90,14 @@ void CheckClass::constructors()
         std::vector<Usage> usage(scope->varlist.size());
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            // check for explicit
+            if (func->type == Function::eConstructor) {
+                if (!func->isExplicit && func->argumentList.size() == 1)
+                    explicitConstructorError(func->token, scope->className);
+                if (func->isExplicit && func->argumentList.size() > 1)
+                    pointlessExplicitConstructorError(func->token, scope->className);
+            }
+
             if (!func->hasBody || !(func->type == Function::eConstructor ||
                                     func->type == Function::eCopyConstructor ||
                                     func->type == Function::eOperatorEqual))
@@ -515,6 +523,32 @@ void CheckClass::operatorEqVarError(const Token *tok, const std::string &classna
     reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
 }
 
+void CheckClass::explicitConstructorError(const Token *tok, const std::string &className)
+{
+    reportError(tok, Severity::style,
+                "explicitConstructorError", "Constructor for '" +
+                className + "' should be explicit.\n"
+                "The single-argument constructor for '" + className + "' should "
+                "be explicit as it can be used for automatic conversion. This is "
+                "convenient but can also be a problem when automatic conversion "
+                "creates new objects when you were not expecting it. Adding the "
+                "explicit declaration to the constructor prevents it being called "
+                "for implicit conversions.");
+}
+
+void CheckClass::pointlessExplicitConstructorError(const Token *tok, const std::string &className)
+{
+    reportError(tok, Severity::style,
+                "pointlessExplicitConstructorError", "Constructor for '" +
+                className + "' is marked explicit but"
+                " takes more than one argument.\n"
+                "The explicit keyword prevents constructor calls for implicit "
+                "conversions, but it is only needed for single-argument "
+                "constructors. The constructor for '" + className + "' takes "
+                "more than one argument so is not affected by the explicit "
+                "declaration.");
+}
+
 //---------------------------------------------------------------------------
 // ClassCheck: Unused private functions
 //---------------------------------------------------------------------------
@@ -530,7 +564,7 @@ void CheckClass::privateFunctions()
         return;
 
     // dont check borland classes with properties..
-    if (Token::findmatch(_tokenizer->tokens(), "; __property ;"))
+    if (Token::findsimplematch(_tokenizer->tokens(), "; __property ;"))
         return;
 
     createSymbolDatabase();
@@ -814,7 +848,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         if (tok->str() == "return") {
             foundReturn = true;
             std::string cast("( " + scope->className + " & )");
-            if (Token::Match(tok->next(), cast.c_str()))
+            if (Token::simpleMatch(tok->next(), cast.c_str()))
                 tok = tok->tokAt(4);
 
             // check if a function is called
@@ -1166,7 +1200,7 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::checkConst()
 {
-    if (!_settings->isEnabled("information") || _settings->ifcfg)
+    if (!_settings->isEnabled("style") || _settings->ifcfg)
         return;
 
     // Don't check C# and JAVA classes
@@ -1277,7 +1311,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
 
         if (tok->str() == "this") {
             return true;
-        } else if (Token::Match(tok->tokAt(-3), "( * this )")) {
+        } else if (Token::simpleMatch(tok->tokAt(-3), "( * this )")) {
             return true;
         } else if (Token::Match(tok->tokAt(-2), "%var% . %var%")) {
             tok = tok->tokAt(-2);
@@ -1319,24 +1353,24 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
     return false;
 }
 
-static int countParameters(const Token *tok)
+static unsigned int countParameters(const Token *tok)
 {
     if (Token::Match(tok->tokAt(2), "void| )"))
         return 0;
 
-    int numpar = 1;
-    int parlevel = 0;
+    unsigned int numpar = 1;
+    unsigned int parlevel = 0;
     for (; tok; tok = tok->next()) {
         if (tok->str() == "(")
             ++parlevel;
 
         else if (tok->str() == ")") {
-            if (parlevel <= 1)
+            if (!parlevel)
                 break;
             --parlevel;
         }
 
-        else if (parlevel == 1 && tok->str() == ",") {
+        else if (!parlevel && tok->str() == ",") {
             ++numpar;
         }
     }

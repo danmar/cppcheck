@@ -262,7 +262,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                             Token::simpleMatch(tok4, "} }") &&
                             Token::simpleMatch(tok4->tokAt(-2), "break ;")) {
                             // Is there a assignment and then a break?
-                            const Token *t = Token::findmatch(tok3, ";");
+                            const Token *t = Token::findsimplematch(tok3, ";");
                             if (t && t->tokAt(3) == tok4) {
                                 for (std::list<ExecutionPath *>::iterator it = checks.begin(); it != checks.end(); ++it) {
                                     if ((*it)->varId == tok3->next()->varId()) {
