@@ -1075,8 +1075,8 @@ void CheckStl::string_c_strError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckStl::checkAutoPointer()
 {
-    std::set<int> autoPtrVarId;
-    std::set<int>::const_iterator iter;
+    std::set<unsigned int> autoPtrVarId;
+    std::set<unsigned int>::const_iterator iter;
     static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {

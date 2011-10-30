@@ -82,7 +82,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
         // Check for [xyz] usage - but exclude standalone square brackets
         unsigned int char_count = 0;
         for (string::size_type pos = 0; pos < pattern.size(); ++pos) {
-            unsigned char c = pattern[pos];
+            char c = pattern[pos];
 
             if (c == ' ') {
                 char_count = 0;
@@ -99,7 +99,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
         // Check | usage: Count characters before the symbol
         char_count = 0;
         for (string::size_type pos = 0; pos < pattern.size(); ++pos) {
-            unsigned char c = pattern[pos];
+            char c = pattern[pos];
 
             if (c == ' ') {
                 char_count = 0;

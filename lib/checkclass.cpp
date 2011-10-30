@@ -1353,24 +1353,24 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
     return false;
 }
 
-static int countParameters(const Token *tok)
+static unsigned int countParameters(const Token *tok)
 {
     if (Token::Match(tok->tokAt(2), "void| )"))
         return 0;
 
-    int numpar = 1;
-    int parlevel = 0;
+    unsigned int numpar = 1;
+    unsigned int parlevel = 0;
     for (; tok; tok = tok->next()) {
         if (tok->str() == "(")
             ++parlevel;
 
         else if (tok->str() == ")") {
-            if (parlevel <= 1)
+            if (!parlevel)
                 break;
             --parlevel;
         }
 
-        else if (parlevel == 1 && tok->str() == ",") {
+        else if (!parlevel && tok->str() == ",") {
             ++numpar;
         }
     }

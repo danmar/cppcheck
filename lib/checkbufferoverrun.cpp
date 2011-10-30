@@ -1212,7 +1212,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
 void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* tok, const Token *scope_begin, const MathLib::bigint total_size, const bool is_readlinkat)
 {
-    unsigned int param_offset = is_readlinkat ? 2 : 0;
+    unsigned char param_offset = is_readlinkat ? 2 : 0;
     const std::string funcname = is_readlinkat ? "readlinkat" : "readlink";
 
     const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(6 + param_offset));
