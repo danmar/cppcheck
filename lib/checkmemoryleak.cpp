@@ -773,11 +773,11 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
 
                 const char *ret = 0;
                 /** @todo handle "goto" */
-                if (Token::findmatch(func_, "dealloc"))
+                if (Token::findsimplematch(func_, "dealloc"))
                     ret = "dealloc";
-                else if (Token::findmatch(func_, "use"))
+                else if (Token::findsimplematch(func_, "use"))
                     ret = "use";
-                else if (Token::findmatch(func_, "&use"))
+                else if (Token::findsimplematch(func_, "&use"))
                     ret = "&use";
 
                 Tokenizer::deleteTokens(func);
@@ -1737,7 +1737,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             }
 
             // Reduce "; if(!var) exit ;" => ";"
-            if (Token::Match(tok2, "; if(!var) exit ;")) {
+            if (Token::simpleMatch(tok2, "; if(!var) exit ;")) {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
             }
@@ -1899,7 +1899,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             }
 
             // Delete if block in "alloc ; if(!var) return ;"
-            if (Token::Match(tok2, "alloc ; if(!var) return ;")) {
+            if (Token::simpleMatch(tok2, "alloc ; if(!var) return ;")) {
                 Token::eraseTokens(tok2, tok2->tokAt(4));
                 done = false;
             }
@@ -2058,7 +2058,7 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
 {
     const Token *result;
 
-    if ((result = Token::findmatch(tokens, "loop alloc ;")) != NULL) {
+    if ((result = Token::findsimplematch(tokens, "loop alloc ;")) != NULL) {
         return result;
     }
 
@@ -2074,16 +2074,16 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
         return result->tokAt(2);
     }
 
-    if ((result = Token::findmatch(tokens, "; alloc ; if assign ;")) != NULL) {
+    if ((result = Token::findsimplematch(tokens, "; alloc ; if assign ;")) != NULL) {
         return result->tokAt(4);
     }
 
-    if (((result = Token::findmatch(tokens, "; alloc ; if dealloc ; }")) != NULL) &&
+    if (((result = Token::findsimplematch(tokens, "; alloc ; if dealloc ; }")) != NULL) &&
         !result->tokAt(7)) {
         return result->tokAt(6);
     }
 
-    if ((result = Token::findmatch(tokens, "alloc ; }")) != NULL) {
+    if ((result = Token::findsimplematch(tokens, "alloc ; }")) != NULL) {
         if (result->tokAt(3) == NULL)
             return result->tokAt(2);
     }
@@ -2151,7 +2151,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
     }
 
     // If the variable is not allocated at all => no memory leak
-    if (Token::findmatch(tok, "alloc") == 0) {
+    if (Token::findsimplematch(tok, "alloc") == 0) {
         Tokenizer::deleteTokens(tok);
         return;
     }
@@ -2163,13 +2163,13 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
     }
 
     // If the variable is not allocated at all => no memory leak
-    if (Token::findmatch(tok, "alloc") == 0) {
+    if (Token::findsimplematch(tok, "alloc") == 0) {
         Tokenizer::deleteTokens(tok);
         return;
     }
 
     /** @todo handle "goto" */
-    if (Token::findmatch(tok, "goto")) {
+    if (Token::findsimplematch(tok, "goto")) {
         Tokenizer::deleteTokens(tok);
         return;
     }
@@ -2178,7 +2178,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
         memoryLeak(result, varname, alloctype);
     }
 
-    else if ((result = Token::findmatch(tok, "dealloc ; dealloc ;")) != NULL) {
+    else if ((result = Token::findsimplematch(tok, "dealloc ; dealloc ;")) != NULL) {
         deallocDeallocError(result->tokAt(2), varname);
     }
 
@@ -2505,7 +2505,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                 }
 
                 // Allocate..
-                if (indent == 0 || Token::Match(tok, (varname + " =").c_str())) {
+                if (indent == 0 || Token::simpleMatch(tok, (varname + " =").c_str())) {
                     // var1 = var2 = ...
                     // bail out
                     if (Token::simpleMatch(tok->previous(), "="))

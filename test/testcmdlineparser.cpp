@@ -63,6 +63,9 @@ private:
         TEST_CASE(enabledPortability);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
+#ifndef NDEBUG
+        TEST_CASE(enabledInternal);
+#endif
         TEST_CASE(errorExitcode);
         TEST_CASE(errorExitcodeMissing);
         TEST_CASE(errorExitcodeStr);
@@ -93,6 +96,7 @@ private:
         TEST_CASE(templates);
         TEST_CASE(templatesGcc);
         TEST_CASE(templatesVs);
+        TEST_CASE(templatesEdit);
         TEST_CASE(xml);
         TEST_CASE(xmlver1);
         TEST_CASE(xmlver2);
@@ -384,6 +388,7 @@ private:
         ASSERT(settings.isEnabled("style"));
         ASSERT(settings.isEnabled("unusedFunction"));
         ASSERT(settings.isEnabled("missingInclude"));
+        ASSERT(!settings.isEnabled("internal"));
     }
 
     void enabledStyle() {
@@ -442,6 +447,17 @@ private:
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings.isEnabled("missingInclude"));
     }
+
+#ifndef NDEBUG
+    void enabledInternal() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--enable=internal", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(settings.isEnabled("internal"));
+    }
+#endif
 
     void errorExitcode() {
         REDIRECT;
@@ -714,6 +730,15 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(4, argv));
         ASSERT_EQUALS("{file}({line}): {severity}: {message}", settings._outputFormat);
+    }
+
+    void templatesEdit() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--template", "edit", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS("{file} +{line}: {severity}: {message}", settings._outputFormat);
     }
 
     void xml() {

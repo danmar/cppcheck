@@ -1086,8 +1086,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                             const Token *type = start->tokAt(3);
 
                             // skip nothrow
-                            if (Token::Match(type, "( nothrow )") ||
-                                Token::Match(type, "( std :: nothrow )"))
+                            if (Token::simpleMatch(type, "( nothrow )") ||
+                                Token::simpleMatch(type, "( std :: nothrow )"))
                                 type = type->link()->next();
 
                             // is it a user defined type?
@@ -1243,7 +1243,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 unusedVariableError(usage._name, varname);
 
             // variable has not been written but has been modified
-            else if (usage._modified & !usage._write)
+            else if (usage._modified && !usage._write)
                 unassignedVariableError(usage._name, varname);
 
             // variable has been written but not read

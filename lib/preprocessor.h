@@ -215,9 +215,10 @@ public:
      * @param filePath filename of code
      * @param includePaths Paths where headers might be
      * @param defs defines (only values)
+     * @param includes provide a empty list. this is just used to prevent recursive inclusions.
      * \return resulting string
      */
-    std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs);
+    std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> includes = std::list<std::string>());
 
 private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, bool userheader);

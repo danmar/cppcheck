@@ -82,8 +82,8 @@ private:
         TEST_CASE(ifAddBraces11);
         TEST_CASE(ifAddBraces12);
         TEST_CASE(ifAddBraces13);
-        TEST_CASE(ifAddBraces14);	// #2610 - segfault: if()<{}
-        TEST_CASE(ifAddBraces15);	// #2616 - unknown macro before if
+        TEST_CASE(ifAddBraces14); // #2610 - segfault: if()<{}
+        TEST_CASE(ifAddBraces15); // #2616 - unknown macro before if
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -142,7 +142,7 @@ private:
         TEST_CASE(simplifyKnownVariablesBailOutFor3);
         TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
         TEST_CASE(simplifyKnownVariablesBailOutConditionalIncrement);
-        TEST_CASE(simplifyKnownVariablesBailOutSwitchBreak);	// ticket #2324
+        TEST_CASE(simplifyKnownVariablesBailOutSwitchBreak); // ticket #2324
         TEST_CASE(simplifyKnownVariablesFloat);    // #2454 - float variable
         TEST_CASE(simplifyKnownVariablesClassMember);  // #2815 - value of class member may be changed by function call
 
@@ -174,7 +174,7 @@ private:
         TEST_CASE(varid24);
         TEST_CASE(varid25);
         TEST_CASE(varid26);   // ticket #1967 (list of function pointers)
-        TEST_CASE(varid27);	// Ticket #2280 (same name for namespace and variable)
+        TEST_CASE(varid27);   // Ticket #2280 (same name for namespace and variable)
         TEST_CASE(varid28);   // ticket #2630
         TEST_CASE(varid29);   // ticket #1974
         TEST_CASE(varid30);   // ticket #2614
@@ -184,6 +184,7 @@ private:
         TEST_CASE(varid34);   // ticket #2825
         TEST_CASE(varid35);   // ticket #2937
         TEST_CASE(varid36);   // ticket #2980 (segmentation fault)
+        TEST_CASE(varid37);   // ticket #3092 (varid for 'Bar bar(*this);')
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -193,6 +194,7 @@ private:
         TEST_CASE(varid_reference_to_containers);
         TEST_CASE(varid_in_class1);
         TEST_CASE(varid_in_class2);
+        TEST_CASE(varid_in_class3);     // #3092 - shadow variable in member function
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
@@ -210,6 +212,7 @@ private:
         TEST_CASE(varidclass11);  // variable declaration below usage
         TEST_CASE(varidclass12);
         TEST_CASE(varidclass13);
+        TEST_CASE(varidclass14);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -2853,13 +2856,9 @@ private:
                                 "}\n");
         const std::string expected2("\n\n##file 0\n"
                                     "1: void f ( int b@1 , int c@2 ) {\n"
-                                    "2: x ( a@3 * b@1 * c@2 , 10 ) ;\n"
+                                    "2: x ( a * b@1 * c@2 , 10 ) ;\n"
                                     "3: }\n");
-        const std::string actual2("\n\n##file 0\n"
-                                  "1: void f ( int b@1 , int c@2 ) {\n"
-                                  "2: x ( a * b@1 * c@3 , 10 ) ;\n"
-                                  "3: }\n");
-        TODO_ASSERT_EQUALS(expected2, actual2, tokenizeDebugListing(code2));
+        ASSERT_EQUALS(expected2, tokenizeDebugListing(code2));
 
         const std::string code3("class Nullpointer : public ExecutionPath\n"
                                 " {\n"
@@ -2937,6 +2936,16 @@ private:
                                "A,a<b<x0;\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void varid37() {
+        const std::string code = "void blah() {"
+                                 "    Bar bar(*x);"
+                                 "}";
+        ASSERT_EQUALS("\n\n##file 0\n1: "
+                      "void blah ( ) { Bar bar@1 ( * x ) ; }\n",
+                      tokenizeDebugListing(code));
+    }
+
 
     void varidFunctionCall1() {
         const std::string code("void f() {\n"
@@ -3198,6 +3207,23 @@ private:
                                    "14: }\n");
         ASSERT_EQUALS(expected, actual);
     }
+
+    void varid_in_class3() {
+        const std::string code = "class Foo {\n"
+                                 "    void blah() {\n"
+                                 "        Bar x(*this);\n"  // <- ..
+                                 "    }\n"
+                                 "    int x;\n"   // <- .. don't assign same varid
+                                 "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Foo {\n"
+                      "2: void blah ( ) {\n"
+                      "3: Bar x@1 ( * this ) ;\n"
+                      "4: }\n"
+                      "5: int x@2 ;\n"
+                      "6: } ;\n", tokenizeDebugListing(code));
+    }
+
 
     void varid_operator() {
         {
@@ -3580,6 +3606,35 @@ private:
                                    "4: } ;\n");
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varidclass14() {
+        // don't give friend classes varid
+        {
+            const std::string code("class A {\n"
+                                   "friend class B;\n"
+                                   "}");
+
+            const std::string expected("\n\n##file 0\n"
+                                       "1: class A {\n"
+                                       "2: friend class B ;\n"
+                                       "3: }\n");
+
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+        }
+
+        {
+            const std::string code("class A {\n"
+                                   "private: friend class B;\n"
+                                   "}");
+
+            const std::string expected("\n\n##file 0\n"
+                                       "1: class A {\n"
+                                       "2: private: friend class B ;\n"
+                                       "3: }\n");
+
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+        }
     }
 
     void file1() {
@@ -5018,7 +5073,7 @@ private:
 
         {
             const char code[] = "class S { int function(void); };";
-            ASSERT_EQUALS("class S { int function ( void ) ; } ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("class S { int function ( ) ; } ;", tokenizeAndStringify(code));
             checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }
@@ -5032,7 +5087,7 @@ private:
 
         {
             const char code[] = "int function(void);";
-            ASSERT_EQUALS("int function ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("int function ( ) ;", tokenizeAndStringify(code));
             checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }
@@ -5046,14 +5101,14 @@ private:
 
         {
             const char code[] = "extern int function(void);";
-            ASSERT_EQUALS("extern int function ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("extern int function ( ) ;", tokenizeAndStringify(code));
             checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }
 
         {
             const char code[] = "int function1(void); int function2(void);";
-            ASSERT_EQUALS("int function1 ( void ) ; int function2 ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("int function1 ( ) ; int function2 ( ) ;", tokenizeAndStringify(code));
             checkSimplifyInitVar(code);
             ASSERT_EQUALS("", errout.str());
         }

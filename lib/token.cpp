@@ -710,16 +710,34 @@ const Token* Token::nextArgument() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
-            return(tok->next());
+            return tok->next();
         else if (tok->str() == "(" || tok->str() == "{" || tok->str() == "[")
             tok = tok->link();
-        else if (tok->str() == ")")
-            return(0);
+        else if (tok->str() == ")" || tok->str() == ";")
+            return 0;
     }
-    return(0);
+    return 0;
 }
 
 //---------------------------------------------------------------------------
+
+const Token *Token::findsimplematch(const Token *tok, const char pattern[])
+{
+    for (; tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, pattern))
+            return tok;
+    }
+    return 0;
+}
+
+const Token *Token::findsimplematch(const Token *tok, const char pattern[], const Token *end)
+{
+    for (; tok && tok != end; tok = tok->next()) {
+        if (Token::simpleMatch(tok, pattern))
+            return tok;
+    }
+    return 0;
+}
 
 const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned int varId)
 {

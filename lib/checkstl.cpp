@@ -1019,6 +1019,35 @@ void CheckStl::string_c_str()
                          tok->next()->varId() > 0 &&
                          localvar.find(tok->next()->varId()) != localvar.end()) {
                     string_c_strError(tok);
+                } else if (Token::Match(tok, "return %var% . c_str ( ) ;") &&
+                           tok->next()->varId() > 0 &&
+                           localvar.find(tok->next()->varId()) != localvar.end()) {
+                    string_c_strError(tok);
+                } else if (Token::Match(tok, "return %var% . str ( ) . c_str ( ) ;") &&
+                           tok->next()->varId() > 0 &&
+                           localvar.find(tok->next()->varId()) != localvar.end()) {
+                    string_c_strError(tok);
+                } else if (Token::simpleMatch(tok, "return std :: string (") &&
+                           Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;")) {
+                    string_c_strError(tok);
+                } else if (Token::simpleMatch(tok, "return (") &&
+                           Token::simpleMatch(tok->next()->link(), ") . c_str ( ) ;")) {
+                    // Check for "+ localvar" or "+ std::string(" inside the bracket
+                    bool is_implicit_std_string = false;
+                    const Token *search_end = tok->next()->link();
+                    for (const Token *search_tok = tok->tokAt(2); search_tok != search_end; search_tok = search_tok->next()) {
+                        if (Token::Match(search_tok, "+ %var%") && search_tok->next()->varId() > 0 &&
+                            localvar.find(search_tok->next()->varId()) != localvar.end()) {
+                            is_implicit_std_string = true;
+                            break;
+                        } else if (Token::simpleMatch(search_tok, "+ std :: string (")) {
+                            is_implicit_std_string = true;
+                            break;
+                        }
+                    }
+
+                    if (is_implicit_std_string)
+                        string_c_strError(tok);
                 } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
                            tok->next()->varId() > 0 &&
                            pointers.find(tok->next()->varId()) != pointers.end()) {
@@ -1046,14 +1075,14 @@ void CheckStl::string_c_strError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckStl::checkAutoPointer()
 {
-    std::set<int> autoPtrVarId;
-    std::set<int>::const_iterator iter;
+    std::set<unsigned int> autoPtrVarId;
+    std::set<unsigned int>::const_iterator iter;
     static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "auto_ptr <")) {
             if ((tok->previous() && tok->previous()->str() == "<" && Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) ||
-                (Token::Match(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST))) {
+                (Token::simpleMatch(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST))) {
                 autoPointerContainerError(tok);
             } else {
                 const Token *tok2 = tok->next()->next();
@@ -1133,13 +1162,7 @@ void CheckStl::uselessCalls()
         if (Token::Match(tok, "%var% . compare (") &&
             tok->varId() == tok->tokAt(3)->link()->tokAt(-1)->varId()) {
             uselessCallsReturnValueError(tok, tok->tokAt(2));
-        } else if ((Token::Match(tok, "%var% . compare ( %var%") ||
-                    Token::Match(tok, "%var% . find ( %var%") ||
-                    Token::Match(tok, "%var% . rfind ( %var%") ||
-                    Token::Match(tok, "%var% . find_first_not_of ( %var%") ||
-                    Token::Match(tok, "%var% . find_first_of ( %var%") ||
-                    Token::Match(tok, "%var% . find_last_not_of ( %var%") ||
-                    Token::Match(tok, "%var% . find_last_of ( %var%")) &&
+        } else if (Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% ,") &&
                    tok->varId() == tok->tokAt(4)->varId()) {
             uselessCallsReturnValueError(tok->tokAt(4), tok->tokAt(2));
         } else if (Token::Match(tok, "%var% . swap ( %var% )") &&

@@ -436,6 +436,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             continue;
         }
 
+        bool inconclusive = false;
+
         /**
          * @todo There are lots of false negatives here. A dereference
          *  is only investigated if a few specific conditions are met.
@@ -444,6 +446,11 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         // dereference in assignment
         if (Token::Match(tok1, "[;{}] %var% . %var%")) {
             tok1 = tok1->next();
+            if (tok1->strAt(3) == "(") {
+                if (!_settings->inconclusive)
+                    continue;
+                inconclusive = true;
+            }
         }
 
         // dereference in assignment
@@ -559,7 +566,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             else if (Token::Match(tok2, "if ( !| %varid% )|&&", varid1)) {
                 // Is this variable a pointer?
                 if (isPointer(varid1))
-                    nullPointerError(tok1, varname, tok2->linenr());
+                    nullPointerError(tok1, varname, tok2->linenr(), inconclusive);
                 break;
             }
         }
@@ -768,6 +775,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             // Name of the pointer
             const std::string &pointerName = vartok->str();
 
+            // Set to true if we would normally bail out the check.
+            bool inconclusive = false;
+
             // Count { and } for tok2
             for (const Token *tok2 = tok1; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "{")
@@ -788,10 +798,10 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch")) {
                     bool dummy = false;
                     if (Token::Match(tok2, "return * %varid%", varid))
-                        nullPointerError(tok2, pointerName, linenr);
+                        nullPointerError(tok2, pointerName, linenr, inconclusive);
                     else if (Token::Match(tok2, "return %varid%", varid) &&
                              CheckNullPointer::isPointerDeRef(tok2->next(), dummy))
-                        nullPointerError(tok2, pointerName, linenr);
+                        nullPointerError(tok2, pointerName, linenr, inconclusive);
                     break;
                 }
 
@@ -807,7 +817,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     parseFunctionCall(*tok2, var, 0);
                     for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
                         if ((*it)->varId() == varid) {
-                            nullPointerError(*it, pointerName, linenr);
+                            nullPointerError(*it, pointerName, linenr, inconclusive);
                             break;
                         }
                     }
@@ -818,8 +828,15 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     (Token::Match(tok2->link()->tokAt(-2), "[;{}.] %var% (") ||
                      Token::Match(tok2->link()->tokAt(-5), "[;{}] ( * %var% ) ("))) {
                     // noreturn function?
-                    if (tok2->strAt(2) == "}")
-                        break;
+                    // If inside null pointer check we unknown function call, we must
+                    // assume that it can terminate the program and possible null pointer
+                    // error wont ever happen.
+                    if (tok2->strAt(2) == "}") {
+                        if (!_settings->inconclusive) {
+                            break;
+                        }
+                        inconclusive = true;
+                    }
 
                     // init function (global variables)
                     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -838,7 +855,10 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                         ;
 
                     else if (CheckNullPointer::isPointerDeRef(tok2, unknown))
-                        nullPointerError(tok2, pointerName, linenr);
+                        nullPointerError(tok2, pointerName, linenr, inconclusive);
+
+                    else if (unknown && _settings->inconclusive)
+                        nullPointerError(tok2, pointerName, linenr, true);
 
                     else
                         break;
@@ -927,7 +947,7 @@ void CheckNullPointer::nullConstantDereference()
 class Nullpointer : public ExecutionPath {
 public:
     /** Startup constructor */
-    Nullpointer(Check *c) : ExecutionPath(c, 0), null(false) {
+    explicit Nullpointer(Check *c) : ExecutionPath(c, 0), null(false) {
     }
 
 private:
