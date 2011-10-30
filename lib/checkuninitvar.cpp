@@ -473,7 +473,10 @@ private:
         if (tok.varId()) {
             // array variable passed as function parameter..
             if (Token::Match(tok.previous(), "[(,] %var% [+-,)]")) {
-                use(checks, &tok);
+                if (Token::Match(tok.previous(), "( %var% ) ="))
+                    ExecutionPath::bailOutVar(checks, tok.varId());
+                else
+                    use(checks, &tok);
                 //use_array(checks, &tok);
                 return &tok;
             }

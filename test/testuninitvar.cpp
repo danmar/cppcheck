@@ -973,6 +973,20 @@ private:
                        "    }\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #3231 - ({ switch .. })
+        checkUninitVar("void f() {\n"
+                       "    int a;\n"
+                       "    ({\n"
+                       "    switch(sizeof(int)) {\n"
+                       "    case 4:\n"
+                       "    default:\n"
+                       "        (a)=0;\n"
+                       "        break;\n"
+                       "    };\n"
+                       "    })\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // arrays..
