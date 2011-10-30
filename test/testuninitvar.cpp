@@ -1502,6 +1502,14 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #3222 - calling function through function pointer
+        checkUninitVar("char f() {\n"
+                       "    char buffer[100];\n"
+                       "    (foo.init)(buffer);\n"
+                       "    return buffer[0];\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // using uninitialized function pointer..
         checkUninitVar("void foo()\n"
                        "{\n"

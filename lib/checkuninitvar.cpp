@@ -703,7 +703,8 @@ private:
         }
 
         // function call via function pointer
-        if (Token::Match(&tok, "( * %var% ) (")) {
+        if (Token::Match(&tok, "( * %var% ) (") || 
+            (Token::Match(&tok, "( *| %var% .|::") && Token::Match(tok.link()->tokAt(-2), ".|:: %var% ) ("))) {
             // is the variable passed as a parameter to some function?
             unsigned int parlevel = 0;
             for (const Token *tok2 = tok.link()->next(); tok2; tok2 = tok2->next()) {
