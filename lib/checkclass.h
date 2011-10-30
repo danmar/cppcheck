@@ -162,7 +162,8 @@ private:
                "* Are there unused private functions\n"
                "* 'operator=' should return reference to self\n"
                "* 'operator=' should check for assignment to self\n"
-               "* Constness for member functions\n";
+               "* Constness for member functions\n"
+               "* explicit should / shouldn't be used\n";
     }
 
     // operatorEqRetRefThis helper function
