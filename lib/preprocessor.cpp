@@ -1732,7 +1732,7 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
 }
 
 
-std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs)
+std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> includes)
 {
     const std::string path(filePath.substr(0, 1 + filePath.find_last_of("\\/")));
 
@@ -1771,8 +1771,16 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 continue;
             }
 
+            // Prevent that files are recursively included
+            if (std::find(includes.begin(), includes.end(), filename) != includes.end()) {
+                ostr << std::endl;
+                continue;
+            }
+
+            includes.push_back(filename);
+
             ostr << "#file \"" << filename << "\"\n"
-                 << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs) << std::endl
+                 << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs, includes) << std::endl
                  << "#endfile";
         } else if (line.compare(0,7,"#ifdef ") == 0) {
             if (indent == indentmatch && defs.find(getdef(line,true)) != defs.end()) {
