@@ -1200,7 +1200,7 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::checkConst()
 {
-    if (!_settings->isEnabled("information") || _settings->ifcfg)
+    if (!_settings->isEnabled("style") || _settings->ifcfg)
         return;
 
     // Don't check C# and JAVA classes

@@ -1397,7 +1397,7 @@ void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varna
 //---------------------------------------------------------------------------
 void CheckOther::checkVariableScope()
 {
-    if (!_settings->isEnabled("information"))
+    if (!_settings->isEnabled("style"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
