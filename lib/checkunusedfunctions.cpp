@@ -21,6 +21,7 @@
 #include "checkunusedfunctions.h"
 #include "tokenize.h"
 #include "token.h"
+#include <cctype>
 //---------------------------------------------------------------------------
 
 
