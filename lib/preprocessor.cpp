@@ -854,7 +854,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    if (_settings && _settings->userDefines.compare(0,14,"CPPCHECK-TEST;") == 0) {
+    if (_settings && !_settings->userDefines.empty()) {
         std::map<std::string, std::string> defs;
 
         // TODO: break out this code. There is other similar code.
