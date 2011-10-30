@@ -480,7 +480,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("information");
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

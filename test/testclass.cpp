@@ -3517,7 +3517,7 @@ private:
         if (s)
             settings = *s;
         else
-            settings.addEnabled("information");
+            settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
