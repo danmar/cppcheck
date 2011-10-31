@@ -35,7 +35,7 @@ public:
      * The constructor.
      * @param masks List of masks.
      */
-    PathMatch(const std::vector<std::string> &masks);
+    explicit PathMatch(const std::vector<std::string> &masks);
 
     /**
      * @brief Match path against list of masks.

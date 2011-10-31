@@ -43,7 +43,7 @@ public:
      * @param settings Settings instance that will be modified according to
      * options user has given.
      */
-    CmdLineParser(Settings *settings);
+    explicit CmdLineParser(Settings *settings);
 
     /**
      * Parse given command line.
