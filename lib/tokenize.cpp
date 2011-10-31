@@ -1164,8 +1164,9 @@ void Tokenizer::simplifyTypedef()
             if (tok->strAt(offset + 1) == "(")
                 ++offset;
             else if (Token::simpleMatch(tok->tokAt(offset), "( * (")) {
+                ++offset;
                 pointers.push_back("*");
-                offset += 2;
+                ++offset;
             }
 
             if (tok->tokAt(offset)->link()->strAt(-2) == "*")
@@ -4041,7 +4042,7 @@ void Tokenizer::simplifySizeof()
                 sz = sizeOfType(tok->tokAt(2));
                 if (sz == 0)
                     continue;
-                sz = sz * static_cast<unsigned long>(MathLib::toLongNumber(tok->strAt(4)));
+                sz = sz * static_cast<unsigned int>(MathLib::toLongNumber(tok->strAt(4)));
             }
 
             if (sz > 0) {
@@ -8353,13 +8354,11 @@ void Tokenizer::simplifyComma()
         if (Token::simpleMatch(tok, "for (") ||
             Token::Match(tok, "=|enum {")) {
             tok = tok->next()->link();
-            if (!tok)
-                break;
 
             continue;
         }
 
-        if (tok->str() == "(") {
+        if (tok->str() == "(" || tok->str() == "[") {
             tok = tok->link();
             continue;
         }
@@ -8372,7 +8371,7 @@ void Tokenizer::simplifyComma()
                 if (tok2->str() == "<")
                     ++comparelevel;
                 else if (tok2->str() == ">") {
-                    if (comparelevel <= 1) {
+                    if (!comparelevel) {
                         tok = tok2;
                         break;
                     }
@@ -9680,7 +9679,7 @@ void Tokenizer::printUnknownTypes()
 
     std::set<std::string> unknowns;
 
-    for (size_t i = 1; i <= _varId; ++i) {
+    for (unsigned int i = 1; i <= _varId; ++i) {
         const Variable *var = _symbolDatabase->getVariableFromVarId(i);
 
         // is unknown record type?

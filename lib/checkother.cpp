@@ -290,7 +290,7 @@ void CheckOther::warningOldStylePointerCast()
             !Token::Match(tok, "( const| %type% * ) (| new"))
             continue;
 
-        int addToIndex = 0;
+        unsigned char addToIndex = 0;
         if (tok->tokAt(1)->str() == "const")
             addToIndex = 1;
 
@@ -363,7 +363,7 @@ void CheckOther::checkSizeofForArrayParameter()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var%")) {
-            int tokIdx = 1;
+            unsigned short tokIdx = 1;
             if (tok->tokAt(tokIdx)->str() == "(") {
                 ++tokIdx;
             }
@@ -432,7 +432,7 @@ void CheckOther::checkSizeofForStrncmpSize()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, pattern1) || Token::Match(tok, pattern2)) {
-            int tokIdx = 7;
+            unsigned short tokIdx = 7;
             if (tok->tokAt(tokIdx)->str() == "(")
                 ++tokIdx;
             const Token *tokVar = tok->tokAt(tokIdx);
@@ -1082,7 +1082,7 @@ void CheckOther::invalidFunctionUsage()
             continue;
 
         // Locate the third parameter of the function call..
-        int param = 1;
+        unsigned int param = 1;
         for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
             if (tok2->str() == "(")
                 tok2 = tok2->link();
@@ -1125,14 +1125,14 @@ void CheckOther::invalidFunctionUsage()
             continue;
 
         // is any source buffer overlapping the target buffer?
-        int parlevel = 0;
+        unsigned int parlevel = 0;
         while ((tok2 = tok2->next()) != NULL) {
             if (tok2->str() == "(")
                 ++parlevel;
             else if (tok2->str() == ")") {
-                --parlevel;
-                if (parlevel < 0)
+                if (!parlevel)
                     break;
+                --parlevel;
             } else if (parlevel == 0 && Token::Match(tok2, ", %varid% [,)]", varid)) {
                 sprintfOverlappingDataError(tok2->next(), tok2->next()->str());
                 break;
@@ -1410,7 +1410,7 @@ void CheckOther::checkVariableScope()
             continue;
 
         // Walk through all tokens..
-        int indentlevel = 0;
+        unsigned int indentlevel = 0;
         for (const Token *tok = scope->classStart; tok; tok = tok->next()) {
             // Skip function local class and struct declarations..
             if ((tok->str() == "class") || (tok->str() == "struct") || (tok->str() == "union")) {
@@ -1430,9 +1430,9 @@ void CheckOther::checkVariableScope()
             else if (tok->str() == "{") {
                 ++indentlevel;
             } else if (tok->str() == "}") {
+                if (!indentlevel)
+                    break;
                 --indentlevel;
-                if (indentlevel == 0)
-                    break;;
             }
 
             if (indentlevel > 0 && Token::Match(tok, "[{};]")) {
@@ -1477,7 +1477,7 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
     // Check if the variable is used in this indentlevel..
     bool used1 = false;   // used in one sub-scope -> reducable
     bool used2 = false;   // used in more sub-scopes -> not reducable
-    int indentlevel = 0;
+    unsigned int indentlevel = 0;
     int parlevel = 0;
     bool for_or_while = false;  // is sub-scope a "for/while/etc". anything that is not "if"
     while (tok) {
@@ -1673,15 +1673,15 @@ void CheckOther::checkCharVariable()
                 tok = tok->next();
 
             // Check usage of char variable..
-            int indentlevel = 0;
+            unsigned int indentlevel = 0;
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "{")
                     ++indentlevel;
 
                 else if (tok2->str() == "}") {
-                    --indentlevel;
-                    if (indentlevel <= 0)
+                    if (!indentlevel)
                         break;
+                    --indentlevel;
                 }
 
                 if (!isPointer) {
@@ -1977,9 +1977,9 @@ void CheckOther::checkMisusedScopedObject()
             if (tok->str() == "{") {
                 ++depth;
             } else if (tok->str() == "}") {
-                --depth;
                 if (depth == 0)
                     break;
+                --depth;
             }
 
             if (Token::Match(tok, "[;{}] %var% (")
