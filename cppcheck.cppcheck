@@ -6,6 +6,7 @@
         <dir name="cli/"/>
         <dir name="externals/"/>
         <dir name="gui/temp/"/>
+        <dir name="gui/"/>
     </includedir>
     <paths>
         <dir name="lib/"/>
