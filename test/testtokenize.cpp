@@ -195,6 +195,7 @@ private:
         TEST_CASE(varid_in_class1);
         TEST_CASE(varid_in_class2);
         TEST_CASE(varid_in_class3);     // #3092 - shadow variable in member function
+        TEST_CASE(varid_in_class4);     // #3271 - public: class C;
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
@@ -3224,6 +3225,16 @@ private:
                       "6: } ;\n", tokenizeDebugListing(code));
     }
 
+    void varid_in_class4() {
+        const std::string code = "class Foo {\n"
+                                 "public: class C;\n"
+                                 "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Foo {\n"
+                      "2: public: class C ;\n"
+                      "3: } ;\n",
+                      tokenizeDebugListing(code));
+    }
 
     void varid_operator() {
         {
