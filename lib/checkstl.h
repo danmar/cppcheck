@@ -167,9 +167,9 @@ private:
     void autoPointerContainerError(const Token *tok);
     void autoPointerArrayError(const Token *tok);
 
-    void uselessCallsReturnValueError(const Token *tok, const Token *function);
-    void uselessCallsSwapError(const Token *tok);
-    void uselessCallsSubstrError(const Token *tok);
+    void uselessCallsReturnValueError(const Token *tok, const std::string &varname, const std::string &function);
+    void uselessCallsSwapError(const Token *tok, const std::string &varname);
+    void uselessCallsSubstrError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckStl c(0, settings, errorLogger);
@@ -190,9 +190,9 @@ private:
         c.autoPointerError(0);
         c.autoPointerContainerError(0);
         c.autoPointerArrayError(0);
-        c.uselessCallsReturnValueError(0, 0);
-        c.uselessCallsSwapError(0);
-        c.uselessCallsSubstrError(0);
+        c.uselessCallsReturnValueError(0, "str", "find");
+        c.uselessCallsSwapError(0, "str");
+        c.uselessCallsSubstrError(0, "str");
     }
 
     std::string myName() const {

@@ -1159,50 +1159,51 @@ void CheckStl::uselessCalls()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->varId() == 0)
             continue;
-        if (Token::Match(tok, "%var% . compare (") &&
+        /*if (Token::Match(tok, "%var% . compare (") &&
             tok->varId() == tok->tokAt(3)->link()->tokAt(-1)->varId()) {
             uselessCallsReturnValueError(tok, tok->tokAt(2));
-        } else if (Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% ,") &&
-                   tok->varId() == tok->tokAt(4)->varId()) {
-            uselessCallsReturnValueError(tok->tokAt(4), tok->tokAt(2));
+        } else */
+        if (Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% [,)]") &&
+            tok->varId() == tok->tokAt(4)->varId()) {
+            uselessCallsReturnValueError(tok->tokAt(4), tok->str(), tok->strAt(2));
         } else if (Token::Match(tok, "%var% . swap ( %var% )") &&
                    tok->varId() == tok->tokAt(4)->varId()) {
-            uselessCallsSwapError(tok);
+            uselessCallsSwapError(tok, tok->str());
         } else if (Token::Match(tok, "%var% . substr ( )")) {
-            uselessCallsSubstrError(tok);
+            uselessCallsSubstrError(tok, tok->str());
         } else if (Token::Match(tok, "%var% . substr ( 0")) {
             if (tok->tokAt(5)->str() == ")" ||
                 tok->tokAt(3)->link()->tokAt(-1)->str() == "npos")
-                uselessCallsSubstrError(tok);
+                uselessCallsSubstrError(tok, tok->str());
         }
     }
 }
 
 
-void CheckStl::uselessCallsReturnValueError(const Token *tok, const Token *function)
+void CheckStl::uselessCallsReturnValueError(const Token *tok, const std::string &varname, const std::string &function)
 {
     std::ostringstream errmsg;
-    const std::string funname(function ? function->str().c_str() : "");
-    const std::string varname(tok ? tok->str().c_str() : "");
-    errmsg << "Function \'"<< funname << "\' useless call. The variable \'"<< varname <<"\' is using function \'"<< funname << "\' against itself. Return of this function depends only on the position.\n" <<
-           "Function \'"<< funname << "\' useless call. The variable \'"<< varname <<"\' is using function \'"<< funname << "\' against itself. If the \'pos\' argument in the \'"<< funname << "\' function is 0 or there is no this argument then the function returns 0. If the position is greater than 0, the return value is npos.";
-
+    errmsg << "It is inefficient to call '" << varname << "." << function << "(" << varname << ")' as it always returns 0.\n"
+           << "The 'std::string::" << function << "()' returns zero when given itself as parameter "
+           << "(" << varname << "." << function << "(" << varname << ")). As it is currently the "
+           << "code is inefficient. It is also possible either the string searched ('"
+           << varname << "') or searched for ('" << varname << "') is wrong/mixed in the code?";
     reportError(tok, Severity::warning, "uselessCallsCompare", errmsg.str());
 }
 
-void CheckStl::uselessCallsSwapError(const Token *tok)
+void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varname)
 {
     std::ostringstream errmsg;
-    const std::string varname(tok ? tok->str().c_str() : "");
-    errmsg << "Function \'swap\' useless call. Using \'swap\' function from \'" << varname << "\' against itself doesn't make any changes.\n" <<
-           "Function \'swap\' useless call. Using \'swap\' function from \'" << varname << "\' against itself doesn't make any changes and can decrease in performance.";
+    errmsg << "It is inefficient to swap a object with itself by calling '" << varname << ".swap(" << varname << ")'\n"
+           << "The 'swap()' function has no logical effect when given itself as parameter "
+           << "(" << varname << ".swap(" << varname << ")). As it is currently the "
+           << "code is inefficient. It is possible either the object or the parameter is wrong/mixed in the code?";
     reportError(tok, Severity::performance, "uselessCallsSwap", errmsg.str());
 }
 
-void CheckStl::uselessCallsSubstrError(const Token *tok)
+void CheckStl::uselessCallsSubstrError(const Token *tok, const std::string &varname)
 {
     std::ostringstream errmsg;
-    const std::string varname(tok ? tok->str().c_str() : "");
     errmsg << "Function \'substr\' useless call. Function create copy of the \'" << varname << "\' object.\n" <<
            "Function \'substr\' useless call. \'substr\' function create copy of the whole \'" << varname << "\' object which can decrease in performance. Please use \'=\' operator instead.";
     reportError(tok, Severity::performance, "uselessCallsSubstr", errmsg.str());

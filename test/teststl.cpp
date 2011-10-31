@@ -1477,8 +1477,7 @@ private:
               "    s2.swap(s2);\n"
               "    \n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (performance) Function \'swap\' useless call. Using 'swap' function "
-                      "from \'s2\' against itself doesn't make any changes.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (performance) It is inefficient to swap a object with itself by calling 's2.swap(s2)'\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1489,10 +1488,7 @@ private:
               "    s1.compare(0, s1.size(), s1);\n"
               "    \n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Function 'compare' useless call. The variable 's2' is using "
-                      "function \'compare\' against itself. Return of this function depends only on the position.\n"
-                      "[test.cpp:7]: (warning) Function 'compare' useless call. The variable 's1' is using "
-                      "function \'compare\' against itself. Return of this function depends only on the position.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) It is inefficient to call 's2.compare(s2)' as it always returns 0.\n", errout.str());
 
         check("void f()\n"
               "{\n"
