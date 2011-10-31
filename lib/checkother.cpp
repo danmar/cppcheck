@@ -1977,7 +1977,7 @@ void CheckOther::checkMisusedScopedObject()
             if (tok->str() == "{") {
                 ++depth;
             } else if (tok->str() == "}") {
-                if (depth == 0)
+                if (depth <= 1)
                     break;
                 --depth;
             }
