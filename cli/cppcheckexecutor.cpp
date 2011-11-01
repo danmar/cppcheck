@@ -107,7 +107,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         bool warned = false;
         std::vector<std::string> ignored = parser.GetIgnoredPaths();
         std::vector<std::string>::iterator iterIgnored = ignored.begin();
-        for (unsigned int i = ignored.size() - 1; i != UINT_MAX; --i) {
+        for (size_t i = 0 ; i < ignored.size();) {
             const std::string extension = Path::getFilenameExtension(ignored[i]);
             if (extension == ".h" || extension == ".hpp") {
                 ignored.erase(iterIgnored + i);
@@ -116,12 +116,13 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
                     std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
                     warned = true; // Warn only once
                 }
-            }
+            } else
+                ++i;
         }
 
         PathMatch matcher(parser.GetIgnoredPaths());
         std::vector<std::string>::iterator iterBegin = filenames.begin();
-        for (unsigned int i = filenames.size() - 1; i != UINT_MAX; i--) {
+        for (size_t i = 0 ; i < filenames.size();) {
 #if defined(_WIN32)
             // For Windows we want case-insensitive path matching
             const bool caseSensitive = false;
@@ -130,6 +131,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #endif
             if (matcher.Match(filenames[i], caseSensitive))
                 filenames.erase(iterBegin + i);
+            else
+                ++i;
         }
     } else {
         std::cout << "cppcheck: error: could not find or open any of the paths given." << std::endl;
@@ -177,7 +180,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         }
 
         long processedsize = 0;
-        for (unsigned int c = 0; c < _filenames.size(); c++) {
+        for (size_t c = 0; c < _filenames.size(); c++) {
             returnValue += cppCheck.check(_filenames[c]);
             if (_filesizes.find(_filenames[c]) != _filesizes.end()) {
                 processedsize += _filesizes[_filenames[c]];
@@ -269,13 +272,13 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal)
+void CppCheckExecutor::reportStatus(size_t fileindex, size_t filecount, long sizedone, long sizetotal)
 {
     if (filecount > 1) {
         std::ostringstream oss;
         oss << fileindex << "/" << filecount
             << " files checked " <<
-            (sizetotal > 0 ? static_cast<long>(static_cast<double>(sizedone) / sizetotal*100) : 0)
+            (sizetotal > 0 ? static_cast<long>(static_cast<long double>(sizedone) / sizetotal*100) : 0)
             << "% done";
         std::cout << oss.str() << std::endl;
     }

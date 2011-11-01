@@ -2892,7 +2892,7 @@ void Tokenizer::simplifyTemplatesUseDefaultArgumentValues(const std::list<Token 
  * @param patternAfter pattern that must match the tokens after the ">"
  * @return match => true
  */
-static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, unsigned int numberOfArguments, const char patternAfter[])
+static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, size_t numberOfArguments, const char patternAfter[])
 {
     if (!Token::simpleMatch(instance, (name + " <").c_str()))
         return false;
@@ -4028,7 +4028,7 @@ void Tokenizer::simplifySizeof()
 
         else if (Token::Match(tok, "sizeof ( * %var% )") || Token::Match(tok, "sizeof ( %var% [ %num% ] )")) {
             // Some default value..
-            unsigned int sz = 0;
+            size_t sz = 0;
 
             unsigned int varid = tok->tokAt((tok->strAt(2) == "*") ? 3 : 2)->varId();
             if (varid != 0) {
@@ -4045,11 +4045,11 @@ void Tokenizer::simplifySizeof()
                 sz = sizeOfType(tok->tokAt(2));
                 if (sz == 0)
                     continue;
-                sz = sz * static_cast<unsigned int>(MathLib::toLongNumber(tok->strAt(4)));
+                sz *= static_cast<unsigned long>(MathLib::toLongNumber(tok->strAt(4)));
             }
 
             if (sz > 0) {
-                tok->str(MathLib::toString<unsigned int>(sz));
+                tok->str(MathLib::toString<size_t>(sz));
                 Token::eraseTokens(tok, tok->next()->link()->next());
             }
         }
@@ -9693,7 +9693,7 @@ void Tokenizer::printUnknownTypes()
             if (var->typeStartToken() == var->typeEndToken())
                 name = var->typeStartToken()->str();
 
-            // complcated type
+            // complicated type
             else {
                 const Token *tok = var->typeStartToken();
                 int level = 0;

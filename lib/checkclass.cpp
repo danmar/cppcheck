@@ -1365,12 +1365,12 @@ static unsigned int countParameters(const Token *tok)
             ++parlevel;
 
         else if (tok->str() == ")") {
-            if (!parlevel)
+            if (parlevel <=1)
                 break;
             --parlevel;
         }
 
-        else if (!parlevel && tok->str() == ",") {
+        else if (parlevel==1 && tok->str() == ",") {
             ++numpar;
         }
     }

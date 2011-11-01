@@ -81,7 +81,7 @@ public:
      * @param sizedone The sum of sizes of the files checked.
      * @param sizetotal The total sizes of the files.
      */
-    static void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal);
+    static void reportStatus(size_t fileindex, size_t filecount, long sizedone, long sizetotal);
 
 protected:
 
