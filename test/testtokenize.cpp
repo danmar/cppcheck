@@ -185,6 +185,7 @@ private:
         TEST_CASE(varid35);   // ticket #2937
         TEST_CASE(varid36);   // ticket #2980 (segmentation fault)
         TEST_CASE(varid37);   // ticket #3092 (varid for 'Bar bar(*this);')
+        TEST_CASE(varid38);   // ticket #3272 (varid for 'FOO class C;')
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -2947,6 +2948,12 @@ private:
                       tokenizeDebugListing(code));
     }
 
+    void varid38() {
+        const std::string code = "FOO class C;\n";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: FOO class C ;\n",
+                      tokenizeDebugListing(code));
+    }
 
     void varidFunctionCall1() {
         const std::string code("void f() {\n"

@@ -3389,9 +3389,6 @@ void Tokenizer::setVarId()
         if (tok && tok->str() == "friend")
             continue;
 
-        if (Token::Match(tok, "class|struct %type% ;"))
-            continue;
-
         // skip global namespace prefix
         if (Token::simpleMatch(tok, "::"))
             tok = tok->next();
@@ -3496,6 +3493,9 @@ void Tokenizer::setVarId()
 
             tok2 = tok2->next();
         }
+
+        if (Token::Match(tok2 ? tok2->tokAt(-2) : 0, "class|struct %type% ;"))
+            continue;
 
         // End of tokens reached..
         if (!tok2)
