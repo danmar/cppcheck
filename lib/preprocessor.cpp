@@ -1766,8 +1766,17 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
             // try to open file
             std::ifstream fin;
             if (!openHeader(filename, includePaths, headerType == UserHeader ? path : std::string(""), fin)) {
-                ostr << std::endl;
-                missingInclude(filePath, linenr, filename, headerType == UserHeader);
+
+                if (_settings && (headerType == UserHeader || _settings->debugwarnings)) {
+                    if (!_settings->nomsg.isSuppressed("missingInclude", "", 0)) {
+                        missingIncludeFlag = true;
+
+                        missingInclude(Path::toNativeSeparators(filePath),
+                                       linenr,
+                                       filename,
+                                       headerType == UserHeader);
+                    }
+                }
                 continue;
             }
 
