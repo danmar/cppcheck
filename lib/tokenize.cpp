@@ -3480,7 +3480,7 @@ void Tokenizer::setVarId()
         std::string varname;
         Token *tok2 = tok ? tok->next() : 0;
         while (tok2) {
-            if (tok2->isName())
+            if (tok2->isName() && tok2->str() != "const")
                 varname = tok2->str();
             else if (tok2->str() != "*" && tok2->str() != "&")
                 break;
