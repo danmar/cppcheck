@@ -2957,10 +2957,19 @@ private:
     }
 
     void varid39() {
-        const std::string code = "void f(FOO::BAR const);\n";
-        ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: void f ( FOO :: BAR const ) ;\n",
-                      tokenizeDebugListing(code));
+        // const..
+        {
+            const std::string code = "void f(FOO::BAR const);\n";
+            ASSERT_EQUALS("\n\n##file 0\n"
+                          "1: void f ( FOO :: BAR const ) ;\n",
+                          tokenizeDebugListing(code));
+        }
+        {
+            const std::string code = "static int const SZ = 22;\n";
+            ASSERT_EQUALS("\n\n##file 0\n"
+                          "1: static int const SZ@1 = 22 ;\n",
+                          tokenizeDebugListing(code));
+        }
     }
 
     void varidFunctionCall1() {
