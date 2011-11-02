@@ -2930,14 +2930,6 @@ private:
             ASSERT_EQUALS(actual1 + "#undef X\n" + actual1, actual);
         }
 
-        // missing include
-        {
-            errout.str("");
-            const std::string code("#include \"missing.h\"");
-            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
-            ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing.h\" not found.\n", errout.str());
-        }
-
         // #error
         {
             errout.str("");
