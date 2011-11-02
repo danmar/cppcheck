@@ -227,8 +227,9 @@ private:
         TEST_CASE(simplifyCondition);
         TEST_CASE(invalidElIf); // #2942 segfault
 
-        // Test Preprocessor::handleIncludes (defines are given)
-        TEST_CASE(handleIncludes_def);
+        // Defines are given: test Preprocessor::handleIncludes
+        TEST_CASE(def_handleIncludes);
+        TEST_CASE(def_missingInclude);
     }
 
 
@@ -2824,7 +2825,7 @@ private:
         ASSERT_EQUALS("\n", actual);
     }
 
-    void handleIncludes_def() {
+    void def_handleIncludes() {
         const std::string filePath("test.c");
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
@@ -2945,6 +2946,48 @@ private:
             const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
             ASSERT_EQUALS("\n#error abc\n\n", actual);
             ASSERT_EQUALS("[test.c:2]: (error) abc\n", errout.str());
+        }
+    }
+
+    void def_missingInclude() {
+        const std::list<std::string> includePaths;
+        std::map<std::string,std::string> defs;
+        defs["AA"] = "";
+        Settings settings;
+        Preprocessor preprocessor(&settings,this);
+
+        // missing local include
+        {
+            const std::string code("#include \"missing-include!!.h\"\n");
+
+            errout.str("");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing-include!!.h\" not found.\n", errout.str());
+
+            errout.str("");
+            settings.nomsg.addSuppression("missingInclude");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        // missing system header
+        {
+            const std::string code("#include <missing-include!!.h>\n");
+
+            errout.str("");
+            settings = Settings();
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
+
+            errout.str("");
+            settings.debugwarnings = true;
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("[test.c:1]: (debug) Include file: \"missing-include!!.h\" not found.\n", errout.str());
+
+            errout.str("");
+            settings.nomsg.addSuppression("missingInclude");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
         }
     }
 };
