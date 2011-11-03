@@ -7272,6 +7272,11 @@ bool Tokenizer::simplifyCalculations()
             ret = true;
         }
 
+        if (tok->str()[0] == '\'' && tok->str().size() == 3 &&
+            Token::Match(tok->previous(), "(|&&|%oror% %any% ==|!=|<=|<|>=|> %num% &&|%oror%|)")) {
+            tok->str(MathLib::toString(tok->str()[1] & 0xff));
+        }
+
         if (tok->isNumber()) {
             if (tok->str() == "0") {
                 if (Token::Match(tok->previous(), "[+-|] 0")) {
