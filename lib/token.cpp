@@ -455,6 +455,10 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 } else { // %varid%
                     if (varid == 0) {
                         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                        ErrorLogger::ErrorMessage::FileLocation loc;
+                        loc.line = tok->linenr();
+                        loc.setfile("");
+                        locationList.push_back(loc);
                         const ErrorLogger::ErrorMessage errmsg(locationList,
                                                                Severity::error,
                                                                "Internal error. Token::Match called with varid 0.",
