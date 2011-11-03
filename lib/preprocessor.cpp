@@ -1754,44 +1754,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
     while (std::getline(istr,line)) {
         ++linenr;
 
-        if (line.compare(0,9,"#include ")==0) {
-            std::string filename(line.substr(9));
-
-            const HeaderTypes headerType = getHeaderFileName(filename);
-            if (headerType == NoHeader) {
-                ostr << std::endl;
-                continue;
-            }
-
-            // try to open file
-            std::ifstream fin;
-            if (!openHeader(filename, includePaths, headerType == UserHeader ? path : std::string(""), fin)) {
-
-                if (_settings && (headerType == UserHeader || _settings->debugwarnings)) {
-                    if (!_settings->nomsg.isSuppressed("missingInclude", "", 0)) {
-                        missingIncludeFlag = true;
-
-                        missingInclude(Path::toNativeSeparators(filePath),
-                                       linenr,
-                                       filename,
-                                       headerType == UserHeader);
-                    }
-                }
-                continue;
-            }
-
-            // Prevent that files are recursively included
-            if (std::find(includes.begin(), includes.end(), filename) != includes.end()) {
-                ostr << std::endl;
-                continue;
-            }
-
-            includes.push_back(filename);
-
-            ostr << "#file \"" << filename << "\"\n"
-                 << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs, includes) << std::endl
-                 << "#endfile";
-        } else if (line.compare(0,7,"#ifdef ") == 0) {
+        if (line.compare(0,7,"#ifdef ") == 0) {
             if (indent == indentmatch && defs.find(getdef(line,true)) != defs.end()) {
                 elseIsTrue = false;
                 indentmatch++;
@@ -1857,6 +1820,47 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
             else if (line.compare(0,7,"#error ") == 0) {
                 error(filePath, linenr, line.substr(7));
+            }
+
+            else if (line.compare(0,9,"#include ")==0) {
+                std::string filename(line.substr(9));
+
+                const HeaderTypes headerType = getHeaderFileName(filename);
+                if (headerType == NoHeader) {
+                    ostr << std::endl;
+                    continue;
+                }
+
+                // try to open file
+                std::ifstream fin;
+                if (!openHeader(filename, includePaths, headerType == UserHeader ? path : std::string(""), fin)) {
+
+                    if (_settings && (headerType == UserHeader || _settings->debugwarnings)) {
+                        if (!_settings->nomsg.isSuppressed("missingInclude", "", 0)) {
+                            missingIncludeFlag = true;
+
+                            missingInclude(Path::toNativeSeparators(filePath),
+                                           linenr,
+                                           filename,
+                                           headerType == UserHeader);
+                        }
+                    }
+                    ostr << std::endl;
+                    continue;
+                }
+
+                // Prevent that files are recursively included
+                if (std::find(includes.begin(), includes.end(), filename) != includes.end()) {
+                    ostr << std::endl;
+                    continue;
+                }
+
+                includes.push_back(filename);
+
+                ostr << "#file \"" << filename << "\"\n"
+                     << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs, includes) << std::endl
+                     << "#endfile\n";
+                continue;
             }
 
             ostr << line;

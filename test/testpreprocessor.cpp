@@ -2981,6 +2981,21 @@ private:
             preprocessor.handleIncludes(code,"test.c",includePaths,defs);
             ASSERT_EQUALS("", errout.str());
         }
+
+        // #3285 - #elif
+        {
+            const std::string code("#ifdef GNU\n"
+                                   "#elif defined(WIN32)\n"
+                                   "#include \"missing-include!!.h\"\n"
+                                   "#endif");
+            defs.clear();
+            defs["GNU"] = "";
+
+            errout.str("");
+            settings = Settings();
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 };
 
