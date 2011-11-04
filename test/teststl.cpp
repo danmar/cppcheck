@@ -122,6 +122,7 @@ private:
         Settings settings;
         settings.addEnabled("style");
         settings.addEnabled("performance");
+        settings.inconclusive = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -1315,31 +1316,31 @@ private:
               "    std::string errmsg;\n"
               "    return errmsg.c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::ostringstream errmsg;\n"
               "    return errmsg.str().c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
               "    return std::string(\"ERROR: \" + errmsg).c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
               "    return (\"ERROR: \" + errmsg).c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
               "    return (\"ERROR: \" + std::string(\"crash me\")).c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
 
         check("void f() {\n"
               "    std::ostringstream errmsg;\n"

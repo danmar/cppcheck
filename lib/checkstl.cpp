@@ -1019,17 +1019,36 @@ void CheckStl::string_c_str()
                          tok->next()->varId() > 0 &&
                          localvar.find(tok->next()->varId()) != localvar.end()) {
                     string_c_strError(tok);
-                } else if (Token::Match(tok, "return %var% . c_str ( ) ;") &&
+                } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
                            tok->next()->varId() > 0 &&
-                           localvar.find(tok->next()->varId()) != localvar.end()) {
+                           pointers.find(tok->next()->varId()) != pointers.end()) {
                     string_c_strError(tok);
+                } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
+                           Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
+                           tok->next()->varId() > 0 &&
+                           pointers.find(tok->next()->varId()) != pointers.end() &&
+                           Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str())) {
+                    string_c_strError(tok);
+                }
+
+                // This part is inconclusive as the return type of the function
+                // might convert it to another string class implicitly.
+                // TODO: As soon as the symbol database stores the return value
+                // of a function, we can check if it's const char* and output a real error.
+                if (!_settings->inconclusive)
+                    continue;
+
+                if (Token::Match(tok, "return %var% . c_str ( ) ;") &&
+                    tok->next()->varId() > 0 &&
+                    localvar.find(tok->next()->varId()) != localvar.end()) {
+                    string_c_strError(tok, true);
                 } else if (Token::Match(tok, "return %var% . str ( ) . c_str ( ) ;") &&
                            tok->next()->varId() > 0 &&
                            localvar.find(tok->next()->varId()) != localvar.end()) {
-                    string_c_strError(tok);
+                    string_c_strError(tok, true);
                 } else if (Token::simpleMatch(tok, "return std :: string (") &&
                            Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;")) {
-                    string_c_strError(tok);
+                    string_c_strError(tok, true);
                 } else if (Token::simpleMatch(tok, "return (") &&
                            Token::simpleMatch(tok->next()->link(), ") . c_str ( ) ;")) {
                     // Check for "+ localvar" or "+ std::string(" inside the bracket
@@ -1047,26 +1066,19 @@ void CheckStl::string_c_str()
                     }
 
                     if (is_implicit_std_string)
-                        string_c_strError(tok);
-                } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
-                           tok->next()->varId() > 0 &&
-                           pointers.find(tok->next()->varId()) != pointers.end()) {
-                    string_c_strError(tok);
-                } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
-                           Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
-                           tok->next()->varId() > 0 &&
-                           pointers.find(tok->next()->varId()) != pointers.end() &&
-                           Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str())) {
-                    string_c_strError(tok);
+                        string_c_strError(tok, true);
                 }
             }
         }
     }
 }
 
-void CheckStl::string_c_strError(const Token *tok)
+void CheckStl::string_c_strError(const Token* tok, bool is_inconlusive)
 {
-    reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str()");
+    if (is_inconlusive)
+        reportInconclusiveError(tok, Severity::error, "stlcstr", "Possible dangerous usage of c_str()");
+    else
+        reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str()");
 }
 
 

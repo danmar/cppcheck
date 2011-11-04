@@ -133,7 +133,7 @@ public:
 
     /** Check for common mistakes when using the function string::c_str() */
     void string_c_str();
-    void string_c_strError(const Token *tok);
+    void string_c_strError(const Token *tok, bool is_inconlusive=false);
 
     /** @brief %Check for use and copy auto pointer */
     void checkAutoPointer();
