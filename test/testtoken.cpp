@@ -34,6 +34,7 @@ private:
     void run() {
         TEST_CASE(nextprevious);
         TEST_CASE(multiCompare);
+        TEST_CASE(multiCompare2);                   // #3294 - false negative multi compare between "=" and "=="
         TEST_CASE(getStrLength);
         TEST_CASE(strValue);
 
@@ -101,6 +102,13 @@ private:
         ASSERT_EQUALS(1, Token::multiCompare("%op%|two", "+"));
         ASSERT_EQUALS(-1, Token::multiCompare("one|%op%", "x"));
         ASSERT_EQUALS(-1, Token::multiCompare("%op%|two", "x"));
+    }
+
+    void multiCompare2() { // #3294
+        // Original pattern that failed: [[,(=<>+-*|&^] %num% [+-*/] %num% ]|,|)|;|=|%op%
+        givenACodeSampleToTokenize toks("a == 1");
+        // FIXME: Result should be true
+        ASSERT_EQUALS(false, Token::Match(toks.tokens(), "a =|%op%"));
     }
 
     void getStrLength() {
