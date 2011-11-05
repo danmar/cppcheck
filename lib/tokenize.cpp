@@ -1869,7 +1869,10 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // token concatenation
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "%var%|%num% ## %var%|%num%")) {
+        // TODO: pattern should be "%var%|%num% ## %var%|%num%"
+        if (Token::Match(tok, "%any% ## %any%") &&
+            (tok->isName() || tok->isNumber()) &&
+            (tok->tokAt(2)->isName() || tok->tokAt(2)->isNumber())) {
             tok->str(tok->str() + tok->strAt(2));
             tok->deleteNext();
             tok->deleteNext();

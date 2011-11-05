@@ -225,6 +225,46 @@ static bool strisop(const char str[])
     return false;
 }
 
+static int multiComparePercent(const char * * haystack_p,
+                               const char * needle,
+                               bool emptyStringFound)
+{
+    const char *haystack = *haystack_p;
+
+    if (haystack[0] == '%' && haystack[1] != '|') {
+        if (haystack[1] == 'o' && // "%op%"
+            haystack[2] == 'p' &&
+            haystack[3] == '%') {
+            if (strisop(needle))
+                return 1;
+            *haystack_p = haystack = haystack + 4;
+        } else if (haystack[1] == 'o' && // "%or%"
+                   haystack[2] == 'r' &&
+                   haystack[3] == '%') {
+            if (*needle == '|')
+                return 1;
+            *haystack_p = haystack = haystack + 4;
+        } else if (haystack[1] == 'o' && // "%oror%"
+                   haystack[2] == 'r' &&
+                   haystack[3] == 'o' &&
+                   haystack[4] == 'r' &&
+                   haystack[5] == '%') {
+            if (needle[0] == '|' && needle[1] == '|')
+                return 1;
+            *haystack_p = haystack = haystack + 6;
+        }
+
+        if (*haystack == '|')
+            *haystack_p = haystack = haystack + 1;
+        else if (*haystack == ' ' || *haystack == '\0')
+            return emptyStringFound ? 0 : -1;
+        else
+            return -1;
+    }
+
+    return 0xFFFF;
+}
+
 int Token::multiCompare(const char *haystack, const char *needle)
 {
     if (haystack[0] == '%' && haystack[1] == 'o') {
@@ -271,6 +311,10 @@ int Token::multiCompare(const char *haystack, const char *needle)
 
             needlePointer = needle;
             ++haystack;
+
+            int ret = multiComparePercent(&haystack, needle, emptyStringFound);
+            if (ret < 2)
+                return ret;
         } else if (*haystack == ' ' || *haystack == '\0') {
             if (needlePointer == needle)
                 return 0;
@@ -291,36 +335,9 @@ int Token::multiCompare(const char *haystack, const char *needle)
 
             ++haystack;
 
-            if (haystack[0] == '%' && haystack[1] != '|') {
-                if (haystack[1] == 'o' && // "%op%"
-                    haystack[2] == 'p' &&
-                    haystack[3] == '%') {
-                    if (strisop(needle))
-                        return 1;
-                    haystack = haystack + 4;
-                } else if (haystack[1] == 'o' && // "%or%"
-                           haystack[2] == 'r' &&
-                           haystack[3] == '%') {
-                    if (*needle == '|')
-                        return 1;
-                    haystack = haystack + 4;
-                } else if (haystack[1] == 'o' && // "%oror%"
-                           haystack[2] == 'r' &&
-                           haystack[3] == 'o' &&
-                           haystack[4] == 'r' &&
-                           haystack[5] == '%') {
-                    if (needle[0] == '|' && needle[1] == '|')
-                        return 1;
-                    haystack = haystack + 6;
-                }
-
-                if (*haystack == '|')
-                    haystack++;
-                else if (*haystack == ' ' || *haystack == '\0')
-                    return emptyStringFound ? 0 : -1;
-                else
-                    return -1;
-            }
+            int ret = multiComparePercent(&haystack, needle, emptyStringFound);
+            if (ret < 2)
+                return ret;
         }
     }
 

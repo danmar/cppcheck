@@ -107,8 +107,7 @@ private:
     void multiCompare2() { // #3294
         // Original pattern that failed: [[,(=<>+-*|&^] %num% [+-*/] %num% ]|,|)|;|=|%op%
         givenACodeSampleToTokenize toks("a == 1");
-        // FIXME: Result should be true
-        ASSERT_EQUALS(false, Token::Match(toks.tokens(), "a =|%op%"));
+        ASSERT_EQUALS(true, Token::Match(toks.tokens(), "a =|%op%"));
     }
 
     void getStrLength() {

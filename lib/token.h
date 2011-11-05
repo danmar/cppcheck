@@ -113,6 +113,9 @@ public:
      * - "!!else" No tokens or any token that is not "else".
      * - "someRandomText" If token contains "someRandomText".
      *
+     * multi-compare patterns such as "int|void|char" can contain %or%, %oror% and %op%
+     * but it is not recommended to put such an %cmd% as the first pattern.
+     *
      * The patterns can be also combined to compare to multiple tokens at once
      * by separating tokens with a space, e.g.
      * ") const|void {" will return true if first token is ')' next token is either
