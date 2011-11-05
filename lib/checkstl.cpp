@@ -1101,6 +1101,10 @@ void CheckStl::checkAutoPointer()
                 while (tok2) {
                     if (Token::Match(tok2, "> %var%")) {
                         const Token *tok3 = tok2->next()->next();
+                        if (Token::Match(tok3, "( new %type% [")) {
+                            autoPointerArrayError(tok2->next());
+                            break;
+                        }
                         while (tok3 && tok3->str() != ";") {
                             tok3 = tok3->next();
                         }
