@@ -3408,6 +3408,11 @@ private:
                       "[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n"
                       "[test.cpp:5] -> [test.cpp:5]: (style) Same expression on both sides of '>'.\n"
                       "[test.cpp:6] -> [test.cpp:6]: (style) Same expression on both sides of '<'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    return a && a;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
     }
 
     void duplicateExpression2() { // ticket #2730
