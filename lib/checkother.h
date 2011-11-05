@@ -369,7 +369,7 @@ public:
                "* sizeof for numeric given as function argument\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* invalid usage of output stream. For example: std::cout << std::cout;'\n"
-               "* too few arguments given to 'printf' or 'scanf;'\n"
+               "* wrong number of arguments given to 'printf' or 'scanf;'\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
@@ -402,7 +402,6 @@ public:
                "* testing is unsigned variable is positive\n"
                "* using bool in bitwise expression\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
-               "* too much arguments given to 'printf' or 'scanf'\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
