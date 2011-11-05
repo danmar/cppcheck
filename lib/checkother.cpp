@@ -2337,7 +2337,7 @@ void CheckOther::checkDuplicateExpression()
             continue;
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next()) {
-            if (Token::Match(tok, "(|&&|%oror% %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% )|&&|%oror%") &&
+            if (Token::Match(tok, "return|(|&&|%oror% %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% )|&&|%oror%|;") &&
                 tok->strAt(1) == tok->strAt(3)) {
                 // float == float and float != float are valid NaN checks
                 if (Token::Match(tok->tokAt(2), "==|!=") && tok->next()->varId()) {
