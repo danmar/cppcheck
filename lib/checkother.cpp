@@ -1868,7 +1868,11 @@ void CheckOther::checkIncompleteStatement()
         else if (tok->str() == "{" && Token::Match(tok->tokAt(-2), "%type% %var%"))
             tok = tok->link();
 
-        else if (Token::Match(tok, "[;{}] %str%") || Token::Match(tok, "[;{}] %num% !!.")) {
+        else if (Token::Match(tok, "[;{}] %str%") || Token::Match(tok, "[;{}] %num%")) {
+            // No warning if numeric constant is followed by a "." or ","
+            if (Token::Match(tok->next(), "%num% [,.]"))
+                continue;
+
             // bailout if there is a "? :" in this statement
             bool bailout = false;
             for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {

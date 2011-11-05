@@ -67,6 +67,7 @@ private:
         TEST_CASE(structinit);          // #2462 : ABC abc{1,2,3};
         TEST_CASE(returnstruct);
         TEST_CASE(cast);                // #3009 : (struct Foo *)123.a = 1;
+        TEST_CASE(increment);           // #3251 : FP for increment
     }
 
     void test1() {
@@ -191,6 +192,14 @@ private:
     void cast() {
         check("void f() {\n"
               "    ((struct foo *)(0x1234))->xy = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void increment() {
+        check("void f() {\n"
+              "    int x = 1;\n"
+              "    x++, x++;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
