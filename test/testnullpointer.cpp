@@ -55,6 +55,7 @@ private:
         TEST_CASE(printf_with_invalid_va_argument);
         TEST_CASE(scanf_with_invalid_va_argument);
         TEST_CASE(nullpointer_in_return);
+        TEST_CASE(nullpointer_in_typeid);
     }
 
     void check(const char code[], bool inconclusive = false, bool cpp11 = false) {
@@ -1550,6 +1551,31 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void nullpointer_in_typeid() {
+        // Should throw std::bad_typeid
+        check("struct PolymorphicA { virtual ~A() {} };\n"
+              "bool foo() {\n"
+              "     PolymorphicA* a = 0;\n"
+              "     return typeid(*a) == typeid(*a);\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
+
+        check("struct NonPolymorphicA { ~A() {} };\n"
+              "bool foo() {\n"
+              "     NonPolymorphicA* a = 0;\n"
+              "     return typeid(*a) == typeid(*a);\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
+
+        check("bool foo() {\n"
+              "     char* c = 0;\n"
+              "     return typeid(*c) == typeid(*c);\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
+
+    }
+
 };
 
 REGISTER_TEST(TestNullPointer)
