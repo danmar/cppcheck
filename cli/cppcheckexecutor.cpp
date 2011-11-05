@@ -68,7 +68,9 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         }
 
         if (parser.ExitAfterPrinting())
-            std::exit(0);
+            std::exit(EXIT_SUCCESS);
+    } else {
+        std::exit(EXIT_FAILURE);
     }
 
     // Check that all include paths exist
