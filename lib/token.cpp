@@ -602,6 +602,9 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             if (!patternUnderstood) {
                 return false;
             }
+            
+            // debugging: assert that this is not part of a multicompare pattern..
+            assert(*p != '|');
 
             tok = tok->next();
             continue;
