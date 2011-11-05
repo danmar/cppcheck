@@ -1219,6 +1219,94 @@ void CheckOther::invalidScanfError(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
+//    printf("%u", "xyz"); // Wrong argument type. TODO.
+//    printf("%u%s", 1); // Too few arguments
+//    printf("", 1); // Too much arguments
+//---------------------------------------------------------------------------
+
+void CheckOther::checkWrongPrintfScanfArguments()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->isName()) continue;
+
+        const Token* argListTok = 0; // Points to first va_list argument
+        std::string formatString;
+
+        if (Token::Match(tok, "printf|scanf ( %str%")) {
+            formatString = tok->strAt(2);
+            if (tok->strAt(3) == ",")
+                argListTok = tok->tokAt(4);
+            else
+                argListTok = 0;
+        } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf ( %any%")) {
+            const Token* formatStringTok = tok->tokAt(2)->nextArgument(); // Find second parameter (format string)
+            if (Token::Match(formatStringTok, "%str%")) {
+                argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
+                formatString = formatStringTok->str();
+            }
+        } else if (Token::Match(tok, "snprintf|fnprintf ( %any%")) {
+            const Token* formatStringTok = tok->tokAt(2);
+            for (int i = 0; i < 2 && formatStringTok; i++) {
+                formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
+            }
+            if (Token::Match(formatStringTok, "%str%")) {
+                argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
+                formatString = formatStringTok->str();
+            }
+        } else {
+            continue;
+        }
+
+        // Count format string parameters..
+        unsigned int numFormat = 0;
+        bool percent = false;
+        for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
+            if (*i == '%') {
+                percent = !percent;
+            } else if (percent && std::isalpha(*i)) {
+                numFormat++;
+                percent = false;
+            }
+        }
+
+        // Count printf/scanf parameters..
+        unsigned int numFunction = 0;
+        while (argListTok) {
+            // TODO: Perform type checks
+            numFunction++;
+            argListTok = argListTok->nextArgument(); // Find next argument
+        }
+
+        // Mismatching number of parameters => warning
+        if (numFormat != numFunction)
+            wrongPrintfScanfArgumentsError(tok, tok->str(), numFormat, numFunction);
+    }
+}
+
+void CheckOther::wrongPrintfScanfArgumentsError(const Token* tok,
+        const std::string &functionName,
+        unsigned int numFormat,
+        unsigned int numFunction)
+{
+    std::ostringstream errmsg;
+    errmsg << functionName
+           << " format string has "
+           << numFormat
+           << " parameters but "
+           << (numFormat > numFunction ? "only " : "")
+           << numFunction
+           << " are given";
+
+    reportError(tok,
+                numFormat > numFunction ? Severity::error : Severity::warning,
+                "wrongPrintfScanfArgs",
+                errmsg.str());
+}
+
+//---------------------------------------------------------------------------
 //    if (!x==3) <- Probably meant to be "x!=3"
 //---------------------------------------------------------------------------
 void CheckOther::checkComparisonOfBoolWithInt()

@@ -89,6 +89,7 @@ public:
         checkOther.checkMathFunctions();
         checkOther.checkFflushOnInputStream();
         checkOther.invalidScanf();
+        checkOther.checkWrongPrintfScanfArguments();
 
         checkOther.checkCoutCerrMisusage();
         checkOther.checkIncorrectLogicOperator();
@@ -166,6 +167,13 @@ public:
     /** @brief scanf can crash if width specifiers are not used */
     void invalidScanf();
     void invalidScanfError(const Token *tok);
+
+    /** @brief %Checks type and number of arguments given to functions like printf or scanf*/
+    void checkWrongPrintfScanfArguments();
+    void wrongPrintfScanfArgumentsError(const Token* tok,
+                                        const std::string &function,
+                                        unsigned int numFormat,
+                                        unsigned int numFunction);
 
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
@@ -340,6 +348,7 @@ public:
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0);
         c.SuspiciousSemicolonError(0);
+        c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
     }
 
     std::string myName() const {
@@ -360,6 +369,7 @@ public:
                "* sizeof for numeric given as function argument\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* invalid usage of output stream. For example: std::cout << std::cout;'\n"
+               "* too few arguments given to 'printf' or 'scanf;'\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
@@ -392,6 +402,7 @@ public:
                "* testing is unsigned variable is positive\n"
                "* using bool in bitwise expression\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
+               "* too much arguments given to 'printf' or 'scanf'\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
