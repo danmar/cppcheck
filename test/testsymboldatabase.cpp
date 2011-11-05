@@ -98,6 +98,8 @@ private:
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
 
+        TEST_CASE(parseFunctionCorrect);
+
         TEST_CASE(hasGlobalVariables1);
         TEST_CASE(hasGlobalVariables2);
         TEST_CASE(hasGlobalVariables3);
@@ -533,6 +535,18 @@ private:
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
             ASSERT(function && function->hasBody && !function->isInline && function->retFuncPtr);
         }
+    }
+
+    void parseFunctionCorrect() {
+        // ticket 3188 - "if" statement parsed as function
+        GET_SYMBOL_DB("void func(i) int i; { if (i == 1) return; }\n")
+        ASSERT(db != NULL);
+
+        // 3 scopes: Global, function, if
+        ASSERT_EQUALS(3, db->scopeList.size());
+
+        ASSERT(tokenizer.getFunctionTokenByName("func") != NULL);
+        ASSERT(tokenizer.getFunctionTokenByName("if") == NULL);
     }
 
     void hasGlobalVariables1() {

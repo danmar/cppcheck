@@ -1952,6 +1952,10 @@ bool Tokenizer::tokenize(std::istream &code,
         return false;
     }
 
+    // Convert K&R function declarations to modern C
+    simplifyVarDecl(true);
+    simplifyFunctionParameters();
+
     // check for simple syntax errors..
     for (const Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "> struct {") &&
@@ -2376,7 +2380,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyInitVar();
 
     // Split up variable declarations.
-    simplifyVarDecl();
+    simplifyVarDecl(false);
 
     // f(x=g())   =>   x=g(); f(x)
     simplifyAssignmentInFunctionCall();
@@ -2420,7 +2424,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyInitVar();
 
     // Split up variable declarations.
-    simplifyVarDecl();
+    simplifyVarDecl(false);
 
     if (!preprocessorCondition) {
         setVarId();
@@ -4222,9 +4226,8 @@ bool Tokenizer::simplifyTokenList()
     simplifyInitVar();
 
     // Simplify variable declarations
-    simplifyVarDecl();
+    simplifyVarDecl(false);
 
-    simplifyFunctionParameters();
     elseif();
     simplifyErrNoInWhile();
     simplifyIfAssign();
@@ -5629,7 +5632,7 @@ static void incdec(std::string &value, const std::string &op)
 
 
 
-void Tokenizer::simplifyVarDecl()
+void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
 {
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
@@ -5638,6 +5641,18 @@ void Tokenizer::simplifyVarDecl()
             tok = tok->next()->link();
             if (!tok)
                 break;
+        }
+
+        if (only_k_r_fpar) {
+            if (tok->str() == "(" || tok->str() == "{") {
+                tok = tok->link();
+                if (!tok)
+                    break;
+                if (tok->next() && Token::Match(tok, ") !!{"))
+                    tok = tok->next();
+                else continue;
+            } else
+                continue;
         }
 
         if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|)|public:|protected:|private:"))

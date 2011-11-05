@@ -4114,7 +4114,7 @@ private:
 
         const std::string actual(tokenizeAndStringify(code));
 
-        ASSERT_EQUALS("void foo ( a , b ) unsigned int a ; unsigned int b ; { }", actual);
+        ASSERT_EQUALS("void foo ( unsigned int a , unsigned int b ) { }", actual);
     }
 
     void vardecl3() {

@@ -220,8 +220,9 @@ public:
 
     /**
      * Simplify variable declarations (split up)
+     * \param only_k_r_fpar Only simplify K&R function parameters
      */
-    void simplifyVarDecl();
+    void simplifyVarDecl(bool only_k_r_fpar);
 
     /**
      * Simplify variable initialization
