@@ -6573,6 +6573,21 @@ bool Tokenizer::simplifyKnownVariables()
                 if (varid == 0)
                     continue;
 
+                // initialization of static variable => the value is not *known*
+                {
+                    bool isstatic = false;
+                    const Token *decl = tok2->previous();
+                    while (decl && (decl->isName() || decl->str() == "*")) {
+                        if (decl->str() == "static") {
+                            isstatic = true;
+                            break;
+                        }
+                        decl = decl->previous();
+                    }
+                    if (isstatic)
+                        continue;
+                }
+
                 // skip loop variable
                 if (Token::Match(tok2->tokAt(-2), "(|:: %type%")) {
                     const Token *tok3 = tok2->previous();

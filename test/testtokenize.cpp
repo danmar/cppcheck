@@ -135,6 +135,7 @@ private:
         TEST_CASE(simplifyKnownVariables41);    // p=&x; if (p) ..
         TEST_CASE(simplifyKnownVariables42);    // ticket #2031 - known string value after strcpy
         TEST_CASE(simplifyKnownVariables43);
+        TEST_CASE(simplifyKnownVariables44);    // ticket #3117 - don't simplify static variables
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
@@ -2105,6 +2106,18 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
         }
+    }
+
+    void simplifyKnownVariables44() {
+        const char code[] = "void a() {\n"
+                            "    static int i = 10;\n"
+                            "    b(i++);\n"
+                            "}";
+        const char expected[] = "void a ( ) {\n"
+                                "static int i = 10 ;\n"
+                                "b ( i ++ ) ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
     void simplifyKnownVariablesBailOutAssign1() {
