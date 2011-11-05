@@ -1435,6 +1435,12 @@ private:
 
         check("void f() \n"
               "{\n"
+              "    auto_ptr<T> p2( new T[5] );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+        check("void f() \n"
+              "{\n"
               "    auto_ptr<T> p2;\n"
               "    p2.reset( new T[] );\n"
               "}\n");
