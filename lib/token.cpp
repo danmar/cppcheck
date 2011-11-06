@@ -241,7 +241,7 @@ static int multiComparePercent(const char * * haystack_p,
         } else if (haystack[1] == 'o' && // "%or%"
                    haystack[2] == 'r' &&
                    haystack[3] == '%') {
-            if (*needle == '|')
+            if (*needle == '|' && needle[1] != '|' && needle[1] != '=')
                 return 1;
             *haystack_p = haystack = haystack + 4;
         } else if (haystack[1] == 'o' && // "%oror%"
@@ -278,7 +278,7 @@ int Token::multiCompare(const char *haystack, const char *needle)
                    haystack[3] == '%' &&
                    haystack[4] == '|') {
             haystack = haystack + 5;
-            if (*needle == '|')
+            if (*needle == '|' && needle[1] != '|' && needle[1] != '=')
                 return 1;
         } else if (haystack[2] == 'r' && // "%oror%|"
                    haystack[3] == 'o' &&

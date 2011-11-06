@@ -43,6 +43,7 @@ private:
         TEST_CASE(nextprevious);
         TEST_CASE(multiCompare);
         TEST_CASE(multiCompare2);                   // #3294 - false negative multi compare between "=" and "=="
+        TEST_CASE(multiCompare3);                   // false positive for %or% on code using "|="
         TEST_CASE(getStrLength);
         TEST_CASE(strValue);
 
@@ -126,6 +127,27 @@ private:
         // Original pattern that failed: [[,(=<>+-*|&^] %num% [+-*/] %num% ]|,|)|;|=|%op%
         givenACodeSampleToTokenize toks("a == 1");
         ASSERT_EQUALS(true, Token::Match(toks.tokens(), "a =|%op%"));
+    }
+
+    void multiCompare3() {
+        // Original pattern that failed: "return|(|&&|%oror% %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% )|&&|%oror%|;"
+        // Code snippet that failed: "return lv@86 |= rv@87 ;"
+
+        // Note: Also test "reverse" alternative pattern, two different code paths to handle it
+        givenACodeSampleToTokenize toks("return a |= b ;");
+        ASSERT_EQUALS(false, Token::Match(toks.tokens(), "return %var% xyz|%or% %var% ;"));
+        ASSERT_EQUALS(false, Token::Match(toks.tokens(), "return %var% %or%|xyz %var% ;"));
+
+        givenACodeSampleToTokenize toks2("return a | b ;");
+        ASSERT_EQUALS(true, Token::Match(toks2.tokens(), "return %var% xyz|%or% %var% ;"));
+        ASSERT_EQUALS(true, Token::Match(toks2.tokens(), "return %var% %or%|xyz %var% ;"));
+
+        givenACodeSampleToTokenize toks3("return a || b ;");
+        ASSERT_EQUALS(false, Token::Match(toks3.tokens(), "return %var% xyz|%or% %var% ;"));
+        ASSERT_EQUALS(false, Token::Match(toks3.tokens(), "return %var% %or%|xyz %var% ;"));
+
+        ASSERT_EQUALS(true, Token::Match(toks3.tokens(),  "return %var% xyz|%oror% %var% ;"));
+        ASSERT_EQUALS(true, Token::Match(toks3.tokens(),  "return %var% %oror%|xyz %var% ;"));
     }
 
     void getStrLength() {
@@ -306,6 +328,11 @@ private:
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "%or%"));
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "%op%"));
         ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%oror%"));
+
+        givenACodeSampleToTokenize bitwiseOrAssignment("|=");
+        ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.tokens(), "%or%"));
+        ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.tokens(), "%op%"));
+        ASSERT_EQUALS(false, Token::Match(bitwiseOrAssignment.tokens(), "%oror%"));
 
         givenACodeSampleToTokenize logicalOr("||");
         ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "%or%"));
