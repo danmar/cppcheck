@@ -49,6 +49,9 @@ private:
         TEST_CASE(matchOr);
         TEST_CASE(matchOp);
 
+        TEST_CASE(isExtendedOp);
+        TEST_CASE(isAssignmentOp);
+
         TEST_CASE(updateProperties)
         TEST_CASE(updatePropertiesConcatStr)
         TEST_CASE(isNameGuarantees1)
@@ -286,6 +289,94 @@ private:
         ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("^").tokens(), "%op%"));
         ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("~").tokens(), "%op%"));
         ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("!").tokens(), "%op%"));
+    }
+
+    void isExtendedOp() {
+        Token tok(NULL);
+
+        // Normal isOp()
+        tok.str("<<");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str(">>");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("+");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("-");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("*");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("/");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("%");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("&&");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("||");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("==");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("!=");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("<");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("<=");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str(">");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str(">=");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("&");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("|");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("^");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("~");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("!");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+
+        // Extended operators
+        tok.str(",");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("[");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("]");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("(");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str(")");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str("?");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+        tok.str(":");
+    }
+
+    void isAssignmentOp() {
+        Token tok(NULL);
+
+        tok.str("=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        tok.str("+=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        tok.str("-=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        tok.str("*=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        tok.str("/=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        tok.str("%=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        tok.str("&=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        tok.str("^=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        tok.str("|=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        tok.str("<<=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        tok.str(">>=");
+        ASSERT_EQUALS(true, tok.isAssignmentOp());
     }
 
     void updateProperties() {
