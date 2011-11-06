@@ -134,6 +134,7 @@ private:
         TEST_CASE(comparisonOfBoolWithInt2);
         TEST_CASE(comparisonOfBoolWithInt3);
         TEST_CASE(comparisonOfBoolWithInt4);
+        TEST_CASE(comparisonOfBoolWithInt5);
 
         TEST_CASE(duplicateIf);
         TEST_CASE(duplicateBranch);
@@ -3171,14 +3172,14 @@ private:
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(bool x) {\n"
               "    if (10 >= x) {\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(bool x) {\n"
               "    if (x != 0) {\n"
@@ -3192,14 +3193,14 @@ private:
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(bool x) {\n"
               "    if (x == 10) {\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(bool x) {\n"
               "    if (x == 0) {\n"
@@ -3215,14 +3216,14 @@ private:
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(int x, bool y) {\n"
               "    if (x == y) {\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(bool x, bool y) {\n"
               "    if (x == y) {\n"
@@ -3245,14 +3246,14 @@ private:
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(int y) {\n"
               "    if (true == y) {\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(bool y) {\n"
               "    if (y == true) {\n"
@@ -3268,14 +3269,14 @@ private:
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (!x != 10) {\n"
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x != 10) {\n"
@@ -3289,19 +3290,26 @@ private:
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (10 != !x) {\n"
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with a non-zero integer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with integer that is neither 1 nor 0\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (10 != x) {\n"
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void comparisonOfBoolWithInt5() {
+        check("void f(int x) {\n"
+              "    if (!x == 1) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

@@ -1363,12 +1363,12 @@ void CheckOther::checkComparisonOfBoolWithInt()
             }
         } else if (Token::Match(tok, "( ! %var% ==|!= %num% )")) {
             const Token *numTok = tok->tokAt(4);
-            if (numTok && numTok->str() != "0") {
+            if (numTok && numTok->str() != "0" && numTok->str() != "1") {
                 comparisonOfBoolWithIntError(numTok, "!"+tok->strAt(2));
             }
         } else if (Token::Match(tok, "( %num% ==|!= ! %var% )")) {
             const Token *numTok = tok->tokAt(1);
-            if (numTok && numTok->str() != "0") {
+            if (numTok && numTok->str() != "0" && numTok->str() != "1") {
                 comparisonOfBoolWithIntError(numTok, "!"+tok->strAt(4));
             }
         }
@@ -1378,8 +1378,10 @@ void CheckOther::checkComparisonOfBoolWithInt()
 void CheckOther::comparisonOfBoolWithIntError(const Token *tok, const std::string &expression)
 {
     reportError(tok, Severity::warning, "comparisonOfBoolWithInt",
-                "Comparison of a boolean with a non-zero integer\n"
-                "The expression \"" + expression + "\" is of type 'bool' but is compared against a non-zero 'int'.");
+                "Comparison of a boolean with integer that is neither 1 nor 0\n"
+                "The expression \"" + expression + "\" is of type 'bool' "
+                "and it is compared against a integer value that is "
+                "neither 1 nor 0.");
 }
 
 //---------------------------------------------------------------------------
