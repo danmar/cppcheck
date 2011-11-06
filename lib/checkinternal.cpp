@@ -23,8 +23,6 @@
 #include <string>
 #include <set>
 
-using namespace std;
-
 // Register this check class (by creating a static instance of it).
 // Disabled in release builds
 namespace {
@@ -44,16 +42,16 @@ void CheckInternal::checkTokenMatchPatterns()
         if (!pattern_tok || !Token::Match(pattern_tok, "%str%"))
             continue;
 
-        const string pattern = pattern_tok->strValue();
+        const std::string pattern = pattern_tok->strValue();
         if (pattern.empty()) {
             simplePatternError(tok, pattern, funcname);
             continue;
         }
 
         // Check for signs of complex patterns
-        if (pattern.find_first_of("[|%") != string::npos)
+        if (pattern.find_first_of("[|%") != std::string::npos)
             continue;
-        else if (pattern.find("!!") != string::npos)
+        else if (pattern.find("!!") != std::string::npos)
             continue;
 
         simplePatternError(tok, pattern, funcname);
@@ -73,7 +71,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
         if (!pattern_tok || !Token::Match(pattern_tok, "%str%"))
             continue;
 
-        const string pattern = pattern_tok->strValue();
+        const std::string pattern = pattern_tok->strValue();
         if (pattern.empty()) {
             complexPatternError(tok, pattern, funcname);
             continue;
@@ -81,7 +79,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
         // Check for [xyz] usage - but exclude standalone square brackets
         unsigned int char_count = 0;
-        for (string::size_type pos = 0; pos < pattern.size(); ++pos) {
+        for (std::string::size_type pos = 0; pos < pattern.size(); ++pos) {
             char c = pattern[pos];
 
             if (c == ' ') {
@@ -98,7 +96,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
         // Check | usage: Count characters before the symbol
         char_count = 0;
-        for (string::size_type pos = 0; pos < pattern.size(); ++pos) {
+        for (std::string::size_type pos = 0; pos < pattern.size(); ++pos) {
             char c = pattern[pos];
 
             if (c == ' ') {
@@ -114,14 +112,14 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
         }
 
         // Check for real errors
-        if (pattern.find_first_of("%") != string::npos || pattern.find("!!") != string::npos)
+        if (pattern.find_first_of("%") != std::string::npos || pattern.find("!!") != std::string::npos)
             complexPatternError(tok, pattern, funcname);
     }
 }
 
 void CheckInternal::checkMissingPercentCharacter()
 {
-    set<string> magics;
+    std::set<std::string> magics;
     magics.insert("%any%");
     magics.insert("%var%");
     magics.insert("%type%");
@@ -143,14 +141,14 @@ void CheckInternal::checkMissingPercentCharacter()
         if (!pattern_tok || !Token::Match(pattern_tok, "%str%"))
             continue;
 
-        const string pattern = pattern_tok->strValue();
+        const std::string pattern = pattern_tok->strValue();
 
-        set<string>::const_iterator magic, magics_end = magics.end();
+        std::set<std::string>::const_iterator magic, magics_end = magics.end();
         for (magic = magics.begin(); magic != magics_end; ++magic) {
-            const string broken_magic = (*magic).substr(0, (*magic).size()-1);
+            const std::string broken_magic = (*magic).substr(0, (*magic).size()-1);
 
-            string::size_type pos = 0;
-            while ((pos = pattern.find(broken_magic, pos)) != string::npos) {
+            std::string::size_type pos = 0;
+            while ((pos = pattern.find(broken_magic, pos)) != std::string::npos) {
                 // Check if it's the full pattern
                 if (pattern.find(*magic, pos) != pos) {
                     // Known whitelist of substrings
@@ -169,14 +167,14 @@ void CheckInternal::checkMissingPercentCharacter()
     }
 }
 
-void CheckInternal::simplePatternError(const Token* tok, const string& pattern, const std::string &funcname)
+void CheckInternal::simplePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::warning, "simplePatternError",
                 "Found simple pattern inside Token::" + funcname + "() call: \"" + pattern + "\""
                );
 }
 
-void CheckInternal::complexPatternError(const Token* tok, const string& pattern, const std::string &funcname)
+void CheckInternal::complexPatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::error, "complexPatternError",
                 "Found complex pattern inside Token::" + funcname + "() call: \"" + pattern + "\""
