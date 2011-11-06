@@ -99,6 +99,9 @@ std::string Settings::addEnabled(const std::string &str)
         }
     } else if (id.find(str) != id.end()) {
         _enabled.insert(str);
+        if (str == "information") {
+            _enabled.insert("missingInclude");
+        }
     } else if (!handled) {
         if (str.empty())
             return std::string("cppcheck: --enable parameter is empty");

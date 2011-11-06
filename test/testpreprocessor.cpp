@@ -216,6 +216,9 @@ private:
 
         TEST_CASE(invalid_define);	// #2605 - hang for: '#define ='
 
+        // Show 'missing include' warnings
+        TEST_CASE(missingInclude);
+
         // inline suppression, missingInclude
         TEST_CASE(inline_suppression_for_missing_include);
 
@@ -2754,6 +2757,20 @@ private:
         std::list<std::string> cfg;
         std::list<std::string> paths;
         preprocessor.preprocess(src, processedFile, cfg, "", paths);		// don't hang
+    }
+
+    void missingInclude() {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        Preprocessor::missingIncludeFlag = false;
+
+        std::istringstream src("#include \"missing.h\"\n");
+        std::string processedFile;
+        std::list<std::string> cfg;
+        std::list<std::string> paths;
+        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
+        preprocessor.preprocess(src, processedFile, cfg, "test.c", paths);
+        ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
     }
 
     void inline_suppression_for_missing_include() {
