@@ -3428,7 +3428,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
         check("void foo() {\n"
-              "    a = a + b && b;\n"
+              "    f(a,b && b);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
     }

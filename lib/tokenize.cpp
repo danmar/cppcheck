@@ -4994,9 +4994,9 @@ void Tokenizer::simplifyCompoundAssignment()
             // Is current token at a compound assignment: +=|-=|.. ?
             const std::string &str = tok->str();
             std::string op;  // operator used in assignment
-            if (str.size() == 2 && str[1] == '=' && str.find_first_of("+-*/%&|^")==0)
+            if (tok->isAssignmentOp() && str.size() == 2)
                 op = str.substr(0, 1);
-            else if (str=="<<=" || str==">>=")
+            else if (tok->isAssignmentOp() && str.size() == 3)
                 op = str.substr(0, 2);
             else {
                 tok = tok1;
@@ -5029,7 +5029,7 @@ void Tokenizer::simplifyCompoundAssignment()
                             break;
                         }
 
-                        someOperator |= bool(tok2->isArithmeticalOp() || (tok2->str() == "?"));
+                        someOperator |= (tok2->isOp() || (tok2->str() == "?"));
                     }
                 }
 
