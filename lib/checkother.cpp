@@ -1762,6 +1762,10 @@ void CheckOther::checkCharVariable()
             if (tok->str() == "*")
                 tok = tok->next();
 
+            const unsigned int varid = tok->varId();
+            if (!varid)
+                continue;
+
             // Check usage of char variable..
             unsigned int indentlevel = 0;
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
@@ -1775,8 +1779,7 @@ void CheckOther::checkCharVariable()
                 }
 
                 if (!isPointer) {
-                    std::string temp = "%var% [ " + tok->str() + " ]";
-                    if ((tok2->str() != ".") && Token::Match(tok2->next(), temp.c_str())) {
+                    if ((tok2->str() != ".") && Token::Match(tok2->next(), "%var% [ %varid% ]", varid)) {
                         charArrayIndexError(tok2->next());
                         break;
                     }

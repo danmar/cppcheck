@@ -33,7 +33,8 @@ private:
 
 
     void run() {
-        TEST_CASE(array_index);
+        TEST_CASE(array_index_1);
+        TEST_CASE(array_index_2);
         TEST_CASE(bitop1);
         TEST_CASE(bitop2);
         TEST_CASE(return1);
@@ -60,7 +61,7 @@ private:
         checkOther.checkCharVariable();
     }
 
-    void array_index() {
+    void array_index_1() {
         check("void foo()\n"
               "{\n"
               "    unsigned char ch = 0x80;\n"
@@ -95,6 +96,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void array_index_2() {
+        // #3282 - False positive
+        check("void foo(char i);\n"
+              "void bar(int i) {\n"
+              "    const char *s = \"abcde\";\n"
+              "    foo(s[i]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void bitop1() {
         check("void foo()\n"
