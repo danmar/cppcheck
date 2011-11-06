@@ -47,6 +47,7 @@ private:
         TEST_CASE(matchNumeric);
         TEST_CASE(matchBoolean);
         TEST_CASE(matchOr);
+        TEST_CASE(matchOp);
 
         TEST_CASE(updateProperties)
         TEST_CASE(updatePropertiesConcatStr)
@@ -248,12 +249,12 @@ private:
     void matchOr() {
         givenACodeSampleToTokenize bitwiseOr("|");
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "%or%"));
-        ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%op%"));
+        ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "%op%"));
         ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%oror%"));
 
         givenACodeSampleToTokenize logicalOr("||");
         ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "%or%"));
-        ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "%op%"));
+        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%op%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%oror%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "&&|%oror%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%oror%|&&"));
@@ -265,8 +266,26 @@ private:
     }
 
     void matchOp() {
-        givenACodeSampleToTokenize op("+");
-        ASSERT_EQUALS(true, Token::Match(op.tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("<<").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize(">>").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("+").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("-").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("*").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("/").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("%").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("&&").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("||").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("==").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("!=").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("<").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("<=").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize(">").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize(">=").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("&").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("|").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("^").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("~").tokens(), "%op%"));
+        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("!").tokens(), "%op%"));
     }
 
     void updateProperties() {

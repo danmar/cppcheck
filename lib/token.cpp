@@ -561,7 +561,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                         if (tok->str() != "|")
                             return false;
                         p += 4;
-                    } else if (p[3] == 'p') {
+                    } else if (p[2] == 'p') {
                         if (!tok->isOp())
                             return false;
                         p += 4;
