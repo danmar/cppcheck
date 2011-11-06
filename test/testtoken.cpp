@@ -46,6 +46,7 @@ private:
         TEST_CASE(matchNothingOrAnyNotElse);
         TEST_CASE(matchType);
         TEST_CASE(matchStr);
+        TEST_CASE(matchVarid);
         TEST_CASE(matchNumeric);
         TEST_CASE(matchBoolean);
         TEST_CASE(matchOr);
@@ -200,8 +201,7 @@ private:
         ASSERT_EQUALS(false, Token::Match(ifSemicolonElse.tokens(), "if ; !!else"));
     }
 
-    void matchType()
-    {
+    void matchType() {
         givenACodeSampleToTokenize type("abc");
         ASSERT_EQUALS(true, Token::Match(type.tokens(), "%type%"));
 
@@ -214,8 +214,7 @@ private:
         ASSERT_EQUALS(false, Token::Match(noType.tokens(), "%type%"));
     }
 
-    void matchStr()
-    {
+    void matchStr() {
         givenACodeSampleToTokenize noStr1("abc");
         ASSERT_EQUALS(false, Token::Match(noStr1.tokens(), "%str%"));
 
@@ -224,6 +223,17 @@ private:
 
         givenACodeSampleToTokenize str("\"abc\"");
         ASSERT_EQUALS(true, Token::Match(str.tokens(), "%str%"));
+    }
+
+    void matchVarid() {
+        givenACodeSampleToTokenize var("int a ; int b ;");
+        ASSERT_EQUALS(false, Token::Match(var.tokens(), "%type% %varid% ; %type% %var%", 0));
+
+        ASSERT_EQUALS(true, Token::Match(var.tokens(), "%type% %varid% ; %type% %var%", 1));
+        ASSERT_EQUALS(true, Token::Match(var.tokens(), "%type% %var% ; %type% %varid%", 2));
+
+        // Try to match two different varids in one match call
+        ASSERT_EQUALS(false, Token::Match(var.tokens(), "%type% %varid% ; %type% %varid%", 2));
     }
 
     void matchNumeric() {
