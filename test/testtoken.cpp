@@ -22,6 +22,8 @@
 #include "settings.h"
 
 #include <cstring>
+#include <vector>
+#include <string>
 
 extern std::ostringstream errout;
 class TestToken : public TestFixture {
@@ -30,8 +32,14 @@ public:
     { }
 
 private:
+    std::vector<std::string> arithmeticalOps;
+    std::vector<std::string> normalOps;
+    std::vector<std::string> extendedOps;
+    std::vector<std::string> assignmentOps;
 
     void run() {
+        initOps();
+
         TEST_CASE(nextprevious);
         TEST_CASE(multiCompare);
         TEST_CASE(multiCompare2);                   // #3294 - false negative multi compare between "=" and "=="
@@ -53,6 +61,7 @@ private:
         TEST_CASE(matchOp);
 
         TEST_CASE(isArithmeticalOp);
+        TEST_CASE(isOp);
         TEST_CASE(isExtendedOp);
         TEST_CASE(isAssignmentOp);
         TEST_CASE(isStandardType);
@@ -225,6 +234,10 @@ private:
 
         givenACodeSampleToTokenize str("\"abc\"");
         ASSERT_EQUALS(true, Token::Match(str.tokens(), "%str%"));
+
+        // Empty string
+        givenACodeSampleToTokenize emptyStr("\"\"");
+        ASSERT_EQUALS(true, Token::Match(emptyStr.tokens(), "%str%"));
     }
 
     void matchVarid() {
@@ -307,187 +320,186 @@ private:
         ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "%oror%|&&"));
     }
 
+    void append_vector(std::vector<std::string> &dest, const std::vector<std::string> &src) {
+        dest.insert(dest.end(), src.begin(), src.end());
+    }
+
+    void initOps() {
+        arithmeticalOps.push_back("+");
+        arithmeticalOps.push_back("-");
+        arithmeticalOps.push_back("*");
+        arithmeticalOps.push_back("/");
+        arithmeticalOps.push_back("%");
+        arithmeticalOps.push_back("<<");
+        arithmeticalOps.push_back(">>");
+
+        normalOps.push_back("&&");
+        normalOps.push_back("||");
+        normalOps.push_back("==");
+        normalOps.push_back("!=");
+        normalOps.push_back("<");
+        normalOps.push_back("<=");
+        normalOps.push_back(">");
+        normalOps.push_back(">=");
+        normalOps.push_back("&");
+        normalOps.push_back("|");
+        normalOps.push_back("^");
+        normalOps.push_back("~");
+        normalOps.push_back("!");
+
+        extendedOps.push_back(",");
+        extendedOps.push_back("[");
+        extendedOps.push_back("]");
+        extendedOps.push_back("(");
+        extendedOps.push_back(")");
+        extendedOps.push_back("?");
+        extendedOps.push_back(":");
+
+        assignmentOps.push_back("=");
+        assignmentOps.push_back("+=");
+        assignmentOps.push_back("-=");
+        assignmentOps.push_back("*=");
+        assignmentOps.push_back("/=");
+        assignmentOps.push_back("%=");
+        assignmentOps.push_back("&=");
+        assignmentOps.push_back("^=");
+        assignmentOps.push_back("|=");
+        assignmentOps.push_back("<<=");
+        assignmentOps.push_back(">>=");
+    }
+
     void matchOp() {
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("<<").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize(">>").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("+").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("-").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("*").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("/").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("%").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("&&").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("||").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("==").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("!=").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("<").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("<=").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize(">").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize(">=").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("&").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("|").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("^").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("~").tokens(), "%op%"));
-        ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("!").tokens(), "%op%"));
+        std::vector<std::string> test_ops;
+        append_vector(test_ops, arithmeticalOps);
+        append_vector(test_ops, normalOps);
+
+        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
+        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
+            ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize(*test_op).tokens(), "%op%"));
+        }
+
+        // Negative test against other operators
+        std::vector<std::string> other_ops;
+        append_vector(other_ops, extendedOps);
+        append_vector(other_ops, assignmentOps);
+
+        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
+        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+            ASSERT_EQUALS_MSG(false, Token::Match(givenACodeSampleToTokenize(*other_op).tokens(), "%op%"), "Failing other operator: " + *other_op);
+        }
     }
 
     void isArithmeticalOp() {
-        Token tok(NULL);
+        std::vector<std::string>::const_iterator test_op, test_ops_end = arithmeticalOps.end();
+        for (test_op = arithmeticalOps.begin(); test_op != test_ops_end; ++test_op) {
+            Token tok(NULL);
+            tok.str(*test_op);
+            ASSERT_EQUALS(true, tok.isArithmeticalOp());
+        }
 
-        // Normal isOp()
-        tok.str("<<");
-        ASSERT_EQUALS(true, tok.isArithmeticalOp());
-        tok.str(">>");
-        ASSERT_EQUALS(true, tok.isArithmeticalOp());
-        tok.str("+");
-        ASSERT_EQUALS(true, tok.isArithmeticalOp());
-        tok.str("-");
-        ASSERT_EQUALS(true, tok.isArithmeticalOp());
-        tok.str("*");
-        ASSERT_EQUALS(true, tok.isArithmeticalOp());
-        tok.str("/");
-        ASSERT_EQUALS(true, tok.isArithmeticalOp());
-        tok.str("%");
+        // Negative test against other operators
+        std::vector<std::string> other_ops;
+        append_vector(other_ops, normalOps);
+        append_vector(other_ops, extendedOps);
+        append_vector(other_ops, assignmentOps);
 
-        // Negative test
-        tok.str("&");
-        ASSERT_EQUALS(false, tok.isArithmeticalOp());
-        tok.str("|");
-        ASSERT_EQUALS(false, tok.isArithmeticalOp());
+        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
+        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+            Token tok(NULL);
+            tok.str(*other_op);
+            ASSERT_EQUALS_MSG(false, tok.isArithmeticalOp(), "Failing arithmetical operator: " + *other_op);
+        }
+    }
+
+    void isOp() {
+        std::vector<std::string> test_ops;
+        append_vector(test_ops, arithmeticalOps);
+        append_vector(test_ops, normalOps);
+
+        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
+        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
+            Token tok(NULL);
+            tok.str(*test_op);
+            ASSERT_EQUALS(true, tok.isOp());
+        }
+
+        // Negative test against other operators
+        std::vector<std::string> other_ops;
+        append_vector(other_ops, extendedOps);
+        append_vector(other_ops, assignmentOps);
+
+        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
+        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+            Token tok(NULL);
+            tok.str(*other_op);
+            ASSERT_EQUALS_MSG(false, tok.isOp(), "Failing normal operator: " + *other_op);
+        }
     }
 
     void isExtendedOp() {
-        Token tok(NULL);
+        std::vector<std::string> test_ops;
+        append_vector(test_ops, arithmeticalOps);
+        append_vector(test_ops, normalOps);
+        append_vector(test_ops, extendedOps);
 
-        // Normal isOp()
-        tok.str("<<");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str(">>");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("+");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("-");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("*");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("/");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("%");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("&&");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("||");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("==");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("!=");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("<");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("<=");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str(">");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str(">=");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("&");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("|");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("^");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("~");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("!");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
+        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
+        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
+            Token tok(NULL);
+            tok.str(*test_op);
+            ASSERT_EQUALS(true, tok.isExtendedOp());
+        }
 
-        // Extended operators
-        tok.str(",");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("[");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("]");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("(");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str(")");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str("?");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-        tok.str(":");
-        ASSERT_EQUALS(true, tok.isExtendedOp());
-
-        // Negative test for assignment operators
-        tok.str("=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
-        tok.str("+=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
-        tok.str("-=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
-        tok.str("*=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
-        tok.str("/=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
-        tok.str("%=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
-        tok.str("&=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
-        tok.str("^=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
-        tok.str("|=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
-        tok.str("<<=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
-        tok.str(">>=");
-        ASSERT_EQUALS(false, tok.isExtendedOp());
+        // Negative test against assignment operators
+        std::vector<std::string>::const_iterator other_op, other_ops_end = assignmentOps.end();
+        for (other_op = assignmentOps.begin(); other_op != other_ops_end; ++other_op) {
+            Token tok(NULL);
+            tok.str(*other_op);
+            ASSERT_EQUALS_MSG(false, tok.isExtendedOp(), "Failing assignment operator: " + *other_op);
+        }
     }
 
     void isAssignmentOp() {
-        Token tok(NULL);
+        std::vector<std::string>::const_iterator test_op, test_ops_end = assignmentOps.end();
+        for (test_op = assignmentOps.begin(); test_op != test_ops_end; ++test_op) {
+            Token tok(NULL);
+            tok.str(*test_op);
+            ASSERT_EQUALS(true, tok.isAssignmentOp());
+        }
 
-        tok.str("=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
-        tok.str("+=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
-        tok.str("-=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
-        tok.str("*=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
-        tok.str("/=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
-        tok.str("%=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
-        tok.str("&=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
-        tok.str("^=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
-        tok.str("|=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
-        tok.str("<<=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
-        tok.str(">>=");
-        ASSERT_EQUALS(true, tok.isAssignmentOp());
+        // Negative test against other operators
+        std::vector<std::string> other_ops;
+        append_vector(other_ops, arithmeticalOps);
+        append_vector(other_ops, normalOps);
+        append_vector(other_ops, extendedOps);
+
+        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
+        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+            Token tok(NULL);
+            tok.str(*other_op);
+            ASSERT_EQUALS_MSG(false, tok.isAssignmentOp(), "Failing assignment operator: " + *other_op);
+        }
     }
 
     void isStandardType() {
-        Token tok(NULL);
-        tok.str("bool");
-        ASSERT_EQUALS(true, tok.isStandardType());
-        tok.str("char");
-        ASSERT_EQUALS(true, tok.isStandardType());
-        tok.str("short");
-        ASSERT_EQUALS(true, tok.isStandardType());
-        tok.str("int");
-        ASSERT_EQUALS(true, tok.isStandardType());
-        tok.str("long");
-        ASSERT_EQUALS(true, tok.isStandardType());
-        tok.str("float");
-        ASSERT_EQUALS(true, tok.isStandardType());
-        tok.str("double");
-        ASSERT_EQUALS(true, tok.isStandardType());
-        tok.str("size_t");
-        ASSERT_EQUALS(true, tok.isStandardType());
+        std::vector<std::string> standard_types;
+        standard_types.push_back("bool");
+        standard_types.push_back("char");
+        standard_types.push_back("short");
+        standard_types.push_back("int");
+        standard_types.push_back("long");
+        standard_types.push_back("float");
+        standard_types.push_back("double");
+        standard_types.push_back("size_t");
+
+        std::vector<std::string>::const_iterator test_op, test_ops_end = standard_types.end();
+        for (test_op = standard_types.begin(); test_op != test_ops_end; ++test_op) {
+            Token tok(NULL);
+            tok.str(*test_op);
+            ASSERT_EQUALS_MSG(true, tok.isStandardType(), "Failing standard type: " + *test_op);
+        }
 
         // Negative test
+        Token tok(0);
         tok.str("string");
         ASSERT_EQUALS(false, tok.isStandardType());
     }
