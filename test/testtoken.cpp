@@ -44,6 +44,8 @@ private:
         TEST_CASE(matchAny);
         TEST_CASE(matchSingleChar);
         TEST_CASE(matchNothingOrAnyNotElse);
+        TEST_CASE(matchType);
+        TEST_CASE(matchStr);
         TEST_CASE(matchNumeric);
         TEST_CASE(matchBoolean);
         TEST_CASE(matchOr);
@@ -198,6 +200,31 @@ private:
         ASSERT_EQUALS(false, Token::Match(ifSemicolonElse.tokens(), "if ; !!else"));
     }
 
+    void matchType()
+    {
+        givenACodeSampleToTokenize type("abc");
+        ASSERT_EQUALS(true, Token::Match(type.tokens(), "%type%"));
+
+        givenACodeSampleToTokenize isVar("int a = 3 ;");
+        ASSERT_EQUALS(true, Token::Match(isVar.tokens(), "%type%"));
+        ASSERT_EQUALS(true, Token::Match(isVar.tokens(), "%type% %var%"));
+        ASSERT_EQUALS(false, Token::Match(isVar.tokens(), "%type% %type%"));
+
+        givenACodeSampleToTokenize noType("delete");
+        ASSERT_EQUALS(false, Token::Match(noType.tokens(), "%type%"));
+    }
+
+    void matchStr()
+    {
+        givenACodeSampleToTokenize noStr1("abc");
+        ASSERT_EQUALS(false, Token::Match(noStr1.tokens(), "%str%"));
+
+        givenACodeSampleToTokenize noStr2("'a'");
+        ASSERT_EQUALS(false, Token::Match(noStr2.tokens(), "%str%"));
+
+        givenACodeSampleToTokenize str("\"abc\"");
+        ASSERT_EQUALS(true, Token::Match(str.tokens(), "%str%"));
+    }
 
     void matchNumeric() {
         givenACodeSampleToTokenize nonNumeric("abc");
