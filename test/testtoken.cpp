@@ -52,8 +52,10 @@ private:
         TEST_CASE(matchOr);
         TEST_CASE(matchOp);
 
+        TEST_CASE(isArithmeticalOp);
         TEST_CASE(isExtendedOp);
         TEST_CASE(isAssignmentOp);
+        TEST_CASE(isStandardType);
 
         TEST_CASE(updateProperties)
         TEST_CASE(updatePropertiesConcatStr)
@@ -328,6 +330,31 @@ private:
         ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize("!").tokens(), "%op%"));
     }
 
+    void isArithmeticalOp() {
+        Token tok(NULL);
+
+        // Normal isOp()
+        tok.str("<<");
+        ASSERT_EQUALS(true, tok.isArithmeticalOp());
+        tok.str(">>");
+        ASSERT_EQUALS(true, tok.isArithmeticalOp());
+        tok.str("+");
+        ASSERT_EQUALS(true, tok.isArithmeticalOp());
+        tok.str("-");
+        ASSERT_EQUALS(true, tok.isArithmeticalOp());
+        tok.str("*");
+        ASSERT_EQUALS(true, tok.isArithmeticalOp());
+        tok.str("/");
+        ASSERT_EQUALS(true, tok.isArithmeticalOp());
+        tok.str("%");
+
+        // Negative test
+        tok.str("&");
+        ASSERT_EQUALS(false, tok.isArithmeticalOp());
+        tok.str("|");
+        ASSERT_EQUALS(false, tok.isArithmeticalOp());
+    }
+
     void isExtendedOp() {
         Token tok(NULL);
 
@@ -387,6 +414,31 @@ private:
         tok.str("?");
         ASSERT_EQUALS(true, tok.isExtendedOp());
         tok.str(":");
+        ASSERT_EQUALS(true, tok.isExtendedOp());
+
+        // Negative test for assignment operators
+        tok.str("=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
+        tok.str("+=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
+        tok.str("-=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
+        tok.str("*=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
+        tok.str("/=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
+        tok.str("%=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
+        tok.str("&=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
+        tok.str("^=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
+        tok.str("|=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
+        tok.str("<<=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
+        tok.str(">>=");
+        ASSERT_EQUALS(false, tok.isExtendedOp());
     }
 
     void isAssignmentOp() {
@@ -414,6 +466,30 @@ private:
         ASSERT_EQUALS(true, tok.isAssignmentOp());
         tok.str(">>=");
         ASSERT_EQUALS(true, tok.isAssignmentOp());
+    }
+
+    void isStandardType() {
+        Token tok(NULL);
+        tok.str("bool");
+        ASSERT_EQUALS(true, tok.isStandardType());
+        tok.str("char");
+        ASSERT_EQUALS(true, tok.isStandardType());
+        tok.str("short");
+        ASSERT_EQUALS(true, tok.isStandardType());
+        tok.str("int");
+        ASSERT_EQUALS(true, tok.isStandardType());
+        tok.str("long");
+        ASSERT_EQUALS(true, tok.isStandardType());
+        tok.str("float");
+        ASSERT_EQUALS(true, tok.isStandardType());
+        tok.str("double");
+        ASSERT_EQUALS(true, tok.isStandardType());
+        tok.str("size_t");
+        ASSERT_EQUALS(true, tok.isStandardType());
+
+        // Negative test
+        tok.str("string");
+        ASSERT_EQUALS(false, tok.isStandardType());
     }
 
     void updateProperties() {
