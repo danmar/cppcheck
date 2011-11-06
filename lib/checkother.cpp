@@ -2558,6 +2558,10 @@ void CheckOther::checkSignOfUnsignedVariable()
     if (!_settings->isEnabled("style"))
         return;
 
+    const bool inconclusive = _tokenizer->codeWithTemplates();
+    if (inconclusive && !_settings->inconclusive)
+        return;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<Scope>::const_iterator scope;
@@ -2572,36 +2576,54 @@ void CheckOther::checkSignOfUnsignedVariable()
             if (Token::Match(tok, ";|(|&&|%oror% %var% <|<= 0 ;|)|&&|%oror%") && tok->next()->varId()) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZeroError(tok->next(), tok->next()->str());
+                    unsignedLessThanZeroError(tok->next(), tok->next()->str(), inconclusive);
             } else if (Token::Match(tok, ";|(|&&|%oror% 0 > %var% ;|)|&&|%oror%") && tok->tokAt(3)->varId()) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZeroError(tok->tokAt(3), tok->strAt(3));
+                    unsignedLessThanZeroError(tok->tokAt(3), tok->strAt(3), inconclusive);
             } else if (Token::Match(tok, ";|(|&&|%oror% 0 <= %var% ;|)|&&|%oror%") && tok->tokAt(3)->varId()) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositiveError(tok->tokAt(3), tok->strAt(3));
+                    unsignedPositiveError(tok->tokAt(3), tok->strAt(3), inconclusive);
             } else if (Token::Match(tok, ";|(|&&|%oror% %var% >= 0 ;|)|&&|%oror%") && tok->next()->varId()) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositiveError(tok->next(), tok->next()->str());
+                    unsignedPositiveError(tok->next(), tok->next()->str(), inconclusive);
             }
         }
     }
 }
 
-void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &varname)
+void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::style, "unsignedLessThanZero",
-                "Checking if unsigned variable '" + varname + "' is less than zero.\n"
-                "An unsigned variable will never be negative so it is either pointless or "
-                "an error to check if it is.");
+    if (inconclusive) {
+        reportInconclusiveError(tok, Severity::style, "unsignedLessThanZero",
+                                "Checking if unsigned variable '" + varname + "' is less than zero. This might be a false warning.\n"
+                                "Checking if unsigned variable '" + varname + "' is less than zero. An unsigned "
+                                "variable will never be negative so it is either pointless or an error to check if it is. "
+                                "It's not known if the used constant is a template parameter or not and therefore "
+                                "this message might be a false warning");
+    } else {
+        reportError(tok, Severity::style, "unsignedLessThanZero",
+                    "Checking if unsigned variable '" + varname + "' is less than zero.\n"
+                    "An unsigned variable will never be negative so it is either pointless or "
+                    "an error to check if it is.");
+    }
 }
 
-void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varname)
+void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::style, "unsignedPositive",
-                "Checking if unsigned variable '" + varname + "' is positive is always true.\n"
-                "An unsigned variable will always be positive so it is either pointless or "
-                "an error to check if it is.");
+    if (inconclusive) {
+        reportInconclusiveError(tok, Severity::style, "unsignedPositive",
+                                "Checking if unsigned variable '" + varname + "' is positive is always true. This might be a false warning.\n"
+                                "Checking if unsigned variable '" + varname + "' is positive is always true. "
+                                "An unsigned variable will always be positive so it is either pointless or "
+                                "an error to check if it is. It's not known if the used constant is a "
+                                "template parameter or not and therefore this message might be a false warning");
+    } else {
+        reportError(tok, Severity::style, "unsignedPositive",
+                    "Checking if unsigned variable '" + varname + "' is positive is always true.\n"
+                    "An unsigned variable will always be positive so it is either pointless or "
+                    "an error to check if it is.");
+    }
 }

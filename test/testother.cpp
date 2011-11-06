@@ -3527,12 +3527,13 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) Passing sizeof(pointer) as the last argument to strncmp.\n", errout.str());
     }
 
-    void check_signOfUnsignedVariable(const char code[]) {
+    void check_signOfUnsignedVariable(const char code[], bool inconclusive=false) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -3753,6 +3754,19 @@ private:
             "  return false;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #3233 - FP when template is used (template parameter is numeric constant)
+        {
+            const char code[] =
+                "template<int n> void foo(unsigned int x) {\n"
+                "  if (x <= n);\n"
+                "}\n"
+                "foo<0>();";
+            check_signOfUnsignedVariable(code, false);
+            ASSERT_EQUALS("", errout.str());
+            check_signOfUnsignedVariable(code, true);
+            ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero. This might be a false warning.\n", errout.str());
+        }
     }
 
     void checkForSuspiciousSemicolon1() {

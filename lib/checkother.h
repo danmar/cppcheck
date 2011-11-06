@@ -289,8 +289,8 @@ public:
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok);
     void assignBoolToPointerError(const Token *tok);
-    void unsignedLessThanZeroError(const Token *tok, const std::string &varname);
-    void unsignedPositiveError(const Token *tok, const std::string &varname);
+    void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
+    void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok);
     void SuspiciousSemicolonError(const Token *tok);
@@ -343,8 +343,8 @@ public:
         c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
         c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
         c.duplicateBreakError(0);
-        c.unsignedLessThanZeroError(0, "varname");
-        c.unsignedPositiveError(0, "varname");
+        c.unsignedLessThanZeroError(0, "varname", false);
+        c.unsignedPositiveError(0, "varname", false);
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0);
         c.SuspiciousSemicolonError(0);
