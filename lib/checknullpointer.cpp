@@ -795,7 +795,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     }
                 }
 
-                if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch")) {
+                if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch|for")) {
                     bool dummy = false;
                     if (Token::Match(tok2, "return * %varid%", varid))
                         nullPointerError(tok2, pointerName, linenr, inconclusive);

@@ -56,6 +56,7 @@ private:
         TEST_CASE(scanf_with_invalid_va_argument);
         TEST_CASE(nullpointer_in_return);
         TEST_CASE(nullpointer_in_typeid);
+        TEST_CASE(nullpointer_in_for_loop);
     }
 
     void check(const char code[], bool inconclusive = false, bool cpp11 = false) {
@@ -1576,6 +1577,16 @@ private:
 
     }
 
+    void nullpointer_in_for_loop() {
+        // Ticket #3278
+        check("void f(int* ptr, int cnt){\n"
+              " if (!ptr)\n"
+              "  cnt = 0;\n"
+              " for (int i = 0; i < cnt; ++i)\n"
+              "  *ptr++ = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestNullPointer)
