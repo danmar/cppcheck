@@ -59,7 +59,7 @@ static const char * const call_func_white_list[] = {
     , "glob", "gmtime", "gmtime_r", "if", "index", "inet_addr", "inet_aton", "inet_network", "initgroups", "ioctl"
     , "link", "localtime", "localtime_r"
     , "lockf", "lseek", "lstat", "mblen", "mbstowcs", "mbtowc", "memchr", "memcmp", "memcpy", "memmove", "memset"
-    , "mkdir", "mkfifo", "mknod"
+    , "mkdir", "mkfifo", "mknod", "mkstemp"
     , "obstack_printf", "obstack_vprintf", "open", "opendir", "parse_printf_format", "pathconf"
     , "perror", "popen" ,"posix_fadvise", "posix_fallocate", "pread"
     , "printf", "psignal", "putenv", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r"
@@ -2889,7 +2889,7 @@ void CheckMemoryLeakNoVar::check()
                     for (const Token *tok3 = tok2; tok3; tok3 = tok3->previous()) {
                         if (tok3->str() == "(") {
                             // Is it a function call..
-                            if (Token::Match(tok3->tokAt(-2), "[(,;{}] %var% (")) {
+                            if (Token::Match(tok3->tokAt(-2), "[(,;{}=] %var% (")) {
                                 const std::string functionName = tok3->strAt(-1);
                                 if (functionName == "delete" ||
                                     functionName == "free" ||
