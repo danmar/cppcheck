@@ -4154,37 +4154,54 @@ bool Tokenizer::simplifyTokenList()
 
     // Replace "*(str + num)" => "str[num]"
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (! strchr(";{}(=<>", tok->str()[0]))
-            continue;
+        if (Token::Match(tok->next(), "* ( %var% + %num% )") ||
+            Token::Match(tok->next(), "* ( %var% + %var% )")) {
+            // remove '* ('
+            tok->deleteNext();
+            tok->deleteNext();
 
-        Token *next = tok->next();
-        if (! next)
-            break;
-
-        if (Token::Match(next, "* ( %var% + %num% )") ||
-            Token::Match(next, "* ( %var% + %var% )")) {
-            // var
-            tok = tok->next();
-            tok->str(tok->strAt(2));
-
-            // [
-            tok = tok->next();
+            tok = tok->tokAt(2);
+            // '+'->'['
             tok->str("[");
 
-            // num
-            tok = tok->next();
-            tok->str(tok->strAt(2));
-
-            // ]
-            tok = tok->next();
+            tok = tok->tokAt(2);
             tok->str("]");
-
-            tok->deleteNext();
-            tok->deleteNext();
-
-            Token::createMutualLinks(next->next(), next->tokAt(3));
+            Token::createMutualLinks(tok->tokAt(-2), tok);
         }
     }
+
+/*    // Replace "&str[num]" => "(str + num)"
+    //TODO: fix the fails testrunner reports:
+    //1)
+    //test/teststl.cpp:805: Assertion failed.
+    //Expected:
+    //"[test.cpp:7]: (error) Invalid pointer 'first' after push_back / push_front\n".
+    //Actual:
+    //"".
+    //2)
+    //test/testautovariables.cpp:279: Assertion failed.
+    //Expected:
+    //"[test.cpp:4]: (error) Return of the address of an auto-variable\n".
+    //Actual:
+    //"".
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if ((Token::Match(tok->next(), "& %var% [ %num% ]") ||
+             Token::Match(tok->next(), "& %var% [ %var% ]"))) {
+            tok = tok->next();
+            // '&' => '('
+            tok->str("(");
+
+            tok = tok->next();
+            // '[' => '+'
+            tok->deleteNext();
+            tok->insertToken("+");
+
+            tok = tok->tokAt(3);
+            //remove ']'
+            tok->str(")");
+            Token::createMutualLinks(tok->tokAt(-4), tok);
+        }
+    }*/
 
     // simplify "x=realloc(y,0);" => "free(y); x=0;"..
     // and "x = realloc (0, n);" => "x = malloc(n);"
@@ -7219,8 +7236,18 @@ bool Tokenizer::simplifyRedundantParenthesis()
             continue;
         }
 
-        if (Token::Match(tok->previous(), "[(!] ( %var% . %var% )")) {
+        if (Token::Match(tok->previous(), "[(,!] ( %var% . %var% )")) {
             // We have "( var . var )", remove the parenthesis
+            tok->deleteThis();
+            tok = tok->tokAt(2);
+            tok->deleteNext();
+            ret = true;
+            continue;
+        }
+
+        if (Token::Match(tok->previous(), "(|[|,|! ( %var% %op% %var% ) ,|]|)") ||
+            Token::Match(tok->previous(), "(|[|,|! ( %var% %op% %num% ) ,|]|)")) {
+            // We have "( var %op% var )", remove the parenthesis
             tok->deleteThis();
             tok = tok->tokAt(2);
             tok->deleteNext();

@@ -240,6 +240,7 @@ private:
         TEST_CASE(removeParentheses10);      // Ticket #2320
         TEST_CASE(removeParentheses11);      // Ticket #2505
         TEST_CASE(removeParentheses12);      // Ticket #2760 ',(b)='
+        TEST_CASE(removeParentheses13);
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -3949,6 +3950,11 @@ private:
     void removeParentheses12() {
         // #2760
         ASSERT_EQUALS(", x = 0 ;", tokenizeAndStringify(",(x)=0;", false));
+    }
+
+    void removeParentheses13() {
+        ASSERT_EQUALS("; f ( a + b , c ) ;", tokenizeAndStringify(";f((a+b),c);", false));
+        ASSERT_EQUALS("; x = y [ a + b ] ;", tokenizeAndStringify(";x=y[(a+b)];", false));
     }
 
     void tokenize_double() {
