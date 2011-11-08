@@ -1790,17 +1790,19 @@ private:
               "    printf(\"%u%s%d\", 0, bar());\n"
               "    printf(\"%u%%%s%d\", 0, bar());\n"
               "    printf(\"%udfd%%dfa%s%d\", 0, bar());\n"
+              "    fprintf(stderr,\"%u%s\");\n"
+              "    snprintf(str,10,\"%u%s\");\n"
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (error) printf format string has 1 parameters but only 0 are given\n"
                       "[test.cpp:3]: (error) printf format string has 2 parameters but only 1 are given\n"
                       "[test.cpp:4]: (error) printf format string has 3 parameters but only 2 are given\n"
                       "[test.cpp:5]: (error) printf format string has 3 parameters but only 2 are given\n"
-                      "[test.cpp:6]: (error) printf format string has 3 parameters but only 2 are given\n", errout.str());
+                      "[test.cpp:6]: (error) printf format string has 3 parameters but only 2 are given\n"
+                      "[test.cpp:7]: (error) fprintf format string has 2 parameters but only 0 are given\n"
+                      "[test.cpp:8]: (error) snprintf format string has 2 parameters but only 0 are given\n", errout.str());
 
-
-
-        check("void foo() {\n"
+        check("void foo(char *str) {\n"
               "    printf(\"\", 0);\n"
               "    printf(\"%u\", 123, bar());\n"
               "    printf(\"%u%s\", 0, bar(), 43123);\n"
@@ -1810,12 +1812,15 @@ private:
                       "[test.cpp:3]: (warning) printf format string has 1 parameters but 2 are given\n"
                       "[test.cpp:4]: (warning) printf format string has 2 parameters but 3 are given\n", errout.str());
 
-        check("void foo() {\n"
+        check("void foo(char *str) {\n"
               "    printf(\"%u\", 0);\n"
               "    printf(\"%u%s\", 123, bar());\n"
               "    printf(\"%u%s%d\", 0, bar(), 43123);\n"
               "    printf(\"%u%%%s%d\", 0, bar(), 43123);\n"
               "    printf(\"%udfd%%dfa%s%d\", 0, bar(), 43123);\n"
+              "    printf(\"%\"PRId64\"\n\", 123);\n"
+              "    fprintf(stderr,\"%\"PRId64\"\n\", 123);\n"
+              "    snprintf(str,10,\"%\"PRId64\"\n\", 123);\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
