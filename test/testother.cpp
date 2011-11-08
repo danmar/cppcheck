@@ -3456,6 +3456,20 @@ private:
               "    if (a && b || b && c) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if (a && b | b && c) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if ((a + b) | (a + b)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
+        check("void foo() {\n"
+              "    if ((a | b) & (a | b)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
     }
 
     void duplicateExpression2() { // ticket #2730
