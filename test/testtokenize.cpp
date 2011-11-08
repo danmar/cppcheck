@@ -3971,7 +3971,7 @@ private:
     }
 
     void removeParentheses14() {
-        ASSERT_EQUALS("; if ( ! ( i & 1 ) ) { ; } ;", tokenizeAndStringify("; if ( (a & b) == 0 ); ;", false));
+        ASSERT_EQUALS("; if ( ! ( i & 1 ) ) { ; } ;", tokenizeAndStringify("; if ( (i & 1) == 0 ); ;", false));
     }
 
     void tokenize_double() {
