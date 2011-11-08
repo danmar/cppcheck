@@ -49,6 +49,7 @@ private:
 
         TEST_CASE(deleteLast);
         TEST_CASE(nextArgument);
+        TEST_CASE(eraseTokens);
 
         TEST_CASE(matchAny);
         TEST_CASE(matchSingleChar);
@@ -194,6 +195,18 @@ private:
 
         givenACodeSampleToTokenize example3("foo(bar(a, b), 2, 3);");
         ASSERT_EQUALS(true, Token::simpleMatch(example3.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
+    }
+
+    void eraseTokens() {
+        givenACodeSampleToTokenize code("begin ; { this code will be removed } end");
+        Token::eraseTokens(code.tokens()->next(), code.tokens()->tokAt(9));
+        std::ostringstream ret;
+        for (const Token *tok = code.tokens(); tok; tok = tok->next()) {
+            if (tok != code.tokens())
+                ret << " ";
+            ret << tok->str();
+        }
+        ASSERT_EQUALS("begin ; end", ret.str());
     }
 
 
