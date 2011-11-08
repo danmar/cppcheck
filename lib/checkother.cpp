@@ -2325,6 +2325,105 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
                             "carefully to determine if it is correct.");
 }
 
+namespace {
+    class Expressions {
+    public:
+        void endExpr() {
+            const std::string &e = _expression.str();
+            if (!e.empty()) {
+                std::map<std::string,int>::const_iterator it = _expressions.find(e);
+                if (it == _expressions.end())
+                    _expressions[e] = 1;
+                else
+                    _expressions[e] += 1;
+            }
+            _expression.str("");
+        }
+
+        void append(const std::string &tok) {
+            _expression << tok;
+        }
+
+        std::map<std::string,int> &getMap() {
+            return _expressions;
+        }
+
+    private:
+        std::map<std::string, int> _expressions;
+        std::ostringstream _expression;
+    };
+}
+
+void CheckOther::checkExpressionRange(const Token *start, const Token *end, const std::string &toCheck)
+{
+    if (!start || !end)
+        return;
+    Expressions expressions;
+    std::string opName;
+    for (const Token *tok = start->next(); tok && tok != end; tok = tok->next()) {
+        if (Token::Match(tok, toCheck.c_str())) {
+            opName = tok->str();
+            expressions.endExpr();
+        } else {
+            expressions.append(tok->str());
+        }
+    }
+    expressions.endExpr();
+    std::map<std::string,int>::const_iterator it = expressions.getMap().begin();
+    for (; it != expressions.getMap().end(); ++it) {
+        if (it->second > 1)
+            duplicateExpressionError(start, start, opName);
+    }
+}
+
+void CheckOther::complexDuplicateExpressionCheck(const Token *classStart,
+                                                 const std::string &toCheck,
+                                                 const std::string &alt)
+{
+    std::string statementStart(",|=|return");
+    if (!alt.empty())
+        statementStart += "|" + alt;
+    std::string statementEnd(";|,");
+    if (!alt.empty())
+        statementEnd += "|" + alt;
+
+    for (const Token *tok = classStart; tok && tok != classStart->link(); tok = tok->next()) {
+        if (!Token::Match(tok, toCheck.c_str()))
+            continue;
+
+        // look backward for the start of the statement
+        const Token *start = 0;
+        int level = 0;
+        for (const Token *tok1 = tok->previous(); tok1 && tok1 != classStart; tok1 = tok1->previous()) {
+            if (tok1->str() == ")")
+                level++;
+            else if (tok1->str() == "(")
+                level--;
+
+            if (level < 0 || Token::Match(tok1, statementStart.c_str())) {
+                start = tok1;
+                break;
+            }
+        }
+        const Token *end = 0;
+        level = 0;
+        // look for the end of the statement
+        for (const Token *tok1 = tok->next(); tok1 && tok1 != classStart->link(); tok1 = tok1->next()) {
+            if (tok1->str() == ")")
+                level--;
+            else if (tok1->str() == "(")
+                level++;
+
+            if (level < 0 || Token::Match(tok1, statementEnd.c_str())) {
+                end = tok1;
+                break;
+            }
+        }
+        checkExpressionRange(start, end, toCheck);
+    }
+}
+
+
 //---------------------------------------------------------------------------
 // check for the same expression on both sides of an operator
 // (x == x), (x && x), (x || x)
@@ -2345,8 +2444,11 @@ void CheckOther::checkDuplicateExpression()
         if (scope->type != Scope::eFunction)
             continue;
 
+        complexDuplicateExpressionCheck(scope->classStart, "%oror%", "");
+        complexDuplicateExpressionCheck(scope->classStart, "&&", "%oror%");
+
         for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next()) {
-            if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% )|&&|%oror%|;") &&
+            if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% ==|!=|<=|>=|<|>|-|%or% %var% )|&&|%oror%|;") &&
                 tok->strAt(1) == tok->strAt(3)) {
                 // float == float and float != float are valid NaN checks
                 if (Token::Match(tok->tokAt(2), "==|!=") && tok->next()->varId()) {
@@ -2358,7 +2460,7 @@ void CheckOther::checkDuplicateExpression()
                 }
 
                 duplicateExpressionError(tok->next(), tok->tokAt(3), tok->strAt(2));
-            } else if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% . %var% &&|%oror%|==|!=|<=|>=|<|>|-|%or% %var% . %var% )|&&|%oror%") &&
+            } else if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% . %var% ==|!=|<=|>=|<|>|-|%or% %var% . %var% )|&&|%oror%") &&
                        tok->strAt(1) == tok->strAt(5) && tok->strAt(3) == tok->strAt(7)) {
                 duplicateExpressionError(tok->next(), tok->tokAt(6), tok->strAt(4));
             }

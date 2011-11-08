@@ -426,6 +426,11 @@ private:
 
         return varname;
     }
+
+    void checkExpressionRange(const Token *start, const Token *end, const std::string &toCheck);
+    void complexDuplicateExpressionCheck(const Token *classStart,
+                                         const std::string &toCheck,
+                                         const std::string &alt);
 };
 /// @}
 //---------------------------------------------------------------------------
