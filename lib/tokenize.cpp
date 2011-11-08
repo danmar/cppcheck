@@ -4154,8 +4154,10 @@ bool Tokenizer::simplifyTokenList()
 
     // Replace "*(str + num)" => "str[num]"
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok->next(), "* ( %var% + %num% )") ||
-            Token::Match(tok->next(), "* ( %var% + %var% )")) {
+        if (!Token::Match(tok, "%var%") && !Token::Match(tok, "%num%")
+            && !Token::Match(tok, "]|)")
+            && (Token::Match(tok->next(), "* ( %var% + %num% )") ||
+                Token::Match(tok->next(), "* ( %var% + %var% )"))) {
             // remove '* ('
             tok->deleteNext();
             tok->deleteNext();
@@ -4178,15 +4180,11 @@ bool Tokenizer::simplifyTokenList()
     //"[test.cpp:7]: (error) Invalid pointer 'first' after push_back / push_front\n".
     //Actual:
     //"".
-    //2)
-    //test/testautovariables.cpp:279: Assertion failed.
-    //Expected:
-    //"[test.cpp:4]: (error) Return of the address of an auto-variable\n".
-    //Actual:
-    //"".
     /*for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if ((Token::Match(tok->next(), "& %var% [ %num% ]") ||
-             Token::Match(tok->next(), "& %var% [ %var% ]"))) {
+        if (!Token::Match(tok, "%var%") && !Token::Match(tok, "%num%")
+            && !Token::Match(tok, "]|)")
+            && (Token::Match(tok->next(), "& %var% [ %num% ]") ||
+                Token::Match(tok->next(), "& %var% [ %var% ]"))) {
             tok = tok->next();
             // '&' => '('
             tok->str("(");

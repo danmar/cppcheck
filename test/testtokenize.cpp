@@ -475,9 +475,21 @@ private:
     }
 
     void tokenize6() {
+        // "&p[1]" => "p+1"
+        /*
+        ASSERT_EQUALS("; x = p + n ;", tokenizeAndStringify("; x = & p [ n ] ;", true));
+        ASSERT_EQUALS("; x = ( p + n ) [ m ] ;", tokenizeAndStringify("; x = & p [ n ] [ m ] ;", true));
+        ASSERT_EQUALS("; x = y & p [ n ] ;", tokenizeAndStringify("; x = y & p [ n ] ;", true));
+        ASSERT_EQUALS("; x = 10 & p [ n ] ;", tokenizeAndStringify(";  x = 10 & p [ n ] ;", true));
+        ASSERT_EQUALS("; x = y [ 10 ] & p [ n ] ;", tokenizeAndStringify("; x = y [ 10 ] & p [ n ] ;", true));
+        ASSERT_EQUALS("; x = ( a + m ) & p [ n ] ;", tokenizeAndStringify("; x = ( a + m ) & p [ n ] ;", true));*/
         // "*(p+1)" => "p[1]"
         ASSERT_EQUALS("; x = p [ 1 ] ;", tokenizeAndStringify("; x = * ( p + 1 ) ;", true));
         ASSERT_EQUALS("; x = p [ n ] ;", tokenizeAndStringify("; x = * ( p + n ) ;", true));
+        ASSERT_EQUALS("; x = y * ( p + n ) ;", tokenizeAndStringify("; x = y * ( p + n ) ;", true));
+        ASSERT_EQUALS("; x = 10 * ( p + n ) ;", tokenizeAndStringify("; x = 10 * ( p + n ) ;", true));
+        ASSERT_EQUALS("; x = y [ 10 ] * ( p + n ) ;", tokenizeAndStringify("; x = y [ 10 ] * ( p + n ) ;", true));
+        ASSERT_EQUALS("; x = ( a + m ) * ( p + n ) ;", tokenizeAndStringify("; x = ( a + m ) * ( p + n ) ;", true));
     }
 
     void tokenize7() {
