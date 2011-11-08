@@ -7243,8 +7243,8 @@ bool Tokenizer::simplifyRedundantParenthesis()
             continue;
         }
 
-        if (Token::Match(tok->previous(), "(|[|,|! ( %var% %op% %var% ) ,|]|)") ||
-            Token::Match(tok->previous(), "(|[|,|! ( %var% %op% %num% ) ,|]|)")) {
+        if (Token::Match(tok->previous(), "(|[|,| ( %var% %op% %var% ) ,|]|)") ||
+            Token::Match(tok->previous(), "(|[|,| ( %var% %op% %num% ) ,|]|)")) {
             // We have "( var %op% var )", remove the parenthesis
             tok->deleteThis();
             tok = tok->tokAt(2);
