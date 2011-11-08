@@ -4170,7 +4170,7 @@ bool Tokenizer::simplifyTokenList()
         }
     }
 
-/*    // Replace "&str[num]" => "(str + num)"
+    // Replace "&str[num]" => "(str + num)"
     //TODO: fix the fails testrunner reports:
     //1)
     //test/teststl.cpp:805: Assertion failed.
@@ -4184,7 +4184,7 @@ bool Tokenizer::simplifyTokenList()
     //"[test.cpp:4]: (error) Return of the address of an auto-variable\n".
     //Actual:
     //"".
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
+    /*for (Token *tok = _tokens; tok; tok = tok->next()) {
         if ((Token::Match(tok->next(), "& %var% [ %num% ]") ||
              Token::Match(tok->next(), "& %var% [ %var% ]"))) {
             tok = tok->next();
@@ -9674,13 +9674,17 @@ void Tokenizer::removeUnnecessaryQualification()
                     }
 
                     while (tok1 && tok1->str() != "(") {
+                        if (tok1->str() == ";")
+                            break;
                         tok1 = tok1->next();
                         ++offset;
                     }
+                    if (!tok1 || tok1->str() != "(")
+                        continue;
                 } else if (tok->strAt(2) == "~")
                     ++offset;
 
-                if (Token::Match(tok->tokAt(offset)->link(), ") const| {|;|:")) {
+                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset)->link(), ") const| {|;|:")) {
                     std::string qualification = tok->str() + "::";
 
                     // check for extra qualification

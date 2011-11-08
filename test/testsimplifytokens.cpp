@@ -382,10 +382,11 @@ private:
         TEST_CASE(removeUnnecessaryQualification3);
         TEST_CASE(removeUnnecessaryQualification4);
         TEST_CASE(removeUnnecessaryQualification5);
-        TEST_CASE(removeUnnecessaryQualification6); // ticket #2859
-        TEST_CASE(removeUnnecessaryQualification7); // ticket #2970
+        TEST_CASE(removeUnnecessaryQualification6);  // ticket #2859
+        TEST_CASE(removeUnnecessaryQualification7);  // ticket #2970
         TEST_CASE(removeUnnecessaryQualification8);
-        TEST_CASE(removeUnnecessaryQualification9); // ticket #3151
+        TEST_CASE(removeUnnecessaryQualification9);  // ticket #3151
+        TEST_CASE(removeUnnecessaryQualification10); // ticket #3310 segmentation fault
 
         TEST_CASE(simplifyIfNotNull);
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
@@ -7418,6 +7419,16 @@ private:
                             "};\n";
         tok(code, false);
         ASSERT_EQUALS("[test.cpp:3]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
+    }
+
+    void removeUnnecessaryQualification10() {
+        const char code[] = "template<typename T> class A\n"
+                            "{\n"
+                            "    operator T();\n"
+                            "    A() { T (A::*f)() = &A::operator T; }\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyIfNotNull() {
