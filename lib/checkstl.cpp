@@ -1081,6 +1081,18 @@ void CheckStl::string_c_strError(const Token* tok, bool is_inconlusive)
         reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str()");
 }
 
+static bool hasArrayEnd(const Token *tok1)
+{
+    const Token *end = Token::findsimplematch(tok1, ";");
+    return (end && Token::simpleMatch(end->previous(), "] ;"));
+}
+
+static bool hasArrayEndParen(const Token *tok1)
+{
+    const Token *end = Token::findsimplematch(tok1, ";");
+    return (end && end->previous() &&
+            Token::simpleMatch(end->previous()->previous(), "] ) ;"));
+}
 
 //---------------------------------------------------------------------------
 //
@@ -1101,7 +1113,7 @@ void CheckStl::checkAutoPointer()
                 while (tok2) {
                     if (Token::Match(tok2, "> %var%")) {
                         const Token *tok3 = tok2->next()->next();
-                        if (Token::Match(tok3, "( new %type% [")) {
+                        if (Token::Match(tok3, "( new %type%") && hasArrayEndParen(tok3)) {
                             autoPointerArrayError(tok2->next());
                             break;
                         }
@@ -1113,8 +1125,8 @@ void CheckStl::checkAutoPointer()
                             if (Token::simpleMatch(tok3->previous(), "[ ] )")) {
                                 autoPointerArrayError(tok2->next());
                             } else if (tok3->varId()) {
-                                const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type% [", tok3->varId());
-                                if (decltok) {
+                                const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type%", tok3->varId());
+                                if (decltok && hasArrayEnd(decltok)) {
                                     autoPointerArrayError(tok2->next());
                                 }
                             }
@@ -1135,7 +1147,8 @@ void CheckStl::checkAutoPointer()
                         autoPointerError(tok->next()->next());
                     }
                 }
-            } else if (Token::Match(tok, "%var% = new %type% [") || Token::Match(tok, "%var% . reset ( new %type% [")) {
+            } else if ((Token::Match(tok, "%var% = new %type% ") && hasArrayEnd(tok)) ||
+                       (Token::Match(tok, "%var% . reset ( new %type% ") && hasArrayEndParen(tok))) {
                 iter = autoPtrVarId.find(tok->varId());
                 if (iter != autoPtrVarId.end()) {
                     autoPointerArrayError(tok);
