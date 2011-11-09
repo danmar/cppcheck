@@ -3373,6 +3373,9 @@ void Tokenizer::setVarId()
         if (tok->str() == "throw")
             continue;
 
+        if (tok->str() == "virtual")
+            continue;
+
         if (tok->str() == "unsigned")
             tok = tok->next();
 
