@@ -316,10 +316,10 @@ bool MathLib::isNullValue(const std::string &str)
             ||  str == "-0E+00"  || str == "+0E+00"
             ||  str == "+0E-00"  || str == "+0"
             ||  str == "+0.0"    || str == "+0."
-            ||  str == "0.0"     || str == "-0e-00"
+            ||  str == "0.0"
             ||  str == "+0e+00"  || str == "-0e+00"
             ||  str == "+0e-00"  || str == "-0e-00"
-            ||  str == "-0E-0"   || str == "+0E-00");
+            ||  str == "-0E-0");
 }
 
 bool MathLib::isOctalDigit(char c)
