@@ -188,6 +188,7 @@ private:
         TEST_CASE(varid37);   // ticket #3092 (varid for 'Bar bar(*this);')
         TEST_CASE(varid38);   // ticket #3272 (varid for 'FOO class C;')
         TEST_CASE(varid39);   // ticket #3279 (varid for 'FOO::BAR const')
+        TEST_CASE(varid40);   // ticket #3279
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -2997,6 +2998,13 @@ private:
                           "1: static int const SZ@1 = 22 ;\n",
                           tokenizeDebugListing(code));
         }
+    }
+
+    void varid40() {
+        const std::string code("extern \"C\" int (*a())();");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: extern \"C\" int ( * a ( ) ) ( ) ;\n",
+                      tokenizeDebugListing(code));
     }
 
     void varidFunctionCall1() {

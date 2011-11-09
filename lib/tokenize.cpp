@@ -3483,6 +3483,9 @@ void Tokenizer::setVarId()
             } while (again);
         }
 
+        if (Token::Match(tok, "%str%"))
+            continue;
+
         // Determine name of declared variable..
         std::string varname;
         Token *tok2 = tok ? tok->next() : 0;
