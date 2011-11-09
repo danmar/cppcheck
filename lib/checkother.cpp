@@ -2391,8 +2391,8 @@ void CheckOther::checkExpressionRange(const Token *start, const Token *end, cons
 }
 
 void CheckOther::complexDuplicateExpressionCheck(const Token *classStart,
-                                                 const std::string &toCheck,
-                                                 const std::string &alt)
+        const std::string &toCheck,
+        const std::string &alt)
 {
     std::string statementStart(",|=|return");
     if (!alt.empty())
