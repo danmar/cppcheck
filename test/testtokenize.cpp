@@ -300,6 +300,7 @@ private:
         TEST_CASE(functionpointer1);
         TEST_CASE(functionpointer2);
         TEST_CASE(functionpointer3);
+        TEST_CASE(functionpointer4);
 
         TEST_CASE(removeRedundantAssignment);
 
@@ -4870,6 +4871,30 @@ private:
                                 "( void)( xy(* p)(0);)"
                                 "}";
         ASSERT_EQUALS(expected, simplifyFunctionPointers(code));
+    }
+
+    void functionpointer4() {
+        const char code[] = ""
+            "struct S\n"
+            "{\n"
+            "    typedef void (*FP)();\n"
+            "    virtual FP getFP();\n"
+            "    virtual void execute();\n"
+            "};\n"
+            "void f() {\n"
+            "  int a[9];\n"
+            "}\n";
+        const char expected[] = "\n\n##file 0\n"
+            "1: struct S\n"
+            "2: {\n"
+            "3: ;\n"
+            "4: virtual void ( * getFP ( ) ) ( ) ;\n"
+            "5: virtual void execute ( ) ;\n"
+            "6: } ;\n"
+            "7: void f ( ) {\n"
+            "8: int a@1 [ 9 ] ;\n"
+            "9: }\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code, false));
     }
 
     void removeRedundantAssignment() {
