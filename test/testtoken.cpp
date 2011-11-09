@@ -542,6 +542,10 @@ private:
         Token tok(0);
         tok.str("string");
         ASSERT_EQUALS(false, tok.isStandardType());
+
+        // Change back to standard type
+        tok.str("int");
+        ASSERT_EQUALS(true, tok.isStandardType());
     }
 
     void updateProperties() {

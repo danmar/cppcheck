@@ -41,6 +41,7 @@ Token::Token(Token **t) :
     _isPointerCompare(false),
     _isLong(false),
     _isUnused(false),
+    _isStandardType(false),
     _varId(0),
     _fileIndex(0),
     _linenr(0),
@@ -75,7 +76,26 @@ void Token::update_property_info()
         _isNumber = false;
         _isBoolean = false;
     }
+
+    update_property_isStandardType();
 }
+
+void Token::update_property_isStandardType()
+{
+    _isStandardType = false;
+
+    if (_str.size() < 3)
+        return;
+
+    static const char * const type[] = {"int", "char", "bool", "long", "short", "float", "double", "size_t", 0};
+    for (int i = 0; type[i]; i++) {
+        if (_str == type[i]) {
+            _isStandardType = true;
+            break;
+        }
+    }
+}
+
 
 void Token::str(const std::string &s)
 {
@@ -124,6 +144,7 @@ void Token::deleteThis()
         _isPointerCompare = _next->_isPointerCompare;
         _isLong = _next->_isLong;
         _isUnused = _next->_isUnused;
+        _isStandardType = _next->_isStandardType;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
@@ -702,11 +723,7 @@ size_t Token::getStrLength(const Token *tok)
 
 bool Token::isStandardType() const
 {
-    bool ret = false;
-    const char *type[] = {"bool", "char", "short", "int", "long", "float", "double", "size_t", 0};
-    for (int i = 0; type[i]; i++)
-        ret |= (_str == type[i]);
-    return ret;
+    return _isStandardType;
 }
 
 void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)

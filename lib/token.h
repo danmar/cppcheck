@@ -445,6 +445,7 @@ private:
     bool _isPointerCompare;
     bool _isLong;
     bool _isUnused;
+    bool _isStandardType;
     unsigned int _varId;
     unsigned int _fileIndex;
     unsigned int _linenr;
@@ -452,6 +453,9 @@ private:
     /** Updates internal property cache like _isName or _isBoolean.
         Called after any _str() modification. */
     void update_property_info();
+
+    /** Update internal property cache about isStandardType() */
+    void update_property_isStandardType();
 
     /**
      * A value from 0-100 that provides a rough idea about where in the token
