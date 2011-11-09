@@ -2247,7 +2247,7 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x == 1 && x == 3)\n"
@@ -3433,9 +3433,53 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
         check("void foo() {\n"
-              "    f(a,b && b);\n"
+              "    f(a,b == b);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+
+        check("void foo() {\n"
+              "    f(b == b, a);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+
+        check("void foo() {\n"
+              "    if (x!=2 || x!=2) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    if (x!=2 || x!=3 || x!=2) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    if (this->bar() || this->bar()) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    if (a && b || a && b) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    if (a && b || b && c) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if (a && b | b && c) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if ((a + b) | (a + b)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
+        check("void foo() {\n"
+              "    if ((a | b) & (a | b)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
     }
 
     void duplicateExpression2() { // ticket #2730
