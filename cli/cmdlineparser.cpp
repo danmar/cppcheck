@@ -410,15 +410,20 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Output formatter
-        else if (strcmp(argv[i], "--template") == 0) {
+        else if (strcmp(argv[i], "--template") == 0 ||
+                 strncmp(argv[i], "--template=", 11) == 0) {
             // "--template path/"
-            ++i;
-            if (i >= argc) {
+            if (argv[i][10] == '=')
+                _settings->_outputFormat = argv[i] + 11;
+            else {
+                ++i;
+                _settings->_outputFormat = (argv[i] ? argv[i] : "");
+            }
+            if (_settings->_outputFormat.empty()) {
                 PrintMessage("cppcheck: argument to '--template' is missing.");
                 return false;
             }
 
-            _settings->_outputFormat = argv[i];
             if (_settings->_outputFormat == "gcc")
                 _settings->_outputFormat = "{file}:{line}: {severity}: {message}";
             else if (_settings->_outputFormat == "vs")
