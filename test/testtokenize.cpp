@@ -4875,25 +4875,25 @@ private:
 
     void functionpointer4() {
         const char code[] = ""
-            "struct S\n"
-            "{\n"
-            "    typedef void (*FP)();\n"
-            "    virtual FP getFP();\n"
-            "    virtual void execute();\n"
-            "};\n"
-            "void f() {\n"
-            "  int a[9];\n"
-            "}\n";
+                            "struct S\n"
+                            "{\n"
+                            "    typedef void (*FP)();\n"
+                            "    virtual FP getFP();\n"
+                            "    virtual void execute();\n"
+                            "};\n"
+                            "void f() {\n"
+                            "  int a[9];\n"
+                            "}\n";
         const char expected[] = "\n\n##file 0\n"
-            "1: struct S\n"
-            "2: {\n"
-            "3: ;\n"
-            "4: virtual void ( * getFP ( ) ) ( ) ;\n"
-            "5: virtual void execute ( ) ;\n"
-            "6: } ;\n"
-            "7: void f ( ) {\n"
-            "8: int a@1 [ 9 ] ;\n"
-            "9: }\n";
+                                "1: struct S\n"
+                                "2: {\n"
+                                "3: ;\n"
+                                "4: virtual void ( * getFP ( ) ) ( ) ;\n"
+                                "5: virtual void execute ( ) ;\n"
+                                "6: } ;\n"
+                                "7: void f ( ) {\n"
+                                "8: int a@1 [ 9 ] ;\n"
+                                "9: }\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code, false));
     }
 
