@@ -55,10 +55,10 @@ Compiling
     gnu make
     ========
         To build Cppcheck with rules (pcre dependency):
-            make
+            make HAVE_RULES=yes
 
         To build Cppcheck without rules (no dependencies):
-            make HAVE_RULES=no
+            make
 
     g++ (for experts)
     =================
