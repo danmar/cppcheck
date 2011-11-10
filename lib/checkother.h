@@ -26,6 +26,7 @@
 #include "settings.h"
 
 class Token;
+class Function;
 
 /// @addtogroup Checks
 /// @{
@@ -434,8 +435,13 @@ private:
         return varname;
     }
 
-    void checkExpressionRange(const Token *start, const Token *end, const std::string &toCheck);
-    void complexDuplicateExpressionCheck(const Token *classStart,
+    void checkExpressionRange(const std::list<Function> &constFunctions,
+                              const Token *start,
+                              const Token *end,
+                              const std::string &toCheck);
+
+    void complexDuplicateExpressionCheck(const std::list<Function> &constFunctions,
+                                         const Token *classStart,
                                          const std::string &toCheck,
                                          const std::string &alt);
 };

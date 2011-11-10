@@ -2371,35 +2371,141 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
 }
 
 namespace {
+    struct ExpressionTokens {
+        const Token *start;
+        const Token *end;
+        int count;
+        ExpressionTokens(const Token *s, const Token *e): start(s), end(e), count(1) {}
+    };
+
     class Expressions {
     public:
-        void endExpr() {
+        Expressions(): _start(0) {}
+
+        void endExpr(const Token *end) {
             const std::string &e = _expression.str();
             if (!e.empty()) {
-                std::map<std::string,int>::const_iterator it = _expressions.find(e);
+                std::map<std::string, ExpressionTokens>::iterator it = _expressions.find(e);
                 if (it == _expressions.end())
-                    _expressions[e] = 1;
+                    _expressions.insert(std::make_pair(e, ExpressionTokens(_start, end)));
                 else
-                    _expressions[e] += 1;
+                    it->second.count += 1;
             }
             _expression.str("");
+            _start = 0;
         }
 
-        void append(const std::string &tok) {
-            _expression << tok;
+        void append(const Token *tok) {
+            if (!_start)
+                _start = tok;
+            _expression << tok->str();
         }
 
-        std::map<std::string,int> &getMap() {
+        std::map<std::string,ExpressionTokens> &getMap() {
             return _expressions;
         }
 
     private:
-        std::map<std::string, int> _expressions;
+        std::map<std::string, ExpressionTokens> _expressions;
         std::ostringstream _expression;
+        const Token *_start;
     };
+
+    struct FuncFilter {
+        FuncFilter(const Scope *scope, const Token *tok): _scope(scope), _tok(tok) {}
+
+        bool operator() (const Function &func) {
+            // todo: function args, etc??
+            bool matchingFunc = func.type == Function::eFunction &&
+                                _tok->str() == func.token->str();
+            // either a class function, or a global function with the same name
+            return (_scope && _scope == func.functionScope && matchingFunc) ||
+                   (!_scope && matchingFunc);
+        }
+        const Scope *_scope;
+        const Token *_tok;
+    };
+
+
+    bool inconclusiveFunctionCall(const SymbolDatabase *symbolDatabase,
+                                  const std::list<Function> &constFunctions,
+                                  const ExpressionTokens &tokens)
+    {
+        const Token *start = tokens.start;
+        const Token *end = tokens.end;
+        // look for function calls between start and end...
+        for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+            if (tok != start && tok->str() == "(") {
+                // go back to find the function call.
+                const Token *prev = tok->previous();
+                if (prev->str() == ">") {
+                    // ignore template functions like boo<double>()
+                    return true;
+                }
+                if (prev && prev->isName()) {
+                    const Variable *v = 0;
+                    if (Token::Match(prev->tokAt(-2), "%var% .")) {
+                        const Token *scope = prev->tokAt(-2);
+                        v = symbolDatabase->getVariableFromVarId(scope->varId());
+                    }
+                    // hard coded list of safe, no-side-effect functions
+                    if (v == 0 && Token::Match(prev, "strcmp|strncmp|strlen|memcmp|strcasecmp|strncasecmp"))
+                        return false;
+                    std::list<Function>::const_iterator it = std::find_if(constFunctions.begin(),
+                                                                          constFunctions.end(),
+                                                                          FuncFilter(v ? v->type(): 0, prev));
+                    if (it == constFunctions.end())
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    bool notconst(const Function &func)
+    {
+        return !func.isConst;
+    }
+
+    void getConstFunctions(const SymbolDatabase *symbolDatabase, std::list<Function> &constFunctions)
+    {
+        std::list<Scope>::const_iterator scope;
+        for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+            std::list<Function>::const_iterator func;
+            // only add const functions that do not have a non-const overloaded version
+            // since it is pretty much impossible to tell which is being called.
+            typedef std::map<std::string, std::list<Function> > StringFunctionMap;
+            StringFunctionMap functionsByName;
+            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+                StringFunctionMap::iterator it = functionsByName.find(func->token->str());
+                Scope *currScope = const_cast<Scope*>(&*scope);
+                if (it == functionsByName.end()) {
+                    std::list<Function> tmp;
+                    tmp.push_back(*func);
+                    tmp.back().functionScope = currScope;
+                    functionsByName[func->token->str()] = tmp;
+                } else {
+                    it->second.push_back(*func);
+                    it->second.back().functionScope = currScope;
+                }
+            }
+            for (StringFunctionMap::iterator it = functionsByName.begin();
+                 it != functionsByName.end(); ++it) {
+                std::list<Function>::const_iterator nc = std::find_if(it->second.begin(), it->second.end(), notconst);
+                if (nc == it->second.end()) {
+                    // ok to add all of them
+                    constFunctions.splice(constFunctions.end(), it->second);
+                }
+            }
+        }
+    }
+
 }
 
-void CheckOther::checkExpressionRange(const Token *start, const Token *end, const std::string &toCheck)
+void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
+                                      const Token *start,
+                                      const Token *end,
+                                      const std::string &toCheck)
 {
     if (!start || !end)
         return;
@@ -2414,22 +2520,27 @@ void CheckOther::checkExpressionRange(const Token *start, const Token *end, cons
 
         if (level == 0 && Token::Match(tok, toCheck.c_str())) {
             opName = tok->str();
-            expressions.endExpr();
+            expressions.endExpr(tok);
         } else {
-            expressions.append(tok->str());
+            expressions.append(tok);
         }
     }
-    expressions.endExpr();
-    std::map<std::string,int>::const_iterator it = expressions.getMap().begin();
+    expressions.endExpr(end);
+    std::map<std::string,ExpressionTokens>::const_iterator it = expressions.getMap().begin();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (; it != expressions.getMap().end(); ++it) {
-        if (it->second > 1)
-            duplicateExpressionError(start, start, opName);
+        if (it->second.count > 1 &&
+            (it->first.find("(") == std::string::npos ||
+             !inconclusiveFunctionCall(symbolDatabase, constFunctions, it->second))) {
+            duplicateExpressionError(it->second.start, it->second.start, opName);
+        }
     }
 }
 
-void CheckOther::complexDuplicateExpressionCheck(const Token *classStart,
-        const std::string &toCheck,
-        const std::string &alt)
+void CheckOther::complexDuplicateExpressionCheck(const std::list<Function> &constFunctions,
+                                                 const Token *classStart,
+                                                 const std::string &toCheck,
+                                                 const std::string &alt)
 {
     std::string statementStart(",|=|return");
     if (!alt.empty())
@@ -2470,10 +2581,9 @@ void CheckOther::complexDuplicateExpressionCheck(const Token *classStart,
                 break;
             }
         }
-        checkExpressionRange(start, end, toCheck);
+        checkExpressionRange(constFunctions, start, end, toCheck);
     }
 }
-
 
 //---------------------------------------------------------------------------
 // check for the same expression on both sides of an operator
@@ -2489,16 +2599,18 @@ void CheckOther::checkDuplicateExpression()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<Scope>::const_iterator scope;
+    std::list<Function> constFunctions;
+    getConstFunctions(symbolDatabase, constFunctions);
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
 
-        complexDuplicateExpressionCheck(scope->classStart, "%or%", "");
-        complexDuplicateExpressionCheck(scope->classStart, "%oror%", "");
-        complexDuplicateExpressionCheck(scope->classStart, "&", "%oror%|%or%");
-        complexDuplicateExpressionCheck(scope->classStart, "&&", "%oror%|%or%");
+        complexDuplicateExpressionCheck(constFunctions, scope->classStart, "%or%", "");
+        complexDuplicateExpressionCheck(constFunctions, scope->classStart, "%oror%", "");
+        complexDuplicateExpressionCheck(constFunctions, scope->classStart, "&", "%oror%|%or%");
+        complexDuplicateExpressionCheck(constFunctions, scope->classStart, "&&", "%oror%|%or%");
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next()) {
             if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% ==|!=|<=|>=|<|>|- %var% )|&&|%oror%|;|,") &&
