@@ -353,9 +353,9 @@ Checking path/file2.cpp...
     templates.</para>
 
     <para>To get Visual Studio compatible output you can use
-    <parameter class="command">--template vs</parameter>:</para>
+    <parameter class="command">--template=vs</parameter>:</para>
 
-    <programlisting>cppcheck --template vs gui/test.cpp</programlisting>
+    <programlisting>cppcheck --template=vs gui/test.cpp</programlisting>
 
     <para>This output will look like this:</para>
 
@@ -364,9 +364,9 @@ gui/test.cpp(31): error: Memory leak: b
 gui/test.cpp(16): error: Mismatching allocation and deallocation: k</programlisting>
 
     <para>To get gcc compatible output you can use
-    <parameter class="command">--template gcc</parameter>:</para>
+    <parameter class="command">--template=gcc</parameter>:</para>
 
-    <programlisting>cppcheck --template gcc gui/test.cpp</programlisting>
+    <programlisting>cppcheck --template=gcc gui/test.cpp</programlisting>
 
     <para>The output will look like this:</para>
 
@@ -377,7 +377,7 @@ gui/test.cpp:16: error: Mismatching allocation and deallocation: k</programlisti
     <para>You can write your own pattern (for example a comma-separated
     format):</para>
 
-    <programlisting>cppcheck --template "{file},{line},{severity},{id},{message}" gui/test.cpp</programlisting>
+    <programlisting>cppcheck --template="{file},{line},{severity},{id},{message}" gui/test.cpp</programlisting>
 
     <para>The output will look like this:</para>
 

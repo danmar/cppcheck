@@ -126,7 +126,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--suppress=&lt;spec&gt;</option></arg>
       <arg choice="opt"><option>--suppressions-list=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--template '&lt;text&gt;'</option></arg>
+      <arg choice="opt"><option>--template='&lt;text&gt;'</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>--version</option></arg>
       <arg choice="opt"><option>--xml</option></arg>
@@ -397,7 +397,7 @@ Directory name is matched to all parts of the path.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--template '&lt;text&gt;'</option></term>
+        <term><option>--template='&lt;text&gt;'</option></term>
         <listitem>
           <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'. Pre-defined templates: gcc, vs</para>
         </listitem>

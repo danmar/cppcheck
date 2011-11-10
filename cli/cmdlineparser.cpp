@@ -765,7 +765,7 @@ void CmdLineParser::PrintHelp()
               "    --suppressions-list=<file>\n"
               "                         Suppress warnings listed in the file. Each suppression\n"
               "                         is in the same format as <spec> above.\n"
-              "    --template '<text>'  Format the error messages. E.g.\n"
+              "    --template='<text>'  Format the error messages. E.g.\n"
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}'\n"
               "                         Pre-defined templates: gcc, vs, edit.\n"
