@@ -610,6 +610,14 @@ private:
             tokenizeAndStringify(code.c_str(), true);
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
         }
+
+        {
+            // #3314 - don't report syntax error.
+            errout.str("");
+            const std::string code("struct A { typedef B::C (A::*f)(); };");
+            tokenizeAndStringify(code.c_str(), true);
+            ASSERT_EQUALS("[test.cpp:1]: (debug) Failed to parse 'typedef B :: C ( A :: * f ) ( ) ;'. The checking continues anyway.\n", errout.str());
+        }
     }
 
     void wrong_syntax_if_macro() {

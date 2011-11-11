@@ -1097,6 +1097,14 @@ void Tokenizer::simplifyTypedef()
                     continue;
                 }
 
+                // unhandled function pointer, skip it and continue
+                else if (Token::Match(tok->tokAt(offset), "( %type% ::") &&
+                         Token::Match(tok->tokAt(offset)->link()->tokAt(-3), ":: * %var% ) (")) {
+                    unsupportedTypedef(typeDef);
+                    tok = deleteInvalidTypedef(typeDef);
+                    continue;
+                }
+
                 // function pointer
                 else if (Token::Match(tok->tokAt(offset), "( * %var% ) (")) {
                     // name token wasn't a name, it was part of the type
