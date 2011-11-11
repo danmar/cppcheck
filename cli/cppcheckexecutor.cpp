@@ -123,7 +123,6 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         }
 
         PathMatch matcher(parser.GetIgnoredPaths());
-        std::vector<std::string>::iterator iterBegin = filenames.begin();
         for (size_t i = 0 ; i < filenames.size();) {
 #if defined(_WIN32)
             // For Windows we want case-insensitive path matching
@@ -132,7 +131,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             const bool caseSensitive = true;
 #endif
             if (matcher.Match(filenames[i], caseSensitive))
-                filenames.erase(iterBegin + i);
+                filenames.erase(filenames.begin() + i);
             else
                 ++i;
         }
