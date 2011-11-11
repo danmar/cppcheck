@@ -900,7 +900,7 @@ void CheckNullPointer::nullConstantDereference()
                     --indentlevel;
             }
 
-            if (tok->str() == "(" && Token::Match(tok->previous(), "sizeof|decltype"))
+            if (tok->str() == "(" && Token::Match(tok->previous(), "sizeof|decltype|typeid"))
                 tok = tok->link();
 
             else if (Token::simpleMatch(tok, "exit ( )")) {
@@ -1064,7 +1064,7 @@ private:
         }
 
         if (Token::Match(&tok, "%var% (")) {
-            if (tok.str() == "sizeof")
+            if (tok.str() == "sizeof" || tok.str() == "typeid")
                 return tok.next()->link();
 
             // parse usage..

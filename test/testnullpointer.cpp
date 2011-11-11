@@ -1560,20 +1560,20 @@ private:
               "     PolymorphicA* a = 0;\n"
               "     return typeid(*a) == typeid(*a);\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("struct NonPolymorphicA { ~A() {} };\n"
               "bool foo() {\n"
               "     NonPolymorphicA* a = 0;\n"
               "     return typeid(*a) == typeid(*a);\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool foo() {\n"
               "     char* c = 0;\n"
               "     return typeid(*c) == typeid(*c);\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
     }
 
