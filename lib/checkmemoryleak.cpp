@@ -2889,7 +2889,7 @@ void CheckMemoryLeakNoVar::check()
                     for (const Token *tok3 = tok2; tok3; tok3 = tok3->previous()) {
                         if (tok3->str() == "(") {
                             // Is it a function call..
-                            if (Token::Match(tok3->tokAt(-2), "[(,;{}=] %var% (")) {
+                            if (Token::Match(tok3->tokAt(-2), "[;{}] %var% (")) {
                                 const std::string functionName = tok3->strAt(-1);
                                 if (functionName == "delete" ||
                                     functionName == "free" ||
