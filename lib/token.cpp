@@ -221,6 +221,18 @@ Token *Token::tokAt(int index)
     return tok;
 }
 
+const Token *Token::linkAt(int index) const
+{
+    const Token *tok = this->tokAt(index);
+    return tok->link();
+}
+
+Token *Token::linkAt(int index)
+{
+    Token *tok = this->tokAt(index);
+    return tok->link();
+}
+
 std::string Token::strAt(int index) const
 {
     const Token *tok = this->tokAt(index);
@@ -818,7 +830,7 @@ void Token::insertToken(const std::string &tokenStr)
 
 void Token::eraseTokens(Token *begin, const Token *end)
 {
-    if (! begin)
+    if (!begin)
         return;
 
     while (begin->next() && begin->next() != end) {

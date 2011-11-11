@@ -71,6 +71,13 @@ public:
     const Token *tokAt(int index) const;
     Token *tokAt(int index);
 
+    /**
+     * Returns the link to the token in given index, related to this token.
+     * For example index 1 would return the link to next token.
+     */
+    const Token *linkAt(int index) const;
+    Token *linkAt(int index);
+
     std::string strAt(int index) const;
 
     /**
@@ -368,7 +375,7 @@ public:
     std::string strValue() const;
 
     /**
-     * Move srcStart and srcEnd tokens and all tokens between then
+     * Move srcStart and srcEnd tokens and all tokens between them
      * into new a location. Only links between tokens are changed.
      * @param srcStart This is the first token to be moved
      * @param srcEnd The last token to be moved
