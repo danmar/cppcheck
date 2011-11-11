@@ -1098,6 +1098,7 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // unhandled function pointer, skip it and continue
+                // TODO: handle such typedefs. See ticket #3314
                 else if (Token::Match(tok->tokAt(offset), "( %type% ::") &&
                          Token::Match(tok->tokAt(offset)->link()->tokAt(-3), ":: * %var% ) (")) {
                     unsupportedTypedef(typeDef);
