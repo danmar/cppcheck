@@ -155,12 +155,9 @@ public:
         _isNumber = number;
     }
     bool isArithmeticalOp() const {
-        return (this && (_str=="<<" || _str==">>" || (_str.size()==1 && _str.find_first_of("+-*/%") != std::string::npos)));
+        return (_str=="<<" || _str==">>" || (_str.size()==1 && _str.find_first_of("+-*/%") != std::string::npos));
     }
     bool isOp() const {
-        if (!this)
-            return false;
-
         return (isArithmeticalOp() ||
                 _str == "&&" ||
                 _str == "||" ||
@@ -174,12 +171,9 @@ public:
     }
     bool isExtendedOp() const {
         return isOp() ||
-               (this && _str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos);
+               (_str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos);
     }
     bool isAssignmentOp() const {
-        if (!this)
-            return false;
-
         return (_str == "="   ||
                 _str == "+="  ||
                 _str == "-="  ||
