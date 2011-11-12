@@ -267,8 +267,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->_errorsOnly = true;
 
         // Append userdefined code to checked source code
-        else if (strncmp(argv[i], "--append=", 9) == 0)
-            _settings->append(9 + argv[i]);
+        else if (strncmp(argv[i], "--append=", 9) == 0) {
+            const std::string filename = 9 + argv[i];
+            if (!_settings->append(filename)) {
+                PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
+                return false;
+            }
+        }
 
         else if (strncmp(argv[i], "--enable=", 9) == 0) {
             const std::string errmsg = _settings->addEnabled(argv[i] + 9);

@@ -118,14 +118,18 @@ bool Settings::isEnabled(const std::string &str) const
 }
 
 
-void Settings::append(const std::string &filename)
+bool Settings::append(const std::string &filename)
 {
     _append = "\n";
     std::ifstream fin(filename.c_str());
+    if (!fin.is_open()) {
+        return false;
+    }
     std::string line;
     while (std::getline(fin, line)) {
         _append += line + "\n";
     }
+    return true;
 }
 
 std::string Settings::append() const
