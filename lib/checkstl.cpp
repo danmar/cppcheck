@@ -787,7 +787,7 @@ bool CheckStl::isStlContainer(unsigned int varid)
 
         // discard namespace if supplied
         if (Token::simpleMatch(type, "std ::"))
-            type = type->next()->next();
+            type = type->tokAt(2);
 
         // all possible stl containers
         static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
@@ -1091,7 +1091,7 @@ static bool hasArrayEndParen(const Token *tok1)
 {
     const Token *end = Token::findsimplematch(tok1, ";");
     return (end && end->previous() &&
-            Token::simpleMatch(end->previous()->previous(), "] ) ;"));
+            Token::simpleMatch(end->tokAt(-2), "] ) ;"));
 }
 
 //---------------------------------------------------------------------------
@@ -1109,10 +1109,10 @@ void CheckStl::checkAutoPointer()
                 (Token::simpleMatch(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST))) {
                 autoPointerContainerError(tok);
             } else {
-                const Token *tok2 = tok->next()->next();
+                const Token *tok2 = tok->tokAt(2);
                 while (tok2) {
                     if (Token::Match(tok2, "> %var%")) {
-                        const Token *tok3 = tok2->next()->next();
+                        const Token *tok3 = tok2->tokAt(2);
                         if (Token::Match(tok3, "( new %type%") && hasArrayEndParen(tok3)) {
                             autoPointerArrayError(tok2->next());
                             break;
@@ -1121,7 +1121,7 @@ void CheckStl::checkAutoPointer()
                             tok3 = tok3->next();
                         }
                         if (tok3) {
-                            tok3 = tok3->previous()->previous();
+                            tok3 = tok3->tokAt(-2);
                             if (Token::simpleMatch(tok3->previous(), "[ ] )")) {
                                 autoPointerArrayError(tok2->next());
                             } else if (tok3->varId()) {
@@ -1142,9 +1142,9 @@ void CheckStl::checkAutoPointer()
         } else {
             if (Token::Match(tok, "%var% = %var% ;")) {
                 if (_settings->isEnabled("style")) {
-                    iter = autoPtrVarId.find(tok->next()->next()->varId());
+                    iter = autoPtrVarId.find(tok->tokAt(2)->varId());
                     if (iter != autoPtrVarId.end()) {
-                        autoPointerError(tok->next()->next());
+                        autoPointerError(tok->tokAt(2));
                     }
                 }
             } else if ((Token::Match(tok, "%var% = new %type% ") && hasArrayEnd(tok)) ||

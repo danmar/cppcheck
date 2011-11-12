@@ -375,7 +375,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                         // class destructor
                         else if (tok->previous() && tok->previous()->str() == "~" &&
-                                 tok->previous()->previous() && tok->previous()->previous()->str() == "::")
+                                 tok->tokAt(-2) && tok->tokAt(-2)->str() == "::")
                             addFunction(&scope, &tok, argStart);
 
                         // regular function
@@ -501,8 +501,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     scope = &scopeList.back();
                     scope->nestedIn->nestedList.push_back(scope);
                 } else if (Token::simpleMatch(tok, "else if (") &&
-                           Token::simpleMatch(tok->next()->next()->link(), ") {")) {
-                    const Token *tok1 = tok->next()->next()->link()->next();
+                           Token::simpleMatch(tok->tokAt(2)->link(), ") {")) {
+                    const Token *tok1 = tok->tokAt(2)->link()->next();
                     scopeList.push_back(Scope(this, tok, scope, Scope::eElseIf, tok1));
                     tok = tok1;
                     scope = &scopeList.back();
@@ -989,7 +989,7 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                                 func->hasBody = true;
                                 func->token = *tok;
                                 func->arg = argStart;
-                                const Token *start = argStart->link()->next()->next()->link()->next();
+                                const Token *start = argStart->link()->tokAt(2)->link()->next();
                                 while (start && start->str() != "{")
                                     start = start->next();
                                 func->start = start;
@@ -1436,7 +1436,7 @@ void Scope::getVariableList()
             } else
                 break;
         } else if (Token::Match(tok, "struct|union {") && Token::Match(tok->next()->link(), "} %var% ;|[")) {
-            tok = tok->next()->link()->next()->next();
+            tok = tok->next()->link()->tokAt(2);
             continue;
         } else if (Token::Match(tok, "struct|union {") && Token::simpleMatch(tok->next()->link(), "} ;")) {
             level++;
@@ -1494,7 +1494,7 @@ void Scope::getVariableList()
         else if (Token::Match(tok, ";|{|}"))
             continue;
         else if (Token::Match(tok, "goto %var% ;")) {
-            tok = tok->next()->next();
+            tok = tok->tokAt(2);
             continue;
         }
 

@@ -47,7 +47,7 @@ void CheckPostfixOperator::postfixOperator()
     for (; tok; tok = tok->next()) {
         bool result = false;
         if (Token::Match(tok, "++|--")) {
-            if (Token::Match(tok->previous()->previous(), ";|{|}") && Token::Match(tok->next(), ";|)|,")) {
+            if (Token::Match(tok->tokAt(-2), ";|{|}") && Token::Match(tok->next(), ";|)|,")) {
                 result = true;
             } else if (tok->strAt(-2) == ",") {
                 int i(1);

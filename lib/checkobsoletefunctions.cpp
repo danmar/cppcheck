@@ -45,7 +45,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
 
         if (tok->isName() && tok->varId()==0 && (tok->next() && tok->next()->str() == "(") &&
-            (!Token::Match(tok->previous(), ".|::|:|,") || Token::simpleMatch(tok->previous()->previous(), "std :: gets"))) {
+            (!Token::Match(tok->previous(), ".|::|:|,") || Token::simpleMatch(tok->tokAt(-2), "std :: gets"))) {
             // c function declaration?
             if ((tok->next()->link()->next() && tok->next()->link()->next()->str() == ";") && (tok->previous() && (tok->previous()->str() == "*" || tok->previous()->isName()))) {
                 continue;

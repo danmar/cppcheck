@@ -722,7 +722,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // standard const type declaration
             // const int i = x;
             else if (Token::Match(tok, "[;{}] const %type% %var% =")) {
-                tok = tok->next()->next();
+                tok = tok->tokAt(2);
 
                 if (tok->isStandardType() || isRecordTypeWithoutSideEffects(tok->next()))
                     variables.addVar(tok->next(), Variables::standard, info, true);

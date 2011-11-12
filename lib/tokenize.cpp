@@ -1402,7 +1402,7 @@ void Tokenizer::simplifyTypedef()
 
                     if (pattern1.find("::") != std::string::npos) { // has a "something ::"
                         if (Token::simpleMatch(tok2->previous(), "::")) {
-                            tok2->previous()->previous()->deleteNext();
+                            tok2->tokAt(-2)->deleteNext();
                             globalScope = true;
                         }
 
@@ -1743,7 +1743,7 @@ void Tokenizer::simplifyTypedef()
                                 if (tok2->next()->str() == "{")
                                     tok2 = tok2->next()->link()->next();
                                 else if (tok2->next()->str().at(0) == '\"')
-                                    tok2 = tok2->next()->next();
+                                    tok2 = tok2->tokAt(2);
                             }
                         } while (Token::Match(tok2, ", %var% ;|'|=|,"));
                     }
@@ -1897,7 +1897,7 @@ bool Tokenizer::tokenize(std::istream &code,
     if (_files[0].find(".cs")) {
         for (Token *tok = _tokens; tok; tok = tok->next()) {
             if (Token::Match(tok, "[;{}] %type% [ ] %var% [=;]")) {
-                tok = tok->next()->next();
+                tok = tok->tokAt(2);
                 tok->str("*");
                 tok->deleteNext();
             }
@@ -6323,7 +6323,7 @@ void Tokenizer::simplifyIfNot()
             if (Token::Match(tok->link()->tokAt(-2), "( %var%")) {
                 Token::eraseTokens(tok, tok->tokAt(3));
                 tok->link()->previous()->insertToken(tok->link()->previous()->str().c_str());
-                tok->link()->previous()->previous()->str("!");
+                tok->link()->tokAt(-2)->str("!");
             }
 
             // if( (x) == 0 )
@@ -7012,7 +7012,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             };
             for (unsigned int i = 0; i < (sizeof(functionName) / sizeof(*functionName)); ++i) {
                 if (tok3->str() == functionName[i]) {
-                    Token *par1 = tok3->next()->next();
+                    Token *par1 = tok3->tokAt(2);
                     if (!structname.empty()) {
                         par1->deleteThis();
                         par1->deleteThis();
@@ -7376,7 +7376,7 @@ bool Tokenizer::simplifyCalculations()
                     tok = tok->previous();
                     if (Token::Match(tok->tokAt(-4), "[;{}] %var% = %var% [+-|] 0 ;") &&
                         tok->strAt(-3) == tok->previous()->str()) {
-                        tok = tok->previous()->previous()->previous();
+                        tok = tok->tokAt(-3);
                         tok->deleteThis();
                         tok->deleteThis();
                         tok->deleteThis();
@@ -8432,9 +8432,9 @@ void Tokenizer::simplifyMathFunctions()
             }
 
             if (tok->previous() &&
-                Token::simpleMatch(tok->previous()->previous(), "std ::")) {
+                Token::simpleMatch(tok->tokAt(-2), "std ::")) {
                 // Delete "std ::"
-                tok = tok->previous()->previous();
+                tok = tok->tokAt(-2);
                 tok->deleteNext();
                 tok->deleteThis();
             }
@@ -8496,8 +8496,8 @@ void Tokenizer::simplifyComma()
             tok->str(";");
         }
 
-        if (tok->previous() && tok->previous()->previous()) {
-            if (Token::Match(tok->previous()->previous(), "delete %var% , %var% ;") &&
+        if (tok->previous() && tok->tokAt(-2)) {
+            if (Token::Match(tok->tokAt(-2), "delete %var% , %var% ;") &&
                 tok->next()->varId() != 0) {
                 // Handle "delete a, b;"
                 tok->str(";");
@@ -9645,7 +9645,7 @@ void Tokenizer::simplifyOperatorName()
                 }
                 if (Token::simpleMatch(par, "[ ]")) {
                     op += "[]";
-                    par = par->next()->next();
+                    par = par->tokAt(2);
                     done = false;
                 }
                 if (Token::Match(par, "( *| )")) {
