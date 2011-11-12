@@ -2405,8 +2405,14 @@ void CheckOther::checkExpressionRange(const Token *start, const Token *end, cons
         return;
     Expressions expressions;
     std::string opName;
+    int level = 0;
     for (const Token *tok = start->next(); tok && tok != end; tok = tok->next()) {
-        if (Token::Match(tok, toCheck.c_str())) {
+        if (tok->str() == ")")
+            level--;
+        else if (tok->str() == "(")
+            level++;
+
+        if (level == 0 && Token::Match(tok, toCheck.c_str())) {
             opName = tok->str();
             expressions.endExpr();
         } else {
@@ -2445,7 +2451,7 @@ void CheckOther::complexDuplicateExpressionCheck(const Token *classStart,
             else if (tok1->str() == "(")
                 level--;
 
-            if (level < 0 || Token::Match(tok1, statementStart.c_str())) {
+            if (level < 0 || (level == 0 && Token::Match(tok1, statementStart.c_str()))) {
                 start = tok1;
                 break;
             }
@@ -2459,7 +2465,7 @@ void CheckOther::complexDuplicateExpressionCheck(const Token *classStart,
             else if (tok1->str() == "(")
                 level++;
 
-            if (level < 0 || Token::Match(tok1, statementEnd.c_str())) {
+            if (level < 0 || (level == 0 && Token::Match(tok1, statementEnd.c_str()))) {
                 end = tok1;
                 break;
             }

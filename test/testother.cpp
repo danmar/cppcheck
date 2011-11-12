@@ -3654,10 +3654,19 @@ private:
               "    if ((a + b) | (a + b)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
+
         check("void foo() {\n"
               "    if ((a | b) & (a | b)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
+
+        check("void d(const char f, int o, int v)\n"
+              "{\n"
+              "     if (((f=='R') && (o == 1) && ((v < 2) || (v > 99))) ||\n"
+              "         ((f=='R') && (o == 2) && ((v < 2) || (v > 99))) ||\n"
+              "         ((f=='T') && (o == 2) && ((v < 200) || (v > 9999)))) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression2() { // ticket #2730
