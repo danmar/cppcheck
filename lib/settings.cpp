@@ -121,7 +121,6 @@ bool Settings::isEnabled(const std::string &str) const
 
 bool Settings::append(const std::string &filename)
 {
-    _append = "\n";
     std::ifstream fin(filename.c_str());
     if (!fin.is_open()) {
         return false;
