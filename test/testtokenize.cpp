@@ -839,8 +839,8 @@ private:
         ASSERT_EQUALS("void f ( )\n"
                       "{\n"
                       "for ( int i = 0 ; i < 2 ; i ++ ) {\n"
-                      "{\n"
-                      "return ; } }\n\n"
+                      "\n"
+                      "return ; }\n\n"
                       "return ;\n"
                       "}", tokenizeAndStringify(code, true));
     }
@@ -3891,7 +3891,7 @@ private:
                                 "{"
                                 "    if (( true )==(true)){}"
                                 "}";
-            ASSERT_EQUALS("void foo ( ) { { } }", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("void foo ( ) { }", tokenizeAndStringify(code, true));
         }
 
         {
@@ -3899,7 +3899,7 @@ private:
                                 "{"
                                 "    if (( 2 )==(2)){}"
                                 "}";
-            ASSERT_EQUALS("void foo ( ) { { } }", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("void foo ( ) { }", tokenizeAndStringify(code, true));
         }
 
         {

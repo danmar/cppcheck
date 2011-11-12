@@ -4328,6 +4328,19 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyFlowControl();
 
+    // Remove redundant consecutive braces, i.e. '.. { { .. } } ..' -> '.. { .. } ..'.
+    {
+        Token *tok = _tokens;
+        while (tok) {
+            if (Token::simpleMatch(tok, "{ {") && Token::simpleMatch(tok->next()->link(), "} }")) {
+                //remove internal parentheses
+                tok->next()->link()->deleteThis();
+                tok->deleteNext();
+            } else
+                tok = tok->next();
+        }
+    }
+
     if (!validate())
         return false;
 

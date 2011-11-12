@@ -397,6 +397,8 @@ private:
         // for (x=0;x<1;x++) { .. }
         // The for is redundant
         TEST_CASE(removeRedundantFor);
+
+        TEST_CASE(consecutiveBraces);
     }
 
     std::string tok(std::string code, bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -3093,8 +3095,10 @@ private:
 
         for (std::list<std::string>::iterator it = beforedead.begin(); it != beforedead.end(); ++it) {
             {
-                ASSERT_EQUALS("void f ( ) { " + *it + " ; }", tok("void f() { " + *it + "; foo();}"));
-                ASSERT_EQUALS("void f ( int n ) { if ( n ) { " + *it + " ; } foo ( ) ; }",tok("void f(int n) { if (n) { " + *it + "; } foo();}"));
+                ASSERT_EQUALS("void f ( ) { " + *it + " ; }", tok("void f() { " + *it + "; foo(); }"));
+                ASSERT_EQUALS("void f ( ) { " + *it + " ; }", tok("void f() { " + *it + "; if (m) foo(); }"));
+                ASSERT_EQUALS("void f ( int n ) { if ( n ) { " + *it + " ; } foo ( ) ; }",tok("void f(int n) { if (n) { " + *it + "; } foo(); }"));
+                ASSERT_EQUALS("void f ( ) { " + *it + " ; }", tok("void f() { " + *it + "; dead(); switch (n) { case 1: deadcode () ; default: deadcode (); } }"));
 
                 ASSERT_EQUALS("int f ( int n ) { switch ( n ) { case 0 : ; " + *it + " ; default : ; " + *it + " ; } " + *it + " ; }",
                               tok("int f(int n) { switch (n) {case 0: " + *it + "; n*=2; default: " + *it + "; n*=6;} " + *it + "; foo();}"));
@@ -3136,7 +3140,7 @@ private:
                                    "        }"
                                    "    }"
                                    "}";
-                ASSERT_EQUALS("void foo ( ) { " + *it + " ; { { label : ; ok ( ) ; } } }", tok(code));
+                ASSERT_EQUALS("void foo ( ) { " + *it + " ; { label : ; ok ( ) ; } }", tok(code));
             }
 
             {
@@ -6200,7 +6204,7 @@ private:
                                 "    if (5==5);\n"
                                 "}\n";
 
-            ASSERT_EQUALS("void f ( ) { { ; } }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; }", tok(code));
         }
 
         {
@@ -6209,7 +6213,7 @@ private:
                                 "    if (4<5);\n"
                                 "}\n";
 
-            ASSERT_EQUALS("void f ( ) { { ; } }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; }", tok(code));
         }
 
         {
@@ -6227,7 +6231,7 @@ private:
                                 "    if (13>12?true:false);\n"
                                 "}\n";
 
-            ASSERT_EQUALS("void f ( ) { { ; } }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; }", tok(code));
         }
     }
 
@@ -6256,7 +6260,7 @@ private:
                 "{\n"
                 "if (true || a) g();\n"
                 "}";
-            ASSERT_EQUALS("void f ( int a ) { { g ( ) ; } }", tok(code));
+            ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
         }
 
         {
@@ -6265,7 +6269,7 @@ private:
                 "{\n"
                 "if (a || true) g();\n"
                 "}";
-            ASSERT_EQUALS("void f ( int a ) { { g ( ) ; } }", tok(code));
+            ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
         }
     }
 
@@ -7493,6 +7497,12 @@ private:
                                 "}";
             ASSERT_EQUALS("void f ( ) { x = 0 ; { y = 1 + x ; } x = 1 ; }", tok(code, true));
         }
+    }
+
+    void consecutiveBraces() {
+            ASSERT_EQUALS("void f ( ) { }", tok("void f(){{}}", true));
+            ASSERT_EQUALS("void f ( ) { }", tok("void f(){{{}}}", true));
+            ASSERT_EQUALS("void f ( ) { for ( ; ; ) { } }", tok("void f(){for(;;){}}", true));
     }
 };
 
