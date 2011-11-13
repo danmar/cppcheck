@@ -57,6 +57,7 @@ private:
         TEST_CASE(nullpointer_in_return);
         TEST_CASE(nullpointer_in_typeid);
         TEST_CASE(nullpointer_in_for_loop);
+        TEST_CASE(nullpointerDelete);
     }
 
     void check(const char code[], bool inconclusive = false, bool cpp11 = false) {
@@ -1585,6 +1586,25 @@ private:
               " for (int i = 0; i < cnt; ++i)\n"
               "  *ptr++ = 0;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointerDelete() {
+        check("void f() {\n"
+              "  K *k = getK();\n"
+              "  if (k)\n"
+              "     k->doStuff();\n"
+              "  delete k;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  K *k = getK();\n"
+              "  if (k)\n"
+              "     k[0] = ptr;\n"
+              "  delete [] k;\n"
+              "  k = new K[10];\n"
+              "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
 };

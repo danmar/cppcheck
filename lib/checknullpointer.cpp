@@ -217,6 +217,10 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     if (Token::Match(tok->previous(), "[;{}] %var% ="))
         return false;
 
+    // OK to delete a null
+    if (Token::Match(tok->previous(), "delete %var%") || Token::Match(tok->tokAt(-3), "delete [ ] %var%"))
+        return false;
+
     // unknown if it's a dereference
     unknown = true;
 
