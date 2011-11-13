@@ -110,8 +110,8 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
 {
     // ------------------------------------------------------------------------------------------
     //
-    // handling <backspace><newline>
-    // when this is encountered the <backspace><newline> will be "skipped".
+    // handling <backslash><newline>
+    // when this is encountered the <backslash><newline> will be "skipped".
     // on the next <newline>, extra newlines will be added
     std::ostringstream code;
     unsigned int newlines = 0;
@@ -120,7 +120,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
         if (((ch & 0x80) == 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
             ch = ' ';
 
-        // <backspace><newline>..
+        // <backslash><newline>..
         // for gcc-compatibility the trailing spaces should be ignored
         // for vs-compatibility the trailing spaces should be kept
         // See tickets #640 and #1869
@@ -134,7 +134,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
                 chNext = (unsigned char)istr.peek();
                 if (chNext != '\n' && chNext != '\r' &&
                     (std::isspace(chNext) || std::iscntrl(chNext))) {
-                    // Skip whitespace between <backspace> and <newline>
+                    // Skip whitespace between <backslash> and <newline>
                     (void)readChar(istr);
                     continue;
                 }
@@ -147,13 +147,13 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
 #endif
             if (chNext == '\n' || chNext == '\r') {
                 ++newlines;
-                (void)readChar(istr);   // Skip the "<backspace><newline>"
+                (void)readChar(istr);   // Skip the "<backslash><newline>"
             } else
                 code << "\\";
         } else {
             code << char(ch);
 
-            // if there has been <backspace><newline> sequences, add extra newlines..
+            // if there has been <backslash><newline> sequences, add extra newlines..
             if (ch == '\n' && newlines > 0) {
                 code << std::string(newlines, '\n');
                 newlines = 0;
@@ -308,8 +308,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     // For the error report
     unsigned int lineno = 1;
 
-    // handling <backspace><newline>
-    // when this is encountered the <backspace><newline> will be "skipped".
+    // handling <backslash><newline>
+    // when this is encountered the <backslash><newline> will be "skipped".
     // on the next <newline>, extra newlines will be added
     unsigned int newlines = 0;
     std::ostringstream code;
@@ -350,7 +350,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 previous = ch;
             }
 
-            // if there has been <backspace><newline> sequences, add extra newlines..
+            // if there has been <backslash><newline> sequences, add extra newlines..
             if (ch == '\n') {
                 if (previous != '\\')
                     inPreprocessorLine = false;
