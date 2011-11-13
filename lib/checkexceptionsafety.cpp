@@ -173,7 +173,7 @@ void CheckExceptionSafety::checkRethrowCopy()
 
         const Token* rethrowTok = Token::findmatch(startBlockTok, "throw %varid%", endBlockTok, varid);
         if (rethrowTok) {
-            rethrowCopyError(rethrowTok, startBlockTok->tokAt(-2)->str());
+            rethrowCopyError(rethrowTok, startBlockTok->strAt(-2));
         }
 
         tok = Token::findmatch(endBlockTok->next(), catchPattern);

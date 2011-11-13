@@ -291,14 +291,14 @@ void CheckOther::warningOldStylePointerCast()
             continue;
 
         unsigned char addToIndex = 0;
-        if (tok->tokAt(1)->str() == "const")
+        if (tok->strAt(1) == "const")
             addToIndex = 1;
 
-        if (tok->tokAt(4 + addToIndex)->str() == "const")
+        if (tok->strAt(4 + addToIndex) == "const")
             continue;
 
         // Is "type" a class?
-        const std::string pattern("class " + tok->tokAt(1 + addToIndex)->str());
+        const std::string pattern("class " + tok->strAt(1 + addToIndex));
         if (!Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
             continue;
 
@@ -364,7 +364,7 @@ void CheckOther::checkSizeofForArrayParameter()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var%")) {
             unsigned short tokIdx = 1;
-            if (tok->tokAt(tokIdx)->str() == "(") {
+            if (tok->strAt(tokIdx) == "(") {
                 ++tokIdx;
             }
             if (tok->tokAt(tokIdx)->varId() > 0) {
@@ -433,7 +433,7 @@ void CheckOther::checkSizeofForStrncmpSize()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, pattern1) || Token::Match(tok, pattern2)) {
             unsigned short tokIdx = 7;
-            if (tok->tokAt(tokIdx)->str() == "(")
+            if (tok->strAt(tokIdx) == "(")
                 ++tokIdx;
             const Token *tokVar = tok->tokAt(tokIdx);
             if (tokVar->varId() > 0) {
@@ -891,7 +891,7 @@ void CheckOther::checkIncorrectLogicOperator()
                     continue;
                 }
                 varFirst1 = true;
-                firstConstant = term1Tok->tokAt(2)->str();
+                firstConstant = term1Tok->strAt(2);
             } else if (Token::Match(term1Tok, "%num% %any% %var%")) {
                 varTok = term1Tok->tokAt(2);
                 varId = varTok->varId();
@@ -916,7 +916,7 @@ void CheckOther::checkIncorrectLogicOperator()
                     continue;
                 }
                 varFirst2 = true;
-                secondConstant = term2Tok->tokAt(2)->str();
+                secondConstant = term2Tok->strAt(2);
                 variableTested = varId;
             } else if (Token::Match(term2Tok, "%num% %any% %var%")) {
                 const unsigned int varId2 = term1Tok->tokAt(2)->varId();
@@ -1331,13 +1331,13 @@ void CheckOther::checkComparisonOfBoolWithInt()
     std::map<unsigned int, bool> boolvars; // Contains all declarated standard type variables and indicates whether its a bool or not.
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]") && tok->tokAt(1)->isStandardType()) { // Declaration of standard type variable
-            boolvars[tok->tokAt(2)->varId()] = (tok->tokAt(1)->str() == "bool");
+            boolvars[tok->tokAt(2)->varId()] = (tok->strAt(1) == "bool");
         } else if (Token::Match(tok, "%var% >|>=|==|!=|<=|< %num%")) { // Comparing variable with number
             const Token *varTok = tok;
             const Token *numTok = tok->tokAt(2);
             std::map<unsigned int, bool>::const_iterator iVar = boolvars.find(varTok->varId());
             if (iVar != boolvars.end() && iVar->second && // Variable has to be a boolean
-                ((tok->tokAt(1)->str() != "==" && tok->tokAt(1)->str() != "!=") ||
+                ((tok->strAt(1) != "==" && tok->strAt(1) != "!=") ||
                  ((MathLib::toLongNumber(numTok->str()) != 0) && (!_tokenizer->code_is_c() || MathLib::toLongNumber(numTok->str()) != 1)))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
                 comparisonOfBoolWithIntError(varTok, numTok->str());
             }
@@ -1346,7 +1346,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
             const Token *numTok = tok;
             std::map<unsigned int, bool>::const_iterator iVar = boolvars.find(varTok->varId());
             if (iVar != boolvars.end() && iVar->second && // Variable has to be a boolean
-                ((tok->tokAt(1)->str() != "==" && tok->tokAt(1)->str() != "!=") ||
+                ((tok->strAt(1) != "==" && tok->strAt(1) != "!=") ||
                  ((MathLib::toLongNumber(numTok->str()) != 0) && (!_tokenizer->code_is_c() || MathLib::toLongNumber(numTok->str()) != 1)))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
                 comparisonOfBoolWithIntError(varTok, numTok->str());
             }
@@ -1963,8 +1963,8 @@ void CheckOther::checkZeroDivision()
             MathLib::toLongNumber(tok->next()->str()) == 0L) {
             zerodivError(tok);
         } else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
-                   MathLib::isInt(tok->tokAt(4)->str()) &&
-                   MathLib::toLongNumber(tok->tokAt(4)->str()) == 0L) {
+                   MathLib::isInt(tok->strAt(4)) &&
+                   MathLib::toLongNumber(tok->strAt(4)) == 0L) {
             zerodivError(tok);
         }
     }
@@ -1981,16 +1981,16 @@ void CheckOther::checkMathFunctions()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->varId() == 0 && Token::Match(tok, "log|log10 ( %num% )")) {
-            bool isNegative = MathLib::isNegative(tok->tokAt(2)->str());
-            bool isInt = MathLib::isInt(tok->tokAt(2)->str());
-            bool isFloat = MathLib::isFloat(tok->tokAt(2)->str());
-            if (isNegative && isInt && MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0) {
+            bool isNegative = MathLib::isNegative(tok->strAt(2));
+            bool isInt = MathLib::isInt(tok->strAt(2));
+            bool isFloat = MathLib::isFloat(tok->strAt(2));
+            if (isNegative && isInt && MathLib::toLongNumber(tok->strAt(2)) <= 0) {
                 mathfunctionCallError(tok); // case log(-2)
-            } else if (isNegative && isFloat && MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.) {
+            } else if (isNegative && isFloat && MathLib::toDoubleNumber(tok->strAt(2)) <= 0.) {
                 mathfunctionCallError(tok); // case log(-2.0)
-            } else if (!isNegative && isFloat && MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.) {
+            } else if (!isNegative && isFloat && MathLib::toDoubleNumber(tok->strAt(2)) <= 0.) {
                 mathfunctionCallError(tok); // case log(0.0)
-            } else if (!isNegative && isInt && MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0) {
+            } else if (!isNegative && isInt && MathLib::toLongNumber(tok->strAt(2)) <= 0) {
                 mathfunctionCallError(tok); // case log(0)
             }
         }
@@ -1998,33 +1998,33 @@ void CheckOther::checkMathFunctions()
         // acos( x ), asin( x )  where x is defined for intervall [-1,+1], but not beyound
         else if (tok->varId() == 0 &&
                  Token::Match(tok, "acos|asin ( %num% )") &&
-                 std::fabs(MathLib::toDoubleNumber(tok->tokAt(2)->str())) > 1.0) {
+                 std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0) {
             mathfunctionCallError(tok);
         }
         // sqrt( x ): if x is negative the result is undefined
         else if (tok->varId() == 0 &&
                  Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )") &&
-                 MathLib::isNegative(tok->tokAt(2)->str())) {
+                 MathLib::isNegative(tok->strAt(2))) {
             mathfunctionCallError(tok);
         }
         // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
         else if (tok->varId() == 0 &&
                  Token::Match(tok, "atan2 ( %num% , %num% )") &&
-                 MathLib::isNullValue(tok->tokAt(2)->str()) &&
-                 MathLib::isNullValue(tok->tokAt(4)->str())) {
+                 MathLib::isNullValue(tok->strAt(2)) &&
+                 MathLib::isNullValue(tok->strAt(4))) {
             mathfunctionCallError(tok, 2);
         }
         // fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined).
         else if (tok->varId() == 0 &&
                  Token::Match(tok, "fmod ( %num% , %num% )") &&
-                 MathLib::isNullValue(tok->tokAt(4)->str())) {
+                 MathLib::isNullValue(tok->strAt(4))) {
             mathfunctionCallError(tok, 2);
         }
         // pow ( x , y) If x is zero, and y is negative --> division by zero
         else if (tok->varId() == 0 &&
                  Token::Match(tok, "pow ( %num% , %num% )") &&
-                 MathLib::isNullValue(tok->tokAt(2)->str())  &&
-                 MathLib::isNegative(tok->tokAt(4)->str())) {
+                 MathLib::isNullValue(tok->strAt(2))  &&
+                 MathLib::isNegative(tok->strAt(4))) {
             mathfunctionCallError(tok, 2);
         }
 
@@ -2035,9 +2035,9 @@ void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numP
 {
     if (tok) {
         if (numParam == 1)
-            reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
+            reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->strAt(2) + " to " + tok->str() + "() leads to undefined result");
         else if (numParam == 2)
-            reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " and " + tok->tokAt(4)->str() + " to " + tok->str() + "() leads to undefined result");
+            reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->strAt(2) + " and " + tok->strAt(4) + " to " + tok->str() + "() leads to undefined result");
     } else
         reportError(tok, Severity::error, "wrongmathcall", "Passing value " " to " "() leads to undefined result");
 }
@@ -2117,30 +2117,30 @@ void CheckOther::checkIncorrectStringCompare()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, ". substr ( %any% , %num% ) ==|!= %str%")) {
-            size_t clen = MathLib::toLongNumber(tok->tokAt(5)->str());
+            size_t clen = MathLib::toLongNumber(tok->strAt(5));
             size_t slen = Token::getStrLength(tok->tokAt(8));
             if (clen != slen) {
-                incorrectStringCompareError(tok->next(), "substr", tok->tokAt(8)->str(), tok->tokAt(5)->str());
+                incorrectStringCompareError(tok->next(), "substr", tok->strAt(8), tok->strAt(5));
             }
         }
         if (Token::Match(tok, "%str% ==|!= %var% . substr ( %any% , %num% )")) {
-            size_t clen = MathLib::toLongNumber(tok->tokAt(8)->str());
+            size_t clen = MathLib::toLongNumber(tok->strAt(8));
             size_t slen = Token::getStrLength(tok);
             if (clen != slen) {
-                incorrectStringCompareError(tok->next(), "substr", tok->str(), tok->tokAt(8)->str());
+                incorrectStringCompareError(tok->next(), "substr", tok->str(), tok->strAt(8));
             }
         }
         if (Token::Match(tok, "&&|%oror% %str% &&|%oror%|)")) {
             // assert(condition && "debug message") would be considered a fp.
-            if (tok->str() == "&&" && tok->tokAt(2)->str() == ")" && tok->tokAt(2)->link()->previous()->str() == "assert")
+            if (tok->str() == "&&" && tok->strAt(2) == ")" && tok->tokAt(2)->link()->previous()->str() == "assert")
                 continue;
-            incorrectStringBooleanError(tok->tokAt(1), tok->tokAt(1)->str());
+            incorrectStringBooleanError(tok->tokAt(1), tok->strAt(1));
         }
         if (Token::Match(tok, "if|while|assert ( %str% &&|%oror%|)")) {
             // assert("debug message" && condition) would be considered a fp.
-            if (tok->tokAt(3)->str() == "&&" && tok->str() == "assert")
+            if (tok->strAt(3) == "&&" && tok->str() == "assert")
                 continue;
-            incorrectStringBooleanError(tok->tokAt(2), tok->tokAt(2)->str());
+            incorrectStringBooleanError(tok->tokAt(2), tok->strAt(2));
         }
     }
 }

@@ -1010,7 +1010,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         // check for template
-        if (tok->tokAt(offset)->str() == "<") {
+        if (tok->strAt(offset) == "<") {
             unsigned int level = 0;
             unsigned int paren = 0;
             typeEnd = tok->tokAt(offset + 1);
@@ -1050,7 +1050,7 @@ void Tokenizer::simplifyTypedef()
 
         // check for pointers and references
         while (Token::Match(tok->tokAt(offset), "*|&|const"))
-            pointers.push_back(tok->tokAt(offset++)->str());
+            pointers.push_back(tok->strAt(offset++));
 
         // check for invalid input
         if (!tok->tokAt(offset)) {
@@ -1063,7 +1063,7 @@ void Tokenizer::simplifyTypedef()
             typeName = tok->tokAt(offset++);
 
             // check for array
-            if (tok->tokAt(offset) && tok->tokAt(offset)->str() == "[") {
+            if (tok->tokAt(offset) && tok->strAt(offset) == "[") {
                 arrayStart = tok->tokAt(offset);
 
                 bool atEnd = false;
@@ -1073,9 +1073,9 @@ void Tokenizer::simplifyTypedef()
 
                     if (!tok->tokAt(offset + 1))
                         return; // invalid input
-                    else if (tok->tokAt(offset + 1)->str() == ";")
+                    else if (tok->strAt(offset + 1) == ";")
                         atEnd = true;
-                    else if (tok->tokAt(offset)->str() == "]")
+                    else if (tok->strAt(offset) == "]")
                         atEnd = true;
                     else
                         ++offset;
@@ -1161,7 +1161,7 @@ void Tokenizer::simplifyTypedef()
         // function: typedef ... ( .... type )( ... );
         //           typedef ... (( .... type )( ... ));
         //           typedef ... ( * ( .... type )( ... ));
-        else if ((tok->tokAt(offset)->str() == "(" &&
+        else if ((tok->strAt(offset) == "(" &&
                   Token::Match(tok->tokAt(offset)->link()->previous(), "%type% ) (") &&
                   Token::Match(tok->tokAt(offset)->link()->next()->link(), ") const|volatile|;")) ||
                  (Token::simpleMatch(tok->tokAt(offset), "( (") &&
@@ -1260,8 +1260,8 @@ void Tokenizer::simplifyTypedef()
 
         // pointer/reference to array
         else if (Token::Match(tok->tokAt(offset), "( *|& %type% ) [")) {
-            ptrToArray = (tok->tokAt(offset + 1)->str() == "*");
-            refToArray = (tok->tokAt(offset + 1)->str() == "&");
+            ptrToArray = (tok->strAt(offset + 1) == "*");
+            refToArray = (tok->strAt(offset + 1) == "&");
             typeName = tok->tokAt(offset + 2);
             arrayStart = tok->tokAt(offset + 4);
             arrayEnd = arrayStart->link();
@@ -1761,12 +1761,12 @@ void Tokenizer::simplifyTypedef()
                 pointers.clear();
 
                 while (Token::Match(tok->tokAt(offset), "*|&"))
-                    pointers.push_back(tok->tokAt(offset++)->str());
+                    pointers.push_back(tok->strAt(offset++));
 
                 if (Token::Match(tok->tokAt(offset), "%type%")) {
                     typeName = tok->tokAt(offset++);
 
-                    if (tok->tokAt(offset) && tok->tokAt(offset)->str() == "[") {
+                    if (tok->tokAt(offset) && tok->strAt(offset) == "[") {
                         arrayStart = tok->tokAt(offset);
 
                         bool atEnd = false;
@@ -1776,9 +1776,9 @@ void Tokenizer::simplifyTypedef()
 
                             if (!tok->tokAt(offset + 1))
                                 return; // invalid input
-                            else if (tok->tokAt(offset + 1)->str() == ";")
+                            else if (tok->strAt(offset + 1) == ";")
                                 atEnd = true;
-                            else if (tok->tokAt(offset)->str() == "]")
+                            else if (tok->strAt(offset) == "]")
                                 atEnd = true;
                             else
                                 ++offset;
@@ -2984,7 +2984,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         }
         return;
     }
-    if ((tok->tokAt(namepos)->str() == "*" || tok->tokAt(namepos)->str() == "&"))
+    if ((tok->strAt(namepos) == "*" || tok->strAt(namepos) == "&"))
         ++namepos;
 
     // name of template function/class..
@@ -4724,7 +4724,7 @@ void Tokenizer::removeRedundantFor()
             // Same variable name..
             const std::string varname(tok->strAt(3));
             const unsigned int varid(tok->tokAt(3)->varId());
-            if (varname != tok->tokAt(7)->str())
+            if (varname != tok->strAt(7))
                 continue;
             const Token *vartok = tok->tokAt(11);
             if (vartok->str() == "++")
@@ -6794,7 +6794,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             --indentlevel3;
             if (indentlevel3 < indentlevel) {
                 if (Token::Match((*tok2)->tokAt(-7), "%type% * %var% ; %var% = & %var% ;") &&
-                    (*tok2)->tokAt(-5)->str() == (*tok2)->strAt(-3)) {
+                    (*tok2)->strAt(-5) == (*tok2)->strAt(-3)) {
                     (*tok2) = (*tok2)->tokAt(-4);
                     Token::eraseTokens((*tok2), (*tok2)->tokAt(5));
                 }

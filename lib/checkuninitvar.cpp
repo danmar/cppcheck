@@ -548,7 +548,7 @@ private:
 
             if (Token::Match(tok.next(), "= malloc|kmalloc") || Token::simpleMatch(tok.next(), "= new char [")) {
                 alloc_pointer(checks, tok.varId());
-                if (tok.tokAt(3)->str() == "(")
+                if (tok.strAt(3) == "(")
                     return tok.tokAt(3);
             }
 

@@ -90,7 +90,7 @@ void CheckStl::iterators()
 
                 // If insert/erase is used on different container then
                 // report an error
-                if (tok2->varId() != containerId && tok2->tokAt(5)->str() != ".") {
+                if (tok2->varId() != containerId && tok2->strAt(5) != ".") {
                     // skip error message if container is a set..
                     if (tok2->varId() > 0) {
                         const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -203,12 +203,12 @@ void CheckStl::mismatchingContainers()
 
         // TODO: If iterator variables are used instead then there are false negatives.
         if (Token::Match(tok, pattern2.c_str()) && algorithm2.find(tok->strAt(2)) != algorithm2.end()) {
-            if (tok->tokAt(4)->str() != tok->tokAt(10)->str()) {
+            if (tok->strAt(4) != tok->strAt(10)) {
                 mismatchingContainersError(tok);
             }
             tok = tok->tokAt(15);
         } else if (Token::Match(tok, pattern22.c_str()) && algorithm22.find(tok->strAt(2)) != algorithm22.end()) {
-            if (tok->tokAt(4)->str() != tok->tokAt(10)->str() || tok->tokAt(16)->str() != tok->tokAt(22)->str()) {
+            if (tok->strAt(4) != tok->strAt(10) || tok->strAt(16) != tok->strAt(22)) {
                 mismatchingContainersError(tok);
             }
             tok = tok->tokAt(27);
@@ -225,7 +225,7 @@ void CheckStl::mismatchingContainers()
                     break;
             }
             if (tok2 && Token::Match(tok2, pattern1x1_2.c_str())) {
-                if (tok->tokAt(4)->str() != tok2->tokAt(1)->str()) {
+                if (tok->strAt(4) != tok2->strAt(1)) {
                     mismatchingContainersError(tok);
                 }
                 tok = tok2->tokAt(6);
@@ -277,7 +277,7 @@ void CheckStl::stlOutOfBounds()
                         if (Token::simpleMatch(tok3->next(), ". size ( )"))
                             break;
                         else if (Token::Match(tok3->next(), "[ %varid% ]", numId))
-                            stlOutOfBoundsError(tok3, tok3->tokAt(2)->str(), tok3->str());
+                            stlOutOfBoundsError(tok3, tok3->strAt(2), tok3->str());
                     }
                 }
                 break;
@@ -455,8 +455,8 @@ void CheckStl::erase()
                 }
 
                 if (Token::Match(tok2, "%var% = %var% . begin|rbegin|cbegin|crbegin ( ) ; %var% != %var% . end|rend|cend|crend ( )") &&
-                    tok2->str() == tok2->tokAt(8)->str() &&
-                    tok2->tokAt(2)->str() == tok2->tokAt(10)->str()) {
+                    tok2->str() == tok2->strAt(8) &&
+                    tok2->strAt(2) == tok2->strAt(10)) {
                     EraseCheckLoop::checkScope(this, tok2);
                     break;
                 }
@@ -546,7 +546,7 @@ void CheckStl::pushback()
         if (iteratorid == 0)
             continue;
 
-        if (iteratorDeclaredInsideLoop && tok->tokAt(4)->str() == "=") {
+        if (iteratorDeclaredInsideLoop && tok->strAt(4) == "=") {
             // skip "> :: iterator|const_iterator"
             tok = tok->tokAt(3);
         }
@@ -878,7 +878,7 @@ void CheckStl::redundantCondition()
                            "}|}|";
     const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern);
     while (tok) {
-        bool b(tok->tokAt(15)->str() == "{");
+        bool b(tok->strAt(15) == "{");
 
         // Get tokens for the fields %var% and %any%
         const Token *var1 = tok->tokAt(2);
@@ -1201,8 +1201,8 @@ void CheckStl::uselessCalls()
         } else if (Token::Match(tok, "%var% . substr ( )")) {
             uselessCallsSubstrError(tok, tok->str());
         } else if (Token::Match(tok, "%var% . substr ( 0")) {
-            if (tok->tokAt(5)->str() == ")" ||
-                tok->tokAt(3)->link()->tokAt(-1)->str() == "npos")
+            if (tok->strAt(5) == ")" ||
+                tok->tokAt(3)->link()->strAt(-1) == "npos")
                 uselessCallsSubstrError(tok, tok->str());
         }
     }

@@ -2291,7 +2291,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                         Token::Match(tokEndBrace->tokAt(-2)->link()->tokAt(-2), "{|}|; %var% ("))
                         continue;
                 }
-                memleakUponReallocFailureError(tok->tokAt(1), tok->tokAt(1)->str());
+                memleakUponReallocFailureError(tok->tokAt(1), tok->strAt(1));
             }
         }
     }
@@ -2361,12 +2361,12 @@ void CheckMemoryLeakInFunction::parseFunctionScope(const Token *tok, const Token
             sz = 1;
 
         if (Token::Match(tok, "[{};] %type% * const| %var% [;=]")) {
-            const Token *vartok = tok->tokAt(tok->tokAt(3)->str() != "const" ? 3 : 4);
+            const Token *vartok = tok->tokAt(tok->strAt(3) != "const" ? 3 : 4);
             checkScope(tok->next(), vartok->str(), vartok->varId(), classmember, sz);
         }
 
         else if (Token::Match(tok, "[{};] %type% %type% * const| %var% [;=]")) {
-            const Token *vartok = tok->tokAt(tok->tokAt(4)->str() != "const" ? 4 : 5);
+            const Token *vartok = tok->tokAt(tok->strAt(4) != "const" ? 4 : 5);
             checkScope(tok->next(), vartok->str(), vartok->varId(), classmember, sz);
         }
 

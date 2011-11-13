@@ -990,10 +990,10 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
             if (tok1 && tok2) {
                 for (; tok1 && tok1 != tok2; tok1 = tok1->next()) {
                     if (Token::Match(tok1, "this ==|!= & %var%")) {
-                        if (tok1->tokAt(3)->str() == rhs->str())
+                        if (tok1->strAt(3) == rhs->str())
                             return true;
                     } else if (Token::Match(tok1, "& %var% ==|!= this")) {
-                        if (tok1->tokAt(1)->str() == rhs->str())
+                        if (tok1->strAt(1) == rhs->str())
                             return true;
                     }
                 }

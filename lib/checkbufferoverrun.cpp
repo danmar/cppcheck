@@ -480,7 +480,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
                 const char action = tok2->strAt(3)[0];
 
                 // second operator
-                const std::string &second(tok2->tokAt(4)->str());
+                const std::string &second(tok2->strAt(4));
 
                 //printf("min_index: %s %c %s\n", min_counter_value.c_str(), action, second.c_str());
                 //printf("max_index: %s %c %s\n", max_counter_value.c_str(), action, second.c_str());
@@ -493,7 +493,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
                 const char action = tok2->strAt(3)[0];
 
                 // first operand
-                const std::string &first(tok2->tokAt(2)->str());
+                const std::string &first(tok2->strAt(2));
 
                 //printf("min_index: %s %c %s\n", first.c_str(), action, min_counter_value.c_str());
                 //printf("max_index: %s %c %s\n", first.c_str(), action, max_counter_value.c_str());
@@ -1233,9 +1233,9 @@ void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* tok, const Token 
     }
 
     if (!found_termination) {
-        bufferNotZeroTerminatedError(tok, tok->tokAt(4 + param_offset)->str(), funcname);
+        bufferNotZeroTerminatedError(tok, tok->strAt(4 + param_offset), funcname);
     } else if (n == total_size) {
-        possibleReadlinkBufferOverrunError(tok, funcname, tok->tokAt(4 + param_offset)->str());
+        possibleReadlinkBufferOverrunError(tok, funcname, tok->strAt(4 + param_offset));
     }
 }
 
@@ -1717,7 +1717,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
                 bufferOverrunError(tok);
             } else if (Token::Match(tok, "sprintf ( %varid% , %str% , %var% )", dstVarId) &&
                        tok->tokAt(6)->varId() == srcVarId &&
-                       tok->tokAt(4)->str().find("%s") != std::string::npos) {
+                       tok->strAt(4).find("%s") != std::string::npos) {
                 bufferOverrunError(tok);
             }
 
@@ -1781,10 +1781,10 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                 Token::Match(tok, "strcpy|strcat ( %var% , %varid% [", varid)) {
                 cmdLineArgsError(tok);
             } else if (Token::Match(tok, "sprintf ( %var% , %str% , %varid% [", varid) &&
-                       tok->tokAt(4)->str().find("%s") != std::string::npos) {
+                       tok->strAt(4).find("%s") != std::string::npos) {
                 cmdLineArgsError(tok);
             } else if (Token::Match(tok, "sprintf ( %var% , %str% , * %varid%", varid) &&
-                       tok->tokAt(4)->str().find("%s") != std::string::npos) {
+                       tok->strAt(4).find("%s") != std::string::npos) {
                 cmdLineArgsError(tok);
             }
 

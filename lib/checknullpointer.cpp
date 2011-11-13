@@ -720,7 +720,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 const Token *endbody = Token::simpleMatch(endpar, ") {") ? endpar->next()->link() : 0;
                 if (endbody &&
                     Token::Match(endbody->tokAt(-3), "[;{}] %var% ;") &&
-                    isUpper(endbody->tokAt(-2)->str()))
+                    isUpper(endbody->strAt(-2)))
                     continue;
             }
 

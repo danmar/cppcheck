@@ -375,7 +375,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                         // class destructor
                         else if (tok->previous() && tok->previous()->str() == "~" &&
-                                 tok->tokAt(-2) && tok->tokAt(-2)->str() == "::")
+                                 tok->tokAt(-2) && tok->strAt(-2) == "::")
                             addFunction(&scope, &tok, argStart);
 
                         // regular function
