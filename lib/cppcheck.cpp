@@ -234,9 +234,7 @@ unsigned int CppCheck::processFile()
                 _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
             }
 
-            std::string appendCode = _settings.append();
-            if (!appendCode.empty())
-                Preprocessor::preprocessWhitespaces(appendCode);
+            const std::string &appendCode = _settings.append();
 
             if (_settings.debugFalsePositive) {
                 if (findError(codeWithoutCfg + appendCode, _filename.c_str())) {

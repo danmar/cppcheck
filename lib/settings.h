@@ -119,7 +119,7 @@ public:
     bool append(const std::string &filename);
 
     /** @brief get append code (--append) */
-    std::string append() const;
+    const std::string &append() const;
 
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */

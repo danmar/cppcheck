@@ -18,6 +18,7 @@
 
 #include "settings.h"
 #include "path.h"
+#include "preprocessor.h"       // Preprocessor
 
 #include <fstream>
 #include <set>
@@ -129,10 +130,11 @@ bool Settings::append(const std::string &filename)
     while (std::getline(fin, line)) {
         _append += line + "\n";
     }
+    Preprocessor::preprocessWhitespaces(_append);
     return true;
 }
 
-std::string Settings::append() const
+const std::string &Settings::append() const
 {
     return _append;
 }
