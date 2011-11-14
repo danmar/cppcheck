@@ -87,6 +87,7 @@ private:
         TEST_CASE(selfAssignment);
         TEST_CASE(testScanf1);
         TEST_CASE(testScanf2);
+        TEST_CASE(testScanf3);
 
         TEST_CASE(testPrintfArgument);
 
@@ -1917,6 +1918,32 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
+    }
+
+    void testScanf3() {
+        check("#include <stdio.h>\n"
+              "int main(int argc, char **argv)\n"
+              "{\n"
+              "    char a[32];\n"
+              "    int b, c;\n"
+              "    FILE *file = fopen(\"test\", \"r\");\n"
+              "    c = fscanf(file, \"%[^ ] %d\n\", a, &b);\n"
+              "    fclose(file);\n"
+              "    return c;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("#include <stdio.h>\n"
+              "int main(int argc, char **argv)\n"
+              "{\n"
+              "    char a[32];\n"
+              "    int b;\n"
+              "    FILE *file = fopen(\"test\", \"r\");\n"
+              "    b = fscanf(file, \"%[^ \n\", a);\n"
+              "    fclose(file);\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
     }
 
     void testPrintfArgument() {

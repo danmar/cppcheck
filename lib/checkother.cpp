@@ -1280,6 +1280,17 @@ void CheckOther::checkWrongPrintfScanfArguments()
         for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
             if (*i == '%') {
                 percent = !percent;
+            } else if (percent && *i == '[') {
+                while (i != formatString.end()) {
+                    if (*i == ']') {
+                        numFormat++;
+                        percent = false;
+                        break;
+                    }
+                    ++i;
+                }
+                if (i == formatString.end())
+                    break;
             } else if (percent && std::isalpha(*i)) {
                 numFormat++;
                 percent = false;
