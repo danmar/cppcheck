@@ -7500,9 +7500,9 @@ private:
     }
 
     void consecutiveBraces() {
-            ASSERT_EQUALS("void f ( ) { }", tok("void f(){{}}", true));
-            ASSERT_EQUALS("void f ( ) { }", tok("void f(){{{}}}", true));
-            ASSERT_EQUALS("void f ( ) { for ( ; ; ) { } }", tok("void f(){for(;;){}}", true));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f(){{}}", true));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f(){{{}}}", true));
+        ASSERT_EQUALS("void f ( ) { for ( ; ; ) { } }", tok("void f(){for(;;){}}", true));
     }
 };
 

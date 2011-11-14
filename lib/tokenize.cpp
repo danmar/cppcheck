@@ -2501,7 +2501,7 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     // Remove redundant consecutive braces, i.e. '.. { { .. } } ..' -> '.. { .. } ..'.
-    for (Token *tok = _tokens; tok; ) {
+    for (Token *tok = _tokens; tok;) {
         if (Token::simpleMatch(tok, "{ {") && Token::simpleMatch(tok->next()->link(), "} }")) {
             //remove internal parentheses
             tok->next()->link()->deleteThis();
@@ -4339,7 +4339,7 @@ bool Tokenizer::simplifyTokenList()
     simplifyFlowControl();
 
     // Remove redundant consecutive braces, i.e. '.. { { .. } } ..' -> '.. { .. } ..'.
-    for (Token *tok = _tokens; tok; ) {
+    for (Token *tok = _tokens; tok;) {
         if (Token::simpleMatch(tok, "{ {") && Token::simpleMatch(tok->next()->link(), "} }")) {
             //remove internal parentheses
             tok->next()->link()->deleteThis();
