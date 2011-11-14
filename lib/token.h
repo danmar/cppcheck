@@ -78,7 +78,7 @@ public:
     const Token *linkAt(int index) const;
     Token *linkAt(int index);
 
-    std::string strAt(int index) const;
+    const std::string &strAt(int index) const;
 
     /**
      * Match given token (or list of tokens) to a pattern list.

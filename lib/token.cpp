@@ -233,10 +233,12 @@ Token *Token::linkAt(int index)
     return tok->link();
 }
 
-std::string Token::strAt(int index) const
+const std::string &Token::strAt(int index) const
 {
+    static const std::string empty_str;
+
     const Token *tok = this->tokAt(index);
-    return tok ? tok->_str.c_str() : "";
+    return tok ? tok->_str : empty_str;
 }
 
 static bool strisop(const char str[])
