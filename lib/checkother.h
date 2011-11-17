@@ -87,6 +87,7 @@ public:
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
+        checkOther.checkCCTypeFunctions();
         checkOther.checkFflushOnInputStream();
         checkOther.invalidScanf();
         checkOther.checkWrongPrintfScanfArguments();
@@ -150,6 +151,9 @@ public:
 
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
+
+    /** @brief %Check for parameters given to cctype function that do make error*/
+    void checkCCTypeFunctions();
 
     void lookupVar(const Token *tok1, const std::string &varname);
 
@@ -264,6 +268,7 @@ public:
     void zerodivError(const Token *tok);
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
+    void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
     void redundantStrcpyInSwitchError(const Token *tok, const std::string &varname);
@@ -349,6 +354,7 @@ public:
         c.comparisonOfBoolExpressionWithIntError(0);
         c.SuspiciousSemicolonError(0);
         c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
+        c.cctypefunctionCallError(0, "funname", "value");
     }
 
     std::string myName() const {
@@ -402,6 +408,7 @@ public:
                "* testing is unsigned variable is positive\n"
                "* using bool in bitwise expression\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
+               "* incorrect usage of functions from ctype library.\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";

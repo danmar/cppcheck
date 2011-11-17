@@ -71,6 +71,7 @@ private:
         TEST_CASE(passedByValue);
 
         TEST_CASE(mathfunctionCall1);
+        TEST_CASE(cctypefunctionCall);
 
         TEST_CASE(fflushOnInputStreamTest);
 
@@ -1030,6 +1031,141 @@ private:
 
     }
 
+    void cctypefunctionCall() {
+        // isalnum
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isalnum(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isalnum(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to isalnum() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isalpha(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isalpha(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to isalpha() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  iscntrl(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  iscntrl(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to iscntrl() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isdigit(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isdigit(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to isdigit() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isgraph(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isgraph(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to isgraph() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  islower(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  islower(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to islower() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isprint(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isprint(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to isprint() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  ispunct(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  ispunct(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to ispunct() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isspace(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isspace(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to isspace() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isupper(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isupper(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to isupper() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isxdigit(61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  isxdigit(-61) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to isxdigit() cause undefined behavior, which may lead to a crash\n", errout.str());
+
+    }
     void fflushOnInputStreamTest() {
         check("void foo()\n"
               "{\n"
