@@ -202,6 +202,7 @@ private:
         // define and then ifdef
         TEST_CASE(define_if1);
         TEST_CASE(define_if2);
+        TEST_CASE(define_if3);
         TEST_CASE(define_ifdef);
         TEST_CASE(define_ifndef1);
         TEST_CASE(define_ifndef2);
@@ -2481,6 +2482,14 @@ private:
                                 "FOO\n"
                                 "#endif";
         ASSERT_EQUALS("\n\n\nFOO\n\n", Preprocessor::getcode(filedata,"","",NULL,NULL));
+    }
+
+    void define_if3() {
+        const char filedata[] = "#define A 0\n"
+                                "#if (A==0)\n"
+                                "FOO\n"
+                                "#endif";
+        ASSERT_EQUALS("\n\nFOO\n\n", Preprocessor::getcode(filedata,"","",NULL,NULL));
     }
 
     void define_ifdef() {

@@ -1320,7 +1320,11 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
     }
 
     if (Token::Match(tokenizer.tokens(), "( ! %var% )")) {
-        if (cfg.find(tokenizer.tokens()->strAt(2)) == cfg.end())
+        std::map<std::string,std::string>::const_iterator var = cfg.find(tokenizer.tokens()->strAt(2));
+
+        if (var == cfg.end())
+            condition = "1";
+        else if (var->second == "0")
             condition = "1";
         else if (match)
             condition = "0";
@@ -1471,7 +1475,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
 
     // Create a map for the cfg for faster access to defines
     std::map<std::string, std::string> cfgmap;
-    {
+    if (!cfg.empty()) {
         std::string::size_type pos = 0;
         for (;;) {
             std::string::size_type pos2 = cfg.find_first_of(";=", pos);
