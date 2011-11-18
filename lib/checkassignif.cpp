@@ -106,22 +106,18 @@ void CheckAssignIf::comparison()
 
             if ((num1 & num2) != num2) {
                 const std::string op(compareToken->str());
-                comparisonError(tok, op=="==" ? false : true);
+                comparisonError(tok, num1, op, num2, op=="==" ? false : true);
             }
         }
     }
 }
 
-void CheckAssignIf::comparisonError(const Token *tok, bool result)
+void CheckAssignIf::comparisonError(const Token *tok, int value1, const std::string &op, int value2, bool result)
 {
-    std::string errmsg("Mismatching comparison, the result is always " + std::string(result ? "true" : "false") + "\n"
-                       "Mismatching comparison. This error message is for example given for such a comparison: ");
+    std::ostringstream expression;
+    expression << std::hex << "(X & 0x" << value1 << ") " << op << " 0x" << value2;
 
-    if (result)
-        errmsg += "'(x & 6 != 1)'. The result of 'x & 6' can't be 1 so the result of the comparison is always true";
-    else
-        errmsg += "'(x & 6 == 1)'. The result of 'x & 6' can't be 1 so the result of the comparison is always false";
-
+    const std::string errmsg("Expression '" + expression.str() + "' is always " + (result?"true":"false") + ". Look again at the constants.");
 
     reportError(tok, Severity::style, "comparisonError", errmsg);
 }
