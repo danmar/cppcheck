@@ -7502,7 +7502,8 @@ private:
     void consecutiveBraces() {
         ASSERT_EQUALS("void f ( ) { }", tok("void f(){{}}", true));
         ASSERT_EQUALS("void f ( ) { }", tok("void f(){{{}}}", true));
-        ASSERT_EQUALS("void f ( ) { for ( ; ; ) { } }", tok("void f(){for(;;){}}", true));
+        ASSERT_EQUALS("void f ( ) { for ( ; ; ) { } }", tok("void f () { for(;;){} }", true));
+        ASSERT_EQUALS("void f ( ) { { scope_lock lock ; foo ( ) ; } { scope_lock lock ; bar ( ) ; } }", tok("void f () { {scope_lock lock; foo();} {scope_lock lock; bar();} }", true));
     }
 };
 
