@@ -3144,6 +3144,67 @@ private:
             }
 
             {
+                std::string code = "void foo () {"
+                                   "    " + *it + ";"
+                                   "    switch (n) {"
+                                   "        case 1:"
+                                   "            label:"
+                                   "            foo(); break;"
+                                   "        default:"
+                                   "            break;"
+                                   "    }"
+                                   "}";
+                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; } }";
+                ASSERT_EQUALS(expected, tok(code));
+            }
+
+            {
+                std::string code = "void foo () {"
+                                   "    " + *it + ";"
+                                   "    switch (n) {"
+                                   "        case 1:"
+                                   "            label:"
+                                   "            foo(); break;"
+                                   "        default:"
+                                   "            break; break;"
+                                   "    }"
+                                   "}";
+                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; break ; } }";
+                std::string actual = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; } }";
+                TODO_ASSERT_EQUALS(expected, actual, tok(code));
+            }
+
+            {
+                std::string code = "void foo () {"
+                                   "    " + *it + ";"
+                                   "    switch (n) {"
+                                   "        case 1:"
+                                   "            label:"
+                                   "            foo(); break; break;"
+                                   "        default:"
+                                   "            break;"
+                                   "    }"
+                                   "}";
+                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; break ; } }";
+                ASSERT_EQUALS(expected, tok(code));
+            }
+
+            {
+                std::string code = "void foo () {"
+                                   "    " + *it + ";"
+                                   "    switch (n) {"
+                                   "        case 1:"
+                                   "            label:"
+                                   "            foo(); break; break;"
+                                   "        default:"
+                                   "            break; break;"
+                                   "    }"
+                                   "}";
+                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; break ; } }";
+                ASSERT_EQUALS(expected, tok(code));
+            }
+
+            {
                 std::string code = "int f() { "
                                    "switch (x) { case 1: " + *it + "; bar(); tack; { ticak(); " + *it + " } " + *it + " "
                                    "case 2: " + *it + "; { random(); } tack(); "
@@ -3175,6 +3236,16 @@ private:
                                        " case 1 : ; switch ( j ) { case -1 : ; " + *it + " ; }"
                                        " case 2 : ; switch ( j ) { case -2 : ; " + *it + " ; }"
                                        " case 3 : ; if ( blah6 ) { " + *it + " ; } break ; } }";
+                ASSERT_EQUALS(expected, tok(code));
+            }
+
+            {
+                std::string code = "void foo () {"
+                                   "    " + *it + ";"
+                                   "    switch (i) { case 0: switch (j) { case 0: foo(); }"
+                                   "        case 1: switch (j) { case -1: bar(); label:; ok(); }"
+                                   "        case 3: if (blah6) { boo(); break; } } }";
+                std::string expected = "void foo ( ) { " + *it + " ; { { label : ; ok ( ) ; } case 3 : ; if ( blah6 ) { boo ( ) ; break ; } } }";
                 ASSERT_EQUALS(expected, tok(code));
             }
         }
