@@ -46,7 +46,7 @@ public:
     { }
 
     virtual ~Check() {
-#ifndef DJGPP
+#if !defined(DJGPP) && !defined(__sun)
         instances().remove(this);
 #endif
     }
