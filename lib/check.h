@@ -46,6 +46,9 @@ public:
     { }
 
     virtual ~Check() {
+#if !defined(DJGPP) && !defined(__sun)
+        instances().remove(this);
+#endif
     }
 
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
