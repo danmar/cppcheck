@@ -1073,7 +1073,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     continue;
 
                 // Is totalIndex in bounds?
-                if (totalIndex > totalElements) {
+                if (totalIndex >= totalElements) {
                     arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
                 }
                 // Is any array index out of bounds?
@@ -1249,7 +1249,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
     for (unsigned int i = 1; i <= _tokenizer->varIdCount(); i++) {
         const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(i);
         if (var && var->isArray() && var->dimension(0) > 0) {
-            ArrayInfo arrayInfo(var, _tokenizer);
+            const ArrayInfo arrayInfo(var, _tokenizer);
             const Token *tok = var->nameToken();
             while (tok && tok->str() != ";") {
                 if (tok->str() == "{") {
