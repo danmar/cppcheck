@@ -94,19 +94,19 @@ private:
               "{\n"
               "    if (x & 4 == 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false. Look again at the constants.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    if ((x & 4) == 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false. Look again at the constants.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 4 != 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) != 0x3' is always true. Look again at the constants.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) != 0x3' is always true\n", errout.str());
     }
 
     void multicompare() {
