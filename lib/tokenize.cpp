@@ -4461,172 +4461,50 @@ void Tokenizer::removeRedundantAssignment()
 void Tokenizer::simplifyFlowControl()
 {
     unsigned int indentlevel = 0;
-    unsigned int indentcase = 0;
-    unsigned int indentflow = 0;
-    unsigned int indentswitch = 0;
-    unsigned int indentlabel = 0;
-    unsigned int roundbraces = 0;
+    Token *beginindent = 0;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (tok->str() == "(") {
-            ++roundbraces;
-            if (indentflow) {
-                tok = tok->previous();
-                tok->deleteNext();
-                continue;
-            }
-        } else if (tok->str() == ")") {
-            if (!roundbraces)
-                break;  //too many ending round parenthesis
-            --roundbraces;
-            if (indentflow) {
-                tok = tok->previous();
-                tok->deleteNext();
-                continue;
-            }
+            tok = tok->link();
+            continue;
         }
 
-        if (!roundbraces && tok->str() == "{") {
+        if (tok->str() == "{") {
+            beginindent = tok;
             ++indentlevel;
-            if (indentflow) {
-                indentlabel = 0;
-                unsigned int indentlevel1 = indentlevel;
-                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "{")
-                        ++indentlevel1;
-                    else if (tok2->str() == "}") {
-                        if (indentlevel1 == indentlevel)
-                            break;
-                        --indentlevel1;
-                    } else if (Token::Match(tok2, "%var% : ;") && !Token::Match(tok2, "case|default")) {
-                        indentlabel = indentlevel1;
-                        break;
-                    }
-                }
-                if (indentlevel > indentlabel) {
-                    tok = tok->previous();
-                    tok->deleteNext();
-                }
-            }
-        } else if (!roundbraces && tok->str() == "}") {
+        } else if (tok->str() == "}") {
             if (!indentlevel)
-                break;  //too many closing parenthesis
-            if (indentflow) {
-                if (!indentswitch || indentlevel > indentcase) {
-                    if (indentlevel > indentflow && indentlevel > indentlabel) {
-                        tok = tok->previous();
-                        tok->deleteNext();
-                    }
-                } else {
-                    if (indentcase > indentflow && indentlevel > indentlabel) {
-                        tok = tok->previous();
-                        tok->deleteNext();
-                    }
-                }
-            }
-            if (indentlevel == indentflow) {
-                indentflow = 0;
-            }
+                break;
             --indentlevel;
-            if (indentlevel <= indentcase) {
-                if (!indentswitch) {
-                    indentcase = 0;
-                } else {
-                    --indentswitch;
-                    indentcase = indentlevel-1;
-                }
-            }
-        } else if (!indentflow) {
-            if (!roundbraces && tok->str() == "switch") {
-                if (!indentlevel)
-                    break;
+        }
 
-                unsigned int switchroundbraces = 0;
-                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "(")
-                        ++switchroundbraces;
-                    else if (tok2->str() == ")") {
-                        if (!switchroundbraces)
-                            break;  //too many closing parenthesis
-                        --switchroundbraces;
-                    }
-                    if (tok2->str() == "{") {
-                        if (switchroundbraces) {
-                            tok = tok2->previous();
-                            break;  //too many opening parenthesis
-                        }
-                        tok = tok2;
-                        ++indentswitch;
-                        break;
-                    } else if (tok2->str() == "}")
-                        break;  //it's not expected, hence it's bad code
-                }
-                if (!indentswitch)
-                    break;
-                ++indentlevel;
-                indentcase = indentlevel;
-            } else if (!roundbraces && indentswitch && Token::Match(tok, "case|default")) {
-                if (indentlevel > indentcase) {
-                    --indentlevel;
-                }
-                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                    if (Token::simpleMatch(tok2, ": ;")) {
-                        if (indentlevel == indentcase) {
-                            ++indentlevel;
-                        }
-                        tok = tok2;
-                        break;
-                    } else if (Token::Match(tok2, "[{}]"))
-                        break;  //bad code
-                }
-            } else if (!roundbraces && Token::Match(tok,"return|goto|continue|break")) {
-                if (!indentlevel)
-                    break;
+        if (!indentlevel)
+            continue;
 
-                if (Token::Match(tok,"continue|break ;")) {
-                    indentflow = indentlevel;
-                    if (Token::Match(tok->tokAt(2),"continue|break ;")) {
-                        tok = tok->tokAt(3);
-                        continue;
-                    }
-                }
+        if (Token::Match(tok, "goto %var% ;")) {
+            tok = tok->tokAt(2);
+            eraseDeadCode(tok, beginindent->link());
 
-                //catch the first ';' after the return
-                unsigned int flowroundbraces = 0;
-                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "(")
-                        ++flowroundbraces;
-                    else if (tok2->str() == ")") {
-                        if (!flowroundbraces)
-                            break;  //excessive closing parenthesis
-                        --flowroundbraces;
-                    } else if (tok2->str() == ";") {
-                        if (flowroundbraces)
-                            break;  //excessive opening parenthesis
-                        indentflow = indentlevel;
-                        tok = tok2;
-                        break;
-                    } else if (Token::Match(tok2, "[{}]"))
-                        break;  //I think this is an error code...
-                }
-                if (!indentflow)
-                    break;
-            }
-        } else if (indentflow) { //there's already a "return;" declaration
-            if (!indentswitch || indentlevel > indentcase+1) {
-                if (indentlevel >= indentflow && (!Token::Match(tok, "%var% : ;") || Token::Match(tok, "case|default") || roundbraces)) {
-                    tok = tok->previous();
-                    tok->deleteNext();
-                } else {
-                    indentflow = 0;
-                }
+        } else if (Token::Match(tok,"continue|break ;")) {
+            if (Token::simpleMatch(tok, "continue ; continue ;")
+                || Token::simpleMatch(tok, "break ; break ;")) {
+                //save the 'double break|continue' message
+                tok = tok->tokAt(3);
             } else {
-                if (roundbraces || (!Token::Match(tok, "%var% : ;") && !Token::Match(tok, "case|default"))) {
-                    tok = tok->previous();
-                    tok->deleteNext();
-                } else {
-                    indentflow = 0;
-                    tok = tok->previous();
-                }
+                tok = tok->next();
+            }
+            eraseDeadCode(tok, beginindent->link());
+
+        } else if (tok->str() == "return") {
+            //catch the first ';' after the return
+            for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(" || tok2->str() == "[") {
+                    tok2 = tok2->link();
+                } else if (tok2->str() == ";") {
+                    tok = tok2;
+                    eraseDeadCode(tok, beginindent->link());
+                    break;
+                } else if (Token::Match(tok2, "[{}]"))
+                    break;  //Wrong code.
             }
         }
     }
@@ -8345,6 +8223,158 @@ void Tokenizer::deleteTokens(Token *tok)
 
 //---------------------------------------------------------------------------
 
+void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
+{
+    if (!begin)
+        return;
+    unsigned int indentlevel = 1,
+                 indentcase = 0,
+                 indentswitch = 0,
+                 indentlabel = 0,
+                 roundbraces = 0,
+                 indentcheck = 0;
+    std::vector<unsigned int> switchindents;
+    bool checklabel = false;
+    Token *tok = begin;
+    Token *tokcheck = 0;
+    while (tok->next() && tok->next() != end) {
+        if (tok->next()->str() == "(") {
+            ++roundbraces;
+            tok->deleteNext();
+            continue;
+        } else if (tok->next()->str() == ")") {
+            if (!roundbraces)
+                break;  //too many ending round parenthesis
+            --roundbraces;
+            tok->deleteNext();
+            continue;
+        }
+
+        if (roundbraces) {
+            tok->deleteNext();
+            continue;
+        }
+
+        if (Token::Match(tok, "[{};] switch (") && tok->linkAt(2)) {
+            if (!checklabel) {
+                if (!indentlabel) {
+                    //remove 'switch ( ... )'
+                    Token *endround = tok->linkAt(2);
+                    Token::eraseTokens(tok, endround->next());
+                } else {
+                    tok = tok->linkAt(2);
+                }
+                if (tok->next()->str() == "{") {
+                    ++indentswitch;
+                    indentcase = indentlevel + 1;
+                    switchindents.push_back(indentcase);
+                }
+            } else {
+                tok = tok->linkAt(2);
+                if (Token::simpleMatch(tok, ") {")) {
+                    ++indentswitch;
+                    indentcase = indentlevel + 1;
+                    switchindents.push_back(indentcase);
+                }
+            }
+        } else if (tok->next()->str() == "{") {
+            ++indentlevel;
+            if (!checklabel) {
+                checklabel = true;
+                tokcheck = tok;
+                indentcheck = indentlevel;
+                indentlabel = 0;
+            }
+            tok = tok->next();
+        } else if (tok->next()->str() == "}") {
+            --indentlevel;
+            if (!indentlevel)
+                break;
+
+            if (!checklabel) {
+                tok->deleteNext();
+            } else {
+                if (indentswitch && indentlevel == indentcase)
+                    --indentlevel;
+                if (indentlevel < indentcheck) {
+                    Token *end2 = tok->next();
+                    tok = tok->next()->link()->previous(); //return to initial '{'
+                    if (indentswitch && Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->tokAt(-2), "[{};] switch ("))
+                        tok = tok->link()->tokAt(-2);   //remove also 'switch ( ... )'
+                    Token::eraseTokens(tok, end2->next());
+                    checklabel = false;
+                    tokcheck = 0;
+                    indentcheck = 0;
+                } else {
+                    tok = tok->next();
+                }
+            }
+            if (indentswitch && indentlevel <= indentcase) {
+                --indentswitch;
+                switchindents.pop_back();
+                if (!indentswitch)
+                    indentcase = 0;
+                else
+                    indentcase = switchindents[indentswitch-1];
+            }
+        } else if (Token::Match(tok, "[{};] case %any% : ;") || Token::Match(tok, "[{};] default : ;")) {
+            if (indentlevel == 1)
+                break;      //it seems like the function was called inside a case-default block.
+            if (indentlevel == indentcase)
+                ++indentlevel;
+            if (!checklabel || !indentswitch) {
+                if (tok->next()->str() == "case")
+                    tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+            } else {
+                tok = tok->tokAt(3 + (tok->next()->str() == "case"));
+            }
+        } else if (Token::Match(tok, "[{};] %var% : ;") && tok->next()->str() != "default") {
+            if (checklabel) {
+                indentlabel = indentlevel;
+                tok = tokcheck->next();
+                checklabel = false;
+                indentlevel = indentcheck;
+            } else {
+                if (indentswitch) {
+                    //since the switch() instruction is removed, there's no sense to keep
+                    //the case instructions. Remove them and leave out, if there are any.
+                    Token *tok2 = tok->tokAt(3);
+                    const Token *end2 = tokcheck->next()->link();
+                    unsigned int indentlevel2 = indentlevel;
+                    while (tok2->next() && tok2->next() != end2->next()) {
+                        if (Token::Match(tok2->next(), "{|[|(")) {
+                            tok2 = tok2->next()->link();
+                        } else if (Token::Match(tok2, "[{};] case %any% : ;") || Token::Match(tok2, "[{};] default : ;")) {
+                            Token::eraseTokens(tok2, tok2->tokAt(4 + (tok2->next()->str() == "case")));
+                            if (Token::simpleMatch(tok2->previous(), "break ; break ;")) {
+                                tok2 = tok2->tokAt(-2);
+                                tok2->deleteNext();
+                                tok2->deleteNext();
+                                tok2 = tok2->tokAt(2);
+                            }
+                        } else if (tok2->next()->str() == "}") {
+                            --indentlevel2;
+                            if (indentlevel2 <= indentcase)
+                                break;
+                            tok2 = tok2->next();
+                        } else {
+                            tok2 = tok2->next();
+                        }
+                    }
+                }
+                break;      //stop removing tokens, we arrived to the label
+            }
+        } else { //I don't need to keep anything different from '{|}|switch|case|default'
+            tok->deleteNext();
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
 const char *Tokenizer::getParameterName(const Token *ftok, unsigned int par)
 {
     unsigned int _par = 1;
@@ -8906,14 +8936,11 @@ void Tokenizer::simplifyWhile0()
 
         // remove "while (0) { .. }"
         if (Token::simpleMatch(tok->next()->link(), ") {")) {
-            const Token *end = tok->next()->link()->next()->link();
-            const Token *labelmatch = Token::findmatch(tok, "[{};] %var% : ;", end);
-            if (!labelmatch || labelmatch->next()->str() == "default") {
-                Token::eraseTokens(tok, end ? end->next() : 0);
-                tok->deleteThis();  // delete "while"
-            }
+            Token *end = tok->next()->link();
+            end = end->next()->link();
+            tok = tok->previous();
+            eraseDeadCode(tok, end->next());
         }
-
     }
 }
 

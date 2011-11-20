@@ -129,6 +129,21 @@ public:
     static void deleteTokens(Token *tok);
 
     /**
+     * Deletes dead code between 'begin' and 'end'.
+     * In general not everything can be erased, such as:
+     * - code after labels;
+     * - code outside the scope where the function is called;
+     * - code after a change of scope caused by 'switch(...);'
+     *   instructions, like 'case %any%;' or 'default;'
+     * Also, it preserves the 'switch' command if in a scope
+     * created by a 'case|default' instruction there is a label.
+     *
+     * @param begin Tokens after this have a possibility to be erased.
+     * @param end Tokens before this have a possibility to be erased.
+     */
+    static void eraseDeadCode(Token *begin, const Token *end);
+
+    /**
      * Simplify '* & %any% =' to '%any% ='
      */
     void simplifyMulAnd(void);

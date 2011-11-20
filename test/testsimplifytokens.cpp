@@ -3170,8 +3170,7 @@ private:
                                    "    }"
                                    "}";
                 std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; break ; } }";
-                std::string actual = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; } }";
-                TODO_ASSERT_EQUALS(expected, actual, tok(code));
+                ASSERT_EQUALS(expected, tok(code));
             }
 
             {
@@ -3246,6 +3245,31 @@ private:
                                    "        case 1: switch (j) { case -1: bar(); label:; ok(); }"
                                    "        case 3: if (blah6) { boo(); break; } } }";
                 std::string expected = "void foo ( ) { " + *it + " ; { { label : ; ok ( ) ; } case 3 : ; if ( blah6 ) { boo ( ) ; break ; } } }";
+                ASSERT_EQUALS(expected, tok(code));
+            }
+
+            {
+                std::string code = "void foo() {"
+                                   "     switch ( t ) {"
+                                   "     case 0:"
+                                   "          if ( t ) switch ( b ) {}"
+                                   "          break;"
+                                   "     case 1:"
+                                   "          " + *it + ";"
+                                   "          return 0;"
+                                   "     }"
+                                   "     return 0;"
+                                   "}";
+                std::string expected = "void foo ( ) {"
+                                       " switch ( t ) {"
+                                       " case 0 : ;"
+                                       " if ( t ) { switch ( b ) { } }"
+                                       " break ;"
+                                       " case 1 : ;"
+                                       " " + *it + " ;"
+                                       " }"
+                                       " return 0 ; "
+                                       "}";
                 ASSERT_EQUALS(expected, tok(code));
             }
         }
