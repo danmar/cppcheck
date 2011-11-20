@@ -115,7 +115,11 @@ bool CppCheck::findError(std::string code, const char FileName[])
             // is still there.
             code = previousCode.substr(found+9);
             _errorList.clear();
-            checkFile(code, FileName);
+            try {
+                checkFile(code, FileName);
+            } catch (ErrorLogger::ErrorMessage &err) {
+                reportErr(err);
+            }
         }
 
         if (_errorList.empty()) {
