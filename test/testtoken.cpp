@@ -277,7 +277,9 @@ private:
 
     void matchVarid() {
         givenACodeSampleToTokenize var("int a ; int b ;");
-        ASSERT_EQUALS(false, Token::Match(var.tokens(), "%type% %varid% ; %type% %var%", 0));
+
+        // Varid == 0 should throw exception
+        ASSERT_THROW(Token::Match(var.tokens(), "%type% %varid% ; %type% %var%", 0),ErrorLogger::ErrorMessage );
 
         ASSERT_EQUALS(true, Token::Match(var.tokens(), "%type% %varid% ; %type% %var%", 1));
         ASSERT_EQUALS(true, Token::Match(var.tokens(), "%type% %var% ; %type% %varid%", 2));

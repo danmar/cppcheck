@@ -250,6 +250,19 @@ unsigned int CppCheck::processFile()
         // Exception was thrown when checking this file..
         const std::string fixedpath = Path::toNativeSeparators(_filename);
         _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
+    } catch (ErrorLogger::ErrorMessage &err) {
+        // Catch exception from Token class
+        const std::string fixedpath = Path::toNativeSeparators(_filename);
+        if( err._callStack.empty() ){
+            ErrorLogger::ErrorMessage::FileLocation loc;
+            loc.setfile(fixedpath);
+            err._callStack.push_back(loc);
+        }
+        else{
+            err._callStack.begin()->setfile(fixedpath);
+        }
+
+        _errorLogger.reportErr(err );
     }
 
     if (!_settings._errorsOnly)
