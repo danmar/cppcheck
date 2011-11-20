@@ -3030,7 +3030,7 @@ private:
                       "1: struct evt ; void f ( const evt & event@1 ) ;\n",
                       tokenizeDebugListing(code2));
     }
-    
+
     void varid42() {
         const std::string code("namespace fruit { struct banana {}; };\n"
                                "class Fred {\n"

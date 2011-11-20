@@ -875,7 +875,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
                 // just taking the address?
                 const bool addr(tok3 && (Token::simpleMatch(tok3, "&") ||
-                                Token::simpleMatch(tok3->previous(), "& (")));
+                                         Token::simpleMatch(tok3->previous(), "& (")));
 
                 // taking address of 1 past end?
                 if (addr && totalIndex == totalElements)
