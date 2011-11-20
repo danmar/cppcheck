@@ -1311,7 +1311,7 @@ private:
               "    std::string errmsg;\n"
               "    throw errmsg.c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after throw call.\n", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
@@ -1355,14 +1355,14 @@ private:
               "    std::ostringstream errmsg;\n"
               "    const char *c = errmsg.str().c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
 
         check("std::string f();\n"
               "\n"
               "void foo() {\n"
               "    const char *c = f().c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
     }
 
     void cstr_inconclusive() {

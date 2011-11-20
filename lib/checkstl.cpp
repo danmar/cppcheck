@@ -1018,7 +1018,7 @@ void CheckStl::string_c_str()
                 else if (Token::Match(tok, "throw %var% . c_str ( ) ;") &&
                          tok->next()->varId() > 0 &&
                          localvar.find(tok->next()->varId()) != localvar.end()) {
-                    string_c_strError(tok);
+                    string_c_strThrowError(tok);
                 } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
                            tok->next()->varId() > 0 &&
                            pointers.find(tok->next()->varId()) != pointers.end()) {
@@ -1073,12 +1073,20 @@ void CheckStl::string_c_str()
     }
 }
 
+void CheckStl::string_c_strThrowError(const Token* tok)
+{
+    reportError(tok, Severity::error, "stlcstrthrow", "Dangerous usage of c_str(). The returned value by c_str() is invalid after throw call.\n"
+                "Dangerous usage of c_str(). The string is destroyed after the c_str() call so the thrown pointer is invalid.");
+}
+
 void CheckStl::string_c_strError(const Token* tok, bool is_inconlusive)
 {
     if (is_inconlusive)
-        reportInconclusiveError(tok, Severity::error, "stlcstr", "Possible dangerous usage of c_str()");
+        reportInconclusiveError(tok, Severity::error, "stlcstr", "Possible dangerous usage of c_str()\n"
+                                "Possible dangerous usage of c_str() in return statement. The c_str() return value is only valid until its string is deleted.");
     else
-        reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str()");
+        reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n"
+                    "Dangerous usage of c_str(). The c_str() return value is only valid until its string is deleted.");
 }
 
 static bool hasArrayEnd(const Token *tok1)
