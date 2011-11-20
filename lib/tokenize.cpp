@@ -6477,7 +6477,7 @@ bool Tokenizer::simplifyKnownVariables()
                 Token *tok1 = tok;
 
                 // start of statement
-                if (tok != _tokens && !Token::Match(tok->previous(),"[;{}]"))
+                if (tok != _tokens && !Token::Match(tok->previous(),";|{|}|private:|protected:|public:"))
                     continue;
                 // skip "const" and "static"
                 while (tok->str() == "const" || tok->str() == "static")

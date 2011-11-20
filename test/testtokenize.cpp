@@ -136,6 +136,7 @@ private:
         TEST_CASE(simplifyKnownVariables42);    // ticket #2031 - known string value after strcpy
         TEST_CASE(simplifyKnownVariables43);
         TEST_CASE(simplifyKnownVariables44);    // ticket #3117 - don't simplify static variables
+        TEST_CASE(simplifyKnownVariables45);    // ticket #3281 - static constant variable not simplified
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
@@ -2143,6 +2144,20 @@ private:
         const char expected[] = "void a ( ) {\n"
                                 "static int i = 10 ;\n"
                                 "b ( i ++ ) ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables45() {
+        const char code[] = "class Fred {\n"
+                            "private:\n"
+                            "    const static int NUM = 2;\n"
+                            "    int array[NUM];\n"
+                            "}";
+        const char expected[] = "class Fred {\n"
+                                "private:\n"
+                                ";\n"
+                                "int array [ 2 ] ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
