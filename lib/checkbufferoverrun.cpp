@@ -870,12 +870,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                     continue;
 
                 const Token *tok3 = tok->previous();
-                while (tok3 && Token::Match(tok3->tokAt(-1), "%var% ."))
+                while (tok3 && Token::Match(tok3->previous(), "%var% ."))
                     tok3 = tok3->tokAt(-2);
 
                 // just taking the address?
-                const bool addr(Token::simpleMatch(tok3, "&") ||
-                                Token::simpleMatch(tok3->tokAt(-1), "& ("));
+                const bool addr(tok3 && (Token::simpleMatch(tok3, "&") ||
+                                Token::simpleMatch(tok3->previous(), "& (")));
 
                 // taking address of 1 past end?
                 if (addr && totalIndex == totalElements)
@@ -1061,12 +1061,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     continue;
 
                 const Token *tok2 = tok->previous();
-                while (tok2 && Token::Match(tok2->tokAt(-1), "%var% ."))
+                while (tok2 && Token::Match(tok2->previous(), "%var% ."))
                     tok2 = tok2->tokAt(-2);
 
                 // just taking the address?
                 const bool addr(Token::simpleMatch(tok2, "&") ||
-                                Token::simpleMatch(tok2->tokAt(-1), "& ("));
+                                Token::simpleMatch(tok2->previous(), "& ("));
 
                 // taking address of 1 past end?
                 if (addr && totalIndex == totalElements)

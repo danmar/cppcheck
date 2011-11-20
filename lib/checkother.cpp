@@ -612,7 +612,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 }
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "do {")) {
-                tok2 = tok2->tokAt(1);
+                tok2 = tok2->next();
                 if (tok2->link() == NULL) {
                     std::ostringstream errmsg;
                     errmsg << "unmatched do in switch: " << tok2->linenr();
@@ -869,7 +869,7 @@ void CheckOther::checkIncorrectLogicOperator()
         } else if (NULL != (logicTok = Token::findmatch(tok, "%any% !=|==|<|>|>=|<= %any% &&|%oror% %any% !=|==|<|>|>=|<= %any% %any%", endTok))) {
             term1Tok = logicTok;
             term2Tok = logicTok->tokAt(4);
-            op1Tok = logicTok->tokAt(1);
+            op1Tok = logicTok->next();
             op2Tok = logicTok->tokAt(3);
             op3Tok = logicTok->tokAt(5);
             nextTok = logicTok->tokAt(7);
@@ -1381,7 +1381,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
                 comparisonOfBoolWithIntError(numTok, "!"+tok->strAt(2));
             }
         } else if (Token::Match(tok, "( %num% ==|!= ! %var% )")) {
-            const Token *numTok = tok->tokAt(1);
+            const Token *numTok = tok->next();
             if (numTok && numTok->str() != "0" && numTok->str() != "1") {
                 comparisonOfBoolWithIntError(numTok, "!"+tok->strAt(4));
             }
@@ -1482,7 +1482,7 @@ void CheckOther::checkMemsetZeroBytes()
 {
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "memset (")) {
-            const Token* lastParamTok = tok->next()->link()->tokAt(-1);
+            const Token* lastParamTok = tok->next()->link()->previous();
             if (lastParamTok->str() == "0")
                 memsetZeroBytesError(tok, tok->strAt(2));
         }
@@ -2148,7 +2148,7 @@ void CheckOther::checkIncorrectStringCompare()
             // assert(condition && "debug message") would be considered a fp.
             if (tok->str() == "&&" && tok->strAt(2) == ")" && tok->linkAt(2)->previous()->str() == "assert")
                 continue;
-            incorrectStringBooleanError(tok->tokAt(1), tok->strAt(1));
+            incorrectStringBooleanError(tok->next(), tok->strAt(1));
         }
         if (Token::Match(tok, "if|while|assert ( %str% &&|%oror%|)")) {
             // assert("debug message" && condition) would be considered a fp.

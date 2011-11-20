@@ -694,7 +694,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
         if (!ftok)
             return 0;
 
-        Token *func = getcode(ftok->tokAt(1), callstack, 0, alloctype, dealloctype, false, 1);
+        Token *func = getcode(ftok->next(), callstack, 0, alloctype, dealloctype, false, 1);
         simplifycode(func);
         const char *ret = 0;
         if (Token::simpleMatch(func, "; alloc ; }"))
@@ -766,7 +766,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                     ftok = ftok->next();
                 if (!ftok)
                     return 0;
-                Token *func = getcode(ftok->tokAt(1), callstack, parameterVarid, alloctype, dealloctype, false, sz);
+                Token *func = getcode(ftok->next(), callstack, parameterVarid, alloctype, dealloctype, false, sz);
                 //simplifycode(func, all);
                 const Token *func_ = func;
                 while (func_ && func_->str() == ";")
@@ -2267,7 +2267,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 
                 const Token* tokEndRealloc = tok->linkAt(3);
                 // Check that the allocation isn't followed immediately by an 'if (!var) { error(); }' that might handle failure
-                if (Token::Match(tokEndRealloc->tokAt(1), "; if ( ! %varid% ) {", tok->varId())) {
+                if (Token::Match(tokEndRealloc->next(), "; if ( ! %varid% ) {", tok->varId())) {
                     const Token* tokEndBrace = tokEndRealloc->linkAt(7);
                     if (tokEndBrace && Token::simpleMatch(tokEndBrace->tokAt(-2), ") ;") &&
                         Token::Match(tokEndBrace->linkAt(-2)->tokAt(-2), "{|}|; %var% ("))
@@ -2286,13 +2286,13 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 
                 const Token* tokEndRealloc = tok->linkAt(4);
                 // Check that the allocation isn't followed immediately by an 'if (!var) { error(); }' that might handle failure
-                if (Token::Match(tokEndRealloc->tokAt(1), "; if ( ! * %varid% ) {", tok->next()->varId())) {
+                if (Token::Match(tokEndRealloc->next(), "; if ( ! * %varid% ) {", tok->next()->varId())) {
                     const Token* tokEndBrace = tokEndRealloc->linkAt(8);
                     if (tokEndBrace && Token::simpleMatch(tokEndBrace->tokAt(-2), ") ;") &&
                         Token::Match(tokEndBrace->linkAt(-2)->tokAt(-2), "{|}|; %var% ("))
                         continue;
                 }
-                memleakUponReallocFailureError(tok->tokAt(1), tok->strAt(1));
+                memleakUponReallocFailureError(tok->next(), tok->strAt(1));
             }
         }
     }

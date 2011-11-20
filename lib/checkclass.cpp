@@ -129,7 +129,7 @@ void CheckClass::constructors()
 
                 // It's non-static and it's not initialized => error
                 if (func->type == Function::eOperatorEqual) {
-                    const Token *operStart = func->token->tokAt(1);
+                    const Token *operStart = func->token->next();
 
                     bool classNameUsed = false;
                     for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next()) {
@@ -755,9 +755,9 @@ void CheckClass::operatorEq()
                     if (Token::Match(func->tokenDef->tokAt(2), "const| %var% &")) {
                         if (func->tokenDef->strAt(2) == "const" &&
                             func->tokenDef->strAt(3) == scope->className)
-                            operatorEqReturnError(func->tokenDef->tokAt(-1), scope->className);
+                            operatorEqReturnError(func->tokenDef->previous(), scope->className);
                         else if (func->tokenDef->strAt(2) == scope->className)
-                            operatorEqReturnError(func->tokenDef->tokAt(-1), scope->className);
+                            operatorEqReturnError(func->tokenDef->previous(), scope->className);
                     }
                 }
             }
@@ -818,7 +818,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                 tok = tok->tokAt(4);
 
             // check if a function is called
-            if (Token::Match(tok->tokAt(1), "%any% (") &&
+            if (Token::Match(tok->next(), "%any% (") &&
                 tok->linkAt(2)->next()->str() == ";") {
                 std::list<Function>::const_iterator it;
 
@@ -847,11 +847,11 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             }
 
             // check if *this is returned
-            else if (!(Token::Match(tok->tokAt(1), "(| * this ;|=") ||
-                       Token::Match(tok->tokAt(1), "(| * this +=") ||
-                       Token::simpleMatch(tok->tokAt(1), "operator= (") ||
-                       Token::simpleMatch(tok->tokAt(1), "this . operator= (") ||
-                       (Token::Match(tok->tokAt(1), "%type% :: operator= (") &&
+            else if (!(Token::Match(tok->next(), "(| * this ;|=") ||
+                       Token::Match(tok->next(), "(| * this +=") ||
+                       Token::simpleMatch(tok->next(), "operator= (") ||
+                       Token::simpleMatch(tok->next(), "this . operator= (") ||
+                       (Token::Match(tok->next(), "%type% :: operator= (") &&
                         tok->next()->str() == scope->className)))
                 operatorEqRetRefThisError(func->token);
         }
@@ -1041,7 +1041,7 @@ void CheckClass::virtualDestructor()
             continue;
 
         const Token *derived = scope->classDef;
-        const Token *derivedClass = derived->tokAt(1);
+        const Token *derivedClass = derived->next();
 
         // Iterate through each base class...
         for (unsigned int j = 0; j < scope->derivedFrom.size(); ++j) {

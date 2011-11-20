@@ -132,7 +132,7 @@ void CheckAutoVariables::autoVariables()
                         errorAutoVariableAssignment(tok->next(), false);
                 }
                 tok = tok->tokAt(4);
-            } else if (Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(7))) {
+            } else if (Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%") && errorAv(tok->next(), tok->tokAt(7))) {
                 errorAutoVariableAssignment(tok->next(), false);
             }
             // Critical return
