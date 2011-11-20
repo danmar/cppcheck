@@ -34,7 +34,8 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckMemoryLeakInFunction instance1;
+    // Experimental (#3267 and #3268)
+    // CheckMemoryLeakInFunction instance1;
     CheckMemoryLeakInClass instance2;
     CheckMemoryLeakStructMember instance3;
     CheckMemoryLeakNoVar instance4;
@@ -2379,6 +2380,10 @@ void CheckMemoryLeakInFunction::parseFunctionScope(const Token *tok, const Token
 
 void CheckMemoryLeakInFunction::check()
 {
+    // experimental checks. See #3267 and #3268
+    if (!_settings->experimental)
+        return;
+
     // fill the "noreturn"
     parse_noreturn();
 

@@ -127,6 +127,7 @@ private:
 
         Settings settings;
         settings.experimental = experimental;
+        settings.experimental = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
