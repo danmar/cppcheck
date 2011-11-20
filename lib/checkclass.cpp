@@ -1166,6 +1166,10 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::checkConst()
 {
+    // this is an inconclusive check - see #3048 for instance
+    if (!_settings->inconclusive)
+        return;
+
     if (!_settings->isEnabled("style") || _settings->ifcfg)
         return;
 
@@ -1548,7 +1552,7 @@ bool CheckClass::isVirtualFunc(const Scope *scope, const Token *functionToken) c
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
-    reportError(tok, Severity::style, "functionConst",
+    reportInconclusiveError(tok, Severity::style, "functionConst",
                 "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
                 "The member function '" + classname + "::" + funcname + "' can be made a const "
                 "function. Making this function const function should not cause compiler errors. "
@@ -1562,7 +1566,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
     std::list<const Token *> toks;
     toks.push_back(tok1);
     toks.push_back(tok2);
-    reportError(toks, Severity::style, "functionConst",
+    reportInconclusiveError(toks, Severity::style, "functionConst",
                 "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
                 "The member function '" + classname + "::" + funcname + "' can be made a const "
                 "function. Making this function const function should not cause compiler errors. "

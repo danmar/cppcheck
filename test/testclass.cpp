@@ -3518,6 +3518,7 @@ private:
             settings = *s;
         else
             settings.addEnabled("style");
+        settings.inconclusive = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
