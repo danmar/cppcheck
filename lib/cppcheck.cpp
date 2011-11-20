@@ -115,11 +115,7 @@ bool CppCheck::findError(std::string code, const char FileName[])
             // is still there.
             code = previousCode.substr(found+9);
             _errorList.clear();
-            try {
-                checkFile(code, FileName);
-            } catch (ErrorLogger::ErrorMessage &err) {
-                reportErr(err);
-            }
+            checkFile(code, FileName);
         }
 
         if (_errorList.empty()) {
@@ -254,18 +250,6 @@ unsigned int CppCheck::processFile()
         // Exception was thrown when checking this file..
         const std::string fixedpath = Path::toNativeSeparators(_filename);
         _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
-    } catch (ErrorLogger::ErrorMessage &err) {
-        // Catch exception from Token class
-        const std::string fixedpath = Path::toNativeSeparators(_filename);
-        if (err._callStack.empty()) {
-            ErrorLogger::ErrorMessage::FileLocation loc;
-            loc.setfile(fixedpath);
-            err._callStack.push_back(loc);
-        } else {
-            err._callStack.begin()->setfile(fixedpath);
-        }
-
-        _errorLogger.reportErr(err);
     }
 
     if (!_settings._errorsOnly)
@@ -337,123 +321,146 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         return;
 
     Tokenizer _tokenizer(&_settings, this);
-    bool result;
+    try {
+        bool result;
 
-    // Tokenize the file
-    std::istringstream istr(code);
+        // Tokenize the file
+        std::istringstream istr(code);
 
-    Timer timer("Tokenizer::tokenize", _settings._showtime, &S_timerResults);
-    result = _tokenizer.tokenize(istr, FileName, cfg);
-    timer.Stop();
-    if (!result) {
-        // File had syntax errors, abort
-        return;
-    }
+        Timer timer("Tokenizer::tokenize", _settings._showtime, &S_timerResults);
+        result = _tokenizer.tokenize(istr, FileName, cfg);
+        timer.Stop();
+        if (!result) {
+            // File had syntax errors, abort
+            return;
+        }
 
-    Timer timer2("Tokenizer::fillFunctionList", _settings._showtime, &S_timerResults);
-    _tokenizer.fillFunctionList();
-    timer2.Stop();
+        Timer timer2("Tokenizer::fillFunctionList", _settings._showtime, &S_timerResults);
+        _tokenizer.fillFunctionList();
+        timer2.Stop();
 
-    // call all "runChecks" in all registered Check classes
-    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-        if (_settings.terminated())
+        // call all "runChecks" in all registered Check classes
+        for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+            if (_settings.terminated())
+                return;
+
+            Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
+            (*it)->runChecks(&_tokenizer, &_settings, this);
+        }
+
+        Timer timer3("Tokenizer::simplifyTokenList", _settings._showtime, &S_timerResults);
+        result = _tokenizer.simplifyTokenList();
+        timer3.Stop();
+        if (!result)
             return;
 
-        Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
-        (*it)->runChecks(&_tokenizer, &_settings, this);
-    }
+        Timer timer4("Tokenizer::fillFunctionList", _settings._showtime, &S_timerResults);
+        _tokenizer.fillFunctionList();
+        timer4.Stop();
 
-    Timer timer3("Tokenizer::simplifyTokenList", _settings._showtime, &S_timerResults);
-    result = _tokenizer.simplifyTokenList();
-    timer3.Stop();
-    if (!result)
-        return;
+        if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
+            _checkUnusedFunctions.parseTokens(_tokenizer);
 
-    Timer timer4("Tokenizer::fillFunctionList", _settings._showtime, &S_timerResults);
-    _tokenizer.fillFunctionList();
-    timer4.Stop();
+        // call all "runSimplifiedChecks" in all registered Check classes
+        for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+            if (_settings.terminated())
+                return;
 
-    if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
-        _checkUnusedFunctions.parseTokens(_tokenizer);
-
-    // call all "runSimplifiedChecks" in all registered Check classes
-    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-        if (_settings.terminated())
-            return;
-
-        Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings._showtime, &S_timerResults);
-        (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
-    }
+            Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings._showtime, &S_timerResults);
+            (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
+        }
 
 #ifdef HAVE_RULES
-    // Are there extra rules?
-    if (!_settings.rules.empty()) {
-        std::ostringstream ostr;
-        for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        const std::string str(ostr.str());
-        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
-            const Settings::Rule &rule = *it;
-            if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty())
-                continue;
+        // Are there extra rules?
+        if (!_settings.rules.empty()) {
+            std::ostringstream ostr;
+            for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            const std::string str(ostr.str());
+            for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+                const Settings::Rule &rule = *it;
+                if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty())
+                    continue;
 
-            const char *error = 0;
-            int erroffset = 0;
-            pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,NULL);
-            if (!re && error) {
-                ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
-                                                 Severity::error,
-                                                 error,
-                                                 "pcre_compile",
-                                                 false);
+                const char *error = 0;
+                int erroffset = 0;
+                pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,NULL);
+                if (!re && error) {
+                    ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+                                                     Severity::error,
+                                                     error,
+                                                     "pcre_compile",
+                                                     false);
 
-                reportErr(errmsg);
-            }
-            if (!re)
-                continue;
+                    reportErr(errmsg);
+                }
+                if (!re)
+                    continue;
 
-            int pos = 0;
-            int ovector[30];
-            while (0 <= pcre_exec(re, NULL, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
-                unsigned int pos1 = (unsigned int)ovector[0];
-                unsigned int pos2 = (unsigned int)ovector[1];
+                int pos = 0;
+                int ovector[30];
+                while (0 <= pcre_exec(re, NULL, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
+                    unsigned int pos1 = (unsigned int)ovector[0];
+                    unsigned int pos2 = (unsigned int)ovector[1];
 
-                // jump to the end of the match for the next pcre_exec
-                pos = (int)pos2;
+                    // jump to the end of the match for the next pcre_exec
+                    pos = (int)pos2;
 
-                // determine location..
-                ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.setfile(_tokenizer.getFiles()->front());
-                loc.line = 0;
+                    // determine location..
+                    ErrorLogger::ErrorMessage::FileLocation loc;
+                    loc.setfile(_tokenizer.getFiles()->front());
+                    loc.line = 0;
 
-                unsigned int len = 0;
-                for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next()) {
-                    len = len + 1 + tok->str().size();
-                    if (len > pos1) {
-                        loc.setfile(_tokenizer.getFiles()->at(tok->fileIndex()));
-                        loc.line = tok->linenr();
-                        break;
+                    unsigned int len = 0;
+                    for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next()) {
+                        len = len + 1 + tok->str().size();
+                        if (len > pos1) {
+                            loc.setfile(_tokenizer.getFiles()->at(tok->fileIndex()));
+                            loc.line = tok->linenr();
+                            break;
+                        }
                     }
+
+                    const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack(1, loc);
+
+                    // Create error message
+                    std::string summary;
+                    if (rule.summary.empty())
+                        summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
+                    else
+                        summary = rule.summary;
+                    const ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id, false);
+
+                    // Report error
+                    reportErr(errmsg);
                 }
 
-                const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack(1, loc);
-
-                // Create error message
-                std::string summary;
-                if (rule.summary.empty())
-                    summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
-                else
-                    summary = rule.summary;
-                const ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id, false);
-
-                // Report error
-                reportErr(errmsg);
+                pcre_free(re);
             }
-
-            pcre_free(re);
         }
-    }
 #endif
+    } catch (const Token &tok) {
+        // Catch exception from Token class
+        const std::string fixedpath = Path::toNativeSeparators(_tokenizer.file(&tok));
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+
+        ErrorLogger::ErrorMessage::FileLocation loc2;
+        loc2.setfile(Path::toNativeSeparators(FileName));
+        locationList.push_back(loc2);
+
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok.linenr();
+        loc.setfile(fixedpath);
+        locationList.push_back(loc);
+
+        const ErrorLogger::ErrorMessage errmsg(locationList,
+                                               Severity::error,
+                                               "Internal error. Token::Match called with varid 0.",
+                                               "cppcheckError",
+                                               false);
+
+        _errorLogger.reportErr(errmsg);
+    }
 }
 
 Settings &CppCheck::settings()
