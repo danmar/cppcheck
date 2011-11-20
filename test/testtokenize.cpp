@@ -189,6 +189,7 @@ private:
         TEST_CASE(varid38);   // ticket #3272 (varid for 'FOO class C;')
         TEST_CASE(varid39);   // ticket #3279 (varid for 'FOO::BAR const')
         TEST_CASE(varid40);   // ticket #3279
+        TEST_CASE(varid41);   // ticket #3340 (varid for union type)
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -3014,6 +3015,18 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: extern \"C\" int ( * a ( ) ) ( ) ;\n",
                       tokenizeDebugListing(code));
+    }
+
+    void varid41() {
+        const std::string code1("union evt; void f(const evt & event);");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: union evt ; void f ( const evt & event@1 ) ;\n",
+                      tokenizeDebugListing(code1));
+
+        const std::string code2("struct evt; void f(const evt & event);");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: struct evt ; void f ( const evt & event@1 ) ;\n",
+                      tokenizeDebugListing(code2));
     }
 
     void varidFunctionCall1() {

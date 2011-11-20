@@ -3398,7 +3398,7 @@ void Tokenizer::setVarId()
         if (tok->str() == "unsigned")
             tok = tok->next();
 
-        if (Token::Match(tok, "class|struct %type% :|{|;"))
+        if (Token::Match(tok, "class|struct|union %type% :|{|;"))
             continue;
 
         if (Token::Match(tok, "using namespace %type% ;")) {
