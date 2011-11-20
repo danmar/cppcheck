@@ -1301,12 +1301,12 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]")) {
             size = MathLib::toLongNumber(tok->strAt(6));
             type = tok->strAt(4);
-            varid = tok->tokAt(1)->varId();
+            varid = tok->next()->varId();
             nextTok = 8;
         } else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% ( %num% )")) {
             size = 1;
             type = tok->strAt(4);
-            varid = tok->tokAt(1)->varId();
+            varid = tok->next()->varId();
             nextTok = 8;
         } else if (indentlevel > 0 &&
                    Token::Match(tok, "[;{}] %var% = %str% ;") &&
@@ -1319,7 +1319,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         } else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = malloc|alloca ( %num% ) ;")) {
             size = MathLib::toLongNumber(tok->strAt(5));
             type = "char";   // minimum type, typesize=1
-            varid = tok->tokAt(1)->varId();
+            varid = tok->next()->varId();
             nextTok = 7;
 
             if (varid > 0) {

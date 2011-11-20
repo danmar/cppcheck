@@ -52,7 +52,7 @@ void Check64BitPortability::pointerassignment()
         if (Token::Match(tok, "[;{}] %var% = %var% [;+]")) {
             const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-            const Variable *var1(symbolDatabase->getVariableFromVarId(tok->tokAt(1)->varId()));
+            const Variable *var1(symbolDatabase->getVariableFromVarId(tok->next()->varId()));
             const Variable *var2(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId()));
 
             if (isaddr(var1) && isint(var2) && tok->strAt(4) != "+")

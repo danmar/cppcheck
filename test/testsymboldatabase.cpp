@@ -371,7 +371,7 @@ private:
         reset();
         givenACodeSampleToTokenize var("X< 1>2 > x1;\n");
 
-        found = si.findClosingBracket(var.tokens()->tokAt(1), t);
+        found = si.findClosingBracket(var.tokens()->next(), t);
         ASSERT(found);
         ASSERT_EQUALS(">", t->str());
         ASSERT_EQUALS(var.tokens()->strAt(3), t->str());
@@ -381,7 +381,7 @@ private:
         reset();
         givenACodeSampleToTokenize var("X < (2 < 1) > x1;\n");
 
-        found = si.findClosingBracket(var.tokens()->tokAt(1), t);
+        found = si.findClosingBracket(var.tokens()->next(), t);
         ASSERT(!found);
     }
 
@@ -392,14 +392,14 @@ private:
         ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("func"));
 
         if (db) {
-            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(1));
+            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->next());
 
             ASSERT(scope && scope->className == "func");
 
-            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(1));
+            const Function *function = db->findFunctionByToken(tokenizer.tokens()->next());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(1));
+            ASSERT(function && function->token == tokenizer.tokens()->next());
             ASSERT(function && function->hasBody);
         }
     }

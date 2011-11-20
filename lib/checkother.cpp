@@ -587,9 +587,9 @@ void CheckOther::checkSwitchCaseFallThrough()
         std::stack<Token *> scopenest;
         bool justbreak = true;
         bool firstcase = true;
-        for (const Token *tok2 = tok->tokAt(1)->link()->tokAt(2); tok2; tok2 = tok2->next()) {
+        for (const Token *tok2 = tok->next()->link()->tokAt(2); tok2; tok2 = tok2->next()) {
             if (Token::simpleMatch(tok2, "if (")) {
-                tok2 = tok2->tokAt(1)->link()->next();
+                tok2 = tok2->next()->link()->next();
                 if (tok2->link() == NULL) {
                     std::ostringstream errmsg;
                     errmsg << "unmatched if in switch: " << tok2->linenr();
@@ -599,7 +599,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 ifnest.push(std::make_pair(tok2->link(), false));
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "while (")) {
-                tok2 = tok2->tokAt(1)->link()->next();
+                tok2 = tok2->next()->link()->next();
                 // skip over "do { } while ( ) ;" case
                 if (tok2->str() == "{") {
                     if (tok2->link() == NULL) {
@@ -622,7 +622,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 loopnest.push(tok2->link());
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "for (")) {
-                tok2 = tok2->tokAt(1)->link()->next();
+                tok2 = tok2->next()->link()->next();
                 if (tok2->link() == NULL) {
                     std::ostringstream errmsg;
                     errmsg << "unmatched for in switch: " << tok2->linenr();
@@ -633,7 +633,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 justbreak = false;
             } else if (Token::Match(tok2, switchPattern)) {
                 // skip over nested switch, we'll come to that soon
-                tok2 = tok2->tokAt(1)->link()->next()->link();
+                tok2 = tok2->next()->link()->next()->link();
             } else if (Token::Match(tok2, breakPattern)) {
                 if (loopnest.empty()) {
                     justbreak = true;
@@ -1330,7 +1330,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
 
     std::map<unsigned int, bool> boolvars; // Contains all declarated standard type variables and indicates whether its a bool or not.
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]") && tok->tokAt(1)->isStandardType()) { // Declaration of standard type variable
+        if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]") && tok->next()->isStandardType()) { // Declaration of standard type variable
             boolvars[tok->tokAt(2)->varId()] = (tok->strAt(1) == "bool");
         } else if (Token::Match(tok, "%var% >|>=|==|!=|<=|< %num%")) { // Comparing variable with number
             const Token *varTok = tok;
@@ -1444,7 +1444,7 @@ void CheckOther::checkUnsignedDivision()
     std::map<unsigned int, char> varsign;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]")) {
-            if (tok->tokAt(1)->isUnsigned())
+            if (tok->next()->isUnsigned())
                 varsign[tok->tokAt(2)->varId()] = 'u';
             else
                 varsign[tok->tokAt(2)->varId()] = 's';
@@ -1452,7 +1452,7 @@ void CheckOther::checkUnsignedDivision()
 
         else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %num%")) {
             if (tok->strAt(3)[0] == '-') {
-                char sign1 = varsign[tok->tokAt(1)->varId()];
+                char sign1 = varsign[tok->next()->varId()];
                 if (sign1 == 'u') {
                     udivError(tok->next());
                 }
@@ -1482,7 +1482,7 @@ void CheckOther::checkMemsetZeroBytes()
 {
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "memset (")) {
-            const Token* lastParamTok = tok->tokAt(1)->link()->tokAt(-1);
+            const Token* lastParamTok = tok->next()->link()->tokAt(-1);
             if (lastParamTok->str() == "0")
                 memsetZeroBytesError(tok, tok->strAt(2));
         }

@@ -261,7 +261,7 @@ void CheckStl::stlOutOfBounds()
                 unsigned int indent3 = 0;
 
                 // variable id for loop variable.
-                unsigned int numId = tok2->tokAt(1)->varId();
+                unsigned int numId = tok2->next()->varId();
 
                 // variable id for the container variable
                 unsigned int varId = tok2->tokAt(3)->varId();
@@ -1189,7 +1189,7 @@ void CheckStl::uselessCalls()
         if (tok->varId() == 0)
             continue;
         /*if (Token::Match(tok, "%var% . compare (") &&
-            tok->varId() == tok->linkAt(3)->tokAt(-1)->varId()) {
+            tok->varId() == tok->linkAt(3)->previous()->varId()) {
             uselessCallsReturnValueError(tok, tok->tokAt(2));
         } else */
         if (Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% [,)]") &&

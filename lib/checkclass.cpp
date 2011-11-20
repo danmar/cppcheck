@@ -985,7 +985,7 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
     for (const Token *tok = func->start; tok && tok != last; tok = tok->next()) {
         if (Token::simpleMatch(tok, "if (")) {
             const Token *tok1 = tok->tokAt(2);
-            const Token *tok2 = tok->tokAt(1)->link();
+            const Token *tok2 = tok->next()->link();
 
             if (tok1 && tok2) {
                 for (; tok1 && tok1 != tok2; tok1 = tok1->next()) {
