@@ -135,8 +135,10 @@ public:
      * - code outside the scope where the function is called;
      * - code after a change of scope caused by 'switch(...);'
      *   instructions, like 'case %any%;' or 'default;'
-     * Also, it preserves the 'switch' command if in a scope
-     * created by a 'case|default' instruction there is a label.
+     * Also, if the dead code contains a 'switch' block
+     * and inside it there's a label, the function removes all
+     * the 'switch(..)' tokens and every occurrence of 'case %any%; | default;'
+     * expression, such as the 'switch' block is reduced to a simple block.
      *
      * @param begin Tokens after this have a possibility to be erased.
      * @param end Tokens before this have a possibility to be erased.

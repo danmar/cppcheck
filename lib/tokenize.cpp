@@ -8259,7 +8259,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
             if (!checklabel) {
                 if (!indentlabel) {
                     //remove 'switch ( ... )'
-                    Token *endround = tok->linkAt(2);
+                    const Token *endround = tok->linkAt(2);
                     Token::eraseTokens(tok, endround->next());
                 } else {
                     tok = tok->linkAt(2);
@@ -8297,10 +8297,10 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                 if (indentswitch && indentlevel == indentcase)
                     --indentlevel;
                 if (indentlevel < indentcheck) {
-                    Token *end2 = tok->next();
-                    tok = tok->next()->link()->previous(); //return to initial '{'
+                    const Token *end2 = tok->next();
+                    tok = tok->next()->link()->previous();  //return to initial '{'
                     if (indentswitch && Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->tokAt(-2), "[{};] switch ("))
-                        tok = tok->link()->tokAt(-2);   //remove also 'switch ( ... )'
+                        tok = tok->link()->tokAt(-2);       //remove also 'switch ( ... )'
                     Token::eraseTokens(tok, end2->next());
                     checklabel = false;
                     tokcheck = 0;
@@ -8339,8 +8339,9 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                 indentlevel = indentcheck;
             } else {
                 if (indentswitch) {
-                    //since the switch() instruction is removed, there's no sense to keep
-                    //the case instructions. Remove them and leave out, if there are any.
+                    //Before stopping the function, since the 'switch()'
+                    //instruction is removed, there's no sense to keep the
+                    //case instructions. Remove them, if there are any.
                     Token *tok2 = tok->tokAt(3);
                     const Token *end2 = tokcheck->next()->link();
                     unsigned int indentlevel2 = indentlevel;
@@ -8348,12 +8349,11 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                         if (Token::Match(tok2->next(), "{|[|(")) {
                             tok2 = tok2->next()->link();
                         } else if (Token::Match(tok2, "[{};] case %any% : ;") || Token::Match(tok2, "[{};] default : ;")) {
-                            Token::eraseTokens(tok2, tok2->tokAt(4 + (tok2->next()->str() == "case")));
+                            const Token *end3 = tok2->tokAt(4 + (tok2->next()->str() == "case"));
+                            Token::eraseTokens(tok2, end3);
                             if (Token::simpleMatch(tok2->previous(), "break ; break ;")) {
-                                tok2 = tok2->tokAt(-2);
                                 tok2->deleteNext();
                                 tok2->deleteNext();
-                                tok2 = tok2->tokAt(2);
                             }
                         } else if (tok2->next()->str() == "}") {
                             --indentlevel2;
@@ -8365,9 +8365,9 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                         }
                     }
                 }
-                break;      //stop removing tokens, we arrived to the label
+                break;  //stop removing tokens, we arrived to the label.
             }
-        } else { //I don't need to keep anything different from '{|}|switch|case|default'
+        } else {        //no need to keep the other strings, remove them.
             tok->deleteNext();
         }
     }

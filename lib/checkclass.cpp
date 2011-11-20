@@ -1553,12 +1553,12 @@ bool CheckClass::isVirtualFunc(const Scope *scope, const Token *functionToken) c
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
     reportInconclusiveError(tok, Severity::style, "functionConst",
-                "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
-                "The member function '" + classname + "::" + funcname + "' can be made a const "
-                "function. Making this function const function should not cause compiler errors. "
-                "Even though the function can be made const function technically it may not make "
-                "sense conceptually. Think about your design and task of the function first - is "
-                "it a function that must not change object internal state?");
+                            "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
+                            "The member function '" + classname + "::" + funcname + "' can be made a const "
+                            "function. Making this function const function should not cause compiler errors. "
+                            "Even though the function can be made const function technically it may not make "
+                            "sense conceptually. Think about your design and task of the function first - is "
+                            "it a function that must not change object internal state?");
 }
 
 void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname)
@@ -1567,12 +1567,12 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
     toks.push_back(tok1);
     toks.push_back(tok2);
     reportInconclusiveError(toks, Severity::style, "functionConst",
-                "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
-                "The member function '" + classname + "::" + funcname + "' can be made a const "
-                "function. Making this function const function should not cause compiler errors. "
-                "Even though the function can be made const function technically it may not make "
-                "sense conceptually. Think about your design and task of the function first - is "
-                "it a function that must not change object internal state?");
+                            "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
+                            "The member function '" + classname + "::" + funcname + "' can be made a const "
+                            "function. Making this function const function should not cause compiler errors. "
+                            "Even though the function can be made const function technically it may not make "
+                            "sense conceptually. Think about your design and task of the function first - is "
+                            "it a function that must not change object internal state?");
 }
 
 //---------------------------------------------------------------------------
