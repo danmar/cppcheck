@@ -120,7 +120,7 @@ void CheckStl::iterators()
                 validIterator = true;
 
                 // skip the operation
-                tok2 = tok2->tokAt(5)->link();
+                tok2 = tok2->linkAt(5);
                 if (!tok2)
                     break;
             }
@@ -621,7 +621,7 @@ void CheckStl::pushback()
                 }
 
                 invalidIterator = tok2->strAt(2);
-                tok2 = tok2->tokAt(3)->link();
+                tok2 = tok2->linkAt(3);
             }
 
             // TODO: instead of bail out for 'else' try to check all execution paths.
@@ -958,7 +958,7 @@ void CheckStl::missingComparison()
                         incrementToken = 0;
                     else if (Token::Match(tok3, "%varid% = %var% . insert ( ++| %varid% ++| ,", iteratorId)) {
                         // skip insertion..
-                        tok3 = tok3->tokAt(6)->link();
+                        tok3 = tok3->linkAt(6);
                         if (!tok3)
                             break;
                     }
@@ -1024,7 +1024,7 @@ void CheckStl::string_c_str()
                            pointers.find(tok->next()->varId()) != pointers.end()) {
                     string_c_strError(tok);
                 } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
-                           Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
+                           Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;") &&
                            tok->next()->varId() > 0 &&
                            pointers.find(tok->next()->varId()) != pointers.end() &&
                            Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str())) {
@@ -1047,7 +1047,7 @@ void CheckStl::string_c_str()
                            localvar.find(tok->next()->varId()) != localvar.end()) {
                     string_c_strError(tok, true);
                 } else if (Token::simpleMatch(tok, "return std :: string (") &&
-                           Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;")) {
+                           Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;")) {
                     string_c_strError(tok, true);
                 } else if (Token::simpleMatch(tok, "return (") &&
                            Token::simpleMatch(tok->next()->link(), ") . c_str ( ) ;")) {
@@ -1189,7 +1189,7 @@ void CheckStl::uselessCalls()
         if (tok->varId() == 0)
             continue;
         /*if (Token::Match(tok, "%var% . compare (") &&
-            tok->varId() == tok->tokAt(3)->link()->tokAt(-1)->varId()) {
+            tok->varId() == tok->linkAt(3)->tokAt(-1)->varId()) {
             uselessCallsReturnValueError(tok, tok->tokAt(2));
         } else */
         if (Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% [,)]") &&
@@ -1202,7 +1202,7 @@ void CheckStl::uselessCalls()
             uselessCallsSubstrError(tok, tok->str());
         } else if (Token::Match(tok, "%var% . substr ( 0")) {
             if (tok->strAt(5) == ")" ||
-                tok->tokAt(3)->link()->strAt(-1) == "npos")
+                tok->linkAt(3)->strAt(-1) == "npos")
                 uselessCallsSubstrError(tok, tok->str());
         }
     }

@@ -1294,7 +1294,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             structname.clear();
             if (Token::simpleMatch(tok->previous(), "extern"))
                 continue;
-            if ((!tok->previous() || Token::simpleMatch(tok->previous(), ";")) && Token::Match(tok->tokAt(2)->link(), ("} ; " + tok->strAt(1) + " %var% ;").c_str()))
+            if ((!tok->previous() || Token::simpleMatch(tok->previous(), ";")) && Token::Match(tok->linkAt(2), ("} ; " + tok->strAt(1) + " %var% ;").c_str()))
                 continue;
 
             structname = tok->strAt(1);

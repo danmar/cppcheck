@@ -139,7 +139,7 @@ void CheckAutoVariables::autoVariables()
             else if (Token::Match(tok, "return & %var% ;") && isAutoVar(tok->tokAt(2)->varId())) {
                 errorReturnAddressToAutoVariable(tok);
             } else if (Token::Match(tok, "return & %var% [") &&
-                       Token::simpleMatch(tok->tokAt(3)->link(), "] ;") &&
+                       Token::simpleMatch(tok->linkAt(3), "] ;") &&
                        isAutoVarArray(tok->tokAt(2)->varId())) {
                 errorReturnAddressToAutoVariable(tok);
             } else if (Token::Match(tok, "return & %var% ;") && tok->tokAt(2)->varId()) {

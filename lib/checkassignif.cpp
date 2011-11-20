@@ -146,7 +146,7 @@ void CheckAssignIf::multiCondition()
             if (num1 < 0)
                 continue;
 
-            const Token *tok2 = tok->tokAt(6)->link();
+            const Token *tok2 = tok->linkAt(6);
             while (Token::simpleMatch(tok2, "} else { if (")) {
                 // Goto '('
                 const Token * const opar = tok2->tokAt(4);

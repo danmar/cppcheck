@@ -420,7 +420,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                     // function returning function pointer with body
                     else if (Token::simpleMatch(argStart->link(), ") ) (") &&
-                             Token::Match(argStart->link()->tokAt(2)->link(), ") const| {")) {
+                             Token::Match(argStart->link()->linkAt(2), ") const| {")) {
                         const Token *tok1 = funcStart;
                         Scope *old_scope = scope;
 
@@ -480,9 +480,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                     // function returning function pointer prototype
                     else if (Token::simpleMatch(argStart->link(), ") ) (") &&
-                             Token::simpleMatch(argStart->link()->tokAt(2)->link(), ") ;")) {
+                             Token::simpleMatch(argStart->link()->linkAt(2), ") ;")) {
                         /** @todo save function prototypes in database someday */
-                        tok = argStart->link()->tokAt(2)->link()->next();
+                        tok = argStart->link()->linkAt(2)->next();
                         continue;
                     }
                 }
@@ -501,8 +501,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     scope = &scopeList.back();
                     scope->nestedIn->nestedList.push_back(scope);
                 } else if (Token::simpleMatch(tok, "else if (") &&
-                           Token::simpleMatch(tok->tokAt(2)->link(), ") {")) {
-                    const Token *tok1 = tok->tokAt(2)->link()->next();
+                           Token::simpleMatch(tok->linkAt(2), ") {")) {
+                    const Token *tok1 = tok->linkAt(2)->next();
                     scopeList.push_back(Scope(this, tok, scope, Scope::eElseIf, tok1));
                     tok = tok1;
                     scope = &scopeList.back();
@@ -989,7 +989,7 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                                 func->hasBody = true;
                                 func->token = *tok;
                                 func->arg = argStart;
-                                const Token *start = argStart->link()->tokAt(2)->link()->next();
+                                const Token *start = argStart->link()->linkAt(2)->next();
                                 while (start && start->str() != "{")
                                     start = start->next();
                                 func->start = start;

@@ -336,7 +336,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         else if (Token::Match(ftok, "::| memset ( %var% ,")) {
             const int offset = ftok->str() == "::" ? 1 : 0;
             assignVar(ftok->strAt(2 + offset), scope, usage);
-            ftok = ftok->tokAt(1 + offset)->link();
+            ftok = ftok->linkAt(1 + offset);
             continue;
         }
 
@@ -819,7 +819,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
 
             // check if a function is called
             if (Token::Match(tok->tokAt(1), "%any% (") &&
-                tok->tokAt(2)->link()->next()->str() == ";") {
+                tok->linkAt(2)->next()->str() == ";") {
                 std::list<Function>::const_iterator it;
 
                 // check if it is a member function
@@ -1037,7 +1037,7 @@ void CheckClass::virtualDestructor()
             continue;
 
         // Empty destructor
-        if (destructor->token->tokAt(3)->link() == destructor->token->tokAt(4))
+        if (destructor->token->linkAt(3) == destructor->token->tokAt(4))
             continue;
 
         const Token *derived = scope->classDef;
@@ -1283,7 +1283,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
             tok = tok->tokAt(-2);
             again = true;
         } else if (Token::Match(tok->tokAt(-2), "] . %var%")) {
-            tok = tok->tokAt(-2)->link()->previous();
+            tok = tok->linkAt(-2)->previous();
             again = true;
         } else if (tok->str() == "]") {
             tok = tok->link()->previous();

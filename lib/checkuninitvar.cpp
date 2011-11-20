@@ -409,7 +409,7 @@ private:
         // Variable declaration..
         if (Token::Match(tok.previous(), "[;{}] %var%") && tok.str() != "return") {
             if (Token::Match(&tok, "enum %type% {"))
-                return tok.tokAt(2)->link();
+                return tok.linkAt(2);
 
             const Token * vartok = &tok;
             while (Token::Match(vartok, "const|struct"))
@@ -427,7 +427,7 @@ private:
             // Variable declaration for array..
             if (Token::Match(vartok, "%type% %var% [") &&
                 vartok->isStandardType() &&
-                Token::simpleMatch(vartok->tokAt(2)->link(), "] ;")) {
+                Token::simpleMatch(vartok->linkAt(2), "] ;")) {
                 vartok = vartok->next();
                 declare(checks, vartok, tok, false, true);
                 return vartok->next()->link();
@@ -916,7 +916,7 @@ public:
                 continue;
             }
             if (tok->str() != "::" && Token::Match(tok->next(), "%var% ( %type%")) {
-                if (!Token::Match(tok->tokAt(2)->link(), ") [{;]"))
+                if (!Token::Match(tok->linkAt(2), ") [{;]"))
                     continue;
                 const Token *tok2 = tok->tokAt(3);
                 while (tok2 && tok2->str() != ")") {

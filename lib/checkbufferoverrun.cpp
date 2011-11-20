@@ -654,7 +654,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                         // goto end of if block..
                         ftok = ftok->next()->link()->next()->link();
                         if (Token::simpleMatch(ftok, "} else {"))
-                            ftok = ftok->tokAt(2)->link();
+                            ftok = ftok->linkAt(2);
                         if (!ftok)
                             break;
                         continue;
@@ -1438,13 +1438,13 @@ void CheckBufferOverrun::checkStructVariable()
                                     // check for allocation
                                     if ((Token::Match(tok3->tokAt(3), "; %var% = malloc ( %num% ) ;") ||
                                          (Token::Match(tok3->tokAt(3), "; %var% = (") &&
-                                          Token::Match(tok3->tokAt(6)->link(), ") malloc ( %num% ) ;"))) &&
+                                          Token::Match(tok3->linkAt(6), ") malloc ( %num% ) ;"))) &&
                                         (tok3->strAt(4) == tok3->strAt(2))) {
                                         MathLib::bigint size;
 
                                         // find size of allocation
                                         if (tok3->strAt(3) == "(") // has cast
-                                            size = MathLib::toLongNumber(tok3->tokAt(6)->link()->strAt(3));
+                                            size = MathLib::toLongNumber(tok3->linkAt(6)->strAt(3));
                                         else
                                             size = MathLib::toLongNumber(tok3->strAt(8));
 

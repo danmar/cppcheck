@@ -4677,16 +4677,16 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             const Token *tok = tokenizer.tokens();
             // A body {}
-            ASSERT_EQUALS(true, tok->tokAt(2)->link() == tok->tokAt(9));
-            ASSERT_EQUALS(true, tok->tokAt(9)->link() == tok->tokAt(2));
+            ASSERT_EQUALS(true, tok->linkAt(2) == tok->tokAt(9));
+            ASSERT_EQUALS(true, tok->linkAt(9) == tok->tokAt(2));
 
             // f body {}
-            ASSERT_EQUALS(true, tok->tokAt(7)->link() == tok->tokAt(8));
-            ASSERT_EQUALS(true, tok->tokAt(8)->link() == tok->tokAt(7));
+            ASSERT_EQUALS(true, tok->linkAt(7) == tok->tokAt(8));
+            ASSERT_EQUALS(true, tok->linkAt(8) == tok->tokAt(7));
 
             // f ()
-            ASSERT_EQUALS(true, tok->tokAt(5)->link() == tok->tokAt(6));
-            ASSERT_EQUALS(true, tok->tokAt(6)->link() == tok->tokAt(5));
+            ASSERT_EQUALS(true, tok->linkAt(5) == tok->tokAt(6));
+            ASSERT_EQUALS(true, tok->linkAt(6) == tok->tokAt(5));
         }
 
         {
@@ -4701,16 +4701,16 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             const Token *tok = tokenizer.tokens();
             // a[10]
-            ASSERT_EQUALS(true, tok->tokAt(7)->link() == tok->tokAt(9));
-            ASSERT_EQUALS(true, tok->tokAt(9)->link() == tok->tokAt(7));
+            ASSERT_EQUALS(true, tok->linkAt(7) == tok->tokAt(9));
+            ASSERT_EQUALS(true, tok->linkAt(9) == tok->tokAt(7));
 
             // new char[]
-            ASSERT_EQUALS(true, tok->tokAt(19)->link() == tok->tokAt(24));
-            ASSERT_EQUALS(true, tok->tokAt(24)->link() == tok->tokAt(19));
+            ASSERT_EQUALS(true, tok->linkAt(19) == tok->tokAt(24));
+            ASSERT_EQUALS(true, tok->linkAt(24) == tok->tokAt(19));
 
             // a[0]
-            ASSERT_EQUALS(true, tok->tokAt(21)->link() == tok->tokAt(23));
-            ASSERT_EQUALS(true, tok->tokAt(23)->link() == tok->tokAt(21));
+            ASSERT_EQUALS(true, tok->linkAt(21) == tok->tokAt(23));
+            ASSERT_EQUALS(true, tok->linkAt(23) == tok->tokAt(21));
         }
 
         {
@@ -4724,12 +4724,12 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             const Token *tok = tokenizer.tokens();
             // foo(
-            ASSERT_EQUALS(true, tok->tokAt(6)->link() == tok->tokAt(10));
-            ASSERT_EQUALS(true, tok->tokAt(10)->link() == tok->tokAt(6));
+            ASSERT_EQUALS(true, tok->linkAt(6) == tok->tokAt(10));
+            ASSERT_EQUALS(true, tok->linkAt(10) == tok->tokAt(6));
 
             // g(
-            ASSERT_EQUALS(true, tok->tokAt(8)->link() == tok->tokAt(9));
-            ASSERT_EQUALS(true, tok->tokAt(9)->link() == tok->tokAt(8));
+            ASSERT_EQUALS(true, tok->linkAt(8) == tok->tokAt(9));
+            ASSERT_EQUALS(true, tok->linkAt(9) == tok->tokAt(8));
         }
     }
 

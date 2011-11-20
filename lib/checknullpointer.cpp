@@ -561,7 +561,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             // Function call: If the pointer is not a local variable it
             // might be changed by the call.
             else if (Token::Match(tok2, "[;{}] %var% (") &&
-                     Token::simpleMatch(tok2->tokAt(2)->link(), ") ;") && !isLocal) {
+                     Token::simpleMatch(tok2->linkAt(2), ") ;") && !isLocal) {
                 break;
             }
 
@@ -794,7 +794,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     if (null && indentlevel == 0) {
                         // skip all "else" blocks because they are not executed in this execution path
                         while (Token::simpleMatch(tok2, "} else {"))
-                            tok2 = tok2->tokAt(2)->link();
+                            tok2 = tok2->linkAt(2);
                         null = false;
                     }
                 }
