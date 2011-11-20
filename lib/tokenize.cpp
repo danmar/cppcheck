@@ -3349,7 +3349,16 @@ void Tokenizer::setVarId()
 
     // Set variable ids..
     _varId = 0;
+    unsigned int executableScope = 0;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (tok->str() == "{") {
+            if (executableScope)
+                executableScope++;
+            else if (tok->strAt(-1) == ")" || Token::simpleMatch(tok->tokAt(-2), ") const"))
+                executableScope = 1;
+        } else if (executableScope >= 1 && tok->str() == "}")
+            --executableScope;
+
         if (tok != _tokens && !Token::Match(tok, "[;{}(,] %type%") && !Token::Match(tok, "[;{}(,] ::"))
             continue;
 
@@ -3383,6 +3392,11 @@ void Tokenizer::setVarId()
                 !tok->previous()->isName() &&
                 tok->strAt(-2) != "operator")
                 continue;
+            if (executableScope && tok->str() == "(" && Token::simpleMatch(tok->link(),") ;")) {
+                tok = tok->link();
+                continue;
+            }
+
             tok = tok->next();
         }
 
@@ -3528,6 +3542,9 @@ void Tokenizer::setVarId()
 
             tok2 = tok2->next();
         }
+
+        if (executableScope && Token::Match(tok2, ") ;"))
+            continue;
 
         if (Token::Match(tok2 ? tok2->tokAt(-2) : 0, "class|struct %type% ;"))
             continue;

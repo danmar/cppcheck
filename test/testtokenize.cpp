@@ -193,6 +193,7 @@ private:
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
+        TEST_CASE(varidFunctionCall4);  // ticket #3280
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -3070,6 +3071,19 @@ private:
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
+
+    void varidFunctionCall4() {
+        // Ticket #3280
+        const std::string code1("void f() { int x; fun(a,b*x); }");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void f ( ) { int x@1 ; fun ( a , b * x@1 ) ; }\n",
+                      tokenizeDebugListing(code1));
+        const std::string code2("void f(int a) { int x; fun(a,b*x); }");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void f ( int a@1 ) { int x@2 ; fun ( a@1 , b * x@2 ) ; }\n",
+                      tokenizeDebugListing(code2));
+    }
+
 
     void varidStl() {
         const std::string actual = tokenizeDebugListing(
