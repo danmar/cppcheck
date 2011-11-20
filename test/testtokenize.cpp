@@ -190,6 +190,7 @@ private:
         TEST_CASE(varid39);   // ticket #3279 (varid for 'FOO::BAR const')
         TEST_CASE(varid40);   // ticket #3279
         TEST_CASE(varid41);   // ticket #3340 (varid for union type)
+        TEST_CASE(varid42);   // ticket #3316 (varid for array)
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -3028,6 +3029,21 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: struct evt ; void f ( const evt & event@1 ) ;\n",
                       tokenizeDebugListing(code2));
+    }
+    
+    void varid42() {
+        const std::string code("namespace fruit { struct banana {}; };\n"
+                               "class Fred {\n"
+                               "public:\n"
+                               "     struct fruit::banana Bananas[25];\n"
+                               "};");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: namespace fruit { struct banana { } ; } ;\n"
+                      "2: class Fred {\n"
+                      "3: public:\n"
+                      "4: struct fruit :: banana Bananas@1 [ 25 ] ;\n"
+                      "5: } ;\n",
+                      tokenizeDebugListing(code));
     }
 
     void varidFunctionCall1() {

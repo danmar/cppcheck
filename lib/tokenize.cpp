@@ -3409,11 +3409,16 @@ void Tokenizer::setVarId()
         if (tok->str() == "virtual")
             continue;
 
-        if (tok->str() == "unsigned")
-            tok = tok->next();
-
         if (Token::Match(tok, "class|struct|union %type% :|{|;"))
             continue;
+
+        while (Token::Match(tok, "public:|private:|protected:"))
+            tok = tok->next();
+        if (!tok)
+            break;
+
+        if (tok->str() == "unsigned")
+            tok = tok->next();
 
         if (Token::Match(tok, "using namespace %type% ;")) {
             tok = tok->next();
@@ -3426,11 +3431,14 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "else|return|typedef|delete|sizeof"))
             continue;
 
-        while (Token::Match(tok, "const|static|extern|public:|private:|protected:|;|mutable"))
+        while (Token::Match(tok, "const|static|extern|;|mutable"))
             tok = tok->next();
 
         if (tok && tok->str() == "friend")
             continue;
+
+        if (Token::Match(tok, "struct %type%"))
+            tok = tok->next();
 
         // skip global namespace prefix
         if (Token::simpleMatch(tok, "::"))
