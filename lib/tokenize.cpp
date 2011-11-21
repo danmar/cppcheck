@@ -3409,8 +3409,13 @@ void Tokenizer::setVarId()
         if (tok->str() == "virtual")
             continue;
 
-        if (Token::Match(tok, "class|struct|union %type% :|{|;"))
+        if (Token::Match(tok, "class|struct|union %type% :|{|;")) {
+            if (tok->strAt(2) == ":") {
+                while (tok->next() && !Token::Match(tok->next(),"[;{]"))
+                    tok = tok->next();
+            }
             continue;
+        }
 
         while (Token::Match(tok, "public:|private:|protected:"))
             tok = tok->next();
