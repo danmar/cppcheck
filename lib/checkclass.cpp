@@ -733,6 +733,10 @@ void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const
 
 void CheckClass::operatorEq()
 {
+    // See #3296
+    if (!_settings->inconclusive)
+        return;
+
     if (!_settings->isEnabled("style"))
         return;
 
@@ -767,7 +771,7 @@ void CheckClass::operatorEq()
 
 void CheckClass::operatorEqReturnError(const Token *tok, const std::string &className)
 {
-    reportError(tok, Severity::style, "operatorEq", "\'" + className + "::operator=' should return \'" + className + " &\'");
+    reportInconclusiveError(tok, Severity::style, "operatorEq", "Inconclusive: \'" + className + "::operator=' should return \'" + className + " &\'");
 }
 
 //---------------------------------------------------------------------------

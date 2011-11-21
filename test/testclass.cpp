@@ -214,6 +214,7 @@ private:
 
         Settings settings;
         settings.addEnabled("style");
+        settings.inconclusive = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -233,7 +234,7 @@ private:
                        "    void goo() {}"
                        "    void operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
@@ -267,14 +268,14 @@ private:
                        "public:\n"
                        "    void operator=(const B&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n"
-                      "[test.cpp:9]: (style) 'B::operator=' should return 'B &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n"
+                      "[test.cpp:9]: (style) Inconclusive: 'B::operator=' should return 'B &'\n", errout.str());
 
         checkOpertorEq("struct A\n"
                        "{\n"
                        "    void operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
     }
 
     void operatorEq2() {
@@ -283,28 +284,28 @@ private:
                        "public:\n"
                        "    void * operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
                        "    A * operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
                        "    const A & operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
                        "    B & operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
     }
 
     void operatorEq3() { // ticket #3051
