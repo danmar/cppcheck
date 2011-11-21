@@ -1226,6 +1226,12 @@ void CheckOther::invalidScanfError(const Token *tok)
 
 void CheckOther::checkWrongPrintfScanfArguments()
 {
+    // This check is experimental. See #3311, #3313, #3339
+    // TODO : fix tickets and remove this condition. When the condition
+    //        is removed the classInfo and getErrorMessages must be updated
+    if (!_settings->experimental)
+        return;
+
     if (!_settings->isEnabled("style"))
         return;
 

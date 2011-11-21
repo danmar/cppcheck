@@ -151,13 +151,14 @@ private:
         TEST_CASE(checkForSuspiciousSemicolon2);
     }
 
-    void check(const char code[], const char *filename = NULL) {
+    void check(const char code[], const char *filename = NULL, bool experimental = false) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
         settings.inconclusive = true;
+        settings.experimental = experimental;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -1897,7 +1898,9 @@ private:
               "    b = fscanf(file, \"aa%%ds\", &a);\n"
               "    fclose(file);\n"
               "    return b;\n"
-              "}\n");
+              "}\n",
+              "test.cpp",
+              true);
         ASSERT_EQUALS("[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
@@ -1914,7 +1917,9 @@ private:
               "    b = fscanf(file, \"aa%%ds\", &a);\n"
               "    fclose(file);\n"
               "    return b;\n"
-              "}\n");
+              "}\n",
+              "test.cpp",
+              true);
         ASSERT_EQUALS("[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
@@ -1930,7 +1935,9 @@ private:
               "    c = fscanf(file, \"%[^ ] %d\n\", a, &b);\n"
               "    fclose(file);\n"
               "    return c;\n"
-              "}\n");
+              "}\n",
+              "test.cpp",
+              true);
         ASSERT_EQUALS("", errout.str());
 
         check("#include <stdio.h>\n"
@@ -1942,7 +1949,9 @@ private:
               "    b = fscanf(file, \"%[^ \n\", a);\n"
               "    fclose(file);\n"
               "    return b;\n"
-              "}\n");
+              "}\n",
+              "test.cpp",
+              true);
         ASSERT_EQUALS("[test.cpp:7]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
     }
 
@@ -1955,7 +1964,9 @@ private:
               "    printf(\"%udfd%%dfa%s%d\", 0, bar());\n"
               "    fprintf(stderr,\"%u%s\");\n"
               "    snprintf(str,10,\"%u%s\");\n"
-              "}\n"
+              "}\n",
+              "test.cpp",
+              true
              );
         ASSERT_EQUALS("[test.cpp:2]: (error) printf format string has 1 parameters but only 0 are given\n"
                       "[test.cpp:3]: (error) printf format string has 2 parameters but only 1 are given\n"
@@ -1969,7 +1980,9 @@ private:
               "    printf(\"\", 0);\n"
               "    printf(\"%u\", 123, bar());\n"
               "    printf(\"%u%s\", 0, bar(), 43123);\n"
-              "}\n"
+              "}\n",
+              "test.cpp",
+              true
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) printf format string has 0 parameters but 1 are given\n"
                       "[test.cpp:3]: (warning) printf format string has 1 parameters but 2 are given\n"
@@ -1984,7 +1997,9 @@ private:
               "    printf(\"%\"PRId64\"\n\", 123);\n"
               "    fprintf(stderr,\"%\"PRId64\"\n\", 123);\n"
               "    snprintf(str,10,\"%\"PRId64\"\n\", 123);\n"
-              "}\n"
+              "}\n",
+              "test.cpp",
+              true
              );
         ASSERT_EQUALS("", errout.str());
     }
