@@ -348,6 +348,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             (*it)->runChecks(&_tokenizer, &_settings, this);
         }
 
+        if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
+            _checkUnusedFunctions.parseTokens(_tokenizer);
+
         Timer timer3("Tokenizer::simplifyTokenList", _settings._showtime, &S_timerResults);
         result = _tokenizer.simplifyTokenList();
         timer3.Stop();
@@ -357,9 +360,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         Timer timer4("Tokenizer::fillFunctionList", _settings._showtime, &S_timerResults);
         _tokenizer.fillFunctionList();
         timer4.Stop();
-
-        if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
-            _checkUnusedFunctions.parseTokens(_tokenizer);
 
         // call all "runSimplifiedChecks" in all registered Check classes
         for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
