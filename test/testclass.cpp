@@ -80,6 +80,7 @@ private:
         TEST_CASE(uninitVarArray3D);
         TEST_CASE(uninitVarStruct1); // ticket #2172
         TEST_CASE(uninitVarStruct2); // ticket #838
+        TEST_CASE(uninitVarUnion); // ticket #3196
         TEST_CASE(uninitMissingFuncDef);	// can't expand function in constructor
         TEST_CASE(privateCtor1);        	// If constructor is private..
         TEST_CASE(privateCtor2);        	// If constructor is private..
@@ -2535,6 +2536,18 @@ private:
                        "public:\n"
                        "    Fred()\n"
                        "    { }\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarUnion() { // ticket #3196
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "private:\n"
+                       "    union { int a; int b; };\n"
+                       "public:\n"
+                       "    Fred()\n"
+                       "    { a = 0; }\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -86,6 +86,22 @@ void CheckClass::constructors()
             }
         }
 
+        // #3196 => bailout if there are nested unions
+        // TODO: handle union variables better
+        {
+            bool bailout = false;
+            for (std::list<Scope *>::const_iterator it = scope->nestedList.begin(); it != scope->nestedList.end(); ++it) {
+                const Scope * const nestedScope = *it;
+                if (nestedScope->type == Scope::eUnion) {
+                    bailout = true;
+                    break;
+                }
+            }
+            if (bailout)
+                continue;
+        }
+
+
         std::list<Function>::const_iterator func;
         std::vector<Usage> usage(scope->varlist.size());
 

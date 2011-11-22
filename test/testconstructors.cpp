@@ -805,7 +805,7 @@ private:
               "    {\n"
               "    }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Fred::U' is not initialized in the constructor.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Fred::U' is not initialized in the constructor.\n", "", errout.str());
     }
 
 
