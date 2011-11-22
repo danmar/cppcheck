@@ -20,7 +20,6 @@
 #include "checkmemoryleak.h"
 #include "mathlib.h"
 #include "tokenize.h"
-#include "executionpath.h"
 
 #include <algorithm>
 #include <cstring>
