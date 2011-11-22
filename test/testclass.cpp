@@ -77,6 +77,7 @@ private:
         TEST_CASE(uninitVarArray6);
         TEST_CASE(uninitVarArray7);
         TEST_CASE(uninitVarArray2D);
+        TEST_CASE(uninitVarArray3D);
         TEST_CASE(uninitVarStruct1); // ticket #2172
         TEST_CASE(uninitVarStruct2); // ticket #838
         TEST_CASE(uninitMissingFuncDef);	// can't expand function in constructor
@@ -2429,6 +2430,17 @@ private:
                        "\n"
                        "private:\n"
                        "    char a[2][2];\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarArray3D() {
+        checkUninitVar("class John\n"
+                       "{\n"
+                       "private:\n"
+                       "    char a[2][2][2];\n"
+                       "public:\n"
+                       "    John() { a[0][0][0] = 0; }\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
     }

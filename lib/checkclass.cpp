@@ -458,33 +458,23 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         }
 
         // Assignment of array item of member variable?
-        else if (Token::Match(ftok, "%var% [") &&
-                 Token::simpleMatch(ftok->next()->link(), "] =")) {
-            assignVar(ftok->str(), scope, usage);
-        }
-
-        // Assignment of member of array item of member variable?
-        else if (Token::Match(ftok, "%var% [ ") &&
-                 (Token::Match(ftok->next()->link(), "] . %var%  =") ||
-                  Token::Match(ftok->next()->link(), "] . %var% . %var%  ="))) {
-            assignVar(ftok->str(), scope, usage);
-        }
-
-        // Assignment of array item of member variable?
-        else if (Token::Match(ftok, "%var% [") &&
-                 Token::simpleMatch(ftok->next()->link(), "] [") &&
-                 Token::simpleMatch(ftok->next()->link()->next()->link(), "] =")) {
-            assignVar(ftok->str(), scope, usage);
+        else if (Token::Match(ftok, "%var% [|.")) {
+            const Token *tok2 = ftok;
+            while (tok2) {
+                if (Token::simpleMatch(tok2->next(), "["))
+                    tok2 = tok2->next()->link();
+                else if (Token::Match(tok2->next(), ". %var%"))
+                    tok2 = tok2->tokAt(2);
+                else
+                    break;
+            }
+            if (Token::Match(tok2, "%any% ="))
+                assignVar(ftok->str(), scope, usage);
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "* %var% =")) {
             assignVar(ftok->next()->str(), scope, usage);
-        }
-
-        // Assignment of struct member of member variable?
-        else if (Token::Match(ftok, "%var% . %any% =")) {
-            assignVar(ftok->str(), scope, usage);
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
