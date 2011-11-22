@@ -737,7 +737,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
     return true;
 }
 
-size_t Token::getStrLength(const Token *tok)
+std::size_t Token::getStrLength(const Token *tok)
 {
     assert(tok != NULL);
 

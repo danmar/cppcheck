@@ -295,7 +295,7 @@ public:
      * Get array dimension length.
      * @return length of dimension
      */
-    MathLib::bigint dimension(size_t index_) const {
+    MathLib::bigint dimension(std::size_t index_) const {
         return _dimensions[index_].num;
     }
 
@@ -353,7 +353,7 @@ public:
           functionScope(NULL) {
     }
 
-    size_t argCount() const {
+    std::size_t argCount() const {
         return argumentList.size();
     }
     unsigned int initializedArgCount() const;

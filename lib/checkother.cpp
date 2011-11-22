@@ -2148,15 +2148,15 @@ void CheckOther::checkIncorrectStringCompare()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, ". substr ( %any% , %num% ) ==|!= %str%")) {
-            size_t clen = MathLib::toLongNumber(tok->strAt(5));
-            size_t slen = Token::getStrLength(tok->tokAt(8));
+            std::size_t clen = MathLib::toLongNumber(tok->strAt(5));
+            std::size_t slen = Token::getStrLength(tok->tokAt(8));
             if (clen != slen) {
                 incorrectStringCompareError(tok->next(), "substr", tok->strAt(8), tok->strAt(5));
             }
         }
         if (Token::Match(tok, "%str% ==|!= %var% . substr ( %any% , %num% )")) {
-            size_t clen = MathLib::toLongNumber(tok->strAt(8));
-            size_t slen = Token::getStrLength(tok);
+            std::size_t clen = MathLib::toLongNumber(tok->strAt(8));
+            std::size_t slen = Token::getStrLength(tok);
             if (clen != slen) {
                 incorrectStringCompareError(tok->next(), "substr", tok->str(), tok->strAt(8));
             }
@@ -2566,7 +2566,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
 
 void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2)
 {
-    const size_t stringLen = 10;
+    const std::size_t stringLen = 10;
     const std::string string1 = (str1.size() < stringLen) ? str1 : (str1.substr(0, stringLen-2) + "..");
     const std::string string2 = (str2.size() < stringLen) ? str2 : (str2.substr(0, stringLen-2) + "..");
 

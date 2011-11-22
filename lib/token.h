@@ -147,7 +147,7 @@ public:
      *
      * @param tok token with C-string
      **/
-    static size_t getStrLength(const Token *tok);
+    static std::size_t getStrLength(const Token *tok);
 
     bool isName() const {
         return _isName;
