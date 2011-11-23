@@ -619,10 +619,12 @@ void CheckClass::privateFunctions()
             // eg. sigc::mem_fun(this, &className::classFunction)
             const std::string _pattern2("& " + classname + " :: " + FuncList.front()->str());
             const std::string methodAsArgument("(|, " + classname + " :: " + FuncList.front()->str() + " ,|)");
+            const std::string methodAssigned("%var% = &| " + classname + " :: " + FuncList.front()->str());
+
             if (!Token::findmatch(_tokenizer->tokens(), _pattern.c_str()) &&
                 !Token::findmatch(_tokenizer->tokens(), _pattern2.c_str()) &&
-                !Token::findmatch(_tokenizer->tokens(), methodAsArgument.c_str())
-               ) {
+                !Token::findmatch(_tokenizer->tokens(), methodAsArgument.c_str()) &&
+                !Token::findmatch(_tokenizer->tokens(), methodAssigned.c_str())) {
                 unusedPrivateFunctionError(FuncList.front(), classname, FuncList.front()->str());
             }
             FuncList.pop_front();
