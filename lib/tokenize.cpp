@@ -3560,7 +3560,7 @@ void Tokenizer::setVarId()
             tok2 = tok2->next();
         }
 
-        if (executableScope && Token::Match(tok2, ") ;"))
+        if (executableScope && Token::simpleMatch(tok2, ") ;"))
             continue;
 
         if (Token::Match(tok2 ? tok2->tokAt(-2) : 0, "class|struct %type% ;"))
