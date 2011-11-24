@@ -6407,12 +6407,12 @@ private:
 
     void unusedPrivate() {
         check("class A {\n"
-                   "public:\n"
-                   "    A() { f = A::func; }\n"
-                   "    void (*f)();\n"
-                   "private:\n"
-                   "    static void func() { }\n"
-                   "};\n");
+              "public:\n"
+              "    A() { f = A::func; }\n"
+              "    void (*f)();\n"
+              "private:\n"
+              "    static void func() { }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
