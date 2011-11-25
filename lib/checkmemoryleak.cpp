@@ -33,8 +33,7 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    // Experimental (#3267 and #3268)
-    // CheckMemoryLeakInFunction instance1;
+    CheckMemoryLeakInFunction instance1;
     CheckMemoryLeakInClass instance2;
     CheckMemoryLeakStructMember instance3;
     CheckMemoryLeakNoVar instance4;
@@ -309,15 +308,15 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
 //--------------------------------------------------------------------------
 
-void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype)
+void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype, bool inconclusive)
 {
     if (alloctype == CheckMemoryLeak::File ||
         alloctype == CheckMemoryLeak::Pipe ||
         alloctype == CheckMemoryLeak::Fd   ||
         alloctype == CheckMemoryLeak::Dir)
-        resourceLeakError(tok, varname.c_str());
+        resourceLeakError(tok, varname.c_str(), inconclusive);
     else
-        memleakError(tok, varname.c_str());
+        memleakError(tok, varname.c_str(), inconclusive);
 }
 //---------------------------------------------------------------------------
 
@@ -354,9 +353,31 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
         Check::reportError(errmsg);
 }
 
-void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname)
+void CheckMemoryLeak::reportInconclusiveError(const Token *tok, Severity::SeverityType severity, const std::string &id, const std::string &msg) const
 {
-    reportErr(tok, Severity::error, "memleak", "Memory leak: " + varname);
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locations;
+    if (tok) {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok->linenr();
+        loc.setfile(tokenizer->file(tok));
+
+        locations.push_back(loc);
+    }
+
+    const ErrorLogger::ErrorMessage errmsg(locations, severity, msg, id, true);
+
+    if (errorLogger)
+        errorLogger->reportErr(errmsg);
+    else
+        Check::reportError(errmsg);
+}
+
+void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname, bool inconclusive)
+{
+    if (inconclusive)
+        reportInconclusiveError(tok, Severity::error, "memleak", "Memory leak: " + varname + " (this might be a false warning)");
+    else
+        reportErr(tok, Severity::error, "memleak", "Memory leak: " + varname);
 }
 
 void CheckMemoryLeak::memleakUponReallocFailureError(const Token *tok, const std::string &varname)
@@ -364,12 +385,15 @@ void CheckMemoryLeak::memleakUponReallocFailureError(const Token *tok, const std
     reportErr(tok, Severity::error, "memleakOnRealloc", "Common realloc mistake: \'" + varname + "\' nulled but not freed upon failure");
 }
 
-void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname)
+void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname, bool inconclusive)
 {
     std::string errmsg("Resource leak");
     if (!varname.empty())
         errmsg += ": " + varname;
-    reportErr(tok, Severity::error, "resourceLeak", errmsg);
+    if (inconclusive)
+        reportInconclusiveError(tok, Severity::error, "resourceLeak", errmsg + " (this might be a false warning)");
+    else
+        reportErr(tok, Severity::error, "resourceLeak", errmsg);
 }
 
 void CheckMemoryLeak::deallocDeallocError(const Token *tok, const std::string &varname)
@@ -2175,7 +2199,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
     }
 
     if ((result = findleak(tok)) != NULL) {
-        memoryLeak(result, varname, alloctype);
+        memoryLeak(result, varname, alloctype, true);
     }
 
     else if ((result = Token::findsimplematch(tok, "dealloc ; dealloc ;")) != NULL) {
@@ -2379,8 +2403,8 @@ void CheckMemoryLeakInFunction::parseFunctionScope(const Token *tok, const Token
 
 void CheckMemoryLeakInFunction::check()
 {
-    // experimental checks. See #3267 and #3268
-    if (!_settings->experimental)
+    // inconclusive checks. See #3267 and #3268
+    if (!_settings->inconclusive)
         return;
 
     // fill the "noreturn"
@@ -2582,9 +2606,9 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
     }
 
     if (allocInConstructor && !deallocInDestructor) {
-        memoryLeak(tokVarname, (classname + "::" + varname).c_str(), Alloc);
+        memoryLeak(tokVarname, (classname + "::" + varname).c_str(), Alloc, false);
     } else if (Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No) {
-        memoryLeak(tokVarname, (classname + "::" + varname).c_str(), Alloc);
+        memoryLeak(tokVarname, (classname + "::" + varname).c_str(), Alloc, false);
     }
 }
 
@@ -2727,7 +2751,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
 
                 else if (tok3->str() == "}") {
                     if (indentlevel3 == 0) {
-                        memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                        memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc, false);
                         break;
                     }
                     --indentlevel3;
@@ -2759,7 +2783,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
 
                 // Deallocating the struct..
                 else if (indentlevel2 == 0 && Token::Match(tok3, "free|kfree ( %varid% )", structid)) {
-                    memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                    memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc, false);
                     break;
                 }
 
@@ -2805,7 +2829,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
                     // Returning from function without deallocating struct member?
                     if (!Token::Match(tok3, "return %varid% ;", structid) &&
                         !Token::Match(tok3, "return & %varid% .", structid)) {
-                        memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                        memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc, false);
                     }
                     break;
                 }
