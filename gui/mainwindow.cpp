@@ -880,17 +880,19 @@ void MainWindow::NewProjectFile()
                        QString(),
                        filter);
 
-    if (!filepath.isEmpty()) {
-        EnableProjectActions(true);
-        QFileInfo inf(filepath);
-        const QString filename = inf.fileName();
-        FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
+    if (filepath.isEmpty())
+        return;
 
-        delete mProject;
-        mProject = new Project(filepath, this);
-        mProject->Create();
-        mProject->Edit();
-    }
+    EnableProjectActions(true);
+    QFileInfo inf(filepath);
+    const QString filename = inf.fileName();
+    FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
+
+    delete mProject;
+    mProject = new Project(filepath, this);
+    mProject->Create();
+    mProject->Edit();
+
     AddProjectMRU(filepath);
     CheckProject(mProject);
 }
