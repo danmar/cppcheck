@@ -5319,11 +5319,10 @@ void Tokenizer::simplifyCasts()
             tok = tok->linkAt(2);
             continue;
         }
-
-        while (Token::Match(tok->next(), "( %type% *| ) *|&| %var%") ||
-               Token::Match(tok->next(), "( %type% %type% *| ) *|&| %var%") ||
-               (!tok->isName() && (Token::Match(tok->next(), "( %type% * ) (") ||
-                                   Token::Match(tok->next(), "( %type% %type% * ) (")))) {
+        while (Token::Match(tok->next(), "( %type% *| *| *| ) *|&| %var%") ||
+               Token::Match(tok->next(), "( %type% %type% *| *| *| ) *|&| %var%") ||
+               (!tok->isName() && (Token::Match(tok->next(), "( %type% * *| *| ) (") ||
+                                   Token::Match(tok->next(), "( %type% %type% * *| *| ) (")))) {
             if (tok->isName() && tok->str() != "return")
                 break;
 

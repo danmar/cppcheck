@@ -67,6 +67,8 @@ private:
         TEST_CASE(removeCast4);
         TEST_CASE(removeCast5);
         TEST_CASE(removeCast6);
+        TEST_CASE(removeCast7);
+        TEST_CASE(removeCast8);
 
         TEST_CASE(inlineasm);
 
@@ -725,6 +727,14 @@ private:
     void removeCast6() {
         // ticket #2103
         ASSERT_EQUALS("if ( ! x )", tokenizeAndStringify("if (x == (char *) ((void *)0))", true));
+    }
+
+    void removeCast7() {
+        ASSERT_EQUALS("str = malloc ( 3 )", tokenizeAndStringify("str=(char **)malloc(3)", true));
+    }
+
+    void removeCast8() {
+        ASSERT_EQUALS("ptr1 = ptr2", tokenizeAndStringify("ptr1=(int *   **)ptr2", true));
     }
 
     void inlineasm() {

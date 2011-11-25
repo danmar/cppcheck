@@ -260,6 +260,7 @@ private:
         TEST_CASE(realloc12);
         TEST_CASE(realloc13);
         TEST_CASE(realloc14);
+        TEST_CASE(realloc15);
 
         TEST_CASE(assign1);
         TEST_CASE(assign2);   // #2806 - FP when using redundant assignment
@@ -2726,6 +2727,17 @@ private:
               "    usep(p);\n"
               "}\n", false);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc15() {
+        check("bool foo() {\n"
+              "    char ** m_options;\n"
+              "    m_options = (char**)realloc( m_options, 2 * sizeof(char*));\n"
+              "    if( m_options == NULL )\n"
+              "        return false;\n"
+              "    return true;\n"
+              "}\n", false);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Common realloc mistake: \'m_options\' nulled but not freed upon failure\n", errout.str());
     }
 
     void assign1() {
