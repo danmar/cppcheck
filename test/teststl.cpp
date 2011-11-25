@@ -595,6 +595,18 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x)\n"
+              "{\n"
+              "    for (iterator it = foo.begin(); it != foo.end(); ++it)\n"
+              "    {\n"
+              "        foo.erase(it);\n"
+              "        if (x)"
+              "            return;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
+
     }
 
     void eraseContinue() {
