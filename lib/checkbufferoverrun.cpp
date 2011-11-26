@@ -219,7 +219,7 @@ private:
 static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 {
     // Used later to check if the body belongs to a "if"
-    const std::string str1(tok->str());
+    bool is_if = tok->str() == "if";
 
     // Count { and }
     unsigned int indentlevel = 0;
@@ -239,7 +239,7 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
         }
 
         // If scanning a "if" block then bailout for "break"
-        else if (str1 == "if" && tok->str() == "break")
+        else if (is_if && tok->str() == "break")
             return true;
 
         // bailout for "return"
@@ -874,7 +874,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                     tok3 = tok3->tokAt(-2);
 
                 // just taking the address?
-                const bool addr(tok3 && (Token::simpleMatch(tok3, "&") ||
+                const bool addr(tok3 && (tok3->str() == "&" ||
                                          Token::simpleMatch(tok3->previous(), "& (")));
 
                 // taking address of 1 past end?
@@ -1065,8 +1065,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     tok2 = tok2->tokAt(-2);
 
                 // just taking the address?
-                const bool addr(Token::simpleMatch(tok2, "&") ||
-                                Token::simpleMatch(tok2->previous(), "& ("));
+                const bool addr(tok2 && (tok2->str() == "&" ||
+					                     Token::simpleMatch(tok2->previous(), "& (")));
 
                 // taking address of 1 past end?
                 if (addr && totalIndex == totalElements)
@@ -1278,6 +1278,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         else if (tok->str() == "}")
             --indentlevel;
 
+        if (indentlevel <= 0)
+            continue;
+
         // size : Max array index
         MathLib::bigint size = 0;
 
@@ -1298,25 +1301,24 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                                      "Check (BufferOverrun::checkGlobalAndLocalVariable)",
                                      tok->progressValue());
 
-        if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]")) {
+        if (Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]")) {
             size = MathLib::toLongNumber(tok->strAt(6));
             type = tok->strAt(4);
             varid = tok->next()->varId();
             nextTok = 8;
-        } else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% ( %num% )")) {
+        } else if (Token::Match(tok, "[*;{}] %var% = new %type% ( %num% )")) {
             size = 1;
             type = tok->strAt(4);
             varid = tok->next()->varId();
             nextTok = 8;
-        } else if (indentlevel > 0 &&
-                   Token::Match(tok, "[;{}] %var% = %str% ;") &&
+        } else if (Token::Match(tok, "[;{}] %var% = %str% ;") &&
                    tok->next()->varId() > 0 &&
                    NULL != Token::findmatch(_tokenizer->tokens(), "[;{}] const| %type% * %varid% ;", tok->next()->varId())) {
             size = 1 + int(tok->tokAt(3)->strValue().size());
             type = "char";
             varid = tok->next()->varId();
             nextTok = 4;
-        } else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = malloc|alloca ( %num% ) ;")) {
+        } else if (Token::Match(tok, "[*;{}] %var% = malloc|alloca ( %num% ) ;")) {
             size = MathLib::toLongNumber(tok->strAt(5));
             type = "char";   // minimum type, typesize=1
             varid = tok->next()->varId();

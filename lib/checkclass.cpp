@@ -1337,25 +1337,13 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
 
 static unsigned int countParameters(const Token *tok)
 {
-    if (Token::Match(tok->tokAt(2), "void| )"))
+    tok = tok->tokAt(2);
+    if (tok->str() == ")")
         return 0;
 
     unsigned int numpar = 1;
-    unsigned int parlevel = 0;
-    for (; tok; tok = tok->next()) {
-        if (tok->str() == "(")
-            ++parlevel;
-
-        else if (tok->str() == ")") {
-            if (parlevel <=1)
-                break;
-            --parlevel;
-        }
-
-        else if (parlevel==1 && tok->str() == ",") {
-            ++numpar;
-        }
-    }
+    while ((tok = tok->nextArgument()))
+        numpar++;
 
     return numpar;
 }
@@ -1364,7 +1352,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
 {
     unsigned int args = countParameters(tok);
 
-    std::list<Function>::const_iterator    func;
+    std::list<Function>::const_iterator func;
     unsigned int matches = 0;
     unsigned int consts = 0;
 

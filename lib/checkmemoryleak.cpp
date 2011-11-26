@@ -626,31 +626,17 @@ bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid, boo
 }
 
 
-static int countParameters(const Token *tok)
+static unsigned int countParameters(const Token *tok)
 {
-    if (!Token::Match(tok, "%var% ("))
-        return -1;
-    if (Token::Match(tok->tokAt(2), "void| )"))
+    tok = tok->tokAt(2);
+    if (tok->str() == ")")
         return 0;
 
-    int numpar = 1;
-    int parlevel = 0;
-    for (; tok; tok = tok->next()) {
-        if (tok->str() == "(")
-            ++parlevel;
+    unsigned int numpar = 1;
+    while (tok = tok->nextArgument())
+        numpar++;
 
-        else if (tok->str() == ")") {
-            if (parlevel <= 1)
-                return numpar;
-            --parlevel;
-        }
-
-        else if (parlevel == 1 && tok->str() == ",") {
-            ++numpar;
-        }
-    }
-
-    return -1;
+    return numpar;
 }
 
 bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname)
@@ -729,8 +715,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     }
 
     // how many parameters is there in the function call?
-    int numpar = countParameters(tok);
-    if (numpar <= 0) {
+    unsigned int numpar = countParameters(tok);
+    if (numpar == 0) {
         // Taking return value => it is not a noreturn function
         if (tok->strAt(-1) == "=")
             return NULL;
@@ -2885,7 +2871,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
 
 
 
-#include "checkuninitvar.h"		// CheckUninitVar::analyse
+#include "checkuninitvar.h" // CheckUninitVar::analyse
 
 void CheckMemoryLeakNoVar::check()
 {

@@ -826,7 +826,7 @@ static Token *processFunc(Token *tok2, bool inOperator)
             tok2 = tok2->linkAt(4)->next();
         else if (Token::Match(tok2->next(), "* ( * %type% ("))
             tok2 = tok2->linkAt(5)->next();
-        else if (Token::Match(tok2->next(), "* [") &&
+        else if (Token::simpleMatch(tok2->next(), "* [") &&
                  Token::simpleMatch(tok2->linkAt(2), "] ;"))
             tok2 = tok2->next();
         else {
@@ -3450,7 +3450,7 @@ void Tokenizer::setVarId()
             tok = tok->next();
 
         // skip global namespace prefix
-        if (Token::simpleMatch(tok, "::"))
+        if (tok && tok->str() == "::")
             tok = tok->next();
 
         while (Token::Match(tok, "%var% ::"))
@@ -8389,9 +8389,9 @@ const char *Tokenizer::getParameterName(const Token *ftok, unsigned int par)
     for (; ftok; ftok = ftok->next()) {
         if (ftok->str() == ")")
             break;
-        if (ftok->str() == ",")
+        else if (ftok->str() == ",")
             ++_par;
-        if (par == _par && Token::Match(ftok, "%var% [,)]"))
+        else if (par == _par && Token::Match(ftok, "%var% [,)]"))
             return ftok->str().c_str();
     }
     return NULL;
@@ -9145,25 +9145,18 @@ void Tokenizer::simplifyStructDecl()
 
 void Tokenizer::simplifyCallingConvention()
 {
-    const char * pattern = "__cdecl|__stdcall|__fastcall|__thiscall|__clrcall|__syscall|__pascal|__fortran|__far|__near|WINAPI|APIENTRY|CALLBACK";
-    while (Token::Match(_tokens, pattern)) {
-        _tokens->deleteThis();
-    }
+    const char pattern[] = "__cdecl|__stdcall|__fastcall|__thiscall|__clrcall|__syscall|__pascal|__fortran|__far|__near|WINAPI|APIENTRY|CALLBACK";
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        while (Token::Match(tok->next(), pattern)) {
-            tok->deleteNext();
+        while (Token::Match(tok, pattern)) {
+            tok->deleteThis();
         }
     }
 }
 
 void Tokenizer::simplifyDeclspec()
 {
-    while (Token::simpleMatch(_tokens, "__declspec (") && _tokens->next()->link() && _tokens->next()->link()->next()) {
-        Token::eraseTokens(_tokens, _tokens->next()->link()->next());
-        _tokens->deleteThis();
-    }
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "__declspec (") && tok->next()->link() && tok->next()->link()->next()) {
+        while (Token::simpleMatch(tok, "__declspec (") && tok->next()->link() && tok->next()->link()->next()) {
             Token::eraseTokens(tok, tok->next()->link()->next());
             tok->deleteThis();
         }
@@ -9172,12 +9165,8 @@ void Tokenizer::simplifyDeclspec()
 
 void Tokenizer::simplifyAttribute()
 {
-    while (Token::simpleMatch(_tokens, "__attribute__ (") && _tokens->next()->link() && _tokens->next()->link()->next()) {
-        Token::eraseTokens(_tokens, _tokens->next()->link()->next());
-        _tokens->deleteThis();
-    }
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "__attribute__ (") && tok->next()->link() && tok->next()->link()->next()) {
+        while (Token::simpleMatch(tok, "__attribute__ (") && tok->next()->link() && tok->next()->link()->next()) {
             if (Token::simpleMatch(tok->tokAt(2), "( unused )")) {
                 // check if after variable name
                 if (Token::Match(tok->next()->link()->next(), ";|=")) {
@@ -9192,7 +9181,6 @@ void Tokenizer::simplifyAttribute()
 
             Token::eraseTokens(tok, tok->next()->link()->next());
             tok->deleteThis();
-            tok = tok->previous();
         }
     }
 }
@@ -9201,12 +9189,9 @@ void Tokenizer::simplifyAttribute()
 void Tokenizer::simplifyKeyword()
 {
     const char pattern[] = "volatile|inline|__inline|__forceinline|register|restrict|__restrict|__restrict__";
-    while (Token::Match(_tokens, pattern)) {
-        _tokens->deleteThis();
-    }
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        while (Token::Match(tok->next(), pattern)) {
-            tok->deleteNext();
+        while (Token::Match(tok, pattern)) {
+            tok->deleteThis();
         }
     }
 }

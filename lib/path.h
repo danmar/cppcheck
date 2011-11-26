@@ -38,14 +38,14 @@ public:
      * @param path Path string to convert.
      * @return converted path.
      */
-    static std::string toNativeSeparators(const std::string &path);
+    static std::string toNativeSeparators(std::string path);
 
     /**
       * Convert path to use internal path separators.
       * @param path Path string to convert.
       * @return converted path.
       */
-    static std::string fromNativeSeparators(const std::string &path);
+    static std::string fromNativeSeparators(std::string path);
 
     /**
      * @brief Simplify path "foo/bar/.." => "foo"
@@ -68,7 +68,7 @@ public:
      * @param path path to be cleaned.
      * @return Cleaned path without quotation marks.
      */
-    static std::string removeQuotationMarks(const std::string &path);
+    static std::string removeQuotationMarks(std::string path);
 
     /**
       * @brief Get an extension of the filename.

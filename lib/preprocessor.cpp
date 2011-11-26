@@ -1107,9 +1107,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
             if (from_negation) {
                 ndeflist.push_back(deflist.back());
-                deflist.pop_back();
-                std::string nmark("!");
-                deflist.push_back(nmark);
+                deflist.back() = "!";
             }
 
             if (std::find(ret.begin(), ret.end(), def) == ret.end()) {
@@ -1119,13 +1117,11 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         else if (line.compare(0, 5, "#else") == 0 && ! deflist.empty()) {
             if (deflist.back() == "!") {
-                deflist.pop_back();
-                deflist.push_back(ndeflist.back());
+                deflist.back() = ndeflist.back();
                 ndeflist.pop_back();
             } else {
                 std::string tempDef((deflist.back() == "1") ? "0" : "1");
-                deflist.pop_back();
-                deflist.push_back(tempDef);
+                deflist.back() = tempDef;
             }
         }
 
@@ -2701,11 +2697,8 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
         }
     }
 
-    {
-        std::map<std::string, PreprocessorMacro *>::iterator it;
-        for (it = macros.begin(); it != macros.end(); ++it)
-            delete it->second;
-    }
+    for (std::map<std::string, PreprocessorMacro *>::iterator it = macros.begin(); it != macros.end(); ++it)
+        delete it->second;
 
     return ostr.str();
 }

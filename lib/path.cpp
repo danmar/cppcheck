@@ -22,7 +22,7 @@
 #include <cstring>
 #include "path.h"
 
-std::string Path::toNativeSeparators(const std::string &path)
+std::string Path::toNativeSeparators(std::string path)
 {
 #if defined(_WIN32)
     char separ = '/';
@@ -31,18 +31,16 @@ std::string Path::toNativeSeparators(const std::string &path)
     char separ = '\\';
     char native = '/';
 #endif
-    std::string modified(path);
-    std::replace(modified.begin(), modified.end(), separ, native);
-    return modified;
+    std::replace(path.begin(), path.end(), separ, native);
+    return path;
 }
 
-std::string Path::fromNativeSeparators(const std::string &path)
+std::string Path::fromNativeSeparators(std::string path)
 {
     char nonnative = '\\';
     char newsepar = '/';
-    std::string modified(path);
-    std::replace(modified.begin(), modified.end(), nonnative, newsepar);
-    return modified;
+    std::replace(path.begin(), path.end(), nonnative, newsepar);
+    return path;
 }
 
 std::string Path::simplifyPath(const char *originalPath)
@@ -109,11 +107,10 @@ bool Path::sameFileName(const std::string &fname1, const std::string &fname2)
 #endif
 }
 
-std::string Path::removeQuotationMarks(const std::string &path)
+std::string Path::removeQuotationMarks(std::string path)
 {
-    std::string editPath(path);
-    editPath.erase(std::remove(editPath.begin(), editPath.end(), '\"'), editPath.end());
-    return editPath;
+    path.erase(std::remove(path.begin(), path.end(), '\"'), path.end());
+    return path;
 }
 
 std::string Path::getFilenameExtension(const std::string &path)

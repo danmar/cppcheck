@@ -336,24 +336,14 @@ void CheckNullPointer::nullPointerLinkedList()
     //    }
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next()) {
         // search for a "for" token..
-        if (!Token::simpleMatch(tok1, "for ("))
+        if (tok1->str() != "for")
             continue;
 
         // is there any dereferencing occurring in the for statement
-        // parlevel2 counts the parentheses when using tok2.
-        unsigned int parlevel2 = 1;
-        for (const Token *tok2 = tok1->tokAt(2); tok2; tok2 = tok2->next()) {
-            // Parentheses..
-            if (tok2->str() == "(")
-                ++parlevel2;
-            else if (tok2->str() == ")") {
-                if (parlevel2 <= 1)
-                    break;
-                --parlevel2;
-            }
-
+        const Token* end2 = tok1->tokAt(1)->link();
+        for (const Token *tok2 = tok1->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
             // Dereferencing a variable inside the "for" parentheses..
-            else if (Token::Match(tok2, "%var% . %var%")) {
+            if (Token::Match(tok2, "%var% . %var%")) {
                 // Variable id for dereferenced variable
                 const unsigned int varid(tok2->varId());
                 if (varid == 0)
