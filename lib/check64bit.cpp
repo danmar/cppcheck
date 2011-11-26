@@ -34,7 +34,7 @@ namespace {
 static bool isaddr(const Variable *var)
 {
     const Token *nametok = var ? var->nameToken() : 0;
-    return (var && (nametok->strAt(-1) == "*" || nametok->strAt(1) == "["));
+    return (var && (nametok->strAt(-2) == "*" || nametok->strAt(-1) == "*" || nametok->strAt(1) == "["));
 }
 
 /** Is given variable an integer variable */

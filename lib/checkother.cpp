@@ -1119,25 +1119,24 @@ void CheckOther::invalidFunctionUsage()
 
         // goto ","
         const Token *tok2 = tok->tokAt(3);
-        while (tok2 && tok2->str() != ",")
+        while (tok2->str() != ",")
             tok2 = tok2->next();
-        if (!tok2)
-            continue;
+
+        tok2 = tok2->next(); // Jump behind ","
+
+        if (tok->str() == "snprintf") { // Jump over second parameter for snprintf
+            tok2 = tok2->nextArgument();
+            if (!tok2)
+                continue;
+        }
 
         // is any source buffer overlapping the target buffer?
-        unsigned int parlevel = 0;
-        while ((tok2 = tok2->next()) != NULL) {
-            if (tok2->str() == "(")
-                ++parlevel;
-            else if (tok2->str() == ")") {
-                if (!parlevel)
-                    break;
-                --parlevel;
-            } else if (parlevel == 0 && Token::Match(tok2, ", %varid% [,)]", varid)) {
+        do {
+            if (Token::Match(tok2, "%varid% [,)]", varid)) {
                 sprintfOverlappingDataError(tok2->next(), tok2->next()->str());
                 break;
             }
-        }
+        } while ((tok2 = tok2->nextArgument()) != NULL);
     }
 }
 
@@ -1167,9 +1166,13 @@ void CheckOther::invalidScanf()
         const Token *formatToken = 0;
         if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
             formatToken = tok->tokAt(2);
-        else if (Token::Match(tok, "fscanf|vfscanf ( %var% , %str% ,"))
-            formatToken = tok->tokAt(4);
-        else
+        else if (Token::Match(tok, "fscanf|vfscanf (")) {
+            const Token* nextArg = tok->tokAt(2)->nextArgument();
+            if (nextArg && Token::Match(nextArg, "%str%"))
+                formatToken = nextArg;
+            else
+                continue;
+        } else
             continue;
 
         bool format = false;
@@ -1776,7 +1779,7 @@ void CheckOther::checkCharVariable()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Declaring the variable..
-        if (Token::Match(tok, "[{};(,] const| char *| %var% [;=,)]") ||
+        if (Token::Match(tok, "[{};(,] const| char *| const| %var% [;=,)]") ||
             Token::Match(tok, "[{};(,] const| char %var% [")) {
             // goto 'char' token
             tok = tok->next();
@@ -1791,6 +1794,8 @@ void CheckOther::checkCharVariable()
             tok = tok->next();
             const bool isPointer(tok->str() == "*" || tok->strAt(1) == "[");
             if (tok->str() == "*")
+                tok = tok->next();
+            if (tok->str() == "const")
                 tok = tok->next();
 
             const unsigned int varid = tok->varId();
