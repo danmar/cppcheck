@@ -340,7 +340,7 @@ void CheckNullPointer::nullPointerLinkedList()
             continue;
 
         // is there any dereferencing occurring in the for statement
-        const Token* end2 = tok1->tokAt(1)->link();
+        const Token* end2 = tok1->linkAt(1);
         for (const Token *tok2 = tok1->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
             // Dereferencing a variable inside the "for" parentheses..
             if (Token::Match(tok2, "%var% . %var%")) {
