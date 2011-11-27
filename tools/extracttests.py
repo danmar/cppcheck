@@ -138,8 +138,11 @@ for arg in sys.argv[1:]:
         xml = True
     elif arg.startswith('--html='):
         htmldir = arg[7:]
-    else:
+    elif arg.endswith('.cpp'):
         filename = arg
+    else:
+        print 'Invalid option: ' + arg
+        sys.exit(1)
 
 
 # extract test cases
