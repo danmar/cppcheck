@@ -55,6 +55,10 @@ class Extract:
 def strtoxml(s):
     return s.replace('&','&amp;').replace('"', '&quot;').replace('<','&lt;').replace('>','&gt;')
 
+if len(sys.argv) == 1 or '--help' in sys.argv:
+    print 'Extract test cases from test file'
+    print 'Syntax: extracttests.py [--html=folder] [--xml] path/testfile.cpp'
+
 # parse command line
 xml = False
 filename = None
