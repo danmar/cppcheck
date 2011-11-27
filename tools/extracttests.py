@@ -124,7 +124,7 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
     fout.close()
 
 
-if len(sys.argv) == 1 or '--help' in sys.argv:
+if len(sys.argv) <= 1 or '--help' in sys.argv:
     print 'Extract test cases from test file'
     print 'Syntax: extracttests.py [--html=folder] [--xml] path/testfile.cpp'
     sys.exit(0)
@@ -133,16 +133,14 @@ if len(sys.argv) == 1 or '--help' in sys.argv:
 xml = False
 filename = None
 htmldir = None
-i = 1
-while i < len(sys.argv):
-    if sys.argv[i] == '--xml':
+for arg in sys.argv[1:]:
+    if arg == '--xml':
         xml = True
-    elif sys.argv[i].startswith('--html='):
-        arg = sys.argv[i]
+    elif arg.startswith('--html='):
         htmldir = arg[7:]
     else:
-        filename = sys.argv[i]
-    i = i + 1
+        filename = arg
+
 
 # extract test cases
 if filename != None:
