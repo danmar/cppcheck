@@ -703,7 +703,7 @@ void CmdLineParser::PrintHelp()
               "    -U<ID>               By default Cppcheck checks all configurations.\n"
               "                         Use '-U' to explicitely hide certain #ifdef <ID> code\n"
               "                         paths from checking.\n"
-              "                         Example: '-UDEBUG\n"
+              "                         Example: '-UDEBUG'\n"
               "    --enable=<id>        Enable additional checks. The available ids are:\n"
               "                          * all\n"
               "                                  Enable all checks\n"
