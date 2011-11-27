@@ -127,6 +127,7 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
 if len(sys.argv) == 1 or '--help' in sys.argv:
     print 'Extract test cases from test file'
     print 'Syntax: extracttests.py [--html=folder] [--xml] path/testfile.cpp'
+    sys.exit(0)
 
 # parse command line
 xml = False
