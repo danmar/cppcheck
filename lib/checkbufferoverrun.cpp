@@ -530,6 +530,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
     total_size["memcmp"] = 3;
     total_size["memcpy"] = 3;
     total_size["memmove"] = 3;
+    total_size["memchr"] = 3;
 
     if (par == 1) {
         // reading from array

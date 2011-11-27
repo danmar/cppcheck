@@ -2718,13 +2718,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: a\n", errout.str());
 
-        // When this TODO assertion works, ticket #909 can probably be closed
+        // Ticket #909
         check("void f()\n"
               "{\n"
-              "    char a[5], b[50];\n"
-              "    memchr(a, b, 10);\n"
+              "    char * pch;\n"
+              "    char str[] = \"Example string\";\n"
+              "    pch = (char*) memchr (str, 'p', 16);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: str\n", errout.str());
     }
 
     // ticket #2121 - buffer access out of bounds when using uint32_t
