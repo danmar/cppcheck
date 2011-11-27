@@ -333,6 +333,11 @@ void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &v
 //---------------------------------------------------------------------------
 void CheckOther::checkSizeofForNumericParameter()
 {
+    // TODO: write sensible error message if char constant is used
+    //       see ticket #3179
+    if (!_settings->experimental)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "sizeof ( %num% )")
             || Token::Match(tok, "sizeof %num%")

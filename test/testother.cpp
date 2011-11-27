@@ -3070,25 +3070,29 @@ private:
     void sizeofForNumericParameter() {
         check("void f() {\n"
               "    std::cout << sizeof(10) << std::endl;\n"
-              "}\n"
+              "}\n",
+              NULL, true
              );
         ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof with a numeric constant as function argument might not be what you intended.\n", errout.str());
 
         check("void f() {\n"
               "    std::cout << sizeof(-10) << std::endl;\n"
-              "}\n"
+              "}\n",
+              NULL, true
              );
         ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof with a numeric constant as function argument might not be what you intended.\n", errout.str());
 
         check("void f() {\n"
               "    std::cout << sizeof 10  << std::endl;\n"
-              "}\n"
+              "}\n",
+              NULL, true
              );
         ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof with a numeric constant as function argument might not be what you intended.\n", errout.str());
 
         check("void f() {\n"
               "    std::cout << sizeof -10  << std::endl;\n"
-              "}\n"
+              "}\n",
+              NULL, true
              );
         ASSERT_EQUALS("[test.cpp:2]: (error) Using sizeof with a numeric constant as function argument might not be what you intended.\n", errout.str());
 
