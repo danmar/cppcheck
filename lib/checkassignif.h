@@ -63,13 +63,19 @@ public:
 private:
 
     void assignIfError(const Token *tok, bool result);
-    void comparisonError(const Token *tok, bool result);
+
+    void comparisonError(const Token *tok,
+                         int value1,
+                         const std::string &op,
+                         int value2,
+                         bool result);
+
     void multiConditionError(const Token *tok, unsigned int line1);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckAssignIf c(0, settings, errorLogger);
         c.assignIfError(0, false);
-        c.comparisonError(0, false);
+        c.comparisonError(0, 6, "==", 1, false);
         c.multiConditionError(0,1);
     }
 

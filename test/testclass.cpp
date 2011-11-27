@@ -77,8 +77,10 @@ private:
         TEST_CASE(uninitVarArray6);
         TEST_CASE(uninitVarArray7);
         TEST_CASE(uninitVarArray2D);
+        TEST_CASE(uninitVarArray3D);
         TEST_CASE(uninitVarStruct1); // ticket #2172
         TEST_CASE(uninitVarStruct2); // ticket #838
+        TEST_CASE(uninitVarUnion); // ticket #3196
         TEST_CASE(uninitMissingFuncDef);	// can't expand function in constructor
         TEST_CASE(privateCtor1);        	// If constructor is private..
         TEST_CASE(privateCtor2);        	// If constructor is private..
@@ -214,6 +216,7 @@ private:
 
         Settings settings;
         settings.addEnabled("style");
+        settings.inconclusive = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -233,7 +236,7 @@ private:
                        "    void goo() {}"
                        "    void operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
@@ -267,14 +270,14 @@ private:
                        "public:\n"
                        "    void operator=(const B&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n"
-                      "[test.cpp:9]: (style) 'B::operator=' should return 'B &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n"
+                      "[test.cpp:9]: (style) Inconclusive: 'B::operator=' should return 'B &'\n", errout.str());
 
         checkOpertorEq("struct A\n"
                        "{\n"
                        "    void operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
     }
 
     void operatorEq2() {
@@ -283,28 +286,28 @@ private:
                        "public:\n"
                        "    void * operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
                        "    A * operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
                        "    const A & operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
                        "    B & operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Inconclusive: 'A::operator=' should return 'A &'\n", errout.str());
     }
 
     void operatorEq3() { // ticket #3051
@@ -2432,6 +2435,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void uninitVarArray3D() {
+        checkUninitVar("class John\n"
+                       "{\n"
+                       "private:\n"
+                       "    char a[2][2][2];\n"
+                       "public:\n"
+                       "    John() { a[0][0][0] = 0; }\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void uninitVarStruct1() { // ticket #2172
         checkUninitVar("class A\n"
                        "{\n"
@@ -2522,6 +2536,18 @@ private:
                        "public:\n"
                        "    Fred()\n"
                        "    { }\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarUnion() { // ticket #3196
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "private:\n"
+                       "    union { int a; int b; };\n"
+                       "public:\n"
+                       "    Fred()\n"
+                       "    { a = 0; }\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3518,6 +3544,7 @@ private:
             settings = *s;
         else
             settings.addEnabled("style");
+        settings.inconclusive = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

@@ -55,6 +55,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.experimental = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -895,6 +896,15 @@ private:
                        "    }\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Assignment in for. Ticket #3287
+        checkUninitVar("int foo(char* in, bool b) {\n"
+                       "    char* c;\n"
+                       "    if (b) for (c = in; *c == 0; ++c) {}\n"
+                       "    else c = in + strlen(in) - 1;\n"
+                       "    *c = 0;\n"
+                       "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Uninitialized variable: c\n", errout.str());
     }
 
     // switch..

@@ -41,6 +41,7 @@ Token::Token(Token **t) :
     _isPointerCompare(false),
     _isLong(false),
     _isUnused(false),
+    _isStandardType(false),
     _varId(0),
     _fileIndex(0),
     _linenr(0),
@@ -75,7 +76,26 @@ void Token::update_property_info()
         _isNumber = false;
         _isBoolean = false;
     }
+
+    update_property_isStandardType();
 }
+
+void Token::update_property_isStandardType()
+{
+    _isStandardType = false;
+
+    if (_str.size() < 3)
+        return;
+
+    static const char * const type[] = {"int", "char", "bool", "long", "short", "float", "double", "size_t", 0};
+    for (int i = 0; type[i]; i++) {
+        if (_str == type[i]) {
+            _isStandardType = true;
+            break;
+        }
+    }
+}
+
 
 void Token::str(const std::string &s)
 {
@@ -124,6 +144,7 @@ void Token::deleteThis()
         _isPointerCompare = _next->_isPointerCompare;
         _isLong = _next->_isLong;
         _isUnused = _next->_isUnused;
+        _isStandardType = _next->_isStandardType;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
@@ -200,10 +221,50 @@ Token *Token::tokAt(int index)
     return tok;
 }
 
-std::string Token::strAt(int index) const
+const Token *Token::linkAt(int index) const
 {
     const Token *tok = this->tokAt(index);
-    return tok ? tok->_str.c_str() : "";
+    if (!tok) {
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.setfile("");
+        loc.line = this->linenr();
+        locationList.push_back(loc);
+        const ErrorLogger::ErrorMessage errmsg(locationList,
+                                               Severity::error,
+                                               "Internal error. Token::linkAt called with index outside the tokens range.",
+                                               "cppcheckError",
+                                               false);
+        Check::reportError(errmsg);
+    }
+    return tok ? tok->link() : 0;
+}
+
+Token *Token::linkAt(int index)
+{
+    Token *tok = this->tokAt(index);
+    if (!tok) {
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.setfile("");
+        loc.line = this->linenr();
+        locationList.push_back(loc);
+        const ErrorLogger::ErrorMessage errmsg(locationList,
+                                               Severity::error,
+                                               "Internal error. Token::linkAt called with index outside the tokens range.",
+                                               "cppcheckError",
+                                               false);
+        Check::reportError(errmsg);
+    }
+    return tok ? tok->link() : 0;
+}
+
+const std::string &Token::strAt(int index) const
+{
+    static const std::string empty_str;
+
+    const Token *tok = this->tokAt(index);
+    return tok ? tok->_str : empty_str;
 }
 
 static bool strisop(const char str[])
@@ -225,6 +286,46 @@ static bool strisop(const char str[])
     return false;
 }
 
+static int multiComparePercent(const char * * haystack_p,
+                               const char * needle,
+                               bool emptyStringFound)
+{
+    const char *haystack = *haystack_p;
+
+    if (haystack[0] == '%' && haystack[1] != '|') {
+        if (haystack[1] == 'o' && // "%op%"
+            haystack[2] == 'p' &&
+            haystack[3] == '%') {
+            if (strisop(needle))
+                return 1;
+            *haystack_p = haystack = haystack + 4;
+        } else if (haystack[1] == 'o' && // "%or%"
+                   haystack[2] == 'r' &&
+                   haystack[3] == '%') {
+            if (*needle == '|' && needle[1] != '|' && needle[1] != '=')
+                return 1;
+            *haystack_p = haystack = haystack + 4;
+        } else if (haystack[1] == 'o' && // "%oror%"
+                   haystack[2] == 'r' &&
+                   haystack[3] == 'o' &&
+                   haystack[4] == 'r' &&
+                   haystack[5] == '%') {
+            if (needle[0] == '|' && needle[1] == '|')
+                return 1;
+            *haystack_p = haystack = haystack + 6;
+        }
+
+        if (*haystack == '|')
+            *haystack_p = haystack = haystack + 1;
+        else if (*haystack == ' ' || *haystack == '\0')
+            return emptyStringFound ? 0 : -1;
+        else
+            return -1;
+    }
+
+    return 0xFFFF;
+}
+
 int Token::multiCompare(const char *haystack, const char *needle)
 {
     if (haystack[0] == '%' && haystack[1] == 'o') {
@@ -238,7 +339,7 @@ int Token::multiCompare(const char *haystack, const char *needle)
                    haystack[3] == '%' &&
                    haystack[4] == '|') {
             haystack = haystack + 5;
-            if (*needle == '|')
+            if (*needle == '|' && needle[1] != '|' && needle[1] != '=')
                 return 1;
         } else if (haystack[2] == 'r' && // "%oror%|"
                    haystack[3] == 'o' &&
@@ -271,6 +372,10 @@ int Token::multiCompare(const char *haystack, const char *needle)
 
             needlePointer = needle;
             ++haystack;
+
+            int ret = multiComparePercent(&haystack, needle, emptyStringFound);
+            if (ret < 2)
+                return ret;
         } else if (*haystack == ' ' || *haystack == '\0') {
             if (needlePointer == needle)
                 return 0;
@@ -291,36 +396,9 @@ int Token::multiCompare(const char *haystack, const char *needle)
 
             ++haystack;
 
-            if (haystack[0] == '%' && haystack[1] != '|') {
-                if (haystack[1] == 'o' && // "%op%"
-                    haystack[2] == 'p' &&
-                    haystack[3] == '%') {
-                    if (strisop(needle))
-                        return 1;
-                    haystack = haystack + 4;
-                } else if (haystack[1] == 'o' && // "%or%"
-                           haystack[2] == 'r' &&
-                           haystack[3] == '%') {
-                    if (*needle == '|')
-                        return 1;
-                    haystack = haystack + 4;
-                } else if (haystack[1] == 'o' && // "%oror%"
-                           haystack[2] == 'r' &&
-                           haystack[3] == 'o' &&
-                           haystack[4] == 'r' &&
-                           haystack[5] == '%') {
-                    if (needle[0] == '|' && needle[1] == '|')
-                        return 1;
-                    haystack = haystack + 6;
-                }
-
-                if (*haystack == '|')
-                    haystack++;
-                else if (*haystack == ' ' || *haystack == '\0')
-                    return emptyStringFound ? 0 : -1;
-                else
-                    return -1;
-            }
+            int ret = multiComparePercent(&haystack, needle, emptyStringFound);
+            if (ret < 2)
+                return ret;
         }
     }
 
@@ -455,12 +533,16 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 } else { // %varid%
                     if (varid == 0) {
                         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                        ErrorLogger::ErrorMessage::FileLocation loc;
+                        loc.line = tok->linenr();
+                        loc.setfile("");
+                        locationList.push_back(loc);
                         const ErrorLogger::ErrorMessage errmsg(locationList,
                                                                Severity::error,
                                                                "Internal error. Token::Match called with varid 0.",
                                                                "cppcheckError",
                                                                false);
-                        Check::reportError(errmsg);
+                        throw *tok;
                     }
 
                     if (tok->varId() != varid)
@@ -540,7 +622,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                         if (tok->str() != "|")
                             return false;
                         p += 4;
-                    } else if (p[3] == 'p') {
+                    } else if (p[2] == 'p') {
                         if (!tok->isOp())
                             return false;
                         p += 4;
@@ -581,6 +663,9 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             if (!patternUnderstood) {
                 return false;
             }
+
+            // debugging: assert that this is not part of a multicompare pattern..
+            assert(*p != '|');
 
             tok = tok->next();
             continue;
@@ -678,11 +763,7 @@ size_t Token::getStrLength(const Token *tok)
 
 bool Token::isStandardType() const
 {
-    bool ret = false;
-    const char *type[] = {"bool", "char", "short", "int", "long", "float", "double", "size_t", 0};
-    for (int i = 0; type[i]; i++)
-        ret |= (_str == type[i]);
-    return ret;
+    return _isStandardType;
 }
 
 void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
@@ -777,7 +858,7 @@ void Token::insertToken(const std::string &tokenStr)
 
 void Token::eraseTokens(Token *begin, const Token *end)
 {
-    if (! begin)
+    if (!begin)
         return;
 
     while (begin->next() && begin->next() != end) {

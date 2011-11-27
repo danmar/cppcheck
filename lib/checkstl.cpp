@@ -90,7 +90,7 @@ void CheckStl::iterators()
 
                 // If insert/erase is used on different container then
                 // report an error
-                if (tok2->varId() != containerId && tok2->tokAt(5)->str() != ".") {
+                if (tok2->varId() != containerId && tok2->strAt(5) != ".") {
                     // skip error message if container is a set..
                     if (tok2->varId() > 0) {
                         const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -120,7 +120,7 @@ void CheckStl::iterators()
                 validIterator = true;
 
                 // skip the operation
-                tok2 = tok2->tokAt(5)->link();
+                tok2 = tok2->linkAt(5);
                 if (!tok2)
                     break;
             }
@@ -203,12 +203,12 @@ void CheckStl::mismatchingContainers()
 
         // TODO: If iterator variables are used instead then there are false negatives.
         if (Token::Match(tok, pattern2.c_str()) && algorithm2.find(tok->strAt(2)) != algorithm2.end()) {
-            if (tok->tokAt(4)->str() != tok->tokAt(10)->str()) {
+            if (tok->strAt(4) != tok->strAt(10)) {
                 mismatchingContainersError(tok);
             }
             tok = tok->tokAt(15);
         } else if (Token::Match(tok, pattern22.c_str()) && algorithm22.find(tok->strAt(2)) != algorithm22.end()) {
-            if (tok->tokAt(4)->str() != tok->tokAt(10)->str() || tok->tokAt(16)->str() != tok->tokAt(22)->str()) {
+            if (tok->strAt(4) != tok->strAt(10) || tok->strAt(16) != tok->strAt(22)) {
                 mismatchingContainersError(tok);
             }
             tok = tok->tokAt(27);
@@ -225,7 +225,7 @@ void CheckStl::mismatchingContainers()
                     break;
             }
             if (tok2 && Token::Match(tok2, pattern1x1_2.c_str())) {
-                if (tok->tokAt(4)->str() != tok2->tokAt(1)->str()) {
+                if (tok->strAt(4) != tok2->strAt(1)) {
                     mismatchingContainersError(tok);
                 }
                 tok = tok2->tokAt(6);
@@ -261,7 +261,7 @@ void CheckStl::stlOutOfBounds()
                 unsigned int indent3 = 0;
 
                 // variable id for loop variable.
-                unsigned int numId = tok2->tokAt(1)->varId();
+                unsigned int numId = tok2->next()->varId();
 
                 // variable id for the container variable
                 unsigned int varId = tok2->tokAt(3)->varId();
@@ -277,7 +277,7 @@ void CheckStl::stlOutOfBounds()
                         if (Token::simpleMatch(tok3->next(), ". size ( )"))
                             break;
                         else if (Token::Match(tok3->next(), "[ %varid% ]", numId))
-                            stlOutOfBoundsError(tok3, tok3->tokAt(2)->str(), tok3->str());
+                            stlOutOfBoundsError(tok3, tok3->strAt(2), tok3->str());
                     }
                 }
                 break;
@@ -455,8 +455,8 @@ void CheckStl::erase()
                 }
 
                 if (Token::Match(tok2, "%var% = %var% . begin|rbegin|cbegin|crbegin ( ) ; %var% != %var% . end|rend|cend|crend ( )") &&
-                    tok2->str() == tok2->tokAt(8)->str() &&
-                    tok2->tokAt(2)->str() == tok2->tokAt(10)->str()) {
+                    tok2->str() == tok2->strAt(8) &&
+                    tok2->strAt(2) == tok2->strAt(10)) {
                     EraseCheckLoop::checkScope(this, tok2);
                     break;
                 }
@@ -546,7 +546,7 @@ void CheckStl::pushback()
         if (iteratorid == 0)
             continue;
 
-        if (iteratorDeclaredInsideLoop && tok->tokAt(4)->str() == "=") {
+        if (iteratorDeclaredInsideLoop && tok->strAt(4) == "=") {
             // skip "> :: iterator|const_iterator"
             tok = tok->tokAt(3);
         }
@@ -621,7 +621,7 @@ void CheckStl::pushback()
                 }
 
                 invalidIterator = tok2->strAt(2);
-                tok2 = tok2->tokAt(3)->link();
+                tok2 = tok2->linkAt(3);
             }
 
             // TODO: instead of bail out for 'else' try to check all execution paths.
@@ -787,7 +787,7 @@ bool CheckStl::isStlContainer(unsigned int varid)
 
         // discard namespace if supplied
         if (Token::simpleMatch(type, "std ::"))
-            type = type->next()->next();
+            type = type->tokAt(2);
 
         // all possible stl containers
         static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
@@ -878,7 +878,7 @@ void CheckStl::redundantCondition()
                            "}|}|";
     const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern);
     while (tok) {
-        bool b(tok->tokAt(15)->str() == "{");
+        bool b(tok->strAt(15) == "{");
 
         // Get tokens for the fields %var% and %any%
         const Token *var1 = tok->tokAt(2);
@@ -958,7 +958,7 @@ void CheckStl::missingComparison()
                         incrementToken = 0;
                     else if (Token::Match(tok3, "%varid% = %var% . insert ( ++| %varid% ++| ,", iteratorId)) {
                         // skip insertion..
-                        tok3 = tok3->tokAt(6)->link();
+                        tok3 = tok3->linkAt(6);
                         if (!tok3)
                             break;
                     }
@@ -1018,18 +1018,37 @@ void CheckStl::string_c_str()
                 else if (Token::Match(tok, "throw %var% . c_str ( ) ;") &&
                          tok->next()->varId() > 0 &&
                          localvar.find(tok->next()->varId()) != localvar.end()) {
-                    string_c_strError(tok);
-                } else if (Token::Match(tok, "return %var% . c_str ( ) ;") &&
+                    string_c_strThrowError(tok);
+                } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
                            tok->next()->varId() > 0 &&
-                           localvar.find(tok->next()->varId()) != localvar.end()) {
+                           pointers.find(tok->next()->varId()) != pointers.end()) {
                     string_c_strError(tok);
+                } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
+                           Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;") &&
+                           tok->next()->varId() > 0 &&
+                           pointers.find(tok->next()->varId()) != pointers.end() &&
+                           Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str())) {
+                    string_c_strError(tok);
+                }
+
+                // This part is inconclusive as the return type of the function
+                // might convert it to another string class implicitly.
+                // TODO: As soon as the symbol database stores the return value
+                // of a function, we can check if it's const char* and output a real error.
+                if (!_settings->inconclusive)
+                    continue;
+
+                if (Token::Match(tok, "return %var% . c_str ( ) ;") &&
+                    tok->next()->varId() > 0 &&
+                    localvar.find(tok->next()->varId()) != localvar.end()) {
+                    string_c_strError(tok, true);
                 } else if (Token::Match(tok, "return %var% . str ( ) . c_str ( ) ;") &&
                            tok->next()->varId() > 0 &&
                            localvar.find(tok->next()->varId()) != localvar.end()) {
-                    string_c_strError(tok);
+                    string_c_strError(tok, true);
                 } else if (Token::simpleMatch(tok, "return std :: string (") &&
-                           Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;")) {
-                    string_c_strError(tok);
+                           Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;")) {
+                    string_c_strError(tok, true);
                 } else if (Token::simpleMatch(tok, "return (") &&
                            Token::simpleMatch(tok->next()->link(), ") . c_str ( ) ;")) {
                     // Check for "+ localvar" or "+ std::string(" inside the bracket
@@ -1047,28 +1066,41 @@ void CheckStl::string_c_str()
                     }
 
                     if (is_implicit_std_string)
-                        string_c_strError(tok);
-                } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") &&
-                           tok->next()->varId() > 0 &&
-                           pointers.find(tok->next()->varId()) != pointers.end()) {
-                    string_c_strError(tok);
-                } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
-                           Token::simpleMatch(tok->tokAt(4)->link(), ") . c_str ( ) ;") &&
-                           tok->next()->varId() > 0 &&
-                           pointers.find(tok->next()->varId()) != pointers.end() &&
-                           Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str())) {
-                    string_c_strError(tok);
+                        string_c_strError(tok, true);
                 }
             }
         }
     }
 }
 
-void CheckStl::string_c_strError(const Token *tok)
+void CheckStl::string_c_strThrowError(const Token* tok)
 {
-    reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str()");
+    reportError(tok, Severity::error, "stlcstrthrow", "Dangerous usage of c_str(). The returned value by c_str() is invalid after throw call.\n"
+                "Dangerous usage of c_str(). The string is destroyed after the c_str() call so the thrown pointer is invalid.");
 }
 
+void CheckStl::string_c_strError(const Token* tok, bool is_inconlusive)
+{
+    if (is_inconlusive)
+        reportInconclusiveError(tok, Severity::error, "stlcstr", "Possible dangerous usage of c_str()\n"
+                                "Possible dangerous usage of c_str() in return statement. The c_str() return value is only valid until its string is deleted.");
+    else
+        reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n"
+                    "Dangerous usage of c_str(). The c_str() return value is only valid until its string is deleted.");
+}
+
+static bool hasArrayEnd(const Token *tok1)
+{
+    const Token *end = Token::findsimplematch(tok1, ";");
+    return (end && Token::simpleMatch(end->previous(), "] ;"));
+}
+
+static bool hasArrayEndParen(const Token *tok1)
+{
+    const Token *end = Token::findsimplematch(tok1, ";");
+    return (end && end->previous() &&
+            Token::simpleMatch(end->tokAt(-2), "] ) ;"));
+}
 
 //---------------------------------------------------------------------------
 //
@@ -1085,20 +1117,24 @@ void CheckStl::checkAutoPointer()
                 (Token::simpleMatch(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST))) {
                 autoPointerContainerError(tok);
             } else {
-                const Token *tok2 = tok->next()->next();
+                const Token *tok2 = tok->tokAt(2);
                 while (tok2) {
                     if (Token::Match(tok2, "> %var%")) {
-                        const Token *tok3 = tok2->next()->next();
+                        const Token *tok3 = tok2->tokAt(2);
+                        if (Token::Match(tok3, "( new %type%") && hasArrayEndParen(tok3)) {
+                            autoPointerArrayError(tok2->next());
+                            break;
+                        }
                         while (tok3 && tok3->str() != ";") {
                             tok3 = tok3->next();
                         }
                         if (tok3) {
-                            tok3 = tok3->previous()->previous();
+                            tok3 = tok3->tokAt(-2);
                             if (Token::simpleMatch(tok3->previous(), "[ ] )")) {
                                 autoPointerArrayError(tok2->next());
                             } else if (tok3->varId()) {
-                                const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type% [", tok3->varId());
-                                if (decltok) {
+                                const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type%", tok3->varId());
+                                if (decltok && hasArrayEnd(decltok)) {
                                     autoPointerArrayError(tok2->next());
                                 }
                             }
@@ -1114,12 +1150,13 @@ void CheckStl::checkAutoPointer()
         } else {
             if (Token::Match(tok, "%var% = %var% ;")) {
                 if (_settings->isEnabled("style")) {
-                    iter = autoPtrVarId.find(tok->next()->next()->varId());
+                    iter = autoPtrVarId.find(tok->tokAt(2)->varId());
                     if (iter != autoPtrVarId.end()) {
-                        autoPointerError(tok->next()->next());
+                        autoPointerError(tok->tokAt(2));
                     }
                 }
-            } else if (Token::Match(tok, "%var% = new %type% [") || Token::Match(tok, "%var% . reset ( new %type% [")) {
+            } else if ((Token::Match(tok, "%var% = new %type% ") && hasArrayEnd(tok)) ||
+                       (Token::Match(tok, "%var% . reset ( new %type% ") && hasArrayEndParen(tok))) {
                 iter = autoPtrVarId.find(tok->varId());
                 if (iter != autoPtrVarId.end()) {
                     autoPointerArrayError(tok);
@@ -1159,50 +1196,51 @@ void CheckStl::uselessCalls()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->varId() == 0)
             continue;
-        if (Token::Match(tok, "%var% . compare (") &&
-            tok->varId() == tok->tokAt(3)->link()->tokAt(-1)->varId()) {
+        /*if (Token::Match(tok, "%var% . compare (") &&
+            tok->varId() == tok->linkAt(3)->previous()->varId()) {
             uselessCallsReturnValueError(tok, tok->tokAt(2));
-        } else if (Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% ,") &&
-                   tok->varId() == tok->tokAt(4)->varId()) {
-            uselessCallsReturnValueError(tok->tokAt(4), tok->tokAt(2));
+        } else */
+        if (Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% [,)]") &&
+            tok->varId() == tok->tokAt(4)->varId()) {
+            uselessCallsReturnValueError(tok->tokAt(4), tok->str(), tok->strAt(2));
         } else if (Token::Match(tok, "%var% . swap ( %var% )") &&
                    tok->varId() == tok->tokAt(4)->varId()) {
-            uselessCallsSwapError(tok);
+            uselessCallsSwapError(tok, tok->str());
         } else if (Token::Match(tok, "%var% . substr ( )")) {
-            uselessCallsSubstrError(tok);
+            uselessCallsSubstrError(tok, tok->str());
         } else if (Token::Match(tok, "%var% . substr ( 0")) {
-            if (tok->tokAt(5)->str() == ")" ||
-                tok->tokAt(3)->link()->tokAt(-1)->str() == "npos")
-                uselessCallsSubstrError(tok);
+            if (tok->strAt(5) == ")" ||
+                tok->linkAt(3)->strAt(-1) == "npos")
+                uselessCallsSubstrError(tok, tok->str());
         }
     }
 }
 
 
-void CheckStl::uselessCallsReturnValueError(const Token *tok, const Token *function)
+void CheckStl::uselessCallsReturnValueError(const Token *tok, const std::string &varname, const std::string &function)
 {
     std::ostringstream errmsg;
-    const std::string funname(function ? function->str().c_str() : "");
-    const std::string varname(tok ? tok->str().c_str() : "");
-    errmsg << "Function \'"<< funname << "\' useless call. The variable \'"<< varname <<"\' is using function \'"<< funname << "\' against itself. Return of this function depends only on the position.\n" <<
-           "Function \'"<< funname << "\' useless call. The variable \'"<< varname <<"\' is using function \'"<< funname << "\' against itself. If the \'pos\' argument in the \'"<< funname << "\' function is 0 or there is no this argument then the function returns 0. If the position is greater than 0, the return value is npos.";
-
+    errmsg << "It is inefficient to call '" << varname << "." << function << "(" << varname << ")' as it always returns 0.\n"
+           << "The 'std::string::" << function << "()' returns zero when given itself as parameter "
+           << "(" << varname << "." << function << "(" << varname << ")). As it is currently the "
+           << "code is inefficient. It is also possible either the string searched ('"
+           << varname << "') or searched for ('" << varname << "') is wrong/mixed in the code?";
     reportError(tok, Severity::warning, "uselessCallsCompare", errmsg.str());
 }
 
-void CheckStl::uselessCallsSwapError(const Token *tok)
+void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varname)
 {
     std::ostringstream errmsg;
-    const std::string varname(tok ? tok->str().c_str() : "");
-    errmsg << "Function \'swap\' useless call. Using \'swap\' function from \'" << varname << "\' against itself doesn't make any changes.\n" <<
-           "Function \'swap\' useless call. Using \'swap\' function from \'" << varname << "\' against itself doesn't make any changes and can decrease in performance.";
+    errmsg << "It is inefficient to swap a object with itself by calling '" << varname << ".swap(" << varname << ")'\n"
+           << "The 'swap()' function has no logical effect when given itself as parameter "
+           << "(" << varname << ".swap(" << varname << ")). As it is currently the "
+           << "code is inefficient. It is possible either the object or the parameter is wrong/mixed in the code?";
     reportError(tok, Severity::performance, "uselessCallsSwap", errmsg.str());
 }
 
-void CheckStl::uselessCallsSubstrError(const Token *tok)
+void CheckStl::uselessCallsSubstrError(const Token *tok, const std::string &varname)
 {
     std::ostringstream errmsg;
-    const std::string varname(tok ? tok->str().c_str() : "");
     errmsg << "Function \'substr\' useless call. Function create copy of the \'" << varname << "\' object.\n" <<
            "Function \'substr\' useless call. \'substr\' function create copy of the whole \'" << varname << "\' object which can decrease in performance. Please use \'=\' operator instead.";
     reportError(tok, Severity::performance, "uselessCallsSubstr", errmsg.str());

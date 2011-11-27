@@ -217,6 +217,10 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     if (Token::Match(tok->previous(), "[;{}] %var% ="))
         return false;
 
+    // OK to delete a null
+    if (Token::Match(tok->previous(), "delete %var%") || Token::Match(tok->tokAt(-3), "delete [ ] %var%"))
+        return false;
+
     // unknown if it's a dereference
     unknown = true;
 
@@ -557,7 +561,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             // Function call: If the pointer is not a local variable it
             // might be changed by the call.
             else if (Token::Match(tok2, "[;{}] %var% (") &&
-                     Token::simpleMatch(tok2->tokAt(2)->link(), ") ;") && !isLocal) {
+                     Token::simpleMatch(tok2->linkAt(2), ") ;") && !isLocal) {
                 break;
             }
 
@@ -720,7 +724,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 const Token *endbody = Token::simpleMatch(endpar, ") {") ? endpar->next()->link() : 0;
                 if (endbody &&
                     Token::Match(endbody->tokAt(-3), "[;{}] %var% ;") &&
-                    isUpper(endbody->tokAt(-2)->str()))
+                    isUpper(endbody->strAt(-2)))
                     continue;
             }
 
@@ -790,12 +794,12 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     if (null && indentlevel == 0) {
                         // skip all "else" blocks because they are not executed in this execution path
                         while (Token::simpleMatch(tok2, "} else {"))
-                            tok2 = tok2->tokAt(2)->link();
+                            tok2 = tok2->linkAt(2);
                         null = false;
                     }
                 }
 
-                if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch")) {
+                if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch|for")) {
                     bool dummy = false;
                     if (Token::Match(tok2, "return * %varid%", varid))
                         nullPointerError(tok2, pointerName, linenr, inconclusive);
@@ -900,7 +904,7 @@ void CheckNullPointer::nullConstantDereference()
                     --indentlevel;
             }
 
-            if (tok->str() == "(" && Token::Match(tok->previous(), "sizeof|decltype"))
+            if (tok->str() == "(" && Token::Match(tok->previous(), "sizeof|decltype|typeid"))
                 tok = tok->link();
 
             else if (Token::simpleMatch(tok, "exit ( )")) {
@@ -1064,7 +1068,7 @@ private:
         }
 
         if (Token::Match(&tok, "%var% (")) {
-            if (tok.str() == "sizeof")
+            if (tok.str() == "sizeof" || tok.str() == "typeid")
                 return tok.next()->link();
 
             // parse usage..

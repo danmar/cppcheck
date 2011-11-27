@@ -45,7 +45,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
 
         if (tok->isName() && tok->varId()==0 && (tok->next() && tok->next()->str() == "(") &&
-            (!Token::Match(tok->previous(), ".|::|:|,") || Token::simpleMatch(tok->previous()->previous(), "std :: gets"))) {
+            (!Token::Match(tok->previous(), ".|::|:|,") || Token::simpleMatch(tok->tokAt(-2), "std :: gets"))) {
             // c function declaration?
             if ((tok->next()->link()->next() && tok->next()->link()->next()->str() == ";") && (tok->previous() && (tok->previous()->str() == "*" || tok->previous()->isName()))) {
                 continue;
@@ -63,20 +63,20 @@ void CheckObsoleteFunctions::obsoleteFunctions()
             if (it != _obsoleteStandardFunctions.end()) {
                 // If checking an old code base it might be uninteresting to update obsolete functions.
                 // Therefore this is "information"
-                reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
+                reportError(tok->next(), Severity::style, "obsoleteFunctions"+it->first, it->second);
             } else {
                 if (_settings->standards.posix) {
                     it = _obsoletePosixFunctions.find(tok->str());
                     if (it != _obsoletePosixFunctions.end()) {
                         // If checking an old code base it might be uninteresting to update obsolete functions.
                         // Therefore this is "information"
-                        reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
+                        reportError(tok->next(), Severity::style, "obsoleteFunctions"+it->first, it->second);
                     }
                 }
                 if (_settings->standards.c99) {
                     it = _obsoleteC99Functions.find(tok->str());
                     if (it != _obsoleteC99Functions.end()) {
-                        reportError(tok->tokAt(1), Severity::style, "obsoleteFunctions"+it->first, it->second);
+                        reportError(tok->next(), Severity::style, "obsoleteFunctions"+it->first, it->second);
                     }
                 }
             }

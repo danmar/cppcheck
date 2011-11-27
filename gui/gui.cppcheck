@@ -2,6 +2,7 @@
 <project version="1">
     <includedir>
         <dir name="../lib"/>
+        <dir name="."/>
         <dir name="temp"/>
     </includedir>
     <paths>

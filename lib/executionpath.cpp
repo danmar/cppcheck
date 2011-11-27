@@ -138,8 +138,8 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
     for (; tok; tok = tok->next()) {
         // might be a noreturn function..
         if (Token::simpleMatch(tok->tokAt(-2), ") ; }") &&
-            Token::Match(tok->tokAt(-2)->link()->tokAt(-2), "[;{}] %var% (") &&
-            tok->tokAt(-2)->link()->previous()->varId() == 0) {
+            Token::Match(tok->linkAt(-2)->tokAt(-2), "[;{}] %var% (") &&
+            tok->linkAt(-2)->previous()->varId() == 0) {
             ExecutionPath::bailOut(checks);
             return;
         }
@@ -161,9 +161,9 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
 
             // skip "while (fgets()!=NULL)"
             if (Token::simpleMatch(tok, "while ( fgets (")) {
-                const Token *tok2 = tok->tokAt(3)->link();
+                const Token *tok2 = tok->linkAt(3);
                 if (Token::simpleMatch(tok2, ") ) {")) {
-                    tok = tok2->tokAt(2)->link();
+                    tok = tok2->linkAt(2);
                     if (!tok)
                         break;
                     continue;
@@ -252,7 +252,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                 // #2231 - loop body only contains a conditional initialization..
                 if (Token::simpleMatch(tok2->next(), "if (")) {
                     // Start { for the if block
-                    const Token *tok3 = tok2->tokAt(2)->link();
+                    const Token *tok3 = tok2->linkAt(2);
                     if (Token::simpleMatch(tok3,") {")) {
                         tok3 = tok3->next();
 
@@ -286,7 +286,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
 
             // if "do { .. } while ( .." , goto end of while..
             if (Token::simpleMatch(tok, "do {") && Token::simpleMatch(tok2, "} while ("))
-                tok2 = tok2->tokAt(2)->link();
+                tok2 = tok2->linkAt(2);
 
             // bail out all variables if the scope contains a "return"
             // bail out all variables used in this for/while/switch/do

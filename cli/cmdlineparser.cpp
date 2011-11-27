@@ -267,8 +267,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->_errorsOnly = true;
 
         // Append userdefined code to checked source code
-        else if (strncmp(argv[i], "--append=", 9) == 0)
-            _settings->append(9 + argv[i]);
+        else if (strncmp(argv[i], "--append=", 9) == 0) {
+            const std::string filename = 9 + argv[i];
+            if (!_settings->append(filename)) {
+                PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
+                return false;
+            }
+        }
 
         else if (strncmp(argv[i], "--enable=", 9) == 0) {
             const std::string errmsg = _settings->addEnabled(argv[i] + 9);
@@ -410,15 +415,20 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Output formatter
-        else if (strcmp(argv[i], "--template") == 0) {
+        else if (strcmp(argv[i], "--template") == 0 ||
+                 strncmp(argv[i], "--template=", 11) == 0) {
             // "--template path/"
-            ++i;
-            if (i >= argc) {
+            if (argv[i][10] == '=')
+                _settings->_outputFormat = argv[i] + 11;
+            else {
+                ++i;
+                _settings->_outputFormat = (argv[i] ? argv[i] : "");
+            }
+            if (_settings->_outputFormat.empty()) {
                 PrintMessage("cppcheck: argument to '--template' is missing.");
                 return false;
             }
 
-            _settings->_outputFormat = argv[i];
             if (_settings->_outputFormat == "gcc")
                 _settings->_outputFormat = "{file}:{line}: {severity}: {message}";
             else if (_settings->_outputFormat == "vs")
@@ -703,7 +713,7 @@ void CmdLineParser::PrintHelp()
               "                         one that is effective.\n"
               "    -h, --help           Print this help.\n"
               "    -I <dir>             Give path to search for include files. Give several\n"
-              "                         '-I' parameters to give several paths. First given path is\n"
+              "                         -I parameters to give several paths. First given path is\n"
               "                         searched for contained header files first. If paths are\n"
               "                         relative to source files, this is not needed.\n"
               "    --includes-file=<file>\n"
@@ -760,7 +770,7 @@ void CmdLineParser::PrintHelp()
               "    --suppressions-list=<file>\n"
               "                         Suppress warnings listed in the file. Each suppression\n"
               "                         is in the same format as <spec> above.\n"
-              "    --template '<text>'  Format the error messages. E.g.\n"
+              "    --template='<text>'  Format the error messages. E.g.\n"
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}'\n"
               "                         Pre-defined templates: gcc, vs, edit.\n"

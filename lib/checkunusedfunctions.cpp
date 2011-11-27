@@ -54,7 +54,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         const Token *funcname = 0;
 
         if (Token::Match(tok, "%type% %var% ("))
-            funcname = tok->tokAt(1);
+            funcname = tok->next();
         else if (Token::Match(tok, "%type% * %var% ("))
             funcname = tok->tokAt(2);
         else if (Token::Match(tok, "%type% :: %var% (") && !Token::Match(tok, tok->strAt(2).c_str()))

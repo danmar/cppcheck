@@ -112,6 +112,7 @@ private:
         TEST_CASE(array_index_35); // ticket #2889
         TEST_CASE(array_index_36); // ticket #2960
         TEST_CASE(array_index_37);
+        TEST_CASE(array_index_38); // ticket #3273
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1262,6 +1263,27 @@ private:
               "    Fred() {\n"
               "        for (unsigned int i = 0; i < 15; i++)\n"
               "            i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_38() { //ticket #3273
+        check("void aFunction()\n"
+              "{\n"
+              "    const unsigned int arraySize = 10;\n"
+              "    double aDoubleArray[ arraySize ];\n"
+              "    unsigned int i = 0;\n"
+              "    for( i = 0; i < 6; i++ )\n"
+              "    {\n"
+              "        unsigned int j = 0;\n"
+              "        for( j = 0; j < 5; j++ )\n"
+              "        {\n"
+              "            unsigned int x = 0;\n"
+              "            for( x = 0; x < 4; x++ )\n"
+              "            {\n"
+              "            }\n"
+              "        }\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());

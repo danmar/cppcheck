@@ -110,8 +110,8 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
 {
     // ------------------------------------------------------------------------------------------
     //
-    // handling <backspace><newline>
-    // when this is encountered the <backspace><newline> will be "skipped".
+    // handling <backslash><newline>
+    // when this is encountered the <backslash><newline> will be "skipped".
     // on the next <newline>, extra newlines will be added
     std::ostringstream code;
     unsigned int newlines = 0;
@@ -120,7 +120,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
         if (((ch & 0x80) == 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
             ch = ' ';
 
-        // <backspace><newline>..
+        // <backslash><newline>..
         // for gcc-compatibility the trailing spaces should be ignored
         // for vs-compatibility the trailing spaces should be kept
         // See tickets #640 and #1869
@@ -134,7 +134,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
                 chNext = (unsigned char)istr.peek();
                 if (chNext != '\n' && chNext != '\r' &&
                     (std::isspace(chNext) || std::iscntrl(chNext))) {
-                    // Skip whitespace between <backspace> and <newline>
+                    // Skip whitespace between <backslash> and <newline>
                     (void)readChar(istr);
                     continue;
                 }
@@ -147,13 +147,13 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
 #endif
             if (chNext == '\n' || chNext == '\r') {
                 ++newlines;
-                (void)readChar(istr);   // Skip the "<backspace><newline>"
+                (void)readChar(istr);   // Skip the "<backslash><newline>"
             } else
                 code << "\\";
         } else {
             code << char(ch);
 
-            // if there has been <backspace><newline> sequences, add extra newlines..
+            // if there has been <backslash><newline> sequences, add extra newlines..
             if (ch == '\n' && newlines > 0) {
                 code << std::string(newlines, '\n');
                 newlines = 0;
@@ -308,8 +308,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     // For the error report
     unsigned int lineno = 1;
 
-    // handling <backspace><newline>
-    // when this is encountered the <backspace><newline> will be "skipped".
+    // handling <backslash><newline>
+    // when this is encountered the <backslash><newline> will be "skipped".
     // on the next <newline>, extra newlines will be added
     unsigned int newlines = 0;
     std::ostringstream code;
@@ -350,7 +350,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 previous = ch;
             }
 
-            // if there has been <backspace><newline> sequences, add extra newlines..
+            // if there has been <backslash><newline> sequences, add extra newlines..
             if (ch == '\n') {
                 if (previous != '\\')
                     inPreprocessorLine = false;
@@ -1320,7 +1320,11 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
     }
 
     if (Token::Match(tokenizer.tokens(), "( ! %var% )")) {
-        if (cfg.find(tokenizer.tokens()->strAt(2)) == cfg.end())
+        std::map<std::string,std::string>::const_iterator var = cfg.find(tokenizer.tokens()->strAt(2));
+
+        if (var == cfg.end())
+            condition = "1";
+        else if (var->second == "0")
             condition = "1";
         else if (match)
             condition = "0";
@@ -1471,7 +1475,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
 
     // Create a map for the cfg for faster access to defines
     std::map<std::string, std::string> cfgmap;
-    {
+    if (!cfg.empty()) {
         std::string::size_type pos = 0;
         for (;;) {
             std::string::size_type pos2 = cfg.find_first_of(";=", pos);
@@ -1754,35 +1758,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
     while (std::getline(istr,line)) {
         ++linenr;
 
-        if (line.compare(0,9,"#include ")==0) {
-            std::string filename(line.substr(9));
-
-            const HeaderTypes headerType = getHeaderFileName(filename);
-            if (headerType == NoHeader) {
-                ostr << std::endl;
-                continue;
-            }
-
-            // try to open file
-            std::ifstream fin;
-            if (!openHeader(filename, includePaths, headerType == UserHeader ? path : std::string(""), fin)) {
-                ostr << std::endl;
-                missingInclude(filePath, linenr, filename, headerType == UserHeader);
-                continue;
-            }
-
-            // Prevent that files are recursively included
-            if (std::find(includes.begin(), includes.end(), filename) != includes.end()) {
-                ostr << std::endl;
-                continue;
-            }
-
-            includes.push_back(filename);
-
-            ostr << "#file \"" << filename << "\"\n"
-                 << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs, includes) << std::endl
-                 << "#endfile";
-        } else if (line.compare(0,7,"#ifdef ") == 0) {
+        if (line.compare(0,7,"#ifdef ") == 0) {
             if (indent == indentmatch && defs.find(getdef(line,true)) != defs.end()) {
                 elseIsTrue = false;
                 indentmatch++;
@@ -1848,6 +1824,47 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
             else if (line.compare(0,7,"#error ") == 0) {
                 error(filePath, linenr, line.substr(7));
+            }
+
+            else if (line.compare(0,9,"#include ")==0) {
+                std::string filename(line.substr(9));
+
+                const HeaderTypes headerType = getHeaderFileName(filename);
+                if (headerType == NoHeader) {
+                    ostr << std::endl;
+                    continue;
+                }
+
+                // try to open file
+                std::ifstream fin;
+                if (!openHeader(filename, includePaths, headerType == UserHeader ? path : std::string(""), fin)) {
+
+                    if (_settings && (headerType == UserHeader || _settings->debugwarnings)) {
+                        if (!_settings->nomsg.isSuppressed("missingInclude", "", 0)) {
+                            missingIncludeFlag = true;
+
+                            missingInclude(Path::toNativeSeparators(filePath),
+                                           linenr,
+                                           filename,
+                                           headerType == UserHeader);
+                        }
+                    }
+                    ostr << std::endl;
+                    continue;
+                }
+
+                // Prevent that files are recursively included
+                if (std::find(includes.begin(), includes.end(), filename) != includes.end()) {
+                    ostr << std::endl;
+                    continue;
+                }
+
+                includes.push_back(filename);
+
+                ostr << "#file \"" << filename << "\"\n"
+                     << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs, includes) << std::endl
+                     << "#endfile\n";
+                continue;
             }
 
             ostr << line;

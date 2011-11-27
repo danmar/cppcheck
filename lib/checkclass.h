@@ -128,8 +128,6 @@ private:
     void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
-    void explicitConstructorError(const Token *tok, const std::string &className);
-    void pointlessExplicitConstructorError(const Token *tok, const std::string &className);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckClass c(0, settings, errorLogger);
@@ -145,8 +143,6 @@ private:
         c.operatorEqToSelfError(0);
         c.checkConstError(0, "class", "function");
         c.initializerListError(0, 0, "class", "variable");
-        c.explicitConstructorError(0, "classname");
-        c.pointlessExplicitConstructorError(0, "classname");
     }
 
     std::string myName() const {
@@ -162,8 +158,7 @@ private:
                "* Are there unused private functions\n"
                "* 'operator=' should return reference to self\n"
                "* 'operator=' should check for assignment to self\n"
-               "* Constness for member functions\n"
-               "* explicit should / shouldn't be used\n";
+               "* Constness for member functions\n";
     }
 
     // operatorEqRetRefThis helper function

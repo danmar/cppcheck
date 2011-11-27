@@ -71,7 +71,14 @@ public:
     const Token *tokAt(int index) const;
     Token *tokAt(int index);
 
-    std::string strAt(int index) const;
+    /**
+     * Returns the link to the token in given index, related to this token.
+     * For example index 1 would return the link to next token.
+     */
+    const Token *linkAt(int index) const;
+    Token *linkAt(int index);
+
+    const std::string &strAt(int index) const;
 
     /**
      * Match given token (or list of tokens) to a pattern list.
@@ -113,6 +120,9 @@ public:
      * - "!!else" No tokens or any token that is not "else".
      * - "someRandomText" If token contains "someRandomText".
      *
+     * multi-compare patterns such as "int|void|char" can contain %or%, %oror% and %op%
+     * but it is not recommended to put such an %cmd% as the first pattern.
+     *
      * The patterns can be also combined to compare to multiple tokens at once
      * by separating tokens with a space, e.g.
      * ") const|void {" will return true if first token is ')' next token is either
@@ -152,12 +162,9 @@ public:
         _isNumber = number;
     }
     bool isArithmeticalOp() const {
-        return (this && (_str=="<<" || _str==">>" || (_str.size()==1 && _str.find_first_of("+-*/%") != std::string::npos)));
+        return (_str=="<<" || _str==">>" || (_str.size()==1 && _str.find_first_of("+-*/%") != std::string::npos));
     }
     bool isOp() const {
-        if (!this)
-            return false;
-
         return (isArithmeticalOp() ||
                 _str == "&&" ||
                 _str == "||" ||
@@ -171,12 +178,9 @@ public:
     }
     bool isExtendedOp() const {
         return isOp() ||
-               (this && _str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos);
+               (_str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos);
     }
     bool isAssignmentOp() const {
-        if (!this)
-            return false;
-
         return (_str == "="   ||
                 _str == "+="  ||
                 _str == "-="  ||
@@ -371,7 +375,7 @@ public:
     std::string strValue() const;
 
     /**
-     * Move srcStart and srcEnd tokens and all tokens between then
+     * Move srcStart and srcEnd tokens and all tokens between them
      * into new a location. Only links between tokens are changed.
      * @param srcStart This is the first token to be moved
      * @param srcEnd The last token to be moved
@@ -442,6 +446,7 @@ private:
     bool _isPointerCompare;
     bool _isLong;
     bool _isUnused;
+    bool _isStandardType;
     unsigned int _varId;
     unsigned int _fileIndex;
     unsigned int _linenr;
@@ -449,6 +454,9 @@ private:
     /** Updates internal property cache like _isName or _isBoolean.
         Called after any _str() modification. */
     void update_property_info();
+
+    /** Update internal property cache about isStandardType() */
+    void update_property_isStandardType();
 
     /**
      * A value from 0-100 that provides a rough idea about where in the token

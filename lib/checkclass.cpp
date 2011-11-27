@@ -86,18 +86,26 @@ void CheckClass::constructors()
             }
         }
 
+        // #3196 => bailout if there are nested unions
+        // TODO: handle union variables better
+        {
+            bool bailout = false;
+            for (std::list<Scope *>::const_iterator it = scope->nestedList.begin(); it != scope->nestedList.end(); ++it) {
+                const Scope * const nestedScope = *it;
+                if (nestedScope->type == Scope::eUnion) {
+                    bailout = true;
+                    break;
+                }
+            }
+            if (bailout)
+                continue;
+        }
+
+
         std::list<Function>::const_iterator func;
         std::vector<Usage> usage(scope->varlist.size());
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            // check for explicit
-            if (func->type == Function::eConstructor) {
-                if (!func->isExplicit && func->argumentList.size() == 1)
-                    explicitConstructorError(func->token, scope->className);
-                if (func->isExplicit && func->argumentList.size() > 1)
-                    pointlessExplicitConstructorError(func->token, scope->className);
-            }
-
             if (!func->hasBody || !(func->type == Function::eConstructor ||
                                     func->type == Function::eCopyConstructor ||
                                     func->type == Function::eOperatorEqual))
@@ -137,7 +145,7 @@ void CheckClass::constructors()
 
                 // It's non-static and it's not initialized => error
                 if (func->type == Function::eOperatorEqual) {
-                    const Token *operStart = func->token->tokAt(1);
+                    const Token *operStart = func->token->next();
 
                     bool classNameUsed = false;
                     for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next()) {
@@ -344,7 +352,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         else if (Token::Match(ftok, "::| memset ( %var% ,")) {
             const int offset = ftok->str() == "::" ? 1 : 0;
             assignVar(ftok->strAt(2 + offset), scope, usage);
-            ftok = ftok->tokAt(1 + offset)->link();
+            ftok = ftok->linkAt(1 + offset);
             continue;
         }
 
@@ -466,33 +474,23 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         }
 
         // Assignment of array item of member variable?
-        else if (Token::Match(ftok, "%var% [") &&
-                 Token::simpleMatch(ftok->next()->link(), "] =")) {
-            assignVar(ftok->str(), scope, usage);
-        }
-
-        // Assignment of member of array item of member variable?
-        else if (Token::Match(ftok, "%var% [ ") &&
-                 (Token::Match(ftok->next()->link(), "] . %var%  =") ||
-                  Token::Match(ftok->next()->link(), "] . %var% . %var%  ="))) {
-            assignVar(ftok->str(), scope, usage);
-        }
-
-        // Assignment of array item of member variable?
-        else if (Token::Match(ftok, "%var% [") &&
-                 Token::simpleMatch(ftok->next()->link(), "] [") &&
-                 Token::simpleMatch(ftok->next()->link()->next()->link(), "] =")) {
-            assignVar(ftok->str(), scope, usage);
+        else if (Token::Match(ftok, "%var% [|.")) {
+            const Token *tok2 = ftok;
+            while (tok2) {
+                if (Token::simpleMatch(tok2->next(), "["))
+                    tok2 = tok2->next()->link();
+                else if (Token::Match(tok2->next(), ". %var%"))
+                    tok2 = tok2->tokAt(2);
+                else
+                    break;
+            }
+            if (Token::Match(tok2, "%any% ="))
+                assignVar(ftok->str(), scope, usage);
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "* %var% =")) {
             assignVar(ftok->next()->str(), scope, usage);
-        }
-
-        // Assignment of struct member of member variable?
-        else if (Token::Match(ftok, "%var% . %any% =")) {
-            assignVar(ftok->str(), scope, usage);
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
@@ -521,32 +519,6 @@ void CheckClass::uninitVarError(const Token *tok, const std::string &classname, 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
     reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
-}
-
-void CheckClass::explicitConstructorError(const Token *tok, const std::string &className)
-{
-    reportError(tok, Severity::style,
-                "explicitConstructorError", "Constructor for '" +
-                className + "' should be explicit.\n"
-                "The single-argument constructor for '" + className + "' should "
-                "be explicit as it can be used for automatic conversion. This is "
-                "convenient but can also be a problem when automatic conversion "
-                "creates new objects when you were not expecting it. Adding the "
-                "explicit declaration to the constructor prevents it being called "
-                "for implicit conversions.");
-}
-
-void CheckClass::pointlessExplicitConstructorError(const Token *tok, const std::string &className)
-{
-    reportError(tok, Severity::style,
-                "pointlessExplicitConstructorError", "Constructor for '" +
-                className + "' is marked explicit but"
-                " takes more than one argument.\n"
-                "The explicit keyword prevents constructor calls for implicit "
-                "conversions, but it is only needed for single-argument "
-                "constructors. The constructor for '" + className + "' takes "
-                "more than one argument so is not affected by the explicit "
-                "declaration.");
 }
 
 //---------------------------------------------------------------------------
@@ -767,6 +739,10 @@ void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const
 
 void CheckClass::operatorEq()
 {
+    // See #3296
+    if (!_settings->inconclusive)
+        return;
+
     if (!_settings->isEnabled("style"))
         return;
 
@@ -789,9 +765,9 @@ void CheckClass::operatorEq()
                     if (Token::Match(func->tokenDef->tokAt(2), "const| %var% &")) {
                         if (func->tokenDef->strAt(2) == "const" &&
                             func->tokenDef->strAt(3) == scope->className)
-                            operatorEqReturnError(func->tokenDef->tokAt(-1), scope->className);
+                            operatorEqReturnError(func->tokenDef->previous(), scope->className);
                         else if (func->tokenDef->strAt(2) == scope->className)
-                            operatorEqReturnError(func->tokenDef->tokAt(-1), scope->className);
+                            operatorEqReturnError(func->tokenDef->previous(), scope->className);
                     }
                 }
             }
@@ -801,7 +777,7 @@ void CheckClass::operatorEq()
 
 void CheckClass::operatorEqReturnError(const Token *tok, const std::string &className)
 {
-    reportError(tok, Severity::style, "operatorEq", "\'" + className + "::operator=' should return \'" + className + " &\'");
+    reportInconclusiveError(tok, Severity::style, "operatorEq", "Inconclusive: \'" + className + "::operator=' should return \'" + className + " &\'");
 }
 
 //---------------------------------------------------------------------------
@@ -852,8 +828,8 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                 tok = tok->tokAt(4);
 
             // check if a function is called
-            if (Token::Match(tok->tokAt(1), "%any% (") &&
-                tok->tokAt(2)->link()->next()->str() == ";") {
+            if (Token::Match(tok->next(), "%any% (") &&
+                tok->linkAt(2)->next()->str() == ";") {
                 std::list<Function>::const_iterator it;
 
                 // check if it is a member function
@@ -881,11 +857,11 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             }
 
             // check if *this is returned
-            else if (!(Token::Match(tok->tokAt(1), "(| * this ;|=") ||
-                       Token::Match(tok->tokAt(1), "(| * this +=") ||
-                       Token::simpleMatch(tok->tokAt(1), "operator= (") ||
-                       Token::simpleMatch(tok->tokAt(1), "this . operator= (") ||
-                       (Token::Match(tok->tokAt(1), "%type% :: operator= (") &&
+            else if (!(Token::Match(tok->next(), "(| * this ;|=") ||
+                       Token::Match(tok->next(), "(| * this +=") ||
+                       Token::simpleMatch(tok->next(), "operator= (") ||
+                       Token::simpleMatch(tok->next(), "this . operator= (") ||
+                       (Token::Match(tok->next(), "%type% :: operator= (") &&
                         tok->next()->str() == scope->className)))
                 operatorEqRetRefThisError(func->token);
         }
@@ -1019,15 +995,15 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
     for (const Token *tok = func->start; tok && tok != last; tok = tok->next()) {
         if (Token::simpleMatch(tok, "if (")) {
             const Token *tok1 = tok->tokAt(2);
-            const Token *tok2 = tok->tokAt(1)->link();
+            const Token *tok2 = tok->next()->link();
 
             if (tok1 && tok2) {
                 for (; tok1 && tok1 != tok2; tok1 = tok1->next()) {
                     if (Token::Match(tok1, "this ==|!= & %var%")) {
-                        if (tok1->tokAt(3)->str() == rhs->str())
+                        if (tok1->strAt(3) == rhs->str())
                             return true;
                     } else if (Token::Match(tok1, "& %var% ==|!= this")) {
-                        if (tok1->tokAt(1)->str() == rhs->str())
+                        if (tok1->strAt(1) == rhs->str())
                             return true;
                     }
                 }
@@ -1071,11 +1047,11 @@ void CheckClass::virtualDestructor()
             continue;
 
         // Empty destructor
-        if (destructor->token->tokAt(3)->link() == destructor->token->tokAt(4))
+        if (destructor->token->linkAt(3) == destructor->token->tokAt(4))
             continue;
 
         const Token *derived = scope->classDef;
-        const Token *derivedClass = derived->tokAt(1);
+        const Token *derivedClass = derived->next();
 
         // Iterate through each base class...
         for (unsigned int j = 0; j < scope->derivedFrom.size(); ++j) {
@@ -1200,6 +1176,10 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::checkConst()
 {
+    // this is an inconclusive check - see #3048 for instance
+    if (!_settings->inconclusive)
+        return;
+
     if (!_settings->isEnabled("style") || _settings->ifcfg)
         return;
 
@@ -1317,7 +1297,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
             tok = tok->tokAt(-2);
             again = true;
         } else if (Token::Match(tok->tokAt(-2), "] . %var%")) {
-            tok = tok->tokAt(-2)->link()->previous();
+            tok = tok->linkAt(-2)->previous();
             again = true;
         } else if (tok->str() == "]") {
             tok = tok->link()->previous();
@@ -1365,12 +1345,12 @@ static unsigned int countParameters(const Token *tok)
             ++parlevel;
 
         else if (tok->str() == ")") {
-            if (!parlevel)
+            if (parlevel <=1)
                 break;
             --parlevel;
         }
 
-        else if (!parlevel && tok->str() == ",") {
+        else if (parlevel==1 && tok->str() == ",") {
             ++numpar;
         }
     }
@@ -1582,13 +1562,13 @@ bool CheckClass::isVirtualFunc(const Scope *scope, const Token *functionToken) c
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
-    reportError(tok, Severity::style, "functionConst",
-                "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
-                "The member function '" + classname + "::" + funcname + "' can be made a const "
-                "function. Making this function const function should not cause compiler errors. "
-                "Even though the function can be made const function technically it may not make "
-                "sense conceptually. Think about your design and task of the function first - is "
-                "it a function that must not change object internal state?");
+    reportInconclusiveError(tok, Severity::style, "functionConst",
+                            "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
+                            "The member function '" + classname + "::" + funcname + "' can be made a const "
+                            "function. Making this function const function should not cause compiler errors. "
+                            "Even though the function can be made const function technically it may not make "
+                            "sense conceptually. Think about your design and task of the function first - is "
+                            "it a function that must not change object internal state?");
 }
 
 void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname)
@@ -1596,13 +1576,13 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
     std::list<const Token *> toks;
     toks.push_back(tok1);
     toks.push_back(tok2);
-    reportError(toks, Severity::style, "functionConst",
-                "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
-                "The member function '" + classname + "::" + funcname + "' can be made a const "
-                "function. Making this function const function should not cause compiler errors. "
-                "Even though the function can be made const function technically it may not make "
-                "sense conceptually. Think about your design and task of the function first - is "
-                "it a function that must not change object internal state?");
+    reportInconclusiveError(toks, Severity::style, "functionConst",
+                            "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
+                            "The member function '" + classname + "::" + funcname + "' can be made a const "
+                            "function. Making this function const function should not cause compiler errors. "
+                            "Even though the function can be made const function technically it may not make "
+                            "sense conceptually. Think about your design and task of the function first - is "
+                            "it a function that must not change object internal state?");
 }
 
 //---------------------------------------------------------------------------

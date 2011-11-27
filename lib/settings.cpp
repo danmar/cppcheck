@@ -18,6 +18,7 @@
 
 #include "settings.h"
 #include "path.h"
+#include "preprocessor.h"       // Preprocessor
 
 #include <fstream>
 #include <set>
@@ -99,6 +100,9 @@ std::string Settings::addEnabled(const std::string &str)
         }
     } else if (id.find(str) != id.end()) {
         _enabled.insert(str);
+        if (str == "information") {
+            _enabled.insert("missingInclude");
+        }
     } else if (!handled) {
         if (str.empty())
             return std::string("cppcheck: --enable parameter is empty");
@@ -115,17 +119,21 @@ bool Settings::isEnabled(const std::string &str) const
 }
 
 
-void Settings::append(const std::string &filename)
+bool Settings::append(const std::string &filename)
 {
-    _append = "\n";
     std::ifstream fin(filename.c_str());
+    if (!fin.is_open()) {
+        return false;
+    }
     std::string line;
     while (std::getline(fin, line)) {
         _append += line + "\n";
     }
+    Preprocessor::preprocessWhitespaces(_append);
+    return true;
 }
 
-std::string Settings::append() const
+const std::string &Settings::append() const
 {
     return _append;
 }

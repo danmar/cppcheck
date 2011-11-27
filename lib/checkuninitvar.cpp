@@ -27,7 +27,8 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckUninitVar instance;
+    // The ExecutionPath framework doesn't work as well as I wanted
+    //CheckUninitVar instance;
 }
 
 //---------------------------------------------------------------------------
@@ -409,7 +410,7 @@ private:
         // Variable declaration..
         if (Token::Match(tok.previous(), "[;{}] %var%") && tok.str() != "return") {
             if (Token::Match(&tok, "enum %type% {"))
-                return tok.tokAt(2)->link();
+                return tok.linkAt(2);
 
             const Token * vartok = &tok;
             while (Token::Match(vartok, "const|struct"))
@@ -427,7 +428,7 @@ private:
             // Variable declaration for array..
             if (Token::Match(vartok, "%type% %var% [") &&
                 vartok->isStandardType() &&
-                Token::simpleMatch(vartok->tokAt(2)->link(), "] ;")) {
+                Token::simpleMatch(vartok->linkAt(2), "] ;")) {
                 vartok = vartok->next();
                 declare(checks, vartok, tok, false, true);
                 return vartok->next()->link();
@@ -548,7 +549,7 @@ private:
 
             if (Token::Match(tok.next(), "= malloc|kmalloc") || Token::simpleMatch(tok.next(), "= new char [")) {
                 alloc_pointer(checks, tok.varId());
-                if (tok.tokAt(3)->str() == "(")
+                if (tok.strAt(3) == "(")
                     return tok.tokAt(3);
             }
 
@@ -916,7 +917,7 @@ public:
                 continue;
             }
             if (tok->str() != "::" && Token::Match(tok->next(), "%var% ( %type%")) {
-                if (!Token::Match(tok->tokAt(2)->link(), ") [{;]"))
+                if (!Token::Match(tok->linkAt(2), ") [{;]"))
                     continue;
                 const Token *tok2 = tok->tokAt(3);
                 while (tok2 && tok2->str() != ")") {
@@ -1018,6 +1019,9 @@ void CheckUninitVar::saveAnalysisData(const std::set<std::string> &data) const
 
 void CheckUninitVar::executionPaths()
 {
+    if (!_settings->experimental)
+        return;
+
     // check if variable is accessed uninitialized..
     {
         // no writing if multiple threads are used (TODO: thread safe analysis?)

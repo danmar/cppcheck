@@ -127,6 +127,7 @@ private:
 
         Settings settings;
         settings.experimental = experimental;
+        settings.experimental = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -577,7 +578,7 @@ private:
             , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "freopen", "fscanf", "fseek"
             , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
             , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "open", "memchr", "memcpy"
-            , "memmove", "memset", "perror", "posix_fadvise", "posix_fallocate", "pread"
+            , "memmove", "memset", "mkstemp", "perror", "posix_fadvise", "posix_fallocate", "pread"
             , "printf", "puts", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
             , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
             , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "stpcpy", "strcasecmp"
@@ -2216,6 +2217,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: f\n", errout.str());
     }
+
 
     void allocfunc1() {
         check("static char *a()\n"
@@ -5166,6 +5168,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
 
+        check("char *x() {\n"
+              "    char *ret = strcpy(malloc(10), \"abc\");\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void x() {\n"
               "    free(malloc(10));\n"
               "}\n");
@@ -5179,6 +5187,14 @@ private:
               "    set_error(strdup(p));\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Allocation with strdup, set_error doesn't release it.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int fd;\n"
+              "    fd = mkstemp(strdup(\"/tmp/file.XXXXXXXX\"));\n"
+              "    close(fd);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Allocation with strdup, mkstemp doesn't release it.\n", "", errout.str());
     }
 };
 static TestMemleakNoVar testMemleakNoVar;

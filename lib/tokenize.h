@@ -129,6 +129,23 @@ public:
     static void deleteTokens(Token *tok);
 
     /**
+     * Deletes dead code between 'begin' and 'end'.
+     * In general not everything can be erased, such as:
+     * - code after labels;
+     * - code outside the scope where the function is called;
+     * - code after a change of scope caused by 'switch(...);'
+     *   instructions, like 'case %any%;' or 'default;'
+     * Also, if the dead code contains a 'switch' block
+     * and inside it there's a label, the function removes all
+     * the 'switch(..)' tokens and every occurrence of 'case %any%; | default;'
+     * expression, such as the 'switch' block is reduced to a simple block.
+     *
+     * @param begin Tokens after this have a possibility to be erased.
+     * @param end Tokens before this have a possibility to be erased.
+     */
+    static void eraseDeadCode(Token *begin, const Token *end);
+
+    /**
      * Simplify '* & %any% =' to '%any% ='
      */
     void simplifyMulAnd(void);
@@ -220,8 +237,9 @@ public:
 
     /**
      * Simplify variable declarations (split up)
+     * \param only_k_r_fpar Only simplify K&R function parameters
      */
-    void simplifyVarDecl();
+    void simplifyVarDecl(bool only_k_r_fpar);
 
     /**
      * Simplify variable initialization

@@ -353,7 +353,7 @@ public:
           functionScope(NULL) {
     }
 
-    unsigned int argCount() const {
+    size_t argCount() const {
         return argumentList.size();
     }
     unsigned int initializedArgCount() const;

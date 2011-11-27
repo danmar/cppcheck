@@ -84,7 +84,7 @@ private:
         oss << "int main()\n"
             << "{\n";
         for (int i = 0; i < 500; i++)
-            oss << "  {char *a = malloc(10);}\n";
+            oss << "  { int a = 4/0; }\n";
 
         oss << "  return 0;\n";
         oss << "}\n";
@@ -122,7 +122,7 @@ private:
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
-        oss << "  {char *a = malloc(10);}\n";
+        oss << "  { int a = 4/0; }\n";
         oss << "  return 0;\n";
         oss << "}\n";
         check(2, 1, 1, oss.str());
@@ -132,7 +132,7 @@ private:
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
-        oss << "  {char *a = malloc(10);}\n";
+        oss << "  { int a = 4/0; }\n";
         oss << "  return 0;\n";
         oss << "}\n";
         check(2, 20, 20, oss.str());

@@ -31,7 +31,7 @@ void CheckBoost::checkBoostForeachModification()
         if (!Token::simpleMatch(tok, "BOOST_FOREACH ("))
             continue;
 
-        const Token *container_tok = tok->next()->link()->tokAt(-1);
+        const Token *container_tok = tok->next()->link()->previous();
         if (!Token::Match(container_tok, "%var% ) {"))
             continue;
 

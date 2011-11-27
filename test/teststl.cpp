@@ -108,6 +108,7 @@ private:
 
         // catch common problems when using the string::c_str() function
         TEST_CASE(cstr);
+        TEST_CASE(cstr_inconclusive);
 
         TEST_CASE(autoPointer);
 
@@ -115,13 +116,14 @@ private:
 
     }
 
-    void check(const std::string &code) {
+    void check(const std::string &code, const bool inconclusive=false) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
         settings.addEnabled("performance");
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -1309,50 +1311,92 @@ private:
               "    std::string errmsg;\n"
               "    throw errmsg.c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after throw call.\n", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
               "    return errmsg.c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        // It's a TODO as we want to warn if return type is const char* but not on std::string. See #3266.
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", "", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::ostringstream errmsg;\n"
               "    return errmsg.str().c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", "", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
               "    return std::string(\"ERROR: \" + errmsg).c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", "", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
               "    return (\"ERROR: \" + errmsg).c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", "", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
               "    return (\"ERROR: \" + std::string(\"crash me\")).c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", "", errout.str());
+
+        // Implicit conversion back to std::string
+        check("std::string get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return errmsg.c_str();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    std::ostringstream errmsg;\n"
               "    const char *c = errmsg.str().c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
 
         check("std::string f();\n"
               "\n"
               "void foo() {\n"
               "    const char *c = f().c_str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str()\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
+    }
+
+    void cstr_inconclusive() {
+        bool inconclusive = true;
+
+        check("const char *get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return errmsg.c_str();\n"
+              "}", inconclusive);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
+
+        check("const char *get_msg() {\n"
+              "    std::ostringstream errmsg;\n"
+              "    return errmsg.str().c_str();\n"
+              "}", inconclusive);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
+
+        check("const char *get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return std::string(\"ERROR: \" + errmsg).c_str();\n"
+              "}", inconclusive);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
+
+        check("const char *get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return (\"ERROR: \" + errmsg).c_str();\n"
+              "}", inconclusive);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
+
+        check("const char *get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return (\"ERROR: \" + std::string(\"crash me\")).c_str();\n"
+              "}", inconclusive);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
     }
 
     void autoPointer() {
@@ -1428,7 +1472,26 @@ private:
 
         check("void f() \n"
               "{\n"
+              "    foo::bar::baz* var = new foo::bar::baz[10];\n"
+              "    auto_ptr<foo::bar::baz> p2( var );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+        check("void f() \n"
+              "{\n"
               "    auto_ptr<T> p2( new T[] );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+        check("void f() \n"
+              "{\n"
+              "    auto_ptr<T> p2( new T[5] );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+        check("void f() \n"
+              "{\n"
+              "    auto_ptr<foo::bar> p(new foo::bar[10]);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
@@ -1455,8 +1518,22 @@ private:
 
         check("void f() \n"
               "{\n"
+              "    auto_ptr<T::B> p2;\n"
+              "    p2 = new T::B[10];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+        check("void f() \n"
+              "{\n"
               "    auto_ptr<T> p2;\n"
               "    p2.reset( new T[10] );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
+
+        check("void f() \n"
+              "{\n"
+              "    auto_ptr<T::B> p2;\n"
+              "    p2.reset( new T::B[10] );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
@@ -1477,8 +1554,7 @@ private:
               "    s2.swap(s2);\n"
               "    \n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (performance) Function \'swap\' useless call. Using 'swap' function "
-                      "from \'s2\' against itself doesn't make any changes.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (performance) It is inefficient to swap a object with itself by calling 's2.swap(s2)'\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1489,10 +1565,7 @@ private:
               "    s1.compare(0, s1.size(), s1);\n"
               "    \n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Function 'compare' useless call. The variable 's2' is using "
-                      "function \'compare\' against itself. Return of this function depends only on the position.\n"
-                      "[test.cpp:7]: (warning) Function 'compare' useless call. The variable 's1' is using "
-                      "function \'compare\' against itself. Return of this function depends only on the position.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) It is inefficient to call 's2.compare(s2)' as it always returns 0.\n", errout.str());
 
         check("void f()\n"
               "{\n"

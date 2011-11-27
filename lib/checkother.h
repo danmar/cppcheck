@@ -87,8 +87,10 @@ public:
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
+        checkOther.checkCCTypeFunctions();
         checkOther.checkFflushOnInputStream();
         checkOther.invalidScanf();
+        checkOther.checkWrongPrintfScanfArguments();
 
         checkOther.checkCoutCerrMisusage();
         checkOther.checkIncorrectLogicOperator();
@@ -150,6 +152,9 @@ public:
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
 
+    /** @brief %Check for parameters given to cctype function that do make error*/
+    void checkCCTypeFunctions();
+
     void lookupVar(const Token *tok1, const std::string &varname);
 
     /** @brief %Check for using fflush() on an input stream*/
@@ -166,6 +171,13 @@ public:
     /** @brief scanf can crash if width specifiers are not used */
     void invalidScanf();
     void invalidScanfError(const Token *tok);
+
+    /** @brief %Checks type and number of arguments given to functions like printf or scanf*/
+    void checkWrongPrintfScanfArguments();
+    void wrongPrintfScanfArgumentsError(const Token* tok,
+                                        const std::string &function,
+                                        unsigned int numFormat,
+                                        unsigned int numFunction);
 
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
@@ -256,6 +268,7 @@ public:
     void zerodivError(const Token *tok);
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
+    void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
     void redundantStrcpyInSwitchError(const Token *tok, const std::string &varname);
@@ -281,8 +294,8 @@ public:
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok);
     void assignBoolToPointerError(const Token *tok);
-    void unsignedLessThanZeroError(const Token *tok, const std::string &varname);
-    void unsignedPositiveError(const Token *tok, const std::string &varname);
+    void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
+    void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok);
     void SuspiciousSemicolonError(const Token *tok);
@@ -335,11 +348,13 @@ public:
         c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
         c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
         c.duplicateBreakError(0);
-        c.unsignedLessThanZeroError(0, "varname");
-        c.unsignedPositiveError(0, "varname");
+        c.unsignedLessThanZeroError(0, "varname", false);
+        c.unsignedPositiveError(0, "varname", false);
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0);
         c.SuspiciousSemicolonError(0);
+        //c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
+        c.cctypefunctionCallError(0, "funname", "value");
     }
 
     std::string myName() const {
@@ -360,6 +375,7 @@ public:
                "* sizeof for numeric given as function argument\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* invalid usage of output stream. For example: std::cout << std::cout;'\n"
+               //"* wrong number of arguments given to 'printf' or 'scanf;'\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
@@ -392,6 +408,7 @@ public:
                "* testing is unsigned variable is positive\n"
                "* using bool in bitwise expression\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
+               "* incorrect usage of functions from ctype library.\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";
@@ -416,6 +433,11 @@ private:
 
         return varname;
     }
+
+    void checkExpressionRange(const Token *start, const Token *end, const std::string &toCheck);
+    void complexDuplicateExpressionCheck(const Token *classStart,
+                                         const std::string &toCheck,
+                                         const std::string &alt);
 };
 /// @}
 //---------------------------------------------------------------------------

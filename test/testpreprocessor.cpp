@@ -123,6 +123,7 @@ private:
         TEST_CASE(if_cond10);
         TEST_CASE(if_cond11);
         TEST_CASE(if_cond12);
+        TEST_CASE(if_cond13);
 
         TEST_CASE(if_or_1);
         TEST_CASE(if_or_2);
@@ -201,6 +202,7 @@ private:
         // define and then ifdef
         TEST_CASE(define_if1);
         TEST_CASE(define_if2);
+        TEST_CASE(define_if3);
         TEST_CASE(define_ifdef);
         TEST_CASE(define_ifndef1);
         TEST_CASE(define_ifndef2);
@@ -215,6 +217,9 @@ private:
 
         TEST_CASE(invalid_define);	// #2605 - hang for: '#define ='
 
+        // Show 'missing include' warnings
+        TEST_CASE(missingInclude);
+
         // inline suppression, missingInclude
         TEST_CASE(inline_suppression_for_missing_include);
 
@@ -227,8 +232,9 @@ private:
         TEST_CASE(simplifyCondition);
         TEST_CASE(invalidElIf); // #2942 segfault
 
-        // Test Preprocessor::handleIncludes (defines are given)
-        TEST_CASE(handleIncludes_def);
+        // Defines are given: test Preprocessor::handleIncludes
+        TEST_CASE(def_handleIncludes);
+        TEST_CASE(def_missingInclude);
     }
 
 
@@ -1403,6 +1409,13 @@ private:
         ASSERT_EQUALS("\n\n;\n\n", Preprocessor::getcode(filedata,"","",NULL,NULL));
     }
 
+    void if_cond13() {
+        const char filedata[] = "#if ('A' == 0x41)\n"
+                                "123\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\n123\n\n", Preprocessor::getcode(filedata,"","",NULL,NULL));
+    }
+
 
 
     void if_or_1() {
@@ -2471,6 +2484,14 @@ private:
         ASSERT_EQUALS("\n\n\nFOO\n\n", Preprocessor::getcode(filedata,"","",NULL,NULL));
     }
 
+    void define_if3() {
+        const char filedata[] = "#define A 0\n"
+                                "#if (A==0)\n"
+                                "FOO\n"
+                                "#endif";
+        ASSERT_EQUALS("\n\nFOO\n\n", Preprocessor::getcode(filedata,"","",NULL,NULL));
+    }
+
     void define_ifdef() {
         {
             const char filedata[] = "#define ABC\n"
@@ -2747,6 +2768,20 @@ private:
         preprocessor.preprocess(src, processedFile, cfg, "", paths);		// don't hang
     }
 
+    void missingInclude() {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        Preprocessor::missingIncludeFlag = false;
+
+        std::istringstream src("#include \"missing.h\"\n");
+        std::string processedFile;
+        std::list<std::string> cfg;
+        std::list<std::string> paths;
+        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
+        preprocessor.preprocess(src, processedFile, cfg, "test.c", paths);
+        ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
+    }
+
     void inline_suppression_for_missing_include() {
         Settings settings;
         settings._inlineSuppressions = true;
@@ -2824,7 +2859,7 @@ private:
         ASSERT_EQUALS("\n", actual);
     }
 
-    void handleIncludes_def() {
+    void def_handleIncludes() {
         const std::string filePath("test.c");
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
@@ -2929,14 +2964,6 @@ private:
             ASSERT_EQUALS(actual1 + "#undef X\n" + actual1, actual);
         }
 
-        // missing include
-        {
-            errout.str("");
-            const std::string code("#include \"missing.h\"");
-            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
-            ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing.h\" not found.\n", errout.str());
-        }
-
         // #error
         {
             errout.str("");
@@ -2945,6 +2972,63 @@ private:
             const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
             ASSERT_EQUALS("\n#error abc\n\n", actual);
             ASSERT_EQUALS("[test.c:2]: (error) abc\n", errout.str());
+        }
+    }
+
+    void def_missingInclude() {
+        const std::list<std::string> includePaths;
+        std::map<std::string,std::string> defs;
+        defs["AA"] = "";
+        Settings settings;
+        Preprocessor preprocessor(&settings,this);
+
+        // missing local include
+        {
+            const std::string code("#include \"missing-include!!.h\"\n");
+
+            errout.str("");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing-include!!.h\" not found.\n", errout.str());
+
+            errout.str("");
+            settings.nomsg.addSuppression("missingInclude");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        // missing system header
+        {
+            const std::string code("#include <missing-include!!.h>\n");
+
+            errout.str("");
+            settings = Settings();
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
+
+            errout.str("");
+            settings.debugwarnings = true;
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("[test.c:1]: (debug) Include file: \"missing-include!!.h\" not found.\n", errout.str());
+
+            errout.str("");
+            settings.nomsg.addSuppression("missingInclude");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        // #3285 - #elif
+        {
+            const std::string code("#ifdef GNU\n"
+                                   "#elif defined(WIN32)\n"
+                                   "#include \"missing-include!!.h\"\n"
+                                   "#endif");
+            defs.clear();
+            defs["GNU"] = "";
+
+            errout.str("");
+            settings = Settings();
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
         }
     }
 };

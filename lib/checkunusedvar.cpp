@@ -409,7 +409,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
         int start = 1;
 
         // search for '='
-        while (tok->tokAt(start)->str() != "=")
+        while (tok->strAt(start) != "=")
             start++;
 
         start++;
@@ -426,21 +426,21 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                 variables.use(tok->tokAt(start)->varId());   // use = read + write
 
             // check for C style cast
-            if (tok->tokAt(start)->str() == "(") {
-                if (tok->tokAt(start + 1)->str() == "const")
+            if (tok->strAt(start) == "(") {
+                if (tok->strAt(start + 1) == "const")
                     offset++;
 
                 if (Token::Match(tok->tokAt(start + 1 + offset), "struct|union"))
                     offset++;
 
-                if (tok->tokAt(start + 2 + offset)->str() == "*")
+                if (tok->strAt(start + 2 + offset) == "*")
                     offset++;
 
-                if (tok->tokAt(start + 3 + offset)->str() == "&") {
+                if (tok->strAt(start + 3 + offset) == "&") {
                     addressOf = true;
                     next = start + 4 + offset;
-                } else if (tok->tokAt(start + 3 + offset)->str() == "(") {
-                    if (tok->tokAt(start + 4 + offset)->str() == "&") {
+                } else if (tok->strAt(start + 3 + offset) == "(") {
+                    if (tok->strAt(start + 4 + offset) == "&") {
                         addressOf = true;
                         next = start + 5 + offset;
                     } else
@@ -450,18 +450,18 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
             }
 
             // check for C++ style cast
-            else if (tok->tokAt(start)->str().find("cast") != std::string::npos &&
-                     tok->tokAt(start + 1)->str() == "<") {
-                if (tok->tokAt(start + 2)->str() == "const")
+            else if (tok->strAt(start).find("cast") != std::string::npos &&
+                     tok->strAt(start + 1) == "<") {
+                if (tok->strAt(start + 2) == "const")
                     offset++;
 
                 if (Token::Match(tok->tokAt(start + 2 + offset), "struct|union"))
                     offset++;
 
-                if (tok->tokAt(start + 3 + offset)->str() == "*")
+                if (tok->strAt(start + 3 + offset) == "*")
                     offset++;
 
-                if (tok->tokAt(start + 5 + offset)->str() == "&") {
+                if (tok->strAt(start + 5 + offset) == "&") {
                     addressOf = true;
                     next = start + 6 + offset;
                 } else
@@ -475,10 +475,10 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
 
             // no cast
             else {
-                if (tok->tokAt(start)->str() == "&") {
+                if (tok->strAt(start) == "&") {
                     addressOf = true;
                     next = start + 1;
-                } else if (tok->tokAt(start)->str() == "new")
+                } else if (tok->strAt(start) == "new")
                     return 0;
                 else
                     next = start;
@@ -538,7 +538,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                             }
 
                             variables.alias(varid1, varid2, replace);
-                        } else if (tok->tokAt(next + 1)->str() == "?") {
+                        } else if (tok->strAt(next + 1) == "?") {
                             if (var2->_type == Variables::reference)
                                 variables.readAliases(varid2);
                             else
@@ -548,7 +548,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                 } else if (var1->_type == Variables::reference) {
                     variables.alias(varid1, varid2, true);
                 } else {
-                    if (var2->_type == Variables::pointer && tok->tokAt(next + 1)->str() == "[")
+                    if (var2->_type == Variables::pointer && tok->strAt(next + 1) == "[")
                         variables.readAliases(varid2);
 
                     variables.read(varid2);
@@ -714,7 +714,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
                 if (tok->isStandardType() || isRecordTypeWithoutSideEffects(tok->next())) {
                     variables.addVar(tok->next(), Variables::standard, info,
-                                     tok->tokAt(2)->str() == "=" || isStatic);
+                                     tok->strAt(2) == "=" || isStatic);
                 }
                 tok = tok->next();
             }
@@ -722,7 +722,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // standard const type declaration
             // const int i = x;
             else if (Token::Match(tok, "[;{}] const %type% %var% =")) {
-                tok = tok->next()->next();
+                tok = tok->tokAt(2);
 
                 if (tok->isStandardType() || isRecordTypeWithoutSideEffects(tok->next()))
                     variables.addVar(tok->next(), Variables::standard, info, true);
@@ -757,7 +757,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 tok = tok->next();
 
                 variables.addVar(tok->next(), Variables::standard, info,
-                                 tok->tokAt(2)->str() == "=" || isStatic);
+                                 tok->strAt(2) == "=" || isStatic);
                 tok = tok->next();
             }
 
@@ -796,7 +796,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     const Token * const nametok = tok->tokAt(isPointer ? 2 : 1);
 
                     variables.addVar(nametok, isPointer ? Variables::pointerArray : Variables::array, info,
-                                     nametok->tokAt(4)->str() == "=" || isStatic);
+                                     nametok->strAt(4) == "=" || isStatic);
 
                     // check for reading array size from local variable
                     if (nametok->tokAt(2)->varId() != 0)
@@ -838,7 +838,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     else
                         type = Variables::reference;
 
-                    bool written = tok->tokAt(3)->str() == "=";
+                    bool written = tok->strAt(3) == "=";
 
                     variables.addVar(tok->tokAt(2), type, info, written || isStatic);
 
@@ -865,7 +865,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     tok = tok->next();
 
                 if (tok->str() != "return") {
-                    bool written = tok->tokAt(4)->str() == "=";
+                    bool written = tok->strAt(4) == "=";
 
                     variables.addVar(tok->tokAt(3), Variables::pointerPointer, info, written || isStatic);
 
@@ -972,7 +972,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 if (tok->str() != "return") {
                     variables.addVar(tok->tokAt(2),
                                      tok->next()->str() == "*" ? Variables::pointerArray : Variables::referenceArray, info,
-                                     tok->tokAt(6)->str() == "=" || isStatic);
+                                     tok->strAt(6) == "=" || isStatic);
 
                     // check for reading array size from local variable
                     if (tok->tokAt(4)->varId() != 0)
@@ -995,8 +995,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     tok = tok->next();
 
                 variables.addVar(tok->tokAt(3),
-                                 tok->tokAt(2)->str() == "*" ? Variables::pointerArray : Variables::referenceArray, info,
-                                 tok->tokAt(7)->str() == "=" || isStatic);
+                                 tok->strAt(2) == "*" ? Variables::pointerArray : Variables::referenceArray, info,
+                                 tok->strAt(7) == "=" || isStatic);
 
                 // check for reading array size from local variable
                 if (tok->tokAt(5)->varId() != 0)
@@ -1294,7 +1294,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             structname.clear();
             if (Token::simpleMatch(tok->previous(), "extern"))
                 continue;
-            if ((!tok->previous() || Token::simpleMatch(tok->previous(), ";")) && Token::Match(tok->tokAt(2)->link(), ("} ; " + tok->strAt(1) + " %var% ;").c_str()))
+            if ((!tok->previous() || Token::simpleMatch(tok->previous(), ";")) && Token::Match(tok->linkAt(2), ("} ; " + tok->strAt(1) + " %var% ;").c_str()))
                 continue;
 
             structname = tok->strAt(1);
