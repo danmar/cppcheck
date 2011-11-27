@@ -999,9 +999,11 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
             if (!valid)
                 line.clear();
-            else if (line.find(" ", 8) == std::string::npos) {
+            else if (line.find(" ", 8) == std::string::npos) 
+            {
                 defines.insert(line.substr(8));
-            } else {
+            } 
+            else {
                 std::string s = line.substr(8);
                 s[s.find(" ")] = '=';
                 defines.insert(s);
