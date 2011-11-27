@@ -59,6 +59,9 @@ class Extract:
                 self.nodes.append(node)
                 code = ''
 
+        # close test file
+        fin.close()
+
 def strtoxml(s):
     """Convert string to xml/html format"""
     return s.replace('&','&amp;').replace('"', '&quot;').replace('<','&lt;').replace('>','&gt;')
