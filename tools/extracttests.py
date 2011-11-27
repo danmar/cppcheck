@@ -1,12 +1,19 @@
 ﻿#!/usr/bin/python
 
+"""Extract test cases information from Cppcheck test file"""
+
 import sys
 import re
 
 class Extract:
+    """Read Cppcheck test file and create data representation"""
+
+    # array that stores all the test cases
     nodes = []
 
     def parseFile(self,filename):
+        """parse test file and add info to the nodes variable"""
+
         name = '[0-9a-zA-Z_]+'
         str =  '\\"(.+)\\"'
 
@@ -53,9 +60,11 @@ class Extract:
                 code = ''
 
 def strtoxml(s):
+    """Convert string to xml/html format"""
     return s.replace('&','&amp;').replace('"', '&quot;').replace('<','&lt;').replace('>','&gt;')
 
 def trimname(name):
+    """Trim test name. Trailing underscore and digits are removed"""
     while name[-1].isdigit():
         name = name[:-1]
     if name[-1] == '_':
@@ -64,6 +73,7 @@ def trimname(name):
 
 
 def writeHtmlFile(nodes, functionName, filename, errorsOnly):
+    """Write html file for a function name"""
     fout = open(filename, 'w')
     fout.write('<html>\n')
     fout.write('<head>\n')
@@ -75,6 +85,13 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
     fout.write('  </style>\n')
     fout.write('</head>\n')
     fout.write('<body>\n')
+
+    fout.write('<a href="index.htm">Home</a> -- ')
+    if errorsOnly:
+        fout.write('<a href="all-'+functionName+'.htm">All test cases</a>')
+    else:
+        fout.write('<a href="errors-'+functionName+'.htm">Error test cases</a>')
+    fout.write('<br><br>')
 
     testclass = None
     num = 0
