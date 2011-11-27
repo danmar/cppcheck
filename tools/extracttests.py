@@ -55,6 +55,14 @@ class Extract:
 def strtoxml(s):
     return s.replace('&','&amp;').replace('"', '&quot;').replace('<','&lt;').replace('>','&gt;')
 
+def trimname(name):
+    while name[-1].isdigit():
+        name = name[:-1]
+    if name[-1] == '_':
+        name = name[:-1]
+    return name
+
+
 if len(sys.argv) == 1 or '--help' in sys.argv:
     print 'Extract test cases from test file'
     print 'Syntax: extracttests.py [--html=folder] [--xml] path/testfile.cpp'
@@ -114,11 +122,7 @@ if filename != None:
 
         functionNames = []
         for node in e.nodes:
-            functionname = node['functionName']
-            while functionname[-1].isdigit():
-                functionname = functionname[:-1]
-            if functionname[-1] == '_':
-                functionname = functionname[:-1]
+            functionname = trimname(node['functionName'])
             if not functionname in functionNames:
                 functionNames.append(functionname)
         functionNames.sort()
@@ -129,12 +133,7 @@ if filename != None:
             findex.write('  <tr><td><a href="'+functionname+'.htm">'+functionname+'</a></td>')
             num = 0
             for node in e.nodes:
-                name = node['functionName']
-                while name[-1].isdigit():
-                    name = name[:-1]
-                if name[-1] == '_':
-                    name = name[:-1]
-                if name == functionname:
+                if trimname(node['functionName']) == functionname:
                     num = num + 1
             findex.write('<td><div align="right">' + str(num) + '</div></td></tr>\n')
 
@@ -161,12 +160,7 @@ if filename != None:
             fout.write('  <tr><th>Nr</th><th>Code</th><th>Expected</th></tr>\n')
             num = 0
             for node in e.nodes:
-                name = node['functionName']
-                while name[-1].isdigit():
-                    name = name[:-1]
-                if name[-1] == '_':
-                    name = name[:-1]
-                if name == functionName:
+                if trimname(node['functionName']) == functionName:
                     num = num + 1
                     fout.write('  <tr><td>' + str(num) + '</td>')
                     fout.write('<td><pre>' + strtoxml(node['code']).replace('\\n', '\n') + '</pre></td>')
