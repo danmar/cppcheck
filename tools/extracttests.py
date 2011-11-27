@@ -15,7 +15,7 @@ class Extract:
         """parse test file and add info to the nodes variable"""
 
         name = '[0-9a-zA-Z_]+'
-        str =  '\\"(.+)\\"'
+        string =  '\\"(.+)\\"'
 
         testclass = None
         functionName = None
@@ -43,12 +43,12 @@ class Extract:
                 continue
 
             # check
-            res = re.match('\s+check\('+str, line)
+            res = re.match('\s+check\('+string, line)
             if res != None:
                 code = res.group(1)
 
             # code..
-            res = re.match('\\s+'+str, line)
+            res = re.match('\\s+'+string, line)
             if res != None:
                 code = code + res.group(1)
 
