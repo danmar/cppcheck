@@ -325,6 +325,30 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->userDefines += define;
         }
 
+        // User undef
+        else if (strncmp(argv[i], "-U", 2) == 0) {
+            std::string undef;
+
+            // "-U undef"
+            if (strcmp(argv[i], "-U") == 0) {
+                ++i;
+                if (i >= argc || strncmp(argv[i], "-", 1) == 0 ||
+                    strncmp(argv[i], "--", 2) == 0) {
+                    PrintMessage("cppcheck: argument to '-U' is missing.");
+                    return false;
+                }
+
+                undef = argv[i];
+            }
+            // "-Uundef"
+            else {
+                undef = 2 + argv[i];
+            }
+
+            if (_settings->userUndefs.find(undef) == _settings->userUndefs.end())
+                _settings->userUndefs.insert(undef);
+        }
+
         // Include paths
         else if (strncmp(argv[i], "-I", 2) == 0) {
             std::string path;
@@ -676,6 +700,10 @@ void CmdLineParser::PrintHelp()
               "                         Use '-D' to limit the checking. When '-D' is used the\n"
               "                         checking is limited to the given configuration.\n"
               "                         Example: '-DDEBUG=1 -D__cplusplus'.\n"
+              "    -U<ID>               By default Cppcheck checks all configurations.\n"
+              "                         Use '-U' to explicitely hide certain #ifdef <ID> code\n"
+              "                         paths from checking.\n"
+              "                         Example: '-UDEBUG\n"
               "    --enable=<id>        Enable additional checks. The available ids are:\n"
               "                          * all\n"
               "                                  Enable all checks\n"
