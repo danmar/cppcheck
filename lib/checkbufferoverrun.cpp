@@ -1066,7 +1066,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
                 // just taking the address?
                 const bool addr(tok2 && (tok2->str() == "&" ||
-					                     Token::simpleMatch(tok2->previous(), "& (")));
+                                         Token::simpleMatch(tok2->previous(), "& (")));
 
                 // taking address of 1 past end?
                 if (addr && totalIndex == totalElements)

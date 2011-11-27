@@ -353,7 +353,7 @@ public:
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0);
         c.SuspiciousSemicolonError(0);
-        //c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
+        c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
         c.cctypefunctionCallError(0, "funname", "value");
     }
 
@@ -375,7 +375,7 @@ public:
                "* sizeof for numeric given as function argument\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* invalid usage of output stream. For example: std::cout << std::cout;'\n"
-               //"* wrong number of arguments given to 'printf' or 'scanf;'\n"
+               "* wrong number of arguments given to 'printf' or 'scanf;'\n"
 
                // style
                "* C-style pointer cast in cpp file\n"

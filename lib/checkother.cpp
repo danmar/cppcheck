@@ -1229,12 +1229,6 @@ void CheckOther::invalidScanfError(const Token *tok)
 
 void CheckOther::checkWrongPrintfScanfArguments()
 {
-    // This check is experimental. See #3311, #3313, #3339
-    // TODO : fix tickets and remove this condition. When the condition
-    //        is removed the classInfo and getErrorMessages must be updated
-    if (!_settings->experimental)
-        return;
-
     if (!_settings->isEnabled("style"))
         return;
 
@@ -1300,8 +1294,15 @@ void CheckOther::checkWrongPrintfScanfArguments()
                 }
                 if (i == formatString.end())
                     break;
-            } else if (percent && std::isalpha(*i)) {
-                numFormat++;
+            } else if (percent) {
+                while (!std::isalpha(*i)) {
+                    if (*i == '*')
+                        numFormat++;
+                    ++i;
+                }
+                if (*i != 'm') // %m is a non-standard extension that requires no parameter
+                    numFormat++;
+
                 percent = false;
             }
         }

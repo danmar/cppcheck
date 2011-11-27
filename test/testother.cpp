@@ -1997,6 +1997,9 @@ private:
               "    printf(\"%\"PRId64\"\n\", 123);\n"
               "    fprintf(stderr,\"%\"PRId64\"\n\", 123);\n"
               "    snprintf(str,10,\"%\"PRId64\"\n\", 123);\n"
+              "    fprintf(stderr, \"error: %m\n\");\n" // #3339
+              "    printf(\"string: %.*s\n\", len, string);\n" // #3311
+              "    fprintf(stderr, \"%*cText.\n\", indent, ' ');\n" // #3313
               "}\n",
               "test.cpp",
               true
