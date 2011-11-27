@@ -55,7 +55,10 @@ class Extract:
             # assert
             res = re.match('\\s+ASSERT_EQUALS\\(\\"(.*)\\"', line)
             if res != None and len(code) > 10:
-                node = { 'testclass':testclass, 'functionName':functionName, 'code':code, 'expected':res.group(1) }
+                node = { 'testclass':testclass,
+                         'functionName':functionName,
+                         'code':code,
+                         'expected':res.group(1) }
                 self.nodes.append(node)
                 code = ''
 
@@ -210,8 +213,14 @@ if filename != None:
 
         # create files for each functionName
         for functionName in functionNames:
-            writeHtmlFile(e.nodes, functionName, htmldir + 'errors-' + functionName + '.htm', True)
-            writeHtmlFile(e.nodes, functionName, htmldir + 'all-' + functionName + '.htm', False)
+            writeHtmlFile(e.nodes, 
+                          functionName, 
+                          htmldir + 'errors-' + functionName + '.htm',
+                          True)
+            writeHtmlFile(e.nodes,
+                          functionName,
+                          htmldir + 'all-' + functionName + '.htm',
+                          False)
 
     else:
         for node in e.nodes:
