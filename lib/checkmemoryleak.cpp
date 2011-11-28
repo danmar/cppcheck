@@ -2563,6 +2563,10 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                     std::string temp = "this . " + varname;
                     dealloc = getDeallocationType(tok, temp);
                 }
+                // some usage in the destructor => assume it's related
+                // to deallocation
+                if (destructor && tok->str() == varname)
+                    dealloc = CheckMemoryLeak::Many;
                 if (dealloc != CheckMemoryLeak::No) {
                     if (destructor)
                         deallocInDestructor = true;
