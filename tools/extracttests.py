@@ -126,18 +126,21 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
 
 if len(sys.argv) <= 1 or '--help' in sys.argv:
     print 'Extract test cases from test file'
-    print 'Syntax: extracttests.py [--html=folder] [--xml] path/testfile.cpp'
+    print 'Syntax: extracttests.py [--html=folder] [--xml] [--code=folder] path/testfile.cpp'
     sys.exit(0)
 
 # parse command line
 xml = False
 filename = None
 htmldir = None
+codedir = None
 for arg in sys.argv[1:]:
     if arg == '--xml':
         xml = True
     elif arg.startswith('--html='):
         htmldir = arg[7:]
+    elif arg.startswith('--code='):
+        codedir = arg[7:]
     elif arg.endswith('.cpp'):
         filename = arg
     else:
@@ -224,6 +227,36 @@ if filename != None:
                           htmldir + 'all-' + functionName + '.htm',
                           False)
 
+    elif codedir:
+        testnum = 0
+
+        if not codedir.endswith('/'):
+            codedir = codedir + '/'
+        errors = open(codedir+'errors.txt', 'w')
+
+        for node in e.nodes:
+            testnum = testnum + 1
+
+            functionName = node['functionName']
+            code = node['code']
+            expected = node['expected']
+
+            filename = str(testnum) + '-' 
+            filename += functionName + '.cpp'
+
+            # source code
+            fout = open(codedir+filename,'w')
+            fout.write(code)
+            fout.close()
+
+            # suppression
+            if expected.startswith('[test.cpp:'):
+                expected='['+filename+expected[10:]
+            elif expected.startswith('[test.c:'):
+                expected='['+filename+expected[8:]
+            if expected != '':
+                errors.write(expected+'\n')
+        errors.close()
     else:
         for node in e.nodes:
             print node['functionName']
