@@ -53,73 +53,90 @@ bool CheckNullPointer::isUpper(const std::string &str)
 void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, unsigned char value)
 {
     // standard functions that dereference first parameter..
-    // both uninitialized data and null pointers are invalid.
-    static std::set<std::string> functionNames1;
-    if (functionNames1.empty()) {
-        functionNames1.insert("memchr");
-        functionNames1.insert("memcmp");
-        functionNames1.insert("strcat");
-        functionNames1.insert("strncat");
-        functionNames1.insert("strchr");
-        functionNames1.insert("strrchr");
-        functionNames1.insert("strcmp");
-        functionNames1.insert("strncmp");
-        functionNames1.insert("strdup");
-        functionNames1.insert("strndup");
-        functionNames1.insert("strlen");
-        functionNames1.insert("strstr");
-        functionNames1.insert("fclose");
-        functionNames1.insert("feof");
-        functionNames1.insert("fwrite");
-        functionNames1.insert("fseek");
-        functionNames1.insert("ftell");
-        functionNames1.insert("fgetpos");
-        functionNames1.insert("fsetpos");
-        functionNames1.insert("rewind");
-        functionNames1.insert("scanf");
-        functionNames1.insert("fscanf");
-        functionNames1.insert("sscanf");
+    static std::set<std::string> functionNames1_all;
+    static std::set<std::string> functionNames1_nullptr;
+    if (functionNames1_all.empty()) {
+        functionNames1_all.insert("memchr");
+        functionNames1_all.insert("memcmp");
+        functionNames1_all.insert("strcat");
+        functionNames1_all.insert("strncat");
+        functionNames1_all.insert("strchr");
+        functionNames1_all.insert("strrchr");
+        functionNames1_all.insert("strcmp");
+        functionNames1_all.insert("strncmp");
+        functionNames1_all.insert("strdup");
+        functionNames1_all.insert("strndup");
+        functionNames1_all.insert("strlen");
+        functionNames1_all.insert("strstr");
+        functionNames1_all.insert("fclose");
+        functionNames1_all.insert("feof");
+        functionNames1_all.insert("fwrite");
+        functionNames1_all.insert("fseek");
+        functionNames1_all.insert("ftell");
+        functionNames1_all.insert("fgetpos");
+        functionNames1_all.insert("fsetpos");
+        functionNames1_all.insert("rewind");
+        functionNames1_all.insert("printf");
+        functionNames1_all.insert("scanf");
+        functionNames1_all.insert("fscanf");
+        functionNames1_all.insert("sscanf");
+
+        functionNames1_nullptr.insert("memcpy");
+        functionNames1_nullptr.insert("memmove");
+        functionNames1_nullptr.insert("memset");
+        functionNames1_nullptr.insert("strcpy");
+        functionNames1_nullptr.insert("sprintf");
+        functionNames1_nullptr.insert("vsprintf");
+        functionNames1_nullptr.insert("vprintf");
+        functionNames1_nullptr.insert("fprintf");
+        functionNames1_nullptr.insert("vfprintf");
     }
 
     // standard functions that dereference second parameter..
-    // both uninitialized data and null pointers are invalid.
-    static std::set<std::string> functionNames2;
-    if (functionNames2.empty()) {
-        functionNames2.insert("memcmp");
-        functionNames2.insert("memcpy");
-        functionNames2.insert("memmove");
-        functionNames2.insert("strcat");
-        functionNames2.insert("strncat");
-        functionNames2.insert("strcmp");
-        functionNames2.insert("strncmp");
-        functionNames2.insert("strcpy");
-        functionNames2.insert("strncpy");
-        functionNames2.insert("strstr");
-        functionNames2.insert("sprintf");
-        functionNames2.insert("fprintf");
-        functionNames2.insert("fscanf");
-        functionNames2.insert("sscanf");
+    static std::set<std::string> functionNames2_all;
+    static std::set<std::string> functionNames2_nullptr;
+    if (functionNames2_all.empty()) {
+        functionNames2_all.insert("memcmp");
+        functionNames2_all.insert("memcpy");
+        functionNames2_all.insert("memmove");
+        functionNames2_all.insert("strcat");
+        functionNames2_all.insert("strncat");
+        functionNames2_all.insert("strcmp");
+        functionNames2_all.insert("strncmp");
+        functionNames2_all.insert("strcpy");
+        functionNames2_all.insert("strncpy");
+        functionNames2_all.insert("strstr");
+        functionNames2_all.insert("sprintf");
+        functionNames2_all.insert("fprintf");
+        functionNames2_all.insert("fscanf");
+        functionNames2_all.insert("sscanf");
+
+        functionNames2_nullptr.insert("frexp");
+        functionNames2_nullptr.insert("modf");
     }
 
     // 1st parameter..
     if ((Token::Match(&tok, "%var% ( %var% ,|)") && tok.tokAt(2)->varId() > 0) ||
         (value == 0 && Token::Match(&tok, "%var% ( 0 ,|)"))) {
-        if (functionNames1.find(tok.str()) != functionNames1.end())
+        if (functionNames1_all.find(tok.str()) != functionNames1_all.end())
             var.push_back(tok.tokAt(2));
-        else if (value == 0 && Token::Match(&tok, "memcpy|memmove|memset|strcpy|printf|sprintf|vsprintf|vprintf|fprintf|vfprintf"))
-            var.push_back(tok.tokAt(2));
-        else if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && tok.strAt(4) != "0")
+        else if (value == 0 && functionNames1_nullptr.find(tok.str()) != functionNames1_nullptr.end())
             var.push_back(tok.tokAt(2));
         else if (value != 0 && Token::simpleMatch(&tok, "fflush"))
+            var.push_back(tok.tokAt(2));
+        else if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && tok.strAt(4) != "0") // Only if length is not zero
             var.push_back(tok.tokAt(2));
     }
 
     // 2nd parameter..
     if (Token::Match(&tok, "%var% ( %any%")) {
         const Token* secondParameter = tok.tokAt(2)->nextArgument();
-        if (secondParameter && ((value == 0 && secondParameter->str() == "0") || (Token::Match(secondParameter, "%var%") && secondParameter->varId() > 0)))
-            if (functionNames2.find(tok.str()) != functionNames2.end())
+        if (secondParameter && ((value == 0 && secondParameter->str() == "0") || (Token::Match(secondParameter, "%var%") && secondParameter->varId() > 0))) {
+            if (functionNames2_all.find(tok.str()) != functionNames2_all.end())
                 var.push_back(secondParameter);
+            else if (value == 0 && functionNames2_nullptr.find(tok.str()) != functionNames2_nullptr.end())
+                var.push_back(secondParameter);
+        }
     }
 
     if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf")) {
@@ -155,14 +172,21 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
                 if (*i == '%') {
                     percent = !percent;
-                } else if (percent && std::isalpha(*i)) {
+                } else if (percent) {
+                    while (!std::isalpha(*i)) {
+                        if (*i == '*')
+                            argListTok = argListTok->nextArgument();
+                        ++i;
+                    }
+
                     if ((*i == 'n' || *i == 's' || scan) && (!scan || value == 0)) {
                         if ((value == 0 && argListTok->str() == "0") || (Token::Match(argListTok, "%var%") && argListTok->varId() > 0)) {
                             var.push_back(argListTok);
                         }
                     }
 
-                    argListTok = argListTok->nextArgument(); // Find next argument
+                    if (*i != 'm') // %m is a non-standard glibc extension that requires no parameter
+                        argListTok = argListTok->nextArgument(); // Find next argument
                     if (!argListTok)
                         break;
 

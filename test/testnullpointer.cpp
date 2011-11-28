@@ -1124,6 +1124,15 @@ private:
               "  memcmp(bar(xyz()), 0, 123);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
+
+        check("void foo(const char *s)\n"
+              "{\n"
+              "    char *p = malloc(100);\n"
+              "    frexp(1.0, p);\n"
+              "    char *q = 0;\n"
+              "    frexp(1.0, q);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Possible null pointer dereference: q\n", errout.str());
     }
 
     // Check if pointer is null and the dereference it
@@ -1506,6 +1515,17 @@ private:
               "    printf(\"%s\", s);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+
+        check("void f(char* s) {\n"
+              "    printf(\"text: %m%s, %s\", s, 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+
+        check("void f(char* s) {\n"
+              "    printf(\"text: %*s, %s\", s, 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
     }
 
     void scanf_with_invalid_va_argument() {
