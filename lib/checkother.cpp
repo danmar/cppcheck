@@ -2426,7 +2426,7 @@ namespace {
     struct FuncFilter {
         FuncFilter(const Scope *scope, const Token *tok): _scope(scope), _tok(tok) {}
 
-        bool operator() (const Function &func) {
+        bool operator()(const Function &func) {
             // todo: function args, etc??
             bool matchingFunc = func.type == Function::eFunction &&
                                 _tok->str() == func.token->str();
@@ -2464,8 +2464,8 @@ namespace {
                     if (v == 0 && Token::Match(prev, "strcmp|strncmp|strlen|memcmp|strcasecmp|strncasecmp"))
                         return false;
                     std::list<Function>::const_iterator it = std::find_if(constFunctions.begin(),
-                                                                          constFunctions.end(),
-                                                                          FuncFilter(v ? v->type(): 0, prev));
+                            constFunctions.end(),
+                            FuncFilter(v ? v->type(): 0, prev));
                     if (it == constFunctions.end())
                         return true;
                 }
@@ -2550,9 +2550,9 @@ void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
 }
 
 void CheckOther::complexDuplicateExpressionCheck(const std::list<Function> &constFunctions,
-                                                 const Token *classStart,
-                                                 const std::string &toCheck,
-                                                 const std::string &alt)
+        const Token *classStart,
+        const std::string &toCheck,
+        const std::string &alt)
 {
     std::string statementStart(",|=|return");
     if (!alt.empty())
