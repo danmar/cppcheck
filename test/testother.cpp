@@ -142,6 +142,7 @@ private:
         TEST_CASE(duplicateBranch);
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
+        TEST_CASE(duplicateExpression3); // ticket #3317
 
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(checkStrncmpSizeof);
@@ -3638,11 +3639,6 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void foo() {\n"
-              "    if (this->bar() || this->bar()) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
-
-        check("void foo() {\n"
               "    if (a && b || a && b) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
@@ -3661,10 +3657,19 @@ private:
               "    if ((a + b) | (a + b)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
+
         check("void foo() {\n"
               "    if ((a | b) & (a | b)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
+
+        check("void d(const char f, int o, int v)\n"
+              "{\n"
+              "     if (((f=='R') && (o == 1) && ((v < 2) || (v > 99))) ||\n"
+              "         ((f=='R') && (o == 2) && ((v < 2) || (v > 99))) ||\n"
+              "         ((f=='T') && (o == 2) && ((v < 200) || (v > 9999)))) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression2() { // ticket #2730
@@ -3686,6 +3691,64 @@ private:
                       "[test.cpp:8]: (error) Passing value -1.0 to sqrt() leads to undefined result\n"
                       "[test.cpp:9]: (error) Passing value -1.0 to sqrtf() leads to undefined result\n", errout.str());
     }
+
+    void duplicateExpression3() {
+        check("void foo() {\n"
+              "    if (x() || x()) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "  void foo() const;\n"
+              "  bool bar() const;\n"
+              "};\n"
+              "void A::foo() const {\n"
+              "    if (bar() && bar()) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6]: (style) Same expression on both sides of '&&'.\n", errout.str());
+
+        check("struct A {\n"
+              "  void foo();\n"
+              "  bool bar();\n"
+              "  bool bar() const;\n"
+              "};\n"
+              "void A::foo() {\n"
+              "    if (bar() && bar()) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class B {\n"
+              "    void bar(int i);\n"
+              "};\n"
+              "class A {\n"
+              "    void bar(int i) const;\n"
+              "};\n"
+              "void foo() {\n"
+              "    B b;\n"
+              "    A a;\n"
+              "    if (b.bar(1) && b.bar(1)) {}\n"
+              "    if (a.bar(1) && a.bar(1)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:11]: (style) Same expression on both sides of '&&'.\n", errout.str());
+
+        check("class D { void strcmp(); };\n"
+              "void foo() {\n"
+              "    D d;\n"
+              "    if (d.strcmp() && d.strcmp()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if ((strcmp(a, b) == 0) || (strcmp(a, b) == 0)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    if (str == \"(\" || str == \"(\") {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+    }
+
 
     void alwaysTrueFalseStringCompare() {
         check_preprocess_suppress(
