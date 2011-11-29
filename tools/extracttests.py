@@ -253,13 +253,10 @@ if filename != None:
             fout.close()
 
             # write 'expected' to errors.txt
-            expected = expected.replace('\\n', '\n')
-            expected = expected.replace('\\"', '"')
-            if expected.startswith('[test.cpp:'):
-                expected='['+filename+expected[9:]
-            elif expected.startswith('[test.c:'):
-                expected='['+filename+expected[8:]
             if expected != '':
+                expected = expected.replace('\\n', '\n')
+                expected = expected.replace('\\"', '"')
+                expected = re.sub('\\[test.cp?p?:', '['+filename+':', expected)
                 errors.write(expected)
         errors.close()
     else:
