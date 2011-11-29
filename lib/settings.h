@@ -34,7 +34,8 @@
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
-class Settings {
+class Settings
+{
 private:
     /** @brief Code to append in the checks */
     std::string _append;
@@ -78,12 +79,14 @@ public:
     bool _verbose;
 
     /** @brief Request termination of checking */
-    void terminate() {
+    void terminate()
+    {
         _terminate = true;
     }
 
     /** @brief termination requested? */
-    bool terminated() const {
+    bool terminated() const
+    {
         return _terminate;
     }
 
@@ -166,9 +169,11 @@ public:
     bool ifcfg;
 
     /** Rule */
-    class Rule {
+    class Rule
+    {
     public:
-        Rule() {
+        Rule()
+        {
             // default id
             id = "rule";
 
@@ -205,7 +210,8 @@ public:
     unsigned int sizeof_size_t;
     unsigned int sizeof_pointer;
 
-    enum PlatformType {
+    enum PlatformType
+    {
         Unspecified, // whatever system this code was compiled on
         Win32A,
         Win32W,
