@@ -25,6 +25,7 @@
 #include <cctype>
 #include <cmath> // fabs()
 #include <stack>
+#include <algorithm> // find_if()
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
