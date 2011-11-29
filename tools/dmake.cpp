@@ -209,13 +209,42 @@ int main(int argc, char **argv)
     if (release) {
         makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall");
     } else {
+        // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
+        fout << "ifndef COMSPEC\n"
+             << "    ifdef ComSpec\n"
+             << "        #### ComSpec is defined on some WIN32's.\n"
+             << "        COMSPEC=$(ComSpec)\n"
+             << "    endif # ComSpec\n"
+             << "endif # COMSPEC\n"
+             << "\n"
+             << "ifdef COMSPEC\n"
+             << "    #### Maybe Windows\n"
+             << "    ifndef CPPCHK_GLIBCXX_DEBUG\n"
+             << "        CPPCHK_GLIBCXX_DEBUG=\n"
+             << "    endif # !CPPCHK_GLIBCXX_DEBUG\n"
+             << "else # !COMSPEC\n"
+             << "    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')\n"
+             << "\n"
+             << "    ifeq ($(uname_S),Linux)\n"
+             << "        ifndef CPPCHK_GLIBCXX_DEBUG\n"
+             << "            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG\n"
+             << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
+             << "    endif # Linux\n"
+             << "\n"
+             << "    ifeq ($(uname_S),GNU/kFreeBSD)\n"
+             << "        ifndef CPPCHK_GLIBCXX_DEBUG\n"
+             << "            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG\n"
+             << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
+             << "    endif # GNU/kFreeBSD\n"
+             << "\n"
+             << "endif # COMSPEC\n"
+             << "\n";
+
         // TODO: add more compiler warnings.
         // -Wlogical-op       : doesn't work on older GCC
         // -Wconversion       : too many warnings
         // -Wsign-conversion  : too many warnings
         // -Wunreachable-code : some GCC versions report lots of warnings
-
-        // The _GLIBCXX_DEBUG doesn't work in cygwin
         makeConditionalVariable(fout, "CXXFLAGS",
                                 "-pedantic "
                                 "-Wall "
@@ -235,7 +264,7 @@ int main(int argc, char **argv)
 //                                "-Wunreachable-code "
 //                                "-Wsign-conversion "
 //                                "-Wconversion "
-                                "-D_GLIBCXX_DEBUG "
+                                "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
 

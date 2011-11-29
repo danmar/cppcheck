@@ -5,8 +5,37 @@ ifndef HAVE_RULES
     HAVE_RULES=no
 endif
 
+ifndef COMSPEC
+    ifdef ComSpec
+        #### ComSpec is defined on some WIN32's.
+        COMSPEC=$(ComSpec)
+    endif # ComSpec
+endif # COMSPEC
+
+ifdef COMSPEC
+    #### Maybe Windows
+    ifndef CPPCHK_GLIBCXX_DEBUG
+        CPPCHK_GLIBCXX_DEBUG=
+    endif # !CPPCHK_GLIBCXX_DEBUG
+else # !COMSPEC
+    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
+
+    ifeq ($(uname_S),Linux)
+        ifndef CPPCHK_GLIBCXX_DEBUG
+            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
+        endif # !CPPCHK_GLIBCXX_DEBUG
+    endif # Linux
+
+    ifeq ($(uname_S),GNU/kFreeBSD)
+        ifndef CPPCHK_GLIBCXX_DEBUG
+            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
+        endif # !CPPCHK_GLIBCXX_DEBUG
+    endif # GNU/kFreeBSD
+
+endif # COMSPEC
+
 ifndef CXXFLAGS
-    CXXFLAGS=-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo -D_GLIBCXX_DEBUG -g
+    CXXFLAGS=-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo $(CPPCHK_GLIBCXX_DEBUG) -g
 endif
 
 ifeq ($(HAVE_RULES),yes)
@@ -200,7 +229,7 @@ lib/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafet
 lib/checkinternal.o: lib/checkinternal.cpp lib/checkinternal.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkinternal.o lib/checkinternal.cpp
 
-lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h lib/executionpath.h lib/checkuninitvar.h
+lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h lib/checkuninitvar.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkmemoryleak.o lib/checkmemoryleak.cpp
 
 lib/checknonreentrantfunctions.o: lib/checknonreentrantfunctions.cpp lib/checknonreentrantfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h
@@ -248,7 +277,7 @@ lib/path.o: lib/path.cpp lib/path.h
 lib/preprocessor.o: lib/preprocessor.cpp lib/preprocessor.h lib/tokenize.h lib/token.h lib/path.h lib/errorlogger.h lib/settings.h lib/suppressions.h lib/standards.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/preprocessor.o lib/preprocessor.cpp
 
-lib/settings.o: lib/settings.cpp lib/settings.h lib/suppressions.h lib/standards.h lib/path.h
+lib/settings.o: lib/settings.cpp lib/settings.h lib/suppressions.h lib/standards.h lib/path.h lib/preprocessor.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/settings.o lib/settings.cpp
 
 lib/suppressions.o: lib/suppressions.cpp lib/suppressions.h lib/settings.h lib/standards.h lib/path.h
