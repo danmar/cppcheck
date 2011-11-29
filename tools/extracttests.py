@@ -239,9 +239,12 @@ if filename != None:
 
             functionName = node['functionName']
             code = node['code']
+            code = code.replace('\\n', '\n')
+            code = code.replace('\\"', '"')
             expected = node['expected']
 
-            filename = str(testnum) + '-' 
+            filename = '0000' + str(testnum) + '-'
+            filename = filename[-4:]
             filename += functionName + '.cpp'
 
             # source code
@@ -249,13 +252,15 @@ if filename != None:
             fout.write(code)
             fout.close()
 
-            # suppression
+            # write 'expected' to errors.txt
+            expected = expected.replace('\\n', '\n')
+            expected = expected.replace('\\"', '"')
             if expected.startswith('[test.cpp:'):
-                expected='['+filename+expected[10:]
+                expected='['+filename+expected[9:]
             elif expected.startswith('[test.c:'):
                 expected='['+filename+expected[8:]
             if expected != '':
-                errors.write(expected+'\n')
+                errors.write(expected)
         errors.close()
     else:
         for node in e.nodes:
