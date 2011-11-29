@@ -235,6 +235,15 @@ private:
         // Defines are given: test Preprocessor::handleIncludes
         TEST_CASE(def_handleIncludes);
         TEST_CASE(def_missingInclude);
+
+        // Using -U to undefine symbols
+        TEST_CASE(undef1);
+        TEST_CASE(undef2);
+        TEST_CASE(undef3);
+        TEST_CASE(undef4);
+        TEST_CASE(undef5);
+        TEST_CASE(undef6);
+        TEST_CASE(undef7);
     }
 
 
@@ -3030,6 +3039,151 @@ private:
             preprocessor.handleIncludes(code,"test.c",includePaths,defs);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void undef1() {
+        Settings settings;
+
+        const char filedata[] = "#ifdef X\n"
+                                "Fred & Wilma\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X");
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, (int)actual.size());
+        ASSERT_EQUALS("\n\n\n", actual[""]);
+    }
+
+    void undef2() {
+        Settings settings;
+
+        const char filedata[] = "#ifndef X\n"
+                                "Fred & Wilma\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X");
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, (int)actual.size());
+        ASSERT_EQUALS("\nFred & Wilma\n\n", actual[""]);
+    }
+
+    void undef3() {
+        Settings settings;
+
+        const char filedata[] = "#define X\n"
+                                "#ifdef X\n"
+                                "Fred & Wilma\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, (int)actual.size());
+        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+    }
+
+    void undef4() {
+        Settings settings;
+
+        const char filedata[] = "#define X Y\n"
+                                "#ifdef X\n"
+                                "Fred & Wilma\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, (int)actual.size());
+        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+    }
+
+    void undef5() {
+        Settings settings;
+
+        const char filedata[] = "#define X() Y\n"
+                                "#ifdef X\n"
+                                "Fred & Wilma\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, (int)actual.size());
+        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+    }
+
+    void undef6() {
+        Settings settings;
+
+        const char filedata[] = "#define X Y\n"
+                                "#ifdef X\n"
+                                "Fred & Wilma\n"
+                                "#else"
+                                "Barney & Betty\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, (int)actual.size());
+        TODO_ASSERT_EQUALS("\n\n\nBarney & Betty\n\n","\n\n\n\n\n", actual[""]);
+    }
+
+    void undef7() {
+        Settings settings;
+
+        const char filedata[] = "#define X XDefined\n"
+                                "X;\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, (int)actual.size());
+        TODO_ASSERT_EQUALS("\n;\n","\nXDefined;\n", actual[""]);
     }
 };
 
