@@ -3379,6 +3379,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(bool x) {\n"  // #3356
+              "    if (x == 1) {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(bool x) {\n"
               "    if (x != 10) {\n"
               "        printf(\"foo\");\n"

@@ -1364,7 +1364,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
             std::map<unsigned int, bool>::const_iterator iVar = boolvars.find(varTok->varId());
             if (iVar != boolvars.end() && iVar->second && // Variable has to be a boolean
                 ((tok->strAt(1) != "==" && tok->strAt(1) != "!=") ||
-                 ((MathLib::toLongNumber(numTok->str()) != 0) && (!_tokenizer->code_is_c() || MathLib::toLongNumber(numTok->str()) != 1)))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
+                 (MathLib::toLongNumber(numTok->str()) != 0 && MathLib::toLongNumber(numTok->str()) != 1))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
                 comparisonOfBoolWithIntError(varTok, numTok->str());
             }
         } else if (Token::Match(tok, "%num% >|>=|==|!=|<=|< %var%")) { // Comparing number with variable
@@ -1373,7 +1373,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
             std::map<unsigned int, bool>::const_iterator iVar = boolvars.find(varTok->varId());
             if (iVar != boolvars.end() && iVar->second && // Variable has to be a boolean
                 ((tok->strAt(1) != "==" && tok->strAt(1) != "!=") ||
-                 ((MathLib::toLongNumber(numTok->str()) != 0) && (!_tokenizer->code_is_c() || MathLib::toLongNumber(numTok->str()) != 1)))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
+                 (MathLib::toLongNumber(numTok->str()) != 0 && MathLib::toLongNumber(numTok->str()) != 1))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
                 comparisonOfBoolWithIntError(varTok, numTok->str());
             }
         } else if (Token::Match(tok, "true|false >|>=|==|!=|<=|< %var%")) { // Comparing boolean constant with variable
