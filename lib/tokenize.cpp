@@ -7469,23 +7469,14 @@ void Tokenizer::simplifyGoto()
     std::list<Token *> gotos;
     unsigned int indentlevel = 0;
     unsigned int indentspecial = 0;
-    unsigned int roundbraces = 0;
     Token *beginfunction = 0;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (tok->str() == ")") {
-            if (!roundbraces)
-                break;
-            --roundbraces;
-        }
-        if (tok->str() == "(")
-            ++roundbraces;
+        if (tok->str() == "(" || tok->str() == "[")
+            tok = tok->link();
 
-        if (roundbraces)
-            continue;
-
-        if (tok->str() == "{") {
-            if ((tok->tokAt(-2) && Token::Match(tok->tokAt(-2),"namespace|struct|class|union %var% {")) ||
-                (tok->previous() && Token::simpleMatch(tok->previous(),"namespace {")))
+        else if (tok->str() == "{") {
+            if (Token::Match(tok->tokAt(-2),"namespace|struct|class|union %var% {") ||
+                Token::simpleMatch(tok->previous(),"namespace {"))
                 ++indentspecial;
             else if (!beginfunction && !indentlevel)
                 tok = tok->link();
@@ -7508,29 +7499,21 @@ void Tokenizer::simplifyGoto()
             }
         }
 
-        else if (!indentlevel && Token::Match(tok, ") const| {")) {
+        else if (Token::Match(tok, "goto %var% ;"))
+            gotos.push_back(tok);
+
+        if (!indentlevel && Token::Match(tok, ") const| {")) {
             gotos.clear();
             beginfunction = tok;
         }
 
-        else if (Token::Match(tok, "goto %var% ;"))
-            gotos.push_back(tok);
-
-        else if (indentlevel == 1 && Token::Match(tok->previous(), "[{};] %var% : ;") && tok->str() != "default") {
+        if (indentlevel == 1 && Token::Match(tok->previous(), "[{};] %var% : ;") && tok->str() != "default") {
             // Is this label at the end..
             bool end = false;
             unsigned int level = 0;
             for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == ")") {
-                    if (!roundbraces)
-                        break;
-                    --roundbraces;
-                }
-                if (tok2->str() == "(")
-                    ++roundbraces;
-
-                if (roundbraces)
-                    continue;
+                if (tok2->str() == "(" || tok2->str() == "[")
+                    tok2 = tok2->link();
 
                 if (tok2->str() == "}") {
                     if (!level) {
@@ -7538,7 +7521,9 @@ void Tokenizer::simplifyGoto()
                         break;
                     }
                     --level;
-                } else if (tok2->str() == "{") {
+                }
+
+                else if (tok2->str() == "{") {
                     ++level;
                 }
 
@@ -7572,6 +7557,7 @@ void Tokenizer::simplifyGoto()
                     std::list<Token*> links2;
                     std::list<Token*> links3;
                     unsigned int lev = 0;
+                    unsigned int roundbraces = 0;
                     for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                         if (tok2->str() == ")") {
                             if (!roundbraces)
