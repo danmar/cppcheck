@@ -3058,7 +3058,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1U, (int)actual.size());
+        ASSERT_EQUALS(1U, actual.size());
         ASSERT_EQUALS("\n\n\n", actual[""]);
     }
 
@@ -3078,7 +3078,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1U, (int)actual.size());
+        ASSERT_EQUALS(1U, actual.size());
         ASSERT_EQUALS("\nFred & Wilma\n\n", actual[""]);
     }
 
@@ -3099,7 +3099,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1U, (int)actual.size());
+        ASSERT_EQUALS(1U, actual.size());
         ASSERT_EQUALS("\n\n\n\n", actual[""]);
     }
 
@@ -3120,7 +3120,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1U, (int)actual.size());
+        ASSERT_EQUALS(1U, actual.size());
         ASSERT_EQUALS("\n\n\n\n", actual[""]);
     }
 
@@ -3141,7 +3141,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1U, (int)actual.size());
+        ASSERT_EQUALS(1U, actual.size());
         ASSERT_EQUALS("\n\n\n\n", actual[""]);
     }
 
@@ -3164,7 +3164,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1U, (int)actual.size());
+        ASSERT_EQUALS(1U, actual.size());
         TODO_ASSERT_EQUALS("\n\n\nBarney & Betty\n\n","\n\n\n\n\n", actual[""]);
     }
 
@@ -3183,7 +3183,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1U, (int)actual.size());
+        ASSERT_EQUALS(1U, actual.size());
         TODO_ASSERT_EQUALS("\n;\n","\nXDefined;\n", actual[""]);
     }
 };
