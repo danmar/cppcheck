@@ -127,7 +127,6 @@ private:
 
         Settings settings;
         settings.experimental = experimental;
-        settings.inconclusive = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -705,6 +704,7 @@ private:
         ASSERT_EQUALS("; loop use ;", simplifycode("; loop { loop loop use ; } ;"));
         ASSERT_EQUALS("; }", simplifycode("; loop { if break ; break ; } ; }"));
         ASSERT_EQUALS("; }", simplifycode("; loop { if continue ; if continue ; } ; }"));
+        ASSERT_EQUALS("; loop if alloc ; if { dealloc ; return ; } }", simplifycode("; loop { if alloc ; } if { dealloc ; return ; } }"));
 
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; while(!var) alloc ;"));
 
@@ -909,27 +909,27 @@ private:
               "{\n"
               "    int *p = new(std::nothrow) int;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    using std::nothrow;\n"
               "    int *p = new(nothrow) int;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    int *p = new(std::nothrow) int[10];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    using namespace std;\n"
               "    int *p = new(nothrow) int[10];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1004,7 +1004,7 @@ private:
               "    str = new char[20];\n"
               "    delete [] str;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str\n", errout.str());
     }
 
 
@@ -1026,7 +1026,7 @@ private:
               "    }\n"
               "    return NULL;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: s (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: s\n", errout.str());
     }
 
 
@@ -1119,7 +1119,7 @@ private:
               "    }\n"
               "    free(c);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: c (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: c\n", errout.str());
     }
 
     void if9() {
@@ -1160,7 +1160,7 @@ private:
               "    }\n"
               "    delete [] x;\n"
               "}\n", true);
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: x (this might be a false warning)\n",
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: x\n",
                            "", errout.str());
     }
 
@@ -1188,7 +1188,7 @@ private:
               "        str = strdup(a[i]);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: str (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: str\n", errout.str());
     }
 
 
@@ -1210,7 +1210,7 @@ private:
               "\n"
               "    return a;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: a (this might be a false warning)\n",
+        TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: a\n",
 
                            "[test.cpp:8]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n",
                            errout.str());
@@ -1254,7 +1254,7 @@ private:
               "    return a;\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:9]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n"
-                      "[test.cpp:11]: (error) Memory leak: a (this might be a false warning)\n", errout.str());
+                      "[test.cpp:11]: (error) Memory leak: a\n", errout.str());
     }
 
 
@@ -1286,7 +1286,7 @@ private:
                                "    };\n"
                                "}\n");
         check(code.c_str(), false);
-        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: str (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: str\n", errout.str());
     }
 
     void switch3() {
@@ -1303,7 +1303,7 @@ private:
               "    }\n"
               "    delete [] str;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: str (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: str\n", errout.str());
     }
 
     void switch4() {
@@ -1456,7 +1456,7 @@ private:
               "    char *p = new char[100];\n"
               "    foo(p);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n", errout.str());
     }
 
 
@@ -1502,7 +1502,7 @@ private:
               "    char *p = new char[100];\n"
               "    foo(p);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: p\n", errout.str());
     }
 
 
@@ -1519,7 +1519,7 @@ private:
               "    char *p = new char[100];\n"
               "    foo(p);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: p (this might be a false warning)\n",
+        TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: p\n",
                            "", errout.str());
     }
 
@@ -1612,7 +1612,7 @@ private:
               "    if (a()) return;\n"    // <- memory leak
               "    free(p);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: p\n", errout.str());
     }
 
     void func16() {
@@ -1752,7 +1752,7 @@ private:
               "    }\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile\n", errout.str());
 
         check("void foo ()\n"
               "{\n"
@@ -1766,7 +1766,7 @@ private:
               "    }\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
 
         check("void foo ()\n"
               "{\n"
@@ -1797,7 +1797,7 @@ private:
               "    }\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile\n", errout.str());
 
         check("void foo ()\n"
               "{\n"
@@ -1811,7 +1811,7 @@ private:
               "    }\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
 
         check("void foo ()\n"
               "{\n"
@@ -1843,7 +1843,7 @@ private:
               "    }\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpFile\n", errout.str());
 
         check("void foo ()\n"
               "{\n"
@@ -1857,7 +1857,7 @@ private:
               "    }\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
 
         check("void foo ()\n"
               "{\n"
@@ -1890,7 +1890,7 @@ private:
               "    delete [] cpDir;\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1903,7 +1903,7 @@ private:
               "    }\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1934,7 +1934,7 @@ private:
               "    delete [] cpDir;\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1947,7 +1947,7 @@ private:
               "    }\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1979,7 +1979,7 @@ private:
               "    delete [] cpDir;\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: cpDir\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1992,7 +1992,7 @@ private:
               "    }\n"
               "    return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: cpDir\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2027,7 +2027,7 @@ private:
               "    sprintf(cBuf,\"%s\",\"testtest..\");\n"
               "    perror (cBuf);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: cBuf (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: cBuf\n", errout.str());
     }
 
     // # 2668
@@ -2044,7 +2044,7 @@ private:
               "    delete [] cpFile;\n"
               "    fclose (stdout);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile\n", errout.str());
 
         check("void  foo()\n"
               "{\n"
@@ -2058,7 +2058,7 @@ private:
               "    }\n"
               "    fclose (stdout);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: cpFile\n", errout.str());
 
         check("void  foo()\n"
               "{\n"
@@ -2093,7 +2093,7 @@ private:
               "    delete [] cpFile;\n"
               "    return file;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile\n", errout.str());
 
         check("int * foo()\n"
               "{\n"
@@ -2107,7 +2107,7 @@ private:
               "    }\n"
               "    return file;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
 
         check("int * foo()\n"
               "{\n"
@@ -2139,7 +2139,7 @@ private:
               "    delete [] cpFile;\n"
               "    return file;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: cpFile\n", errout.str());
 
         check("int * foo()\n"
               "{\n"
@@ -2153,7 +2153,7 @@ private:
               "    }\n"
               "    return file;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: cpFile\n", errout.str());
 
         check("int * foo()\n"
               "{\n"
@@ -2177,7 +2177,7 @@ private:
               "{\n"
               "  std::string *x = new std::string;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x (this might be a false warning)\n","", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x\n","", errout.str());
 
         check("void f(void) \n"
               "{\n"
@@ -2201,7 +2201,7 @@ private:
               "{\n"
               "  Fred *f = new Fred();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: f (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: f\n", errout.str());
 
         check("class Fred { void foo(){ } };\n"
               "void f(void) \n"
@@ -2216,7 +2216,7 @@ private:
               "{\n"
               "  Fred *f = new Fred();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: f (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: f\n", errout.str());
     }
 
 
@@ -2229,7 +2229,7 @@ private:
               "{\n"
               "    char *p = a();\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p (this might be a false warning)\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
 
         check("FILE *a()\n"
               "{\n"
@@ -2239,7 +2239,7 @@ private:
               "{\n"
               "    FILE *p = a();\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Resource leak: p (this might be a false warning)\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Resource leak: p\n"), errout.str());
 
         check("char *a()\n"
               "{\n"
@@ -2249,7 +2249,7 @@ private:
               "{\n"
               "    char *p = a();\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p (this might be a false warning)\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
     }
 
     void allocfunc2() {
@@ -2302,7 +2302,7 @@ private:
               "{\n"
               "    char *p = a();\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p (this might be a false warning)\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
     }
 
     void allocfunc4() {
@@ -2317,7 +2317,7 @@ private:
               "{\n"
               "   char *p = foo();\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p (this might be a false warning)\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"), errout.str());
 
         check("char* foo()\n"
               "{\n"
@@ -2345,7 +2345,7 @@ private:
               "   char *p;\n"
               "   foo(&p);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:10]: (error) Memory leak: p (this might be a false warning)\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:10]: (error) Memory leak: p\n"), errout.str());
 
         check("void foo(char **str)\n"
               "{\n"
@@ -2371,7 +2371,7 @@ private:
               "   char *q;\n"
               "   foo(&q, &p);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p (this might be a false warning)\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"), errout.str());
 
         check("void foo(char **str)\n"
               "{\n"
@@ -2384,7 +2384,7 @@ private:
               "   char *p;\n"
               "   foo(&p);\n"
               "}\n");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p (this might be a false warning)\n"),
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"),
                            "", errout.str());
 
         check("void foo(char **str)\n"
@@ -2469,7 +2469,7 @@ private:
               "    f = foo();\n"
               "    fclose(f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Resource leak: f (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Resource leak: f\n", errout.str());
     }
 
     void allocfunc9() {
@@ -2508,7 +2508,7 @@ private:
               "    delete [] str;\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str\n", errout.str());
     }
 
     void throw2() {
@@ -2570,7 +2570,7 @@ private:
               "    return;\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: s2 (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: s2\n", errout.str());
     }
 
 
@@ -2581,7 +2581,7 @@ private:
               "    a = realloc(a, 100);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n"
-                      "[test.cpp:5]: (error) Memory leak: a (this might be a false warning)\n", errout.str());
+                      "[test.cpp:5]: (error) Memory leak: a\n", errout.str());
     }
 
     void realloc2() {
@@ -2748,7 +2748,7 @@ private:
               "    free(a);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2825,7 +2825,7 @@ private:
               "    char *a = reinterpret_cast<char *>(malloc(10));\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a\n", errout.str());
     }
 
 
@@ -3022,7 +3022,7 @@ private:
               "        ThrowException();\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: p\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -3030,7 +3030,7 @@ private:
               "    p = g();\n"
               "    delete [] p;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
     }
 
     void unknownFunction4() {
@@ -3041,7 +3041,7 @@ private:
               "    if (b) return;\n"
               "    delete [] p;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
 
     void unknownFunction5() {
@@ -3091,7 +3091,7 @@ private:
               "        int *p = new int[100];\n"
               "    }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: p\n", errout.str());
     }
 
     void class2() {
@@ -3191,7 +3191,7 @@ private:
               "        exit(0);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n", errout.str());
     }
 
     void exit5() {
@@ -3237,7 +3237,7 @@ private:
               "    char *p = malloc(100);\n"
               "    int i = a(123);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: p\n", errout.str());
     }
 
     void noreturn() {
@@ -3259,7 +3259,7 @@ private:
               "    char *p = malloc(100);\n"
               "    fatal_error();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n", errout.str());
     }
 
 
@@ -3271,7 +3271,7 @@ private:
               "    memset(&(out[0]), 0, 1);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: out (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: out\n", errout.str());
     }
 
     void strndup_function() {
@@ -3279,7 +3279,7 @@ private:
               "{\n"
               "    char *out = strndup(\"text\", 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: out (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: out\n", errout.str());
     }
 
     void tmpfile_function() {
@@ -3287,7 +3287,7 @@ private:
               "{\n"
               "    FILE *f = tmpfile();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: f (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: f\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -3295,7 +3295,7 @@ private:
               "    if (!f)\n"
               "        return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Resource leak: f (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Resource leak: f\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -3341,7 +3341,7 @@ private:
               "{\n"
               "    int fd = open(path, O_RDONLY);\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: fd (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: fd\n", errout.str());
 
         check("void f(const char *path)\n"
               "{\n"
@@ -3387,7 +3387,7 @@ private:
               "{\n"
               "    int fd = creat(path, S_IRWXU);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: fd (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: fd\n", errout.str());
     }
 
     void close_function() {
@@ -3447,7 +3447,7 @@ private:
               "      }\n"
               "  close(handle);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Resource leak: handle (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Resource leak: handle\n", errout.str());
     }
 
     void fd_functions() {
@@ -3475,7 +3475,7 @@ private:
               "    fstat(fd, buf);\n"
               "    fchmod(fd, mode);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:24]: (error) Resource leak: fd (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:24]: (error) Resource leak: fd\n", errout.str());
     }
 
     void opendir_function() {
@@ -3483,7 +3483,7 @@ private:
               "{\n"
               "    DIR *f = opendir(\".\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: f (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: f\n", errout.str());
     }
 
     void fdopendir_function() {
@@ -3491,7 +3491,7 @@ private:
               "{\n"
               "    DIR *f = fdopendir(fd);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: f (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: f\n", errout.str());
     }
 
     void closedir_function() {
@@ -3528,7 +3528,7 @@ private:
               "    seekdir(f, 2)\n;"
               "    scandir(f, namelist, filter, comp);\n;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Resource leak: f (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Resource leak: f\n", errout.str());
     }
 
     void file_functions() {
@@ -3554,7 +3554,7 @@ private:
               "fgetpos(in, 10);\n"
               "fprintf(in, \"text\\n\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:22]: (error) Resource leak: f (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:22]: (error) Resource leak: f\n", errout.str());
     }
 
     void getc_function() {
@@ -3566,7 +3566,7 @@ private:
                   "    while ( (c = getc (fin1a)) != EOF)\n"
                   "    { }\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:6]: (error) Resource leak: fin1a (this might be a false warning)\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Resource leak: fin1a\n", errout.str());
         }
 
         {
@@ -3576,7 +3576,7 @@ private:
                   "    FILE *fin1b = fopen(\"FILE.txt\", \"r\");\n"
                   "    c = getc(fin1b);\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:6]: (error) Resource leak: fin1b (this might be a false warning)\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Resource leak: fin1b\n", errout.str());
         }
     }
 
@@ -3632,7 +3632,7 @@ private:
               "    int *p = new int[100];\n"
               "    typeid(p);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
 
     void same_function_name() {
@@ -3651,7 +3651,7 @@ private:
               "{\n"
               "    p = malloc(100);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
     }
 
     // Ticket #2014 - setjmp / longjmp
@@ -3690,7 +3690,7 @@ private:
               "return 0;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: buff (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: buff\n", errout.str());
     }
 
     void trac2662() {
@@ -3736,7 +3736,7 @@ private:
               "try {}\n"
               "catch(...) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a (this might be a false warning)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n", errout.str());
     }
 
 

@@ -82,15 +82,6 @@ private:
      */
     void reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) const;
 
-    /**
-     * Report inconclusive error. Similar with the function Check::reportInconclusiveError
-     * @param location the token where the error occurs
-     * @param severity the severity of the bug
-     * @param id type of message
-     * @param msg text
-     */
-    void reportInconclusiveError(const Token *location, Severity::SeverityType severity, const std::string &id, const std::string &msg) const;
-
 public:
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e)
         : tokenizer(t), errorLogger(e) {
@@ -100,7 +91,7 @@ public:
     /** @brief What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
     enum AllocType { No, Malloc, gMalloc, New, NewArray, File, Fd, Pipe, Dir, Many };
 
-    void memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype, bool inconclusive);
+    void memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype);
 
     /**
      * @brief Get type of deallocation at given position
@@ -142,14 +133,14 @@ public:
      * @param tok token where memory is leaked
      * @param varname name of variable
      */
-    void memleakError(const Token *tok, const std::string &varname, bool inconclusive);
+    void memleakError(const Token *tok, const std::string &varname);
 
     /**
      * Report that there is a resource leak (fopen/popen/etc)
      * @param tok token where resource is leaked
      * @param varname name of variable
      */
-    void resourceLeakError(const Token *tok, const std::string &varname, bool inconclusive);
+    void resourceLeakError(const Token *tok, const std::string &varname);
 
     /**
      * @brief Report error: deallocating a deallocated pointer
@@ -321,8 +312,8 @@ public:
     void getErrorMessages(ErrorLogger *e, const Settings *settings) {
         CheckMemoryLeakInFunction c(0, settings, e);
 
-        c.memleakError(0, "varname", false);
-        c.resourceLeakError(0, "varname", false);
+        c.memleakError(0, "varname");
+        c.resourceLeakError(0, "varname");
 
         c.deallocDeallocError(0, "varname");
         c.deallocuseError(0, "varname");
