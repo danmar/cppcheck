@@ -325,17 +325,14 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->userDefines += define;
         }
         // User undef
-        else if (strncmp(argv[i], "-U", 2) == 0)
-        {
+        else if (strncmp(argv[i], "-U", 2) == 0) {
             std::string undef;
 
             // "-U undef"
-            if (strcmp(argv[i], "-U") == 0)
-            {
+            if (strcmp(argv[i], "-U") == 0) {
                 ++i;
                 if (i >= argc || strncmp(argv[i], "-", 1) == 0 ||
-                    strncmp(argv[i], "--", 2) == 0)
-                {
+                    strncmp(argv[i], "--", 2) == 0) {
                     PrintMessage("cppcheck: argument to '-U' is missing.");
                     return false;
                 }
@@ -343,8 +340,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 undef = argv[i];
             }
             // "-Uundef"
-            else
-            {
+            else {
                 undef = 2 + argv[i];
             }
 
