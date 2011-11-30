@@ -105,6 +105,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--append=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>--check-config</option></arg>
       <arg choice="opt"><option>-D&lt;id&gt;</option></arg>
+      <arg choice="opt"><option>-U&lt;id&gt;</option></arg>
       <arg choice="opt"><option>--enable=&lt;id&gt;</option></arg>
       <arg choice="opt"><option>--error-exitcode=&lt;n&gt;</option></arg>
       <arg choice="opt"><option>--errorlist</option></arg>
@@ -170,8 +171,15 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
           <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration. 
 Example: -DDEBUG=1 -D__cplusplus</para>
         </listitem>
-      </varlistentry>      
-      <varlistentry>
+      </varlistentry>
+        <varlistentry>
+            <term><option>-U&lt;id&gt;</option></term>
+            <listitem>
+                <para>By default Cppcheck checks all configurations. Use '-U' to explicitely hide certain #ifdef &lt;id&gt; code paths from checking. 
+Example: '-UDEBUG'</para>
+            </listitem>
+        </varlistentry>
+        <varlistentry>
         <term><option>--enable=&lt;id&gt;</option></term>
         <listitem>
           <para>Enable additional checks. The available ids are:
