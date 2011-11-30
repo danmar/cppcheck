@@ -76,6 +76,7 @@ private:
         TEST_CASE(uninitVarArray5);
         TEST_CASE(uninitVarArray6);
         TEST_CASE(uninitVarArray7);
+        TEST_CASE(uninitVarArray8);
         TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitVarArray3D);
         TEST_CASE(uninitVarStruct1); // ticket #2172
@@ -2421,6 +2422,15 @@ private:
                        "public:\n"
                        "    Foo() { ::memset(array, 0, sizeof(array)); }\n"
                        "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarArray8() {
+        checkUninitVar("class Foo {\n"
+                       "    char a[10];\n"
+                       "public:\n"
+                       "    Foo() { ::ZeroMemory(a); }\n"
+                       "}");
         ASSERT_EQUALS("", errout.str());
     }
 

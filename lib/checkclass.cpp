@@ -395,7 +395,10 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
             else {
                 assignAllVar(usage);
             }
-        } else if (Token::Match(ftok, "%var% (") && ftok->str() != "if") {
+        } else if (Token::Match(ftok, "::| %var% (") && ftok->str() != "if") {
+            if (ftok->str() == "::")
+                ftok = ftok->next();
+
             // Passing "this" => assume that everything is initialized
             for (const Token *tok2 = ftok->next()->link(); tok2 && tok2 != ftok; tok2 = tok2->previous()) {
                 if (tok2->str() == "this") {
