@@ -55,7 +55,6 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.experimental = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

@@ -27,8 +27,7 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    // The ExecutionPath framework doesn't work as well as I wanted
-    //CheckUninitVar instance;
+    CheckUninitVar instance;
 }
 
 //---------------------------------------------------------------------------
@@ -1019,9 +1018,6 @@ void CheckUninitVar::saveAnalysisData(const std::set<std::string> &data) const
 
 void CheckUninitVar::executionPaths()
 {
-    if (!_settings->experimental)
-        return;
-
     // check if variable is accessed uninitialized..
     {
         // no writing if multiple threads are used (TODO: thread safe analysis?)

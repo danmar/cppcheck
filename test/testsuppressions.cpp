@@ -157,7 +157,6 @@ private:
 
         Settings settings;
         settings._inlineSuppressions = true;
-        settings.experimental = true;
         if (!suppression.empty())
             settings.nomsg.addSuppressionLine(suppression);
 
@@ -172,16 +171,18 @@ private:
     void runChecks(void (TestSuppressions::*check)(const char[], const std::string &)) {
         // check to make sure the appropriate error is present
         (this->*check)("void f() {\n"
-                       "    int a = 4 / 0;\n"
+                       "    int a;\n"
+                       "    a++;\n"
                        "}\n",
                        "");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
         // suppress uninitvar globally
         (this->*check)("void f() {\n"
-                       "    int a = 4 / 0;\n"
+                       "    int a;\n"
+                       "    a++;\n"
                        "}\n",
-                       "zerodiv");
+                       "uninitvar");
         ASSERT_EQUALS("", errout.str());
 
         // suppress uninitvar globally, without error present
@@ -189,15 +190,15 @@ private:
                        "    int a;\n"
                        "    b++;\n"
                        "}\n",
-                       "zerodiv");
-        ASSERT_EQUALS("[*]: (information) Unmatched suppression: zerodiv\n", errout.str());
+                       "uninitvar");
+        ASSERT_EQUALS("[*]: (information) Unmatched suppression: uninitvar\n", errout.str());
 
         // suppress uninitvar for this file only
         (this->*check)("void f() {\n"
-                       "    int a = 4 / 0;\n"
+                       "    int a;\n"
                        "    a++;\n"
                        "}\n",
-                       "zerodiv:test.cpp");
+                       "uninitvar:test.cpp");
         ASSERT_EQUALS("", errout.str());
 
         // suppress uninitvar for this file only, without error present
@@ -205,13 +206,13 @@ private:
                        "    int a;\n"
                        "    b++;\n"
                        "}\n",
-                       "zerodiv:test.cpp");
-        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: zerodiv\n", errout.str());
+                       "uninitvar:test.cpp");
+        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: uninitvar\n", errout.str());
 
         // suppress all for this file only
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    a = 4 / 0;\n"
+                       "    a++;\n"
                        "}\n",
                        "*:test.cpp");
         ASSERT_EQUALS("", errout.str());
@@ -227,24 +228,24 @@ private:
         // suppress uninitvar for this file and line
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    a = 4 / 0;\n"
+                       "    a++;\n"
                        "}\n",
-                       "zerodiv:test.cpp:3");
+                       "uninitvar:test.cpp:3");
         ASSERT_EQUALS("", errout.str());
 
         // suppress uninitvar for this file and line, without error present
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    a = 4;\n"
+                       "    b++;\n"
                        "}\n",
-                       "zerodiv:test.cpp:3");
-        ASSERT_EQUALS("[test.cpp:3]: (information) Unmatched suppression: zerodiv\n", errout.str());
+                       "uninitvar:test.cpp:3");
+        ASSERT_EQUALS("[test.cpp:3]: (information) Unmatched suppression: uninitvar\n", errout.str());
 
         // suppress uninitvar inline
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    // cppcheck-suppress zerodiv\n"
-                       "    a = 4 / 0;\n"
+                       "    // cppcheck-suppress uninitvar\n"
+                       "    a++;\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -252,9 +253,9 @@ private:
         // suppress uninitvar inline
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    // cppcheck-suppress zerodiv\n"
+                       "    // cppcheck-suppress uninitvar\n"
                        "\n"
-                       "    a = 4 / 0;\n"
+                       "    a++;\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -262,8 +263,8 @@ private:
         // suppress uninitvar inline
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    /* cppcheck-suppress zerodiv */\n"
-                       "    a = 4 / 0;\n"
+                       "    /* cppcheck-suppress uninitvar */\n"
+                       "    a++;\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -271,9 +272,9 @@ private:
         // suppress uninitvar inline
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    /* cppcheck-suppress zerodiv */\n"
+                       "    /* cppcheck-suppress uninitvar */\n"
                        "\n"
-                       "    a = 4 / 0;\n"
+                       "    a++;\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -281,11 +282,11 @@ private:
         // suppress uninitvar inline, without error present
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    // cppcheck-suppress zerodiv\n"
-                       "    a = 4;\n"
+                       "    // cppcheck-suppress uninitvar\n"
+                       "    b++;\n"
                        "}\n",
                        "");
-        ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: zerodiv\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: uninitvar\n", errout.str());
     }
 
     void suppressionsSettings() {
@@ -301,12 +302,12 @@ private:
             "}\n",
             "void f() {\n"
             "    int a;\n"
-            "    a = 4 / 0;\n"
+            "    a++;\n"
             "}\n",
         };
 
         // suppress uninitvar for this file and line
-        checkSuppression(names, codes, "zerodiv:xyz.cpp:3");
+        checkSuppression(names, codes, "uninitvar:xyz.cpp:3");
         ASSERT_EQUALS("", errout.str());
     }
 
