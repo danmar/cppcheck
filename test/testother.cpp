@@ -1965,6 +1965,8 @@ private:
               "    printf(\"%udfd%%dfa%s%d\", 0, bar());\n"
               "    fprintf(stderr,\"%u%s\");\n"
               "    snprintf(str,10,\"%u%s\");\n"
+              "    sprintf(string1, \"%-*.*s\", 32, string2);\n" // #3364
+              "    sprintf(string1, \"%*\", 32);\n" // #3364
               "}\n",
               "test.cpp",
               true
@@ -1975,7 +1977,8 @@ private:
                       "[test.cpp:5]: (error) printf format string has 3 parameters but only 2 are given\n"
                       "[test.cpp:6]: (error) printf format string has 3 parameters but only 2 are given\n"
                       "[test.cpp:7]: (error) fprintf format string has 2 parameters but only 0 are given\n"
-                      "[test.cpp:8]: (error) snprintf format string has 2 parameters but only 0 are given\n", errout.str());
+                      "[test.cpp:8]: (error) snprintf format string has 2 parameters but only 0 are given\n"
+                      "[test.cpp:9]: (error) sprintf format string has 3 parameters but only 2 are given\n", errout.str());
 
         check("void foo(char *str) {\n"
               "    printf(\"\", 0);\n"

@@ -177,6 +177,8 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                         if (*i == '*')
                             argListTok = argListTok->nextArgument();
                         ++i;
+                        if (!argListTok || i == formatString.end())
+                            return;
                     }
 
                     if ((*i == 'n' || *i == 's' || scan) && (!scan || value == 0)) {

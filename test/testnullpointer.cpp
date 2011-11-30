@@ -1526,6 +1526,13 @@ private:
               "    printf(\"text: %*s, %s\", s, 0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+
+        // Ticket #3364
+        check("void f() {\n"
+              "    printf(\"%-*.*s\", s, 0);\n"
+              "    sprintf(\"%*\", s);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void scanf_with_invalid_va_argument() {

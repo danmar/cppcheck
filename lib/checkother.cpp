@@ -71,6 +71,7 @@ void CheckOther::clarifyCalculation()
 {
     if (!_settings->isEnabled("style"))
         return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->strAt(1) == "?") {
             // condition
@@ -1301,11 +1302,13 @@ void CheckOther::checkWrongPrintfScanfArguments()
                 if (i == formatString.end())
                     break;
             } else if (percent) {
-                while (!std::isalpha(*i)) {
+                while (!std::isalpha(*i) && i != formatString.end()) {
                     if (*i == '*')
                         numFormat++;
                     ++i;
                 }
+                if (i == formatString.end())
+                    break;
                 if (*i != 'm') // %m is a non-standard extension that requires no parameter
                     numFormat++;
 
