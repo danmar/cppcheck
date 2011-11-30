@@ -440,6 +440,7 @@ private:
         ASSERT_EQUALS(";;use;if{}", getcode("char *s; if (x(s)) { }", "s"));
         ASSERT_EQUALS(";;use;if{}", getcode("char *s; if (x(&s)) { }", "s"));
         ASSERT_EQUALS(";;use;if{}", getcode("char *s; if (!s || x(&s)) { }", "s"));
+        ASSERT_EQUALS(";;ifv{}", getcode("int ffd; if (ffd<0 && (ffd=a)<0){}", "ffd"));
 
         // if (ticket #2442)
         ASSERT_EQUALS(";;;;if(!var){;}ifv{}", getcode("char *s; int x = 0; if (!s) { x = 2; } if (x) { }", "s"));

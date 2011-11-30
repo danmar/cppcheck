@@ -1087,24 +1087,20 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                         if (tok2->str() == "(")
                             ++innerParlevel;
-                        if (tok2->str() == ")") {
+                        else if (tok2->str() == ")") {
                             --innerParlevel;
                             if (innerParlevel <= 0)
                                 break;
-                        }
-                        if (Token::Match(tok2, "close|pclose|fclose|closedir ( %varid% )", varid)) {
+                        } else if (Token::Match(tok2, "close|pclose|fclose|closedir ( %varid% )", varid)) {
                             addtoken(&rettail, tok, "dealloc");
                             addtoken(&rettail, tok, ";");
                             dep = true;
                             break;
-                        }
-                        if (alloctype == Fd && Token::Match(tok2, "%varid% !=|>=", varid)) {
+                        } else if (alloctype == Fd && Token::Match(tok2, "%varid% !=|>=", varid)) {
                             dep = true;
-                        }
-                        if (innerParlevel > 0 && Token::Match(tok2, "! %varid%", varid)) {
+                        } else if (innerParlevel > 0 && Token::Match(tok2, "! %varid%", varid)) {
                             dep = true;
-                        }
-                        if (innerParlevel > 0 && Token::Match(tok2, "%var% (") && !test_white_list(tok2->str())) {
+                        } else if (innerParlevel > 0 && Token::Match(tok2, "%var% (") && !test_white_list(tok2->str())) {
                             bool use = false;
                             for (const Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->next()) {
                                 if (tok3->str() == "(")
@@ -1122,10 +1118,10 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                                 dep = false;
                                 break;
                             }
-                        }
-                        if (tok2->varId() && extravar.find(tok2->varId()) != extravar.end()) {
+                        } else if (tok2->varId() && extravar.find(tok2->varId()) != extravar.end()) {
                             dep = true;
-                        }
+                        } else if (tok2->varId() == varid && tok2->next()->isOp())
+                            dep = true;
                     }
 
                     if (Token::Match(tok, "if ( ! %varid% &&", varid)) {
@@ -1673,7 +1669,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 }
 
                 // Delete "if { dealloc|assign|use ; return ; }"
-                else if (Token::Match(tok2, "[;{}] if { dealloc|assign|use ; return ; }") && 
+                else if (Token::Match(tok2, "[;{}] if { dealloc|assign|use ; return ; }") &&
                          !Token::findmatch(tok, "if alloc ;")) {
                     Token::eraseTokens(tok2, tok2->tokAt(8));
                     if (Token::simpleMatch(tok2->next(), "else"))
