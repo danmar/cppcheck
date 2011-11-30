@@ -120,6 +120,12 @@ private:
 
         TEST_CASE(checkconfig);
         TEST_CASE(unknownParam);
+
+        TEST_CASE(undefs_noarg);
+        TEST_CASE(undefs_noarg2);
+        TEST_CASE(undefs_noarg3);
+        TEST_CASE(undefs);
+        TEST_CASE(undefs2);
     }
 
 
@@ -922,6 +928,54 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(!parser.ParseFromArgs(3, argv));
+    }
+
+    void undefs() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-U_WIN32", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT_EQUALS(1, settings.userUndefs.size());
+        ASSERT(settings.userUndefs.find("_WIN32") != settings.userUndefs.end());
+    }
+
+    void undefs2() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-U_WIN32", "-UNODEBUG", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS(2, settings.userUndefs.size());
+        ASSERT(settings.userUndefs.find("_WIN32") != settings.userUndefs.end());
+        ASSERT(settings.userUndefs.find("NODEBUG") != settings.userUndefs.end());
+    }
+
+    void undefs_noarg() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-U"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        // Fails since -U has no param
+        ASSERT_EQUALS(false, parser.ParseFromArgs(2, argv));
+    }
+
+    void undefs_noarg2() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-U", "-v", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        // Fails since -U has no param
+        ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
+    }
+
+    void undefs_noarg3() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-U", "--quiet", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        // Fails since -U has no param
+        ASSERT_EQUALS(false, parser.ParseFromArgs(4, argv));
     }
 };
 
