@@ -739,8 +739,10 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
     std::list<std::string> configs;
     std::string data;
     preprocess(istr, data, configs, filename, includePaths);
-    for (std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it)
-        result[ *it ] = Preprocessor::getcode(data, *it, filename, _settings, _errorLogger);
+    for (std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {
+        if (_settings && (_settings->userUndefs.find(*it) == _settings->userUndefs.end()))
+            result[ *it ] = Preprocessor::getcode(data, *it, filename, _settings, _errorLogger);
+    }
 }
 
 std::string Preprocessor::removeSpaceNearNL(const std::string &str)
@@ -1539,6 +1541,24 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
 
         if (line.compare(0, 8, "#define ") == 0) {
             match = true;
+
+            if (settings) {
+                typedef std::set<std::string>::iterator It;
+                for (It it = settings->userUndefs.begin(); it != settings->userUndefs.end(); ++it) {
+                    std::string::size_type pos = line.find_first_not_of(' ',8);
+                    if (pos != std::string::npos) {
+                        std::string::size_type pos2 = line.find(*it,pos);
+                        if ((pos2 != std::string::npos) &&
+                            ((line.size() == pos2 + (*it).size()) ||
+                             (line[pos2 + (*it).size()] == ' ') ||
+                             (line[pos2 + (*it).size()] == '('))) {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
             for (std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it)
                 match &= bool(*it);
 
