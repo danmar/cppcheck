@@ -143,6 +143,7 @@ private:
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
         TEST_CASE(duplicateExpression3); // ticket #3317
+        TEST_CASE(duplicateExpression4); // ticket #3354 (++)
 
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(checkStrncmpSizeof);
@@ -3763,6 +3764,17 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
     }
 
+    void duplicateExpression4() {
+        check("void foo() {\n"
+              "    if (*a++ != b || *a++ != b) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if (*a-- != b || *a-- != b) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void alwaysTrueFalseStringCompare() {
         check_preprocess_suppress(

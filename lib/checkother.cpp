@@ -2566,6 +2566,9 @@ void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
                     break;
                 }
                 --brackets;
+            } else if (tok->str() == "++" || tok->str() == "--") {
+                valid = false;
+                break;
             }
         }
 
