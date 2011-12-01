@@ -2415,11 +2415,13 @@ namespace {
             if (tok != start && tok->str() == "(") {
                 // go back to find the function call.
                 const Token *prev = tok->previous();
+                if (!prev)
+                    continue;
                 if (prev->str() == ">") {
                     // ignore template functions like boo<double>()
                     return true;
                 }
-                if (prev && prev->isName()) {
+                if (prev->isName()) {
                     const Variable *v = 0;
                     if (Token::Match(prev->tokAt(-2), "%var% .")) {
                         const Token *scope = prev->tokAt(-2);
