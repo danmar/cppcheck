@@ -2386,47 +2386,14 @@ namespace {
         const Token *start;
         const Token *end;
         int count;
-        ExpressionTokens(const Token *s, const Token *e): start(s), end(e), count(1) {}
-    };
-
-    class Expressions {
-    public:
-        Expressions(): _start(0) {}
-
-        void endExpr(const Token *end) {
-            const std::string &e = _expression.str();
-            if (!e.empty()) {
-                std::map<std::string, ExpressionTokens>::iterator it = _expressions.find(e);
-                if (it == _expressions.end())
-                    _expressions.insert(std::make_pair(e, ExpressionTokens(_start, end)));
-                else
-                    it->second.count += 1;
-            }
-            _expression.str("");
-            _start = 0;
-        }
-
-        void append(const Token *tok) {
-            if (!_start)
-                _start = tok;
-            _expression << tok->str();
-        }
-
-        std::map<std::string,ExpressionTokens> &getMap() {
-            return _expressions;
-        }
-
-    private:
-        std::map<std::string, ExpressionTokens> _expressions;
-        std::ostringstream _expression;
-        const Token *_start;
+        bool inconclusiveFunction;
+        ExpressionTokens(const Token *s, const Token *e): start(s), end(e), count(1), inconclusiveFunction(false) {}
     };
 
     struct FuncFilter {
         FuncFilter(const Scope *scope, const Token *tok): _scope(scope), _tok(tok) {}
 
         bool operator()(const Function &func) {
-            // todo: function args, etc??
             bool matchingFunc = func.type == Function::eFunction &&
                                 _tok->str() == func.token->str();
             // either a class function, or a global function with the same name
@@ -2436,7 +2403,6 @@ namespace {
         const Scope *_scope;
         const Token *_tok;
     };
-
 
     bool inconclusiveFunctionCall(const SymbolDatabase *symbolDatabase,
                                   const std::list<Function> &constFunctions,
@@ -2472,6 +2438,49 @@ namespace {
         }
         return false;
     }
+
+    class Expressions {
+    public:
+        Expressions(const SymbolDatabase *symbolDatabase, const
+                    std::list<Function> &constFunctions)
+            : _start(0),
+              _symbolDatabase(symbolDatabase),
+              _constFunctions(constFunctions) { }
+
+        void endExpr(const Token *end) {
+            const std::string &e = _expression.str();
+            if (!e.empty()) {
+                std::map<std::string, ExpressionTokens>::iterator it = _expressions.find(e);
+                if (it == _expressions.end()) {
+                    ExpressionTokens exprTokens(_start, end);
+                    exprTokens.inconclusiveFunction = inconclusiveFunctionCall(
+                                                          _symbolDatabase, _constFunctions, exprTokens);
+                    _expressions.insert(std::make_pair(e, exprTokens));
+                } else {
+                    it->second.count += 1;
+                }
+            }
+            _expression.str("");
+            _start = 0;
+        }
+
+        void append(const Token *tok) {
+            if (!_start)
+                _start = tok;
+            _expression << tok->str();
+        }
+
+        std::map<std::string,ExpressionTokens> &getMap() {
+            return _expressions;
+        }
+
+    private:
+        std::map<std::string, ExpressionTokens> _expressions;
+        std::ostringstream _expression;
+        const Token *_start;
+        const SymbolDatabase *_symbolDatabase;
+        const std::list<Function> &_constFunctions;
+    };
 
     bool notconst(const Function &func)
     {
@@ -2520,7 +2529,7 @@ void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
 {
     if (!start || !end)
         return;
-    Expressions expressions;
+    Expressions expressions(_tokenizer->getSymbolDatabase(), constFunctions);
     std::string opName;
     int level = 0;
     for (const Token *tok = start->next(); tok && tok != end; tok = tok->next()) {
@@ -2538,7 +2547,6 @@ void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
     }
     expressions.endExpr(end);
     std::map<std::string,ExpressionTokens>::const_iterator it = expressions.getMap().begin();
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (; it != expressions.getMap().end(); ++it) {
         // check expression..
         bool valid = true;
@@ -2571,10 +2579,9 @@ void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
         if (!valid || parantheses!=0 || brackets!=0)
             continue;
 
-        if (it->second.count > 1 &&
-            (it->first.find("(") == std::string::npos ||
-             !inconclusiveFunctionCall(symbolDatabase, constFunctions, it->second))) {
-            duplicateExpressionError(it->second.start, it->second.start, opName);
+        const ExpressionTokens &expr = it->second;
+        if (expr.count > 1 && !expr.inconclusiveFunction) {
+            duplicateExpressionError(expr.start, expr.start, opName);
         }
     }
 }
