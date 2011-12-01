@@ -2544,6 +2544,34 @@ void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
     std::map<std::string,ExpressionTokens>::const_iterator it = expressions.getMap().begin();
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (; it != expressions.getMap().end(); ++it) {
+        // check expression..
+        bool valid = true;
+        unsigned int parantheses = 0;  // ()
+        unsigned int brackets = 0;     // []
+        const std::string &expr = it->first;
+        for (std::string::size_type pos = 0; pos < expr.size(); ++pos) {
+            if (expr[pos] == '(') {
+                ++parantheses;
+            } else if (expr[pos] == ')') {
+                if (parantheses == 0) {
+                    valid = false;
+                    break;
+                }
+                --parantheses;
+            } else if (expr[pos] == '[') {
+                ++brackets;
+            } else if (expr[pos] == ']') {
+                if (brackets == 0) {
+                    valid = false;
+                    break;
+                }
+                --brackets;
+            }
+        }
+
+        if (!valid || parantheses!=0 || brackets!=0)
+            continue;
+
         if (it->second.count > 1 &&
             (it->first.find("(") == std::string::npos ||
              !inconclusiveFunctionCall(symbolDatabase, constFunctions, it->second))) {

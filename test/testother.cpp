@@ -3672,6 +3672,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
 
+        check("void foo() {\n"
+              "    if (a1[a2[c & 0xff] & 0xff]) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void d(const char f, int o, int v)\n"
               "{\n"
               "     if (((f=='R') && (o == 1) && ((v < 2) || (v > 99))) ||\n"
