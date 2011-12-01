@@ -3762,6 +3762,11 @@ private:
               "    if (str == \"(\" || str == \"(\") {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    if (bar(a) && !strcmp(a, b) && bar(a) && !strcmp(a, b)) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression4() {

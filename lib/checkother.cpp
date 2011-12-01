@@ -2444,6 +2444,7 @@ namespace {
         Expressions(const SymbolDatabase *symbolDatabase, const
                     std::list<Function> &constFunctions)
             : _start(0),
+              _lastTokens(0),
               _symbolDatabase(symbolDatabase),
               _constFunctions(constFunctions) { }
 
@@ -2451,13 +2452,18 @@ namespace {
             const std::string &e = _expression.str();
             if (!e.empty()) {
                 std::map<std::string, ExpressionTokens>::iterator it = _expressions.find(e);
+                bool lastInconclusive = _lastTokens && _lastTokens->inconclusiveFunction;
                 if (it == _expressions.end()) {
                     ExpressionTokens exprTokens(_start, end);
-                    exprTokens.inconclusiveFunction = inconclusiveFunctionCall(
+                    exprTokens.inconclusiveFunction = lastInconclusive || inconclusiveFunctionCall(
                                                           _symbolDatabase, _constFunctions, exprTokens);
                     _expressions.insert(std::make_pair(e, exprTokens));
+                    _lastTokens = &_expressions.find(e)->second;
                 } else {
-                    it->second.count += 1;
+                    ExpressionTokens &expr = it->second;
+                    expr.count += 1;
+                    expr.inconclusiveFunction = expr.inconclusiveFunction || lastInconclusive;
+                    _lastTokens = &expr;
                 }
             }
             _expression.str("");
@@ -2478,6 +2484,7 @@ namespace {
         std::map<std::string, ExpressionTokens> _expressions;
         std::ostringstream _expression;
         const Token *_start;
+        ExpressionTokens *_lastTokens;
         const SymbolDatabase *_symbolDatabase;
         const std::list<Function> &_constFunctions;
     };
