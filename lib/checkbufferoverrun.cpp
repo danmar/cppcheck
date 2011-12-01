@@ -1246,6 +1246,17 @@ void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* tok, const Token 
 
 void CheckBufferOverrun::checkGlobalAndLocalVariable()
 {
+    // check string literals
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%str% [ %num% ]")) {
+            std::string str = tok->strValue();
+            std::size_t index = atoi(tok->tokAt(2)->str().c_str());
+            if (index > str.length()) {
+                bufferOverrunError(tok, tok->str());
+            }
+        }
+    }
+
     // check all known fixed size arrays first by just looking them up
     for (unsigned int i = 1; i <= _tokenizer->varIdCount(); i++) {
         const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(i);

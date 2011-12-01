@@ -128,6 +128,7 @@ private:
         TEST_CASE(array_index_vla_for);    // #3221: access VLA inside for
         TEST_CASE(array_index_extern);      // FP when using 'extern'. #1684
         TEST_CASE(array_index_cast);       // FP after cast. #2841
+        TEST_CASE(array_index_string_literal);
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -1655,6 +1656,38 @@ private:
               "    f1(x);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array 'x[2]' index 4 out of bounds\n", errout.str());
+    }
+
+    void array_index_string_literal() {
+        check("void f()\n"
+              "{\n"
+              "    const char *str = \"abc\";\n"
+              "    int i = 10;\n"
+              "    bar(str[i]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: \"abc\"\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    const char *str = \"abc\";\n"
+              "    bar(str[4]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: \"abc\"\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    const char *str = \"abc\";\n"
+              "    bar(str[3]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    const char *str = \"a\tc\";\n"
+              "    bar(str[4]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: \"a\tc\"\n", errout.str());
+
     }
 
     void buffer_overrun_1() {
