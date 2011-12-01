@@ -1302,13 +1302,14 @@ void CheckOther::checkWrongPrintfScanfArguments()
                 if (i == formatString.end())
                     break;
             } else if (percent) {
-                while (!std::isalpha(*i) && i != formatString.end()) {
+                while (i != formatString.end() && !std::isalpha(*i)) {
                     if (*i == '*')
                         numFormat++;
                     ++i;
                 }
                 if (i == formatString.end())
                     break;
+
                 if (*i != 'm') // %m is a non-standard extension that requires no parameter
                     numFormat++;
 
@@ -1471,19 +1472,16 @@ void CheckOther::checkUnsignedDivision()
         return;
 
     // Check for "ivar / uvar" and "uvar / ivar"
-    std::map<unsigned int, char> varsign;
+    std::set<unsigned int> uvars;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]")) {
             if (tok->next()->isUnsigned())
-                varsign[tok->tokAt(2)->varId()] = 'u';
-            else
-                varsign[tok->tokAt(2)->varId()] = 's';
+                uvars.insert(tok->tokAt(2)->varId());
         }
 
         else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %num%")) {
             if (tok->strAt(3)[0] == '-') {
-                char sign1 = varsign[tok->next()->varId()];
-                if (sign1 == 'u') {
+                if (uvars.find(tok->next()->varId()) != uvars.end()) {
                     udivError(tok->next());
                 }
             }
@@ -1491,8 +1489,7 @@ void CheckOther::checkUnsignedDivision()
 
         else if (Token::Match(tok, "(|[|=|%op% %num% / %var%")) {
             if (tok->strAt(1)[0] == '-') {
-                char sign2 = varsign[tok->tokAt(3)->varId()];
-                if (sign2 == 'u') {
+                if (uvars.find(tok->tokAt(3)->varId()) != uvars.end()) {
                     udivError(tok->next());
                 }
             }
@@ -1955,26 +1952,25 @@ void CheckOther::strPlusChar()
         return;
     }
 
-    bool charVars[10000] = {0};
+    std::set<unsigned int> charVars;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Declaring char variable..
-        if (Token::Match(tok, "char|int|short %var% [;=]")) {
+        if (Token::Match(tok, "char %var% [;=]")) {
             unsigned int varid = tok->next()->varId();
-            if (varid > 0 && varid < 10000)
-                charVars[varid] = true;
+            if (varid > 0)
+                charVars.insert(varid);
         }
 
         //
         else if (Token::Match(tok, "[=(] %str% + %any%")) {
             // char constant..
-            const std::string s = tok->strAt(3);
-            if (s[0] == '\'')
+            if (tok->strAt(3)[0] == '\'')
                 strPlusCharError(tok->next());
 
             // char variable..
             unsigned int varid = tok->tokAt(3)->varId();
-            if (varid > 0 && varid < 10000 && charVars[varid])
+            if (varid > 0 && charVars.find(varid) != charVars.end())
                 strPlusCharError(tok->next());
         }
     }
