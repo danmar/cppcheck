@@ -2548,19 +2548,19 @@ void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
         bool valid = true;
         unsigned int parantheses = 0;  // ()
         unsigned int brackets = 0;     // []
-        const std::string &expr = it->first;
-        for (std::string::size_type pos = 0; pos < expr.size(); ++pos) {
-            if (expr[pos] == '(') {
+
+        for (const Token *tok = it->second.start; tok && tok != it->second.end; tok = tok->next()) {
+            if (tok->str() == "(") {
                 ++parantheses;
-            } else if (expr[pos] == ')') {
+            } else if (tok->str() == ")") {
                 if (parantheses == 0) {
                     valid = false;
                     break;
                 }
                 --parantheses;
-            } else if (expr[pos] == '[') {
+            } else if (tok->str() == "[") {
                 ++brackets;
-            } else if (expr[pos] == ']') {
+            } else if (tok->str() == "]") {
                 if (brackets == 0) {
                     valid = false;
                     break;
