@@ -23,7 +23,7 @@
 //---------------------------------------------------------------------------
 
 #include "check.h"
-
+#include "mathlib.h"
 
 /// @addtogroup Checks
 /// @{
@@ -65,9 +65,9 @@ private:
     void assignIfError(const Token *tok, bool result);
 
     void comparisonError(const Token *tok,
-                         int value1,
+                         MathLib::bigint value1,
                          const std::string &op,
-                         int value2,
+                         MathLib::bigint value2,
                          bool result);
 
     void multiConditionError(const Token *tok, unsigned int line1);

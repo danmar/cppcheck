@@ -112,7 +112,7 @@ void CheckAssignIf::comparison()
     }
 }
 
-void CheckAssignIf::comparisonError(const Token *tok, int value1, const std::string &op, int value2, bool result)
+void CheckAssignIf::comparisonError(const Token *tok, MathLib::bigint value1, const std::string &op, MathLib::bigint value2, bool result)
 {
     std::ostringstream expression;
     expression << std::hex << "(X & 0x" << value1 << ") " << op << " 0x" << value2;
