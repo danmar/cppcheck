@@ -445,7 +445,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok,
 
     // Check if return pointer is allocated..
     AllocType allocType = No;
-    while (0 != (tok = tok->next())) {
+    while (NULL != (tok = tok->next())) {
         if (Token::Match(tok, "%varid% =", varid)) {
             allocType = getAllocationType(tok->tokAt(2), varid, callstack);
         }
@@ -516,7 +516,7 @@ const char *CheckMemoryLeak::functionArgAlloc(const Token *tok, unsigned int tar
     // Check if pointer is allocated.
     unsigned int indentlevel = 0;
     int realloc = 0;
-    while (0 != (tok = tok->next())) {
+    while (NULL != (tok = tok->next())) {
         if (tok->str() == "{")
             ++indentlevel;
         else if (tok->str() == "}") {
@@ -608,7 +608,7 @@ static unsigned int countParameters(const Token *tok)
         return 0;
 
     unsigned int numpar = 1;
-    while ((tok = tok->nextArgument()))
+    while (NULL != (tok = tok->nextArgument()))
         numpar++;
 
     return numpar;
@@ -1670,7 +1670,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
 
                 // Delete "if { dealloc|assign|use ; return ; }"
                 else if (Token::Match(tok2, "[;{}] if { dealloc|assign|use ; return ; }") &&
-                         !Token::findmatch(tok, "if alloc ;")) {
+                         !Token::findsimplematch(tok, "if alloc ;")) {
                     Token::eraseTokens(tok2, tok2->tokAt(8));
                     if (Token::simpleMatch(tok2->next(), "else"))
                         tok2->deleteNext();
@@ -2356,7 +2356,7 @@ void CheckMemoryLeakInFunction::parseFunctionScope(const Token *tok, const Token
             const Token *vartok = tok->tokAt(2);
             checkScope(tok->next(), vartok->str(), vartok->varId(), classmember, sz);
         }
-    } while (0 != (tok = tok->next()));
+    } while (NULL != (tok = tok->next()));
 }
 
 void CheckMemoryLeakInFunction::check()

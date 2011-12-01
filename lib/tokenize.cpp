@@ -2554,7 +2554,7 @@ void Tokenizer::labels()
             // Simplify labels in the executable scope..
             unsigned int indentlevel = 0;
             unsigned int indentroundbraces = 0;
-            while (0 != (tok = tok->next())) {
+            while (NULL != (tok = tok->next())) {
                 if (tok->str() == "{")
                     ++indentlevel;
                 else if (tok->str() == "}") {
@@ -2571,7 +2571,7 @@ void Tokenizer::labels()
                     --indentroundbraces;
                 }
                 if (!indentroundbraces && tok->str() == "case") {
-                    while (0 != (tok = tok->next())) {
+                    while (NULL != (tok = tok->next())) {
                         if (Token::Match(tok->previous(), "%any% :"))
                             break;
                     }
@@ -2737,7 +2737,7 @@ std::set<std::string> Tokenizer::simplifyTemplatesExpandSpecialized()
         tok->deleteThis();
 
         // Use this special template in the code..
-        while (0 != (tok2 = const_cast<Token *>(Token::findmatch(tok2, pattern.c_str())))) {
+        while (NULL != (tok2 = const_cast<Token *>(Token::findmatch(tok2, pattern.c_str())))) {
             Token::eraseTokens(tok2, Token::findsimplematch(tok2, "("));
             tok2->str(name);
         }
@@ -4797,7 +4797,7 @@ bool Tokenizer::simplifyIfAddBraces()
         // * if (cond) for (;;) break;
         // * if (cond1) if (cond2) { }
         // * if (cond1) if (cond2) ; else ;
-        while ((tempToken = tempToken->next()) != NULL) {
+        while (NULL != (tempToken = tempToken->next())) {
             if (tempToken->str() == "{") {
                 if (Token::simpleMatch(tempToken->previous(),"else {")) {
                     if (innerIf)
@@ -5779,7 +5779,7 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                 insertTokens(tok2, type0, typelen);
                 std::stack<Token *> link1;
                 std::stack<Token *> link2;
-                while (((typelen--) > 0) && (0 != (tok2 = tok2->next()))) {
+                while (((typelen--) > 0) && (NULL != (tok2 = tok2->next()))) {
                     if (tok2->str() == "(")
                         link1.push(tok2);
                     else if (tok2->str() == ")" && !link1.empty()) {
@@ -6357,7 +6357,7 @@ bool Tokenizer::simplifyLogicalOperators()
                 continue;
 
             const Token *tok2 = tok;
-            while (0 != (tok2 = tok2->previous())) {
+            while (NULL != (tok2 = tok2->previous())) {
                 if (tok2->str() == ")")
                     tok2 = tok2->link();
                 else if (Token::Match(tok2, "(|;|{|}"))

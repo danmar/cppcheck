@@ -1345,7 +1345,7 @@ static unsigned int countParameters(const Token *tok)
         return 0;
 
     unsigned int numpar = 1;
-    while ((tok = tok->nextArgument()))
+    while (NULL != (tok = tok->nextArgument()))
         numpar++;
 
     return numpar;

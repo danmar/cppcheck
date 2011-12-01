@@ -308,8 +308,10 @@ void CheckNullPointer::nullPointerAfterLoop()
         // Is this checking inconclusive?
         bool inconclusive = false;
 
+        if (!tok2)
+            continue;
         // Check if the variable is dereferenced after the while loop
-        while (0 != (tok2 = tok2 ? tok2->next() : 0)) {
+        while (NULL != (tok2 = tok2->next())) {
             // inner and outer scopes
             if (tok2->str() == "{" || tok2->str() == "}") {
                 // Not inconclusive: bail out

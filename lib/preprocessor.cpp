@@ -2334,7 +2334,7 @@ public:
                 tok = tok->next();
             if (tok) {
                 bool optcomma = false;
-                while ((tok = tok->next()) != NULL) {
+                while (NULL != (tok = tok->next())) {
                     std::string str = tok->str();
                     if (str == "##")
                         continue;

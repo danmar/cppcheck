@@ -1143,7 +1143,7 @@ void CheckOther::invalidFunctionUsage()
                 sprintfOverlappingDataError(tok2->next(), tok2->next()->str());
                 break;
             }
-        } while ((tok2 = tok2->nextArgument()) != NULL);
+        } while (NULL != (tok2 = tok2->nextArgument()));
     }
 }
 

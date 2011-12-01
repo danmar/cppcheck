@@ -668,7 +668,7 @@ private:
                     if (Token::Match(tok2->tokAt(-2), "[(,] *") || Token::Match(tok2->next(), ". %var%")) {
                         // find function call..
                         const Token *functionCall = tok2;
-                        while (0 != (functionCall = functionCall ? functionCall->previous() : 0)) {
+                        while (NULL != (functionCall = functionCall ? functionCall->previous() : 0)) {
                             if (functionCall->str() == "(")
                                 break;
                             if (functionCall->str() == ")")

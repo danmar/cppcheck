@@ -251,7 +251,7 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
 {
     if (!Token::Match(tok, "return %var% ("))
         return false;
-    return bool(0 != Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->next()->str() + " (").c_str()));
+    return bool(NULL != Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->next()->str() + " (").c_str()));
 }
 
 //---------------------------------------------------------------------------
