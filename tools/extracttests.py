@@ -1,18 +1,27 @@
 ﻿#!/usr/bin/python
 
-"""Extract test cases information from Cppcheck test file"""
+"""
+Extract test cases information from Cppcheck test
+file
+"""
 
 import sys
 import re
 
 class Extract:
-    """Read Cppcheck test file and create data representation"""
+    """
+    Read Cppcheck test file and create data
+    representation
+    """
 
     # array that stores all the test cases
     nodes = []
 
     def parseFile(self,filename):
-        """parse test file and add info to the nodes variable"""
+        """
+        parse test file and add info to the nodes
+        variable
+        """
 
         name = '[0-9a-zA-Z_]+'
         string =  '\\"(.+)\\"'
@@ -43,7 +52,7 @@ class Extract:
                 continue
 
             # check
-            res = re.match('\s+check\('+string, line)
+            res = re.match('\s+check.*\('+string, line)
             if res != None:
                 code = res.group(1)
 
@@ -53,7 +62,7 @@ class Extract:
                 code = code + res.group(1)
 
             # assert
-            res = re.match('\\s+ASSERT_EQUALS\\(\\"(.*)\\"', line)
+            res = re.match('\\s+ASSERT_EQUALS\\(\\"([^"]*)\\",', line)
             if res != None and len(code) > 10:
                 node = { 'testclass':testclass,
                          'functionName':functionName,
