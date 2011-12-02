@@ -1265,7 +1265,7 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-            "; int main ( ) { int foo ; foo = 0 ; }",
+            "int main ( ) { int foo ; foo = 0 ; }",
             simplifyKnownVariables(code));
     }
 
@@ -1947,13 +1947,13 @@ private:
                                 "    const int x = 0;\n"
                                 "    bar(0,x);\n"
                                 "}\n";
-            const char expected[] = "void foo ( ) {\n;\nbar ( 0 , 0 ) ;\n}";
+            const char expected[] = "void foo ( ) {\n\nbar ( 0 , 0 ) ;\n}";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
         }
 
         {
             const char code[] = "static int const SZ = 22; char str[SZ];\n";
-            ASSERT_EQUALS("; char str [ 22 ] ;", tokenizeAndStringify(code,true));
+            ASSERT_EQUALS("char str [ 22 ] ;", tokenizeAndStringify(code,true));
         }
     }
 
@@ -2168,7 +2168,7 @@ private:
                             "}";
         const char expected[] = "class Fred {\n"
                                 "private:\n"
-                                ";\n"
+                                "\n"
                                 "int array [ 2 ] ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
@@ -4155,7 +4155,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { ; { ; } } void g ( ) { ; }", ostr.str());
+        ASSERT_EQUALS(" void f ( ) { } void g ( ) { }", ostr.str());
     }
 
     void simplify_constants2() {
@@ -4184,7 +4184,7 @@ private:
             ostr << " " << tok->str();
 
         std::ostringstream oss;
-        oss << " void f ( Foo & foo , Foo * foo2 ) { ; foo . a = 90 ; foo2 . a = 45 ; }";
+        oss << " void f ( Foo & foo , Foo * foo2 ) { foo . a = 90 ; foo2 . a = 45 ; }";
         ASSERT_EQUALS(oss.str(), ostr.str());
     }
 

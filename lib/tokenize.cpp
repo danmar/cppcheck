@@ -6502,6 +6502,7 @@ bool Tokenizer::simplifyKnownVariables()
                     // remove statement
                     while (tok1->str() != ";")
                         tok1->deleteThis();
+                    tok1->deleteThis();
                     tok = tok1;
                 }
             }
@@ -7240,7 +7241,7 @@ void Tokenizer::simplifyReference()
                         }
                     }
 
-                    Token::eraseTokens(tok2, tok2->tokAt(7));
+                    Token::eraseTokens(tok2, tok2->tokAt(7+(tok->strAt(6)==")")));
                 }
             }
         }
