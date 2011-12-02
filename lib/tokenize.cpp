@@ -4453,14 +4453,15 @@ void Tokenizer::removeRedundantAssignment()
             }
             localvars.erase(0);
             if (!localvars.empty()) {
-                for (Token *tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next()) {
+                for (Token *tok2 = tok->next(); tok2 && tok2 != end;) {
                     if (Token::Match(tok2, "[;{}] %type% %var% ;") && localvars.find(tok2->tokAt(2)->varId()) != localvars.end()) {
-                        Token::eraseTokens(tok2, tok2->tokAt(3));
+                        Token::eraseTokens(tok2, tok2->tokAt(4));
                     } else if (Token::Match(tok2, "[;{}] %type% * %var% ;") && localvars.find(tok2->tokAt(3)->varId()) != localvars.end()) {
-                        Token::eraseTokens(tok2, tok2->tokAt(4));
+                        Token::eraseTokens(tok2, tok2->tokAt(5));
                     } else if (Token::Match(tok2, "[;{}] %var% = %any% ;") && localvars.find(tok2->next()->varId()) != localvars.end()) {
-                        Token::eraseTokens(tok2, tok2->tokAt(4));
-                    }
+                        Token::eraseTokens(tok2, tok2->tokAt(5));
+                    } else
+                        tok2 = tok2->next();
                 }
             }
         }

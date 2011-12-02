@@ -523,7 +523,7 @@ private:
 
         {
             const char code1[] = "void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; }";
-            const char code2[] = "void f ( ) { ; }";
+            const char code2[] = "void f ( ) { }";
             ASSERT_EQUALS(code2, tok(code1));
         }
 
@@ -999,7 +999,7 @@ private:
                                 "}\n";
             std::ostringstream oss;
             oss << sizeofFromTokenizer("*");
-            ASSERT_EQUALS("void f ( ) { ; a = " + oss.str() + " ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { a = " + oss.str() + " ; }", sizeof_(code));
         }
     }
 
@@ -1174,7 +1174,7 @@ private:
 
         const char expected[] = "void f ( ) "
                                 "{"
-                                " ;"
+                                ""
                                 " 4 ; "
                                 "}";
 
@@ -1566,7 +1566,7 @@ private:
                             "f<int>(10);";
 
         const std::string expected("; f<int> ( 10 ) ; "
-                                   "void f<int> ( int val ) { ; }");
+                                   "void f<int> ( int val ) { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -2645,7 +2645,7 @@ private:
                                 "  bool x = false;\n"
                                 "  int b = x ? 44 : 3;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { }", tok(code));
         }
 
         {
@@ -6251,7 +6251,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { ; { g ( ) ; } }", tok(code));
+            ASSERT_EQUALS("void f ( ) { g ( ) ; }", tok(code));
         }
 
         {
@@ -6264,7 +6264,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { }", tok(code));
         }
 
         {
@@ -6277,7 +6277,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { }", tok(code));
         }
 
         {
@@ -6290,7 +6290,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { ; { g ( ) ; } }", tok(code));
+            ASSERT_EQUALS("void f ( ) { g ( ) ; }", tok(code));
         }
 
         {
@@ -6508,7 +6508,7 @@ private:
                             "}\n";
         const char expected[] = "int f ( ) "
                                 "{"
-                                " ; return 5 ; "
+                                " return 5 ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -6529,10 +6529,10 @@ private:
 
     void while0for() {
         // for (condition is always false)
-        ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { int i; for (i = 0; i < 0; i++) { a; } }"));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { int i; for (i = 0; i < 0; i++) { a; } }"));
         //ticket #3140
-        ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { int i; for (i = 0; i < 0; i++) { foo(); break; } }"));
-        ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { int i; for (i = 0; i < 0; i++) { foo(); continue; } }"));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { int i; for (i = 0; i < 0; i++) { foo(); break; } }"));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { int i; for (i = 0; i < 0; i++) { foo(); continue; } }"));
         ASSERT_EQUALS("void f ( ) { }", tok("void f() { for (int i = 0; i < 0; i++) { a; } }"));
         ASSERT_EQUALS("void f ( ) { }", tok("void f() { for (unsigned int i = 0; i < 0; i++) { a; } }"));
         ASSERT_EQUALS("void f ( ) { }", tok("void f() { for (long long i = 0; i < 0; i++) { a; } }"));
@@ -6953,17 +6953,17 @@ private:
         // ticket #1005 - int *p(0); => int *p = 0;
         {
             const char code[] = "void foo() { int *p(0); }";
-            ASSERT_EQUALS("void foo ( ) { ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { }", tok(code));
         }
 
         {
             const char code[] = "void foo() { int p(0); }";
-            ASSERT_EQUALS("void foo ( ) { ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { }", tok(code));
         }
 
         {
             const char code[] = "void a() { foo *p(0); }";
-            ASSERT_EQUALS("void a ( ) { ; }", tok(code));
+            ASSERT_EQUALS("void a ( ) { }", tok(code));
         }
     }
 

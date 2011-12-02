@@ -1614,7 +1614,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: int foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 + v@2 ;\n"
                                     "6: }\n";
@@ -1631,7 +1631,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: int foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 - v@2 ;\n"
                                     "6: }\n";
@@ -1648,7 +1648,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: int foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 * v@2 ;\n"
                                     "6: }\n";
@@ -1665,7 +1665,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: int foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 / v@2 ;\n"
                                     "6: }\n";
@@ -1682,7 +1682,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: int foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 & v@2 ;\n"
                                     "6: }\n";
@@ -1699,7 +1699,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: int foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 | v@2 ;\n"
                                     "6: }\n";
@@ -1716,7 +1716,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: int foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 ^ v@2 ;\n"
                                     "6: }\n";
@@ -1733,7 +1733,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: int foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 % v@2 ;\n"
                                     "6: }\n";
@@ -1750,7 +1750,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: int foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 >> v@2 ;\n"
                                     "6: }\n";
@@ -1767,7 +1767,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: int foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 << v@2 ;\n"
                                     "6: }\n";
@@ -1784,7 +1784,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: bool foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 == v@2 ;\n"
                                     "6: }\n";
@@ -1801,7 +1801,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: bool foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 != v@2 ;\n"
                                     "6: }\n";
@@ -1818,7 +1818,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: bool foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 > v@2 ;\n"
                                     "6: }\n";
@@ -1835,7 +1835,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: bool foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 >= v@2 ;\n"
                                     "6: }\n";
@@ -1852,7 +1852,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: bool foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 < v@2 ;\n"
                                     "6: }\n";
@@ -1869,7 +1869,7 @@ private:
             const char expected[] = "\n\n##file 0\n"
                                     "1: bool foo ( int u@1 , int v@2 )\n"
                                     "2: {\n"
-                                    "3: ;\n"
+                                    "3:\n"
                                     "4:\n"
                                     "5: return u@1 <= v@2 ;\n"
                                     "6: }\n";
@@ -1886,11 +1886,11 @@ private:
             const char wanted[] = "\n\n##file 0\n"
                                   "1: bool foo ( int u@1 , int v@2 )\n"
                                   "2: {\n"
-                                  "3: ;\n"
-                                  "4: ;\n"
+                                  "3:\n"
+                                  "4:\n"
                                   "5: return u@1 && v@2 ;\n"
                                   "6: }\n";
-            const char current[] =  "\n\n##file 0\n1: bool foo ( int u@1 , int v@2 )\n2: {\n3: ;\n4: int i@4 ; i@4 = v@2 ;\n5: return u@1 && i@4 ;\n6: }\n";
+            const char current[] =  "\n\n##file 0\n1: bool foo ( int u@1 , int v@2 )\n2: {\n3:\n4: int i@4 ; i@4 = v@2 ;\n5: return u@1 && i@4 ;\n6: }\n";
             TODO_ASSERT_EQUALS(wanted, current, tokenizeDebugListing(code, true));
         }
 
@@ -1908,7 +1908,7 @@ private:
                                   "4: ;\n"
                                   "5: return u@1 || v@2 ;\n"
                                   "6: }\n";
-            const char current[] =  "\n\n##file 0\n1: bool foo ( int u@1 , int v@2 )\n2: {\n3: ;\n4: int i@4 ; i@4 = v@2 ;\n5: return u@1 || i@4 ;\n6: }\n";
+            const char current[] =  "\n\n##file 0\n1: bool foo ( int u@1 , int v@2 )\n2: {\n3:\n4: int i@4 ; i@4 = v@2 ;\n5: return u@1 || i@4 ;\n6: }\n";
             TODO_ASSERT_EQUALS(wanted, current, tokenizeDebugListing(code, true));
         }
     }
@@ -2019,9 +2019,9 @@ private:
         const char expected[] = "void f ( ) {\n"
                                 "double x ; x = 0 ;\n"
                                 "for ( int iter = 0 ; iter < 42 ; iter ++ ) {\n"
-                                ";\n"
-                                "{\n"
-                                "Eval ( x ) ; }\n"
+                                "\n"
+                                "\n"
+                                "Eval ( x ) ;\n"
                                 "}\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
@@ -2035,9 +2035,9 @@ private:
                             "    if (x || y);\n"
                             "}";
         const char expected[] = "void f ( ) {\n"
+                                "\n"
+                                "\n"
                                 ";\n"
-                                "\n"
-                                "\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
@@ -2068,7 +2068,7 @@ private:
                             "    char c1 = 'a';\n"
                             "    char c2 = { c1 };\n"
                             "}";
-        ASSERT_EQUALS("void f ( ) {\n;\nchar c2 ; c2 = { 'a' } ;\n}", tokenizeAndStringify(code, true));
+        ASSERT_EQUALS("void f ( ) {\n\nchar c2 ; c2 = { 'a' } ;\n}", tokenizeAndStringify(code, true));
     }
 
     void simplifyKnownVariables41() {
@@ -2308,7 +2308,7 @@ private:
                             "    x(10 / a);\n"
                             "}\n";
 
-        const char expected[] = "void f ( ) {\n;\nx ( 0.25 ) ;\n}";
+        const char expected[] = "void f ( ) {\n\nx ( 0.25 ) ;\n}";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
     }
@@ -2478,7 +2478,7 @@ private:
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
-                                   "3: ;\n"
+                                   "3:\n"
                                    "4: }\n");
 
         ASSERT_EQUALS(expected, actual);
@@ -3945,7 +3945,7 @@ private:
                                 "        int x;"
                                 "    { }"
                                 "}";
-            ASSERT_EQUALS("void foo ( ) { if ( x ) { ; } { } }", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("void foo ( ) { if ( x ) { } { } }", tokenizeAndStringify(code, true));
         }
     }
 
@@ -4155,7 +4155,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { ; } void g ( ) { ; }", ostr.str());
+        ASSERT_EQUALS(" void f ( ) { } void g ( ) { }", ostr.str());
     }
 
     void simplify_constants2() {
@@ -4990,8 +4990,8 @@ private:
     }
 
     void removeRedundantAssignment() {
-        ASSERT_EQUALS("void f ( ) { ; int * q ; }", tokenizeAndStringify("void f() { int *p, *q; p = q; }", true));
-        ASSERT_EQUALS("void f ( ) { ; int * q ; }", tokenizeAndStringify("void f() { int *p = 0, *q; p = q; }", true));
+        ASSERT_EQUALS("void f ( ) { int * q ; }", tokenizeAndStringify("void f() { int *p, *q; p = q; }", true));
+        ASSERT_EQUALS("void f ( ) { int * q ; }", tokenizeAndStringify("void f() { int *p = 0, *q; p = q; }", true));
         ASSERT_EQUALS("int f ( int * x ) { return * x ; }", tokenizeAndStringify("int f(int *x) { return *x; }", true));
     }
 
@@ -5753,7 +5753,7 @@ private:
                       tokenizeAndStringify("void foo ( int b ) { int a = 0 | b ; bar ( a ) ; }", true));
 
         // ticket #3093
-        ASSERT_EQUALS("int f ( ) { ; return 15 ; }",
+        ASSERT_EQUALS("int f ( ) { return 15 ; }",
                       tokenizeAndStringify("int f() { int a = 10; int b = 5; return a + b; }", true));
         ASSERT_EQUALS("int f ( ) { return a ; }",
                       tokenizeAndStringify("int f() { return a * 1; }", true));
