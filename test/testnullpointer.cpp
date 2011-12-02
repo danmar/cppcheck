@@ -301,6 +301,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(struct ABC *abc) {\n"
+              "    int x = abc && a(abc->x);\n"
+              "    if (abc) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // ok to use a linked list..
         check("void foo(struct ABC *abc)\n"
               "{\n"

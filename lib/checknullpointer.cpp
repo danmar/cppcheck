@@ -507,6 +507,21 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             }
             if (assignment)
                 continue;
+
+            // Is the dereference checked with a previous &&
+            bool checked = false;
+            for (tok2 = tok1->tokAt(-2); tok2; tok2 = tok2->previous()) {
+                if (Token::Match(tok2, "[,(;{}]"))
+                    break;
+                else if (tok2->str() == ")")
+                    tok2 = tok2->link();
+                else if (Token::Match(tok2, "%varid% &&", varid1)) {
+                    checked = true;
+                    break;
+                }
+            }
+            if (checked)
+                continue;
         }
 
         // Goto next token
@@ -673,16 +688,19 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
                 if (tok1->varId() == varid) {
                     // Don't write warning if the dereferencing is
-                    // guarded by ?:
+                    // guarded by ?: or &&
                     const Token *tok2 = tok1->previous();
                     if (tok2 && (tok2->isArithmeticalOp() || tok2->str() == "(")) {
                         while (tok2 && !Token::Match(tok2, "[;{}?:]")) {
                             if (tok2->str() == ")")
                                 tok2 = tok2->link();
+                            // guarded by &&
+                            if (tok2->varId() == varid && tok2->next()->str() == "&&")
+                                break;
                             tok2 = tok2->previous();
                         }
                     }
-                    if (Token::Match(tok2, "[?:]"))
+                    if (Token::Match(tok2, "[?:]") || tok2->varId() == varid)
                         continue;
 
                     // unknown : this is set by isPointerDeRef if it is
