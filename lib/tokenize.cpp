@@ -5286,6 +5286,9 @@ bool Tokenizer::simplifyQuestionMark()
             int ind = 0;
             for (const Token *endTok = semicolon; endTok; endTok = endTok->next()) {
                 if (endTok->str() == ";") {
+                    //we can remove the semicolon if after it there's at least another token
+                    if (endTok->next())
+                        endTok = endTok->next();
                     Token::eraseTokens(semicolon->previous(), endTok);
                     ret = true;
                     break;
@@ -6708,7 +6711,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                 if (Token::Match((*tok2)->tokAt(-7), "%type% * %var% ; %var% = & %var% ;") &&
                     (*tok2)->strAt(-5) == (*tok2)->strAt(-3)) {
                     (*tok2) = (*tok2)->tokAt(-4);
-                    Token::eraseTokens((*tok2), (*tok2)->tokAt(5));
+                    Token::eraseTokens((*tok2), (*tok2)->tokAt(6));
                 }
                 break;
             }
@@ -7039,7 +7042,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (indentlevel == indentlevel3 && Token::Match(tok3->next(), "%varid% ++|--", varid) && MathLib::isInt(value)) {
             const std::string op(tok3->strAt(2));
             if (Token::Match(tok3, "[{};] %any% %any% ;")) {
-                Token::eraseTokens(tok3, tok3->tokAt(3));
+                Token::eraseTokens(tok3, tok3->tokAt(4));
             } else {
                 tok3 = tok3->next();
                 tok3->str(value);
@@ -7060,7 +7063,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             (*tok2)->tokAt(2)->str(value);
             (*tok2)->tokAt(2)->varId(valueVarId);
             if (Token::Match(tok3, "[;{}] %any% %any% ;")) {
-                Token::eraseTokens(tok3, tok3->tokAt(3));
+                Token::eraseTokens(tok3, tok3->tokAt(4));
             } else {
                 tok3->deleteNext();
                 tok3->next()->str(value);

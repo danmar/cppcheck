@@ -1174,7 +1174,7 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-            "void foo ( ) { int i ; i = 23 ; ; abc [ 23 ] = 0 ; }",
+            "void foo ( ) { int i ; i = 23 ; abc [ 23 ] = 0 ; }",
             simplifyKnownVariables(code));
     }
 
@@ -4155,7 +4155,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { } void g ( ) { }", ostr.str());
+        ASSERT_EQUALS(" void f ( ) { ; } void g ( ) { ; }", ostr.str());
     }
 
     void simplify_constants2() {
