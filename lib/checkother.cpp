@@ -1285,6 +1285,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
         }
 
         // Count format string parameters..
+        bool scan = Token::Match(tok, "sscanf|fscanf|scanf");
         unsigned int numFormat = 0;
         bool percent = false;
         for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
@@ -1302,25 +1303,33 @@ void CheckOther::checkWrongPrintfScanfArguments()
                 if (i == formatString.end())
                     break;
             } else if (percent) {
+                percent = false;
+
+                bool _continue = false;
                 while (i != formatString.end() && !std::isalpha(*i)) {
-                    if (*i == '*')
-                        numFormat++;
+                    if (*i == '*') {
+                        if (scan)
+                            _continue = true;
+                        else
+                            numFormat++;
+                    }
                     ++i;
                 }
                 if (i == formatString.end())
                     break;
+                if (_continue)
+                    continue;
 
                 if (*i != 'm') // %m is a non-standard extension that requires no parameter
                     numFormat++;
 
-                percent = false;
+                // TODO: Perform type checks
             }
         }
 
         // Count printf/scanf parameters..
         unsigned int numFunction = 0;
         while (argListTok) {
-            // TODO: Perform type checks
             numFunction++;
             argListTok = argListTok->nextArgument(); // Find next argument
         }

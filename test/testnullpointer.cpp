@@ -1587,6 +1587,11 @@ private:
               "    sscanf(dummy, \"%d%d\", foo(iVal), iVal);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: iVal\n", errout.str());
+
+        check("void f(char* dummy) {\n"
+              "    sscanf(dummy, \"%*d%u\", 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
     }
 
     void nullpointer_in_return() {

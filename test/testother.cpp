@@ -89,6 +89,7 @@ private:
         TEST_CASE(testScanf2);
         TEST_CASE(testScanf3);
 
+        TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
 
         TEST_CASE(trac1132);
@@ -1955,6 +1956,47 @@ private:
               "test.cpp",
               true);
         ASSERT_EQUALS("[test.cpp:7]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
+    }
+
+    void testScanfArgument() {
+        check("void foo() {\n"
+              "    scanf(\"%1d\", &foo);\n"
+              "    sscanf(bar, \"%1d\", &foo);\n"
+              "    scanf(\"%1u%1u\", &foo, bar());\n"
+              "    scanf(\"%*1x %1x %29s\", &count, KeyName);\n" // #3373
+              "}\n",
+              "test.cpp",
+              true
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    scanf(\"\", &foo);\n"
+              "    scanf(\"%1d\", &foo, &bar);\n"
+              "    fscanf(bar, \"%1d\", &foo, &bar);\n"
+              "    scanf(\"%*1x %1x %29s\", &count, KeyName, foo);\n"
+              "}\n",
+              "test.cpp",
+              true
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) scanf format string has 0 parameters but 1 are given\n"
+                      "[test.cpp:3]: (warning) scanf format string has 1 parameters but 2 are given\n"
+                      "[test.cpp:4]: (warning) fscanf format string has 1 parameters but 2 are given\n"
+                      "[test.cpp:5]: (warning) scanf format string has 2 parameters but 3 are given\n", errout.str());
+
+        check("void foo() {\n"
+              "    scanf(\"%1d\");\n"
+              "    scanf(\"%1u%1u\", bar());\n"
+              "    sscanf(bar, \"%1d%1d\", &foo);\n"
+              "    scanf(\"%*1x %1x %29s\", &count);\n"
+              "}\n",
+              "test.cpp",
+              true
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (error) scanf format string has 1 parameters but only 0 are given\n"
+                      "[test.cpp:3]: (error) scanf format string has 2 parameters but only 1 are given\n"
+                      "[test.cpp:4]: (error) sscanf format string has 2 parameters but only 1 are given\n"
+                      "[test.cpp:5]: (error) scanf format string has 2 parameters but only 1 are given\n", errout.str());
     }
 
     void testPrintfArgument() {
