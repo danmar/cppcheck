@@ -4476,7 +4476,7 @@ void Tokenizer::simplifyFlowControl()
     unsigned int indentlevel = 0;
     Token *beginindent = 0;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (tok->str() == "(") {
+        if (tok->str() == "(" || tok->str() == "[") {
             tok = tok->link();
             continue;
         }
@@ -4498,13 +4498,7 @@ void Tokenizer::simplifyFlowControl()
             eraseDeadCode(tok, beginindent->link());
 
         } else if (Token::Match(tok,"continue|break ;")) {
-            if (Token::simpleMatch(tok, "continue ; continue ;")
-                || Token::simpleMatch(tok, "break ; break ;")) {
-                //save the 'double break|continue' message
-                tok = tok->tokAt(3);
-            } else {
-                tok = tok->next();
-            }
+            tok = tok->next();
             eraseDeadCode(tok, beginindent->link());
 
         } else if (tok->str() == "return" || tok->str() == "throw") {
@@ -8351,12 +8345,11 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                         if (Token::Match(tok2->next(), "{|[|(")) {
                             tok2 = tok2->next()->link();
                         } else if (Token::Match(tok2, "[{};] case %any% : ;") || Token::Match(tok2, "[{};] default : ;")) {
-                            const Token *end3 = tok2->tokAt(4 + (tok2->next()->str() == "case"));
-                            Token::eraseTokens(tok2, end3);
-                            if (Token::simpleMatch(tok2->previous(), "break ; break ;")) {
+                            if (tok2->next()->str() == "case")
                                 tok2->deleteNext();
-                                tok2->deleteNext();
-                            }
+                            tok2->deleteNext();
+                            tok2->deleteNext();
+                            tok2->deleteNext();
                         } else if (tok2->next()->str() == "}") {
                             --indentlevel2;
                             if (indentlevel2 <= indentcase)

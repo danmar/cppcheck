@@ -3096,8 +3096,6 @@ private:
         beforedead.push_back("goto labels");
         beforedead.push_back("break");
         beforedead.push_back("continue");
-        beforedead.push_back("break ; break");
-        beforedead.push_back("continue ; continue");
 
         for (std::list<std::string>::iterator it = beforedead.begin(); it != beforedead.end(); ++it) {
             {
@@ -3175,7 +3173,7 @@ private:
                                    "            break; break;"
                                    "    }"
                                    "}";
-                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; break ; } }";
+                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; } }";
                 ASSERT_EQUALS(expected, tok(code));
             }
 
@@ -3190,7 +3188,7 @@ private:
                                    "            break;"
                                    "    }"
                                    "}";
-                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; break ; } }";
+                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; } }";
                 ASSERT_EQUALS(expected, tok(code));
             }
 
@@ -3205,7 +3203,7 @@ private:
                                    "            break; break;"
                                    "    }"
                                    "}";
-                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; break ; } }";
+                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; } }";
                 ASSERT_EQUALS(expected, tok(code));
             }
 
