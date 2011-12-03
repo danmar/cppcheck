@@ -2671,9 +2671,14 @@ static void removeTemplates(Token *tok)
                 if (!tok2)
                     break;
             }
-            if (tok2->str() == ";") {
+            else if (tok2->str() == ";") {
                 Token::eraseTokens(tok, tok2->next());
                 tok->str(";");
+                break;
+            }
+            else if (Token::Match(tok2, ">|>> class %var% [,)]")) {
+                Token::eraseTokens(tok,tok2->next());
+                tok->deleteThis();
                 break;
             }
         }

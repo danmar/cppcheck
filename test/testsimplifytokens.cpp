@@ -117,6 +117,7 @@ private:
         TEST_CASE(template24);  // #2648 - using sizeof in template parameter
         TEST_CASE(template25);  // #2648 - another test for sizeof template parameter
         TEST_CASE(template26);  // #2721 - passing 'char[2]' as template parameter
+        TEST_CASE(template27);  // #3350 - removing unused template in macro call
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2093,6 +2094,12 @@ private:
                             "C<2> a;\n";
         // TODO: expand A also
         ASSERT_EQUALS("; C<2> a ; class C<2> : public A < char [ 2 ] > { }", sizeof_(code));
+    }
+
+    void template27() {
+        // #3350 - template inside macro call
+        const char code[] = "X(template<class T> class Fred);";
+        ASSERT_EQUALS("X ( class Fred ) ;", sizeof_(code));
     }
 
     void template_unhandled() {
