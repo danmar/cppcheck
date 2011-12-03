@@ -705,7 +705,12 @@ private:
         ASSERT_EQUALS("; loop use ;", simplifycode("; loop { loop loop use ; } ;"));
         ASSERT_EQUALS("; }", simplifycode("; loop { if break ; break ; } ; }"));
         ASSERT_EQUALS("; }", simplifycode("; loop { if continue ; if continue ; } ; }"));
-        ASSERT_EQUALS("; loop if alloc ; if { dealloc ; return ; } }", simplifycode("; loop { if alloc ; } if { dealloc ; return ; } }"));
+        {
+            // ticket #3267
+            const char expected[] = "; loop if alloc ; if { dealloc ; return ; } }";
+            ASSERT_EQUALS(expected, simplifycode("; loop { if alloc ; } if { dealloc ; return ; } }"));
+            ASSERT_EQUALS(expected, simplifycode("; loop { if { alloc ; if(!var) { return ; } } } if { dealloc ; return ; } }"));
+        }
 
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; while(!var) alloc ;"));
 
