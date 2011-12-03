@@ -2170,14 +2170,14 @@ void CheckOther::checkIncorrectStringCompare()
         if (Token::Match(tok, ". substr ( %any% , %num% ) ==|!= %str%")) {
             MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(5));
             std::size_t slen = Token::getStrLength(tok->tokAt(8));
-            if (clen != slen) {
+            if (clen != (int)slen) {
                 incorrectStringCompareError(tok->next(), "substr", tok->strAt(8), tok->strAt(5));
             }
         }
         if (Token::Match(tok, "%str% ==|!= %var% . substr ( %any% , %num% )")) {
             MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(8));
             std::size_t slen = Token::getStrLength(tok);
-            if (clen != slen) {
+            if (clen != (int)slen) {
                 incorrectStringCompareError(tok->next(), "substr", tok->str(), tok->strAt(8));
             }
         }
