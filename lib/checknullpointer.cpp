@@ -867,7 +867,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     std::list<const Token *> var;
                     parseFunctionCall(*tok2, var, 0);
                     for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
-                        if ((*it)->varId() == varid) {
+                        if (Token::Match(*it, "%varid% [,)]", varid)) {
                             nullPointerError(*it, pointerName, linenr, inconclusive);
                             break;
                         }
@@ -977,7 +977,7 @@ void CheckNullPointer::nullConstantDereference()
 
                 // is one of the var items a NULL pointer?
                 for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
-                    if ((*it)->str() == "0") {
+                    if (Token::Match(*it, "0 [,)]")) {
                         nullPointerError(*it);
                     }
                 }

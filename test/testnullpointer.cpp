@@ -1422,6 +1422,12 @@ private:
             check(code, true);  // inconclusive
             ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 2\n", errout.str());
         }
+
+        check("void f(char *s) {\n"   // #3358
+              "    if (s==0);\n"
+              "    strcpy(a, s?b:c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
@@ -1487,6 +1493,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: s\n", errout.str());
 
+        check("void f() {\n"
+              "    char *s = 0;\n"
+              "    printf(\"%s\", s == 0 ? a : s);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    printf(\"%u%s\", 0, 0);\n"
