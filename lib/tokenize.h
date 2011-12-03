@@ -372,7 +372,7 @@ public:
     void simplifyGoto();
 
     /** Simplify redundant code placed after control flow statements :
-     * 'return', 'goto', 'break' and 'continue'
+     * 'return', 'throw', 'goto', 'break' and 'continue'
      */
     void simplifyFlowControl();
 

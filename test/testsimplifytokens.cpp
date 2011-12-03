@@ -3085,8 +3085,7 @@ private:
     void flowControl() {
         std::list<std::string> beforedead;
         beforedead.push_back("return");
-        beforedead.push_back("return 0");
-        beforedead.push_back("return -1");
+        beforedead.push_back("throw ( 10 )");
         beforedead.push_back("goto labels");
         beforedead.push_back("break");
         beforedead.push_back("continue");
