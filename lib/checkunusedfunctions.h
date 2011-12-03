@@ -32,12 +32,12 @@
 class CheckUnusedFunctions: public Check {
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
-    CheckUnusedFunctions() : Check(myName())
+    CheckUnusedFunctions() : Check(myName()), templates(false)
     { }
 
     /** @brief This constructor is used when running checks. */
     CheckUnusedFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger), templates(false)
     { }
 
     // Parse current tokens and determine..
@@ -88,6 +88,8 @@ private:
     };
 
     std::map<std::string, FunctionUsage> _functions;
+
+    bool templates;
 };
 /// @}
 //---------------------------------------------------------------------------

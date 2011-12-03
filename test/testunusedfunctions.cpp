@@ -40,6 +40,7 @@ private:
         TEST_CASE(else1);
         TEST_CASE(functionpointer);
         TEST_CASE(template1);
+        TEST_CASE(template2);
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -142,6 +143,16 @@ private:
               "{\n"
               "    foo<int>();\n"
               "    return 0\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template2() {
+        check("void f() { }\n"
+              "\n"
+              "template<class T> void g()\n"
+              "{\n"
+              "    f();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

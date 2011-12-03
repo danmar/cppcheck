@@ -33,6 +33,11 @@
 
 void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 {
+    // if there are templates there might be false positives
+    templates |= tokenizer.codeWithTemplates();
+    if (templates)
+        return;
+
     // Function declarations..
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
         if (tok->fileIndex() != 0)
@@ -144,6 +149,9 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 
 void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
 {
+    if (templates)
+        return;
+
     for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it) {
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
