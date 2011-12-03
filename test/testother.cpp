@@ -1765,6 +1765,29 @@ private:
     }
 
     void duplicateBreak() {
+        check("void foo(int a) {\n"
+              "    while(1) {\n"
+              "        if (a++ >= 100) {\n"
+              "            break;\n"
+              "            continue;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary\n", errout.str());
+
+        check("int foo(int a) {\n"
+              "    return 0;\n"
+              "    return(a-1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary\n", errout.str());
+
+        check("int foo(int a) {\n"
+              "  A:"
+              "    return(0);\n"
+              "    goto A;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary\n", errout.str());
+
         check("void foo(int a)\n"
               "{\n"
               "        switch(a) {\n"
@@ -1777,7 +1800,7 @@ private:
               "            break;\n"
               "         }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Consecutive break or continue statements are unnecessary\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary\n", errout.str());
 
         check("void foo(int a)\n"
               "{\n"
@@ -1801,7 +1824,7 @@ private:
               "          }\n"
               "       }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consecutive break or continue statements are unnecessary\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary\n", errout.str());
 
         check("void foo(int a)\n"
               "{\n"
@@ -1813,7 +1836,7 @@ private:
               "          a+=2;\n"
               "       }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consecutive break or continue statements are unnecessary\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary\n", errout.str());
 
         check("void foo(int a)\n"
               "{\n"
@@ -1824,6 +1847,63 @@ private:
               "          a+=2;\n"
               "       }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo() {\n"
+              "    throw 0;\n"
+              "    return 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    throw 0;\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary\n", errout.str());
+
+        check("int foo() {\n"
+              "    return 0;\n"
+              "    return 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary\n", errout.str());
+
+        check("int foo() {\n"
+              "    return 0;\n"
+              "    foo();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Statements following return, break, continue, goto or throw will never be executed\n", errout.str());
+
+        check("int foo() {\n"
+              "    if(bar)\n"
+              "        return 0;\n"
+              "    return 124;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo() {\n"
+              "    while(bar) {\n"
+              "        return 0;\n"
+              "        return 0;\n"
+              "        return 0;\n"
+              "        return 0;\n"
+              "    }\n"
+              "    return 124;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary\n", errout.str());
+
+        check("void foo() {\n"
+              "    while(bar) {\n"
+              "        return;\n"
+              "        break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary\n", errout.str());
+
+        check("int foo() {\n"
+              "    return 0;\n"
+              "  label:\n"
+              "    throw 0;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

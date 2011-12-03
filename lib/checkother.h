@@ -65,7 +65,7 @@ public:
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
-        checkOther.checkDuplicateBreak();
+        checkOther.checkUnreachableCode();
         checkOther.checkSuspiciousSemicolon();
 
         // information checks
@@ -237,8 +237,8 @@ public:
     /** @brief %Check for suspicious code that compares string literals for equality */
     void checkAlwaysTrueOrFalseStringCompare();
 
-    /** @brief %Check for duplicate break statements in a switch or loop */
-    void checkDuplicateBreak();
+    /** @brief %Check for code that gets never executed, such as duplicate break statements */
+    void checkUnreachableCode();
 
     /** @brief assigning bool to pointer */
     void checkAssignBoolToPointer();
@@ -294,6 +294,7 @@ public:
     void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok);
+    void unreachableCodeError(const Token* tok);
     void assignBoolToPointerError(const Token *tok);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
     void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
@@ -349,6 +350,7 @@ public:
         c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
         c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
         c.duplicateBreakError(0);
+        c.unreachableCodeError(0);
         c.unsignedLessThanZeroError(0, "varname", false);
         c.unsignedPositiveError(0, "varname", false);
         c.bitwiseOnBooleanError(0, "varname", "&&");
@@ -405,6 +407,7 @@ public:
                "* suspicious condition (runtime comparison of string literals)\n"
                "* suspicious condition (string literals as boolean)\n"
                "* duplicate break statement\n"
+               "* unreachable code\n"
                "* testing if unsigned variable is negative\n"
                "* testing is unsigned variable is positive\n"
                "* using bool in bitwise expression\n"

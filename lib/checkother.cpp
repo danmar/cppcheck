@@ -1439,37 +1439,73 @@ void CheckOther::comparisonOfBoolWithIntError(const Token *tok, const std::strin
 }
 
 //---------------------------------------------------------------------------
-//    switch (x)
-//    {
-//        case 2:
-//            y = a;
-//            break;
-//            break; // <- Redundant break
-//        case 3:
-//            y = b;
-//    }
+//    Find consecutive return, break, continue, goto or throw statements. e.g.:
+//        break; break;
+//    Detect dead code, that follows such a statement. e.g.:
+//        return(0); foo();
 //---------------------------------------------------------------------------
-void CheckOther::checkDuplicateBreak()
+void CheckOther::checkUnreachableCode()
 {
     if (!_settings->isEnabled("style"))
         return;
 
-    const char breakPattern[] = "break|continue ; break|continue ;";
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        const Token* secondBreak = 0;
+        if (Token::Match(tok, "break|continue ;"))
+            secondBreak = tok->tokAt(2);
+        else if (tok->str() == "return" || tok->str() == "throw") {
+            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+                if (tok2->str() == ";") {
+                    secondBreak = tok2->tokAt(1);
+                    break;
+                }
+        } else if (Token::Match(tok, "goto %any% ;"))
+            secondBreak = tok->tokAt(3);
 
-    // Find consecutive break or continue statements. e.g.:
-    //   break; break;
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), breakPattern);
-    while (tok) {
-        duplicateBreakError(tok);
-        tok = Token::findmatch(tok->next(), breakPattern);
+        if (secondBreak) {
+            if (Token::Match(secondBreak, "continue|goto|throw") ||
+                (secondBreak->str() == "return" && (tok->str() == "return" || secondBreak->strAt(1) == ";"))) { // return with value after statements like throw can be necessary to make a function compile
+                duplicateBreakError(secondBreak);
+                tok = Token::findmatch(secondBreak, "[}:]");
+            } else if (secondBreak->str() == "break") { // break inside switch as second break statement should not issue a warning
+                if (tok->str() == "break") // If the previous was a break, too: Issue warning
+                    duplicateBreakError(secondBreak);
+                else {
+                    unsigned int indent = 0;
+                    for (const Token* tok2 = tok; tok2; tok2 = tok2->previous()) { // Check, if the enclosing scope is a switch (TODO: Can we use SymbolDatabase here?)
+                        if (tok2->str() == "}")
+                            indent++;
+                        else if (indent == 0 && tok2->str() == "{" && tok2->strAt(-1) == ")") {
+                            if (tok2->previous()->link()->strAt(-1) != "switch") {
+                                duplicateBreakError(secondBreak);
+                                break;
+                            } else
+                                break;
+                        } else if (tok2->str() == "{")
+                            indent--;
+                    }
+                }
+                tok = Token::findmatch(secondBreak, "[}:]");
+            } else if (!Token::Match(secondBreak, "return|}|case|default") && secondBreak->strAt(1) != ":") { // TODO: No bailout for unconditional scopes
+                unreachableCodeError(secondBreak);
+                tok = Token::findmatch(secondBreak, "[}:]");
+            } else
+                tok = secondBreak;
+        }
     }
 }
 
 void CheckOther::duplicateBreakError(const Token *tok)
 {
     reportError(tok, Severity::style, "duplicateBreak",
-                "Consecutive break or continue statements are unnecessary\n"
+                "Consecutive return, break, continue, goto or throw statements are unnecessary\n"
                 "The second of the two statements can never be executed, and so should be removed\n");
+}
+
+void CheckOther::unreachableCodeError(const Token *tok)
+{
+    reportError(tok, Severity::style, "unreachableCode",
+                "Statements following return, break, continue, goto or throw will never be executed\n");
 }
 
 //---------------------------------------------------------------------------
