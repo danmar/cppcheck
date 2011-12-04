@@ -3684,7 +3684,7 @@ private:
 
         const std::string expected("\n\n"
                                    "##file 0\n"
-                                   "1: ; class A {\n"
+                                   "1: class A {\n"
                                    "2: public:\n"
                                    "3: void f ( char ( & cl ) [ 10 ] ) ;\n"
                                    "4: void g ( char cl@1 [ 10 ] ) ;\n"
@@ -4948,8 +4948,7 @@ private:
                             "void f1 ( ) { }"
                             "PF pf = &f1;"
                             "PF pfs[] = { &f1, &f1 };";
-        const char expected[] = "; "
-                                "void f1(){} "
+        const char expected[] = " void f1(){} "
                                 "void* pf; pf=& f1; "
                                 "void* pfs[]={& f1,& f1};";
         ASSERT_EQUALS(expected, simplifyFunctionPointers(code));

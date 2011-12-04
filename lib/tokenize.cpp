@@ -870,9 +870,16 @@ void Tokenizer::simplifyTypedef()
     bool isNamespace = false;
     std::string className;
     bool hasClass = false;
+    bool goback = false;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (_errorLogger && !_files.empty())
             _errorLogger->reportProgress(_files[0], "Tokenize (typedef)", tok->progressValue());
+
+        if (goback) {
+            //jump back once, see the comment at the end of the function
+            goback = false;
+            tok = tok->previous();
+        }
 
         if (Token::Match(tok, "class|struct|namespace %any%") &&
             (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum"))) {
@@ -1807,16 +1814,23 @@ void Tokenizer::simplifyTypedef()
         }
 
         if (ok) {
-            // remove typedef but leave ;
+            // remove typedef
             Token::eraseTokens(typeDef, tok);
 
             if (typeDef != _tokens) {
                 tok = typeDef->previous();
                 tok->deleteNext();
-                tok->deleteNext();
+                //no need to remove last token in the list
+                if (tok->tokAt(2))
+                    tok->deleteNext();
             } else {
                 _tokens->deleteThis();
+                //no need to remove last token in the list
+                if (_tokens->next())
+                    _tokens->deleteThis();
                 tok = _tokens;
+                //now the next token to process is 'tok', not 'tok->next()';
+                goback = true;
             }
         }
     }

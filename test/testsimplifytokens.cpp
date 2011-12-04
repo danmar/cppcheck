@@ -3471,7 +3471,6 @@ private:
                             "}\n";
 
         const std::string expected =
-            "; "
             "void f ( ) "
             "{ "
             "int ivar ; ivar = -2 ; "
@@ -3491,7 +3490,6 @@ private:
             "}\n";
 
         const char expected[] =
-            "; "
             "void f ( ) "
             "{ "
             "struct yy_buffer_state * state ; "
@@ -3520,9 +3518,7 @@ private:
     void simplifyTypedef7() {
         const char code[] = "typedef int abc ; "
                             "Fred :: abc f ;";
-        const char expected[] =
-            "; "
-            "Fred :: abc f ;";
+        const char expected[] = "Fred :: abc f ;";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
@@ -3545,7 +3541,6 @@ private:
                             "RCUINT trcui;";
 
         const char expected[] =
-            "; "
             "int ti ; "
             "unsigned int tui ; "
             "int * tpi ; "
@@ -3571,7 +3566,6 @@ private:
                             "V v;";
 
         const char expected[] =
-            "; "
             "struct t { int a ; } ; "
             "struct U { int a ; } ; "
             "struct Unnamed0 { int a ; } ; "
@@ -3598,7 +3592,6 @@ private:
                             "V v;";
 
         const char expected[] =
-            "; "
             "union t { int a ; float b ; } ; "
             "union U { int a ; float b ; } ; "
             "union Unnamed1 { int a ; float b ; } ; "
@@ -3637,7 +3630,6 @@ private:
                             "IntListIterator iter;";
 
         const char expected[] =
-            "; "
             "vector < int > v1 ; "
             "std :: vector < int > v2 ; "
             "std :: vector < std :: vector < int > > v3 ; "
@@ -3697,9 +3689,7 @@ private:
             const char code[] = "typedef char frame[10];\n"
                                 "frame f;";
 
-            const char expected[] =
-                "; "
-                "char f [ 10 ] ;";
+            const char expected[] = "char f [ 10 ] ;";
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
@@ -3708,9 +3698,7 @@ private:
             const char code[] = "typedef unsigned char frame[10];\n"
                                 "frame f;";
 
-            const char expected[] =
-                "; "
-                "unsigned char f [ 10 ] ;";
+            const char expected[] = "unsigned char f [ 10 ] ;";
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
@@ -3743,7 +3731,6 @@ private:
                             "CHAR c;";
 
         const char expected[] =
-            "; "
             "char * pc ; "
             "char c ;";
 
@@ -3837,7 +3824,7 @@ private:
                             "PFV pfv;";
 
         const char expected[] =
-            "; "
+            ""
             ""
             "void ( * pf ) ( ) ; "
             "void * ( * pfv ) ( void * ) ;";
@@ -3939,7 +3926,6 @@ private:
                             "void    addCallback1(Callback callback, int j) { }";
 
         const char expected[] =
-            "; "
             "void addCallback ( bool * callback ) { } "
             "void addCallback1 ( bool * callback , int j ) { }";
 
@@ -3955,7 +3941,6 @@ private:
                                 "}";
 
             const char expected[] =
-                "; "
                 "void g ( int * f ) "
                 "{ "
                 "int * f2 ; f2 = ( int * ) f ; "
@@ -3972,7 +3957,6 @@ private:
                                 "}";
 
             const char expected[] =
-                "; "
                 "void g ( int * f ) "
                 "{ "
                 "int * f2 ; f2 = static_cast < int * > ( f ) ; "
@@ -3991,7 +3975,6 @@ private:
                                 "}";
 
             const char expected[] =
-                "; "
                 "struct vfs_class { "
                 "void ( * fill_names ) ( struct vfs_class * me , void ( * ) ( const char * ) ) ; "
                 "}";
@@ -4006,7 +3989,6 @@ private:
                                 "}";
 
             const char expected[] =
-                "; "
                 "struct vfs_class { "
                 "void ( * fill_names ) ( void ( * ) ( const char * ) , struct vfs_class * me ) ; "
                 "}";
@@ -4020,9 +4002,7 @@ private:
             const char code[] = "typedef void (*Callback) ();\n"
                                 "void    addCallback(Callback (*callback)());";
 
-            const char expected[] =
-                "; "
-                "void addCallback ( void ( * ( * callback ) ( ) ) ( ) ) ;";
+            const char expected[] = "void addCallback ( void ( * ( * callback ) ( ) ) ( ) ) ;";
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
@@ -4034,9 +4014,7 @@ private:
                                 "\n"
                                 "struct mscrtc6845 *pc_video_start(pc_video_update_proc (*choosevideomode)(running_machine *machine, int *width, int *height, struct mscrtc6845 *crtc));";
 
-            const char expected[] =
-                "; "
-                "struct mscrtc6845 * pc_video_start ( void ( * ( * choosevideomode ) ( running_machine * machine , int * width , int * height , struct mscrtc6845 * crtc ) ) ( bitmap_t * bitmap , struct mscrtc6845 * crtc ) ) ;";
+            const char expected[] = "struct mscrtc6845 * pc_video_start ( void ( * ( * choosevideomode ) ( running_machine * machine , int * width , int * height , struct mscrtc6845 * crtc ) ) ( bitmap_t * bitmap , struct mscrtc6845 * crtc ) ) ;";
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
@@ -4064,9 +4042,7 @@ private:
         const char code[] = "typedef std::pair<double, double> (*F)(double);\n"
                             "F f;";
 
-        const char expected[] =
-            "; "
-            "std :: pair < double , double > ( * f ) ( double ) ;";
+        const char expected[] = "std :: pair < double , double > ( * f ) ( double ) ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -4083,7 +4059,6 @@ private:
                             "int_array ia;";
 
         const char expected[] =
-            "; "
             "int a [ ice_or < is_int < int > :: value , is_int < UDT > :: value > :: value ? 1 : -1 ] ; "
             "int a1 [ N ] ; "
             "int a2 [ N ] [ M ] ; "
@@ -4102,7 +4077,6 @@ private:
                             "int_list_array ila;";
 
         const char expected[] =
-            "; "
             ":: std :: list < int > il ; "
             ":: std :: list < int > :: iterator ili ; "
             ":: std :: list < int > ila [ 10 ] ;";
@@ -4167,7 +4141,6 @@ private:
                             "LPCSTR ccp;";
 
         const char expected[] =
-            "; "
             "char c ; "
             "char * cp ; "
             "const char * ccp ;";
@@ -4302,8 +4275,7 @@ private:
                             "    return a + s;\n"
                             "}";
 
-        const char expected[] = "; "
-                                "class S "
+        const char expected[] = "class S "
                                 "{ "
                                 "public: "
                                 ""
@@ -4352,8 +4324,7 @@ private:
                             "{\n"
                             "    *va_arg(ap, TIFFFaxFillFunc*) = 0;\n"
                             "}";
-        const char expected[] = "; "
-                                "void f ( va_list ap ) "
+        const char expected[] = "void f ( va_list ap ) "
                                 "{ "
                                 "* va_arg ( ap , void ( * * ) ( ) ) = 0 ; "
                                 "}";
@@ -4380,8 +4351,7 @@ private:
                                 "{\n"
                                 "    INT i; { }\n"
                                 "}";
-            const char expected[] = "; "
-                                    "void f ( ) "
+            const char expected[] = "void f ( ) "
                                     "{ "
                                     "int i ; { } "
                                     "}";
@@ -4392,7 +4362,7 @@ private:
     void simplifyTypedef38() {
         const char code[] = "typedef C A;\n"
                             "struct AB : public A, public B { };";
-        const char expected[] = "; struct AB : public C , public B { } ;";
+        const char expected[] = "struct AB : public C , public B { } ;";
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
@@ -4500,8 +4470,7 @@ private:
                                 "};\n";
 
             // The expected result..
-            const std::string expected("; "
-                                       "struct A "
+            const std::string expected("struct A "
                                        "{ "
                                        "int alloclen ; "
                                        "} ;");
@@ -4519,8 +4488,7 @@ private:
                                 "};\n";
 
             // The expected result..
-            const std::string expected("; "
-                                       "union A "
+            const std::string expected("union A "
                                        "{ "
                                        "int alloclen ; "
                                        "} ;");
@@ -4538,8 +4506,7 @@ private:
                                 "};\n";
 
             // The expected result..
-            const std::string expected("; "
-                                       "class A "
+            const std::string expected("class A "
                                        "{ "
                                        "int alloclen ; "
                                        "} ;");
@@ -4558,8 +4525,7 @@ private:
                                 "};\n";
 
             // The expected result..
-            const std::string expected("; "
-                                       "class MyMap : public std :: map < std :: string , int > "
+            const std::string expected("class MyMap : public std :: map < std :: string , int > "
                                        "{ "
                                        "} ;");
             ASSERT_EQUALS(expected, sizeof_(code));
@@ -4575,8 +4541,7 @@ private:
                                 "};\n";
 
             // The expected result..
-            const std::string expected("; "
-                                       "class MyMap : protected std :: map < std :: string , int > "
+            const std::string expected("class MyMap : protected std :: map < std :: string , int > "
                                        "{ "
                                        "} ;");
             ASSERT_EQUALS(expected, sizeof_(code));
@@ -4592,8 +4557,7 @@ private:
                                 "};\n";
 
             // The expected result..
-            const std::string expected("; "
-                                       "class MyMap : private std :: map < std :: string , int > "
+            const std::string expected("class MyMap : private std :: map < std :: string , int > "
                                        "{ "
                                        "} ;");
             ASSERT_EQUALS(expected, sizeof_(code));
@@ -4664,8 +4628,7 @@ private:
                                 "I i;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: pair < int , int > const i ;");
+            const std::string expected("std :: pair < int , int > const i ;");
             ASSERT_EQUALS(expected, sizeof_(code));
         }
 
@@ -4674,8 +4637,7 @@ private:
                                 "F f;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "void ( X :: * f ) ( ) ;");
+            const std::string expected("void ( X :: * f ) ( ) ;");
             ASSERT_EQUALS(expected, sizeof_(code));
         }
     }
@@ -4724,8 +4686,7 @@ private:
                             "type4 t4;";
 
         // The expected result..
-        const std::string expected("; "
-                                   "char ( * t1 ) [ 10 ] ; "
+        const std::string expected("char ( * t1 ) [ 10 ] ; "
                                    "char ( * ( * tp1 ) [ 2 ] ) [ 10 ] ; "
                                    "char ( & t2 ) [ 10 ] ; "
                                    "char ( & t3 ) [ x ] ; "
@@ -4750,8 +4711,7 @@ private:
                                 "type1 foo() { }";
 
             // The expected result..
-            const std::string expected("; "
-                                       "char ( * foo ( ) ) [ 10 ] { }");
+            const std::string expected("char ( * foo ( ) ) [ 10 ] { }");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             checkSimplifyTypedef(code);
@@ -4820,8 +4780,7 @@ private:
                             "_Iterator v3;\n";
 
         // The expected result..
-        const std::string expected("; "
-                                   "long * v1 ; "
+        const std::string expected("long * v1 ; "
                                    "void * v2 [ 2 ] ; "
                                    "int * * v3 ;");
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -4875,8 +4834,7 @@ private:
                                 "vec2_t coords[4] = {1,2,3,4,5,6,7,8};\n";
 
             // The expected result..
-            const std::string expected("; "
-                                       "int coords [ 4 ] [ 2 ] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 } ;");
+            const std::string expected("int coords [ 4 ] [ 2 ] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 } ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -4889,8 +4847,7 @@ private:
                                 "vec2_t coords[4][5][6+1] = {1,2,3,4,5,6,7,8};\n";
 
             // The expected result..
-            const std::string expected("; "
-                                       "int coords [ 4 ] [ 5 ] [ 7 ] [ 2 ] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 } ;");
+            const std::string expected("int coords [ 4 ] [ 5 ] [ 7 ] [ 2 ] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 } ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -4953,7 +4910,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected1("; void f ( ) { char a [ 256 ] ; char b [ 256 ] ; }");
+        const std::string expected1("void f ( ) { char a [ 256 ] ; char b [ 256 ] ; }");
         ASSERT_EQUALS(expected1, sizeof_(code1, false));
 
         // Check for output..
@@ -4967,7 +4924,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected2("; void f ( ) { char a [ 256 ] = { 0 } ; char b [ 256 ] = { 0 } ; }");
+        const std::string expected2("void f ( ) { char a [ 256 ] = { 0 } ; char b [ 256 ] = { 0 } ; }");
         ASSERT_EQUALS(expected2, tok(code2, false));
 
         // Check for output..
@@ -4981,7 +4938,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected3("; void f ( ) { char a [ 256 ] = \"\" ; char b [ 256 ] = \"\" ; }");
+        const std::string expected3("void f ( ) { char a [ 256 ] = \"\" ; char b [ 256 ] = \"\" ; }");
         ASSERT_EQUALS(expected3, tok(code3, false));
 
         // Check for output..
@@ -4995,7 +4952,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected4("; void f ( ) { char a [ 256 ] = \"1234\" ; char b [ 256 ] = \"5678\" ; }");
+        const std::string expected4("void f ( ) { char a [ 256 ] = \"1234\" ; char b [ 256 ] = \"5678\" ; }");
         ASSERT_EQUALS(expected4, tok(code4, false));
 
         // Check for output..
@@ -5007,7 +4964,7 @@ private:
         const char code[] = "typedef float x[3];\n"
                             "x a,b,c;\n";
         const std::string actual(sizeof_(code));
-        ASSERT_EQUALS("; float a [ 3 ] ; float b [ 3 ] ; float c [ 3 ] ;", actual);
+        ASSERT_EQUALS("float a [ 3 ] ; float b [ 3 ] ; float c [ 3 ] ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5015,7 +4972,7 @@ private:
         const char code[] = "typedef __typeof__(__type1() + __type2()) __type;"
                             "__type t;\n";
         const std::string actual(sizeof_(code));
-        ASSERT_EQUALS("; __typeof__ ( __type1 ( ) + __type2 ( ) ) t ;", actual);
+        ASSERT_EQUALS("__typeof__ ( __type1 ( ) + __type2 ( ) ) t ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5026,7 +4983,7 @@ private:
                             "    return b > Foo(10); \n"
                             "}";
         const std::string actual(sizeof_(code));
-        ASSERT_EQUALS("; int main ( ) { BAR < int > b ( 0 ) ; return b > BAR < int > ( 10 ) ; }", actual);
+        ASSERT_EQUALS("int main ( ) { BAR < int > b ( 0 ) ; return b > BAR < int > ( 10 ) ; }", actual);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5042,8 +4999,7 @@ private:
                             "void f ( ) {\n"
                             "    ((Function * (*) (char *, char *, int, int)) global[6]) ( \"assoc\", \"eggdrop\", 106, 0);\n"
                             "}\n";
-        const std::string expected = "; "
-                                     "void f ( ) { "
+        const std::string expected = "void f ( ) { "
                                      "( ( int ( * * ( * ) ( char * , char * , int , int ) ) ( ) ) global [ 6 ] ) ( \"assoc\" , \"eggdrop\" , 106 , 0 ) ; "
                                      "}";
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -5064,8 +5020,7 @@ private:
                             "{\n"
                             "    CompilerHook *(*compilerHookVector)(void);\n"
                             "}VirtualMachine;\n";
-        const std::string expected = "; "
-                                     "struct VirtualMachine "
+        const std::string expected = "struct VirtualMachine "
                                      "{ "
                                      "int ( * * ( * compilerHookVector ) ( void ) ) ( ) ; "
                                      "} ;";
@@ -5076,8 +5031,7 @@ private:
     void simplifyTypedef70() { // ticket #2348
         const char code[] = "typedef int pread_f ( int ) ;\n"
                             "pread_f *(*test_func)(char *filename);\n";
-        const std::string expected = "; "
-                                     "int ( * ( * test_func ) ( char * filename ) ) ( int ) ;";
+        const std::string expected = "int ( * ( * test_func ) ( char * filename ) ) ( int ) ;";
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
     }
@@ -5086,16 +5040,14 @@ private:
         {
             const char code[] = "typedef int RexxFunctionHandler();\n"
                                 "RexxFunctionHandler *(efuncs[1]);\n";
-            const std::string expected = "; "
-                                         "int ( * ( efuncs [ 1 ] ) ) ( ) ;";
+            const std::string expected = "int ( * ( efuncs [ 1 ] ) ) ( ) ;";
             ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
             const char code[] = "typedef int RexxFunctionHandler();\n"
                                 "RexxFunctionHandler *(efuncs[]) = { NULL, NULL };\n";
-            const std::string expected = "; "
-                                         "int ( * ( efuncs [ ] ) ) ( ) = { 0 , 0 } ;";
+            const std::string expected = "int ( * ( efuncs [ ] ) ) ( ) = { 0 , 0 } ;";
             ASSERT_EQUALS(expected, sizeof_(code));
             ASSERT_EQUALS("", errout.str());
         }
@@ -5178,8 +5130,7 @@ private:
                             "typedef state_func_t (*state_t)(void);\n"
                             "state_t current_state = death;\n"
                             "static char get_runlevel(const state_t);\n";
-        const std::string expected = "; "
-                                     "long ( * ( * current_state ) ( void ) ) ( void ) = death ; "
+        const std::string expected = "long ( * ( * current_state ) ( void ) ) ( void ) = death ; "
                                      "static char get_runlevel ( const long ( * ( * ) ( void ) ) ( void ) ) ;";
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
@@ -5201,7 +5152,7 @@ private:
 
     void simplifyTypedef77() { // ticket #2554
         const char code[] = "typedef char Str[10]; int x = sizeof(Str);\n";
-        const std::string expected = "; int x ; x = 10 ;";
+        const std::string expected = "int x ; x = 10 ;";
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
@@ -5210,7 +5161,7 @@ private:
                             "A_t a;\n"
                             "typedef struct A { } A_t;\n"
                             "A_t a1;\n";
-        const std::string expected = "; struct A a ; struct A { } ; struct A a1 ;";
+        const std::string expected = "struct A a ; struct A { } ; struct A a1 ;";
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
@@ -5220,8 +5171,7 @@ private:
                             "{\n"
                             "    Tcl_ObjCmdProc * (*V_LangOptionCommand);\n"
                             "} LangVtab;\n";
-        const std::string expected = "; "
-                                     "struct LangVtab "
+        const std::string expected = "struct LangVtab "
                                      "{ "
                                      "int ( * ( * V_LangOptionCommand ) ) ( int x ) ; "
                                      "} ;";
@@ -5274,8 +5224,7 @@ private:
                             "void f(Str &cl) { }\n";
 
         // The expected result..
-        const std::string expected("; "
-                                   "void f ( char ( & cl ) [ 10 ] ) { }");
+        const std::string expected("void f ( char ( & cl ) [ 10 ] ) { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -5350,7 +5299,7 @@ private:
     void simplifyTypedef90() { // ticket #2718
         const char code[] = "typedef int IA[2];\n"
                             "void f(const IA&) {};\n";
-        const char expected[] = "; void f ( const int ( & ) [ 2 ] ) { } ;";
+        const char expected[] = "void f ( const int ( & ) [ 2 ] ) { } ;";
         checkSimplifyTypedef(code);
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
@@ -5458,8 +5407,7 @@ private:
         const char code[] = "typedef long Long;\n"
                             "namespace NS {\n"
                             "}\n";
-        const char expected[] = "; "
-                                "namespace NS { "
+        const char expected[] = "namespace NS { "
                                 "}";
 
         checkSimplifyTypedef(code);
@@ -5636,8 +5584,7 @@ private:
                                 "std::queue<my_func> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5650,8 +5597,7 @@ private:
                                 "std::queue<my_func> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( void ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( void ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5664,8 +5610,7 @@ private:
                                 "std::queue<my_func> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( int ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( int ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5678,8 +5623,7 @@ private:
                                 "std::queue<my_func> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( int * ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( int * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5693,8 +5637,7 @@ private:
                                 "std::queue<my_func> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5708,8 +5651,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5722,8 +5664,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( void ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( void ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5736,8 +5677,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( int ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( int ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5750,8 +5690,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( int * ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( int * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5764,8 +5703,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5779,8 +5717,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5793,8 +5730,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( void ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( void ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5807,8 +5743,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( int ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( int ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5821,8 +5756,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( int * ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( int * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5835,8 +5769,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5850,8 +5783,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5864,8 +5796,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( void ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( void ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5878,8 +5809,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( int ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( int ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5892,8 +5822,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( int * ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( int * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5906,8 +5835,7 @@ private:
                                 "std::queue<my_func *> func_queue;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
+            const std::string expected("std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
 
             // Check for output..
@@ -5921,8 +5849,7 @@ private:
                             "voidfn xxx;";
 
         // The expected result..
-        const std::string expected("; "
-                                   "void xxx ( int ) ;");
+        const std::string expected("void xxx ( int ) ;");
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
@@ -5944,8 +5871,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "C f1 ( ) ; "
+            const std::string expected("C f1 ( ) ; "
                                        "C * f2 ; " // this gets simplified to a regular pointer
                                        "C ( & f3 ) ( ) ; "
                                        "C ( C :: * f4 ) ( ) ; "
@@ -5976,8 +5902,7 @@ private:
 
             // The expected result..
             // C const -> const C
-            const std::string expected("; "
-                                       "const C f1 ( ) ; "
+            const std::string expected("const C f1 ( ) ; "
                                        "const C * f2 ; " // this gets simplified to a regular pointer
                                        "const C ( & f3 ) ( ) ; "
                                        "const C ( C :: * f4 ) ( ) ; "
@@ -6007,8 +5932,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "const C f1 ( ) ; "
+            const std::string expected("const C f1 ( ) ; "
                                        "const C * f2 ; " // this gets simplified to a regular pointer
                                        "const C ( & f3 ) ( ) ; "
                                        "const C ( C :: * f4 ) ( ) ; "
@@ -6038,8 +5962,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "C * f1 ( ) ; "
+            const std::string expected("C * f1 ( ) ; "
                                        "C * * f2 ; " // this gets simplified to a regular pointer
                                        "C * ( & f3 ) ( ) ; "
                                        "C * ( C :: * f4 ) ( ) ; "
@@ -6069,8 +5992,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const std::string expected("; "
-                                       "const C * f1 ( ) ; "
+            const std::string expected("const C * f1 ( ) ; "
                                        "const C * * f2 ; " // this gets simplified to a regular pointer
                                        "const C * ( & f3 ) ( ) ; "
                                        "const C * ( C :: * f4 ) ( ) ; "
@@ -6101,8 +6023,7 @@ private:
 
             // The expected result..
             // C const -> const C
-            const std::string expected("; "
-                                       "const C * f1 ( ) ; "
+            const std::string expected("const C * f1 ( ) ; "
                                        "const C * * f2 ; " // this gets simplified to a regular pointer
                                        "const C * ( & f3 ) ( ) ; "
                                        "const C * ( C :: * f4 ) ( ) ; "
@@ -6125,8 +6046,7 @@ private:
                             "type3 t3;";
 
         // The expected result..
-        const std::string expected("; "
-                                   "int ( * ( * t1 ) ( bool ) ) ( int , int ) ; "
+        const std::string expected("int ( * ( * t1 ) ( bool ) ) ( int , int ) ; "
                                    "int ( * t2 ( bool ) ) ( int , int ) ; "
                                    "int ( * t3 ( bool ) ) ( int , int ) ;");
         ASSERT_EQUALS(expected, tok(code, false));
@@ -6162,8 +6082,7 @@ private:
                             "type12 t12;";
 
         // The expected result..
-        const std::string expected("; "
-                                   "int * t1 ; " // simplified to regular pointer
+        const std::string expected("int * t1 ; " // simplified to regular pointer
                                    "int ( * const t2 ) ( float ) ; "
                                    "int * t3 ; " // volatile removed, gets simplified to regular pointer
                                    "int ( * const t4 ) ( float ) ; " // volatile removed
@@ -6194,8 +6113,7 @@ private:
                             "void ( * Fred::get4 ( ) ) ( ) { return 0 ; }\n";
 
         // The expected result..
-        const std::string expected("; "
-                                   "struct Fred "
+        const std::string expected("struct Fred "
                                    "{ "
                                    "void ( * get1 ( ) ) ( ) { return 0 ; } "
                                    "void ( * get2 ( ) ) ( ) { return 0 ; } "
@@ -6216,8 +6134,7 @@ private:
                             "_func_Tp_SGIAssignableConcept X;\n";
 
         // The expected result..
-        const std::string expected("; "
-                                   "void ( __gnu_cxx :: _SGIAssignableConcept < _Tp > :: * X ) ( ) ;");
+        const std::string expected("void ( __gnu_cxx :: _SGIAssignableConcept < _Tp > :: * X ) ( ) ;");
 
         ASSERT_EQUALS(expected, tok(code, false));
 
@@ -7355,7 +7272,7 @@ private:
         ASSERT_EQUALS("int * p ;", tok("int * restrict p;", true));
         ASSERT_EQUALS("int * * p ;", tok("int * restrict * p;", true));
         ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", true));
-        ASSERT_EQUALS("; int * p ;", tok("typedef int * __restrict__ rint; rint p;", true));
+        ASSERT_EQUALS("int * p ;", tok("typedef int * __restrict__ rint; rint p;", true));
     }
 
     void simplifyCallingConvention() {
@@ -7398,8 +7315,7 @@ private:
                             "    testfp get3();\n"
                             "    void ( * get4 ( ) ) ( );\n"
                             "};";
-        const char expected[] = "; "
-                                "struct Fred "
+        const char expected[] = "struct Fred "
                                 "{ "
                                 "void ( * get1 ( ) ) ( ) { return 0 ; } "
                                 "void ( * get2 ( ) ) ( ) { return 0 ; } "
