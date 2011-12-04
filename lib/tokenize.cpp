@@ -744,7 +744,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
     bool isConst = false;
 
     if (tok->next()->str() == "const") {
-        tok->next()->deleteThis();
+        tok->deleteNext();
         isConst = true;
     }
 
@@ -936,10 +936,10 @@ void Tokenizer::simplifyTypedef()
         bool undefinedStruct = false;
         if (Token::Match(tok, "typedef enum|struct %type% %type% ;") && tok->strAt(2) == tok->strAt(3)) {
             if (tok->next()->str() == "enum") {
-                tok->deleteThis();
-                tok->deleteThis();
-                tok->deleteThis();
-                tok->deleteThis();
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
                 if (tok->next())
                     tok->deleteThis();
                 //now the next token to process is 'tok', not 'tok->next()';
@@ -2551,8 +2551,8 @@ void Tokenizer::arraySize()
 {
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "%var% [ ] = { %str% }")) {
-            tok->tokAt(4)->deleteThis();
-            tok->tokAt(5)->deleteThis();
+            tok->tokAt(3)->deleteNext();
+            tok->tokAt(4)->deleteNext();
         }
 
         if (Token::Match(tok, "%var% [ ] = {")) {
@@ -2780,8 +2780,8 @@ std::set<std::string> Tokenizer::simplifyTemplatesExpandSpecialized()
         tok2->str(name);
 
         // delete the "template < >"
-        tok->deleteThis();
-        tok->deleteThis();
+        tok->deleteNext();
+        tok->deleteNext();
         tok->deleteThis();
 
         // Use this special template in the code..
@@ -2978,7 +2978,7 @@ void Tokenizer::simplifyTemplatesUseDefaultArgumentValues(const std::list<Token 
         }
 
         for (std::list<Token *>::iterator it = eq.begin(); it != eq.end(); ++it) {
-            (*it)->deleteThis();
+            (*it)->deleteNext();
             (*it)->deleteThis();
         }
     }
@@ -4044,7 +4044,7 @@ void Tokenizer::simplifySizeof()
 
         // sizeof('x')
         if (Token::Match(tok, "sizeof ( %any% )") && tok->strAt(2)[0] == '\'') {
-            tok->deleteThis();
+            tok->deleteNext();
             tok->deleteThis();
             tok->deleteNext();
             std::ostringstream sz;
@@ -4064,7 +4064,7 @@ void Tokenizer::simplifySizeof()
 
         // sizeof ("text")
         if (Token::Match(tok->next(), "( %str% )")) {
-            tok->deleteThis();
+            tok->deleteNext();
             tok->deleteThis();
             tok->deleteNext();
             std::ostringstream ostr;
@@ -4151,7 +4151,7 @@ void Tokenizer::simplifySizeof()
         // sizeof( a )
         else if (Token::Match(tok->next(), "( %var% )") && tok->tokAt(2)->varId() != 0) {
             if (sizeOfVar.find(tok->tokAt(2)->varId()) != sizeOfVar.end()) {
-                tok->deleteThis();
+                tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
                 tok->str(sizeOfVar[tok->varId()]);
@@ -7013,7 +7013,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                 if (tok3->str() == functionName[i]) {
                     Token *par1 = tok3->tokAt(2);
                     if (!structname.empty()) {
-                        par1->deleteThis();
+                        par1->deleteNext();
                         par1->deleteThis();
                     }
                     par1->str(value);
@@ -7033,7 +7033,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                 if (tok3->str() == functionName[i]) {
                     Token *par = tok3->tokAt(4);
                     if (!structname.empty()) {
-                        par->deleteThis();
+                        par->deleteNext();
                         par->deleteThis();
                     }
                     par->str(value);
@@ -7376,16 +7376,16 @@ bool Tokenizer::simplifyCalculations()
                     if (Token::Match(tok->tokAt(-4), "[;{}] %var% = %var% [+-|] 0 ;") &&
                         tok->strAt(-3) == tok->previous()->str()) {
                         tok = tok->tokAt(-3);
-                        tok->deleteThis();
-                        tok->deleteThis();
+                        tok->deleteNext();
+                        tok->deleteNext();
                         tok->deleteThis();
                     }
-                    tok->deleteThis();
+                    tok->deleteNext();
                     tok->deleteThis();
                     ret = true;
                 } else if (Token::Match(tok->previous(), "[=([,] 0 [+|]") ||
                            Token::Match(tok->previous(), "return|case 0 [+|]")) {
-                    tok->deleteThis();
+                    tok->deleteNext();
                     tok->deleteThis();
                     ret = true;
                 } else if (Token::Match(tok->previous(), "[=[(,] 0 * %any% ,|]|)|;|=|%op%") ||
@@ -7401,7 +7401,7 @@ bool Tokenizer::simplifyCalculations()
             if (Token::simpleMatch(tok->previous(), "* 1") || Token::simpleMatch(tok, "1 *")) {
                 if (tok->previous()->isOp())
                     tok = tok->previous();
-                tok->deleteThis();
+                tok->deleteNext();
                 tok->deleteThis();
                 ret = true;
             }
@@ -7422,7 +7422,7 @@ bool Tokenizer::simplifyCalculations()
                 Token::simpleMatch(tok->previous(), "&& 1 )")) {
                 if (tok->previous()->isOp())
                     tok = tok->previous();
-                tok->deleteThis();
+                tok->deleteNext();
                 tok->deleteThis();
                 ret = true;
             }
@@ -7624,8 +7624,8 @@ void Tokenizer::simplifyGoto()
 
             const std::string name(tok->str());
 
-            tok->deleteThis();
-            tok->deleteThis();
+            tok->deleteNext();
+            tok->deleteNext();
             tok->deleteThis();
 
             // This label is at the end of the function.. replace all matching goto statements..
@@ -7958,8 +7958,7 @@ void Tokenizer::simplifyEnum()
 
                 /** @todo start substitution check at forward declaration */
                 // delete forward declaration
-                while (start->next() != tok)
-                    start->deleteThis();
+                Token::eraseTokens(start, tok);
                 start->deleteThis();
                 tok = start;
                 continue;
@@ -9584,11 +9583,11 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
             } else if (Token::simpleMatch(tok, "_stscanf (")) {
                 tok->str("sscanf");
             } else if (Token::Match(tok, "_T ( %str% )")) {
-                tok->deleteThis();
+                tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
             } else if (Token::Match(tok, "_T ( %any% )") && tok->strAt(2)[0] == '\'') {
-                tok->deleteThis();
+                tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
             }
@@ -9631,11 +9630,11 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
             } else if (Token::simpleMatch(tok, "_stscanf (")) {
                 tok->str("swscanf");
             } else if (Token::Match(tok, "_T ( %str% )")) {
-                tok->deleteThis();
+                tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
             } else if (Token::Match(tok, "_T ( %any% )") && tok->strAt(2)[0] == '\'') {
-                tok->deleteThis();
+                tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
             }
@@ -9678,7 +9677,7 @@ void Tokenizer::simplifyBorland()
                         tok2->deleteThis();
                     if (Token::simpleMatch(tok2, "{")) {
                         Token::eraseTokens(tok2, tok2->link());
-                        tok2->deleteThis();
+                        tok2->deleteNext();
                         tok2->deleteThis();
 
                         // insert "; __property ;"
@@ -9868,7 +9867,7 @@ void Tokenizer::removeUnnecessaryQualification()
                     if (_settings && _settings->isEnabled("portability"))
                         unnecessaryQualificationError(tok, qualification);
 
-                    tok->deleteThis();
+                    tok->deleteNext();
                     tok->deleteThis();
                 }
             }
