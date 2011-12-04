@@ -5038,7 +5038,22 @@ void Tokenizer::simplifyCompoundAssignment()
                 tok->insertToken(op);
 
                 std::stack<Token *> tokend;
-                for (const Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous()) {
+                for (Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous()) {
+                    // Don't duplicate ++ and --. Put preincrement in lhs. Put
+                    // postincrement in rhs.
+                    if (tok2->str() == "++" || tok2->str() == "--") {
+                        // pre increment/decrement => don't copy
+                        if (tok2->next()->isName()) {
+                            continue;
+                        }
+
+                        // post increment/decrement => move from lhs to rhs
+                        tok->insertToken(tok2->str());
+                        tok2->deleteThis();
+                        continue;
+                    }
+
+                    // Copy token from lhs to rhs
                     tok->insertToken(tok2->str());
                     tok->next()->varId(tok2->varId());
                     if (Token::Match(tok->next(), "]|)"))
