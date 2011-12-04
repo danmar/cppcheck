@@ -118,6 +118,7 @@ private:
         TEST_CASE(template25);  // #2648 - another test for sizeof template parameter
         TEST_CASE(template26);  // #2721 - passing 'char[2]' as template parameter
         TEST_CASE(template27);  // #3350 - removing unused template in macro call
+        TEST_CASE(template28);
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2100,6 +2101,13 @@ private:
         // #3350 - template inside macro call
         const char code[] = "X(template<class T> class Fred);";
         ASSERT_EQUALS("X ( class Fred ) ;", sizeof_(code));
+    }
+
+    void template28() {
+        // #3226 - inner template
+        const char code[] = "template<class A, class B> class Fred {};\n"
+                            "Fred<int,Fred<int,int> > x;\n";
+        ASSERT_EQUALS("; Fred<int,Fred<int,int>> x ; class Fred<int,int> { } class Fred<int,Fred<int,int>> { }", sizeof_(code));
     }
 
     void template_unhandled() {

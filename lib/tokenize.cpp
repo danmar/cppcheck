@@ -2614,8 +2614,11 @@ static unsigned int templateParameters(const Token *tok)
         return 0;
     tok = tok->next();
 
+    unsigned int level = 0;
+
     while (tok) {
-        ++numberOfParameters;
+        if (level == 0)
+            ++numberOfParameters;
 
         // skip std::
         while (Token::Match(tok, "%var% ::"))
@@ -2632,9 +2635,20 @@ static unsigned int templateParameters(const Token *tok)
         if (tok->str() == "*")
             tok = tok->next();
 
+        // inner template
+        if (tok->str() == "<") {
+            ++level;
+            tok = tok->next();
+            continue;
+        }
+
         // ,/>
-        if (tok->str() == ">")
-            return numberOfParameters;
+        while (tok->str() == ">") {
+            if (level == 0)
+                return numberOfParameters;
+            --level;
+            tok = tok->next();
+        }
         if (tok->str() != ",")
             break;
         tok = tok->next();
@@ -2817,6 +2831,32 @@ std::list<Token *> Tokenizer::simplifyTemplatesGetTemplateInstantiations()
                 break;
         } else if (Token::Match(tok->previous(), "[({};=] %var% <") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %var% <")) {
+
+            // Add inner template instantiations first => go to the ">"
+            // and then parse backwards, adding all seen instantiations
+            const Token *tok2;
+
+            // goto end ">" token
+            unsigned int level = 0;
+            for (tok2 = tok; tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "<") {
+                    ++level;
+                } else if (tok2->str() == ">") {
+                    if (level <= 1)
+                        break;
+                    --level;
+                }
+            }
+
+            // parse backwards and add template instantiations
+            for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
+                if (Token::Match(tok2, ", %var% <") &&
+                    templateParameters(tok2->tokAt(2))) {
+                    used.push_back(tok2->next());
+                }
+            }
+
+            // Add outer template..
             if (templateParameters(tok->next()))
                 used.push_back(tok);
         }
