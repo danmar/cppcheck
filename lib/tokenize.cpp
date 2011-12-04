@@ -7871,7 +7871,15 @@ void Tokenizer::simplifyEnum()
 
     std::string className;
     int classLevel = 0;
+    bool goback = false;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
+
+        if (goback) {
+            //jump back once, see the comment at the end of the function
+            goback = false;
+            tok = tok->previous();
+        }
+
         if (Token::Match(tok, "class|struct|namespace %any%") &&
             (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum"))) {
             className = tok->next()->str();
@@ -8204,10 +8212,18 @@ void Tokenizer::simplifyEnum()
             if (start != _tokens) {
                 tok1 = start->previous();
                 tok1->deleteNext();
+                //no need to remove last token in the list
+                if (tok1->tokAt(2))
+                    tok1->deleteNext();
                 tok = tok1;
             } else {
                 _tokens->deleteThis();
+                //no need to remove last token in the list
+                if (_tokens->next())
+                    _tokens->deleteThis();
                 tok = _tokens;
+                //now the next token to process is 'tok', not 'tok->next()';
+                goback = true;
             }
         }
     }

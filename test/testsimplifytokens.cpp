@@ -6477,21 +6477,21 @@ private:
 
     void enum1() {
         const char code[] = "enum A { a, b, c }; A c1 = c;";
-        const char expected[] = "; int c1 ; c1 = 2 ;";
+        const char expected[] = "int c1 ; c1 = 2 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void enum2() {
         const char code[] = "enum A { a, }; int array[a];";
-        const char expected[] = "; int array [ 0 ] ;";
+        const char expected[] = "int array [ 0 ] ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void enum3() {
         const char code[] = "enum { a, }; int array[a];";
-        const char expected[] = "; int array [ 0 ] ;";
+        const char expected[] = "int array [ 0 ] ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -6511,7 +6511,7 @@ private:
 
             const char expected[] = "class A { "
                                     "public: "
-                                    "; "
+                                    ""
                                     "int get ( ) const ; "
                                     "void put ( int a ) { ea = a ; ea = 0 ; } "
                                     "private: "
@@ -6534,7 +6534,7 @@ private:
                                 "A::EA e = A::a1;";
 
             const char expected[] = "struct A { "
-                                    "; "
+                                    ""
                                     "int get ( ) const ; "
                                     "void put ( int a ) { ea = a ; ea = 0 ; } "
                                     "int ea ; "
@@ -6557,8 +6557,7 @@ private:
                             "    g\n"
                             "};\n"
                             "int sum =  a + b + c + d + e + f + g;";
-        const char expected[] = "; "
-                                "int sum ; sum = "
+        const char expected[] = "int sum ; sum = "
                                 "sizeof ( int ) + "
                                 "1 + sizeof ( int ) + "
                                 "1 + sizeof ( int ) + 100 + "
@@ -6568,12 +6567,12 @@ private:
                                 "91 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS("; int sum ; sum = 508 ;", tok(code, true));
+        ASSERT_EQUALS("int sum ; sum = 508 ;", tok(code, true));
     }
 
     void enum6() {
         const char code[] = "enum { a = MAC(A, B, C) }; void f(a) { }";
-        const char expected[] = "; void f ( MAC ( A , B , C ) ) { }";
+        const char expected[] = "void f ( MAC ( A , B , C ) ) { }";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
@@ -6586,8 +6585,7 @@ private:
                                 "  int A = B;\n"
                                 "  { float A = C; }\n"
                                 "}";
-            const char expected[] = "; "
-                                    "int main ( ) "
+            const char expected[] = "int main ( ) "
                                     "{ "
                                     "int A ; A = 1 ; "
                                     "{ float A ; A = 2 ; } "
@@ -6598,8 +6596,7 @@ private:
         {
             const char code[] = "enum FOO {A,B,C};\n"
                                 "void f(int A, float B, char C) { }";
-            const char expected[] = "; "
-                                    "void f ( int A , float B , char C ) { }";
+            const char expected[] = "void f ( int A , float B , char C ) { }";
             ASSERT_EQUALS(expected, tok(code, false));
         }
     }
@@ -6678,7 +6675,7 @@ private:
         const char code[] = "enum {\n"
                             "SHELL_SIZE = sizeof(union { int i; char *cp; double d; }) - 1, \n"
                             "} e = SHELL_SIZE;";
-        const char expected[] = "; int e ; e = sizeof ( union { int i ; char * cp ; double d ; } ) - 1 ;";
+        const char expected[] = "int e ; e = sizeof ( union { int i ; char * cp ; double d ; } ) - 1 ;";
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyEnum(code);
@@ -6693,7 +6690,7 @@ private:
                             "}";
         const char expected[] = "int main ( ) "
                                 "{ "
-                                "; "
+                                ""
                                 "A u ; u = 1 ; A v ; v = 2 ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false));
@@ -6709,7 +6706,7 @@ private:
                             "{\n"
                             "    unsigned int fred = 0;\n"
                             "}";
-        const char expected[] = "; void foo ( ) { unsigned int fred ; fred = 0 ; }";
+        const char expected[] = "void foo ( ) { unsigned int fred ; fred = 0 ; }";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
@@ -6719,14 +6716,14 @@ private:
                             "{\n"
                             "    unsigned int fred = a;\n"
                             "}";
-        const char expected[] = "; void foo ( ) { unsigned int fred ; fred = a ; }";
+        const char expected[] = "void foo ( ) { unsigned int fred ; fred = a ; }";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void enum14() {
         const char code[] = "enum ab { a };\n"
                             "ab";
-        const char expected[] = "; ab";
+        const char expected[] = "ab";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
@@ -6734,42 +6731,42 @@ private:
         {
             const char code[] = "enum : char { a = 99 };\n"
                                 "char c1 = a;";
-            const char expected[] = "; char c1 ; c1 = 99 ;";
+            const char expected[] = "char c1 ; c1 = 99 ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "enum class Enum1 { a };\n"
                                 "Enum1 e1 = a;";
-            const char expected[] = "; int e1 ; e1 = 0 ;";
+            const char expected[] = "int e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "enum Enum1 : char { a };\n"
                                 "Enum1 e1 = a;";
-            const char expected[] = "; char e1 ; e1 = 0 ;";
+            const char expected[] = "char e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned char { a };\n"
                                 "Enum1 e1 = a;";
-            const char expected[] = "; unsigned char e1 ; e1 = 0 ;";
+            const char expected[] = "unsigned char e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned int { a };\n"
                                 "Enum1 e1 = a;";
-            const char expected[] = "; unsigned int e1 ; e1 = 0 ;";
+            const char expected[] = "unsigned int e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned long long int { a };\n"
                                 "Enum1 e1 = a;";
-            const char expected[] = "; unsigned long long e1 ; e1 = 0 ;";
+            const char expected[] = "unsigned long long e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
     }
@@ -6791,7 +6788,7 @@ private:
     void enum18() { // ticket #2466 - array with same name as enum constant
         const char code[] = "enum ab { a=0, b };\n"
                             "void f() { a[0]; }\n";
-        ASSERT_EQUALS("; void f ( ) { a [ 0 ] ; }", tok(code, false));
+        ASSERT_EQUALS("void f ( ) { a [ 0 ] ; }", tok(code, false));
     }
 
     void enum19() { // ticket #2536
@@ -6828,7 +6825,7 @@ private:
     void enum23() { // ticket #2804
         const char code[] = "enum Enumerator : std::uint8_t { ITEM1, ITEM2, ITEM3 };\n"
                             "Enumerator e = ITEM3;\n";
-        const char expected[] = "; std :: uint8_t e ; e = 2 ;";
+        const char expected[] = "std :: uint8_t e ; e = 2 ;";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -6838,7 +6835,7 @@ private:
                             "void f(long style) {\n"
                             "    if (style & STYLE) { }\n"
                             "}\n";
-        const char expected[] = "; void f ( long style ) { if ( style & 1 ) { } }";
+        const char expected[] = "void f ( long style ) { if ( style & 1 ) { } }";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -6866,7 +6863,7 @@ private:
                             "void f() { char x[4];  memset(x, 0, 4); \n"
                             "{ x } };\n"
                             "void g() { x; }";
-        ASSERT_EQUALS("; void f ( ) { char x [ 4 ] ; memset ( x , 0 , 4 ) ; { x } } ; void g ( ) { 0 ; }", tok(code, true));
+        ASSERT_EQUALS("void f ( ) { char x [ 4 ] ; memset ( x , 0 , 4 ) ; { x } } ; void g ( ) { 0 ; }", tok(code, true));
     }
 
     void removestd() {
