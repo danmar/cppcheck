@@ -3398,7 +3398,7 @@ private:
             "class A "
             "{ "
             "public: "
-            "; "
+            ""
             "void foo ( ) { } "
             "} ; "
             "int main ( ) "
@@ -3425,7 +3425,7 @@ private:
             "class A "
             "{ "
             "public: "
-            "; "
+            ""
             "wchar_t foo ( ) { wchar_t b ; return b ; } "
             "} ;";
         ASSERT_EQUALS(expected, tok(code));
@@ -3449,7 +3449,7 @@ private:
             "class A { } ; "
             "wchar_t foo ( ) "
             "{ "
-            "; "
+            ""
             "wchar_t b ; "
             "return b ; "
             "} "
@@ -3510,7 +3510,7 @@ private:
 
         const char expected[] =
             "namespace VL { "
-            "; "
+            ""
             "float fast_atan2 ( float y , float x ) { } "
             "}";
 
@@ -3838,7 +3838,7 @@ private:
 
         const char expected[] =
             "; "
-            "; "
+            ""
             "void ( * pf ) ( ) ; "
             "void * ( * pfv ) ( void * ) ;";
 
@@ -3855,7 +3855,7 @@ private:
 
             const char expected[] =
                 "class Fred { "
-                "; "
+                ""
                 "void ( * get ( ) ) ( ) { return test ; } "
                 "static void test ( ) { } "
                 "} ;";
@@ -3872,7 +3872,7 @@ private:
 
             const char expected[] =
                 "class Fred { "
-                "; "
+                ""
                 "void * ( * get ( ) ) ( void * ) { return test ; } "
                 "static void * test ( void * p ) { return p ; } "
                 "} ;";
@@ -3889,7 +3889,7 @@ private:
 
             const char expected[] =
                 "class Fred { "
-                "; "
+                ""
                 "unsigned int * ( * get ( ) ) ( unsigned int * ) { return test ; } "
                 "static unsigned int * test ( unsigned int * p ) { return p ; } "
                 "} ;";
@@ -3907,7 +3907,7 @@ private:
             // static const gets changed to const static
             const char expected[] =
                 "class Fred { "
-                "; "
+                ""
                 "const unsigned int * ( * get ( ) ) ( const unsigned int * ) { return test ; } "
                 "const static unsigned int * test ( const unsigned int * p ) { return p ; } "
                 "} ;";
@@ -3924,7 +3924,7 @@ private:
 
             const char expected[] =
                 "class Fred { "
-                "; "
+                ""
                 "void * ( * get ( int i ) ) ( void * ) { return test ; } "
                 "static void * test ( void * p ) { return p ; } "
                 "} ;";
@@ -4053,7 +4053,7 @@ private:
         const char expected[] =
             "int main ( ) "
             "{ "
-            "; "
+            ""
             "VERIFY ( is_same < result_of < int ( * ( char , float ) ) ( float , double ) > :: type , int > :: value ) ; "
             "}";
 
@@ -4124,7 +4124,7 @@ private:
 
             const char expected[] = "class A { "
                                     "public: "
-                                    "; "
+                                    ""
                                     "int get ( ) const ; "
                                     "void put ( int x ) { a = x ; } "
                                     "int a ; "
@@ -4146,7 +4146,7 @@ private:
                                 "A::INT i = A::a;";
 
             const char expected[] = "struct A { "
-                                    "; "
+                                    ""
                                     "int get ( ) const ; "
                                     "void put ( int x ) { a = x ; } "
                                     "int a ; "
@@ -4207,18 +4207,18 @@ private:
         const char expected[] =
             "class A { "
             "public: "
-            "; "
+            ""
             "char funA ( ) ; "
             "class B { "
             "public: "
-            "; "
+            ""
             "short funB ( ) ; "
             "class C { "
             "public: "
-            "; "
+            ""
             "int funC ( ) ; "
             "struct D { "
-            "; "
+            ""
             "long funD ( ) ; "
             "long d ; "
             "} ; "
@@ -4306,7 +4306,7 @@ private:
                                 "class S "
                                 "{ "
                                 "public: "
-                                "; "
+                                ""
                                 "float a ; "
                                 "virtual void fun ( float x ) ; "
                                 "} ; "
@@ -4318,7 +4318,7 @@ private:
                                 "} ; "
                                 "struct T "
                                 "{ "
-                                "; "
+                                ""
                                 "int b ; "
                                 "} ; "
                                 "float fun1 ( float A ) { return A ; } "
@@ -4705,7 +4705,7 @@ private:
 
         // The expected result..
         const std::string expected("class Class2 { "
-                                   "; "
+                                   ""
                                    "void some_method ( const Class & x ) const { } "
                                    "void another_method ( const Class & x ) const { } "
                                    "}");
@@ -4840,7 +4840,7 @@ private:
 
         // The expected result..
         const std::string expected("struct C { "
-                                   "; "
+                                   ""
                                    "const void * pr ; " // this gets simplified to a regular pointer
                                    "operatorconstvoid(*)()& ( ) { return pr ; } "
                                    "} ;");
@@ -4859,7 +4859,7 @@ private:
 
         // The expected result..
         const std::string expected("void foo { "
-                                   "; "
+                                   ""
                                    "int a ; a = int ( 1 ) * int ( 2 ) ; "
                                    "} ;");
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -5109,7 +5109,7 @@ private:
                                 "    operator F() const { }\n"
                                 "};\n";
             const std::string expected = "class Fred { "
-                                         "; "
+                                         ""
                                          "operatorint** ( ) const { } "
                                          "} ;";
             ASSERT_EQUALS(expected, sizeof_(code));
@@ -5122,7 +5122,7 @@ private:
                                 "    void f1() const { INT i; }\n"
                                 "};\n";
             const std::string expected = "class Fred { "
-                                         "; "
+                                         ""
                                          "void f1 ( ) const { int i ; } "
                                          "} ;";
             ASSERT_EQUALS(expected, sizeof_(code));
@@ -5136,7 +5136,7 @@ private:
                                 "};\n"
                                 "void Fred::f1() const { INT i; f(i); }\n";
             const std::string expected = "class Fred { "
-                                         "; "
+                                         ""
                                          "void f1 ( ) const ; "
                                          "} ; "
                                          "void Fred :: f1 ( ) const { int i ; f ( i ) ; }";
@@ -5151,7 +5151,7 @@ private:
                                 "};\n"
                                 "Fred::operator F() const { }\n";
             const std::string expected = "class Fred { "
-                                         "; "
+                                         ""
                                          "operatorint** ( ) const ; "
                                          "} ; "
                                          "Fred :: operatorint** ( ) const { }";
@@ -5310,7 +5310,7 @@ private:
                             "    safe_bool operator!() const;\n"
                             "};\n";
         const char expected[] = "class relational { "
-                                "; "
+                                ""
                                 "public: "
                                 "operatorsafe_bool ( ) const ; "
                                 "safe_bool operator! ( ) const ; "
@@ -5341,7 +5341,7 @@ private:
                             "    typedef void f(int) const;\n"
                             "    f func;\n"
                             "};\n";
-        const char expected[] = "class Fred { ; void func ( int ) const ; } ;";
+        const char expected[] = "class Fred { void func ( int ) const ; } ;";
         checkSimplifyTypedef(code);
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
@@ -5367,7 +5367,7 @@ private:
                              "    T A::f() {}\n"
                              "}\n";
         const char expected1[] = "namespace NS { "
-                                 "; "
+                                 ""
                                  "class A { "
                                  "int ( * f ( ) ) ( ) ; "
                                  "} ; "
@@ -5387,7 +5387,7 @@ private:
                              "}\n"
                              "NS::T NS::A::f() {}\n";
         const char expected2[] = "namespace NS { "
-                                 "; "
+                                 ""
                                  "class A { "
                                  "int ( * f ( ) ) ( ) ; "
                                  "} ; "
@@ -5412,7 +5412,7 @@ private:
                              "}\n";
         const char expected3[] = "namespace NS1 { "
                                  "namespace NS2 { "
-                                 "; "
+                                 ""
                                  "class A { "
                                  "int ( * f ( ) ) ( ) ; "
                                  "} ; "
@@ -5440,7 +5440,7 @@ private:
                              "}\n";
         const char expected4[] = "namespace NS1 { "
                                  "namespace NS2 { "
-                                 "; "
+                                 ""
                                  "class A { "
                                  "int ( * f ( ) ) ( ) ; "
                                  "} ; "
@@ -5544,7 +5544,7 @@ private:
                             "};\n";
         const char expected[] = "class symbol_table { "
                                 "public: "
-                                "; "
+                                ""
                                 "expression_error :: error_code ( * f ) ( void * cbparam , const char * name , expression_space space ) ; "
                                 "} ;";
 

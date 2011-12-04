@@ -1808,11 +1808,11 @@ void Tokenizer::simplifyTypedef()
 
         if (ok) {
             // remove typedef but leave ;
-            while (typeDef->next() && typeDef->next() != tok)
-                typeDef->deleteNext();
+            Token::eraseTokens(typeDef, tok);
 
             if (typeDef != _tokens) {
                 tok = typeDef->previous();
+                tok->deleteNext();
                 tok->deleteNext();
             } else {
                 _tokens->deleteThis();
@@ -8185,9 +8185,7 @@ void Tokenizer::simplifyEnum()
             }
 
             tok1 = start;
-            while (tok1->next() && tok1->next() != end)
-                tok1->deleteNext();
-            tok1->deleteNext();
+            Token::eraseTokens(tok1, end->next());
             if (start != _tokens) {
                 tok1 = start->previous();
                 tok1->deleteNext();

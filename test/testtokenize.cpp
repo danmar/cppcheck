@@ -4979,7 +4979,7 @@ private:
         const char expected[] = "\n\n##file 0\n"
                                 "1: struct S\n"
                                 "2: {\n"
-                                "3: ;\n"
+                                "3:\n"
                                 "4: virtual void ( * getFP ( ) ) ( ) ;\n"
                                 "5: virtual void execute ( ) ;\n"
                                 "6: } ;\n"
