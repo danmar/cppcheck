@@ -940,6 +940,10 @@ void Tokenizer::simplifyTypedef()
                 tok->deleteThis();
                 tok->deleteThis();
                 tok->deleteThis();
+                if (tok->next())
+                    tok->deleteThis();
+                //now the next token to process is 'tok', not 'tok->next()';
+                goback = true;
                 continue;
             } else {
                 const std::string pattern("struct " + tok->strAt(2) + " {|:");
@@ -1102,6 +1106,9 @@ void Tokenizer::simplifyTypedef()
                 if (typeName->str() == "void") {
                     unsupportedTypedef(typeDef);
                     tok = deleteInvalidTypedef(typeDef);
+                    if (tok == _tokens)
+                        //now the next token to process is 'tok', not 'tok->next()';
+                        goback = true;
                     continue;
                 }
 
@@ -1111,6 +1118,9 @@ void Tokenizer::simplifyTypedef()
                          Token::Match(tok->linkAt(offset)->tokAt(-3), ":: * %var% ) (")) {
                     unsupportedTypedef(typeDef);
                     tok = deleteInvalidTypedef(typeDef);
+                    if (tok == _tokens)
+                        //now the next token to process is 'tok', not 'tok->next()';
+                        goback = true;
                     continue;
                 }
 
@@ -1152,6 +1162,9 @@ void Tokenizer::simplifyTypedef()
             else {
                 unsupportedTypedef(typeDef);
                 tok = deleteInvalidTypedef(typeDef);
+                if (tok == _tokens)
+                    //now the next token to process is 'tok', not 'tok->next()';
+                    goback = true;
                 continue;
             }
         }
@@ -1289,6 +1302,9 @@ void Tokenizer::simplifyTypedef()
         else {
             unsupportedTypedef(typeDef);
             tok = deleteInvalidTypedef(typeDef);
+            if (tok == _tokens)
+                //now the next token to process is 'tok', not 'tok->next()';
+                goback = true;
             continue;
         }
 

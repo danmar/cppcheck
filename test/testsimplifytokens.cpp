@@ -3611,10 +3611,8 @@ private:
                             "abc e1;\n"
                             "XYZ e2;";
 
-        const char expected[] =
-            "; "
-            "int e1 ; "
-            "int e2 ;";
+        const char expected[] = "int e1 ; "
+                                "int e2 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -4878,7 +4876,7 @@ private:
                             "    localEntitiyAddFunc_t f;\n"
                             "}\n";
         // The expected result..
-        const std::string expected("; void f ( ) { int b ; int * f ; }");
+        const std::string expected("void f ( ) { int b ; int * f ; }");
         ASSERT_EQUALS(expected, sizeof_(code, false));
 
         // Check for output..
