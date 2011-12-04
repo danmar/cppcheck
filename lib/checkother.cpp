@@ -226,7 +226,7 @@ void CheckOther::checkBitwiseOnBoolean()
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "(|.|return %var% [&|]")) {
+        if (Token::Match(tok, "(|.|return|&&|%oror% %var% [&|]")) {
             if (tok->next()->varId()) {
                 const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->next()->varId());
                 if (var && (var->typeStartToken() == var->typeEndToken()) &&
@@ -288,7 +288,7 @@ void CheckOther::warningOldStylePointerCast()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Old style pointer casting..
-        if (!Token::Match(tok, "( const| %type% * ) %var%") &&
+        if (!Token::Match(tok, "( const| %type% * ) (| %var%") &&
             !Token::Match(tok, "( const| %type% * ) (| new"))
             continue;
 
@@ -1173,7 +1173,7 @@ void CheckOther::invalidScanf()
         const Token *formatToken = 0;
         if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
             formatToken = tok->tokAt(2);
-        else if (Token::Match(tok, "fscanf|vfscanf (")) {
+        else if (Token::Match(tok, "sscanf|vsscanf|fscanf|vfscanf (")) {
             const Token* nextArg = tok->tokAt(2)->nextArgument();
             if (nextArg && Token::Match(nextArg, "%str%"))
                 formatToken = nextArg;
@@ -1768,44 +1768,26 @@ void CheckOther::checkConstantFunctionParameter()
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        // TODO: False negatives. This pattern only checks for string.
-        //       Investigate if there are other classes in the std
-        //       namespace and add them to the pattern. There are
-        //       streams for example (however it seems strange with
-        //       const stream parameter).
-        if (Token::Match(tok, "[,(] const std :: string %var% [,)]")) {
-            passedByValueError(tok, tok->strAt(5));
-        }
-
-        else if (Token::Match(tok, "[,(] const std :: %type% < %type% > %var% [,)]")) {
-            passedByValueError(tok, tok->strAt(8));
-        }
-
-        else if (Token::Match(tok, "[,(] const std :: %type% < std :: %type% > %var% [,)]")) {
-            passedByValueError(tok, tok->strAt(10));
-        }
-
-        else if (Token::Match(tok, "[,(] const std :: %type% < std :: %type% , std :: %type% > %var% [,)]")) {
-            passedByValueError(tok, tok->strAt(14));
-        }
-
-        else if (Token::Match(tok, "[,(] const std :: %type% < %type% , std :: %type% > %var% [,)]")) {
-            passedByValueError(tok, tok->strAt(12));
-        }
-
-        else if (Token::Match(tok, "[,(] const std :: %type% < std :: %type% , %type% > %var% [,)]")) {
-            passedByValueError(tok, tok->strAt(12));
-        }
-
-        else if (Token::Match(tok, "[,(] const std :: %type% < %type% , %type% > %var% [,)]")) {
-            passedByValueError(tok, tok->strAt(10));
-        }
-
-        else if (Token::Match(tok, "[,(] const %type% %var% [,)]")) {
-            // Check if type is a struct or class.
-            if (symbolDatabase->isClassOrStruct(tok->strAt(2))) {
-                passedByValueError(tok, tok->strAt(3));
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        for (std::list<Function>::const_iterator j = i->functionList.begin(); j != i->functionList.end(); ++j) {
+            for (const Token* tok = j->arg->next(); tok; tok = tok->nextArgument()) {
+                // TODO: False negatives. This pattern only checks for string.
+                //       Investigate if there are other classes in the std
+                //       namespace and add them to the pattern. There are
+                //       streams for example (however it seems strange with
+                //       const stream parameter).
+                if (Token::Match(tok, "const std :: string %var% [,)]")) {
+                    passedByValueError(tok, tok->strAt(4));
+                } else if (Token::Match(tok, "const std :: %type% < std| ::| %type% > %var% [,)]")) {
+                    passedByValueError(tok, Token::findsimplematch(tok->tokAt(5), ">")->strAt(1));
+                } else if (Token::Match(tok, "const std :: %type% < std| ::| %type% , std| ::| %type% > %var% [,)]")) {
+                    passedByValueError(tok, Token::findsimplematch(tok->tokAt(7), ">")->strAt(1));
+                } else if (Token::Match(tok, "const %type% %var% [,)]")) {
+                    // Check if type is a struct or class.
+                    if (symbolDatabase->isClassOrStruct(tok->strAt(1))) {
+                        passedByValueError(tok, tok->strAt(2));
+                    }
+                }
             }
         }
     }
