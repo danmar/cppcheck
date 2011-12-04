@@ -8921,11 +8921,12 @@ void Tokenizer::simplifyComparisonOrder()
 void Tokenizer::simplifyConst()
 {
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}(,] %type% const") &&
-            tok->next()->str().find(":") == std::string::npos &&
-            tok->next()->str() != "operator") {
-            tok->tokAt(2)->str(tok->next()->str());
-            tok->next()->str("const");
+        if (Token::Match(tok, "%type% const") &&
+            (!tok->previous() || Token::Match(tok->previous(), "[;{}(,]")) &&
+            tok->str().find(":") == std::string::npos &&
+            tok->str() != "operator") {
+            tok->next()->str(tok->str());
+            tok->str("const");
         }
     }
 }

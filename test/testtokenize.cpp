@@ -4196,7 +4196,7 @@ private:
             "a = SZ;\n"
             "}\n";
         const char expected[] =
-            "static const char str [ 5 ] = \"abcd\" ;\n\nvoid f ( ) {\na = 5 ;\n}";
+            "const static char str [ 5 ] = \"abcd\" ;\n\nvoid f ( ) {\na = 5 ;\n}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
     }
 
@@ -4890,6 +4890,7 @@ private:
         ASSERT_EQUALS("void foo ( ) { int * const x ; }",
                       tokenizeAndStringify("void foo(){ int * const x;}"));
 
+        ASSERT_EQUALS("const int foo ( ) ;", tokenizeAndStringify("int const foo ();"));
     }
 
     void switchCase() {
