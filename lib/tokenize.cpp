@@ -939,7 +939,7 @@ void Tokenizer::simplifyTypedef()
                 tok->deleteNext();
                 tok->deleteNext();
                 tok->deleteNext();
-                tok->deleteNext();
+                tok->deleteThis();
                 if (tok->next())
                     tok->deleteThis();
                 //now the next token to process is 'tok', not 'tok->next()';
