@@ -707,9 +707,10 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 
     // remove typedef but leave ;
     while (typeDef->next()) {
-        if (level == 0 && typeDef->next()->str() == ";")
+        if (level == 0 && typeDef->next()->str() == ";") {
+            typeDef->deleteNext();
             break;
-        else if (typeDef->next()->str() == "{")
+        } else if (typeDef->next()->str() == "{")
             ++level;
         else if (typeDef->next()->str() == "}") {
             if (!level)
