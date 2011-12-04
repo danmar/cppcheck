@@ -5,6 +5,7 @@ Extract test cases information from Cppcheck test
 file
 """
 
+import os
 import sys
 import re
 
@@ -179,6 +180,8 @@ if filename != None:
     elif htmldir != None:
         if not htmldir.endswith('/'):
             htmldir += '/'
+        if not os.path.exists(htmldir):
+            os.mkdir(htmldir)
         findex = open(htmldir + 'index.htm', 'w')
         findex.write('<html>\n')
         findex.write('<head>\n')
@@ -241,6 +244,10 @@ if filename != None:
 
         if not codedir.endswith('/'):
             codedir = codedir + '/'
+
+        if not os.path.exists(codedir):
+            os.mkdir(codedir)
+
         errors = open(codedir+'errors.txt', 'w')
 
         for node in e.nodes:
