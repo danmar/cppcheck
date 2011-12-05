@@ -1947,9 +1947,10 @@ bool Tokenizer::tokenize(std::istream &code,
     if (isJavaOrCSharp()) {
         const bool isJava(_files[0].find(".java") != std::string::npos);
         for (Token *tok = _tokens; tok; tok = tok->next()) {
-            if (isJava && Token::Match(tok, ") throws %var% {"))
-                Token::eraseTokens(tok, tok->tokAt(3));
-            else if (tok->str() == "private")
+            if (isJava && Token::Match(tok, ") throws %var% {")) {
+                tok->deleteNext();
+                tok->deleteNext();
+            } else if (tok->str() == "private")
                 tok->str("private:");
             else if (tok->str() == "protected")
                 tok->str("protected:");
@@ -3091,7 +3092,10 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         if (Token::Match(tok2, "%var% < sizeof ( %type% ) >") && tok2->tokAt(4)->isStandardType()) {
             Token * const tok3 = tok2->next();
             const unsigned int sz = sizeOfType(tok3->tokAt(3));
-            Token::eraseTokens(tok3, tok3->tokAt(5));
+            tok3->deleteNext();
+            tok3->deleteNext();
+            tok3->deleteNext();
+            tok3->deleteNext();
             tok3->insertToken(MathLib::toString<unsigned int>(sz));
         }
 
@@ -4030,7 +4034,9 @@ void Tokenizer::simplifySizeof()
             continue;
 
         if (Token::simpleMatch(tok->next(), ". . .")) {
-            Token::eraseTokens(tok, tok->tokAt(4));
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
         }
 
         // sizeof 'x'
@@ -4145,7 +4151,9 @@ void Tokenizer::simplifySizeof()
 
         if (Token::simpleMatch(tok->next(), "( * )")) {
             tok->str(MathLib::toString<unsigned long>(sizeOfType(tok->tokAt(2))));
-            Token::eraseTokens(tok, tok->tokAt(4));
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
         }
 
         // sizeof( a )
@@ -4165,7 +4173,9 @@ void Tokenizer::simplifySizeof()
             unsigned int size = sizeOfType(tok->tokAt(2));
             if (size > 0) {
                 tok->str(MathLib::toString<unsigned int>(size));
-                Token::eraseTokens(tok, tok->tokAt(4));
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
             }
         }
 
@@ -4247,7 +4257,9 @@ bool Tokenizer::simplifyTokenList()
     // change array to pointer..
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "%type% %var% [ ] [,;=]")) {
-            Token::eraseTokens(tok->next(), tok->tokAt(4));
+            Token *t = tok->next();
+            t->deleteNext();
+            t->deleteNext();
             tok->insertToken("*");
         }
     }
@@ -4349,10 +4361,12 @@ bool Tokenizer::simplifyTokenList()
             tok->next()->str("free");
 
             // delete the ", 0"
-            Token::eraseTokens(tok->tokAt(3), tok->tokAt(6));
+            tok = tok->tokAt(3);
+            tok->deleteNext();
+            tok->deleteNext();
 
             // goto the ";"
-            tok = tok->tokAt(5);
+            tok = tok->tokAt(2);
 
             // insert "var=0;"
             tok->insertToken(";");
@@ -4529,11 +4543,19 @@ void Tokenizer::removeRedundantAssignment()
             if (!localvars.empty()) {
                 for (Token *tok2 = tok->next(); tok2 && tok2 != end;) {
                     if (Token::Match(tok2, "[;{}] %type% %var% ;") && localvars.find(tok2->tokAt(2)->varId()) != localvars.end()) {
-                        Token::eraseTokens(tok2, tok2->tokAt(4));
+                        tok2->deleteNext();
+                        tok2->deleteNext();
+                        tok2->deleteNext();
                     } else if (Token::Match(tok2, "[;{}] %type% * %var% ;") && localvars.find(tok2->tokAt(3)->varId()) != localvars.end()) {
-                        Token::eraseTokens(tok2, tok2->tokAt(5));
+                        tok2->deleteNext();
+                        tok2->deleteNext();
+                        tok2->deleteNext();
+                        tok2->deleteNext();
                     } else if (Token::Match(tok2, "[;{}] %var% = %any% ;") && localvars.find(tok2->next()->varId()) != localvars.end()) {
-                        Token::eraseTokens(tok2, tok2->tokAt(5));
+                        tok2->deleteNext();
+                        tok2->deleteNext();
+                        tok2->deleteNext();
+                        tok2->deleteNext();
                     } else
                         tok2 = tok2->next();
                 }
@@ -4664,7 +4686,10 @@ bool Tokenizer::removeRedundantConditions()
                     else
                         tok->str(";");
 
-                    Token::eraseTokens(tok, tok->tokAt(5));
+                    tok->deleteNext();
+                    tok->deleteNext();
+                    tok->deleteNext();
+                    tok->deleteNext();
                 }
 
                 ret = true;
@@ -4688,7 +4713,10 @@ bool Tokenizer::removeRedundantConditions()
                 else
                     tok->str(";");
 
-                Token::eraseTokens(tok, tok->tokAt(5));
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
+                tok->deleteNext();
             }
 
             ret = true;
@@ -5191,14 +5219,16 @@ bool Tokenizer::simplifyConditions()
         if (Token::simpleMatch(tok, "( true &&") ||
             Token::simpleMatch(tok, "&& true &&") ||
             Token::simpleMatch(tok->next(), "&& true )")) {
-            Token::eraseTokens(tok, tok->tokAt(3));
+            tok->deleteNext();
+            tok->deleteNext();
             ret = true;
         }
 
         else if (Token::simpleMatch(tok, "( false ||") ||
                  Token::simpleMatch(tok, "|| false ||") ||
                  Token::simpleMatch(tok->next(), "|| false )")) {
-            Token::eraseTokens(tok, tok->tokAt(3));
+            tok->deleteNext();
+            tok->deleteNext();
             ret = true;
         }
 
@@ -5359,7 +5389,8 @@ bool Tokenizer::simplifyQuestionMark()
 
             // delete the condition token and the "?"
             tok = tok->tokAt(-2);
-            Token::eraseTokens(tok, tok->tokAt(3));
+            tok->deleteNext();
+            tok->deleteNext();
 
             // delete operator after the :
             if (end) {
@@ -6305,28 +6336,32 @@ void Tokenizer::simplifyIfNot()
                 tok = tok->previous();
                 tok->insertToken("!");
                 tok = tok->tokAt(4);
-                Token::eraseTokens(tok, tok->tokAt(3));
+                tok->deleteNext();
+                tok->deleteNext();
             }
 
             else if (Token::Match(tok, "* %var% == 0|false")) {
                 tok = tok->previous();
                 tok->insertToken("!");
                 tok = tok->tokAt(3);
-                Token::eraseTokens(tok, tok->tokAt(3));
+                tok->deleteNext();
+                tok->deleteNext();
             }
         }
 
         else if (tok->link() && Token::Match(tok, ") == 0|false")) {
             // if( foo(x) == 0 )
             if (Token::Match(tok->link()->tokAt(-2), "( %var%")) {
-                Token::eraseTokens(tok, tok->tokAt(3));
+                tok->deleteNext();
+                tok->deleteNext();
                 tok->link()->previous()->insertToken(tok->link()->previous()->str().c_str());
                 tok->link()->tokAt(-2)->str("!");
             }
 
             // if( (x) == 0 )
             else if (Token::simpleMatch(tok->link()->previous(), "(")) {
-                Token::eraseTokens(tok, tok->tokAt(3));
+                tok->deleteNext();
+                tok->deleteNext();
                 tok->link()->insertToken("(");
                 tok->link()->str("!");
                 Token *temp = tok->link();
@@ -7126,7 +7161,9 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (indentlevel == indentlevel3 && Token::Match(tok3->next(), "%varid% ++|--", varid) && MathLib::isInt(value)) {
             const std::string op(tok3->strAt(2));
             if (Token::Match(tok3, "[{};] %any% %any% ;")) {
-                Token::eraseTokens(tok3, tok3->tokAt(4));
+                tok3->deleteNext();
+                tok3->deleteNext();
+                tok3->deleteNext();
             } else {
                 tok3 = tok3->next();
                 tok3->str(value);
@@ -7147,7 +7184,9 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             (*tok2)->tokAt(2)->str(value);
             (*tok2)->tokAt(2)->varId(valueVarId);
             if (Token::Match(tok3, "[;{}] %any% %any% ;")) {
-                Token::eraseTokens(tok3, tok3->tokAt(4));
+                tok3->deleteNext();
+                tok3->deleteNext();
+                tok3->deleteNext();
             } else {
                 tok3->deleteNext();
                 tok3->next()->str(value);
@@ -7507,7 +7546,8 @@ bool Tokenizer::simplifyCalculations()
                     if (!result.empty()) {
                         ret = true;
                         tok->str(result);
-                        Token::eraseTokens(tok, tok->tokAt(3));
+                        tok->deleteNext();
+                        tok->deleteNext();
                         continue;
                     }
                 }
