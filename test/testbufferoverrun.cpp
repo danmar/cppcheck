@@ -113,6 +113,7 @@ private:
         TEST_CASE(array_index_36); // ticket #2960
         TEST_CASE(array_index_37);
         TEST_CASE(array_index_38); // ticket #3273
+        TEST_CASE(array_index_39);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1288,6 +1289,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_39() { // ticket 3387
+        check("void aFunction()\n"
+              "{\n"
+              "    char a[10];\n"
+              "    a[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' index 10 out of bounds\n", errout.str());
     }
 
     void array_index_multidim() {
