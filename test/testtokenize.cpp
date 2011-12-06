@@ -5017,7 +5017,7 @@ private:
                            "{\n"
                            "  fn2<int>();\n"
                            "}\n";
-        ASSERT_EQUALS(";\n\n\nint main ( )\n{\nfn2<int> ( ) ;\n}void fn2<int> ( int t = [ ] { return 1 ; } ( ) )\n{ }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("int main ( )\n{\nfn2<int> ( ) ;\n}void fn2<int> ( int t = [ ] { return 1 ; } ( ) )\n{ }", tokenizeAndStringify(code));
     }
 
     void cpp0xtemplate2() {
@@ -5033,8 +5033,8 @@ private:
                            "struct S\n"
                            "{};\n"
                            "S<int> s;\n";
-        TODO_ASSERT_EQUALS(";\n\n\nS < int , ( int ) 0 > s ;",   // wanted result
-                           ";\n\n\nS < int , ( T ) 0 > s ;",     // current result
+        TODO_ASSERT_EQUALS("S < int , ( int ) 0 > s ;",   // wanted result
+                           "S < int , ( T ) 0 > s ;",     // current result
                            tokenizeAndStringify(code));
     }
 

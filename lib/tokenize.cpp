@@ -2694,35 +2694,43 @@ static unsigned int templateParameters(const Token *tok)
  */
 static void removeTemplates(Token *tok)
 {
+    bool goback = false;
     for (; tok; tok = tok->next()) {
-        if (! Token::simpleMatch(tok, "template <"))
+        if (goback) {
+            tok = tok->previous();
+            goback = false;
+        }
+        if (!Token::simpleMatch(tok, "template <"))
             continue;
 
         for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
             if (tok2->str() == "{") {
-                tok2 = tok2->link();
-                tok2 = tok2 ? tok2->next() : 0;
+                tok2 = tok2->link()->next();
                 Token::eraseTokens(tok, tok2);
-                tok->str(";");
+                if (tok2 && tok2->str() == ";" && tok2->next())
+                    tok->deleteNext();
+                tok->deleteThis();
+                goback = true;
                 break;
             }
             // don't remove constructor
             if (tok2->str() == "explicit") {
                 Token::eraseTokens(tok, tok2);
-                tok->str(";");
+                tok->deleteThis();
+                goback = true;
                 break;
             }
             if (tok2->str() == "(") {
                 tok2 = tok2->link();
-                if (!tok2)
-                    break;
             } else if (tok2->str() == ";") {
                 Token::eraseTokens(tok, tok2->next());
-                tok->str(";");
+                tok->deleteThis();
+                goback = true;
                 break;
             } else if (Token::Match(tok2, ">|>> class %var% [,)]")) {
                 Token::eraseTokens(tok,tok2->next());
                 tok->deleteThis();
+                goback = true;
                 break;
             }
         }
@@ -3375,12 +3383,18 @@ void Tokenizer::simplifyTemplates()
 
 void Tokenizer::simplifyTemplates2()
 {
+    bool goback = false;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (goback) {
+            tok = tok->previous();
+            goback = false;
+        }
         if (tok->str() == "(")
             tok = tok->link();
 
-        else if (Token::Match(tok, "; %type% <")) {
-            const Token *tok2 = tok->tokAt(3);
+        else if (Token::Match(tok, "%type% <") && 
+                 (!tok->previous() || tok->previous()->str() == ";")) {
+            const Token *tok2 = tok->tokAt(2);
             std::string type;
             while (Token::Match(tok2, "%type% ,") || Token::Match(tok2, "%num% ,")) {
                 type += tok2->str() + ",";
@@ -3388,9 +3402,10 @@ void Tokenizer::simplifyTemplates2()
             }
             if (Token::Match(tok2, "%type% > (") || Token::Match(tok2, "%num% > (")) {
                 type += tok2->str();
-                tok = tok->next();
                 tok->str(tok->str() + "<" + type + ">");
                 Token::eraseTokens(tok, tok2->tokAt(2));
+                if (tok == _tokens)
+                    goback = true;
             }
         }
     }

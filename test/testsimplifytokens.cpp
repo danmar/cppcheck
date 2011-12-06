@@ -1567,7 +1567,7 @@ private:
         const char code[] = "template <classname T> void f(T val) { T a; }\n"
                             "f<int>(10);";
 
-        const std::string expected("; f<int> ( 10 ) ; "
+        const std::string expected("f<int> ( 10 ) ; "
                                    "void f<int> ( int val ) { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -1577,8 +1577,7 @@ private:
         const char code[] = "template <classname T> class Fred { T a; };\n"
                             "Fred<int> fred;";
 
-        const std::string expected("; "
-                                   "Fred<int> fred ; "
+        const std::string expected("Fred<int> fred ; "
                                    "class Fred<int> { int a ; }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -1588,8 +1587,7 @@ private:
         const char code[] = "template <classname T, int sz> class Fred { T data[sz]; };\n"
                             "Fred<float,4> fred;";
 
-        const std::string expected("; "
-                                   "Fred<float,4> fred ; "
+        const std::string expected("Fred<float,4> fred ; "
                                    "class Fred<float,4> { float data [ 4 ] ; }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -1599,8 +1597,7 @@ private:
         const char code[] = "template <classname T> class Fred { Fred(); };\n"
                             "Fred<float> fred;";
 
-        const std::string expected("; "
-                                   "Fred<float> fred ; "
+        const std::string expected("Fred<float> fred ; "
                                    "class Fred<float> { Fred<float> ( ) ; }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -1611,8 +1608,7 @@ private:
                             "template <classname T> Fred<T>::Fred() { }\n"
                             "Fred<float> fred;";
 
-        const std::string expected("; "
-                                   "Fred<float> fred ; "
+        const std::string expected("Fred<float> fred ; "
                                    "class Fred<float> { } "
                                    "Fred<float> :: Fred<float> ( ) { }");
 
@@ -1624,10 +1620,9 @@ private:
                             "Fred<float> fred1;\n"
                             "Fred<float> fred2;";
 
-        const std::string expected(";"
-                                   " Fred<float> fred1 ;"
-                                   " Fred<float> fred2 ;"
-                                   " class Fred<float> { }");
+        const std::string expected("Fred<float> fred1 ; "
+                                   "Fred<float> fred2 ; "
+                                   "class Fred<float> { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -1659,15 +1654,13 @@ private:
                                 "    return 0;\n"
                                 "}\n";
 
-            const std::string wanted("; "
-                                     "int main ( ) { "
+            const std::string wanted("int main ( ) { "
                                      "std :: vector < int > v ; "
                                      "v . push_back ( 4 ) ; "
                                      "return 0 ; "
                                      "}");
 
-            const std::string current("; "
-                                      "int main ( ) { "
+            const std::string current("int main ( ) { "
                                       "ABC < int > :: type v ; "
                                       "v . push_back ( 4 ) ; "
                                       "return 0 ; "
@@ -1715,7 +1708,7 @@ private:
 
         ASSERT_EQUALS(";", sizeof_(code));
 
-        ASSERT_EQUALS("class A { ; } ;", sizeof_("class A{ template<typename T> int foo(T d);};"));
+        ASSERT_EQUALS("class A { } ;", sizeof_("class A{ template<typename T> int foo(T d);};"));
     }
 
     void template9() {
@@ -1733,7 +1726,7 @@ private:
                             "} ;\n";
 
         // The expected result..
-        std::string expected("; void f ( ) { A<int> a ; } ; class A<int> { } class A<T> { }");
+        std::string expected("void f ( ) { A<int> a ; } class A<int> { } class A<T> { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -1748,8 +1741,7 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("; "
-                                   "void f ( ) "
+        const std::string expected("void f ( ) "
                                    "{"
                                    " foo<3,int> ( ) ; "
                                    "} "
@@ -1767,8 +1759,7 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("; "
-                                   "void f ( ) "
+        const std::string expected("void f ( ) "
                                    "{"
                                    " char * p ; p = foo<3,char> ( ) ; "
                                    "} "
@@ -1787,8 +1778,7 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("; "
-                                   "void f ( ) "
+        const std::string expected("void f ( ) "
                                    "{"
                                    " A<12,12,11> a ; "
                                    "} "
@@ -1857,8 +1847,7 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("; "
-                                   "void a<0> ( ) { } "
+        const std::string expected("void a<0> ( ) { } "
                                    "int main ( ) "
                                    "{ a<2> ( ) ; return 0 ; } "
                                    "void a<2> ( ) { a<1> ( ) ; } "
@@ -1880,8 +1869,7 @@ private:
                             "    return 0;\n"
                             "}\n";
 
-        const std::string expected("; "
-                                   "int main ( ) { b<2> ( ) ; return 0 ; } "
+        const std::string expected("int main ( ) { b<2> ( ) ; return 0 ; } "
                                    "void b<2> ( ) { a<2> ( ) ; } "
                                    "void a<i> ( ) { } "
                                    "void a<2> ( ) { }");
@@ -1909,8 +1897,7 @@ private:
         const char code[] = "template <class T> class foo { T a; };\n"
                             "foo<int> *f;";
 
-        const std::string expected("; "
-                                   "foo<int> * f ; "
+        const std::string expected("foo<int> * f ; "
                                    "class foo<int> { int a ; }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -1926,8 +1913,7 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("; "
-                                   "void f ( ) "
+        const std::string expected("void f ( ) "
                                    "{"
                                    " char p ; p = foo<char> ( ) ; "
                                    "} "
@@ -1950,7 +1936,7 @@ private:
                             "A<int> a;\n";
 
         // The expected result..
-        const std::string expected("; A<int> a ; "
+        const std::string expected("A<int> a ; "
                                    "class A<int> { public: ~ A<int> ( ) ; } "
                                    "A<int> :: ~ A<int> ( ) { }");
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -1961,8 +1947,7 @@ private:
             const char code[] = "template <classname T> struct Fred { T a; };\n"
                                 "Fred<int> fred;";
 
-            const std::string expected("; "
-                                       "Fred<int> fred ; "
+            const std::string expected("Fred<int> fred ; "
                                        "struct Fred<int> { int a ; }");
 
             ASSERT_EQUALS(expected, sizeof_(code));
@@ -1972,8 +1957,7 @@ private:
             const char code[] = "template <classname T, int sz> struct Fred { T data[sz]; };\n"
                                 "Fred<float,4> fred;";
 
-            const std::string expected("; "
-                                       "Fred<float,4> fred ; "
+            const std::string expected("Fred<float,4> fred ; "
                                        "struct Fred<float,4> { float data [ 4 ] ; }");
 
             ASSERT_EQUALS(expected, sizeof_(code));
@@ -1983,8 +1967,7 @@ private:
             const char code[] = "template <classname T> struct Fred { Fred(); };\n"
                                 "Fred<float> fred;";
 
-            const std::string expected("; "
-                                       "Fred<float> fred ; "
+            const std::string expected("Fred<float> fred ; "
                                        "struct Fred<float> { Fred<float> ( ) ; }");
 
             ASSERT_EQUALS(expected, sizeof_(code));
@@ -1995,8 +1978,7 @@ private:
                                 "template <classname T> Fred<T>::Fred() { }\n"
                                 "Fred<float> fred;";
 
-            const std::string expected("; "
-                                       "Fred<float> fred ; "
+            const std::string expected("Fred<float> fred ; "
                                        "struct Fred<float> { } "
                                        "Fred<float> :: Fred<float> ( ) { }");
 
@@ -2008,10 +1990,9 @@ private:
                                 "Fred<float> fred1;\n"
                                 "Fred<float> fred2;";
 
-            const std::string expected(";"
-                                       " Fred<float> fred1 ;"
-                                       " Fred<float> fred2 ;"
-                                       " struct Fred<float> { }");
+            const std::string expected("Fred<float> fred1 ; "
+                                       "Fred<float> fred2 ; "
+                                       "struct Fred<float> { }");
 
             ASSERT_EQUALS(expected, sizeof_(code));
         }
@@ -2021,8 +2002,7 @@ private:
         const char code[] = "template <classname T> struct Fred { T a; };\n"
                             "Fred<std::string> fred;";
 
-        const std::string expected("; "
-                                   "Fred<std::string> fred ; "
+        const std::string expected("Fred<std::string> fred ; "
                                    "struct Fred<std::string> { std :: string a ; }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -2034,8 +2014,7 @@ private:
                             "    std::cout << (foo<double>());\n"
                             "}";
 
-        const std::string expected("; "
-                                   "void bar ( ) {"
+        const std::string expected("void bar ( ) {"
                                    " std :: cout << ( foo<double> ( ) ) ; "
                                    "} "
                                    "void foo<double> ( ) { }");
@@ -2054,8 +2033,7 @@ private:
                             "{};\n"
                             "\n"
                             "bitset<1> z;";
-        const char expected[] = "; "
-                                "bitset<1> z ; "
+        const char expected[] = "bitset<1> z ; "
                                 "class bitset<1> : B<4> { } "
                                 "struct B<4> { int a [ 4 ] ; }";
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -2072,11 +2050,10 @@ private:
                             "\n"
                             "bitset<1> z;";
 
-        const char actual[] = "; bitset<1> z ; "
+        const char actual[] = "bitset<1> z ; "
                               "class bitset<1> : B < ( ) > { }";
 
-        const char expected[] = "; "
-                                "bitset<1> z ; "
+        const char expected[] = "bitset<1> z ; "
                                 "class bitset<1> : B<4> { } "
                                 "struct B<4> { int a [ 4 ] ; }";
 
@@ -2094,7 +2071,7 @@ private:
                             "\n"
                             "C<2> a;\n";
         // TODO: expand A also
-        ASSERT_EQUALS("; C<2> a ; class C<2> : public A < char [ 2 ] > { }", sizeof_(code));
+        ASSERT_EQUALS("C<2> a ; class C<2> : public A < char [ 2 ] > { }", sizeof_(code));
     }
 
     void template27() {
@@ -2107,12 +2084,12 @@ private:
         // #3226 - inner template
         const char code[] = "template<class A, class B> class Fred {};\n"
                             "Fred<int,Fred<int,int> > x;\n";
-        ASSERT_EQUALS("; Fred<int,Fred<int,int>> x ; class Fred<int,int> { } class Fred<int,Fred<int,int>> { }", sizeof_(code));
+        ASSERT_EQUALS("Fred<int,Fred<int,int>> x ; class Fred<int,int> { } class Fred<int,Fred<int,int>> { }", sizeof_(code));
     }
 
     void template_unhandled() {
         // An unhandled template usage should be simplified..
-        ASSERT_EQUALS("; x<int> ( ) ;", sizeof_(";x<int>();"));
+        ASSERT_EQUALS("x<int> ( ) ;", sizeof_("x<int>();"));
     }
 
     void template_default_parameter() {
@@ -2128,8 +2105,7 @@ private:
                                 "}\n";
 
             // The expected result..
-            const std::string expected("; "
-                                       "void f ( ) "
+            const std::string expected("void f ( ) "
                                        "{"
                                        " A<int,2> a1 ;"
                                        " A<int,3> a2 ; "
@@ -2152,8 +2128,7 @@ private:
                                 "}\n";
 
             // The expected result..
-            const std::string expected("; "
-                                       "void f ( ) "
+            const std::string expected("void f ( ) "
                                        "{"
                                        " A<int,3,2> a1 ;"
                                        " A<int,3,2> a2 ; "
@@ -2186,8 +2161,7 @@ private:
                                      " class A<int,3>"
                                      " { int ar [ 3 ] ; }");
 
-            const std::string current("; "
-                                      "void f ( ) "
+            const std::string current("void f ( ) "
                                       "{ "
                                       "A < int , ( int ) 2 > a1 ; "
                                       "A<int,3> a2 ; "
@@ -2270,7 +2244,7 @@ private:
         const char code[] = "class Fred {\n"
                             "    template<class T> explicit Fred(T t) { }\n"
                             "}";
-        ASSERT_EQUALS("class Fred { ; explicit Fred ( T t ) { } }", tok(code));
+        ASSERT_EQUALS("class Fred { explicit Fred ( T t ) { } }", tok(code));
     }
 
     void namespaces() {
