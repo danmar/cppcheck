@@ -297,6 +297,8 @@ private:
         TEST_CASE(removeExceptionSpecification1);
         TEST_CASE(removeExceptionSpecification2);
         TEST_CASE(removeExceptionSpecification3);
+        TEST_CASE(removeExceptionSpecification4);
+        TEST_CASE(removeExceptionSpecification5);
 
         TEST_CASE(gt);      // use "<" comparisons instead of ">"
 
@@ -4850,6 +4852,29 @@ private:
                                 "} ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void removeExceptionSpecification4() {
+        const char code[] = "namespace {\n"
+                            "    void B() throw ();\n"
+                            "};";
+
+        const char expected[] = "namespace {\n"
+                                "void B ( ) ;\n"
+                                "} ;";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void removeExceptionSpecification5() {
+        ASSERT_EQUALS("void foo ( struct S ) ;",
+                      tokenizeAndStringify("void foo (struct S) throw();"));
+        ASSERT_EQUALS("void foo ( struct S , int ) ;",
+                      tokenizeAndStringify("void foo (struct S, int) throw();"));
+        ASSERT_EQUALS("void foo ( int , struct S ) ;",
+                      tokenizeAndStringify("void foo (int, struct S) throw();"));
+        ASSERT_EQUALS("void foo ( struct S1 , struct S2 ) ;",
+                      tokenizeAndStringify("void foo (struct S1, struct S2) throw();"));
     }
 
 

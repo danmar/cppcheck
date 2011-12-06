@@ -8816,16 +8816,24 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
             tok->deleteNext();
         }
 
-        else if (Token::Match(tok, "class|namespace|struct %type%")) {
+        else if (Token::Match(tok, "class|namespace|struct %type% :|{")) {
+            tok = tok->tokAt(2);
             while (tok && !Token::Match(tok, "[;{=]"))
                 tok = tok->next();
             if (tok && tok->str() == "{") {
                 removeExceptionSpecifications(tok->next());
                 tok = tok->link();
-            }
+            } else
+                continue;
         }
 
-        tok = tok ? tok->next() : 0;
+        else if (Token::simpleMatch(tok, "namespace {")) {
+            tok = tok->next();
+            removeExceptionSpecifications(tok->next());
+            tok = tok->link();
+        }
+
+        tok = tok->next();
     }
 }
 
