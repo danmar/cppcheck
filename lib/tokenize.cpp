@@ -4609,8 +4609,8 @@ void Tokenizer::simplifyFlowControl()
             tok = tok->next();
             eraseDeadCode(tok, beginindent->link());
 
-        } else if (tok->str() == "return" || tok->str() == "throw") {
-            //catch the first ';' after the return|trow statement
+        } else if (Token::Match(tok,"return|throw|exit|abort")) {
+            //catch the first ';'
             for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(" || tok2->str() == "[") {
                     tok2 = tok2->link();

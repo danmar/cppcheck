@@ -3075,6 +3075,8 @@ private:
         std::list<std::string> beforedead;
         beforedead.push_back("return");
         beforedead.push_back("throw ( 10 )");
+        beforedead.push_back("exit ( 0 )");
+        beforedead.push_back("abort ( )");
         beforedead.push_back("goto labels");
         beforedead.push_back("break");
         beforedead.push_back("continue");
