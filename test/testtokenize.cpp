@@ -4975,7 +4975,7 @@ private:
                             "PF pfs[] = { &f1, &f1 };";
         const char expected[] = " void f1(){} "
                                 "void* pf; pf=& f1; "
-                                "void* pfs[]={& f1,& f1};";
+                                "void* pfs[2]={& f1,& f1};";
         ASSERT_EQUALS(expected, simplifyFunctionPointers(code));
     }
 
@@ -5116,7 +5116,12 @@ private:
 
     void arraySize() {
         ASSERT_EQUALS("; int a[3]={1,2,3};", arraySize_(";int a[]={1,2,3};"));
-        ASSERT_EQUALS("; int a[]={ ABC,2,3};", arraySize_(";int a[]={ABC,2,3};"));
+        ASSERT_EQUALS("; int a[3]={1,2,3};", arraySize_(";int a[]={1,2,3,};"));
+        ASSERT_EQUALS("; foo a[3]={{1,2},{3,4},{5,6}};", arraySize_(";foo a[]={{1,2},{3,4},{5,6}};"));
+        TODO_ASSERT_EQUALS("; int a[1]={ foo< bar1, bar2>(123,4)};", "; int a[]={ foo< bar1, bar2>(123,4)};", arraySize_(";int a[]={foo<bar1,bar2>(123,4)};"));
+        ASSERT_EQUALS("; int a[2]={ b> c?1:2,3};", arraySize_(";int a[]={ b>c?1:2,3};"));
+        TODO_ASSERT_EQUALS(" int main(){ int a[2]={ b< c?1:2,3}}", " int main(){ int a[]={ b< c?1:2,3}}", arraySize_("int main(){int a[]={b<c?1:2,3}}"));
+        ASSERT_EQUALS("; int a[3]={ ABC,2,3};", arraySize_(";int a[]={ABC,2,3};"));
     }
 
     std::string labels_(const std::string &code) {

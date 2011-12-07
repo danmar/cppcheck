@@ -2553,15 +2553,22 @@ void Tokenizer::arraySize()
 
         if (Token::Match(tok, "%var% [ ] = {")) {
             unsigned int sz = 1;
-            const Token *tok2 = tok->tokAt(5);
-            while (Token::Match(tok2, "%any% ,")) {
-                if (tok2->isName())
+
+            for (Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "{" || tok2->str() == "(" || tok2->str() == "[")
+                    tok2 = tok2->link();
+                else if (tok2->str() == "<") { // Bailout. TODO: When link() supports <>, this bailout becomes unnecessary
+                    sz = 0;
                     break;
-                ++sz;
-                tok2 = tok2->tokAt(2);
+                } else if (tok2->str() == ",") {
+                    if (!Token::Match(tok2->next(), "[},]"))
+                        ++sz;
+                    else
+                        tok2->deleteThis();
+                }
             }
 
-            if (!tok2->isName() && Token::Match(tok2, "%any% } ;"))
+            if (sz != 0)
                 tok->next()->insertToken(MathLib::toString<unsigned int>(sz));
         }
 
@@ -2599,7 +2606,7 @@ void Tokenizer::labels()
                 }
                 if (!indentroundbraces && tok->str() == "case") {
                     while (NULL != (tok = tok->next())) {
-                        if (Token::Match(tok->previous(), "%any% :"))
+                        if (tok->str() == ":")
                             break;
                     }
                     if (!(tok->next()) || tok->next()->str() != ";") {
@@ -5038,7 +5045,7 @@ void Tokenizer::simplifyCompoundAssignment()
                     tok->deleteNext();
             } else {
                 // Enclose the rhs in parantheses..
-                if (!Token::Match(tok->next(), "%any% [;)]")) {
+                if (!Token::Match(tok->tokAt(2), "[;)]")) {
                     // Only enclose rhs in parantheses if there is some operator
                     bool someOperator = false;
                     for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
@@ -6431,7 +6438,7 @@ bool Tokenizer::simplifyLogicalOperators()
             ret = true;
         }
         // "%var%|) and %var%|("
-        else if (Token::Match(tok->previous(), "%any% %var% %any%")) {
+        else if (Token::Match(tok, "%var% %any%")) {
             if (!Token::Match(tok, "and|or|bitand|bitor|xor|not_eq"))
                 continue;
 
@@ -9451,58 +9458,25 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
             // FillMemory(dst, len, val) -> memset(dst, val, len)
             tok->str("memset");
 
-            // find first ','
             Token *tok1 = tok->tokAt(2);
-            unsigned int level = 0;
-            while (tok1) {
-                if (tok1->str() == "(")
-                    ++level;
-                else if (tok1->str() == ")")
-                    --level;
-                else if (level == 0 && tok1->str() == ",")
-                    break;
-
-                tok1 = tok1->next();
-            }
-
-            // find second ','
+            if (tok1)
+                tok1 = tok1->nextArgument(); // Second argument
             if (tok1) {
-                Token *tok2 = tok1->next();
-                level = 0;
-                while (tok2) {
-                    if (tok2->str() == "(")
-                        ++level;
-                    else if (tok2->str() == ")")
-                        --level;
-                    else if (level == 0 && tok2->str() == ",")
-                        break;
+                Token *tok2 = tok1->nextArgument(); // Third argument
 
-                    tok2 = tok2->next();
-                }
-
-                // move second argument to third position
-                if (tok2) {
-                    Token::move(tok1, tok2->previous(), tok->next()->link()->previous());
-                }
+                if (tok2)
+                    Token::move(tok1->previous(), tok2->tokAt(-2), tok->next()->link()->previous()); // Swap third with second argument
             }
         } else if (Token::simpleMatch(tok, "ZeroMemory (")) {
             // ZeroMemory(dst, len) -> memset(dst, 0, len)
             tok->str("memset");
 
             Token *tok1 = tok->tokAt(2);
-            unsigned int level = 0;
-            while (tok1) {
-                if (tok1->str() == "(")
-                    ++level;
-                else if (tok1->str() == ")")
-                    --level;
-                else if (level == 0 && tok1->str() == ",")
-                    break;
-
-                tok1 = tok1->next();
-            }
+            if (tok1)
+                tok1 = tok1->nextArgument(); // Second argument
 
             if (tok1) {
+                tok1 = tok1->previous();
                 tok1->insertToken("0");
                 tok1 = tok1->next();
                 tok1->insertToken(",");

@@ -787,7 +787,7 @@ void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
         tok->_progressValue = newLocation->_progressValue;
 }
 
-const Token* Token::nextArgument() const
+Token* Token::nextArgument() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
