@@ -1341,9 +1341,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
                 tok->str("0");
             else
                 continue;
-            tok->deleteNext();
-            tok->deleteNext();
-            tok->deleteNext();
+            Token::eraseTokens(tok, 3);
             continue;
         }
 
@@ -1416,8 +1414,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
 
     for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next()) {
         while (Token::Match(tok, "(|%oror% %any% %oror% 1")) {
-            tok->deleteNext();
-            tok->deleteNext();
+            Token::eraseTokens(tok, 2);
             if (tok->tokAt(-3))
                 tok = tok->tokAt(-3);
         }

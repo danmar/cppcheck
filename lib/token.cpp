@@ -866,6 +866,16 @@ void Token::eraseTokens(Token *begin, const Token *end)
     }
 }
 
+void Token::eraseTokens(Token *tok, unsigned long index)
+{
+    if (!tok)
+        return;
+
+    while (tok->next() && index--) {
+        tok->deleteNext();
+    }
+}
+
 void Token::createMutualLinks(Token *begin, Token *end)
 {
     assert(begin != NULL);
