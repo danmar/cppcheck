@@ -135,8 +135,8 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
 
 
 if len(sys.argv) <= 1 or '--help' in sys.argv:
-    print('Extract test cases from test file')
-    print('Syntax: extracttests.py [--html=folder] [--xml] [--code=folder] path/testfile.cpp')
+    print 'Extract test cases from test file'
+    print 'Syntax: extracttests.py [--html=folder] [--xml] [--code=folder] path/testfile.cpp'
     sys.exit(0)
 
 # parse command line
@@ -154,7 +154,7 @@ for arg in sys.argv[1:]:
     elif arg.endswith('.cpp'):
         filename = arg
     else:
-        print('Invalid option: ' + arg)
+        print 'Invalid option: ' + arg
         sys.exit(1)
 
 
@@ -166,8 +166,8 @@ if filename != None:
 
     # generate output
     if xml:
-        print('<?xml version="1.0"?>')
-        print('<tree>')
+        print '<?xml version="1.0"?>'
+        print '<tree>'
         count = 0
         for node in e.nodes:
             s  = '  <node'
@@ -175,8 +175,8 @@ if filename != None:
             s += ' code="' + strtoxml(node['code']) + '"'
             s += ' expected="' + strtoxml(node['expected']) + '"'
             s += '/>'
-            print(s)
-        print('</tree>')
+            print s
+        print '</tree>'
     elif htmldir != None:
         if not htmldir.endswith('/'):
             htmldir += '/'
@@ -277,5 +277,5 @@ if filename != None:
         errors.close()
     else:
         for node in e.nodes:
-            print(node['functionName'])
+            print node['functionName']
 
