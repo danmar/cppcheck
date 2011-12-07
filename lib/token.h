@@ -59,9 +59,9 @@ public:
     }
 
     /**
-     * Unlink and delete next token.
+     * Unlink and delete the next 'index' tokens.
      */
-    void deleteNext();
+    void deleteNext(unsigned long index = 1);
 
     /**
      * Returns token in given index, related to this token.
