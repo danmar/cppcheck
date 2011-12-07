@@ -1451,12 +1451,15 @@ void CheckOther::checkUnreachableCode()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         const Token* secondBreak = 0;
-        if (Token::Match(tok, "break|continue ;"))
+        if (tok->str() == "(")
+            tok = tok->link();
+        else if (Token::Match(tok, "break|continue ;"))
             secondBreak = tok->tokAt(2);
-        else if (tok->str() == "return" || tok->str() == "throw") {
+        else if (Token::Match(tok, "[;{}:] return|throw")) {
+            tok = tok->next(); // tok should point to return or throw
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
                 if (tok2->str() == ";") {
-                    secondBreak = tok2->tokAt(1);
+                    secondBreak = tok2->next();
                     break;
                 }
         } else if (Token::Match(tok, "goto %any% ;"))

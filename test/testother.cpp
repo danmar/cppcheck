@@ -80,7 +80,7 @@ private:
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchFallThroughCase);
-        TEST_CASE(duplicateBreak);
+        TEST_CASE(unreachableCode);
 
         TEST_CASE(coutCerrMisusage);
 
@@ -1764,7 +1764,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void duplicateBreak() {
+    void unreachableCode() {
         check("void foo(int a) {\n"
               "    while(1) {\n"
               "        if (a++ >= 100) {\n"
@@ -1903,6 +1903,18 @@ private:
               "    return 0;\n"
               "  label:\n"
               "    throw 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    wxCHECK2(state < 3 && state >= 0, return);\n"
+              "    _checkboxState = state;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    virtual void foo  (P & Val) throw ();\n"
+              "    virtual void foo1 (P & Val) throw ();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
