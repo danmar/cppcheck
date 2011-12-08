@@ -484,7 +484,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
 
         // dereference in assignment
         else if (Token::Match(tok1, "[{};] %var% = %var% . %var%")) {
-            if (std::string(tok1->strAt(1)) == tok1->strAt(3))
+            if (tok1->strAt(1) == tok1->strAt(3))
                 continue;
             tok1 = tok1->tokAt(3);
         }
@@ -715,6 +715,12 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     bool unknown = false;
 
                     if (Token::Match(tok1->tokAt(-2), "%varid% = %varid% .", varid)) {
+                        break;
+                    } else if (Token::simpleMatch(tok1->tokAt(-2), "* )") &&
+                               Token::Match(tok1->linkAt(-1)->tokAt(-2), "%varid% = (", tok1->varId())) {
+                        break;
+                    } else if (Token::simpleMatch(tok1->tokAt(-3), "* ) (") &&
+                               Token::Match(tok1->linkAt(-2)->tokAt(-2), "%varid% = (", tok1->varId())) {
                         break;
                     } else if (Token::Match(tok1->previous(), "&&|%oror%")) {
                         break;

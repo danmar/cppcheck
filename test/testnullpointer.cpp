@@ -316,6 +316,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(struct ABC *abc) {\n"
+              "    abc = (ABC *)(abc->_next);\n"
+              "    if (abc) { }"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // reassign struct..
         check("void foo(struct ABC *abc)\n"
               "{\n"
