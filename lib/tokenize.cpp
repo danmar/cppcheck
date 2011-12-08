@@ -8740,7 +8740,7 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
             tok->deleteNext();
         }
 
-        else if (Token::Match(tok, "class|namespace|struct %type% :|{")) {
+        else if (Token::Match(tok, "class|namespace|struct|union %type% :|{")) {
             tok = tok->tokAt(2);
             while (tok && !Token::Match(tok, "[;{=]"))
                 tok = tok->next();
@@ -8751,7 +8751,7 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
                 continue;
         }
 
-        else if (Token::simpleMatch(tok, "namespace {")) {
+        else if (Token::Match(tok, "namespace|struct|union {")) {
             tok = tok->next();
             removeExceptionSpecifications(tok->next());
             tok = tok->link();
