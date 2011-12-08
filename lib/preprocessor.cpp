@@ -1848,8 +1848,11 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 }
 
                 // try to open file
+                std::string filepath;
+                if (headerType == UserHeader)
+                    filepath = path;
                 std::ifstream fin;
-                if (!openHeader(filename, includePaths, headerType == UserHeader ? path : std::string(""), fin)) {
+                if (!openHeader(filename, includePaths, filepath, fin)) {
 
                     if (_settings && (headerType == UserHeader || _settings->debugwarnings)) {
                         if (!_settings->nomsg.isSuppressed("missingInclude", "", 0)) {
@@ -1928,8 +1931,11 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
         // filename contains now a file name e.g. "menu.h"
         std::string processedFile;
+        std::string filepath;
+        if (headerType == UserHeader)
+            filepath = paths.back();
         std::ifstream fin;
-        const bool fileOpened(openHeader(filename, includePaths, headerType == UserHeader ? paths.back() : std::string(""), fin));
+        const bool fileOpened(openHeader(filename, includePaths, filepath, fin));
 
         if (fileOpened) {
             filename = Path::simplifyPath(filename.c_str());
