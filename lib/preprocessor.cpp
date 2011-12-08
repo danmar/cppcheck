@@ -1539,7 +1539,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             match = true;
 
             if (settings) {
-                typedef std::set<std::string>::iterator It;
+                typedef std::set<std::string>::const_iterator It;
                 for (It it = settings->userUndefs.begin(); it != settings->userUndefs.end(); ++it) {
                     std::string::size_type pos = line.find_first_not_of(' ',8);
                     if (pos != std::string::npos) {
