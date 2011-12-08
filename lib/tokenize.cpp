@@ -8132,7 +8132,7 @@ void Tokenizer::simplifyEnum()
             }
 
             if (enumType) {
-                const std::string pattern(className.empty() ? std::string("") : (className + " :: " + enumType->str()));
+                const std::string pattern(className.empty() ? "" : (className + " :: " + enumType->str()).c_str());
 
                 // count { and } for tok2
                 int level = 0;
