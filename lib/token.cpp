@@ -123,7 +123,7 @@ std::string Token::strValue() const
 
 void Token::deleteNext(unsigned long index)
 {
-    while(_next && index--) {
+    while (_next && index--) {
         Token *n = _next;
         _next = n->next();
         delete n;
@@ -866,16 +866,6 @@ void Token::eraseTokens(Token *begin, const Token *end)
 
     while (begin->next() && begin->next() != end) {
         begin->deleteNext();
-    }
-}
-
-void Token::eraseTokens(Token *tok, unsigned long index)
-{
-    if (!tok)
-        return;
-
-    while (tok->next() && index--) {
-        tok->deleteNext();
     }
 }
 

@@ -280,16 +280,6 @@ public:
     static void eraseTokens(Token *begin, const Token *end);
 
     /**
-     * Delete tokens after tok 'index' times. It's a replacement
-     * of the consecutive calls to 'deleteNext', more efficient
-     * than calling 'Token::eraseTokens(tok, tok->tokAt(index+1))'.
-     *
-     * @param tok Tokens after this will be erased.
-     * @param index How many times it should remove the next token.
-     */
-    static void eraseTokens(Token *tok, unsigned long index);
-
-    /**
      * Insert new token after this token. This function will handle
      * relations between next and previous token also.
      * @param tokenStr String for the new token.
