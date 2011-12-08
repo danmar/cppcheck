@@ -24,8 +24,6 @@
 #include "errorlogger.h"
 #include "symboldatabase.h"
 
-#include <locale>
-
 #include <cstring>
 #include <string>
 #include <sstream>
@@ -487,7 +485,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
                 else
                     break;
             }
-            if (Token::Match(tok2, "%any% ="))
+            if (tok2 && tok2->strAt(1) == "=")
                 assignVar(ftok->str(), scope, usage);
         }
 
@@ -833,7 +831,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                 tok = tok->tokAt(4);
 
             // check if a function is called
-            if (Token::Match(tok->next(), "%any% (") &&
+            if (tok->strAt(2) == "(" &&
                 tok->linkAt(2)->next()->str() == ";") {
                 std::list<Function>::const_iterator it;
 

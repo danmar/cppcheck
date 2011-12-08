@@ -159,7 +159,7 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map
 
     oss << cleanedPath;
 
-    if (MyIsDirectory(cleanedPath.c_str())) {
+    if (MyIsDirectory(cleanedPath)) {
         char c = cleanedPath[ cleanedPath.size()-1 ];
         switch (c) {
         case '\\':
@@ -175,8 +175,7 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map
                 bdir << cleanedPath << '\\';
         }
     } else {
-        std::string::size_type pos;
-        pos = cleanedPath.find_last_of('\\');
+        std::string::size_type pos = cleanedPath.find_last_of('\\');
         if (std::string::npos != pos) {
             bdir << cleanedPath.substr(0, pos + 1);
         }
@@ -202,7 +201,7 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map
 #endif // defined(UNICODE)
 
         std::ostringstream fname;
-        fname << bdir.str().c_str() << ansiFfd;
+        fname << bdir.str() << ansiFfd;
 
         if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
             // File
@@ -236,10 +235,7 @@ bool FileLister::isDirectory(const std::string &path)
 
 bool FileLister::fileExists(const std::string &path)
 {
-    if (MyFileExists(path) == TRUE)
-        return true;
-    else
-        return false;
+    return (MyFileExists(path) == TRUE);
 }
 
 

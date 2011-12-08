@@ -46,9 +46,8 @@ namespace {
 
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
+static void makeArrayIndexOutOfBoundsError(std::ostream& oss, const CheckBufferOverrun::ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
 {
-    std::ostringstream oss;
     oss << "Array '" << arrayInfo.varname();
     for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
         oss << "[" << arrayInfo.num(i) << "]";
@@ -61,24 +60,18 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
             oss << "[" << index[i] << "]";
     }
     oss << " out of bounds";
+}
+void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
+{
+    std::ostringstream oss;
+    makeArrayIndexOutOfBoundsError(oss, arrayInfo, index);
     reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str());
 }
 
 void CheckBufferOverrun::arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
 {
     std::ostringstream oss;
-    oss << "Array '" << arrayInfo.varname();
-    for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
-        oss << "[" << arrayInfo.num(i) << "]";
-    oss << "' index ";
-    if (index.size() == 1)
-        oss << index[0];
-    else {
-        oss << arrayInfo.varname();
-        for (unsigned int i = 0; i < index.size(); ++i)
-            oss << "[" << index[i] << "]";
-    }
-    oss << " out of bounds";
+    makeArrayIndexOutOfBoundsError(oss, arrayInfo, index);
     reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str());
 }
 
@@ -542,7 +535,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
         total_size["fwrite"] = 1001;    // parameter 2 * parameter 3
     }
 
-    if (par == 2) {
+    else if (par == 2) {
         total_size["read"] = 3;
         total_size["pread"] = 3;
         total_size["write"] = 3;
@@ -928,7 +921,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             (varid == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))) {
             const std::size_t len = Token::getStrLength(tok->tokAt(varc + 4));
             if (total_size > 0 && len >= (unsigned int)total_size) {
-                bufferOverrunError(tok, varid > 0 ? "" : varnames.c_str());
+                bufferOverrunError(tok, varid > 0 ? std::string("") : varnames);
                 continue;
             }
         } else if ((varid > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %var% )", varid)) ||
@@ -1653,7 +1646,7 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigin
     std::list<const Token*> parameters;
     const Token* vaArg = tok->tokAt(2)->nextArgument()->nextArgument();
     while (vaArg) {
-        if (Token::Match(vaArg, "%any% [,)]")) {
+        if (Token::Match(vaArg->next(), "[,)]")) {
             if (Token::Match(vaArg, "%str%"))
                 parameters.push_back(vaArg);
 

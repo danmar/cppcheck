@@ -417,7 +417,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
         if (Token::Match(tok->tokAt(start), "&| %var%") ||
             Token::Match(tok->tokAt(start), "( const| struct|union| %type% *| ) &| %var%") ||
             Token::Match(tok->tokAt(start), "( const| struct|union| %type% *| ) ( &| %var%") ||
-            Token::Match(tok->tokAt(start), "%any% < const| struct|union| %type% *| > ( &| %var%")) {
+            Token::Match(tok->tokAt(start+1), "< const| struct|union| %type% *| > ( &| %var%")) {
             unsigned char offset = 0;
             unsigned int varid2;
             bool addressOf = false;

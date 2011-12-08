@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <cstring>
 #include <cstdlib>
-#include <iostream>
 #include <sstream>
 #include <set>
 #include <stack>
@@ -314,9 +313,9 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, A
         alloctype == CheckMemoryLeak::Pipe ||
         alloctype == CheckMemoryLeak::Fd   ||
         alloctype == CheckMemoryLeak::Dir)
-        resourceLeakError(tok, varname.c_str());
+        resourceLeakError(tok, varname);
     else
-        memleakError(tok, varname.c_str());
+        memleakError(tok, varname);
 }
 //---------------------------------------------------------------------------
 
@@ -2553,7 +2552,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
 
                 // Function call .. possible deallocation
                 else if (Token::Match(tok->previous(), "[{};] %var% (")) {
-                    if (!CheckMemoryLeakInFunction::test_white_list(tok->str().c_str())) {
+                    if (!CheckMemoryLeakInFunction::test_white_list(tok->str())) {
                         return;
                     }
                 }
@@ -2562,9 +2561,9 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
     }
 
     if (allocInConstructor && !deallocInDestructor) {
-        memoryLeak(tokVarname, (classname + "::" + varname).c_str(), Alloc);
+        memoryLeak(tokVarname, classname + "::" + varname, Alloc);
     } else if (Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No) {
-        memoryLeak(tokVarname, (classname + "::" + varname).c_str(), Alloc);
+        memoryLeak(tokVarname, classname + "::" + varname, Alloc);
     }
 }
 
@@ -2707,7 +2706,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
 
                 else if (tok3->str() == "}") {
                     if (indentlevel3 == 0) {
-                        memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                        memoryLeak(tok3, vartok->str() + "." + tok2->strAt(2), Malloc);
                         break;
                     }
                     --indentlevel3;
@@ -2739,7 +2738,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
 
                 // Deallocating the struct..
                 else if (indentlevel2 == 0 && Token::Match(tok3, "free|kfree ( %varid% )", structid)) {
-                    memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                    memoryLeak(tok3, vartok->str() + "." + tok2->strAt(2), Malloc);
                     break;
                 }
 
@@ -2785,7 +2784,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
                     // Returning from function without deallocating struct member?
                     if (!Token::Match(tok3, "return %varid% ;", structid) &&
                         !Token::Match(tok3, "return & %varid% .", structid)) {
-                        memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc);
+                        memoryLeak(tok3, vartok->str() + "." + tok2->strAt(2), Malloc);
                     }
                     break;
                 }

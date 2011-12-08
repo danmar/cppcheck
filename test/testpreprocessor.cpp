@@ -30,7 +30,6 @@
 #include <map>
 #include <string>
 #include <sstream>
-#include <stdexcept>
 
 extern std::ostringstream errout;
 extern std::ostringstream output;
@@ -2294,7 +2293,7 @@ private:
 
     void unicodeInComment() {
         const std::string filedata("//\xC8");
-        std::istringstream istr(filedata.c_str());
+        std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         ASSERT_EQUALS("", preprocessor.read(istr, "test.cpp", 0));
@@ -2302,7 +2301,7 @@ private:
 
     void unicodeInString() {
         const std::string filedata("\"\xC8\"");
-        std::istringstream istr(filedata.c_str());
+        std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         ASSERT_EQUALS(filedata, preprocessor.read(istr, "test.cpp", 0));
@@ -2716,7 +2715,7 @@ private:
 
     void testPreprocessorRead1() {
         const std::string filedata("/*\n*/ # /*\n*/ defi\\\nne FO\\\nO 10\\\n20");
-        std::istringstream istr(filedata.c_str());
+        std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         ASSERT_EQUALS("#define FOO 1020", preprocessor.read(istr, "test.cpp", 0));
@@ -2724,7 +2723,7 @@ private:
 
     void testPreprocessorRead2() {
         const std::string filedata("\"foo\\\\\nbar\"");
-        std::istringstream istr(filedata.c_str());
+        std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         ASSERT_EQUALS("\"foo\\bar\"", preprocessor.read(istr, "test.cpp", 0));
@@ -2732,7 +2731,7 @@ private:
 
     void testPreprocessorRead3() {
         const std::string filedata("#define A \" a  \"\n\" b\"");
-        std::istringstream istr(filedata.c_str());
+        std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         ASSERT_EQUALS(filedata, preprocessor.read(istr, "test.cpp", 0));
@@ -2742,7 +2741,7 @@ private:
         {
             // test < \\> < > (unescaped)
             const std::string filedata("#define A \" \\\\\"/*space*/  \" \"");
-            std::istringstream istr(filedata.c_str());
+            std::istringstream istr(filedata);
             Settings settings;
             Preprocessor preprocessor(&settings, this);
             ASSERT_EQUALS("#define A \" \\\\\" \" \"", preprocessor.read(istr, "test.cpp", 0));
@@ -2751,7 +2750,7 @@ private:
         {
             // test <" \\\"  "> (unescaped)
             const std::string filedata("#define A \" \\\\\\\"  \"");
-            std::istringstream istr(filedata.c_str());
+            std::istringstream istr(filedata);
             Settings settings;
             Preprocessor preprocessor(&settings, this);
             ASSERT_EQUALS("#define A \" \\\\\\\"  \"", preprocessor.read(istr, "test.cpp", 0));
@@ -2760,7 +2759,7 @@ private:
         {
             // test <" \\\\">  <" "> (unescaped)
             const std::string filedata("#define A \" \\\\\\\\\"/*space*/  \" \"");
-            std::istringstream istr(filedata.c_str());
+            std::istringstream istr(filedata);
             Settings settings;
             Preprocessor preprocessor(&settings, this);
             ASSERT_EQUALS("#define A \" \\\\\\\\\" \" \"", preprocessor.read(istr, "test.cpp", 0));
@@ -2775,7 +2774,7 @@ private:
         std::string processedFile;
         std::list<std::string> cfg;
         std::list<std::string> paths;
-        preprocessor.preprocess(src, processedFile, cfg, "", paths);		// don't hang
+        preprocessor.preprocess(src, processedFile, cfg, "", paths); // don't hang
     }
 
     void missingInclude() {

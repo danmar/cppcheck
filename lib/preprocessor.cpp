@@ -25,7 +25,6 @@
 #include "settings.h"
 
 #include <algorithm>
-#include <stdexcept>
 #include <sstream>
 #include <fstream>
 #include <cstdlib>
@@ -590,7 +589,7 @@ std::string Preprocessor::removeParentheses(const std::string &str)
     if (str.find("\n#if") == std::string::npos && str.compare(0, 3, "#if") != 0)
         return str;
 
-    std::istringstream istr(str.c_str());
+    std::istringstream istr(str);
     std::ostringstream ret;
     std::string line;
     while (std::getline(istr, line)) {
@@ -836,7 +835,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
     // Replace "defined A" with "defined(A)"
     {
-        std::istringstream istr(processedFile.c_str());
+        std::istringstream istr(processedFile);
         std::ostringstream ostr;
         std::string line;
         while (std::getline(istr, line)) {
@@ -1183,7 +1182,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         if (s.find("&&") != std::string::npos) {
             Tokenizer tokenizer(_settings, _errorLogger);
-            std::istringstream tempIstr(s.c_str());
+            std::istringstream tempIstr(s);
             if (!tokenizer.tokenize(tempIstr, filename.c_str(), "", true)) {
                 std::ostringstream lineStream;
                 lineStream << __LINE__;
@@ -1300,7 +1299,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
 {
     Settings settings;
     Tokenizer tokenizer(&settings, NULL);
-    std::istringstream istr(("(" + condition + ")").c_str());
+    std::istringstream istr("(" + condition + ")");
     if (!tokenizer.tokenize(istr, "", "", true)) {
         // If tokenize returns false, then there is syntax error in the
         // code which we can't handle. So stop here.
@@ -1519,7 +1518,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             if (line.find("=") != std::string::npos) {
                 Tokenizer tokenizer(settings, NULL);
                 line.erase(0, sizeof("#pragma endasm"));
-                std::istringstream tempIstr(line.c_str());
+                std::istringstream tempIstr(line);
                 tokenizer.tokenize(tempIstr, "");
                 if (Token::Match(tokenizer.tokens(), "( %var% = %any% )")) {
                     ret << "asm(" << tokenizer.tokens()->strAt(1) << ");";
@@ -2210,7 +2209,7 @@ public:
         tokenizer.setSettings(&settings);
 
         // Tokenize the macro to make it easier to handle
-        std::istringstream istr(macro.c_str());
+        std::istringstream istr(macro);
         tokenizer.createTokens(istr);
 
         // macro name..
@@ -2481,7 +2480,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
     std::ostringstream ostr;
 
     // read code..
-    std::istringstream istr(code.c_str());
+    std::istringstream istr(code);
     std::string line;
     while (getlines(istr, line)) {
         // defining a macro..

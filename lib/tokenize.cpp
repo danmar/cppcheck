@@ -129,7 +129,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     }
 
     if (_tokensBack) {
-        _tokensBack->insertToken(str2.str().c_str());
+        _tokensBack->insertToken(str2.str());
     } else {
         _tokens = new Token(&_tokensBack);
         _tokensBack = _tokens;
@@ -145,20 +145,12 @@ void Tokenizer::addtoken(const Token * tok, const unsigned int lineno, const uns
     if (tok == 0)
         return;
 
-    // Replace hexadecimal value with decimal
-    std::ostringstream str2;
-    if (strncmp(tok->str().c_str(), "0x", 2) == 0) {
-        str2 << std::strtoul(tok->str().c_str() + 2, NULL, 16);
-    } else {
-        str2 << tok->str();
-    }
-
     if (_tokensBack) {
-        _tokensBack->insertToken(str2.str().c_str());
+        _tokensBack->insertToken(tok->str());
     } else {
         _tokens = new Token(&_tokensBack);
         _tokensBack = _tokens;
-        _tokensBack->str(str2.str());
+        _tokensBack->str(tok->str());
     }
 
     _tokensBack->linenr(lineno);
@@ -330,7 +322,7 @@ void Tokenizer::createTokens(std::istream &code)
                 bool foundOurfile = false;
                 fileIndexes.push_back(FileIndex);
                 for (unsigned int i = 0; i < _files.size(); ++i) {
-                    if (Path::sameFileName(_files[i].c_str(), line.c_str())) {
+                    if (Path::sameFileName(_files[i], line)) {
                         // Use this index
                         foundOurfile = true;
                         FileIndex = i;
@@ -759,7 +751,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
                 static unsigned int count = 0;
                 name = "Unnamed" + MathLib::toString<unsigned int>(count++);
             }
-            tok->next()->insertToken(name.c_str());
+            tok->next()->insertToken(name);
         } else
             return NULL;
     } else if (tok->strAt(3) == ":") {
@@ -798,7 +790,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
         }
         tok1->insertToken(tok->next()->str()); // struct, union or enum
         tok1 = tok1->next();
-        tok1->insertToken(name.c_str());
+        tok1->insertToken(name);
         tok->deleteThis();
         tok = tok3;
     }
@@ -1849,7 +1841,7 @@ void Tokenizer::simplifyTypedef()
     }
 }
 
-void Tokenizer::simplifyMulAnd(void)
+void Tokenizer::simplifyMulAnd()
 {
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "[;{}] *")) {
@@ -5141,10 +5133,10 @@ void Tokenizer::simplifyConditionOperator()
             while (pos1 != std::string::npos) {
                 std::string::size_type pos2 = str.find(" ", pos1);
                 if (pos2 == std::string::npos) {
-                    tok->insertToken(str.substr(pos1).c_str());
+                    tok->insertToken(str.substr(pos1));
                     pos1 = pos2;
                 } else {
-                    tok->insertToken(str.substr(pos1, pos2 - pos1).c_str());
+                    tok->insertToken(str.substr(pos1, pos2 - pos1));
                     pos1 = pos2 + 1;
                 }
                 tok = tok->next();
@@ -5661,7 +5653,7 @@ bool Tokenizer::simplifyFunctionReturn()
 static void incdec(std::string &value, const std::string &op)
 {
     int ivalue = 0;
-    std::istringstream istr(value.c_str());
+    std::istringstream istr(value);
     istr >> ivalue;
     if (op == "++")
         ++ivalue;
@@ -6311,7 +6303,7 @@ void Tokenizer::simplifyIfNot()
             // if( foo(x) == 0 )
             if (Token::Match(tok->link()->tokAt(-2), "( %var%")) {
                 tok->deleteNext(2);
-                tok->link()->previous()->insertToken(tok->link()->previous()->str().c_str());
+                tok->link()->previous()->insertToken(tok->link()->previous()->str());
                 tok->link()->tokAt(-2)->str("!");
             }
 
@@ -7649,7 +7641,7 @@ void Tokenizer::simplifyGoto()
                             if (indentlevel == 1 && lev == 0)
                                 ret2 = true;
                         }
-                        token->insertToken(tok2->str().c_str());
+                        token->insertToken(tok2->str());
                         token = token->next();
                         token->linenr(tok2->linenr());
                         token->varId(tok2->varId());
@@ -8140,7 +8132,7 @@ void Tokenizer::simplifyEnum()
             }
 
             if (enumType) {
-                const std::string pattern(className.empty() ? "" : (className + " :: " + enumType->str()).c_str());
+                const std::string pattern(className.empty() ? std::string("") : (className + " :: " + enumType->str()));
 
                 // count { and } for tok2
                 int level = 0;
@@ -9117,7 +9109,7 @@ void Tokenizer::simplifyStructDecl()
                     tok->insertToken("static");
                     tok = tok->next();
                 }
-                tok->insertToken(type->str().c_str());
+                tok->insertToken(type->str());
             }
 
             tok = restart;
@@ -9138,11 +9130,11 @@ void Tokenizer::simplifyStructDecl()
 
                 name = "Anonymous" + MathLib::toString<unsigned int>(count++);
 
-                tok1->insertToken(name.c_str());
+                tok1->insertToken(name);
 
                 tok->insertToken(";");
                 tok = tok->next();
-                tok->insertToken(name.c_str());
+                tok->insertToken(name);
             }
 
             // unnamed anonymous struct/union so possibly remove it

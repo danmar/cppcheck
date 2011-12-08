@@ -21,10 +21,8 @@
 #include "mathlib.h"
 #include "tokenize.h"
 
-#include <fstream>
 #include <string>
 #include <cstring>
-#include <iostream>
 #include <sstream>
 #include <cstdlib>
 #include <cmath>
@@ -70,7 +68,7 @@ double MathLib::toDoubleNumber(const std::string &str)
     else if (isNullValue(str))
         return 0.0;
     // otherwise, convert to double
-    std::istringstream istr(str.c_str());
+    std::istringstream istr(str);
     double ret;
     istr >> ret;
     return ret;

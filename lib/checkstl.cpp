@@ -789,14 +789,11 @@ bool CheckStl::isStlContainer(unsigned int varid)
         if (Token::simpleMatch(type, "std ::"))
             type = type->tokAt(2);
 
-        // all possible stl containers
-        static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
-
-        // container template string
-        const std::string checkStr(std::string(STL_CONTAINER_LIST) + " <");
+        // all possible stl containers as a token
+        static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector <";
 
         // check if it's an stl template
-        if (Token::Match(type, checkStr.c_str()))
+        if (Token::Match(type, STL_CONTAINER_LIST))
             return true;
     }
 
@@ -861,7 +858,7 @@ void CheckStl::size()
 
 void CheckStl::sizeError(const Token *tok)
 {
-    const std::string varname(tok ? tok->str().c_str() : "list");
+    const std::string varname(tok ? tok->str() : std::string("list"));
     reportError(tok, Severity::performance, "stlSize",
                 "Possible inefficient checking for '" + varname + "' emptiness.\n"
                 "Checking for '" + varname + "' emptiness might be inefficient. "
