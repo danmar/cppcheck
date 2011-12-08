@@ -54,9 +54,6 @@ private:
         // Assign variable ids
         tokenizer.setVarId();
 
-        // Fill function list
-        tokenizer.fillFunctionList();
-
         // Check for non reentrant functions..
         CheckNonReentrantFunctions checkNonReentrantFunctions(&tokenizer, &settings, this);
         checkNonReentrantFunctions.nonReentrantFunctions();

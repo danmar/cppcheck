@@ -135,8 +135,6 @@ private:
         tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
-        tokenizer.fillFunctionList();
-
         // Check for memory leaks..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.checkReallocUsage();
@@ -3788,8 +3786,6 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
         tokenizer.simplifyTokenList();
-
-        tokenizer.fillFunctionList();
 
         // Check for memory leaks..
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);

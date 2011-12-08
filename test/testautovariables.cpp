@@ -54,9 +54,6 @@ private:
         // Assign variable ids
         tokenizer.setVarId();
 
-        // Fill function list
-        tokenizer.fillFunctionList();
-
         // Check auto variables
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();

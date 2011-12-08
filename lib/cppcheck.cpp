@@ -17,17 +17,15 @@
  */
 #include "cppcheck.h"
 
-#include "preprocessor.h" // preprocessor.
-#include "tokenize.h"   // <- Tokenizer
+#include "preprocessor.h" // Preprocessor
+#include "tokenize.h" // Tokenizer
 
 #include "check.h"
 #include "path.h"
 
 #include <algorithm>
-#include <iostream>
 #include <fstream>
 #include <stdexcept>
-#include <ctime>
 #include "timer.h"
 
 #ifdef HAVE_RULES
@@ -335,10 +333,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             return;
         }
 
-        Timer timer2("Tokenizer::fillFunctionList", _settings._showtime, &S_timerResults);
-        _tokenizer.fillFunctionList();
-        timer2.Stop();
-
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             if (_settings.terminated())
@@ -356,10 +350,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         timer3.Stop();
         if (!result)
             return;
-
-        Timer timer4("Tokenizer::fillFunctionList", _settings._showtime, &S_timerResults);
-        _tokenizer.fillFunctionList();
-        timer4.Stop();
 
         // call all "runSimplifiedChecks" in all registered Check classes
         for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {

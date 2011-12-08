@@ -27,7 +27,6 @@
 #include <list>
 #include <vector>
 #include <set>
-#include <iosfwd>
 
 class Token;
 class ErrorLogger;
@@ -180,9 +179,6 @@ public:
      * @return vector with filenames
      */
     const std::vector<std::string> *getFiles() const;
-
-    /** recreate symbol database */
-    void fillFunctionList();
 
     /**
      * Get function token by function name

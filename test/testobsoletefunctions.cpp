@@ -86,9 +86,6 @@ private:
         // Assign variable ids
         tokenizer.setVarId();
 
-        // Fill function list
-        tokenizer.fillFunctionList();
-
         // Check for obsolete functions..
         CheckObsoleteFunctions checkObsoleteFunctions(&tokenizer, &settings, this);
         checkObsoleteFunctions.obsoleteFunctions();

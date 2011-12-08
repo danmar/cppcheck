@@ -2587,7 +2587,6 @@ void Tokenizer::labels()
         if (Token::Match(tok, ") const| {")) {
             // Simplify labels in the executable scope..
             unsigned int indentlevel = 0;
-            unsigned int indentroundbraces = 0;
             while (NULL != (tok = tok->next())) {
                 if (tok->str() == "{")
                     ++indentlevel;
@@ -2595,27 +2594,21 @@ void Tokenizer::labels()
                     --indentlevel;
                     if (!indentlevel)
                         break;
-                }
+                } else if (tok->str() == "(")
+                    tok = tok->link();
 
-                if (tok->str() == "(")
-                    ++indentroundbraces;
-                else if (tok->str() == ")") {
-                    if (!indentroundbraces)
-                        break;
-                    --indentroundbraces;
-                }
-                if (!indentroundbraces && tok->str() == "case") {
+                else if (tok->str() == "case") {
                     while (NULL != (tok = tok->next())) {
                         if (tok->str() == ":")
                             break;
                     }
-                    if (!(tok->next()) || tok->next()->str() != ";") {
+                    if (tok && (!(tok->next()) || tok->next()->str() != ";")) {
                         tok->insertToken(";");
                         tok = tok->next();
                     }
                 }
                 // simplify label.. except for unhandled macro
-                if (!indentroundbraces && Token::Match(tok, "[;{}] %var% :")
+                if (Token::Match(tok, "[;{}] %var% :")
                     && !Token::Match(tok->next(), "public|protected|private")
                     && tok->strAt(3) != ";") {
                     for (Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
@@ -7004,7 +6997,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (Token::Match(tok3, ("%var% ( " + structname + " %varid% ,").c_str(), varid)) {
             const char * const functionName[] = {
                 "memcmp","memcpy","memmove","memset",
-                "strcmp","strcpy","strncpy","strdup"
+                "strcmp","strcpy","strncmp","strncpy","strdup"
             };
             for (unsigned int i = 0; i < (sizeof(functionName) / sizeof(*functionName)); ++i) {
                 if (tok3->str() == functionName[i]) {
@@ -8275,12 +8268,6 @@ const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
         }
     }
     return NULL;
-}
-
-
-void Tokenizer::fillFunctionList()
-{
-    getSymbolDatabase();
 }
 
 //---------------------------------------------------------------------------

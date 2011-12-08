@@ -51,9 +51,6 @@ private:
         // Assign variable ids
         tokenizer.setVarId();
 
-        // Fill function list
-        tokenizer.fillFunctionList();
-
         // Check for postfix operators..
         CheckPostfixOperator checkPostfixOperator(&tokenizer, &settings, this);
         checkPostfixOperator.postfixOperator();

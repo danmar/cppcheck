@@ -54,9 +54,6 @@ private:
         // Assign variable ids
         tokenizer.simplifyTokenList();
 
-        // Fill function list
-        tokenizer.fillFunctionList();
-
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.bufferOverrun();
