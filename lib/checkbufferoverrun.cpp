@@ -1243,7 +1243,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%str% [ %num% ]")) {
             std::string str = tok->strValue();
-            std::size_t index = atoi(tok->tokAt(2)->str().c_str());
+            std::size_t index = std::atoi(tok->tokAt(2)->str().c_str());
             if (index > str.length()) {
                 bufferOverrunError(tok, tok->str());
             }
