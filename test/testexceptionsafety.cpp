@@ -38,6 +38,7 @@ private:
         TEST_CASE(rethrowCopy1);
         TEST_CASE(rethrowCopy2);
         TEST_CASE(rethrowCopy3);
+        TEST_CASE(rethrowCopy4);
     }
 
     void check(const std::string &code) {
@@ -59,11 +60,25 @@ private:
     }
 
     void destructors() {
-        check("x::~x()\n"
-              "{\n"
-              "    throw e;\n"
-              "}\n");
+        check("class x {\n"
+              "    ~x() {\n"
+              "        throw e;\n"
+              "    }\n"
+              "};");
         ASSERT_EQUALS("[test.cpp:3]: (error) Throwing exception in destructor\n", errout.str());
+
+        check("class x {\n"
+              "    ~x();\n"
+              "};\n"
+              "x::~x() {\n"
+              "    throw e;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Throwing exception in destructor\n", errout.str());
+
+        check("x::~x() {\n"
+              "    throw e;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Throwing exception in destructor\n", "", errout.str());
     }
 
     void deallocThrow1() {
@@ -117,6 +132,18 @@ private:
     }
 
     void rethrowCopy3() {
+        check("void f() {\n"
+              "    try {\n"
+              "       foo();\n"
+              "    }\n"
+              "    catch(std::runtime_error err) {\n"
+              "        throw err;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception\n", errout.str());
+    }
+
+    void rethrowCopy4() {
         check("void f() {\n"
               "    try\n"
               "    {\n"

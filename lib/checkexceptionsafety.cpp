@@ -18,7 +18,7 @@
 
 //---------------------------------------------------------------------------
 #include "checkexceptionsafety.h"
-
+#include "symboldatabase.h"
 #include "token.h"
 
 //---------------------------------------------------------------------------
@@ -37,33 +37,21 @@ void CheckExceptionSafety::destructors()
     if (!_settings->isEnabled("style"))
         return;
 
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
     // Perform check..
-    for (const Token * tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        // Skip executable scopes
-        if (Token::simpleMatch(tok, ") {"))
-            tok = tok->next()->link();
-
-        // only looking for destructors
-        if (!Token::Match(tok, "~ %var% ( ) {"))
-            continue;
-
-        // Inspect this destructor..
-        unsigned int indentlevel = 0;
-        for (const Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "{") {
-                ++indentlevel;
-            }
-
-            else if (tok2->str() == "}") {
-                if (indentlevel <= 1)
-                    break;
-                --indentlevel;
-            }
-
-            // throw found within a destructor
-            else if (tok2->str() == "throw") {
-                destructorsError(tok2);
-                break;
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        for (std::list<Function>::const_iterator j = i->functionList.begin(); j != i->functionList.end(); ++j) {
+            // only looking for destructors
+            if (j->type == Function::eDestructor && j->start) {
+                // Inspect this destructor..
+                for (const Token *tok = j->start->next(); tok != j->start->link(); tok = tok->next()) {
+                    // throw found within a destructor
+                    if (tok->str() == "throw") {
+                        destructorsError(tok);
+                        break;
+                    }
+                }
             }
         }
     }
@@ -74,6 +62,8 @@ void CheckExceptionSafety::destructors()
 
 void CheckExceptionSafety::deallocThrow()
 {
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
     // Deallocate a global/member pointer and then throw exception
     // the pointer will be a dead pointer
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -93,35 +83,10 @@ void CheckExceptionSafety::deallocThrow()
         if (varid == 0)
             continue;
 
-        // is this variable a global variable?
-        {
-            // TODO: Isn't it better to use symbol database instead?
-            bool globalVar = false;
-            for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next()) {
-                if (tok2->varId() == varid) {
-                    globalVar = true;
-                    break;
-                }
-
-                if (tok2->str() == "class") {
-                    while (tok2 && tok2->str() != ";" && tok2->str() != "{")
-                        tok2 = tok2->next();
-                    tok2 = tok2 ? tok2->next() : 0;
-                    if (!tok2)
-                        break;
-                }
-
-                if (tok2->str() == "{") {
-                    tok2 = tok2->link();
-                    if (!tok2)
-                        break;
-                }
-            }
-
-            // Not a global variable.. skip checking this var.
-            if (!globalVar)
-                continue;
-        }
+        // we only look for global variables
+        const Variable* var = symbolDatabase->getVariableFromVarId(varid);
+        if (!var || !var->isGlobal())
+            continue;
 
         // indentlevel..
         unsigned int indentlevel = 0;
@@ -139,7 +104,7 @@ void CheckExceptionSafety::deallocThrow()
                 --indentlevel;
             }
 
-            if (tok2->str() == "throw")
+            else if (tok2->str() == "throw")
                 ThrowToken = tok2;
 
             // if the variable is not assigned after the throw then it
@@ -163,20 +128,27 @@ void CheckExceptionSafety::checkRethrowCopy()
 {
     if (!_settings->isEnabled("style"))
         return;
-    const char catchPattern[] = "catch ( const| %type% &|*| %var% ) { %any%";
 
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), catchPattern);
+    const char catchPattern1[] = "catch (";
+    const char catchPattern2[] = "%var% ) { %any%";
+
+    const Token* tok = Token::findsimplematch(_tokenizer->tokens(), catchPattern1);
     while (tok) {
-        const Token *startBlockTok = tok->next()->link()->next();
-        const Token *endBlockTok = startBlockTok->link();
-        const unsigned int varid = startBlockTok->tokAt(-2)->varId();
+        const Token* endScopeTok = tok->next();
+        const Token* endBracketTok = tok->next()->link();
 
-        const Token* rethrowTok = Token::findmatch(startBlockTok, "throw %varid%", endBlockTok, varid);
-        if (rethrowTok) {
-            rethrowCopyError(rethrowTok, startBlockTok->strAt(-2));
+        if (endBracketTok && Token::Match(endBracketTok->previous(), catchPattern2)) {
+            const Token* startScopeTok = endBracketTok->next();
+            endScopeTok = startScopeTok->link();
+            const unsigned int varid = endBracketTok->previous()->varId();
+
+            const Token* rethrowTok = Token::findmatch(startScopeTok->next(), "throw %varid%", endScopeTok->previous(), varid);
+            if (rethrowTok) {
+                rethrowCopyError(rethrowTok, endBracketTok->strAt(-1));
+            }
         }
 
-        tok = Token::findmatch(endBlockTok->next(), catchPattern);
+        tok = Token::findsimplematch(endScopeTok->next(), catchPattern1);
     }
 }
 
