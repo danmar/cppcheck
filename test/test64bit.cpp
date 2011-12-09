@@ -51,7 +51,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // Check char variable usage..
         Check64BitPortability check64BitPortability(&tokenizer, &settings, this);

@@ -873,7 +873,6 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.setVarId();
         if (simplify)
             tokenizer.simplifyTokenList();
 

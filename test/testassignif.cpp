@@ -49,7 +49,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         // Check char variable usage..

@@ -48,9 +48,6 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Assign variable ids
-        tokenizer.setVarId();
-
         // Check for postfix operators..
         CheckPostfixOperator checkPostfixOperator(&tokenizer, &settings, this);
         checkPostfixOperator.postfixOperator();

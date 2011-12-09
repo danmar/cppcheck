@@ -136,8 +136,11 @@ void CheckAssignIf::multiCondition()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "if ( %var% & %num% ) {")) {
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (i->type == Scope::eIf && Token::Match(i->classDef, "if ( %var% & %num% ) {")) {
+            const Token* const tok = i->classDef;
             const unsigned int varid(tok->tokAt(2)->varId());
             if (varid == 0)
                 continue;

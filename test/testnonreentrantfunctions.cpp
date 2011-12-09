@@ -51,9 +51,6 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Assign variable ids
-        tokenizer.setVarId();
-
         // Check for non reentrant functions..
         CheckNonReentrantFunctions checkNonReentrantFunctions(&tokenizer, &settings, this);
         checkNonReentrantFunctions.nonReentrantFunctions();

@@ -48,7 +48,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         return ((const CheckMemoryLeak *)0)->functionReturnType(tokenizer.tokens());
     }
@@ -132,7 +131,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         // Check for memory leaks..
@@ -3077,7 +3075,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         // Check for memory leaks..
@@ -3784,7 +3781,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         // Check for memory leaks..

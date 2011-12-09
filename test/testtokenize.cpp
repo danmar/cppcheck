@@ -1048,7 +1048,6 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.setVarId();
         tokenizer.simplifyKnownVariables();
 
         std::ostringstream ostr;
@@ -4151,7 +4150,6 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         std::ostringstream ostr;
@@ -4178,7 +4176,6 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         std::ostringstream ostr;

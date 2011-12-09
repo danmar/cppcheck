@@ -38,7 +38,7 @@ private:
         TEST_CASE(testgethostbyaddr);
         TEST_CASE(testusleep);
         TEST_CASE(testindex);
-        TEST_CASE(test_qt_index);	// FP when using the Qt function 'index'?
+        TEST_CASE(test_qt_index); // FP when using the Qt function 'index'?
         TEST_CASE(testrindex);
 
         // no false positives for variables
@@ -82,9 +82,6 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
-
-        // Assign variable ids
-        tokenizer.setVarId();
 
         // Check for obsolete functions..
         CheckObsoleteFunctions checkObsoleteFunctions(&tokenizer, &settings, this);

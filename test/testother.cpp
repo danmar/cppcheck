@@ -371,7 +371,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         //tokenizer.tokens()->printOut( "tokens" );
 
@@ -437,7 +436,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // Check for redundant code..
         CheckOther checkOther(&tokenizer, &settings, this);
@@ -718,12 +716,10 @@ private:
         Tokenizer tokenizerCpp(&settings, this);
         std::istringstream istr(code);
         tokenizerCpp.tokenize(istr, "test.cpp");
-        tokenizerCpp.setVarId();
 
         Tokenizer tokenizerC(&settings, this);
         std::istringstream istr2(code);
         tokenizerC.tokenize(istr2, "test.c");
-        tokenizerC.setVarId();
 
         CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
         checkOtherCpp.warningOldStylePointerCast();
