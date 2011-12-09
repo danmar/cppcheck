@@ -258,7 +258,7 @@ private:
         TEST_CASE(simplify_constants2);
         TEST_CASE(simplify_constants3);
         TEST_CASE(simplify_null);
-        TEST_CASE(simplifyMulAnd);          // #2784
+        TEST_CASE(simplifyMulAndParens);    // Ticket #2784 + #3184
 
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
@@ -4211,20 +4211,43 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
     }
 
-    void simplifyMulAnd() {
+    void simplifyMulAndParens() {
         // (error) Resource leak
-        ASSERT_EQUALS(
-            "void f ( ) { int f ; f = open ( ) ; }",
-            tokenizeAndStringify(
-                "void f() {int f; *&f=open(); }"
-            )
-        );
-        ASSERT_EQUALS(
-            "void f ( ) { int f ; f = open ( ) ; }",
-            tokenizeAndStringify(
-                "void f() {int f; *(&f)=open(); }"
-            )
-        );
+        const char code[] = "void f() {"
+                            "   *&n1=open();"
+                            "   *&(n2)=open();"
+                            "   *(&n3)=open();"
+                            "   *&*&n4=open();"
+                            "   *&*&*&(n5)=open();"
+                            "   *&*&(*&n6)=open();"
+                            "   *&*(&*&n7)=open();"
+                            "   *(&*&n8)=open();"
+                            "   *&(*&*&(*&n9))=open();"
+                            "   (n10) = open();"
+                            "   ((n11)) = open();"
+                            "   ((*&n12))=open();"
+                            "   *(&(*&n13))=open();"
+                            "   ((*&(*&n14)))=open();"
+                            "   ((*&(*&n15)))+=10;"
+                            "}";
+        const char expected[] = "void f ( ) {"
+                                " n1 = open ( ) ;"
+                                " n2 = open ( ) ;"
+                                " n3 = open ( ) ;"
+                                " n4 = open ( ) ;"
+                                " n5 = open ( ) ;"
+                                " n6 = open ( ) ;"
+                                " n7 = open ( ) ;"
+                                " n8 = open ( ) ;"
+                                " n9 = open ( ) ;"
+                                " n10 = open ( ) ;"
+                                " n11 = open ( ) ;"
+                                " n12 = open ( ) ;"
+                                " n13 = open ( ) ;"
+                                " n14 = open ( ) ;"
+                                " n15 = n15 + 10 ; "
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void vardecl1() {

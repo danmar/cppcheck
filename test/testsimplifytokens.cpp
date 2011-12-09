@@ -3193,7 +3193,7 @@ private:
 
             {
                 std::string code = "int f() { "
-                                   "switch (x) { case 1: " + *it + "; bar(); tack; { ticak(); " + *it + " } " + *it + " "
+                                   "switch (x) { case 1: " + *it + "; bar(); tack; { ticak(); " + *it + " } " + *it + ";"
                                    "case 2: " + *it + "; { random(); } tack(); "
                                    "switch(y) { case 1: " + *it + "; case 2: " + *it + "; } "
                                    "" + *it + "; } " + *it + "; }";

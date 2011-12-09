@@ -1841,22 +1841,62 @@ void Tokenizer::simplifyTypedef()
     }
 }
 
-void Tokenizer::simplifyMulAnd()
+void Tokenizer::simplifyMulAndParens()
 {
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] *")) {
-            //fix Ticket #2784
-            if (Token::Match(tok->next(), "* & %any% =")) {
-                tok->deleteNext(); //del *
-                tok->deleteNext(); //del &
-                continue;
+    for (Token *tok = _tokens->tokAt(3); tok; tok = tok->next()) {
+        if (tok->isName()) {
+            //fix ticket #2784 - improved by ticket #3184
+            unsigned int closedpars = 0;
+            Token *tokend = tok->next();
+            Token *tokbegin = tok->previous();
+            while (tokend && tokend->str() == ")") {
+                ++closedpars;
+                tokend = tokend->next();
             }
-            if (Token::Match(tok->next(), "* ( & %any% ) =")) {
-                tok->deleteNext(); //del *
-                tok->deleteNext(); //del (
-                tok->deleteNext(); //del &
-                tok->next()->deleteNext(); //del )
+            if (!tokend || !(tokend->isAssignmentOp()))
                 continue;
+            while (tokbegin && (tokbegin->str() == "&" || tokbegin->str() == "(")) {
+                if (tokbegin->str() == "&") {
+                    if (Token::Match(tokbegin->tokAt(-2), "[;{}&(] *")) {
+                        //remove '* &'
+                        tokbegin = tokbegin->tokAt(-2);
+                        tokbegin->deleteNext(2);
+                    } else if (Token::Match(tokbegin->tokAt(-3), "[;{}&(] * (")) {
+                        if (!closedpars)
+                            break;
+                        --closedpars;
+                        //remove ')'
+                        tok->deleteNext();
+                        //remove '* ( &'
+                        tokbegin = tokbegin->tokAt(-3);
+                        tokbegin->deleteNext(3);
+                    } else
+                        break;
+                } else if (tokbegin->str() == "(") {
+                    if (!closedpars)
+                        break;
+
+                    //find consecutive opening parentheses
+                    unsigned int openpars = 0;
+                    while (tokbegin && tokbegin->str() == "(" && openpars <= closedpars) {
+                        ++openpars;
+                        tokbegin = tokbegin->previous();
+                    }
+                    if (!tokbegin || openpars > closedpars)
+                        break;
+
+                    if ((openpars == closedpars && Token::Match(tokbegin, "[;{}]")) ||
+                        Token::Match(tokbegin->tokAt(-2), "[;{}&(] * &") ||
+                        Token::Match(tokbegin->tokAt(-3), "[;{}&(] * ( &")) {
+                        //remove the excessive parentheses around the variable
+                        while (openpars--) {
+                            tok->deleteNext();
+                            tokbegin->deleteNext();
+                            --closedpars;
+                        }
+                    } else
+                        break;
+                }
             }
         }
     }
@@ -1907,9 +1947,6 @@ bool Tokenizer::tokenize(std::istream &code,
                 tok = tok->previous();
         }
     }
-
-    // simplify '[;{}] * & %any% =' to '%any% ='
-    simplifyMulAnd();
 
     // Convert C# code
     if (_files[0].find(".cs")) {
@@ -2061,6 +2098,9 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // simplify labels..
     labels();
+
+    // simplify '[;{}] * & ( %any% ) =' to '%any% ='
+    simplifyMulAndParens();
 
     // ";a+=b;" => ";a=a+b;"
     simplifyCompoundAssignment();

@@ -145,9 +145,10 @@ public:
     static void eraseDeadCode(Token *begin, const Token *end);
 
     /**
-     * Simplify '* & %any% =' to '%any% ='
+     * Simplify '* & ( %var% ) =' or any combination of '* &' and '()'
+     * parentheses around '%var%' to '%var% ='
      */
-    void simplifyMulAnd(void);
+    void simplifyMulAndParens(void);
 
     /**
      * Get parameter name of function
