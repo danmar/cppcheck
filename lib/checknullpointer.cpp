@@ -288,13 +288,15 @@ bool CheckNullPointer::isPointer(const unsigned int varid)
 
 void CheckNullPointer::nullPointerAfterLoop()
 {
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
     // Locate insufficient null-pointer handling after loop
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         // only interested in while ( %var% )
         // TODO: Aren't there false negatives. Shouldn't other loops be handled such as:
         //       - while ( ! %var% )
-        //       - while ( %var% && .. )
-        if (! Token::Match(tok, "while ( %var% )|&&"))
+        const Token* const tok = i->classDef;
+        if (i->type != Scope::eWhile || !Token::Match(tok, "while ( %var% )|&&"))
             continue;
 
         // Get variable id for the loop variable
@@ -363,15 +365,18 @@ void CheckNullPointer::nullPointerAfterLoop()
 
 void CheckNullPointer::nullPointerLinkedList()
 {
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
     // looping through items in a linked list in a inner loop.
     // Here is an example:
     //    for (const Token *tok = tokens; tok; tok = tok->next) {
     //        if (tok->str() == "hello")
     //            tok = tok->next;   // <- tok might become a null pointer!
     //    }
-    for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next()) {
-        // search for a "for" token..
-        if (tok1->str() != "for")
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        const Token* const tok1 = i->classDef;
+        // search for a "for" scope..
+        if (i->type != Scope::eFor || !tok1)
             continue;
 
         // is there any dereferencing occurring in the for statement
@@ -624,11 +629,12 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
     // Dereferencing a pointer and then checking if it's NULL..
     // This check will first scan for the check. And then scan backwards
     // from the check, searching for dereferencing.
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         // TODO: false negatives.
         // - logical operators
         // - while
-        if (tok->str() == "if" && Token::Match(tok->previous(), "; if ( !| %var% )|%oror%|&&")) {
+        const Token* const tok = i->classDef;
+        if (i->type == Scope::eIf && tok && Token::Match(tok->previous(), "; if ( !| %var% )|%oror%|&&")) {
             const Token * vartok = tok->tokAt(2);
             if (vartok->str() == "!")
                 vartok = vartok->next();

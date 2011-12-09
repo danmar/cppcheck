@@ -1747,56 +1747,62 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 void CheckBufferOverrun::checkInsecureCmdLineArgs()
 {
     const char pattern[] = "main ( int %var% , char *";
-    for (const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern); tok; tok = Token::findmatch(tok->next(),pattern)) {
-        // Get the name of the argv variable
-        unsigned int varid = 0;
-        if (Token::Match(tok, "main ( int %var% , char * %var% [ ] ,|)")) {
-            varid = tok->tokAt(7)->varId();
 
-        } else if (Token::Match(tok, "main ( int %var% , char * * %var% ,|)")) {
-            varid = tok->tokAt(8)->varId();
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        for (std::list<Function>::const_iterator j = i->functionList.begin(); j != i->functionList.end(); ++j) {
+            const Token* tok = j->token;
+
+            // Get the name of the argv variable
+            unsigned int varid = 0;
+            if (Token::Match(tok, "main ( int %var% , char * %var% [ ] ,|)")) {
+                varid = tok->tokAt(7)->varId();
+
+            } else if (Token::Match(tok, "main ( int %var% , char * * %var% ,|)")) {
+                varid = tok->tokAt(8)->varId();
+            }
+            if (varid == 0)
+                continue;
+
+            // Jump to the opening curly brace
+            tok = tok->next()->link();
+            if (!Token::simpleMatch(tok, ") {"))
+                continue;
+            tok = tok->next();
+
+            // Search within main() for possible buffer overruns involving argv
+            int indentlevel = -1;
+            for (; tok; tok = tok->next()) {
+                if (tok->str() == "{") {
+                    ++indentlevel;
+                }
+
+                else if (tok->str() == "}") {
+                    --indentlevel;
+                    if (indentlevel < 0)
+                        return;
+                }
+
+                // If argv is modified or tested, its size may be being limited properly
+                if (tok->varId() == varid)
+                    break;
+
+                // Match common patterns that can result in a buffer overrun
+                // e.g. strcpy(buffer, argv[0])
+                if (Token::Match(tok, "strcpy|strcat ( %var% , * %varid%", varid) ||
+                    Token::Match(tok, "strcpy|strcat ( %var% , %varid% [", varid)) {
+                    cmdLineArgsError(tok);
+                } else if (Token::Match(tok, "sprintf ( %var% , %str% , %varid% [", varid) &&
+                           tok->strAt(4).find("%s") != std::string::npos) {
+                    cmdLineArgsError(tok);
+                } else if (Token::Match(tok, "sprintf ( %var% , %str% , * %varid%", varid) &&
+                           tok->strAt(4).find("%s") != std::string::npos) {
+                    cmdLineArgsError(tok);
+                }
+
+            }
         }
-        if (varid == 0)
-            continue;
-
-        // Jump to the opening curly brace
-        tok = tok->next()->link();
-        if (!Token::simpleMatch(tok, ") {"))
-            continue;
-        tok = tok->next();
-
-        // Search within main() for possible buffer overruns involving argv
-        int indentlevel = -1;
-        for (; tok; tok = tok->next()) {
-            if (tok->str() == "{") {
-                ++indentlevel;
-            }
-
-            else if (tok->str() == "}") {
-                --indentlevel;
-                if (indentlevel < 0)
-                    return;
-            }
-
-            // If argv is modified or tested, its size may be being limited properly
-            if (tok->varId() == varid)
-                break;
-
-            // Match common patterns that can result in a buffer overrun
-            // e.g. strcpy(buffer, argv[0])
-            if (Token::Match(tok, "strcpy|strcat ( %var% , * %varid%", varid) ||
-                Token::Match(tok, "strcpy|strcat ( %var% , %varid% [", varid)) {
-                cmdLineArgsError(tok);
-            } else if (Token::Match(tok, "sprintf ( %var% , %str% , %varid% [", varid) &&
-                       tok->strAt(4).find("%s") != std::string::npos) {
-                cmdLineArgsError(tok);
-            } else if (Token::Match(tok, "sprintf ( %var% , %str% , * %varid%", varid) &&
-                       tok->strAt(4).find("%s") != std::string::npos) {
-                cmdLineArgsError(tok);
-            }
-
-        }
-
     }
 }
 //---------------------------------------------------------------------------

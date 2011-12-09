@@ -442,22 +442,14 @@ private:
     void erase1() {
         check("void f()\n"
               "{\n"
-              "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-              "    {\n"
+              "    for (it = foo.begin(); it != foo.end(); ++it) {\n"
+              "        foo.erase(it);\n"
+              "    }\n"
+              "    for (it = foo.begin(); it != foo.end(); ++it) {\n"
               "        foo.erase(it);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
-
-        check("for (it = foo.begin(); it != foo.end(); ++it)\n"
-              "{\n"
-              "    foo.erase(it);\n"
-              "}\n"
-              "for (it = foo.begin(); it != foo.end(); ++it)\n"
-              "{\n"
-              "    foo.erase(it);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous iterator usage after erase()-method.\n"
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous iterator usage after erase()-method.\n"
                       "[test.cpp:7]: (error) Dangerous iterator usage after erase()-method.\n", errout.str());
 
         check("void f(std::list<int> &ints)\n"

@@ -238,10 +238,13 @@ void CheckStl::mismatchingContainers()
 
 void CheckStl::stlOutOfBounds()
 {
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
     // Scan through all tokens..
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        const Token* const tok = i->classDef;
         // only interested in "for" loops
-        if (!Token::simpleMatch(tok, "for ("))
+        if (i->type != Scope::eFor || !tok)
             continue;
 
         // check if the for loop condition is wrong
@@ -432,13 +435,16 @@ private:
 
 void CheckStl::erase()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "for (")) {
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        const Token* const tok = i->classDef;
+
+        if (tok && i->type == Scope::eFor) {
             for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";") {
                     if (Token::Match(tok2, "; %var% !=")) {
                         // Get declaration token for var..
-                        const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
                         const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->next()->varId());
                         const Token *decltok = variableInfo ? variableInfo->typeEndToken() : NULL;
 
@@ -463,7 +469,7 @@ void CheckStl::erase()
             }
         }
 
-        if (Token::Match(tok, "while ( %var% !=")) {
+        else if (i->type == Scope::eWhile && Token::Match(tok, "while ( %var% !=")) {
             const unsigned int varid = tok->tokAt(2)->varId();
             if (varid > 0 && Token::findmatch(_tokenizer->tokens(), "> :: iterator %varid%", varid))
                 EraseCheckLoop::checkScope(this, tok->tokAt(2));
@@ -712,7 +718,12 @@ void CheckStl::if_find()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (i->type != Scope::eIf && i->type != Scope::eElseIf)
+            continue;
+
+        const Token* tok = i->classDef;
+
         if (Token::Match(tok, "if ( !| %var% . find ( %any% ) )")) {
             // goto %var%
             tok = tok->tokAt(2);
@@ -738,7 +749,7 @@ void CheckStl::if_find()
             }
         }
 
-        if (Token::Match(tok, "if ( !| std :: find|find_if (")) {
+        else if (Token::Match(tok, "if ( !| std :: find|find_if (")) {
             // goto '(' for the find
             tok = tok->tokAt(4);
             if (tok->isName())

@@ -249,12 +249,15 @@ void CheckOther::checkSuspiciousSemicolon()
     if (!_settings->inconclusive || !_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        // Look for "if(); {}", "for(); {}" or "while(); {}"
-        if (Token::Match(tok, "if|for|while (")) {
-            const Token *end = tok->next()->link();
-            if (!end)
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    // Look for "if(); {}", "for(); {}" or "while(); {}"
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (i->type == Scope::eIf || i->type == Scope::eElse || i->type == Scope::eElseIf || i->type == Scope::eWhile || i->type == Scope::eFor) {
+            const Token *tok = Token::findsimplematch(i->classDef, "(", i->classEnd);
+            if (!tok)
                 continue;
+            const Token *end = tok->link();
 
             // Ensure the semicolon is at the same line number as the if/for/while statement
             // and the {..} block follows it without an extra empty line.
@@ -580,13 +583,14 @@ void CheckOther::checkSwitchCaseFallThrough()
     if (!(_settings->isEnabled("style") && _settings->experimental))
         return;
 
-    const char switchPattern[] = "switch (";
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
     const char breakPattern[] = "break|continue|return|exit|goto|throw";
 
-    // Find the beginning of a switch. E.g.:
-    //   switch (var) { ...
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), switchPattern);
-    while (tok) {
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        const Token* const tok = i->classDef;
+        if (i->type != Scope::eSwitch || !tok) // Find the beginning of a switch
+            continue;
 
         // Check the contents of the switch statement
         std::stack<std::pair<Token *, bool> > ifnest;
@@ -638,7 +642,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 }
                 loopnest.push(tok2->link());
                 justbreak = false;
-            } else if (Token::Match(tok2, switchPattern)) {
+            } else if (Token::simpleMatch(tok2, "switch (")) {
                 // skip over nested switch, we'll come to that soon
                 tok2 = tok2->next()->link()->next()->link();
             } else if (Token::Match(tok2, breakPattern)) {
@@ -699,8 +703,6 @@ void CheckOther::checkSwitchCaseFallThrough()
             }
 
         }
-
-        tok = Token::findmatch(tok->next(), switchPattern);
     }
 }
 
@@ -2290,54 +2292,45 @@ void CheckOther::checkDuplicateIf()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction)
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        const Token* const tok = scope->classDef;
+        // only check if statements
+        if (scope->type != Scope::eIf || !tok)
             continue;
 
-        // check all the code in the function for if (...) and else if (...) statements
-        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next()) {
-            if (Token::simpleMatch(tok, "if (") && tok->strAt(-1) != "else" &&
-                Token::simpleMatch(tok->next()->link(), ") {")) {
-                std::map<std::string, const Token*> expressionMap;
+        std::map<std::string, const Token*> expressionMap;
 
-                // get the expression from the token stream
-                std::string expression = stringifyTokens(tok->tokAt(2), tok->next()->link()->previous());
+        // get the expression from the token stream
+        std::string expression = stringifyTokens(tok->tokAt(2), tok->next()->link()->previous());
 
-                // save the expression and its location
-                expressionMap.insert(std::make_pair(expression, tok));
+        // save the expression and its location
+        expressionMap.insert(std::make_pair(expression, tok));
 
-                // find the next else if (...) statement
-                const Token *tok1 = tok->next()->link()->next()->link();
+        // find the next else if (...) statement
+        const Token *tok1 = tok->next()->link()->next()->link();
 
-                // check all the else if (...) statements
-                while (Token::simpleMatch(tok1, "} else if (") &&
-                       Token::simpleMatch(tok1->linkAt(3), ") {")) {
-                    // get the expression from the token stream
-                    expression = stringifyTokens(tok1->tokAt(4), tok1->linkAt(3)->previous());
+        // check all the else if (...) statements
+        while (Token::simpleMatch(tok1, "} else if (") &&
+               Token::simpleMatch(tok1->linkAt(3), ") {")) {
+            // get the expression from the token stream
+            expression = stringifyTokens(tok1->tokAt(4), tok1->linkAt(3)->previous());
 
-                    // try to look up the expression to check for duplicates
-                    std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
+            // try to look up the expression to check for duplicates
+            std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
 
-                    // found a duplicate
-                    if (it != expressionMap.end()) {
-                        // check for expressions that have side effects and ignore them
-                        if (!expressionHasSideEffects(tok1->tokAt(4), tok1->linkAt(3)->previous()))
-                            duplicateIfError(it->second, tok1->next());
-                    }
-
-                    // not a duplicate expression so save it and its location
-                    else
-                        expressionMap.insert(std::make_pair(expression, tok1->next()));
-
-                    // find the next else if (...) statement
-                    tok1 = tok1->linkAt(3)->next()->link();
-                }
-
-                tok = tok->next()->link()->next();
+            // found a duplicate
+            if (it != expressionMap.end()) {
+                // check for expressions that have side effects and ignore them
+                if (!expressionHasSideEffects(tok1->tokAt(4), tok1->linkAt(3)->previous()))
+                    duplicateIfError(it->second, tok1->next());
             }
+
+            // not a duplicate expression so save it and its location
+            else
+                expressionMap.insert(std::make_pair(expression, tok1->next()));
+
+            // find the next else if (...) statement
+            tok1 = tok1->linkAt(3)->next()->link();
         }
     }
 }
@@ -2371,30 +2364,24 @@ void CheckOther::checkDuplicateBranch()
     std::list<Scope>::const_iterator scope;
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction)
-            continue;
+        const Token* const tok = scope->classDef;
 
         // check all the code in the function for if (..) else
-        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next()) {
-            if (Token::simpleMatch(tok, "if (") && tok->strAt(-1) != "else" &&
-                Token::simpleMatch(tok->next()->link(), ") {") &&
-                Token::simpleMatch(tok->next()->link()->next()->link(), "} else {")) {
-                // save if branch code
-                std::string branch1 = stringifyTokens(tok->next()->link()->tokAt(2), tok->next()->link()->next()->link()->previous());
+        if (scope->type == Scope::eIf && tok && tok->next() &&
+            Token::simpleMatch(tok->next()->link(), ") {") &&
+            Token::simpleMatch(tok->next()->link()->next()->link(), "} else {")) {
+            // save if branch code
+            std::string branch1 = stringifyTokens(tok->next()->link()->tokAt(2), tok->next()->link()->next()->link()->previous());
 
-                // find else branch
-                const Token *tok1 = tok->next()->link()->next()->link();
+            // find else branch
+            const Token *tok1 = tok->next()->link()->next()->link();
 
-                // save else branch code
-                std::string branch2 = stringifyTokens(tok1->tokAt(3), tok1->linkAt(2)->previous());
+            // save else branch code
+            std::string branch2 = stringifyTokens(tok1->tokAt(3), tok1->linkAt(2)->previous());
 
-                // check for duplicates
-                if (branch1 == branch2)
-                    duplicateBranchError(tok, tok1->tokAt(2));
-
-                tok = tok->next()->link()->next();
-            }
+            // check for duplicates
+            if (branch1 == branch2)
+                duplicateBranchError(tok, tok1->tokAt(2));
         }
     }
 }
