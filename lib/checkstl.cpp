@@ -140,10 +140,10 @@ void CheckStl::iterators()
                 dereferenceErasedError(tok2, tok2->strAt(1));
                 tok2 = tok2->next();
             } else if (!validIterator && Token::Match(tok2, "%varid% . %var%", iteratorId)) {
-                dereferenceErasedError(tok2, tok2->strAt(0));
+                dereferenceErasedError(tok2, tok2->str());
                 tok2 = tok2->tokAt(2);
             } else if (Token::Match(tok2, "%var% . erase ( * %varid%", iteratorId) && tok2->varId() == containerId) {
-//                eraseByValueError(tok2, tok2->strAt(0), tok2->strAt(5));
+//                eraseByValueError(tok2, tok2->str(), tok2->strAt(5));
             }
 
             // bailout handling. Assume that the iterator becomes valid if we see return/break.
@@ -605,7 +605,7 @@ void CheckStl::pushback()
                 }
 
                 if (pushbackTok)
-                    invalidIteratorError(pushbackTok, pushbackTok->str(), tok2->strAt(0));
+                    invalidIteratorError(pushbackTok, pushbackTok->str(), tok2->str());
             }
 
             // Assigning iterator..
