@@ -80,10 +80,9 @@ private:
     }
 
     std::string classInfo() const {
-        return "Check for wrong or unsuitable internal API usage:\n"
-               "* Found simple pattern inside Token::Match() call: \"class {\"\n"
-               "* Found complex pattern inside Token::simpleMatch() call: \"%type%\"\n"
-               "* Missing percent end character in Token::Match pattern: \"%num\"\n";
+        // Don't include these checks on the WIKI where people can read what
+        // checks there are. These checks are not intended for users.
+        return "";
     }
 };
 /// @}
