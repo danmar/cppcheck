@@ -3882,7 +3882,7 @@ private:
 
 
     void doublesharp() {
-        const char code[] = "TEST(var,val) var##_##val = val\n";
+        const char code[] = "a##_##b TEST(var,val) var##_##val = val\n";
 
         errout.str("");
 
@@ -3898,7 +3898,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << tok->str() << " ";
 
-        ASSERT_EQUALS("TEST ( var , val ) var_val = val ", ostr.str());
+        ASSERT_EQUALS("a_b TEST ( var , val ) var_val = val ", ostr.str());
     }
 
     void macrodoublesharp() {
@@ -5876,6 +5876,7 @@ private:
     }
 
     void cs() {
+        ASSERT_EQUALS("int * i ;", tokenizeAndStringify("int [] i;"));
         ASSERT_EQUALS("; int * i ;", tokenizeAndStringify("; int [] i;"));
     }
 
