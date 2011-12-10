@@ -5,37 +5,8 @@ ifndef HAVE_RULES
     HAVE_RULES=no
 endif
 
-ifndef COMSPEC
-    ifdef ComSpec
-        #### ComSpec is defined on some WIN32's.
-        COMSPEC=$(ComSpec)
-    endif # ComSpec
-endif # COMSPEC
-
-ifdef COMSPEC
-    #### Maybe Windows
-    ifndef CPPCHK_GLIBCXX_DEBUG
-        CPPCHK_GLIBCXX_DEBUG=
-    endif # !CPPCHK_GLIBCXX_DEBUG
-else # !COMSPEC
-    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
-
-    ifeq ($(uname_S),Linux)
-        ifndef CPPCHK_GLIBCXX_DEBUG
-            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
-        endif # !CPPCHK_GLIBCXX_DEBUG
-    endif # Linux
-
-    ifeq ($(uname_S),GNU/kFreeBSD)
-        ifndef CPPCHK_GLIBCXX_DEBUG
-            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
-        endif # !CPPCHK_GLIBCXX_DEBUG
-    endif # GNU/kFreeBSD
-
-endif # COMSPEC
-
 ifndef CXXFLAGS
-    CXXFLAGS=-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo $(CPPCHK_GLIBCXX_DEBUG) -g
+    CXXFLAGS=-O2 -DNDEBUG -Wall
 endif
 
 ifeq ($(HAVE_RULES),yes)
@@ -208,7 +179,7 @@ install: cppcheck
 lib/check64bit.o: lib/check64bit.cpp lib/check64bit.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/check64bit.o lib/check64bit.cpp
 
-lib/checkassignif.o: lib/checkassignif.cpp lib/checkassignif.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
+lib/checkassignif.o: lib/checkassignif.cpp lib/checkassignif.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/mathlib.h lib/symboldatabase.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkassignif.o lib/checkassignif.cpp
 
 lib/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
@@ -223,7 +194,7 @@ lib/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h li
 lib/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkclass.o lib/checkclass.cpp
 
-lib/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafety.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h
+lib/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafety.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkexceptionsafety.o lib/checkexceptionsafety.cpp
 
 lib/checkinternal.o: lib/checkinternal.cpp lib/checkinternal.h lib/check.h lib/token.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/symboldatabase.h lib/mathlib.h
@@ -319,7 +290,7 @@ test/options.o: test/options.cpp test/options.h
 test/test64bit.o: test/test64bit.cpp lib/tokenize.h lib/check64bit.h lib/check.h lib/token.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/test64bit.o test/test64bit.cpp
 
-test/testassignif.o: test/testassignif.cpp lib/tokenize.h lib/checkassignif.h lib/check.h lib/token.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h test/testsuite.h test/redirect.h
+test/testassignif.o: test/testassignif.cpp lib/tokenize.h lib/checkassignif.h lib/check.h lib/token.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/mathlib.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testassignif.o test/testassignif.cpp
 
 test/testautovariables.o: test/testautovariables.cpp lib/tokenize.h lib/checkautovariables.h lib/check.h lib/token.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h test/testsuite.h test/redirect.h
