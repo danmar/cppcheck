@@ -855,7 +855,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    if (_settings && !_settings->userDefines.empty()) {
+    if (_settings && (!_settings->userDefines.empty() || !_settings->userUndefs.empty())) {
         std::map<std::string, std::string> defs;
 
         // TODO: break out this code. There is other similar code.
@@ -884,7 +884,11 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         }
 
         processedFile = handleIncludes(processedFile, filename, includePaths, defs);
+        if (_settings->userDefines.empty())
+            resultConfigurations = getcfgs(processedFile, filename);
+
     } else {
+
         handleIncludes(processedFile, filename, includePaths);
 
         processedFile = replaceIfDefined(processedFile);
@@ -1764,31 +1768,48 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
     unsigned int linenr = 0;
 
+    std::set<std::string> undefs = _settings ? _settings->userUndefs : std::set<std::string>();
+
     std::ostringstream ostr;
     std::istringstream istr(code);
     std::string line;
+    bool suppressCurrentCodePath = false;
     while (std::getline(istr,line)) {
         ++linenr;
 
         if (line.compare(0,7,"#ifdef ") == 0) {
-            if (indent == indentmatch && defs.find(getdef(line,true)) != defs.end()) {
-                elseIsTrue = false;
-                indentmatch++;
+            if (indent == indentmatch) {
+                std::string tag = getdef(line,true);
+                if (defs.find(tag) != defs.end()) {
+                    elseIsTrue = false;
+                    indentmatch++;
+                } else if (undefs.find(tag) != undefs.end()) {
+                    elseIsTrue = true;
+                    indentmatch++;
+                    suppressCurrentCodePath = true;
+                }
             }
             ++indent;
 
             if (indent == indentmatch + 1)
                 elseIsTrue = true;
         } else if (line.compare(0,8,"#ifndef ") == 0) {
-            if (indent == indentmatch && defs.find(getdef(line,false)) == defs.end()) {
-                elseIsTrue = false;
-                indentmatch++;
-            }
-            ++indent;
+            if (indent == indentmatch) {
+                std::string tag = getdef(line,false);
+                if (defs.find(tag) == defs.end()) {
+                    elseIsTrue = false;
+                    indentmatch++;
+                } else if (undefs.find(tag) != undefs.end()) {
+                    elseIsTrue = false;
+                    indentmatch++;
+                    suppressCurrentCodePath = false;
+                }
+                ++indent;
 
-            if (indent == indentmatch + 1)
-                elseIsTrue = true;
-        } else if (line.compare(0,4,"#if ") == 0) {
+                if (indent == indentmatch + 1)
+                    elseIsTrue = true;
+            }
+        } else if (!suppressCurrentCodePath && line.compare(0,4,"#if ") == 0) {
             if (indent == indentmatch && match_cfg_def(defs, line.substr(4))) {
                 elseIsTrue = false;
                 indentmatch++;
@@ -1799,46 +1820,58 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 elseIsTrue = true;
         } else if (line.compare(0,6,"#elif ") == 0 || line.compare(0,5,"#else") == 0) {
             if (!elseIsTrue) {
-                if (indentmatch == indent)
+                if (indentmatch == indent) {
                     indentmatch = indent - 1;
+                }
             } else {
-                if (indentmatch == indent)
+                if (indentmatch == indent) {
                     indentmatch = indent - 1;
-                else if (indentmatch == indent - 1) {
+                } else if (indentmatch == indent - 1) {
                     if (line.compare(0,5,"#else")==0 || match_cfg_def(defs,line.substr(6))) {
                         indentmatch = indent;
                         elseIsTrue = false;
                     }
                 }
             }
+            if (suppressCurrentCodePath) {
+                suppressCurrentCodePath = false;
+                indentmatch = indent;
+            }
         } else if (line == "#endif") {
             --indent;
             if (indentmatch > indent) {
                 indentmatch = indent;
                 elseIsTrue = false;
+                suppressCurrentCodePath = false;
             }
         } else if (indentmatch == indent) {
-            if (line.compare(0,8,"#define ")==0) {
+            if (!suppressCurrentCodePath && line.compare(0,8,"#define ")==0) {
                 // no value
+                std::string tag = line.substr(8);
                 if (line.find_first_of("( ", 8) == std::string::npos)
-                    defs[line.substr(8)] = "";
+                    defs[tag] = "";
 
                 // define value
                 else if (line.find("(") == std::string::npos) {
                     const std::string::size_type pos = line.find(" ", 8);
-                    defs[line.substr(8,pos-8)] = line.substr(pos+1);
+                    tag = line.substr(8,pos-8);
+                    defs[tag] = line.substr(pos+1);
+                }
+
+                if (undefs.find(tag) != undefs.end()) {
+                    defs.erase(tag);
                 }
             }
 
-            else if (line.compare(0,7,"#undef ") == 0) {
+            else if (!suppressCurrentCodePath && line.compare(0,7,"#undef ") == 0) {
                 defs.erase(line.substr(7));
             }
 
-            else if (line.compare(0,7,"#error ") == 0) {
+            else if (!suppressCurrentCodePath && line.compare(0,7,"#error ") == 0) {
                 error(filePath, linenr, line.substr(7));
             }
 
-            else if (line.compare(0,9,"#include ")==0) {
+            else if (!suppressCurrentCodePath && line.compare(0,9,"#include ")==0) {
                 std::string filename(line.substr(9));
 
                 const HeaderTypes headerType = getHeaderFileName(filename);
@@ -1882,7 +1915,8 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 continue;
             }
 
-            ostr << line;
+            if (!suppressCurrentCodePath)
+                ostr << line;
         }
 
         // A line has been read..
