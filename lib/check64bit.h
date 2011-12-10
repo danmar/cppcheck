@@ -76,7 +76,7 @@ private:
 
     std::string classInfo() const {
         return "Check if there is 64-bit portability issues:\n"
-               " * assign address to/from int/long";
+               "* assign address to/from int/long";
     }
 };
 /// @}
