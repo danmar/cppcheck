@@ -50,7 +50,7 @@
 # save "cppcheck --doc" output on wiki
 #
 # To upload a file to the release system through scp:
-# scp readme.txt hyd_danmar,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/1.51/
+# scp readme.txt danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/1.51/
 #
 
 # Tag to use
@@ -64,6 +64,5 @@ git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
 git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
 
-# scp cppcheck-1.49.zip hyd_danmar,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/1.49/
-
+# scp cppcheck-1.52.zip danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/1.52/
 
