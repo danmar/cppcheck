@@ -702,7 +702,7 @@ void CmdLineParser::PrintHelp()
               "                         checking is limited to the given configuration.\n"
               "                         Example: '-DDEBUG=1 -D__cplusplus'.\n"
               "    -U<ID>               By default Cppcheck checks all configurations.\n"
-              "                         Use '-U' to explicitely hide certain #ifdef <ID> code\n"
+              "                         Use '-U' to explicitly hide certain #ifdef <ID> code\n"
               "                         paths from checking.\n"
               "                         Example: '-UDEBUG'\n"
               "    --enable=<id>        Enable additional checks. The available ids are:\n"

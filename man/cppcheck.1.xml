@@ -175,7 +175,7 @@ Example: -DDEBUG=1 -D__cplusplus</para>
         <varlistentry>
             <term><option>-U&lt;id&gt;</option></term>
             <listitem>
-                <para>By default Cppcheck checks all configurations. Use '-U' to explicitely hide certain #ifdef &lt;id&gt; code paths from checking. 
+                <para>By default Cppcheck checks all configurations. Use '-U' to explicitly hide certain #ifdef &lt;id&gt; code paths from checking. 
 Example: '-UDEBUG'</para>
             </listitem>
         </varlistentry>
