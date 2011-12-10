@@ -203,15 +203,17 @@ public:
      * \param tok token for the function name
      * \param par on what parameter is the array used
      * \param arrayInfo the array information
+     * \param functionNames function names (to prevent endless recursion)
      */
-    void checkFunctionParameter(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo);
+    void checkFunctionParameter(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo, std::list<std::string> functionNames);
 
     /**
      * Helper function that checks if the array is used and if so calls the checkFunctionCall
      * @param tok token that matches "%var% ("
      * @param arrayInfo the array information
+     * \param functionNames function names (to prevent endless recursion)
      */
-    void checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo);
+    void checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo, std::list<std::string> functionNames);
 
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);

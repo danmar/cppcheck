@@ -33,8 +33,6 @@ public:
 
 private:
 
-
-
     void check(const char code[], bool experimental = true, const std::string &filename="test.cpp") {
         // Clear the error buffer..
         errout.str("");
@@ -724,6 +722,14 @@ private:
               "    foo(p+1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #3168
+        check("void a(char *p) { memset(p,0,100); }\n"
+              "void b() {\n"
+              "    char buf[10];\n"
+              "    a(buf);"
+              "}");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Buffer access out-of-bounds: buf\n", errout.str());
     }
 
 

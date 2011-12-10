@@ -514,7 +514,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 
 
 
-void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo)
+void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo, std::list<std::string> functionNames)
 {
     // total_size : which parameter in function call takes the total size?
     std::map<std::string, unsigned int> total_size;
@@ -677,21 +677,31 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                         }
                     }
                 }
+
+                // Calling function..
+                if (Token::Match(ftok, "%var% (")) {
+                    ArrayInfo ai(arrayInfo);
+                    ai.varid(parameterVarId);
+                    checkFunctionCall(ftok, ai, functionNames);
+                }
             }
         }
     }
 }
 
 
-void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo)
+void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo, std::list<std::string> functionNames)
 {
+    if (std::find(functionNames.begin(), functionNames.end(), tok->str()) != functionNames.end())
+        return;
+    functionNames.push_back(tok->str());
 
     // 1st parameter..
     if (Token::Match(tok->tokAt(2), "%varid% ,|)", arrayInfo.varid()))
-        checkFunctionParameter(*tok, 1, arrayInfo);
+        checkFunctionParameter(*tok, 1, arrayInfo, functionNames);
     else if (Token::Match(tok->tokAt(2), "%varid% + %num% ,|)", arrayInfo.varid())) {
         const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok->strAt(4))));
-        checkFunctionParameter(*tok, 1, ai);
+        checkFunctionParameter(*tok, 1, ai, functionNames);
     }
 
     // goto 2nd parameter and check it..
@@ -704,10 +714,10 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
             break;
         if (tok2->str() == ",") {
             if (Token::Match(tok2, ", %varid% ,|)", arrayInfo.varid()))
-                checkFunctionParameter(*tok, 2, arrayInfo);
+                checkFunctionParameter(*tok, 2, arrayInfo, functionNames);
             else if (Token::Match(tok2, ", %varid% + %num% ,|)", arrayInfo.varid())) {
                 const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(3))));
-                checkFunctionParameter(*tok, 2, ai);
+                checkFunctionParameter(*tok, 2, ai, functionNames);
             }
             break;
         }
@@ -901,9 +911,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // memset, memcmp, memcpy, strncpy, fgets..
         if (varid == 0 && size > 0) {
             if (Token::Match(tok, ("%var% ( " + varnames + " ,").c_str()))
-                checkFunctionParameter(*tok, 1, arrayInfo);
+                checkFunctionParameter(*tok, 1, arrayInfo, std::list<std::string>());
             if (Token::Match(tok, ("%var% ( %var% , " + varnames + " ,").c_str()))
-                checkFunctionParameter(*tok, 2, arrayInfo);
+                checkFunctionParameter(*tok, 2, arrayInfo, std::list<std::string>());
         }
 
         // Loop..
@@ -975,7 +985,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 continue;
 
             const ArrayInfo arrayInfo1(varid, varnames, total_size / size, size);
-            checkFunctionCall(tok, arrayInfo1);
+            const std::list<std::string> functionNames;
+            checkFunctionCall(tok, arrayInfo1, functionNames);
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
@@ -1099,7 +1110,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
         // Check function call..
         if (Token::Match(tok, "%var% (")) {
-            checkFunctionCall(tok, arrayInfo);
+            checkFunctionCall(tok, arrayInfo, std::list<std::string>());
         }
 
         if (Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", arrayInfo.varid())) {
