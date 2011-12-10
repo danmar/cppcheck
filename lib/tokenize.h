@@ -218,8 +218,8 @@ public:
     /** Insert array size where it isn't given */
     void arraySize();
 
-    /** Simplify labels */
-    void labels();
+    /** Simplify labels and 'case|default' syntaxes */
+    void simplifyLabelsCaseDefault();
 
     /** Remove macros in global scope */
     void removeMacrosInGlobalScope();

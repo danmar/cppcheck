@@ -2096,8 +2096,8 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
-    // simplify labels..
-    labels();
+    // simplify labels and 'case|default'-like syntaxes
+    simplifyLabelsCaseDefault();
 
     // simplify '[;{}] * & ( %any% ) =' to '%any% ='
     simplifyMulAndParens();
@@ -2611,9 +2611,9 @@ void Tokenizer::arraySize()
     }
 }
 
-/** simplify labels in the code.. add an ";" */
+/** simplify labels and case|default in the code: add a ";" if not already in.*/
 
-void Tokenizer::labels()
+void Tokenizer::simplifyLabelsCaseDefault()
 {
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, ") const| {")) {
@@ -2626,30 +2626,20 @@ void Tokenizer::labels()
                     --indentlevel;
                     if (!indentlevel)
                         break;
-                } else if (tok->str() == "(")
+                } else if (tok->str() == "(" || tok->str() == "[")
                     tok = tok->link();
 
-                else if (tok->str() == "case") {
+                if (Token::Match(tok, "[;{}] case")) {
                     while (NULL != (tok = tok->next())) {
                         if (tok->str() == ":")
                             break;
                     }
-                    if (tok && (!(tok->next()) || tok->next()->str() != ";")) {
+                    if (Token::Match(tok, ": !!;")) {
                         tok->insertToken(";");
-                        tok = tok->next();
                     }
-                }
-                // simplify label.. except for unhandled macro
-                if (Token::Match(tok, "[;{}] %var% :")
-                    && !Token::Match(tok->next(), "public|protected|private")
-                    && tok->strAt(3) != ";") {
-                    for (Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
-                        if (Token::Match(tok2, "%var%")) {
-                            tok->tokAt(2)->insertToken(";");
-                            break;
-                        } else if (!Token::Match(tok2, "[(*&{]"))
-                            break;
-                    }
+                } else if (Token::Match(tok, "[;{}] %var% : !!;")) {
+                    tok = tok->tokAt(2);
+                    tok->insertToken(";");
                 }
             }
         }
