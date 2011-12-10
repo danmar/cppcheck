@@ -1935,35 +1935,26 @@ bool Tokenizer::tokenize(std::istream &code,
             tok->str(MathLib::toString(tok->linenr()));
     }
 
-    // 'double sharp' token concatenation
-    {
-        bool goback = false;
-        for (Token *tok = _tokens; tok; tok = tok->next()) {
-            if (goback) {
-                goback = false;
+    // token concatenation
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        // TODO: pattern should be "%var%|%num% ## %var%|%num%"
+        if (Token::Match(tok, "%any% ## %any%") &&
+            (tok->isName() || tok->isNumber()) &&
+            (tok->tokAt(2)->isName() || tok->tokAt(2)->isNumber())) {
+            tok->str(tok->str() + tok->strAt(2));
+            tok->deleteNext(2);
+            if (tok->previous())
                 tok = tok->previous();
-            }
-            // TODO: pattern should be "%var%|%num% ## %var%|%num%"
-            if (Token::Match(tok, "%any% ## %any%") &&
-                (tok->isName() || tok->isNumber()) &&
-                (tok->tokAt(2)->isName() || tok->tokAt(2)->isNumber())) {
-                tok->str(tok->str() + tok->strAt(2));
-                tok->deleteNext(2);
-                goback = true;
-            }
         }
     }
 
     // Convert C# code
     if (_files[0].find(".cs")) {
         for (Token *tok = _tokens; tok; tok = tok->next()) {
-            if (Token::Match(tok, "%type% [ ] %var% [=;]") &&
-                (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
-                tok->deleteNext(2);
-                tok->insertToken("*");
+            if (Token::Match(tok, "[;{}] %type% [ ] %var% [=;]")) {
                 tok = tok->tokAt(2);
-                if (tok->next()->str() == "=")
-                    tok = tok->next();
+                tok->str("*");
+                tok->deleteNext();
             }
         }
     }
@@ -2629,12 +2620,9 @@ void Tokenizer::simplifyLabelsCaseDefault()
             // Simplify labels in the executable scope..
             unsigned int indentlevel = 0;
             while (NULL != (tok = tok->next())) {
-                if (tok->str() == "{") {
-                    if (tok->previous() && tok->previous()->str() == "=")
-                        tok = tok->link();
-                    else
-                        ++indentlevel;
-                } else if (tok->str() == "}") {
+                if (tok->str() == "{")
+                    ++indentlevel;
+                else if (tok->str() == "}") {
                     --indentlevel;
                     if (!indentlevel)
                         break;
@@ -5715,15 +5703,18 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "= {")) {
             tok = tok->next()->link();
+            if (!tok)
+                break;
         }
 
         if (only_k_r_fpar) {
-            if (tok->link()) {
+            if (tok->str() == "(" || tok->str() == "{") {
                 tok = tok->link();
+                if (!tok)
+                    break;
                 if (tok->next() && Token::Match(tok, ") !!{"))
                     tok = tok->next();
-                else
-                    continue;
+                else continue;
             } else
                 continue;
         }
@@ -5777,9 +5768,10 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
         if (Token::Match(tok2, "%type% *| %var% ,|=")) {
             const bool isPointer = (tok2->next()->str() == "*");
             const Token *varName = tok2->tokAt((isPointer ? 2 : 1));
+            Token *endDeclaration = varName->next();
 
             if (varName->str() != "operator") {
-                tok2 = varName->next(); // The ',' or '=' token
+                tok2 = endDeclaration; // The ',' or '=' token
 
                 if (isstatic && tok2->str() == "=") {
                     if (Token::Match(tok2->next(), "%num% ,"))
@@ -5874,69 +5866,70 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                 --typelen;
             } else {
                 tok2 = NULL;
+                typelen = 0;
             }
         } else {
             tok2 = NULL;
+            typelen = 0;
         }
 
-        if (!tok2)
-            continue;
+        if (tok2) {
+            if (tok2->str() == ",") {
+                tok2->str(";");
+                insertTokens(tok2, type0, typelen);
+                std::stack<Token *> link1;
+                std::stack<Token *> link2;
+                while (((typelen--) > 0) && (NULL != (tok2 = tok2->next()))) {
+                    if (tok2->str() == "(")
+                        link1.push(tok2);
+                    else if (tok2->str() == ")" && !link1.empty()) {
+                        Token::createMutualLinks(tok2, link1.top());
+                        link1.pop();
+                    }
 
-        if (tok2->str() == ",") {
-            tok2->str(";");
-            insertTokens(tok2, type0, typelen);
-            std::stack<Token *> link1;
-            std::stack<Token *> link2;
-            while (((typelen--) > 0) && (NULL != (tok2 = tok2->next()))) {
-                if (tok2->str() == "(")
-                    link1.push(tok2);
-                else if (tok2->str() == ")" && !link1.empty()) {
-                    Token::createMutualLinks(tok2, link1.top());
-                    link1.pop();
-                }
-
-                else if (tok2->str() == "[")
-                    link2.push(tok2);
-                else if (tok2->str() == "]" && !link2.empty()) {
-                    Token::createMutualLinks(tok2, link2.top());
-                    link2.pop();
+                    else if (tok2->str() == "[")
+                        link2.push(tok2);
+                    else if (tok2->str() == "]" && !link2.empty()) {
+                        Token::createMutualLinks(tok2, link2.top());
+                        link2.pop();
+                    }
                 }
             }
-        }
 
-        else {
-            Token *eq = tok2;
+            else {
+                Token *eq = tok2;
 
-            unsigned int level = 0;
-            while (tok2) {
-                if (Token::Match(tok2, "[{(]"))
-                    tok2 = tok2->link();
+                unsigned int level = 0;
+                while (tok2) {
+                    if (Token::Match(tok2, "[{(]"))
+                        tok2 = tok2->link();
 
-                else if (tok2->str() == "<") {
-                    if (tok2->previous()->isName() && !tok2->previous()->varId())
-                        ++level;
-                }
-
-                else if (level > 0 && tok2->str() == ">")
-                    --level;
-
-                else if (level == 0 && strchr(";,", tok2->str()[0])) {
-                    // "type var ="   =>   "type var; var ="
-                    Token *VarTok = type0->tokAt((int)typelen);
-                    while (Token::Match(VarTok, "*|&|const"))
-                        VarTok = VarTok->next();
-                    insertTokens(eq, VarTok, 2);
-                    eq->str(";");
-
-                    // "= x, "   =>   "= x; type "
-                    if (tok2->str() == ",") {
-                        tok2->str(";");
-                        insertTokens(tok2, type0, typelen);
+                    else if (tok2->str() == "<") {
+                        if (tok2->previous()->isName() && !tok2->previous()->varId())
+                            ++level;
                     }
-                    break;
-                }
 
-                tok2 = tok2->next();
+                    else if (level > 0 && tok2->str() == ">")
+                        --level;
+
+                    else if (level == 0 && strchr(";,", tok2->str()[0])) {
+                        // "type var ="   =>   "type var; var ="
+                        Token *VarTok = type0->tokAt((int)typelen);
+                        while (Token::Match(VarTok, "*|&|const"))
+                            VarTok = VarTok->next();
+                        insertTokens(eq, VarTok, 2);
+                        eq->str(";");
+
+                        // "= x, "   =>   "= x; type "
+                        if (tok2->str() == ",") {
+                            tok2->str(";");
+                            insertTokens(tok2, type0, typelen);
+                        }
+                        break;
+                    }
+
+                    tok2 = tok2->next();
+                }
             }
         }
     }
