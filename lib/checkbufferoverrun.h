@@ -203,19 +203,22 @@ public:
      * \param tok token for the function name
      * \param par on what parameter is the array used
      * \param arrayInfo the array information
+     * \param callstack call stack. This is used to prevent recursion and to provide better error messages. Pass a empty list from checkScope etc.
      */
-    void checkFunctionParameter(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo);
+    void checkFunctionParameter(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo, std::list<const Token *> callstack);
 
     /**
      * Helper function that checks if the array is used and if so calls the checkFunctionCall
      * @param tok token that matches "%var% ("
      * @param arrayInfo the array information
+     * \param callstack call stack. This is used to prevent recursion and to provide better error messages. Pass a empty list from checkScope etc.
      */
-    void checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo);
+    void checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo, std::list<const Token *> callstack);
 
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void bufferOverrunError(const Token *tok, const std::string &varnames = "");
+    void bufferOverrunError(const std::list<const Token *> &callstack, const std::string &varnames = "");
     void strncatUsageError(const Token *tok);
     void outOfBoundsError(const Token *tok, const std::string &what, const bool show_size_info, const MathLib::bigint &supplied_size, const MathLib::bigint &actual_size);
     void sizeArgumentAsCharError(const Token *tok);

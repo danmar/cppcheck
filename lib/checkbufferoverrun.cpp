@@ -75,17 +75,27 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const std::list<const Token 
     reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str());
 }
 
-void CheckBufferOverrun::bufferOverrunError(const Token *tok, const std::string &varnames)
+static std::string bufferOverrunMessage(std::string varnames)
 {
-    std::string v = varnames;
-    while (v.find(" ") != std::string::npos)
-        v.erase(v.find(" "), 1);
+    while (varnames.find(" ") != std::string::npos)
+        varnames.erase(varnames.find(" "), 1);
 
     std::string errmsg("Buffer access out-of-bounds");
-    if (!v.empty())
-        errmsg += ": " + v;
+    if (!varnames.empty())
+        errmsg += ": " + varnames;
+    
+    return errmsg;
+}
 
-    reportError(tok, Severity::error, "bufferAccessOutOfBounds", errmsg);
+void CheckBufferOverrun::bufferOverrunError(const Token *tok, const std::string &varnames)
+{
+    reportError(tok, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames));
+}
+
+
+void CheckBufferOverrun::bufferOverrunError(const std::list<const Token *> &callstack, const std::string &varnames)
+{
+    reportError(callstack, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames));
 }
 
 void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat)
@@ -513,8 +523,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 }
 
 
-
-void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo)
+void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo, std::list<const Token *> callstack)
 {
     // total_size : which parameter in function call takes the total size?
     std::map<std::string, unsigned int> total_size;
@@ -572,7 +581,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                         for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
                             elements *= arrayInfo.num(i);
                         if (sz < 0 || sz > int(elements * arrayInfo.element_size())) {
-                            bufferOverrunError(&tok, arrayInfo.varname());
+                            bufferOverrunError(callstack, arrayInfo.varname());
                         }
                     }
 
@@ -666,16 +675,22 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                     if (Token::Match(ftok->previous(), "=|;|{|}|%op% %var% [ %num% ]")) {
                         const MathLib::bigint index = MathLib::toLongNumber(ftok->strAt(2));
                         if (index >= 0 && arrayInfo.num(0) > 0 && index >= arrayInfo.num(0)) {
-                            std::list<const Token *> callstack;
-                            callstack.push_back(&tok);
-                            callstack.push_back(ftok);
+                            std::list<const Token *> callstack2(callstack);
+                            callstack2.push_back(ftok);
 
                             std::vector<MathLib::bigint> indexes;
                             indexes.push_back(index);
 
-                            arrayIndexOutOfBoundsError(callstack, arrayInfo, indexes);
+                            arrayIndexOutOfBoundsError(callstack2, arrayInfo, indexes);
                         }
                     }
+                }
+
+                // Calling function..
+                if (Token::Match(ftok, "%var% (")) {
+                    ArrayInfo ai(arrayInfo);
+                    ai.varid(parameterVarId);
+                    checkFunctionCall(ftok, ai, callstack);
                 }
             }
         }
@@ -683,15 +698,27 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
 }
 
 
-void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo)
+void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo, std::list<const Token *> callstack)
 {
+    // Don't go deeper than 2 levels, the checking can get very slow
+    // when there is no limit
+    if (callstack.size() >= 2)
+        return;
+
+    // Prevent recursion
+    for (std::list<const Token*>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
+        // Same function name => bail out
+        if (tok->str() == (*it)->str())
+            return;
+    }
+    callstack.push_back(tok);
 
     // 1st parameter..
     if (Token::Match(tok->tokAt(2), "%varid% ,|)", arrayInfo.varid()))
-        checkFunctionParameter(*tok, 1, arrayInfo);
+        checkFunctionParameter(*tok, 1, arrayInfo, callstack);
     else if (Token::Match(tok->tokAt(2), "%varid% + %num% ,|)", arrayInfo.varid())) {
         const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok->strAt(4))));
-        checkFunctionParameter(*tok, 1, ai);
+        checkFunctionParameter(*tok, 1, ai, callstack);
     }
 
     // goto 2nd parameter and check it..
@@ -704,10 +731,10 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
             break;
         if (tok2->str() == ",") {
             if (Token::Match(tok2, ", %varid% ,|)", arrayInfo.varid()))
-                checkFunctionParameter(*tok, 2, arrayInfo);
+                checkFunctionParameter(*tok, 2, arrayInfo, callstack);
             else if (Token::Match(tok2, ", %varid% + %num% ,|)", arrayInfo.varid())) {
                 const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(3))));
-                checkFunctionParameter(*tok, 2, ai);
+                checkFunctionParameter(*tok, 2, ai, callstack);
             }
             break;
         }
@@ -900,10 +927,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
         // memset, memcmp, memcpy, strncpy, fgets..
         if (varid == 0 && size > 0) {
+            std::list<const Token *> callstack;
+            callstack.push_back(tok);
             if (Token::Match(tok, ("%var% ( " + varnames + " ,").c_str()))
-                checkFunctionParameter(*tok, 1, arrayInfo);
+                checkFunctionParameter(*tok, 1, arrayInfo, callstack);
             if (Token::Match(tok, ("%var% ( %var% , " + varnames + " ,").c_str()))
-                checkFunctionParameter(*tok, 2, arrayInfo);
+                checkFunctionParameter(*tok, 2, arrayInfo, callstack);
         }
 
         // Loop..
@@ -975,7 +1004,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 continue;
 
             const ArrayInfo arrayInfo1(varid, varnames, total_size / size, size);
-            checkFunctionCall(tok, arrayInfo1);
+            const std::list<const Token *> callstack;
+            checkFunctionCall(tok, arrayInfo1, callstack);
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
@@ -1099,7 +1129,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
         // Check function call..
         if (Token::Match(tok, "%var% (")) {
-            checkFunctionCall(tok, arrayInfo);
+            const std::list<const Token *> callstack;
+            checkFunctionCall(tok, arrayInfo, callstack);
         }
 
         if (Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", arrayInfo.varid())) {
