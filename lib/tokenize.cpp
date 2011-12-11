@@ -2011,15 +2011,18 @@ bool Tokenizer::tokenize(std::istream &code,
             const Token *end = tok;
             while (end && end->str() != ";")
                 end = end->next();
+
             Token::eraseTokens(tok, end);
 
-            if (tok) {
-                // insert "asm ( ) ;"
-                tok->str("asm");
-                tok->insertToken("(");
-                tok = tok->next();
-                tok->insertToken(")");
-            }
+            // insert "asm ( ) ;"
+            tok->str("asm");
+            // it can happen that 'end' is NULL when wrong code is inserted
+            if (!tok->next())
+                tok->insertToken(";");
+            tok->insertToken(")");
+            tok->insertToken("(");
+            // jump to ';' and continue
+            tok = tok->tokAt(3);
         }
     }
 
@@ -5500,13 +5503,10 @@ void Tokenizer::simplifyFunctionParameters()
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (tok->str() == "{" || tok->str() == "[" || tok->str() == "(") {
             tok = tok->link();
-            if (!tok)
-                break;
-            continue;
         }
 
         // Find the function e.g. foo( x ) or foo( x, y )
-        if (Token::Match(tok, "%var% ( %var% [,)]")) {
+        else if (Token::Match(tok, "%var% ( %var% [,)]")) {
             // We have found old style function, now we need to change it
 
             // backup pointer to the '(' token
@@ -5806,31 +5806,36 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
             }
         }
 
-        else if (Token::Match(tok2, "%type% %var% [ %num% ] ,|=|[") ||
-                 Token::Match(tok2, "%type% %var% [ %var% ] ,|=|[")) {
-            tok2 = tok2->tokAt(5);    // The ',' token
-            while (Token::Match(tok2, "[ %num% ]") || Token::Match(tok2, "[ %var% ]"))
-                tok2 = tok2->tokAt(3);
-            if (!Token::Match(tok2, "=|,")) {
-                tok2 = NULL;
-            }
+        else if (Token::Match(tok2, "%type% %var% [ %any% ] ,|=|[")) {
+            tok2 = tok2->tokAt(2);
+            if (tok2->next()->isName() || tok2->next()->isNumber()) {
+                tok2 = tok2->link()->next();    // The ',' token
+                while (Token::Match(tok2, "[ %any% ]") &&
+                       (tok2->next()->isName() || tok2->next()->isNumber()))
+                    tok2 = tok2->link()->next();
+                if (!Token::Match(tok2, "=|,")) {
+                    tok2 = NULL;
+                }
 
-            if (tok2 && tok2->str() == "=") {
-                while (tok2 && tok2->str() != ",") {
-                    if (tok2->str() == "{")
-                        tok2 = tok2->link();
-
-                    tok2 = tok2->next();
-
+                if (tok2 && tok2->str() == "=") {
+                    while (tok2 && tok2->str() != "," && tok2->str() != ";") {
+                        if (tok2->str() == "{")
+                            tok2 = tok2->link();
+                        tok2 = tok2->next();
+                    }
                     if (tok2 && tok2->str() == ";")
                         tok2 = NULL;
                 }
-            }
+            } else
+                tok2 = NULL;
         }
 
-        else if (Token::Match(tok2, "%type% * %var% [ %num% ] ,") ||
-                 Token::Match(tok2, "%type% * %var% [ %var% ] ,")) {
-            tok2 = tok2->tokAt(6);    // The ',' token
+        else if (Token::Match(tok2, "%type% * %var% [ %any% ] ,")) {
+            tok2 = tok2->tokAt(3);
+            if (tok2->next()->isName() || tok2->next()->isNumber())
+                tok2 = tok2->link()->next();    // The ',' token
+            else
+                tok2 = NULL;
         }
 
         else if (Token::Match(tok2, "%type% <")) {
@@ -7577,10 +7582,11 @@ void Tokenizer::simplifyGoto()
             tok = tok->link();
 
         else if (tok->str() == "{") {
-            if (Token::Match(tok->tokAt(-2),"namespace|struct|class|union %var% {") ||
-                Token::simpleMatch(tok->previous(),"namespace {"))
+            if (Token::Match(tok->tokAt(-2),"class|namespace|struct|union %var% {") ||
+                Token::Match(tok->previous(),"namespace|struct|union {"))
                 ++indentspecial;
-            else if (!beginfunction && !indentlevel)
+            else if ((!beginfunction && !indentlevel) ||
+                     (tok->previous() && tok->previous()->str() == "="))
                 tok = tok->link();
             else
                 ++indentlevel;
@@ -7601,23 +7607,27 @@ void Tokenizer::simplifyGoto()
             }
         }
 
-        else if (Token::Match(tok, "goto %var% ;"))
-            gotos.push_back(tok);
-
         if (!indentlevel && Token::Match(tok, ") const| {")) {
             gotos.clear();
             beginfunction = tok;
         }
 
-        if (indentlevel == 1 && Token::Match(tok->previous(), "[{};] %var% : ;") && tok->str() != "default") {
+        else if (indentlevel && Token::Match(tok, "[{};] goto %var% ;"))
+            gotos.push_back(tok->next());
+
+        else if (indentlevel == 1 && Token::Match(tok, "[{};] %var% : ;") && tok->next()->str() != "default") {
             // Is this label at the end..
             bool end = false;
             unsigned int level = 0;
-            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
+            for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(" || tok2->str() == "[")
                     tok2 = tok2->link();
 
-                if (tok2->str() == "}") {
+                else if (tok2->str() == "{") {
+                    ++level;
+                }
+
+                else if (tok2->str() == "}") {
                     if (!level) {
                         end = true;
                         break;
@@ -7625,21 +7635,17 @@ void Tokenizer::simplifyGoto()
                     --level;
                 }
 
-                else if (tok2->str() == "{") {
-                    ++level;
-                }
-
-                if ((Token::Match(tok2->previous(), "[{};] %var% : ;") && tok2->str() != "default") || tok2->str() == "goto") {
+                if ((Token::Match(tok2, "[{};] %var% : ;") && tok2->next()->str() != "default") ||
+                    Token::Match(tok2, "[{};] goto %var% ;")) {
                     break;
                 }
             }
             if (!end)
                 continue;
 
-            const std::string name(tok->str());
+            const std::string name(tok->next()->str());
 
-            tok->deleteNext(2);
-            tok->deleteThis();
+            tok->deleteNext(3);
 
             // This label is at the end of the function.. replace all matching goto statements..
             for (std::list<Token *>::iterator it = gotos.begin(); it != gotos.end(); ++it) {
@@ -7657,7 +7663,7 @@ void Tokenizer::simplifyGoto()
                     std::list<Token*> links3;
                     unsigned int lev = 0;
                     unsigned int roundbraces = 0;
-                    for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
+                    for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                         if (tok2->str() == ")") {
                             if (!roundbraces)
                                 break;
