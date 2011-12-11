@@ -4841,8 +4841,9 @@ void Tokenizer::removeRedundantSemicolons()
 
 bool Tokenizer::simplifyIfAddBraces()
 {
-    for (Token *tok = _tokens; tok; tok = tok ? tok->next() : NULL) {
-        if (tok->str() == "(" && !Token::Match(tok->previous(), "[;{}]")) {
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (tok->str() == "(" || tok->str() == "[" ||
+            (tok->str() == "{" && tok->previous() && tok->previous()->str() == "=")) {
             tok = tok->link();
             continue;
         }
@@ -4861,7 +4862,7 @@ bool Tokenizer::simplifyIfAddBraces()
             tok = tok->next()->link();
 
             // ')' should be followed by '{'
-            if (!tok || Token::simpleMatch(tok, ") {"))
+            if (Token::simpleMatch(tok, ") {"))
                 continue;
         }
 
@@ -4878,7 +4879,7 @@ bool Tokenizer::simplifyIfAddBraces()
         // If there is no code after the if(), abort
         if (!tok->next()) {
             // This is a syntax error and we should call syntaxError() and return false but
-            // many tokenizer tests are written with this syntax error so just ingore it.
+            // many tokenizer tests are written with this syntax error so just ignore it.
             return true;
         }
 
@@ -5523,7 +5524,11 @@ void Tokenizer::simplifyFunctionParameters()
 
                 if (argumentNames.find(tok->str()) != argumentNames.end()) {
                     // Invalid code, two arguments with the same name.
-                    // TODO, print error perhaps?
+                    // syntaxError(tok);
+                    // If you uncomment it, testrunner will fail:
+                    // testclass.cpp:3910
+                    // because of void Fred::foo5(int, int).
+                    // how should this be handled?
                     bailOut = true;
                     break;
                 }
@@ -5537,8 +5542,6 @@ void Tokenizer::simplifyFunctionParameters()
 
             if (bailOut) {
                 tok = tok1->link();
-                if (!tok)
-                    return;
                 continue;
             }
 

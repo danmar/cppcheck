@@ -5986,12 +5986,12 @@ private:
         tokenizeAndStringify("if()x");
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
 
-        // ticket #2873
+        // ticket #2873 - the fix is not needed anymore.
         {
             const char code[] = "void f() { "
-                                "( { if(*p) (*p) = x(); } ) "
+                                "(void) ( { if(*p) (*p) = x(); } ) "
                                 "}";
-            ASSERT_EQUALS("void f ( ) { ( { if ( * p ) { ( * p ) = x ( ) ; } } ) }",
+            ASSERT_EQUALS("void f ( ) { ( void ) ( { if ( * p ) { ( * p ) = x ( ) ; } } ) }",
                           tokenizeAndStringify(code));
         }
     }
