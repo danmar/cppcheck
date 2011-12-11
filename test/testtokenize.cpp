@@ -5991,7 +5991,7 @@ private:
             const char code[] = "void f() { "
                                 "(void) ( { if(*p) (*p) = x(); } ) "
                                 "}";
-            ASSERT_EQUALS("void f ( ) { ( void ) ( { if ( * p ) { ( * p ) = x ( ) ; } } ) }",
+            ASSERT_EQUALS("void f ( ) { ( void ) ( { if ( * p ) ( * p ) = x ( ) ; } ) }",
                           tokenizeAndStringify(code));
         }
     }
