@@ -2588,17 +2588,28 @@ bool Tokenizer::tokenize(std::istream &code,
 
 void Tokenizer::arraySize()
 {
+    bool addlength = false;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "%var% [ ] = { %str% }")) {
+        if (Token::Match(tok, "%var% [ ] = { %str% } ;")) {
             Token *t = tok->tokAt(3);
             t->deleteNext();
             t->next()->deleteNext();
+            addlength = true;
         }
 
-        if (Token::Match(tok, "%var% [ ] = {")) {
-            unsigned int sz = 1;
+        if (addlength || Token::Match(tok, "%var% [ ] = %str% ;")) {
+            tok = tok->next();
+            std::size_t sz = tok->strAt(3).length() - 1;
+            tok->insertToken(MathLib::toString<unsigned int>((unsigned int)sz));
+            addlength = false;
+            tok = tok->tokAt(5);
+        }
 
-            for (Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next()) {
+        else if (Token::Match(tok, "%var% [ ] = {")) {
+            unsigned int sz = 1;
+            tok = tok->next();
+            Token *end = tok->linkAt(3);
+            for (Token *tok2 = tok->tokAt(4); tok2 && tok2 != end; tok2 = tok2->next()) {
                 if (tok2->str() == "{" || tok2->str() == "(" || tok2->str() == "[")
                     tok2 = tok2->link();
                 else if (tok2->str() == "<") { // Bailout. TODO: When link() supports <>, this bailout becomes unnecessary
@@ -2613,12 +2624,9 @@ void Tokenizer::arraySize()
             }
 
             if (sz != 0)
-                tok->next()->insertToken(MathLib::toString<unsigned int>(sz));
-        }
+                tok->insertToken(MathLib::toString<unsigned int>(sz));
 
-        else if (Token::Match(tok, "%var% [ ] = %str% ;")) {
-            std::size_t sz = tok->strAt(4).length() - 1;
-            tok->next()->insertToken(MathLib::toString<unsigned int>((unsigned int)sz));
+            tok = end->next() ? end->next() : end;
         }
     }
 }
