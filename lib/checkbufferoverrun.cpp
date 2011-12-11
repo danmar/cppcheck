@@ -83,7 +83,7 @@ static std::string bufferOverrunMessage(std::string varnames)
     std::string errmsg("Buffer access out-of-bounds");
     if (!varnames.empty())
         errmsg += ": " + varnames;
-    
+
     return errmsg;
 }
 

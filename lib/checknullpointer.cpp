@@ -254,6 +254,15 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     if (Token::Match(tok->previous(), "delete %var%") || Token::Match(tok->tokAt(-3), "delete [ ] %var%"))
         return false;
 
+    // OK to check if pointer is null
+    // OK to take address of pointer
+    if (Token::Match(tok->previous(), "!|& %var% )|,|&&|%oror%"))
+        return false;
+
+    // OK to pass pointer to function
+    if (Token::Match(tok->previous(), ", %var% [,)]"))
+        return false;
+
     // unknown if it's a dereference
     unknown = true;
 
