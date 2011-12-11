@@ -4961,66 +4961,47 @@ bool Tokenizer::simplifyIfAddBraces()
     return true;
 }
 
-bool Tokenizer::simplifyDoWhileAddBracesHelper(Token *tok)
-{
-    if (Token::Match(tok->next(), "[),]")) {
-        // fix for #988
-        return false;
-    }
-
-    Token *tok1 = tok;  // token with "do"
-    Token *tok2 = NULL; // token with "while"
-    Token *tok3 = tok->next();
-
-    // skip loop body
-    bool result = false;
-    while (tok3) {
-        if (tok3->str() == "{") {
-            // skip all tokens until "}"
-            tok3 = tok3->link();
-        } else if (tok3->str() == "while") {
-            tok2 = tok3;
-            break;
-        } else if (Token::simpleMatch(tok3, "do {")) {
-            // Skip do{}while inside the current "do"
-            tok3 = tok3->next()->link();
-            if (Token::simpleMatch(tok3->next(), "while"))
-                tok3 = tok3->next();
-        } else if (Token::Match(tok3, "do !!{") &&
-                   !Token::Match(tok3->next(), "[),]")) {
-            // Handle do-while inside the current "do"
-            // first and return true to get the outer
-            // "do" to be handled later.
-            tok1 = tok3;
-            result = true;
-        }
-
-        tok3 = tok3->next();
-    }
-
-    if (tok2) {
-        // insert "{" after "do"
-        tok1->insertToken("{");
-
-        // insert "}" before "while"
-        tok2->previous()->insertToken("}");
-
-        Token::createMutualLinks(tok1->next(), tok2->previous());
-    } else
-        result = false;
-
-    return result;
-}
-
 void Tokenizer::simplifyDoWhileAddBraces()
 {
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "do !!{")) {
-            while (simplifyDoWhileAddBracesHelper(tok)) {
-                // Call until the function returns false to
-                // handle do-while inside do-while
+    //start from the last token and proceed backwards
+    Token *last = _tokens;
+    while (last && last->next())
+        last = last->next();
 
+    for (Token *tok = last; tok; tok = tok->previous()) {
+        // fix for #988
+        if (tok->str() == ")" || tok->str() == "]" ||
+            (tok->str() == "}" && Token::simpleMatch(tok->link()->previous(), "= {")))
+            tok = tok->link();
+
+        if (!Token::Match(tok, "do !!{"))
+            continue;
+
+        Token *tok1 = tok;  // token with "do"
+        Token *tok2 = NULL; // token with "while"
+
+        for (Token *tok3 = tok->next(); tok3; tok3 = tok3->next()) {
+            if (tok3->str() == "(" || tok3->str() == "[" || tok3->str() == "{") {
+                tok3 = tok3->link();
+            } else if (tok3->str() == "while") {
+                tok2 = tok3;
+                break;
+            } else if (Token::simpleMatch(tok3, "do {")) {
+                // Skip 'do { } while' inside the current "do"
+                tok3 = tok3->next()->link();
+                if (Token::simpleMatch(tok3->next(), "while"))
+                    tok3 = tok3->next();
             }
+        }
+
+        if (tok2) {
+            // insert "{" after "do"
+            tok1->insertToken("{");
+
+            // insert "}" before "while"
+            tok2->previous()->insertToken("}");
+
+            Token::createMutualLinks(tok1->next(), tok2->previous());
         }
     }
 }

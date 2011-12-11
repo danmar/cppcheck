@@ -596,13 +596,6 @@ public:
     bool validate() const;
 
     /**
-     * Helper function for simplifyDoWhileAddBraces()
-     * @param tok This must be a "do" token, which is
-     * not followed by "{".
-     */
-    bool simplifyDoWhileAddBracesHelper(Token *tok);
-
-    /**
      * Remove __declspec()
      */
     void simplifyDeclspec();
