@@ -2125,23 +2125,15 @@ bool Tokenizer::tokenize(std::istream &code,
                 while (tok->str() != "{")
                     tok = tok->next();
                 tok = tok->link();
-                if (!tok)
-                    break;
             }
 
             // skip executing scopes (ticket #1984)..
-            if (Token::simpleMatch(tok, "; {")) {
+            if (Token::simpleMatch(tok, "; {"))
                 tok = tok->next()->link();
-                if (!tok)
-                    break;
-            }
 
             // skip executing scopes (ticket #3183)..
-            if (Token::simpleMatch(tok, "( {")) {
+            if (Token::simpleMatch(tok, "( {"))
                 tok = tok->next()->link();
-                if (!tok)
-                    break;
-            }
 
             // skip executing scopes (ticket #1985)..
             if (Token::simpleMatch(tok, "try {")) {
@@ -2151,8 +2143,6 @@ bool Tokenizer::tokenize(std::istream &code,
                     if (Token::simpleMatch(tok, ") {"))
                         tok = tok->next()->link();
                 }
-                if (!tok)
-                    break;
             }
 
             // not start of statement?
@@ -7655,6 +7645,9 @@ void Tokenizer::simplifyGoto()
                 if (token->next()->str() == name) {
                     // Delete the "goto name;"
                     token = token->previous();
+                    // change 'tok' before 'goto' if it coincides with the ';' token after 'name'
+                    if (token->tokAt(3) == tok)
+                        tok = token;
                     token->deleteNext(3);
 
                     // Insert the statements..
@@ -7730,10 +7723,8 @@ void Tokenizer::simplifyGoto()
                     }
 
                     if (!ret) {
-                        token->insertToken("return");
-                        token = token->next();
                         token->insertToken(";");
-                        token = token->next();
+                        token->insertToken("return");
                     }
                 }
             }
