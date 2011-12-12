@@ -86,6 +86,7 @@ private:
         TEST_CASE(ifAddBraces13);
         TEST_CASE(ifAddBraces14); // #2610 - segfault: if()<{}
         TEST_CASE(ifAddBraces15); // #2616 - unknown macro before if
+        TEST_CASE(ifAddBraces16); // '} else' should be in the same line
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -750,6 +751,9 @@ private:
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify("; __asm__ (\"fnstcw %0\" : \"= m\" (old_cw));"));
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify("; __asm __volatile__ (\"ddd\") ;"));
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm__ volatile ( \"mov ax,bx\" );"));
+
+        // 'asm ( ) ;' should be in the same line
+        ASSERT_EQUALS(";\n\nasm ( ) ;", tokenizeAndStringify(";\n\n__asm__ volatile ( \"mov ax,bx\" );", true));
     }
 
 
@@ -940,6 +944,25 @@ private:
         // ticket #2616 - unknown macro before if
         ASSERT_EQUALS("{ A if ( x ) { y ( ) ; } }", tokenizeAndStringify("{A if(x)y();}", false));
     }
+
+    void ifAddBraces16() {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    if (a)\n"
+                            "        bar1 ();\n"
+                            "    \n"
+                            "    else\n"
+                            "        bar2 ();\n"
+                            "}\n";
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "if ( a ) {\n"
+                      "bar1 ( ) ;\n\n"
+                      "} else {\n"
+                      "bar2 ( ) ; }\n"
+                      "}", tokenizeAndStringify(code, true));
+    }
+
 
 
     void whileAddBraces() {

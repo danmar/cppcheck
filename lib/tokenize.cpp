@@ -4953,6 +4953,13 @@ bool Tokenizer::simplifyIfAddBraces()
         if (tempToken) {
             tempToken->insertToken("}");
             Token::createMutualLinks(tok, tempToken->next());
+
+            // move '}' in the same line as 'else' if there's it after the new token,
+            // except for '}' which is after '{ ; }'
+            tempToken = tempToken->next();
+            if (!Token::simpleMatch(tempToken->link(), "{ ; }") && tempToken->next() && tempToken->next()->str() == "else" &&
+                tempToken->next()->linenr() != tempToken->linenr())
+                tempToken->linenr(tempToken->next()->linenr());
         } else {
             // Can't insert matching "}" so give up.  This is fatal because it
             // causes unbalanced braces.
@@ -9360,6 +9367,18 @@ void Tokenizer::simplifyAsm()
         tok->insertToken("asm");
 
         Token::createMutualLinks(tok->tokAt(2), tok->tokAt(3));
+
+        //move the new tokens in the same line as ";" if available
+        tok = tok->tokAt(3);
+        if (tok->next() && tok->next()->str() == ";" &&
+            tok->next()->linenr() != tok->linenr()) {
+            unsigned int endposition = tok->next()->linenr();
+            tok = tok->tokAt(-3);
+            for (int i = 0; i < 4; ++i) {
+                tok = tok->next();
+                tok->linenr(endposition);
+            }
+        }
     }
 }
 
