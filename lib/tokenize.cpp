@@ -2618,8 +2618,10 @@ void Tokenizer::arraySize()
                 } else if (tok2->str() == ",") {
                     if (!Token::Match(tok2->next(), "[},]"))
                         ++sz;
-                    else
-                        tok2->deleteThis();
+                    else {
+                        tok2 = tok2->previous();
+                        tok2->deleteNext();
+                    }
                 }
             }
 
