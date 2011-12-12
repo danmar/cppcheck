@@ -917,7 +917,7 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
         path_length++;
     }
 
-    if (count) {
+    if (tok1 && count) {
         path = tok1->str() + " :: " + path;
         path_length++;
     }
@@ -1248,6 +1248,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
                         } else if (tok->str() == "<")
                             level++;
                     }
+                    if (!tok) // something is wrong so just bail
+                        return;
                 }
 
                 tok = tok->next();

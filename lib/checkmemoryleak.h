@@ -133,7 +133,7 @@ public:
      * @param tok token where memory is leaked
      * @param varname name of variable
      */
-    void memleakError(const Token *tok, const std::string &varname);
+    void memleakError(const Token *tok, const std::string &varname) const;
 
     /**
      * Report that there is a resource leak (fopen/popen/etc)
@@ -147,11 +147,11 @@ public:
      * @param tok token where error occurs
      * @param varname name of variable
      */
-    void deallocDeallocError(const Token *tok, const std::string &varname);
-    void deallocuseError(const Token *tok, const std::string &varname);
-    void mismatchSizeError(const Token *tok, const std::string &sz);
-    void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname);
-    void memleakUponReallocFailureError(const Token *tok, const std::string &varname);
+    void deallocDeallocError(const Token *tok, const std::string &varname) const;
+    void deallocuseError(const Token *tok, const std::string &varname) const;
+    void mismatchSizeError(const Token *tok, const std::string &sz) const;
+    void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname) const;
+    void memleakUponReallocFailureError(const Token *tok, const std::string &varname) const;
 
     /** What type of allocated memory does the given function return? */
     AllocType functionReturnType(const Token *tok, std::list<const Token *> *callstack = NULL) const;

@@ -352,12 +352,12 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
         Check::reportError(errmsg);
 }
 
-void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname)
+void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname) const
 {
     reportErr(tok, Severity::error, "memleak", "Memory leak: " + varname);
 }
 
-void CheckMemoryLeak::memleakUponReallocFailureError(const Token *tok, const std::string &varname)
+void CheckMemoryLeak::memleakUponReallocFailureError(const Token *tok, const std::string &varname) const
 {
     reportErr(tok, Severity::error, "memleakOnRealloc", "Common realloc mistake: \'" + varname + "\' nulled but not freed upon failure");
 }
@@ -370,22 +370,22 @@ void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &var
     reportErr(tok, Severity::error, "resourceLeak", errmsg);
 }
 
-void CheckMemoryLeak::deallocDeallocError(const Token *tok, const std::string &varname)
+void CheckMemoryLeak::deallocDeallocError(const Token *tok, const std::string &varname) const
 {
     reportErr(tok, Severity::error, "deallocDealloc", "Deallocating a deallocated pointer: " + varname);
 }
 
-void CheckMemoryLeak::deallocuseError(const Token *tok, const std::string &varname)
+void CheckMemoryLeak::deallocuseError(const Token *tok, const std::string &varname) const
 {
     reportErr(tok, Severity::error, "deallocuse", "Dereferencing '" + varname + "' after it is deallocated / released");
 }
 
-void CheckMemoryLeak::mismatchSizeError(const Token *tok, const std::string &sz)
+void CheckMemoryLeak::mismatchSizeError(const Token *tok, const std::string &sz) const
 {
     reportErr(tok, Severity::error, "mismatchSize", "The given size " + sz + " is mismatching");
 }
 
-void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname)
+void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname) const
 {
     reportErr(callstack, Severity::error, "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname);
 }

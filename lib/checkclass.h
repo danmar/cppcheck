@@ -209,13 +209,13 @@ private:
      * @brief set all variables in list assigned
      * @param usage reference to usage vector
      */
-    void assignAllVar(std::vector<Usage> &usage);
+    void assignAllVar(std::vector<Usage> &usage) const;
 
     /**
      * @brief set all variables in list not assigned and not initialized
      * @param usage reference to usage vector
      */
-    void clearAllVar(std::vector<Usage> &usage);
+    void clearAllVar(std::vector<Usage> &usage) const;
 
     /**
      * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist

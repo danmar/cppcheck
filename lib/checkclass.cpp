@@ -204,13 +204,13 @@ void CheckClass::initVar(const std::string &varname, const Scope *scope, std::ve
     }
 }
 
-void CheckClass::assignAllVar(std::vector<Usage> &usage)
+void CheckClass::assignAllVar(std::vector<Usage> &usage) const
 {
     for (size_t i = 0; i < usage.size(); ++i)
         usage[i].assign = true;
 }
 
-void CheckClass::clearAllVar(std::vector<Usage> &usage)
+void CheckClass::clearAllVar(std::vector<Usage> &usage) const
 {
     for (size_t i = 0; i < usage.size(); ++i) {
         usage[i].assign = false;
