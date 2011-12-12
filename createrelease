@@ -2,6 +2,9 @@
 #
 # A script for creating release packages. The release packages are create in the home directory.
 #
+# Test cppcheck on itself.
+#   cppcheck -j2 --inconclusive --enable=all lib
+#
 # Make sure "cppcheck --errorlist" works. For example with:
 # make test
 # cppcheck --errorlist > errlist.xml
