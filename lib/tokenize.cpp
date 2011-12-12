@@ -4926,7 +4926,7 @@ bool Tokenizer::simplifyIfAddBraces()
                 continue;
             }
 
-            if (tempToken->str() == "(") {
+            if (tempToken->str() == "(" || tempToken->str() == "[") {
                 tempToken = tempToken->link();
                 continue;
             }
@@ -4973,7 +4973,8 @@ void Tokenizer::simplifyDoWhileAddBraces()
     for (Token *tok = last; tok; tok = tok->previous()) {
         // fix for #988
         if (tok->str() == ")" || tok->str() == "]" ||
-            (tok->str() == "}" && Token::simpleMatch(tok->link()->previous(), "= {")))
+            (tok->str() == "}" && tok->link()->previous() &&
+             tok->link()->previous()->str() == "="))
             tok = tok->link();
 
         if (!Token::Match(tok, "do !!{"))
@@ -9059,8 +9060,8 @@ void Tokenizer::simplifyErrNoInWhile()
                 tok1 = tok1->previous();
 
             // erase "&& errno == EINTR"
+            tok1 = tok1->previous();
             Token::eraseTokens(tok1, endpar);
-            tok1->deleteThis();
 
             // tok is invalid.. move to endpar
             tok = endpar;
