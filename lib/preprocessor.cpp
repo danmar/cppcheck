@@ -1838,8 +1838,9 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 indentmatch = indent;
             }
         } else if (line == "#endif") {
-            --indent;
-            if (indentmatch > indent) {
+            if (indent > 0)
+                --indent;
+            if (indentmatch > indent || indent == 0) {
                 indentmatch = indent;
                 elseIsTrue = false;
                 suppressCurrentCodePath = false;
