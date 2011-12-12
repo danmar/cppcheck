@@ -218,6 +218,8 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
  */
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 {
+    const bool inconclusive = unknown;
+
     unknown = false;
 
     // Dereferencing pointer..
@@ -246,25 +248,29 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         tok->varId() == tok->tokAt(2)->varId())
         return true;
 
-    // Not a dereference..
-    if (Token::Match(tok->previous(), "[;{}] %var% ="))
-        return false;
+    // Check if it's NOT a pointer dereference.
+    // This is most useful in inconclusive checking
+    if (inconclusive) {
+        // Not a dereference..
+        if (Token::Match(tok->previous(), "[;{}] %var% ="))
+            return false;
 
-    // OK to delete a null
-    if (Token::Match(tok->previous(), "delete %var%") || Token::Match(tok->tokAt(-3), "delete [ ] %var%"))
-        return false;
+        // OK to delete a null
+        if (Token::Match(tok->previous(), "delete %var%") || Token::Match(tok->tokAt(-3), "delete [ ] %var%"))
+            return false;
 
-    // OK to check if pointer is null
-    // OK to take address of pointer
-    if (Token::Match(tok->previous(), "!|& %var% )|,|&&|%oror%"))
-        return false;
+        // OK to check if pointer is null
+        // OK to take address of pointer
+        if (Token::Match(tok->previous(), "!|& %var% )|,|&&|%oror%"))
+            return false;
 
-    // OK to pass pointer to function
-    if (Token::Match(tok->previous(), ", %var% [,)]"))
-        return false;
+        // OK to pass pointer to function
+        if (Token::Match(tok->previous(), ", %var% [,)]"))
+            return false;
 
-    // unknown if it's a dereference
-    unknown = true;
+        // unknown if it's a dereference
+        unknown = true;
+    }
 
     // assume that it's not a dereference (no false positives)
     return false;
@@ -355,7 +361,7 @@ void CheckNullPointer::nullPointerAfterLoop()
             // loop variable is found..
             else if (tok2->varId() == varid) {
                 // dummy variable.. is it unknown if pointer is dereferenced or not?
-                bool unknown = false;
+                bool unknown = _settings->inconclusive;
 
                 // Is the loop variable dereferenced?
                 if (CheckNullPointer::isPointerDeRef(tok2, unknown)) {
@@ -921,7 +927,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     // unknown: this is set to true by isPointerDeRef if
                     //          the function fails to determine if there
                     //          is a dereference or not
-                    bool unknown = false;
+                    bool unknown = _settings->inconclusive;
 
                     if (Token::Match(tok2->previous(), "[;{}=] %var% = 0 ;"))
                         ;
@@ -1153,7 +1159,7 @@ private:
             // unknown : not really used. it is passed to isPointerDeRef.
             //           if isPointerDeRef fails to determine if there
             //           is a dereference the this will be set to true.
-            bool unknown = false;
+            bool unknown = owner->inconclusiveFlag();
 
             if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
                 setnull(checks, tok.varId());
