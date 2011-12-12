@@ -272,7 +272,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         // FIXME: Uncomment this. We just need to fix false positives
         //        when cppcheck source code is checked before it can
         //        be uncommented. We need to have better checks to
-        //        determine when there is NOT a pointer dereference.        
+        //        determine when there is NOT a pointer dereference.
         //unknown = true;
     }
 
