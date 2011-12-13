@@ -1779,7 +1779,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
         if (line.compare(0,7,"#ifdef ") == 0) {
             if (indent == indentmatch) {
-                std::string tag = getdef(line,true);
+                const std::string tag = getdef(line,true);
                 if (defs.find(tag) != defs.end()) {
                     elseIsTrue = false;
                     indentmatch++;
@@ -1795,7 +1795,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 elseIsTrue = true;
         } else if (line.compare(0,8,"#ifndef ") == 0) {
             if (indent == indentmatch) {
-                std::string tag = getdef(line,false);
+                const std::string tag = getdef(line,false);
                 if (defs.find(tag) == defs.end()) {
                     elseIsTrue = false;
                     indentmatch++;
@@ -1804,11 +1804,12 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                     indentmatch++;
                     suppressCurrentCodePath = false;
                 }
-                ++indent;
-
-                if (indent == indentmatch + 1)
-                    elseIsTrue = true;
             }
+            ++indent;
+
+            if (indent == indentmatch + 1)
+                elseIsTrue = true;
+
         } else if (!suppressCurrentCodePath && line.compare(0,4,"#if ") == 0) {
             if (indent == indentmatch && match_cfg_def(defs, line.substr(4))) {
                 elseIsTrue = false;

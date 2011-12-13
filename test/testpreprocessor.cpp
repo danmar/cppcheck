@@ -234,6 +234,7 @@ private:
         // Defines are given: test Preprocessor::handleIncludes
         TEST_CASE(def_handleIncludes);
         TEST_CASE(def_missingInclude);
+        TEST_CASE(def_handleIncludes_ifelse);   // problems in handleIncludes for #else
 
         // Using -U to undefine symbols
         TEST_CASE(undef1);
@@ -3040,6 +3041,48 @@ private:
             settings = Settings();
             preprocessor.handleIncludes(code,"test.c",includePaths,defs);
             ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void def_handleIncludes_ifelse() {
+        const std::string filePath("test.c");
+        const std::list<std::string> includePaths;
+        std::map<std::string,std::string> defs;
+        Preprocessor preprocessor(NULL, this);
+
+        // #3405
+        {
+            defs.clear();
+            defs["A"] = "";
+            const std::string code("\n#ifndef PAL_UTIL_UTILS_H_\n"
+                                   "#define PAL_UTIL_UTILS_H_\n"
+                                   "1\n"
+                                   "#ifndef USE_BOOST\n"
+                                   "2\n"
+                                   "#else\n"
+                                   "3\n"
+                                   "#endif\n"
+                                   "4\n"
+                                   "#endif\n"
+                                   "\n"
+                                   "#ifndef PAL_UTIL_UTILS_H_\n"
+                                   "#define PAL_UTIL_UTILS_H_\n"
+                                   "5\n"
+                                   "#ifndef USE_BOOST\n"
+                                   "6\n"
+                                   "#else\n"
+                                   "7\n"
+                                   "#endif\n"
+                                   "8\n"
+                                   "#endif\n"
+                                   "\n");
+            std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+
+            // the 1,2,4 should be in the result
+            actual.erase(0, actual.find("1"));
+            while (actual.find("\n") != std::string::npos)
+                actual.erase(actual.find("\n"),1);
+            ASSERT_EQUALS("124", actual);
         }
     }
 
