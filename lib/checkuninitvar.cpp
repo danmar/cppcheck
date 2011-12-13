@@ -22,6 +22,7 @@
 #include "mathlib.h"
 #include "executionpath.h"
 #include "checknullpointer.h"   // CheckNullPointer::parseFunctionCall
+#include "symboldatabase.h"
 #include <algorithm>
 //---------------------------------------------------------------------------
 
@@ -1028,6 +1029,104 @@ void CheckUninitVar::executionPaths()
         checkExecutionPaths(_tokenizer->tokens(), &c);
     }
 }
+
+
+void CheckUninitVar::check()
+{
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    std::list<Scope>::const_iterator func_scope;
+
+    // scan every function
+    for (func_scope = symbolDatabase->scopeList.begin(); func_scope != symbolDatabase->scopeList.end(); ++func_scope) {
+        // only check functions
+        if (func_scope->type == Scope::eFunction) {
+            for (const Token *tok = func_scope->classStart; tok && tok != func_scope->classEnd; tok = tok->next()) {
+                // Variable declaration..
+                if (Token::Match(tok, "[;{}] %type% %var% ;") && tok->next()->isStandardType()) {
+                    checkScopeForVariable(tok->tokAt(3), tok->tokAt(2)->varId());
+                }
+            }
+        }
+    }
+}
+
+bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int varid)
+{
+    if (varid == 0)
+        return false;
+
+    bool ret = false;
+
+    unsigned int number_of_if = 0;
+
+    for (; tok; tok = tok->next()) {
+        // End of scope..
+        if (tok->str() == "}") {
+            // might be a noreturn function..
+            if (Token::simpleMatch(tok->tokAt(-2), ") ; }") &&
+                Token::Match(tok->linkAt(-2)->tokAt(-2), "[;{}] %var% (") &&
+                tok->linkAt(-2)->previous()->varId() == 0) {
+                ret = true;
+            }
+
+            break;
+        }
+
+        // Inner scope..
+        if (Token::Match(tok, "if (")) {
+            // goto the {
+            tok = tok->next()->link()->next();
+
+            const bool initif = checkScopeForVariable(tok->next(), varid);
+
+            // goto the }
+            tok = tok->link();
+
+            if (!Token::Match(tok, "} else {")) {
+                if (initif) {
+                    ++number_of_if;
+                    if (number_of_if >= 2)
+                        return true;
+                }
+            } else {
+                // goto the {
+                tok = tok->tokAt(2);
+
+                const bool initelse = checkScopeForVariable(tok->next(), varid);
+
+                // goto the }
+                tok = tok->link();
+
+                if (initif && initelse)
+                    return true;
+
+                if (initif || initelse)
+                    ++number_of_if;
+            }
+        }
+
+        if (tok->str() == "return")
+            ret = true;
+
+        // variable is seen..
+        if (tok->varId() == varid) {
+            // Assign variable
+            if (tok->previous()->str() == ">>" || tok->next()->str() == "=")
+                return true;
+
+            // Use variable
+            if (tok->previous()->str() == "return")
+                uninitvarError(tok, tok->str());
+
+            else
+                // assume that variable is assigned
+                return true;
+        }
+    }
+
+    return ret;
+}
+
 
 void CheckUninitVar::uninitstringError(const Token *tok, const std::string &varname, bool strncpy_)
 {

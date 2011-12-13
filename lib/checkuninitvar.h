@@ -55,7 +55,12 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
         checkUninitVar.executionPaths();
+        checkUninitVar.check();
     }
+
+    /** Check for uninitialized variables */
+    void check();
+    bool checkScopeForVariable(const Token *tok, const unsigned int varid);
 
     /**
      * @brief Uninitialized variables: analyse functions to see how they work with uninitialized variables

@@ -48,6 +48,10 @@ private:
         TEST_CASE(func_uninit_var);     // analyse function calls for: 'int a(int x) { return x+x; }'
         TEST_CASE(func_uninit_pointer); // analyse function calls for: 'void a(int *p) { *p = 0; }'
         TEST_CASE(uninitvar_typeof);    // typeof
+
+        // checking for uninitialized variables without using the
+        // ExecutionPath functionality
+        TEST_CASE(uninitvar2);
     }
 
     void checkUninitVar(const char code[]) {
@@ -1672,6 +1676,52 @@ private:
                        "    struct SData * s;\n"
                        "    TYPEOF(s->status);\n"
                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+
+    /** New checking that doesn't rely on ExecutionPath */
+    void checkUninitVar2(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Check for redundant code..
+        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
+        checkuninitvar.check();
+    }
+
+    void uninitvar2() {
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    if (y == 1) { x = 1; }\n"
+                        "    else if (y == 2) { x = 1; }\n"
+                        "    return x;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    if (y == 1) { return; }\n"
+                        "    else { x = 1; }\n"
+                        "    return x;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    if (y == 1) { exit(0); }\n"
+                        "    else { x = 1; }\n"
+                        "    return x;\n"
+                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
