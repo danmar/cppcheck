@@ -6497,10 +6497,10 @@ void Tokenizer::simplifyInitVar()
         if (!tok->isName() || (tok->previous() && !Token::Match(tok->previous(), "[;{}]")))
             continue;
 
-        if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ;") ||
-            Token::Match(tok, "%type% *| %var% ( %type% (")) {
+        if (Token::Match(tok, "class|struct|union| %type% *| *| *| %var% ( &|*| *| *| %any% ) ;") ||
+            Token::Match(tok, "%type% *| *| *| %var% ( %type% (")) {
             tok = initVar(tok);
-        } else if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ,")) {
+        } else if (Token::Match(tok, "class|struct|union| %type% *| *| *| %var% ( &|*| *| *| %any% ) ,")) {
             Token *tok1 = tok;
             while (tok1->str() != ",")
                 tok1 = tok1->next();
@@ -7832,7 +7832,7 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
 
             // find end of definition
             int level = 0;
-            while (end && end->next() && (!Token::Match(end->next(), ";|)|>") ||
+            while (end->next() && (!Token::Match(end->next(), ";|)|>") ||
                                           (end->next()->str() == ")" && level == 0))) {
                 if (end->next()->str() == "(")
                     ++level;
@@ -9330,9 +9330,9 @@ void Tokenizer::simplifyAsm()
     std::string instruction;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "__asm|_asm|asm {") &&
-            tok->linkAt(1)->next()) {
-            instruction = tok->tokAt(2)->stringify(tok->linkAt(1));
-            Token::eraseTokens(tok, tok->linkAt(1)->next());
+            tok->next()->link()->next()) {
+            instruction = tok->tokAt(2)->stringify(tok->next()->link());
+            Token::eraseTokens(tok, tok->next()->link()->next());
         }
 
         else if (Token::Match(tok, "asm|__asm|__asm__ volatile|__volatile__| (")) {
@@ -9364,10 +9364,11 @@ void Tokenizer::simplifyAsm()
         tok->insertToken("\"" + instruction + "\"");
         tok->insertToken("(");
 
-        Token::createMutualLinks(tok->tokAt(1), tok->tokAt(3));
+        tok = tok->next();
+        Token::createMutualLinks(tok, tok->tokAt(2));
 
         //move the new tokens in the same line as ";" if available
-        tok = tok->tokAt(3);
+        tok = tok->tokAt(2);
         if (tok->next() && tok->next()->str() == ";" &&
             tok->next()->linenr() != tok->linenr()) {
             unsigned int endposition = tok->next()->linenr();
