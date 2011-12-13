@@ -697,7 +697,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     break;
             }
 
-            if (Token::Match(tok, "[;{}] asm ( ) ;")) {
+            if (Token::Match(tok, "[;{}] asm ( %str% )")) {
                 variables.clear();
                 break;
             }

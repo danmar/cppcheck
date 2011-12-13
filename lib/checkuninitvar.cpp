@@ -633,7 +633,7 @@ private:
                 return tok.next()->link();
             }
 
-            if (Token::simpleMatch(&tok, "asm ( )")) {
+            if (Token::Match(&tok, "asm ( %str% )")) {
                 ExecutionPath::bailOut(checks);
                 return &tok;
             }

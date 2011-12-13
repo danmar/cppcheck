@@ -2008,18 +2008,20 @@ bool Tokenizer::tokenize(std::istream &code,
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "EXEC SQL")) {
             // delete all tokens until ";"
-            const Token *end = tok;
+            const Token *end = tok->tokAt(2);
             while (end && end->str() != ";")
                 end = end->next();
 
+            std::string instruction = tok->stringify(end);
             Token::eraseTokens(tok, end);
 
-            // insert "asm ( ) ;"
+            // insert "asm ( "instruction" ) ;"
             tok->str("asm");
             // it can happen that 'end' is NULL when wrong code is inserted
             if (!tok->next())
                 tok->insertToken(";");
             tok->insertToken(")");
+            tok->insertToken("\"" + instruction + "\"");
             tok->insertToken("(");
             // jump to ';' and continue
             tok = tok->tokAt(3);
@@ -3054,9 +3056,9 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         std::list<Token *> &used,
         std::set<std::string> &expandedtemplates)
 {
-    // this variable is not used at the moment. the intention was to
+    // this variable is not used at the moment. The intention was to
     // allow continuous instantiations until all templates has been expanded
-    bool done = false;
+    //bool done = false;
 
     std::vector<const Token *> type;
     for (tok = tok->tokAt(2); tok && tok->str() != ">"; tok = tok->next()) {
@@ -3277,8 +3279,8 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                     // copy
                     addtoken(tok3, tok3->linenr(), tok3->fileIndex());
                     if (Token::Match(tok3, "%type% <")) {
-                        if (!Token::simpleMatch(tok3, (name + " <").c_str()))
-                            done = false;
+                        //if (!Token::simpleMatch(tok3, (name + " <").c_str()))
+                        //done = false;
                         used.push_back(_tokensBack);
                     }
 
@@ -3396,10 +3398,10 @@ void Tokenizer::simplifyTemplates()
     simplifyTemplatesUseDefaultArgumentValues(templates, used);
 
     // expand templates
-    bool done = false;
+    //bool done = false;
     //while (!done)
     {
-        done = true;
+        //done = true;
         for (std::list<Token *>::reverse_iterator iter1 = templates.rbegin(); iter1 != templates.rend(); ++iter1) {
             simplifyTemplatesInstantiate(*iter1, used, expandedtemplates);
         }
@@ -9325,39 +9327,44 @@ void Tokenizer::simplifyAssignmentInFunctionCall()
 // Remove __asm..
 void Tokenizer::simplifyAsm()
 {
+    std::string instruction;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok->next(), "__asm|_asm|asm {") &&
-            tok->linkAt(2)->next()) {
-            Token::eraseTokens(tok, tok->linkAt(2)->next());
+        if (Token::Match(tok, "__asm|_asm|asm {") &&
+            tok->linkAt(1)->next()) {
+            instruction = tok->tokAt(2)->stringify(tok->linkAt(1));
+            Token::eraseTokens(tok, tok->linkAt(1)->next());
         }
 
-        else if (Token::Match(tok->next(), "asm|__asm|__asm__ volatile|__volatile__| (")) {
+        else if (Token::Match(tok, "asm|__asm|__asm__ volatile|__volatile__| (")) {
             // Goto "("
-            Token *partok = tok->tokAt(2);
+            Token *partok = tok->next();
             if (partok->str() != "(")
                 partok = partok->next();
+            instruction = partok->next()->stringify(partok->link());
             Token::eraseTokens(tok, partok->link()->next());
         }
 
-        else if (Token::simpleMatch(tok->next(), "__asm")) {
-            const Token *tok2 = tok->next();
+        else if (Token::simpleMatch(tok, "__asm")) {
+            const Token *tok2 = tok;
             while (tok2 && (tok2->isNumber() || tok2->isName() || tok2->str() == ","))
                 tok2 = tok2->next();
-            if (tok2 && tok2->str() == ";")
+            if (tok2 && tok2->str() == ";") {
+                instruction = tok->next()->stringify(tok2);
                 Token::eraseTokens(tok, tok2);
-            else
+            } else
                 continue;
         }
 
         else
             continue;
 
-        // insert "asm ( )"
+        // insert "asm ( "instruction" )"
+        tok->str("asm");
         tok->insertToken(")");
+        tok->insertToken("\"" + instruction + "\"");
         tok->insertToken("(");
-        tok->insertToken("asm");
 
-        Token::createMutualLinks(tok->tokAt(2), tok->tokAt(3));
+        Token::createMutualLinks(tok->tokAt(1), tok->tokAt(3));
 
         //move the new tokens in the same line as ";" if available
         tok = tok->tokAt(3);

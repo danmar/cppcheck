@@ -2233,37 +2233,6 @@ void CheckOther::incorrectStringBooleanError(const Token *tok, const std::string
 // check for duplicate expressions in if statements
 // if (a) { } else if (a) { }
 //-----------------------------------------------------------------------------
-static const std::string stringifyTokens(const Token *start, const Token *end)
-{
-    const Token *tok = start;
-    std::string stringified;
-
-    if (tok->isUnsigned())
-        stringified.append("unsigned ");
-    else if (tok->isSigned())
-        stringified.append("signed ");
-
-    if (tok->isLong())
-        stringified.append("long ");
-
-    stringified.append(tok->str());
-
-    while (tok && tok->next() && tok != end) {
-        if (tok->isUnsigned())
-            stringified.append("unsigned ");
-        else if (tok->isSigned())
-            stringified.append("signed ");
-
-        if (tok->isLong())
-            stringified.append("long ");
-
-        tok = tok->next();
-        stringified.append(" ");
-        stringified.append(tok->str());
-    }
-
-    return stringified;
-}
 
 static bool expressionHasSideEffects(const Token *first, const Token *last)
 {
@@ -2301,7 +2270,7 @@ void CheckOther::checkDuplicateIf()
         std::map<std::string, const Token*> expressionMap;
 
         // get the expression from the token stream
-        std::string expression = stringifyTokens(tok->tokAt(2), tok->next()->link()->previous());
+        std::string expression = tok->tokAt(2)->stringify(tok->next()->link());
 
         // save the expression and its location
         expressionMap.insert(std::make_pair(expression, tok));
@@ -2313,7 +2282,7 @@ void CheckOther::checkDuplicateIf()
         while (Token::simpleMatch(tok1, "} else if (") &&
                Token::simpleMatch(tok1->linkAt(3), ") {")) {
             // get the expression from the token stream
-            expression = stringifyTokens(tok1->tokAt(4), tok1->linkAt(3)->previous());
+            expression = tok1->tokAt(4)->stringify(tok1->linkAt(3));
 
             // try to look up the expression to check for duplicates
             std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
@@ -2356,28 +2325,30 @@ void CheckOther::checkDuplicateBranch()
     if (!_settings->isEnabled("style"))
         return;
 
-    if (!_settings->inconclusive)
-        return;
-
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<Scope>::const_iterator scope;
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        const Token* const tok = scope->classDef;
+        const Token* tok = scope->classDef;
+
+        if ((scope->type != Scope::eIf && scope->type != Scope::eElseIf) || !tok)
+            continue;
+
+        if (tok->str() == "else")
+            tok = tok->next();
 
         // check all the code in the function for if (..) else
-        if (scope->type == Scope::eIf && tok && tok->next() &&
-            Token::simpleMatch(tok->next()->link(), ") {") &&
+        if (tok && tok->next() && Token::simpleMatch(tok->next()->link(), ") {") &&
             Token::simpleMatch(tok->next()->link()->next()->link(), "} else {")) {
             // save if branch code
-            std::string branch1 = stringifyTokens(tok->next()->link()->tokAt(2), tok->next()->link()->next()->link()->previous());
+            std::string branch1 = tok->next()->link()->tokAt(2)->stringify(tok->next()->link()->next()->link());
 
             // find else branch
             const Token *tok1 = tok->next()->link()->next()->link();
 
             // save else branch code
-            std::string branch2 = stringifyTokens(tok1->tokAt(3), tok1->linkAt(2)->previous());
+            std::string branch2 = tok1->tokAt(3)->stringify(tok1->linkAt(2));
 
             // check for duplicates
             if (branch1 == branch2)

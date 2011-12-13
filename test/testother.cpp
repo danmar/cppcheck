@@ -3717,6 +3717,16 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for if and else.\n", errout.str());
 
+        check("void f(int a, int &b) {\n"
+              "    if (a == 1)\n"
+              "        b = 1;\n"
+              "    else if (a)\n"
+              "        b = 2;\n"
+              "    else\n"
+              "        b = 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (style) Found duplicate branches for if and else.\n", errout.str());
+
         check("int f(int signed, unsigned char value) {\n"
               "    int ret;\n"
               "    if (signed)\n"
@@ -3726,6 +3736,22 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if (b)\n"
+              "        __asm__(\"mov ax, bx\");\n"
+              "    else\n"
+              "        __asm__(\"mov bx, bx\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str()); // #3407
+
+        check("void f() {\n"
+              "    if (b)\n"
+              "        __asm__(\"mov ax, bx\");\n"
+              "    else\n"
+              "        __asm__(\"mov ax, bx\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Found duplicate branches for if and else.\n", errout.str());
     }
 
     void duplicateExpression1() {

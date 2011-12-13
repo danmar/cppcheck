@@ -889,6 +889,30 @@ void Token::printOut(const char *title, const std::vector<std::string> &fileName
     std::cout << stringifyList(true, title, fileNames) << std::endl;
 }
 
+std::string Token::stringify(const Token* end) const
+{
+    std::ostringstream ret;
+
+    if (isUnsigned())
+        ret << "unsigned ";
+    else if (isSigned())
+        ret << "signed ";
+    if (isLong())
+        ret << "long ";
+    ret << str();
+
+    for (const Token *tok = this->next(); tok && tok != end; tok = tok->next()) {
+        if (tok->isUnsigned())
+            ret << " unsigned";
+        else if (tok->isSigned())
+            ret << " signed";
+        if (tok->isLong())
+            ret << " long";
+        ret << " " << tok->str();
+    }
+    return ret.str();
+}
+
 std::string Token::stringifyList(bool varid, const char *title) const
 {
     const std::vector<std::string> fileNames;
@@ -937,6 +961,4 @@ std::string Token::stringifyList(bool varid, const char *title, const std::vecto
     ret << "\n";
     return ret.str();
 }
-
-
 
