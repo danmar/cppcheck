@@ -26,7 +26,6 @@
 
 #include <cstring>
 #include <string>
-#include <sstream>
 #include <algorithm>
 
 //---------------------------------------------------------------------------
@@ -742,10 +741,6 @@ void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const
 
 void CheckClass::operatorEq()
 {
-    // See #3296
-    if (!_settings->inconclusive)
-        return;
-
     if (!_settings->isEnabled("style"))
         return;
 
@@ -762,7 +757,7 @@ void CheckClass::operatorEq()
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->access != Private) {
                 // use definition for check so we don't have to deal with qualification
-                if (!(Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
+                if (!(Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private:|virtual %type% &") &&
                       func->tokenDef->strAt(-2) == scope->className)) {
                     // make sure we really have a copy assignment operator
                     if (Token::Match(func->tokenDef->tokAt(2), "const| %var% &")) {
@@ -780,7 +775,7 @@ void CheckClass::operatorEq()
 
 void CheckClass::operatorEqReturnError(const Token *tok, const std::string &className)
 {
-    reportInconclusiveError(tok, Severity::style, "operatorEq", "Inconclusive: \'" + className + "::operator=' should return \'" + className + " &\'");
+    reportInconclusiveError(tok, Severity::style, "operatorEq", "\'" + className + "::operator=' should return \'" + className + " &\'");
 }
 
 //---------------------------------------------------------------------------
@@ -805,12 +800,10 @@ void CheckClass::operatorEqRetRefThis()
             for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
                 if (func->type == Function::eOperatorEqual && func->hasBody) {
                     // make sure return signature is correct
-                    if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
+                    if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private:|virtual %type% &") &&
                         func->tokenDef->strAt(-2) == scope->className) {
-                        // find the ')'
-                        const Token *tok = func->token->next()->link();
 
-                        checkReturnPtrThis(&(*scope), &(*func), tok->tokAt(2), tok->next()->link());
+                        checkReturnPtrThis(&(*scope), &(*func), func->start->next(), func->start->link());
                     }
                 }
             }
@@ -844,7 +837,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                         if (it->tokenDef->previous()->str() == "&" &&
                             it->tokenDef->strAt(-2) == scope->className) {
                             // make sure it's not a const function
-                            if (it->arg->link()->next()->str() != "const") {
+                            if (!it->isConst) {
                                 /** @todo make sure argument types match */
                                 // make sure it's not the same function
                                 if (&*it != func)
@@ -860,8 +853,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             }
 
             // check if *this is returned
-            else if (!(Token::Match(tok->next(), "(| * this ;|=") ||
-                       Token::Match(tok->next(), "(| * this +=") ||
+            else if (!(Token::Match(tok->next(), "(| * this ;|=|+=") ||
                        Token::simpleMatch(tok->next(), "operator= (") ||
                        Token::simpleMatch(tok->next(), "this . operator= (") ||
                        (Token::Match(tok->next(), "%type% :: operator= (") &&
