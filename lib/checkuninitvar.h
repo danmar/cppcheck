@@ -61,6 +61,7 @@ public:
     /** Check for uninitialized variables */
     void check();
     bool checkScopeForVariable(const Token *tok, const unsigned int varid);
+    bool isVariableUsage(const Token *vartok) const;
 
     /**
      * @brief Uninitialized variables: analyse functions to see how they work with uninitialized variables

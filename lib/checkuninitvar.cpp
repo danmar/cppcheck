@@ -1078,7 +1078,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             const Token * const endToken = tok->next()->link();
             for (const Token *tok2 = tok->tokAt(2); tok2 != endToken; tok2 = tok2->next()) {
                 if (tok2->varId() == varid) {
-                    // TODO: better checks if this is initialization or usage
+                    if (isVariableUsage(tok2))
+                        uninitvarError(tok2, tok2->str());
                     return true;
                 }
             }
@@ -1124,10 +1125,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
                 return true;
 
             // Use variable
-            if (tok->previous()->str() == "return")
-                uninitvarError(tok, tok->str());
-
-            else if (Token::Match(tok->next(), "++|--|%op%"))
+            if (isVariableUsage(tok))
                 uninitvarError(tok, tok->str());
 
             else
@@ -1137,6 +1135,23 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
     }
 
     return ret;
+}
+
+bool CheckUninitVar::isVariableUsage(const Token *vartok) const
+{
+    if (vartok->previous()->str() == "return")
+        return true;
+
+    if (Token::Match(vartok->next(), "++|--|%op%"))
+        return true;
+
+    if (Token::Match(vartok->previous(), "++|--|%op%")) {
+        if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,]")) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 

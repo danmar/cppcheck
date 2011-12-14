@@ -1713,6 +1713,19 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    int y = 3 & x;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
+        // using uninit var in condition
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    if (1 == (3 & x)) { }\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
         // conditional initialization
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
