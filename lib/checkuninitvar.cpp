@@ -1115,6 +1115,12 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             }
         }
 
+        // TODO: handle loops etc
+        if (Token::simpleMatch(tok, ") {")) {
+            ret = true;
+            return false;
+        }
+
         if (Token::Match(tok, "return|break|continue|throw"))
             ret = true;
 

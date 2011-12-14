@@ -1754,6 +1754,16 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // for, while
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    while (a) {\n"
+                        "        if (b) x++;\n"
+                        "        else x = 0;\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // exit
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
