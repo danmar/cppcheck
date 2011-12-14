@@ -39,18 +39,9 @@ namespace {
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : Check(myName(), tokenizer, settings, errorLogger),
-      symbolDatabase(NULL)
+      symbolDatabase(tokenizer?tokenizer->getSymbolDatabase():NULL)
 {
 
-}
-
-void CheckClass::createSymbolDatabase()
-{
-    // Multiple calls => bail out
-    if (symbolDatabase)
-        return;
-
-    symbolDatabase = _tokenizer->getSymbolDatabase();
 }
 
 //---------------------------------------------------------------------------
@@ -61,8 +52,6 @@ void CheckClass::constructors()
 {
     if (!_settings->isEnabled("style"))
         return;
-
-    createSymbolDatabase();
 
     std::list<Scope>::const_iterator scope;
 
@@ -535,12 +524,6 @@ void CheckClass::privateFunctions()
     if (_tokenizer->codeWithTemplates())
         return;
 
-    // dont check borland classes with properties..
-    if (Token::findsimplematch(_tokenizer->tokens(), "; __property ;"))
-        return;
-
-    createSymbolDatabase();
-
     std::list<Scope>::const_iterator scope;
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
@@ -548,21 +531,17 @@ void CheckClass::privateFunctions()
         if (!scope->isClassOrStruct())
             continue;
 
-        // don’t check derived classes
-        if (!scope->derivedFrom.empty())
-            continue;
-
         // skip checking if there are friends
         if (!scope->friendList.empty())
             continue;
 
-        // Locate some class
-        const Token *tok1 = scope->classDef;
+        // dont check borland classes with properties..
+        if (Token::findsimplematch(scope->classStart, "; __property ;", scope->classEnd))
+            continue;
 
         // check that the whole class implementation is seen
         bool whole = true;
-        std::list<Function>::const_iterator func;
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (!func->hasBody) {
                 // empty private copy constructors and assignment operators are OK
                 if ((func->type == Function::eCopyConstructor ||
@@ -574,31 +553,49 @@ void CheckClass::privateFunctions()
                 break;
             }
         }
-
         if (!whole)
             continue;
-
-        const std::string &classname = tok1->next()->str();
 
         std::list<const Token *> FuncList;
         /** @todo embedded class have access to private functions */
         if (!scope->getNestedNonFunctions()) {
-            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
                 // Get private functions..
                 if (func->type == Function::eFunction && func->access == Private)
                     FuncList.push_back(func->tokenDef);
             }
         }
 
-        // Check that all private functions are used..
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            const Token *ftok = func->start;
-            if (ftok) {
-                const Token *etok = ftok->link();
+        // Bailout for overriden virtual functions of base classes
+        if (!scope->derivedFrom.empty()) {
+            for (std::vector<Scope::BaseInfo>::const_iterator i = scope->derivedFrom.begin(); i != scope->derivedFrom.end(); ++i) {
+                if (!i->scope || !i->scope->classStart) {
+                    whole = false; // We need to see the complete definition of the class
+                    break;
+                }
+                for (std::list<Function>::const_iterator func = i->scope->functionList.begin(); func != i->scope->functionList.end(); ++func) {
+                    if (func->isVirtual) { // Only virtual functions can be overriden
+                        // Remove function from FuncList. TODO: Handle overloads
+                        std::list<const Token *>::iterator it = FuncList.begin();
+                        while (it != FuncList.end()) {
+                            if (func->token->str() == (*it)->str())
+                                FuncList.erase(it++);
+                            else
+                                ++it;
+                        }
+                    }
+                }
+            }
+        }
+        if (!whole)
+            continue;
 
-                for (; ftok != etok; ftok = ftok->next()) {
+        // Check that all private functions are used..
+        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (func->start) {
+                for (const Token *ftok = func->start; ftok != func->start->link(); ftok = ftok->next()) {
                     if (Token::Match(ftok, "%var% (")) {
-                        // Remove function from FuncList
+                        // Remove function from FuncList. TODO: Handle overloads
                         std::list<const Token *>::iterator it = FuncList.begin();
                         while (it != FuncList.end()) {
                             if (ftok->str() == (*it)->str())
@@ -613,19 +610,19 @@ void CheckClass::privateFunctions()
 
         while (!FuncList.empty()) {
             // Final check; check if the function pointer is used somewhere..
-            const std::string _pattern("return|(|)|,|= &|" + FuncList.front()->str());
+            const std::string _pattern("return|throw|(|)|,|= &|" + FuncList.front()->str());
 
             // or if the function address is used somewhere...
             // eg. sigc::mem_fun(this, &className::classFunction)
-            const std::string _pattern2("& " + classname + " :: " + FuncList.front()->str());
-            const std::string methodAsArgument("(|, " + classname + " :: " + FuncList.front()->str() + " ,|)");
-            const std::string methodAssigned("%var% = &| " + classname + " :: " + FuncList.front()->str());
+            const std::string _pattern2("& " + scope->className + " :: " + FuncList.front()->str());
+            const std::string methodAsArgument("(|, " + scope->className + " :: " + FuncList.front()->str() + " ,|)");
+            const std::string methodAssigned("%var% = &| " + scope->className + " :: " + FuncList.front()->str());
 
             if (!Token::findmatch(_tokenizer->tokens(), _pattern.c_str()) &&
                 !Token::findmatch(_tokenizer->tokens(), _pattern2.c_str()) &&
                 !Token::findmatch(_tokenizer->tokens(), methodAsArgument.c_str()) &&
                 !Token::findmatch(_tokenizer->tokens(), methodAssigned.c_str())) {
-                unusedPrivateFunctionError(FuncList.front(), classname, FuncList.front()->str());
+                unusedPrivateFunctionError(FuncList.front(), scope->className, FuncList.front()->str());
             }
             FuncList.pop_front();
         }
@@ -643,8 +640,6 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 
 void CheckClass::noMemset()
 {
-    createSymbolDatabase();
-
     std::list<Scope>::const_iterator scope;
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
@@ -744,8 +739,6 @@ void CheckClass::operatorEq()
     if (!_settings->isEnabled("style"))
         return;
 
-    createSymbolDatabase();
-
     std::list<Scope>::const_iterator scope;
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
@@ -787,8 +780,6 @@ void CheckClass::operatorEqRetRefThis()
 {
     if (!_settings->isEnabled("style"))
         return;
-
-    createSymbolDatabase();
 
     std::list<Scope>::const_iterator scope;
 
@@ -888,8 +879,6 @@ void CheckClass::operatorEqToSelf()
 {
     if (!_settings->isEnabled("style"))
         return;
-
-    createSymbolDatabase();
 
     std::list<Scope>::const_iterator scope;
 
@@ -1024,8 +1013,6 @@ void CheckClass::virtualDestructor()
     // * base class doesn't have virtual destructor
     // * derived class has non-empty destructor
     // * base class is deleted
-
-    createSymbolDatabase();
 
     std::list<Scope>::const_iterator scope;
 
@@ -1182,8 +1169,6 @@ void CheckClass::checkConst()
     if (_tokenizer->isJavaOrCSharp()) {
         return;
     }
-
-    createSymbolDatabase();
 
     std::list<Scope>::const_iterator scope;
 
@@ -1591,8 +1576,6 @@ void CheckClass::initializerList()
     // have an error if the list is in order so this enforces defensive programming.
     if (!_settings->inconclusive)
         return;
-
-    createSymbolDatabase();
 
     std::list<Scope>::const_iterator info;
 

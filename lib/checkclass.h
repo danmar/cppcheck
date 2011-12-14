@@ -106,12 +106,6 @@ public:
     void initializerList();
 
 private:
-    /**
-     * @brief Create symbol database. For performance reasons, only call
-     * it if it's needed.
-     */
-    void createSymbolDatabase();
-
     const SymbolDatabase *symbolDatabase;
 
     // Reporting errors..

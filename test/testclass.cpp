@@ -206,10 +206,9 @@ private:
         TEST_CASE(constVirtualFunc);
         TEST_CASE(constIfCfg);  // ticket #1881 - fp when there are #if
         TEST_CASE(constFriend); // ticket #1921 - fp for friend function
-        TEST_CASE(constUnion);	// ticket #2111 - fp when there are union
+        TEST_CASE(constUnion);  // ticket #2111 - fp when there is a union
 
         TEST_CASE(initializerList);
-        TEST_CASE(unusedPrivate); // ticket #2233
     }
 
     // Check the operator Equal
@@ -6405,36 +6404,6 @@ private:
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Member variable 'Fred::b' is in the wrong order in the initializer list.\n"
                       "[test.cpp:4] -> [test.cpp:2]: (style) Member variable 'Fred::a' is in the wrong order in the initializer list.\n", errout.str());
     }
-
-    void check(const char code[]) {
-        // Clear the error buffer..
-        errout.str("");
-
-        Settings settings;
-        settings.addEnabled("style");
-        settings.inconclusive = true;
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.runSimplifiedChecks(&tokenizer, &settings, this);
-    }
-
-    void unusedPrivate() {
-        check("class A {\n"
-              "public:\n"
-              "    A() { f = A::func; }\n"
-              "    void (*f)();\n"
-              "private:\n"
-              "    static void func() { }\n"
-              "};\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
 };
 
 REGISTER_TEST(TestClass)

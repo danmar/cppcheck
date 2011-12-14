@@ -44,6 +44,7 @@ private:
         TEST_CASE(func_pointer2);
         TEST_CASE(func_pointer3);
         TEST_CASE(func_pointer4); // ticket #2807
+        TEST_CASE(func_pointer5); // ticket #2233
 
         TEST_CASE(ctor);
 
@@ -301,6 +302,19 @@ private:
     }
 
 
+    void func_pointer5() {
+        check("class A {\n"
+              "public:\n"
+              "    A() { f = A::func; }\n"
+              "    void (*f)();\n"
+              "private:\n"
+              "    static void func() { }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+
     void ctor() {
         check("class PrivateCtor\n"
               "{\n"
@@ -388,7 +402,7 @@ private:
     }
 
     void derivedClass() {
-        // skip warning in derived classes in case the function is virtual
+        // skip warning in derived classes in case the base class is invisible
         check("class derived : public base\n"
               "{\n"
               "public:\n"
@@ -397,6 +411,18 @@ private:
               "    void f();\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class base {\n"
+              "public:\n"
+              "    virtual void foo();\n"
+              "    void bar();\n"
+              "};\n"
+              "class derived : public base {\n"
+              "private:\n"
+              "    void foo() {}\n" // Skip for overrides of virtual functions of base
+              "    void bar() {}\n" // Don't skip if no function is overriden
+              "};");
+        ASSERT_EQUALS("[test.cpp:9]: (style) Unused private function 'derived::bar'\n", errout.str());
     }
 
     void friendClass() {
