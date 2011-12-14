@@ -1118,6 +1118,9 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             if (tok->previous()->str() == "return")
                 uninitvarError(tok, tok->str());
 
+            else if (Token::Match(tok->next(), "++|--|%op%"))
+                uninitvarError(tok, tok->str());
+
             else
                 // assume that variable is assigned
                 return true;

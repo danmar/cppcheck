@@ -1700,6 +1700,20 @@ private:
     }
 
     void uninitvar2() {
+        // using uninit var
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    x++;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    int y = x & 3;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
+        // conditional initialization
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
                         "    if (y == 1) { x = 1; }\n"
