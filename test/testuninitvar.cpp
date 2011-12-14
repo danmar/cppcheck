@@ -1709,6 +1709,12 @@ private:
 
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
+                        "    str[x] = 0;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
                         "    int y = x & 3;\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
