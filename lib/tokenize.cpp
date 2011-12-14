@@ -7833,7 +7833,7 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
             // find end of definition
             int level = 0;
             while (end->next() && (!Token::Match(end->next(), ";|)|>") ||
-                                          (end->next()->str() == ")" && level == 0))) {
+                                   (end->next()->str() == ")" && level == 0))) {
                 if (end->next()->str() == "(")
                     ++level;
                 else if (end->next()->str() == ")")
