@@ -1708,14 +1708,18 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
+        // return, break, continue
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
                         "    if (y == 1) { return; }\n"
+                        "    if (y == 2) { break; }\n"
+                        "    if (y == 3) { continue; }\n"
                         "    else { x = 1; }\n"
                         "    return x;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // exit
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
                         "    if (y == 1) { exit(0); }\n"
