@@ -1722,6 +1722,14 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
+        // initialization in condition
+        checkUninitVar2("void f() {\n"
+                        "    int a;\n"
+                        "    if (init(&a)) { }\n"
+                        "    a++;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // return, break, continue
         checkUninitVar2("void f() {\n"
                         "    int x;\n"

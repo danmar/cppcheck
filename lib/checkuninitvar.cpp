@@ -1074,6 +1074,15 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
 
         // Inner scope..
         if (Token::Match(tok, "if (")) {
+            // initialization in condition..
+            const Token * const endToken = tok->next()->link();
+            for (const Token *tok2 = tok->tokAt(2); tok2 != endToken; tok2 = tok2->next()) {
+                if (tok2->varId() == varid) {
+                    // TODO: better checks if this is initialization or usage
+                    return true;
+                }
+            }
+
             // goto the {
             tok = tok->next()->link()->next();
 
