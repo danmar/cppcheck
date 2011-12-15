@@ -1800,6 +1800,13 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    for (int i = 0; i < 10; i += x) {\n"
+                        "    }\n"
+                        "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
         // try
         checkUninitVar2("void f() {\n"
                         "    int i, *p = &i;\n"
