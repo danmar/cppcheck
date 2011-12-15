@@ -1092,6 +1092,10 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             // goto the }
             tok = tok->link();
 
+            // TODO: Make sure "if" blocks are surrounded by {} properly (#3415)
+            if (!tok)
+                return true;   // bail out
+
             if (!Token::Match(tok, "} else {")) {
                 if (initif) {
                     ++number_of_if;

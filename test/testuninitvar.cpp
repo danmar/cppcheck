@@ -1778,6 +1778,14 @@ private:
                         "    return x;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // strange code.. don't crash (#3415)
+        checkUninitVar2("void foo() {\n"
+                        "    int i;\n"
+                        "    ({ if (0); });\n"
+                        "    for_each(i) { }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
