@@ -1130,10 +1130,6 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
 
         // variable is seen..
         if (tok->varId() == varid) {
-            // Assign variable
-            if (tok->previous()->str() == ">>" || tok->next()->str() == "=")
-                return true;
-
             // Use variable
             if (isVariableUsage(tok))
                 uninitvarError(tok, tok->str());
@@ -1156,6 +1152,11 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok) const
         return true;
 
     if (Token::Match(vartok->previous(), "++|--|%op%")) {
+        if (vartok->previous()->str() == ">>" && _tokenizer->isCPP()) {
+            // assume that variable is initialized
+            return false;
+        }
+
         if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,]")) {
             return true;
         }

@@ -1682,7 +1682,7 @@ private:
 
 
     /** New checking that doesn't rely on ExecutionPath */
-    void checkUninitVar2(const char code[]) {
+    void checkUninitVar2(const char code[], const char fname[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -1691,7 +1691,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, fname);
         tokenizer.simplifyTokenList();
 
         // Check for redundant code..
@@ -1731,6 +1731,20 @@ private:
                         "    if (1 == (3 & x)) { }\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
+        // >> => initialization / usage
+        {
+            const char code[] = "void f() {\n"
+                                "    int x;\n"
+                                "    if (i >> x) { }\n"
+                                "}";
+
+            checkUninitVar2(code, "test.cpp");
+            ASSERT_EQUALS("", errout.str());
+
+            checkUninitVar2(code, "test.c");
+            ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: x\n", errout.str());
+        }
 
         // conditional initialization
         checkUninitVar2("void f() {\n"
