@@ -1161,7 +1161,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok) const
             return false;
         }
 
-        if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,]")) {
+        if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,=]")) {
             return true;
         }
     }
