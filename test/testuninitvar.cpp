@@ -1800,6 +1800,14 @@ private:
                         "    for_each(i) { }\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        // if, if
+        checkUninitVar2("void f(int a) {\n"
+                        "    int i;\n"
+                        "    if (a) i = 0;\n"
+                        "    if (a) i++;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

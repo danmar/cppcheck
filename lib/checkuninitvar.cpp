@@ -1074,6 +1074,10 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
 
         // Inner scope..
         if (Token::Match(tok, "if (")) {
+            if (number_of_if) {
+                return true;
+            }
+
             // initialization in condition..
             const Token * const endToken = tok->next()->link();
             for (const Token *tok2 = tok->tokAt(2); tok2 != endToken; tok2 = tok2->next()) {
