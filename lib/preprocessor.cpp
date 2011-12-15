@@ -1857,7 +1857,11 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 else if (line.find("(") == std::string::npos) {
                     const std::string::size_type pos = line.find(" ", 8);
                     tag = line.substr(8,pos-8);
-                    defs[tag] = line.substr(pos+1);
+                    const std::string value(line.substr(pos+1));
+                    if (defs.find(value) != defs.end())
+                        defs[tag] = defs[value];
+                    else
+                        defs[tag] = value;
                 }
 
                 if (undefs.find(tag) != undefs.end()) {

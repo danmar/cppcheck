@@ -3084,6 +3084,19 @@ private:
                 actual.erase(actual.find("\n"),1);
             ASSERT_EQUALS("124", actual);
         }
+
+        // #3418
+        {
+            defs.clear();
+            const char code[] = "#define A 1\n"
+                                "#define B A\n"
+                                "#if A == B\n"
+                                "123\n"
+                                "#endif\n";
+
+            std::string actual(preprocessor.handleIncludes(code, filePath, includePaths, defs));
+            ASSERT_EQUALS("#define A 1\n#define B A\n\n123\n\n", actual);
+        }
     }
 
     void undef1() {
