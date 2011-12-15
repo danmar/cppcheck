@@ -44,6 +44,10 @@ private:
         TEST_CASE(onemasklongerpath1);
         TEST_CASE(onemasklongerpath2);
         TEST_CASE(onemasklongerpath3);
+        TEST_CASE(twomasklongerpath1);
+        TEST_CASE(twomasklongerpath2);
+        TEST_CASE(twomasklongerpath3);
+        TEST_CASE(twomasklongerpath4);
         TEST_CASE(filemask1);
         TEST_CASE(filemaskdifferentcase);
         TEST_CASE(filemask2);

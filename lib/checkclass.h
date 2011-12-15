@@ -165,7 +165,7 @@ private:
     // checkConst helper functions
     bool isMemberVar(const Scope *scope, const Token *tok);
     bool isConstMemberFunc(const Scope *scope, const Token *tok);
-    bool checkConstFunc(const Scope *scope, const Token *tok);
+    bool checkConstFunc(const Scope *scope, const Function *func);
     /** @brief check if this function is virtual in the base classes */
     bool isVirtualFunc(const Scope *scope, const Token *functionToken) const;
 

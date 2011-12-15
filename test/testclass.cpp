@@ -184,14 +184,15 @@ private:
         TEST_CASE(const49); // ticket #2795
         TEST_CASE(const50); // ticket #2943
         TEST_CASE(const51); // ticket #3040
-        TEST_CASE(const52); // ticket #3049
-        TEST_CASE(const53); // ticket #3052
-        TEST_CASE(const54);
-        TEST_CASE(const55); // ticket #3149
+        TEST_CASE(const52); // ticket #3048
+        TEST_CASE(const53); // ticket #3049
+        TEST_CASE(const54); // ticket #3052
+        TEST_CASE(const55);
+        TEST_CASE(const56); // ticket #3149
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
-        TEST_CASE(constoperator2);	// operator<<
+        TEST_CASE(constoperator2);  // operator<<
         TEST_CASE(constoperator3);
         TEST_CASE(constoperator4);
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3553,7 +3554,7 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction\n", errout.str());
     }
 
-    void checkConst(const char code[], const Settings *s = 0) {
+    void checkConst(const char code[], const Settings *s = 0, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -3563,7 +3564,7 @@ private:
             settings = *s;
         else
             settings.addEnabled("style");
-        settings.inconclusive = true;
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -5609,7 +5610,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const52() { // ticket 3049
+    void const52() { // ticket 3048
+        checkConst("class foo {\n"
+                   "    void DoSomething(int &a) const { a = 1; }\n"
+                   "    void DoSomethingElse() { DoSomething(bar); }\n"
+                   "private:\n"
+                   "    int bar;\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const53() { // ticket 3049
         checkConst("class A {\n"
                    "  public:\n"
                    "    A() : foo(false) {};\n"
@@ -5625,7 +5636,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const53() { // ticket 3052
+    void const54() { // ticket 3052
         checkConst("class Example {\n"
                    "  public:\n"
                    "    void Clear(void) { Example tmp; (*this) = tmp; }\n"
@@ -5633,7 +5644,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const54() {
+    void const55() {
         checkConst("class MyObject {\n"
                    "    int tmp;\n"
                    "    MyObject() : tmp(0) {}\n"
@@ -5643,7 +5654,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const55() { // ticket #3149
+    void const56() { // ticket #3149
         checkConst("class MyObject {\n"
                    "public:\n"
                    "    void foo(int x) {\n"
@@ -6350,8 +6361,11 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Technically the member function 'foo::f' can be const.\n", errout.str());
 
         settings.ifcfg = true;
-        checkConst(code, &settings);
+        checkConst(code, &settings, false);
         ASSERT_EQUALS("", errout.str());
+
+        checkConst(code, &settings, true);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Technically the member function 'foo::f' can be const.\n", errout.str());
     }
 
     void constFriend() { // ticket #1921

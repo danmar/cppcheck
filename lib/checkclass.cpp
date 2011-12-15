@@ -1158,11 +1158,11 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::checkConst()
 {
-    // this is an inconclusive check - see #3048 for instance
+    // This is an inconclusive check. False positives: #3252, #3322, #3360.
     if (!_settings->inconclusive)
         return;
 
-    if (!_settings->isEnabled("style") || _settings->ifcfg)
+    if (!_settings->isEnabled("style"))
         return;
 
     // Don't check C# and JAVA classes
@@ -1221,12 +1221,10 @@ void CheckClass::checkConst()
                             }
                         }
 
-                        if (allupper && previous->str().size() > 2)
+                        if (allupper && s.size() > 2)
                             continue;
                     }
                 }
-
-                const Token *paramEnd = func->arg->link();
 
                 // check if base class function is virtual
                 if (!scope->derivedFrom.empty()) {
@@ -1235,7 +1233,7 @@ void CheckClass::checkConst()
                 }
 
                 // if nothing non-const was found. write error..
-                if (checkConstFunc(&(*scope), paramEnd)) {
+                if (checkConstFunc(&(*scope), &*func)) {
                     std::string classname = scope->className;
                     const Scope *nest = scope->nestedIn;
                     while (nest && nest->type != Scope::eGlobal) {
@@ -1366,46 +1364,31 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
     return false;
 }
 
-bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
+bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
 {
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
-    unsigned int indentlevel = 0;
-    bool isconst = true;
-    for (const Token *tok1 = tok; tok1; tok1 = tok1->next()) {
-        if (tok1->str() == "{")
-            ++indentlevel;
-        else if (tok1->str() == "}") {
-            if (indentlevel <= 1)
-                break;
-            --indentlevel;
-        }
-
+    for (const Token *tok1 = func->start; tok1 && tok1 != func->start->link(); tok1 = tok1->next()) {
         // assignment.. = += |= ..
-        else if (tok1->isAssignmentOp()) {
+        if (tok1->isAssignmentOp()) {
             if (tok1->next()->str() == "this") {
-                isconst = false;
-                break;
+                return(false);
             } else if (isMemberVar(scope, tok1->previous())) {
-                isconst = false;
-                break;
+                return(false);
             }
         }
 
         // streaming: <<
         else if (tok1->str() == "<<" && isMemberVar(scope, tok1->previous())) {
-            isconst = false;
-            break;
+            return(false);
         } else if (Token::simpleMatch(tok1->previous(), ") <<") &&
                    isMemberVar(scope, tok1->tokAt(-2))) {
-            isconst = false;
-            break;
+            return(false);
         }
 
         // streaming: >>
         else if (tok1->str() == ">>" && isMemberVar(scope, tok1->next())) {
-            isconst = false;
-            break;
+            return(false);
         }
 
         // increment/decrement (member variable?)..
@@ -1414,24 +1397,21 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
             if (Token::Match(tok1->previous(), "%var%") &&
                 tok1->previous()->str() != "return") {
                 if (isMemberVar(scope, tok1->previous())) {
-                    isconst = false;
-                    break;
+                    return(false);
                 }
             }
 
             // var[...]++ and var[...]--
             else if (tok1->previous()->str() == "]") {
                 if (isMemberVar(scope, tok1->previous()->link()->previous())) {
-                    isconst = false;
-                    break;
+                    return(false);
                 }
             }
 
             // ++var and --var
             else if (Token::Match(tok1->next(), "%var%")) {
                 if (isMemberVar(scope, tok1->next())) {
-                    isconst = false;
-                    break;
+                    return(false);
                 }
             }
         }
@@ -1442,37 +1422,49 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Token *tok)
 
             if (var && (var->typeStartToken()->str() == "map" ||
                         Token::simpleMatch(var->typeStartToken(), "std :: map"))) {
-                isconst = false;
-                break;
+                return(false);
             }
         }
 
         // function call..
-        else if (Token::Match(tok1, "%var% (") &&
-                 !(Token::Match(tok1, "return|c_str|if|string|switch|while|catch|for") || tok1->isStandardType())) {
+        else if (Token::Match(tok1, "%var% (") && !tok1->isStandardType() &&
+                 !Token::Match(tok1, "return|c_str|if|string|switch|while|catch|for")) {
             if (!isConstMemberFunc(scope, tok1)) {
-                isconst = false;
-                break;
+                return(false);
+            }
+            // Member variable given as parameter
+            for (const Token* tok2 = tok1->tokAt(2); tok2 && tok2 != tok1->next()->link(); tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    tok2 = tok2->link();
+                else if (tok2->isName() && isMemberVar(scope, tok2))
+                    return(false); // TODO: Only bailout if function takes argument as non-const reference
             }
         } else if (Token::Match(tok1, "%var% < %any% > (")) {
-            isconst = false;
-            break;
-        } else if (Token::Match(tok1, "%var% . size|empty ( )") && tok1->varId()) {
+            return(false);
+        } else if (Token::Match(tok1, "%var% . size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|rfind|get_allocator|copy ( )") && tok1->varId()) {
             // assume all std::*::size() and std::*::empty() are const
             const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
 
             if (var && Token::simpleMatch(var->typeStartToken(), "std ::"))
                 tok1 = tok1->tokAt(4);
+            else
+                return(false);
         }
 
         // delete..
         else if (tok1->str() == "delete") {
-            isconst = false;
-            break;
+            const Token* end = Token::findsimplematch(tok1->next(), ";")->previous();
+            while (end->str() == ")")
+                end = end->previous();
+            if (end->str() == "this")
+                return(false);
+            if (end->isName() && isMemberVar(scope, end))
+                return(false);
+
         }
     }
 
-    return isconst;
+    return(true);
 }
 
 // check if this function is defined virtual in the base classes
