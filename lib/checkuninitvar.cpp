@@ -1132,7 +1132,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
         if (Token::Match(tok, "return|break|continue|throw"))
             ret = true;
         else if (ret && tok->str() == ";")
-            return false;
+            return true;
 
         // variable is seen..
         if (tok->varId() == varid) {
