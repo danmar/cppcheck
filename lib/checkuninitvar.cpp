@@ -1125,8 +1125,12 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
 
         // TODO: handle loops, try, etc
         if (Token::simpleMatch(tok, ") {") || Token::Match(tok, "%var% {")) {
-            ret = true;
-            return false;
+            return true;
+        }
+
+        // bailout if there is assembler code
+        if (Token::simpleMatch(tok, "asm (")) {
+            return true;
         }
 
         if (Token::Match(tok, "return|break|continue|throw"))

@@ -1823,6 +1823,14 @@ private:
                         "    if (a) i++;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        // asm
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    asm();\n"
+                        "    x++;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
