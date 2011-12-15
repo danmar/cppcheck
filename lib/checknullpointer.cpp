@@ -252,7 +252,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     // This is most useful in inconclusive checking
     if (inconclusive) {
         // Not a dereference..
-        if (Token::Match(tok->previous(), "[;{}] %var% ="))
+        if (Token::Match(tok->previous(), "[;{}(] %var% ="))
             return false;
 
         // OK to delete a null
@@ -265,7 +265,15 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
             return false;
 
         // OK to pass pointer to function
-        if (Token::Match(tok->previous(), ", %var% [,)]"))
+        if (Token::Match(tok->previous(), "[(,] %var% [,)]"))
+            return false;
+
+        // Compare pointer
+        if (Token::Match(tok->previous(), "(|&&|%oror%|==|!= %var% &&|%oror%|)"))
+            return false;
+
+        // Taking address
+        if (Token::Match(tok->previous(), "return|= %var% ;"))
             return false;
 
         // unknown if it's a dereference
