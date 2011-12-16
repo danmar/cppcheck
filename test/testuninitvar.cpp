@@ -1746,6 +1746,12 @@ private:
             ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: x\n", errout.str());
         }
 
+        checkUninitVar2("void f() {\n"
+                        "    int i, i2;\n"
+                        "    strm >> i >> i2;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // conditional initialization
         checkUninitVar2("void f() {\n"
                         "    int x;\n"

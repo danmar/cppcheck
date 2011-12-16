@@ -1165,9 +1165,6 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok) const
     if (vartok->previous()->str() == "return")
         return true;
 
-    if (Token::Match(vartok->next(), "++|--|%op%"))
-        return true;
-
     if (Token::Match(vartok->previous(), "++|--|%op%")) {
         if (vartok->previous()->str() == ">>" && _tokenizer->isCPP()) {
             // assume that variable is initialized
@@ -1178,6 +1175,9 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok) const
             return true;
         }
     }
+
+    if (Token::Match(vartok->next(), "++|--|%op%"))
+        return true;
 
     if (vartok->strAt(1) == "]")
         return true;
