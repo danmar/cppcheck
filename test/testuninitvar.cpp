@@ -1753,7 +1753,7 @@ private:
                         "    else if (y == 2) { x = 1; }\n"
                         "    return x;\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", "", errout.str());
 
         // initialization in condition
         checkUninitVar2("void f() {\n"
@@ -1836,6 +1836,18 @@ private:
                         "    int i;\n"
                         "    if (a) i = 0;\n"
                         "    if (a) i++;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int a,b=0;\n"
+                        "    if (x) {\n"
+                        "        if (y) {\n"
+                        "            a = 0;\n"
+                        "            b = 1;\n"
+                        "        }\n"
+                        "    }\n"
+                        "    if (b) a++;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
 

@@ -1062,6 +1062,9 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
     for (; tok; tok = tok->next()) {
         // End of scope..
         if (tok->str() == "}") {
+            if (number_of_if)
+                return true;
+
             // might be a noreturn function..
             if (Token::simpleMatch(tok->tokAt(-2), ") ; }") &&
                 Token::Match(tok->linkAt(-2)->tokAt(-2), "[;{}] %var% (") &&
