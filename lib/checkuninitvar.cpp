@@ -1176,7 +1176,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok) const
         }
     }
 
-    if (vartok->strAt(-1) == "[" || vartok->strAt(1) == "]")
+    if (vartok->strAt(1) == "]")
         return true;
 
     return false;
