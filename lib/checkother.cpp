@@ -338,9 +338,7 @@ void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &v
 //---------------------------------------------------------------------------
 void CheckOther::checkSizeofForNumericParameter()
 {
-    // TODO: write sensible error message if char constant is used
-    //       see ticket #3179
-    if (!_settings->experimental)
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -354,15 +352,12 @@ void CheckOther::checkSizeofForNumericParameter()
 
 void CheckOther::sizeofForNumericParameterError(const Token *tok)
 {
-    reportError(tok, Severity::error,
+    reportError(tok, Severity::warning,
                 "sizeofwithnumericparameter", "Using sizeof with a numeric constant as function "
                 "argument might not be what you intended.\n"
-                "It is unusual to use constant value with sizeof. For example, this code:\n"
-                "     int f() {\n"
-                "         return sizeof(10);\n"
-                "     }\n"
-                " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 10."
-               );
+                "It is unusual to use constant value with sizeof. For example, sizeof(10)"
+                " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 10. sizeof('A')"
+                " and sizeof(char) can return different results.");
 }
 
 //---------------------------------------------------------------------------
@@ -437,7 +432,7 @@ void CheckOther::checkSizeofForStrncmpSize()
 
     // danmar : this is inconclusive in case the size parameter is
     //          sizeof(char *) by intention.
-    if (!_settings->inconclusive)
+    if (!_settings->inconclusive || !_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -477,6 +472,9 @@ void CheckOther::sizeofForStrncmpError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkRedundantAssignmentInSwitch()
 {
+    if (!_settings->isEnabled("style"))
+        return;
+
     const char switchPattern[] = "switch ( %any% ) { case";
     const char breakPattern[] = "break|continue|return|exit|goto|throw";
     const char functionPattern[] = "%var% (";
@@ -1238,9 +1236,6 @@ void CheckOther::invalidScanfError(const Token *tok)
 
 void CheckOther::checkWrongPrintfScanfArguments()
 {
-    if (!_settings->isEnabled("style"))
-        return;
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->isName()) continue;
 
@@ -1347,6 +1342,10 @@ void CheckOther::wrongPrintfScanfArgumentsError(const Token* tok,
         unsigned int numFormat,
         unsigned int numFunction)
 {
+    Severity::SeverityType severity = numFormat > numFunction ? Severity::error : Severity::warning;
+    if (severity != Severity::error && !_settings->isEnabled("style"))
+        return;
+
     std::ostringstream errmsg;
     errmsg << functionName
            << " format string has "
@@ -1356,10 +1355,7 @@ void CheckOther::wrongPrintfScanfArgumentsError(const Token* tok,
            << numFunction
            << " are given";
 
-    reportError(tok,
-                numFormat > numFunction ? Severity::error : Severity::warning,
-                "wrongPrintfScanfArgs",
-                errmsg.str());
+    reportError(tok, severity, "wrongPrintfScanfArgs", errmsg.str());
 }
 
 //---------------------------------------------------------------------------
@@ -1518,9 +1514,6 @@ void CheckOther::unreachableCodeError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkUnsignedDivision()
 {
-    if (!_settings->isEnabled("style"))
-        return;
-
     // Check for "ivar / uvar" and "uvar / ivar"
     std::set<unsigned int> uvars;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -1557,6 +1550,9 @@ void CheckOther::udivError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkMemsetZeroBytes()
 {
+    if (!_settings->isEnabled("style"))
+        return;
+
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "memset (")) {
             const Token* lastParamTok = tok->next()->link()->previous();
@@ -2189,6 +2185,9 @@ void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& va
 //---------------------------------------------------------------------------
 void CheckOther::checkIncorrectStringCompare()
 {
+    if (!_settings->isEnabled("style"))
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, ". substr ( %any% , %num% ) ==|!= %str%")) {
             MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(5));
@@ -2196,21 +2195,18 @@ void CheckOther::checkIncorrectStringCompare()
             if (clen != (int)slen) {
                 incorrectStringCompareError(tok->next(), "substr", tok->strAt(8), tok->strAt(5));
             }
-        }
-        if (Token::Match(tok, "%str% ==|!= %var% . substr ( %any% , %num% )")) {
+        } else if (Token::Match(tok, "%str% ==|!= %var% . substr ( %any% , %num% )")) {
             MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(8));
             std::size_t slen = Token::getStrLength(tok);
             if (clen != (int)slen) {
                 incorrectStringCompareError(tok->next(), "substr", tok->str(), tok->strAt(8));
             }
-        }
-        if (Token::Match(tok, "&&|%oror% %str% &&|%oror%|)")) {
+        } else if (Token::Match(tok, "&&|%oror% %str% &&|%oror%|)")) {
             // assert(condition && "debug message") would be considered a fp.
             if (tok->str() == "&&" && tok->strAt(2) == ")" && tok->linkAt(2)->previous()->str() == "assert")
                 continue;
             incorrectStringBooleanError(tok->next(), tok->strAt(1));
-        }
-        if (Token::Match(tok, "if|while|assert ( %str% &&|%oror%|)")) {
+        } else if (Token::Match(tok, "if|while|assert ( %str% &&|%oror%|)")) {
             // assert("debug message" && condition) would be considered a fp.
             if (tok->strAt(3) == "&&" && tok->str() == "assert")
                 continue;
@@ -2785,6 +2781,7 @@ void CheckOther::sizeofCalculation()
 {
     if (!_settings->isEnabled("style"))
         return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             unsigned int parlevel = 0;
@@ -2837,6 +2834,9 @@ void CheckOther::assignBoolToPointerError(const Token *tok)
 //-----------------------------------------------------------------------------
 void CheckOther::checkComparisonOfBoolExpressionWithInt()
 {
+    if (!_settings->isEnabled("style"))
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "&&|%oror% %any% ) ==|!=|>|< %num%")) {
             const std::string& op = tok->strAt(3);

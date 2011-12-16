@@ -33,10 +33,6 @@ namespace {
 
 void CheckExceptionSafety::destructors()
 {
-    // This is a style error..
-    if (!_settings->isEnabled("style"))
-        return;
-
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // Perform check..
