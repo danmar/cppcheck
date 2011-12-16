@@ -1123,6 +1123,10 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             }
         }
 
+        // skip = { .. }
+        if (Token::simpleMatch(tok, "= {"))
+            tok = tok->next()->link();
+
         // TODO: handle loops, try, etc
         if (tok->str() == "for" || Token::simpleMatch(tok, ") {") || Token::Match(tok, "%var% {")) {
             return true;
