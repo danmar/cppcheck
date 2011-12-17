@@ -172,7 +172,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
         }
 
         // goto/setjmp/longjmp => bailout
-        if (Token::Match(tok, "goto|setjmp|longjmp")) {
+        else if (Token::Match(tok, "goto|setjmp|longjmp")) {
             ExecutionPath::bailOut(checks);
             return;
         }
@@ -185,28 +185,39 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
             }
         }
 
-        if (tok->str() == "switch") {
-            // parse condition
-            if (checks.size() > 10 || check->parseCondition(*tok->next(), checks)) {
+        // for/while/switch/do .. bail out
+        else if (Token::Match(tok, "for|while|switch|do")) {
+            // goto {
+            const Token *tok2 = tok->next();
+            if (tok2 && tok2->str() == "(")
+                tok2 = tok2->link();
+            if (tok2 && tok2->str() == ")")
+                tok2 = tok2->next();
+            if (!tok2 || tok2->str() != "{") {
                 ExecutionPath::bailOut(checks);
                 return;
             }
 
-            const Token *tok2 = tok->next()->link();
-            if (Token::simpleMatch(tok2, ") { case")) {
+            if (tok->str() == "switch") {
+                // parse condition
+                if (checks.size() > 10 || check->parseCondition(*tok->next(), checks)) {
+                    ExecutionPath::bailOut(checks);
+                    return;
+                }
+
                 // what variable ids should the if be counted for?
                 std::set<unsigned int> countif;
 
                 std::list<ExecutionPath *> newchecks;
 
-                for (tok2 = tok2->tokAt(2); tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "{")
-                        tok2 = tok2->link();
-                    else if (tok2->str() == "}")
+                for (const Token* tok3 = tok2->next(); tok3; tok3 = tok3->next()) {
+                    if (tok3->str() == "{")
+                        tok3 = tok3->link();
+                    else if (tok3->str() == "}")
                         break;
-                    else if (tok2->str() == "case" &&
-                             !Token::Match(tok2, "case %num% : ; case")) {
-                        parseIfSwitchBody(tok2, checks, newchecks, countif);
+                    else if (tok3->str() == "case" &&
+                             !Token::Match(tok3, "case %num% : ; case")) {
+                        parseIfSwitchBody(tok3, checks, newchecks, countif);
                     }
                 }
 
@@ -220,22 +231,8 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                         (*it)->numberOfIf++;
                 }
             }
-        }
-
-        // for/while/switch/do .. bail out
-        if (Token::Match(tok, "for|while|switch|do")) {
-            // goto {
-            const Token *tok2 = tok->next();
-            if (tok2 && tok2->str() == "(")
-                tok2 = tok2->link();
-            if (tok2 && tok2->str() == ")")
-                tok2 = tok2->next();
-            if (!tok2 || tok2->str() != "{") {
-                ExecutionPath::bailOut(checks);
-                return;
-            }
-
-            if (tok->str() != "switch") {
+            // no switch
+            else {
                 for (const Token *tok3 = tok; tok3 && tok3 != tok2; tok3 = tok3->next()) {
                     if (tok3->varId())
                         ExecutionPath::bailOutVar(checks, tok3->varId());
@@ -357,7 +354,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
         }
 
         // ; { ... }
-        if (Token::Match(tok->previous(), "[;{}] {")) {
+        if (Token::Match(tok->previous(), "[;{}:] {")) {
             ExecutionPath::checkScope(tok->next(), checks);
             tok = tok->link();
             continue;
