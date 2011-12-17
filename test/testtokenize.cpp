@@ -87,6 +87,7 @@ private:
         TEST_CASE(ifAddBraces14); // #2610 - segfault: if()<{}
         TEST_CASE(ifAddBraces15); // #2616 - unknown macro before if
         TEST_CASE(ifAddBraces16); // '} else' should be in the same line
+        TEST_CASE(ifAddBraces17); // #3424 - if if { } else else
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -961,6 +962,12 @@ private:
                       "} else {\n"
                       "bar2 ( ) ; }\n"
                       "}", tokenizeAndStringify(code, true));
+    }
+
+    void ifAddBraces17() {
+        // ticket #3424 - if if { } else else
+        ASSERT_EQUALS("{ if ( x ) { if ( y ) { } else { ; } } else { ; } }",
+                      tokenizeAndStringify("{ if(x) if(y){}else;else;}", false));
     }
 
 

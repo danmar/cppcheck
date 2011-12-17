@@ -4913,7 +4913,9 @@ bool Tokenizer::simplifyIfAddBraces()
                 tempToken = tempToken->link();
                 if (!tempToken || !tempToken->next())
                     break;
-                if (tempToken->next()->isName() && tempToken->next()->str() != "else")
+                if (Token::simpleMatch(tempToken, "} else") && !Token::Match(tempToken->tokAt(2), "if|{"))
+                    innerIf = false;
+                else if (tempToken->next()->isName() && tempToken->next()->str() != "else")
                     break;
                 continue;
             }
