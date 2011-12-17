@@ -1434,6 +1434,13 @@ private:
               "    strcpy(a, s?b:c);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // sizeof
+        check("void f(struct fred_t *fred) {\n"
+              "    if (!fred)\n"
+              "        int sz = sizeof fred->x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference

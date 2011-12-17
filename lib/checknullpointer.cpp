@@ -896,7 +896,10 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 }
 
                 // parameters to sizeof are not dereferenced
-                if (Token::Match(tok2, "decltype|sizeof (")) {
+                if (Token::Match(tok2, "decltype|sizeof")) {
+                    if (tok2->strAt(1) != "(")
+                        break;
+
                     tok2 = tok2->next()->link();
                     continue;
                 }
