@@ -1126,9 +1126,19 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             }
         }
 
-        // skip = { .. }
-        if (Token::simpleMatch(tok, "= {"))
-            tok = tok->next()->link();
+        // = { .. }
+        if (Token::simpleMatch(tok, "= {")) {
+            // end token
+            const Token *end = tok->next()->link();
+
+            // If address of variable is taken in the block then bail out
+            if (Token::findmatch(tok->tokAt(2), "& %varid%", end, varid))
+                return true;
+
+            // Skip block
+            tok = end;
+            continue;
+        }
 
         // TODO: handle loops, try, etc
         if (tok->str() == "for" || Token::simpleMatch(tok, ") {") || Token::Match(tok, "%var% {")) {

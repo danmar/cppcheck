@@ -1732,6 +1732,15 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
+        // = { .. }
+        checkUninitVar2("int f() {\n"
+                        "    int a;\n"
+                        "    int *p[] = { &a };\n"
+                        "    *p[0] = 0;\n"
+                        "    return a;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // >> => initialization / usage
         {
             const char code[] = "void f() {\n"
