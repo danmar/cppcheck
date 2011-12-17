@@ -1880,6 +1880,12 @@ private:
                         "    sizeof(i+1);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int i;\n"
+                        "    if (100 == sizeof(i+1));\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

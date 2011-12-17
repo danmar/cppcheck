@@ -1089,6 +1089,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
                         uninitvarError(tok2, tok2->str());
                     return true;
                 }
+                if (Token::Match(tok2, "sizeof|decltype|offsetof ("))
+                    tok2 = tok2->next()->link();
             }
 
             // goto the {
@@ -1141,7 +1143,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
         }
 
         // skip sizeof / offsetof
-        if (Token::Match(tok, "sizeof|offsetof ("))
+        if (Token::Match(tok, "sizeof|offsetof|decltype ("))
             tok = tok->next()->link();
 
         // TODO: handle loops, try, etc
