@@ -108,7 +108,6 @@ private:
 
         // catch common problems when using the string::c_str() function
         TEST_CASE(cstr);
-        TEST_CASE(cstr_inconclusive);
 
         TEST_CASE(autoPointer);
 
@@ -744,17 +743,24 @@ private:
         check("void f()\n"
               "{\n"
               "    std::set<int> foo;\n"
-              "    for (std::set<int> it = foo.begin(); it != foo.end(); ++it)\n"
+              "    for (std::set<int>::iterator it = foo.begin(); it != foo.end(); ++it)\n"
               "    {\n"
               "        foo.erase(*it);\n"
               "    }\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' becomes invalid when deleted by value from 'foo'\n", "", errout.str());
 
+        check("int f(std::set<int> foo) {\n"
+              "    std::set<int>::iterator it = foo.begin();\n"
+              "    foo.erase(*it);\n"
+              "    return *it;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereferenced iterator 'it' has been erased\n", errout.str());
+
         check("void f()\n"
               "{\n"
               "    std::set<int> foo;\n"
-              "    std::set<int> it = foo.begin();\n"
+              "    std::set<int>::iterator it = foo.begin();\n"
               "    foo.erase(*it);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -1321,32 +1327,32 @@ private:
               "    std::string errmsg;\n"
               "    return errmsg.c_str();\n"
               "}");
-        // It's a TODO as we want to warn if return type is const char* but not on std::string. See #3266.
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", "", errout.str());
+
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::ostringstream errmsg;\n"
               "    return errmsg.str().c_str();\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
               "    return std::string(\"ERROR: \" + errmsg).c_str();\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
               "    return (\"ERROR: \" + errmsg).c_str();\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
 
         check("const char *get_msg() {\n"
               "    std::string errmsg;\n"
               "    return (\"ERROR: \" + std::string(\"crash me\")).c_str();\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
 
         // Implicit conversion back to std::string
         check("std::string get_msg() {\n"
@@ -1367,40 +1373,6 @@ private:
               "    const char *c = f().c_str();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
-    }
-
-    void cstr_inconclusive() {
-        bool inconclusive = true;
-
-        check("const char *get_msg() {\n"
-              "    std::string errmsg;\n"
-              "    return errmsg.c_str();\n"
-              "}", inconclusive);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
-
-        check("const char *get_msg() {\n"
-              "    std::ostringstream errmsg;\n"
-              "    return errmsg.str().c_str();\n"
-              "}", inconclusive);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
-
-        check("const char *get_msg() {\n"
-              "    std::string errmsg;\n"
-              "    return std::string(\"ERROR: \" + errmsg).c_str();\n"
-              "}", inconclusive);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
-
-        check("const char *get_msg() {\n"
-              "    std::string errmsg;\n"
-              "    return (\"ERROR: \" + errmsg).c_str();\n"
-              "}", inconclusive);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
-
-        check("const char *get_msg() {\n"
-              "    std::string errmsg;\n"
-              "    return (\"ERROR: \" + std::string(\"crash me\")).c_str();\n"
-              "}", inconclusive);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible dangerous usage of c_str()\n", errout.str());
     }
 
     void autoPointer() {

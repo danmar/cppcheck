@@ -134,7 +134,7 @@ public:
     /** Check for common mistakes when using the function string::c_str() */
     void string_c_str();
     void string_c_strThrowError(const Token *tok);
-    void string_c_strError(const Token *tok, bool is_inconlusive=false);
+    void string_c_strError(const Token *tok);
 
     /** @brief %Check for use and copy auto pointer */
     void checkAutoPointer();
