@@ -1873,6 +1873,13 @@ private:
                         "    x++;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        // sizeof / offsetof
+        checkUninitVar2("void f() {\n"
+                        "    int i;\n"
+                        "    sizeof(i+1);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

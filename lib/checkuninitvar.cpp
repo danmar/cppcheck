@@ -1140,6 +1140,10 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             continue;
         }
 
+        // skip sizeof / offsetof
+        if (Token::Match(tok, "sizeof|offsetof ("))
+            tok = tok->next()->link();
+
         // TODO: handle loops, try, etc
         if (tok->str() == "for" || Token::simpleMatch(tok, ") {") || Token::Match(tok, "%var% {")) {
             return true;
