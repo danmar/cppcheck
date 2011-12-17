@@ -109,6 +109,7 @@ private:
         TEST_CASE(array_index_37);
         TEST_CASE(array_index_38); // ticket #3273
         TEST_CASE(array_index_39);
+        TEST_CASE(array_index_40); // loop variable calculation, taking address
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1307,6 +1308,15 @@ private:
               "    a[10] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' index 10 out of bounds\n", errout.str());
+    }
+
+    void array_index_40() {
+        check("void f() {\n"
+              "    char a[10];\n"
+              "    for (int i = 0; i < 10; ++i)\n"
+              "        f2(&a[i + 1]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {

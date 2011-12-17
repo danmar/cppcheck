@@ -450,7 +450,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok, const ArrayInfo &array
             break;
         }
 
-        else if (arrayInfo.varid() && counter_varid > 0 && !min_counter_value.empty() && !max_counter_value.empty()) {
+        else if (arrayInfo.varid() && tok2->varId() && counter_varid > 0 && !min_counter_value.empty() && !max_counter_value.empty()) {
             // Is the loop variable used to calculate the array index?
             // In this scope it is determined if such calculated
             // array indexes are out of bounds.
@@ -491,6 +491,10 @@ void CheckBufferOverrun::parse_for_body(const Token *tok, const ArrayInfo &array
                 max_index = std::atoi(MathLib::calculate(first, max_counter_value, action, _tokenizer).c_str());
             }
 
+            else {
+                continue;
+            }
+
             //printf("min_index = %d, max_index = %d, size = %d\n", min_index, max_index, size);
             if (min_index < 0 || max_index < 0) {
                 std::vector<MathLib::bigint> indexes;
@@ -499,7 +503,14 @@ void CheckBufferOverrun::parse_for_body(const Token *tok, const ArrayInfo &array
             }
 
             // skip 0 length arrays
-            if (arrayInfo.num(0) && (min_index >= arrayInfo.num(0) || max_index >= arrayInfo.num(0))) {
+            if (arrayInfo.num(0) == 0)
+                ;
+
+            // taking address.
+            else if (tok2->previous()->str() == "&" && max_index == arrayInfo.num(0))
+                ;
+
+            else if (arrayInfo.num(0) && (min_index >= arrayInfo.num(0) || max_index >= arrayInfo.num(0))) {
                 std::vector<MathLib::bigint> indexes;
                 indexes.push_back(std::max(min_index, max_index));
                 arrayIndexOutOfBoundsError(tok2, arrayInfo, indexes);
