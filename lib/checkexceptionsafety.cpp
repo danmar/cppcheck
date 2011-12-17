@@ -138,9 +138,11 @@ void CheckExceptionSafety::checkRethrowCopy()
             endScopeTok = startScopeTok->link();
             const unsigned int varid = endBracketTok->previous()->varId();
 
-            const Token* rethrowTok = Token::findmatch(startScopeTok->next(), "throw %varid%", endScopeTok->previous(), varid);
-            if (rethrowTok) {
-                rethrowCopyError(rethrowTok, endBracketTok->strAt(-1));
+            if (varid > 0) {
+                const Token* rethrowTok = Token::findmatch(startScopeTok->next(), "throw %varid%", endScopeTok->previous(), varid);
+                if (rethrowTok) {
+                    rethrowCopyError(rethrowTok, endBracketTok->strAt(-1));
+                }
             }
         }
 
