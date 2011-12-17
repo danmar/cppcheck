@@ -801,6 +801,9 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
 void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo)
 {
     const MathLib::bigint size = arrayInfo.num(0);
+    if (size == 0)  // unknown size
+        return;
+
     const MathLib::bigint total_size = arrayInfo.element_size() * arrayInfo.num(0);
     unsigned int varid = arrayInfo.varid();
 

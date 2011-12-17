@@ -624,6 +624,12 @@ private:
               "        f.str[i] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (error) Buffer access out-of-bounds: f.str\n", errout.str());
+
+        check("struct AB { char a[NUM]; char b[NUM]; }\n"
+              "void f(struct AB *ab) {\n"
+              "    ab->a[0] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
