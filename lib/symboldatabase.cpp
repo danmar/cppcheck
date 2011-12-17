@@ -25,8 +25,6 @@
 #include "errorlogger.h"
 #include "check.h"
 
-#include <locale>
-
 #include <cstring>
 #include <string>
 #include <sstream>
@@ -111,19 +109,26 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
         // unnamed struct and union
         else if (Token::Match(tok, "struct|union {") &&
-                 Token::Match(tok->next()->link(), "} %var% ;|[")) {
+                 Token::Match(tok->next()->link(), "} |* %var% ;|[")) {
             scopeList.push_back(Scope(this, tok, scope));
 
             Scope *new_scope = &scopeList.back();
 
             std::vector<Dimension> dimensions;
 
+            bool isPointer = false;
             bool isArray = false;
 
-            if (tok->next()->link()->strAt(2) == "[")
-                isArray = arrayDimensions(dimensions, tok->next()->link()->tokAt(2));
+            const Token* varNameTok = tok->next()->link()->next();
+            if (varNameTok->str() == "*") {
+                isPointer = true;
+                varNameTok = varNameTok->next();
+            }
 
-            scope->addVariable(tok->next()->link()->next(), tok, tok, scope->access, false, false, false, true, new_scope, scope, isArray, dimensions);
+            if (varNameTok->next()->str() == "[")
+                isArray = arrayDimensions(dimensions, varNameTok->next());
+
+            scope->addVariable(varNameTok, tok, tok, scope->access, false, false, false, true, new_scope, scope, isArray, isPointer, dimensions);
 
             const Token *tok2 = tok->next();
 
@@ -1210,20 +1215,14 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
     // check for non-empty argument list "( ... )"
     if (arg->link() != arg->next() && !Token::simpleMatch(arg, "( void )")) {
         unsigned int count = 0;
-        const Token *startTok;
-        const Token *endTok;
-        const Token *nameTok;
-        bool isConstVar;
-        bool isArrayVar;
-        bool hasDefault;
-        const Token *tok = arg->next();
-        for (;;) {
-            startTok = tok;
-            endTok = NULL;
-            nameTok = NULL;
-            isConstVar = bool(tok->str() == "const");
-            isArrayVar = false;
-            hasDefault = false;
+
+        for (const Token* tok = arg->next(); tok; tok = tok->next()) {
+            const Token* startTok = tok;
+            const Token* endTok   = NULL;
+            const Token* nameTok  = NULL;
+            bool isConstVar   = bool(tok->str() == "const");
+            bool isArrayVar   = false;
+            bool hasDefault   = false;
             std::vector<Dimension> dimensions;
 
             while (tok->str() != "," && tok->str() != ")" && tok->str() != "=") {
@@ -1282,6 +1281,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
                 argType = symbolDatabase->findVariableType(scope, typeTok);
 
             bool isClassVar = startTok == endTok && !startTok->isStandardType();
+            bool isPointerVar = nameTok->strAt(-1) == "*" || nameTok->strAt(-2) == "*";
 
             // skip default values
             if (tok->str() == "=") {
@@ -1291,12 +1291,10 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
                     tok = tok->next();
             }
 
-            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, functionScope, isArrayVar, hasDefault, dimensions));
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, functionScope, isArrayVar, isPointerVar, hasDefault, dimensions));
 
             if (tok->str() == ")")
                 break;
-
-            tok = tok->next();
         }
     }
 }
@@ -1359,8 +1357,7 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
     }
 }
 
-bool
-Scope::hasDefaultConstructor() const
+bool Scope::hasDefaultConstructor() const
 {
     if (numConstructors) {
         std::list<Function>::const_iterator func;
@@ -1548,10 +1545,12 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     }
 
     bool isArray = false;
+    bool isPointer = false;
     std::vector<Dimension> dimensions;
 
-    if (tok && isVariableDeclaration(tok, vartok, typetok, isArray)) {
-        isClass = (!typetok->isStandardType() && vartok->previous()->str() != "*");
+    if (tok && isVariableDeclaration(tok, vartok, typetok, isArray, isPointer)) {
+        isPointer = vartok->previous()->str() == "*" || vartok->strAt(-2) == "*";
+        isClass = (!typetok->isStandardType() && !isPointer && vartok->previous()->str() != "&");
         if (isArray) {
             isArray = check->arrayDimensions(dimensions, vartok->next());
             tok = vartok->next();
@@ -1571,7 +1570,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
         if (typetok)
             scope = check->findVariableType(this, typetok);
 
-        addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this, isArray, dimensions);
+        addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this, isArray, isPointer, dimensions);
     }
 
     return tok;
@@ -1607,14 +1606,14 @@ inline const Token* skipPointers(const Token* tok)
 {
     const Token* ret = tok;
 
-    while (Token::simpleMatch(ret, "*")) {
+    while (Token::Match(ret, "*|&")) {
         ret = ret->next();
     }
 
     return ret;
 }
 
-bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray) const
+bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray, bool &isPointer) const
 {
     const Token* localTypeTok = skipScopeIdentifiers(tok);
     const Token* localVarTok = NULL;
@@ -1649,6 +1648,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         typetok = localTypeTok;
         isArray = false;
     }
+    isPointer = vartok && (vartok->strAt(-1) == "*" || vartok->strAt(-2) == "*");
 
     return NULL != vartok;
 }

@@ -422,25 +422,11 @@ static bool for_bailout(const Token * const tok1, unsigned int varid)
 }
 
 
-void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value)
+void CheckBufferOverrun::parse_for_body(const Token *tok, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value)
 {
     const std::string pattern((arrayInfo.varid() ? std::string("%varid%") : arrayInfo.varname()) + " [ " + strindex + " ]");
 
-    // count { and } for tok2
-    int indentlevel2 = 0;
-    for (; tok2; tok2 = tok2->next()) {
-        if (tok2->str() == ";" && indentlevel2 == 0)
-            break;
-
-        if (tok2->str() == "{")
-            ++indentlevel2;
-
-        if (tok2->str() == "}") {
-            --indentlevel2;
-            if (indentlevel2 <= 0)
-                break;
-        }
-
+    for (const Token* tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
         // TODO: try to reduce false negatives. This is just a quick fix
         // for TestBufferOverrun::array_index_for_question
         if (tok2->str() == "?")
@@ -713,31 +699,22 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
     }
     callstack.push_back(tok);
 
+    const Token *tok2 = tok->tokAt(2);
     // 1st parameter..
-    if (Token::Match(tok->tokAt(2), "%varid% ,|)", arrayInfo.varid()))
+    if (Token::Match(tok2, "%varid% ,|)", arrayInfo.varid()))
         checkFunctionParameter(*tok, 1, arrayInfo, callstack);
-    else if (Token::Match(tok->tokAt(2), "%varid% + %num% ,|)", arrayInfo.varid())) {
-        const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok->strAt(4))));
+    else if (Token::Match(tok2, "%varid% + %num% ,|)", arrayInfo.varid())) {
+        const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(2))));
         checkFunctionParameter(*tok, 1, ai, callstack);
     }
 
     // goto 2nd parameter and check it..
-    for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-        if (tok2->str() == "(") {
-            tok2 = tok2->link();
-            continue;
-        }
-        if (tok2->str() == ";" || tok2->str() == ")")
-            break;
-        if (tok2->str() == ",") {
-            if (Token::Match(tok2, ", %varid% ,|)", arrayInfo.varid()))
-                checkFunctionParameter(*tok, 2, arrayInfo, callstack);
-            else if (Token::Match(tok2, ", %varid% + %num% ,|)", arrayInfo.varid())) {
-                const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(3))));
-                checkFunctionParameter(*tok, 2, ai, callstack);
-            }
-            break;
-        }
+    tok2 = tok2->nextArgument();
+    if (Token::Match(tok2, "%varid% ,|)", arrayInfo.varid()))
+        checkFunctionParameter(*tok, 2, arrayInfo, callstack);
+    else if (Token::Match(tok2, "%varid% + %num% ,|)", arrayInfo.varid())) {
+        const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(2))));
+        checkFunctionParameter(*tok, 2, ai, callstack);
     }
 }
 
@@ -1012,7 +989,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
-        if (varid && Token::Match(tok, "= %varid% + %num% ;", varid)) {
+        else if (varid && Token::Match(tok, "= %varid% + %num% ;", varid)) {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
             if (index > size && _settings->isEnabled("portability"))
                 pointerOutOfBoundsError(tok->next(), "buffer");
@@ -1020,7 +997,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 pointerIsOutOfBounds = true;
         }
 
-        if (pointerIsOutOfBounds && Token::Match(tok, "[;{}=] * %varid% [;=]", varid)) {
+        else if (pointerIsOutOfBounds && Token::Match(tok, "[;{}=] * %varid% [;=]", varid)) {
             outOfBoundsError(tok->tokAt(2), tok->strAt(2), false, 0, 0);
         }
     }

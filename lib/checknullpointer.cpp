@@ -288,31 +288,6 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     return false;
 }
 
-bool CheckNullPointer::isPointer(const unsigned int varid)
-{
-    // Check if given variable is a pointer
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const Variable *variableInfo = symbolDatabase->getVariableFromVarId(varid);
-    const Token *tok = variableInfo ? variableInfo->typeStartToken() : NULL;
-
-    if (Token::Match(tok, "%type% %type% * %varid% [;)=]", varid))
-        return true;
-
-    // maybe not a pointer
-    if (!Token::Match(tok, "%type% * %varid% [;)=]", varid))
-        return false;
-
-    // it is a pointer
-    if (!tok->previous() ||
-        Token::Match(tok->previous(), "[({};]") ||
-        tok->previous()->isName()) {
-        return true;
-    }
-
-    // it is not a pointer
-    return false;
-}
-
 void CheckNullPointer::nullPointerAfterLoop()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -327,12 +302,10 @@ void CheckNullPointer::nullPointerAfterLoop()
             continue;
 
         // Get variable id for the loop variable
-        const unsigned int varid(tok->tokAt(2)->varId());
-        if (varid == 0)
-            continue;
+        const Variable* var(symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId()));
 
         // Is variable a pointer?
-        if (!isPointer(varid))
+        if (!var || !var->isPointer())
             continue;
 
         // Get variable name for the loop variable
@@ -371,7 +344,7 @@ void CheckNullPointer::nullPointerAfterLoop()
                 break;
 
             // loop variable is found..
-            else if (tok2->varId() == varid) {
+            else if (tok2->varId() == var->varId()) {
                 // dummy variable.. is it unknown if pointer is dereferenced or not?
                 bool unknown = _settings->inconclusive;
 
@@ -445,8 +418,9 @@ void CheckNullPointer::nullPointerLinkedList()
                                 ++indentlevel4;
                             else if (tok4->str() == "}") {
                                 if (indentlevel4 <= 1) {
+                                    const Variable* var = symbolDatabase->getVariableFromVarId(varid);
                                     // Is this variable a pointer?
-                                    if (isPointer(varid))
+                                    if (var && var->isPointer())
                                         nullPointerError(tok1, varname, tok3->linenr());
 
                                     break;
@@ -580,7 +554,9 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         // is pointer local?
         bool isLocal = false;
         const Variable * var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok1->varId());
-        if (var && (var->isLocal() || var->isArgument()))
+        if (!var)
+            continue;
+        if (var->isLocal() || var->isArgument())
             isLocal = true;
 
         // member function may or may not nullify the pointer if it's global (#2647)
@@ -641,7 +617,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             // TODO: false negatives for "if (!p || .."
             else if (Token::Match(tok2, "if ( !| %varid% )|&&", varid1)) {
                 // Is this variable a pointer?
-                if (isPointer(varid1))
+                if (var->isPointer())
                     nullPointerError(tok1, varname, tok2->linenr(), inconclusive);
                 break;
             }
@@ -674,13 +650,9 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             // Name of pointer
             const std::string varname(vartok->str());
 
+            const Variable* var = symbolDatabase->getVariableFromVarId(varid);
             // Check that variable is a pointer..
-            if (!isPointer(varid))
-                continue;
-
-            // Token where pointer is declared
-            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-            if (!var)
+            if (!var || !var->isPointer())
                 continue;
 
             const Token * const decltok = var->nameToken();
@@ -785,15 +757,8 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 {
     // Check if pointer is NULL and then dereference it..
 
-    // used to check if a variable is a pointer.
-    // TODO: Use isPointer?
-    std::set<unsigned int> pointerVariables;
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "* %var% [;,)=]"))
-            pointerVariables.insert(tok->next()->varId());
-
-        else if (Token::simpleMatch(tok, "if (")) {
+        if (Token::simpleMatch(tok, "if (")) {
             // TODO: investigate false negatives:
             // - handle "while"?
             // - if there are logical operators
@@ -828,8 +793,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
             const unsigned int linenr = vartok->linenr();
 
-            // Check if variable is a pointer. TODO: Use isPointer?
-            if (pointerVariables.find(varid) == pointerVariables.end())
+            const Variable* var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
+            // Check if variable is a pointer
+            if (!var || !var->isPointer())
                 continue;
 
             if (Token::Match(vartok->next(), "&& ( %varid% =", varid))
@@ -906,9 +872,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
                 // function call, check if pointer is dereferenced
                 if (Token::Match(tok2, "%var% (")) {
-                    std::list<const Token *> var;
-                    parseFunctionCall(*tok2, var, 0);
-                    for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
+                    std::list<const Token *> vars;
+                    parseFunctionCall(*tok2, vars, 0);
+                    for (std::list<const Token *>::const_iterator it = vars.begin(); it != vars.end(); ++it) {
                         if (Token::Match(*it, "%varid% [,)]", varid)) {
                             nullPointerError(*it, pointerName, linenr, inconclusive);
                             break;
@@ -932,8 +898,6 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     }
 
                     // init function (global variables)
-                    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
                     if (!var || !(var->isLocal() || var->isArgument()))
                         break;
                 }

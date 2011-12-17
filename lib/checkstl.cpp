@@ -997,12 +997,6 @@ void CheckStl::missingComparisonError(const Token *incrementToken1, const Token 
 }
 
 
-static bool isPointer(const SymbolDatabase* symbolDatabase, unsigned int varid)
-{
-    const Variable* var = symbolDatabase->getVariableFromVarId(varid);
-    return var && var->nameToken()->previous()->str() == "*";
-}
-
 static bool isLocal(const SymbolDatabase* symbolDatabase, unsigned int varid)
 {
     const Variable* var = symbolDatabase->getVariableFromVarId(varid);
@@ -1023,13 +1017,16 @@ void CheckStl::string_c_str()
                 // Invalid usage..
                 if (Token::Match(tok, "throw %var% . c_str ( ) ;") && isLocal(symbolDatabase, tok->next()->varId())) {
                     string_c_strThrowError(tok);
-                } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;") && isPointer(symbolDatabase, tok->next()->varId())) {
-                    string_c_strError(tok);
+                } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;")) {
+                    const Variable* var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                    if (var && var->isPointer())
+                        string_c_strError(tok);
                 } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
                            Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;") &&
-                           isPointer(symbolDatabase, tok->next()->varId()) &&
                            Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str())) {
-                    string_c_strError(tok);
+                    const Variable* var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                    if (var && var->isPointer())
+                        string_c_strError(tok);
                 }
 
                 // Using c_str() to get the return value is only dangerous if the function returns a char*

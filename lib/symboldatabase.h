@@ -61,7 +61,8 @@ class Variable {
         fIsConst    = (1 << 2), /** @brief const variable */
         fIsClass    = (1 << 3), /** @brief user defined type */
         fIsArray    = (1 << 4), /** @brief array variable */
-        fHasDefault = (1 << 5)  /** @brief function argument with default value */
+        fIsPointer  = (1 << 5), /** @brief pointer variable */
+        fHasDefault = (1 << 6)  /** @brief function argument with default value */
     };
 
     /**
@@ -86,7 +87,7 @@ public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
              std::size_t index_, AccessControl access_, bool mutable_,
              bool static_, bool const_, bool class_, const Scope *type_,
-             const Scope *scope_, bool array_, bool default_,
+             const Scope *scope_, bool array_, bool pointer_, bool default_,
              const std::vector<Dimension> &dimensions_)
         : _name(name_),
           _start(start_),
@@ -101,6 +102,7 @@ public:
         setFlag(fIsConst, const_);
         setFlag(fIsClass, class_);
         setFlag(fIsArray, array_);
+        setFlag(fIsPointer, pointer_);
         setFlag(fHasDefault, default_);
         _dimensions = dimensions_;
     }
@@ -257,6 +259,14 @@ public:
      */
     bool isArray() const {
         return getFlag(fIsArray);
+    }
+
+    /**
+     * Is pointer or array variable.
+     * @return true if pointer, false otherwise
+     */
+    bool isPointer() const {
+        return getFlag(fIsPointer);
     }
 
     /**
@@ -451,11 +461,11 @@ public:
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, bool mutable_,
                      bool static_, bool const_, bool class_, const Scope *type_,
-                     const Scope *scope_, bool array_,
+                     const Scope *scope_, bool array_, bool pointer_,
                      const std::vector<Dimension> &dimensions_) {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
                                    access_, mutable_, static_, const_, class_,
-                                   type_, scope_, array_, false, dimensions_));
+                                   type_, scope_, array_, pointer_, false, dimensions_));
     }
 
     /** @brief initialize varlist */
@@ -497,9 +507,10 @@ private:
      * @param vartok populated with pointer to the variable token, if found
      * @param typetok populated with pointer to the type token, if found
      * @param isArray reference to variable to set if array is found
+     * @param isPointer reference to variable to set if pointer is found
      * @return true if tok points to a variable declaration, false otherwise
      */
-    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray) const;
+    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray, bool &isPointer) const;
     bool isSimpleVariable(const Token* tok) const;
     bool isArrayVariable(const Token* tok) const;
     bool findClosingBracket(const Token* tok, const Token*& close) const;
