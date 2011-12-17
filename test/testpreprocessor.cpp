@@ -2159,8 +2159,7 @@ private:
     }
 
     void endifsemicolon() {
-        const char filedata[] = "void f()\n"
-                                "{\n"
+        const char filedata[] = "void f() {\n"
                                 "#ifdef A\n"
                                 "#endif;\n"
                                 "}\n";
@@ -2174,11 +2173,9 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("void f()\n"
-                      "{\n"
-                      "\n"
-                      "\n"
-                      "}\n", actual[""]);
+        const std::string expected("void f() {\n\n\n}\n");
+        ASSERT_EQUALS(expected, actual[""]);
+        ASSERT_EQUALS(expected, actual["A"]);
     }
 
     void handle_error() {
@@ -2958,6 +2955,16 @@ private:
                 const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
                 ASSERT_EQUALS("\n\n\n\n\n\n\n4\n\n", actual);
             }
+        }
+
+        // #endif
+        {
+            // see also endifsemicolon
+            const std::string code("{\n#ifdef X\n#endif;\n}");
+            defs.clear();
+            defs["Z"] = "";
+            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+            ASSERT_EQUALS("{\n\n\n}\n", actual);
         }
 
         // #undef
