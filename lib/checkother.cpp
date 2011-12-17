@@ -2359,10 +2359,10 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
     toks.push_back(tok2);
     toks.push_back(tok1);
 
-    reportInconclusiveError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for if and else.\n"
-                            "Finding the same code for an if branch and an else branch is suspicious and "
-                            "might indicate a cut and paste or logic error. Please examine this code "
-                            "carefully to determine if it is correct.");
+    reportError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for if and else.\n"
+                "Finding the same code for an if branch and an else branch is suspicious and "
+                "might indicate a cut and paste or logic error. Please examine this code "
+                "carefully to determine if it is correct.");
 }
 
 namespace {

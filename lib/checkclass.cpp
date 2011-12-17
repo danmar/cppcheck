@@ -768,7 +768,7 @@ void CheckClass::operatorEq()
 
 void CheckClass::operatorEqReturnError(const Token *tok, const std::string &className)
 {
-    reportInconclusiveError(tok, Severity::style, "operatorEq", "\'" + className + "::operator=' should return \'" + className + " &\'");
+    reportError(tok, Severity::style, "operatorEq", "\'" + className + "::operator=' should return \'" + className + " &\'");
 }
 
 //---------------------------------------------------------------------------
@@ -1067,9 +1067,9 @@ void CheckClass::virtualDestructor()
                         }
 
                         // Assign base class pointer with pointer to derived class instance
-                        if (Token::Match(tok, "[;{}] %var% =") &&
-                            tok->next()->varId() > 0 &&
-                            basepointer.find(tok->next()->varId()) != basepointer.end()) {
+                        else if (Token::Match(tok, "[;{}] %var% =") &&
+                                 tok->next()->varId() > 0 &&
+                                 basepointer.find(tok->next()->varId()) != basepointer.end()) {
                             // new derived class..
                             if (Token::simpleMatch(tok->tokAt(3), ("new " + derivedClass->str()).c_str())) {
                                 dontDelete.insert(tok->next()->varId());
@@ -1077,9 +1077,9 @@ void CheckClass::virtualDestructor()
                         }
 
                         // Delete base class pointer that might point at derived class
-                        if (Token::Match(tok, "delete %var% ;") &&
-                            tok->next()->varId() &&
-                            dontDelete.find(tok->next()->varId()) != dontDelete.end()) {
+                        else if (Token::Match(tok, "delete %var% ;") &&
+                                 tok->next()->varId() &&
+                                 dontDelete.find(tok->next()->varId()) != dontDelete.end()) {
                             ok = false;
                             break;
                         }
