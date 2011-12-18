@@ -1405,6 +1405,18 @@ void CheckBufferOverrun::checkStructVariable()
         if (!scope->isClassOrStruct())
             continue;
 
+        // are there duplicate names for classes/structs?
+        bool duplicateNames = false;
+        for (std::list<Scope>::const_iterator scope2 = symbolDatabase->scopeList.begin(); scope2 != symbolDatabase->scopeList.end(); ++scope2) {
+            if (scope2 != scope && scope2->isClassOrStruct() && scope2->className == scope->className) {
+                duplicateNames = true;
+                break;
+            }
+        }
+        // TODO: handle duplicate names better (TestBufferOverrun::array_index_41)
+        if (duplicateNames)
+            continue;
+
         // check all variables to see if they are arrays
         std::list<Variable>::const_iterator var;
         for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {

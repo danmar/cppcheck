@@ -110,6 +110,7 @@ private:
         TEST_CASE(array_index_38); // ticket #3273
         TEST_CASE(array_index_39);
         TEST_CASE(array_index_40); // loop variable calculation, taking address
+        TEST_CASE(array_index_41); // structs with the same name
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1315,6 +1316,19 @@ private:
               "    char a[10];\n"
               "    for (int i = 0; i < 10; ++i)\n"
               "        f2(&a[i + 1]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_41() {
+        // Don't generate false positives when structs have the same name
+        check("void a() {\n"
+              "    struct Fred { char data[6]; } fred;\n"
+              "    fred.data[4] = 0;\n"  // <- no error
+              "}\n"
+              "\n"
+              "void b() {\n"
+              "    struct Fred { char data[3]; } fred;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
