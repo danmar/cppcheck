@@ -231,6 +231,13 @@ public:
     }
     bool isStandardType() const;
 
+    bool isExpandedMacro() const {
+        return _isExpandedMacro;
+    }
+    void setExpandedMacro(bool m) {
+        _isExpandedMacro = m;
+    }
+
     static const Token *findsimplematch(const Token *tok, const char pattern[]);
     static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
     static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
@@ -448,6 +455,7 @@ private:
     bool _isLong;
     bool _isUnused;
     bool _isStandardType;
+    bool _isExpandedMacro;
     unsigned int _varId;
     unsigned int _fileIndex;
     unsigned int _linenr;

@@ -454,6 +454,13 @@ private:
             check(code, true);
             ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 3\n", errout.str());
         }
+
+        // false positives when there are macros
+        check("void f(struct FRED *fred) {\n"
+              "    fred->x = 0;\n"
+              "    $if(!fred){}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing a pointer and then checking if it is null
@@ -707,6 +714,13 @@ private:
         check("void f(struct ABC *abc) {\n"
               "  WARN_ON(!abc || abc->x == 7);\n"
               "  if (!abc) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // false positives when there are macros
+        check("void f(int *p) {\n"
+              "    *p = 0;\n"
+              "    $if(!p){}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1439,6 +1453,13 @@ private:
         check("void f(struct fred_t *fred) {\n"
               "    if (!fred)\n"
               "        int sz = sizeof fred->x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // check in macro
+        check("void f(int *x) {\n"
+              "    $if (!x) {}\n"
+              "    *x = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

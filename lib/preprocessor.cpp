@@ -2741,7 +2741,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         macrocode.append(1,' ');
 
                     // insert expanded macro code
-                    line.insert(pos1, macrocode);
+                    line.insert(pos1, "$" + macrocode);
 
                     // position = start position.
                     pos = pos1;

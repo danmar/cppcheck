@@ -245,6 +245,7 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last)
         tok2->isPointerCompare(tok->isPointerCompare());
         tok2->isLong(tok->isLong());
         tok2->isUnused(tok->isUnused());
+        tok2->setExpandedMacro(tok->isExpandedMacro());
         tok2->varId(tok->varId());
 
         // Check for links and fix them up
@@ -287,8 +288,19 @@ void Tokenizer::createTokens(std::istream &code)
     // FileIndex. What file in the _files vector is read now?
     unsigned int FileIndex = 0;
 
+    bool expandedMacro = false;
+
     // Read one byte at a time from code and create tokens
     for (char ch = (char)code.get(); code.good(); ch = (char)code.get()) {
+        if (ch == '$') {
+            while (code.peek() == '$')
+                code.get();
+            ch = ' ';
+            expandedMacro = true;
+        } else if (ch == '\n') {
+            expandedMacro = false;
+        }
+
         // char/string..
         // multiline strings are not handled. The preprocessor should handle that for us.
         if (ch == '\'' || ch == '\"') {
@@ -340,9 +352,13 @@ void Tokenizer::createTokens(std::istream &code)
             } else {
                 // Add previous token
                 addtoken(CurrentToken.c_str(), lineno, FileIndex);
+                if (!CurrentToken.empty())
+                    _tokensBack->setExpandedMacro(expandedMacro);
 
                 // Add content of the string
                 addtoken(line.c_str(), lineno, FileIndex);
+                if (!line.empty())
+                    _tokensBack->setExpandedMacro(expandedMacro);
             }
 
             CurrentToken.clear();
@@ -368,22 +384,27 @@ void Tokenizer::createTokens(std::istream &code)
             } else if (ch=='&' && code.peek() == '&') {
                 if (!CurrentToken.empty()) {
                     addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+                    if (!CurrentToken.empty())
+                        _tokensBack->setExpandedMacro(expandedMacro);
                     CurrentToken.clear();
                 }
 
                 // &&
                 ch = (char)code.get();
                 addtoken("&&", lineno, FileIndex, true);
+                _tokensBack->setExpandedMacro(expandedMacro);
                 continue;
             } else if (ch==':' && CurrentToken.empty() && code.peek() == ' ') {
                 // :
                 addtoken(":", lineno, FileIndex, true);
+                _tokensBack->setExpandedMacro(expandedMacro);
                 CurrentToken.clear();
                 continue;
             } else if (ch==':' && CurrentToken.empty() && code.peek() == ':') {
                 // ::
                 ch = (char)code.get();
                 addtoken("::", lineno, FileIndex, true);
+                _tokensBack->setExpandedMacro(expandedMacro);
                 CurrentToken.clear();
                 continue;
             } else {
@@ -406,6 +427,8 @@ void Tokenizer::createTokens(std::istream &code)
                 }
 
                 addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+                if (!CurrentToken.empty())
+                    _tokensBack->setExpandedMacro(expandedMacro);
 
                 CurrentToken.clear();
 
@@ -421,6 +444,7 @@ void Tokenizer::createTokens(std::istream &code)
                 if ((ch == '+' || ch == '-' || ch == '>') && (code.peek() == ch))
                     CurrentToken += (char)code.get();
                 addtoken(CurrentToken.c_str(), lineno, FileIndex);
+                _tokensBack->setExpandedMacro(expandedMacro);
                 CurrentToken.clear();
                 continue;
             }
@@ -429,6 +453,8 @@ void Tokenizer::createTokens(std::istream &code)
         CurrentToken += ch;
     }
     addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+    if (!CurrentToken.empty())
+        _tokensBack->setExpandedMacro(expandedMacro);
     _tokens->assignProgressValues();
 }
 

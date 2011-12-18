@@ -42,6 +42,7 @@ Token::Token(Token **t) :
     _isLong(false),
     _isUnused(false),
     _isStandardType(false),
+    _isExpandedMacro(false),
     _varId(0),
     _fileIndex(0),
     _linenr(0),
@@ -148,6 +149,7 @@ void Token::deleteThis()
         _isLong = _next->_isLong;
         _isUnused = _next->_isUnused;
         _isStandardType = _next->_isStandardType;
+        _isExpandedMacro = _next->_isExpandedMacro;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;

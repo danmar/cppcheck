@@ -615,7 +615,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
 
             // Check if pointer is null.
             // TODO: false negatives for "if (!p || .."
-            else if (Token::Match(tok2, "if ( !| %varid% )|&&", varid1)) {
+            else if (!tok2->isExpandedMacro() && Token::Match(tok2, "if ( !| %varid% )|&&", varid1)) {
                 // Is this variable a pointer?
                 if (var->isPointer())
                     nullPointerError(tok1, varname, tok2->linenr(), inconclusive);
@@ -637,7 +637,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         // - logical operators
         // - while
         const Token* const tok = i->classDef;
-        if (i->type == Scope::eIf && tok && Token::Match(tok->previous(), "; if ( !| %var% )|%oror%|&&")) {
+        if (i->type == Scope::eIf && tok && !tok->isExpandedMacro() && Token::Match(tok->previous(), "; if ( !| %var% )|%oror%|&&")) {
             const Token * vartok = tok->tokAt(2);
             if (vartok->str() == "!")
                 vartok = vartok->next();
@@ -758,7 +758,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
     // Check if pointer is NULL and then dereference it..
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "if (")) {
+        if (Token::simpleMatch(tok, "if (") && !tok->isExpandedMacro()) {
             // TODO: investigate false negatives:
             // - handle "while"?
             // - if there are logical operators

@@ -53,6 +53,7 @@ private:
         TEST_CASE(tokenize19);  // #3006 (segmentation fault)
         TEST_CASE(tokenize20);  // replace C99 _Bool => bool
         TEST_CASE(tokenize21);  // tokenize 0x0E-7
+        TEST_CASE(tokenize22);  // special marker $ from preprocessor
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -604,6 +605,10 @@ private:
 
     void tokenize21() { // tokenize 0x0E-7
         ASSERT_EQUALS("14 - 7", tokenizeAndStringify("0x0E-7"));
+    }
+
+    void tokenize22() { // tokenize special marker $ from preprocessor
+        ASSERT_EQUALS("a b", tokenizeAndStringify("a$b"));
     }
 
     void wrong_syntax() {
