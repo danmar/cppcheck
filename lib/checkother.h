@@ -179,6 +179,12 @@ public:
                                         const std::string &function,
                                         unsigned int numFormat,
                                         unsigned int numFunction);
+    void invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat);
+    void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
+    void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
+    void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat);
+    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
+    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
 
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
@@ -357,6 +363,12 @@ public:
         c.comparisonOfBoolExpressionWithIntError(0);
         c.SuspiciousSemicolonError(0);
         c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
+        c.invalidScanfArgTypeError(0, "scanf", 1);
+        c.invalidPrintfArgTypeError_s(0, 1);
+        c.invalidPrintfArgTypeError_n(0, 1);
+        c.invalidPrintfArgTypeError_p(0, 1);
+        c.invalidPrintfArgTypeError_int(0, 1, 'u');
+        c.invalidPrintfArgTypeError_float(0, 1, 'f');
         c.cctypefunctionCallError(0, "funname", "value");
     }
 

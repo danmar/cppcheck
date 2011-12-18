@@ -2098,10 +2098,7 @@ private:
               "    snprintf(str,10,\"%u%s\");\n"
               "    sprintf(string1, \"%-*.*s\", 32, string2);\n" // #3364
               "    sprintf(string1, \"%*\", 32);\n" // #3364
-              "}\n",
-              "test.cpp",
-              true
-             );
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) printf format string has 1 parameters but only 0 are given\n"
                       "[test.cpp:3]: (error) printf format string has 2 parameters but only 1 are given\n"
                       "[test.cpp:4]: (error) printf format string has 3 parameters but only 2 are given\n"
@@ -2115,10 +2112,7 @@ private:
               "    printf(\"\", 0);\n"
               "    printf(\"%u\", 123, bar());\n"
               "    printf(\"%u%s\", 0, bar(), 43123);\n"
-              "}\n",
-              "test.cpp",
-              true
-             );
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) printf format string has 0 parameters but 1 are given\n"
                       "[test.cpp:3]: (warning) printf format string has 1 parameters but 2 are given\n"
                       "[test.cpp:4]: (warning) printf format string has 2 parameters but 3 are given\n", errout.str());
@@ -2135,11 +2129,83 @@ private:
               "    fprintf(stderr, \"error: %m\n\");\n" // #3339
               "    printf(\"string: %.*s\n\", len, string);\n" // #3311
               "    fprintf(stderr, \"%*cText.\n\", indent, ' ');\n" // #3313
-              "}\n",
-              "test.cpp",
-              true
-             );
+              "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char* s, const char* s2, std::string s3, int i) {\n"
+              "    printf(\"%s%s\", s, s2);\n"
+              "    printf(\"%s\", i);\n"
+              "    printf(\"%i%s\", i, i);\n"
+              "    printf(\"%s\", s3);\n"
+              "    printf(\"%s\", \"s4\");\n"
+              "    printf(\"%u\", s);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires a char* given in the argument list\n"
+                      "[test.cpp:4]: (warning) %s in format string (no. 2) requires a char* given in the argument list\n"
+                      "[test.cpp:5]: (warning) %s in format string (no. 1) requires a char* given in the argument list\n", errout.str());
+
+        check("void foo(const int* cpi, const int ci, int i, int* pi, std::string s) {\n"
+              "    printf(\"%n\", cpi);\n"
+              "    printf(\"%n\", ci);\n"
+              "    printf(\"%n\", i);\n"
+              "    printf(\"%n\", pi);\n"
+              "    printf(\"%n\", s);\n"
+              "    printf(\"%n\", \"s4\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %n in format string (no. 1) requires a pointer to an non-const integer given in the argument list\n"
+                      "[test.cpp:3]: (warning) %n in format string (no. 1) requires a pointer to an non-const integer given in the argument list\n"
+                      "[test.cpp:4]: (warning) %n in format string (no. 1) requires a pointer to an non-const integer given in the argument list\n"
+                      "[test.cpp:6]: (warning) %n in format string (no. 1) requires a pointer to an non-const integer given in the argument list\n"
+                      "[test.cpp:7]: (warning) %n in format string (no. 1) requires a pointer to an non-const integer given in the argument list\n", errout.str());
+
+        check("class foo {};\n"
+              "void foo(const int* cpi, foo f, bar b, bar* bp, double d) {\n"
+              "    printf(\"%i\", f);\n"
+              "    printf(\"%c\", \"s4\");\n"
+              "    printf(\"%o\", d);\n"
+              "    printf(\"%i\", cpi);\n"
+              "    printf(\"%u\", b);\n"
+              "    printf(\"%u\", bp);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %i in format string (no. 1) requires an integer given in the argument list\n"
+                      "[test.cpp:4]: (warning) %c in format string (no. 1) requires an integer given in the argument list\n"
+                      "[test.cpp:5]: (warning) %o in format string (no. 1) requires an integer given in the argument list\n", errout.str());
+
+        check("class foo {};\n"
+              "void foo(const int* cpi, foo f, bar b, bar* bp, char c) {\n"
+              "    printf(\"%p\", f);\n"
+              "    printf(\"%p\", c);\n"
+              "    printf(\"%p\", bp);\n"
+              "    printf(\"%p\", cpi);\n"
+              "    printf(\"%p\", b);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %p in format string (no. 1) requires an integer or pointer given in the argument list\n"
+                      "[test.cpp:4]: (warning) %p in format string (no. 1) requires an integer or pointer given in the argument list\n", errout.str());
+
+        check("class foo {};\n"
+              "void foo(const int* cpi, foo f, bar b, bar* bp, double d) {\n"
+              "    printf(\"%e\", f);\n"
+              "    printf(\"%E\", \"s4\");\n"
+              "    printf(\"%f\", cpi);\n"
+              "    printf(\"%G\", bp);\n"
+              "    printf(\"%f\", d);\n"
+              "    printf(\"%f\", b);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %e in format string (no. 1) requires a floating point number given in the argument list\n"
+                      "[test.cpp:4]: (warning) %E in format string (no. 1) requires a floating point number given in the argument list\n"
+                      "[test.cpp:5]: (warning) %f in format string (no. 1) requires a floating point number given in the argument list\n"
+                      "[test.cpp:6]: (warning) %G in format string (no. 1) requires a floating point number given in the argument list\n", errout.str());
+
+        check("class foo;\n"
+              "void foo(foo f) {\n"
+              "    printf(\"%u\", f);\n"
+              "    printf(\"%f\", f);\n"
+              "    printf(\"%p\", f);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 1) requires an integer given in the argument list\n"
+                           "[test.cpp:4]: (warning) %f in format string (no. 1) requires an integer given in the argument list\n"
+                           "[test.cpp:5]: (warning) %p in format string (no. 1) requires an integer given in the argument list\n", "", errout.str());
+
     }
 
     void trac1132() {

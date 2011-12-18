@@ -1230,13 +1230,35 @@ void CheckOther::invalidScanfError(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
-//    printf("%u", "xyz"); // Wrong argument type. TODO.
+//    printf("%u", "xyz"); // Wrong argument type
 //    printf("%u%s", 1); // Too few arguments
 //    printf("", 1); // Too much arguments
 //---------------------------------------------------------------------------
+static bool isComplexType(const Variable* var, const Token* varTypeTok)
+{
+    if (var->type())
+        return(true);
+
+    static std::set<std::string> knownTypes;
+    if (knownTypes.empty()) {
+        knownTypes.insert("struct"); // If a type starts with the struct keyword, its a complex type
+        knownTypes.insert("string");
+    }
+
+    if (varTypeTok->str() == "std")
+        varTypeTok = varTypeTok->tokAt(2);
+    return(knownTypes.find(varTypeTok->str()) != knownTypes.end() && !var->isPointer() && !var->isArray());
+}
+
+static bool isKnownType(const Variable* var, const Token* varTypeTok)
+{
+    return(varTypeTok->isStandardType() || varTypeTok->next()->isStandardType() || isComplexType(var, varTypeTok));
+}
 
 void CheckOther::checkWrongPrintfScanfArguments()
 {
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->isName()) continue;
 
@@ -1286,6 +1308,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
         bool scan = Token::Match(tok, "sscanf|fscanf|scanf");
         unsigned int numFormat = 0;
         bool percent = false;
+        const Token* argListTok2 = argListTok;
         for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
             if (*i == '%') {
                 percent = !percent;
@@ -1293,6 +1316,8 @@ void CheckOther::checkWrongPrintfScanfArguments()
                 while (i != formatString.end()) {
                     if (*i == ']') {
                         numFormat++;
+                        if (argListTok)
+                            argListTok = argListTok->nextArgument();
                         percent = false;
                         break;
                     }
@@ -1308,8 +1333,11 @@ void CheckOther::checkWrongPrintfScanfArguments()
                     if (*i == '*') {
                         if (scan)
                             _continue = true;
-                        else
+                        else {
                             numFormat++;
+                            if (argListTok)
+                                argListTok = argListTok->nextArgument();
+                        }
                     }
                     ++i;
                 }
@@ -1318,18 +1346,80 @@ void CheckOther::checkWrongPrintfScanfArguments()
                 if (_continue)
                     continue;
 
-                if (*i != 'm') // %m is a non-standard extension that requires no parameter
+                if (*i != 'm') { // %m is a non-standard extension that requires no parameter
                     numFormat++;
 
-                // TODO: Perform type checks
+                    // Perform type checks
+                    if (_settings->isEnabled("style") && Token::Match(argListTok, "%any% ,|)")) { // We can currently only check the type of arguments matching this simple pattern.
+                        const Variable* variableInfo = symbolDatabase->getVariableFromVarId(argListTok->varId());
+                        const Token* varTypeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
+                        if (varTypeTok && varTypeTok->str() == "static")
+                            varTypeTok = varTypeTok->next();
+
+                        if (scan && varTypeTok) {
+                            if ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->str() == "const")
+                                invalidScanfArgTypeError(tok, tok->str(), numFormat);
+                        } else if (!scan) {
+                            switch (*i) {
+                            case 's':
+                                if (variableInfo && !Token::Match(argListTok, "%str%") && isKnownType(variableInfo, varTypeTok) && (!variableInfo->isPointer() && !variableInfo->isArray()))
+                                    invalidPrintfArgTypeError_s(tok, numFormat);
+                                break;
+                            case 'n':
+                                if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->str() == "const")) || Token::Match(argListTok, "%str%"))
+                                    invalidPrintfArgTypeError_n(tok, numFormat);
+                                break;
+                            case 'c':
+                            case 'd':
+                            case 'i':
+                            case 'u':
+                            case 'x':
+                            case 'X':
+                            case 'o':
+                                if (varTypeTok && varTypeTok->str() == "const")
+                                    varTypeTok = varTypeTok->next();
+                                if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "unsigned|signed| bool|short|long|int|char|size_t|unsigned|signed") && !variableInfo->isPointer() && !variableInfo->isArray()))
+                                    invalidPrintfArgTypeError_int(tok, numFormat, *i);
+                                else if (Token::Match(argListTok, "%str%"))
+                                    invalidPrintfArgTypeError_int(tok, numFormat, *i);
+                                break;
+                            case 'p':
+                                if (varTypeTok && varTypeTok->str() == "const")
+                                    varTypeTok = varTypeTok->next();
+                                if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "unsigned|signed| short|long|int|size_t|unsigned|signed") && !variableInfo->isPointer() && !variableInfo->isArray())
+                                    invalidPrintfArgTypeError_p(tok, numFormat);
+                                else if (Token::Match(argListTok, "%str%"))
+                                    invalidPrintfArgTypeError_p(tok, numFormat);
+                                break;
+                            case 'e':
+                            case 'E':
+                            case 'f':
+                            case 'g':
+                            case 'G':
+                                if (varTypeTok && varTypeTok->str() == "const")
+                                    varTypeTok = varTypeTok->next();
+                                if (varTypeTok && (isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double") || variableInfo->isPointer() || variableInfo->isArray()))
+                                    invalidPrintfArgTypeError_float(tok, numFormat, *i);
+                                else if (Token::Match(argListTok, "%str%"))
+                                    invalidPrintfArgTypeError_float(tok, numFormat, *i);
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+
+                    if (argListTok)
+                        argListTok = argListTok->nextArgument(); // Find next argument
+                }
             }
         }
 
         // Count printf/scanf parameters..
         unsigned int numFunction = 0;
-        while (argListTok) {
+        while (argListTok2) {
             numFunction++;
-            argListTok = argListTok->nextArgument(); // Find next argument
+            argListTok2 = argListTok2->nextArgument(); // Find next argument
         }
 
         // Mismatching number of parameters => warning
@@ -1356,7 +1446,44 @@ void CheckOther::wrongPrintfScanfArgumentsError(const Token* tok,
            << numFunction
            << " are given";
 
-    reportError(tok, severity, "wrongPrintfScanfArgs", errmsg.str());
+    reportError(tok, severity, "wrongPrintfScanfArgNum", errmsg.str());
+}
+
+void CheckOther::invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat)
+{
+    std::ostringstream errmsg;
+    errmsg << functionName << " argument no. " << numFormat << ": requires non-const pointers or arrays as arguments";
+    reportError(tok, Severity::warning, "invalidScanfArgType", errmsg.str());
+}
+void CheckOther::invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat)
+{
+    std::ostringstream errmsg;
+    errmsg << "%s in format string (no. " << numFormat << ") requires a char* given in the argument list";
+    reportError(tok, Severity::warning, "invalidPrintfArgType_s", errmsg.str());
+}
+void CheckOther::invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat)
+{
+    std::ostringstream errmsg;
+    errmsg << "%n in format string (no. " << numFormat << ") requires a pointer to an non-const integer given in the argument list";
+    reportError(tok, Severity::warning, "invalidPrintfArgType_n", errmsg.str());
+}
+void CheckOther::invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat)
+{
+    std::ostringstream errmsg;
+    errmsg << "%p in format string (no. " << numFormat << ") requires an integer or pointer given in the argument list";
+    reportError(tok, Severity::warning, "invalidPrintfArgType_p", errmsg.str());
+}
+void CheckOther::invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c)
+{
+    std::ostringstream errmsg;
+    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires an integer given in the argument list";
+    reportError(tok, Severity::warning, "invalidPrintfArgType_int", errmsg.str());
+}
+void CheckOther::invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c)
+{
+    std::ostringstream errmsg;
+    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a floating point number given in the argument list";
+    reportError(tok, Severity::warning, "invalidPrintfArgType_float", errmsg.str());
 }
 
 //---------------------------------------------------------------------------
