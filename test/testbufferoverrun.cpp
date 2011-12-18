@@ -1331,6 +1331,17 @@ private:
               "    struct Fred { char data[3]; } fred;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void a() {\n"
+              "    struct Fred { char data[6]; } fred;\n"
+              "    fred.data[4] = 0;\n"  // <- no error
+              "}\n"
+              "\n"
+              "void b() {\n"
+              "    struct Fred { char data[3]; } fred;\n"
+              "    fred.data[4] = 0;\n"  // <- error
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'fred.data[3]' index 4 out of bounds\n", errout.str());
     }
 
     void array_index_multidim() {
