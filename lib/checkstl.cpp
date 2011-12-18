@@ -1000,7 +1000,7 @@ void CheckStl::missingComparisonError(const Token *incrementToken1, const Token 
 static bool isLocal(const SymbolDatabase* symbolDatabase, unsigned int varid)
 {
     const Variable* var = symbolDatabase->getVariableFromVarId(varid);
-    return var && var->isLocal();
+    return var && !var->isStatic() && var->isLocal();
 }
 
 void CheckStl::string_c_str()
