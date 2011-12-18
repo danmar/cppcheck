@@ -26,6 +26,8 @@
 #include "settings.h"
 
 class Token;
+class Scope;
+class Variables;
 
 /// @addtogroup Checks
 /// @{
@@ -59,6 +61,8 @@ public:
     }
 
     /** @brief %Check for unused function variables */
+    void checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables);
+    void checkVariableUsage(const Scope* const scope, const Token* start, Variables& variables);
     void checkFunctionVariableUsage();
 
     /** @brief %Check that all struct members are used */
@@ -96,10 +100,6 @@ public:
                "* unassigned variable\n"
                "* unused struct member\n";
     }
-
-private:
-    /** @brief check if token is a record type without side effects */
-    bool isRecordTypeWithoutSideEffects(const Token *tok);
 };
 /// @}
 //---------------------------------------------------------------------------

@@ -1398,7 +1398,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
                             case 'G':
                                 if (varTypeTok && varTypeTok->str() == "const")
                                     varTypeTok = varTypeTok->next();
-                                if (varTypeTok && (isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double") || variableInfo->isPointer() || variableInfo->isArray()))
+                                if (varTypeTok && ((isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double")) || variableInfo->isPointer() || variableInfo->isArray()))
                                     invalidPrintfArgTypeError_float(tok, numFormat, *i);
                                 else if (Token::Match(argListTok, "%str%"))
                                     invalidPrintfArgTypeError_float(tok, numFormat, *i);

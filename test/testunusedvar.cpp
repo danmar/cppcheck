@@ -43,7 +43,7 @@ private:
         TEST_CASE(structmember7);
         TEST_CASE(structmember8);
         TEST_CASE(structmember9);  // #2017 - struct is inherited
-        TEST_CASE(structmember_extern);		// No false positives for extern structs
+        TEST_CASE(structmember_extern); // No false positives for extern structs
         TEST_CASE(structmember10);
 
         TEST_CASE(localvar1);
@@ -83,6 +83,7 @@ private:
         TEST_CASE(localvar35); // ticket #2535
         TEST_CASE(localvar36); // ticket #2805
         TEST_CASE(localvar37); // ticket #3078
+        TEST_CASE(localvar38);
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1359,6 +1360,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvar38() {
+        functionVariableUsage("std::string f() {\n"
+                              "    const char code[] = \"foo\";\n"
+                              "    const std::string s1(sizeof_(code));\n"
+                              "    const std::string s2 = sizeof_(code);\n"
+                              "    return(s1+s2);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvaralias1() {
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2287,9 +2298,7 @@ private:
                               "    } while(a--);\n"
                               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: x\n"
-                           "[test.cpp:4]: (style) Unused variable: z\n",
-
-                           "", errout.str());
+                           "[test.cpp:4]: (style) Unused variable: z\n", "", errout.str());
     }
 
     void localvarStruct4() {
@@ -2476,6 +2485,12 @@ private:
                               "    int a = 1;\n"
                               "    for (;a;);\n"
                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo() {\n"
+                              "    for (int i = 0; (pci = cdi_list_get(pciDevices, i)); i++)\n"
+                              "    {}\n"
+                              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
