@@ -2991,16 +2991,19 @@ private:
 
     void varid31() { // ticket #2831 (segmentation fault)
         const std::string code("z<y<x>");
+        tokenizeDebugListing(code);
         ASSERT_EQUALS("", errout.str());
     }
 
     void varid32() { // ticket #2835 (segmentation fault)
         const std::string code("><,f<i,");
+        tokenizeDebugListing(code);
         ASSERT_EQUALS("", errout.str());
     }
 
     void varid33() { // ticket #2875 (segmentation fault)
         const std::string code("0; (a) < (a)");
+        tokenizeDebugListing(code);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3045,6 +3048,7 @@ private:
     void varid36() { // ticket #2980 (segmentation fault)
         const std::string code("#elif A\n"
                                "A,a<b<x0;\n");
+        tokenizeDebugListing(code);
         ASSERT_EQUALS("", errout.str());
     }
 
