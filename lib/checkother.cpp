@@ -1530,7 +1530,8 @@ void CheckOther::checkComparisonOfBoolWithInt()
             if (iVar != boolvars.end() && !iVar->second) { // Variable has to be of non-boolean standard type
                 comparisonOfBoolWithIntError(varTok, constTok->str());
             }
-        } else if (Token::Match(tok, "%var% >|>=|==|!=|<=|< %var%") && !Token::Match(tok->tokAt(3), ".|::|(")) { // Comparing two variables, one of them boolean, one of them integer
+        } else if (Token::Match(tok, "%var% >|>=|==|!=|<=|< %var%") &&
+                   !Token::Match(tok->tokAt(3), ".|::|(")) { // Comparing two variables, one of them boolean, one of them integer
             const Token *var1Tok = tok->tokAt(2);
             const Token *var2Tok = tok;
             std::map<unsigned int, bool>::const_iterator iVar1 = boolvars.find(var1Tok->varId());
