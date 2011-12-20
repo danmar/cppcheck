@@ -138,6 +138,7 @@ private:
         TEST_CASE(comparisonOfBoolWithInt3);
         TEST_CASE(comparisonOfBoolWithInt4);
         TEST_CASE(comparisonOfBoolWithInt5);
+        TEST_CASE(comparisonOfBoolWithInt6);
 
         TEST_CASE(duplicateIf);
         TEST_CASE(duplicateBranch);
@@ -3707,6 +3708,14 @@ private:
     void comparisonOfBoolWithInt5() {
         check("void f(int x) {\n"
               "    if (!x == 1) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void comparisonOfBoolWithInt6() {
+        check("void SetVisible(int index, bool visible) {\n"
+              "    bool (SciTEBase::*ischarforsel)(char ch);\n"
+              "    if (visible != GetVisible(index)) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
