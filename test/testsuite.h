@@ -34,6 +34,7 @@ private:
     static unsigned int countTests;
     static size_t fails_counter;
     static size_t todos_counter;
+    static size_t succeeded_todos_counter;
 
 protected:
     std::string classname;

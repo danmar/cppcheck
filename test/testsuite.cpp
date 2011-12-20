@@ -60,6 +60,7 @@ unsigned int       TestFixture::countTests;
 
 size_t TestFixture::fails_counter = 0;
 size_t TestFixture::todos_counter = 0;
+size_t TestFixture::succeeded_todos_counter = 0;
 
 TestFixture::TestFixture(const std::string &_name)
     :classname(_name)
@@ -77,29 +78,34 @@ bool TestFixture::runTest(const char testname[])
         if (quiet_tests) {
             std::cout << '.';
         } else {
-            std::cout << classname << "::" << testname << "\n";
+            std::cout << classname << "::" << testname << std::endl;
         }
         return true;
     }
     return false;
 }
 
-static std::string writestr(const std::string &str)
+static std::string writestr(const std::string &str, bool gccStyle = false)
 {
     std::ostringstream ostr;
-    ostr << "\"";
-    for (unsigned int i = 0; i < str.length(); ++i) {
-        char ch = str[i];
-        if (ch == '\n')
+    if (gccStyle)
+        ostr << '\"';
+    for (std::string::const_iterator i = str.begin(); i != str.end(); ++i) {
+        if (*i == '\n') {
             ostr << "\\n";
-        else if (ch == '\t')
+            if ((i+1) != str.end() && !gccStyle)
+                ostr << std::endl;
+        } else if (*i == '\t')
             ostr << "\\t";
-        else if (ch == '\"')
+        else if (*i == '\"')
             ostr << "\\\"";
         else
-            ostr << std::string(1, ch);
+            ostr << *i;
     }
-    ostr << "\"";
+    if (!str.empty() && !gccStyle)
+        ostr << std::endl;
+    else if (gccStyle)
+        ostr << '\"';
     return ostr.str();
 }
 
@@ -110,7 +116,7 @@ void TestFixture::assert_(const char *filename, int linenr, bool condition)
         if (gcc_style_errors) {
             errmsg << filename << ':' << linenr << ": Assertion failed." << std::endl;
         } else {
-            errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl;
+            errmsg << "_____" << std::endl << "Assertion failed in " << filename << " at line " << linenr << std::endl;
         }
     }
 }
@@ -122,17 +128,17 @@ void TestFixture::assertEquals(const char *filename, int linenr, const std::stri
         if (gcc_style_errors) {
             errmsg << filename << ':' << linenr << ": Assertion failed. "
                    << "Expected: "
-                   << writestr(expected)
+                   << writestr(expected, true)
                    << ". Actual: "
-                   << writestr(actual)
-                   << "."
+                   << writestr(actual, true)
+                   << '.'
                    << std::endl;
         } else {
             errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
                    << "Expected:" << std::endl
                    << writestr(expected) << std::endl
                    << "Actual:" << std::endl
-                   << writestr(actual) << std::endl;
+                   << writestr(actual) << std::endl << "_____" << std::endl;
         }
         if (!msg.empty()) {
             errmsg << msg << std::endl;
@@ -163,10 +169,17 @@ void TestFixture::todoAssertEquals(const char *filename, int linenr,
                                    const std::string &current,
                                    const std::string &actual)
 {
-    assertEquals(filename, linenr, current, actual);
     if (wanted == actual) {
-        assertEquals(filename, linenr, "TODO assertion", "The assertion succeeded");
+        if (gcc_style_errors) {
+            errmsg << filename << ':' << linenr << ": Assertion succeeded unexpectedly. "
+                   << "Result: " << writestr(wanted, true) << "." << std::endl;
+        } else {
+            errmsg << "Assertion succeeded unexpectedly in " << filename << " at line " << linenr << std::endl
+                   << "Result:" << std::endl << writestr(wanted) << std::endl << "_____" << std::endl;
+        }
+        ++succeeded_todos_counter;
     } else {
+        assertEquals(filename, linenr, current, actual);
         ++todos_counter;
     }
 }
@@ -187,7 +200,7 @@ void TestFixture::assertThrowFail(const char *filename, int linenr)
         errmsg << filename << ':' << linenr << " Assertion failed. "
                << "The expected exception was not thrown" << std::endl;
     } else {
-        errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
+        errmsg << "_____" << std::endl << "Assertion failed in " << filename << " at line " << linenr << std::endl
                << "The expected exception was not thrown" << std::endl;
     }
 }
@@ -237,12 +250,15 @@ size_t TestFixture::runTests(const options& args)
         }
     }
 
-    std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << "\n";
-    std::cout << "Number of todos: " << todos_counter << "\n";
+    std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
+    std::cout << "Number of todos: " << todos_counter;
+    if (succeeded_todos_counter > 0)
+        std::cout << " (" << succeeded_todos_counter << " succeeded)";
+    std::cout << std::endl;
     // calling flush here, to do all output before the error messages (in case the output is buffered)
     std::cout.flush();
 
-    std::cerr << "Tests failed: " << fails_counter << "\n";
+    std::cerr << "Tests failed: " << fails_counter << std::endl << std::endl;
     std::cerr << errmsg.str();
     std::cerr.flush();
     return fails_counter;
