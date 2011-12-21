@@ -42,6 +42,7 @@ private:
         TEST_CASE(iterator8);
         TEST_CASE(iterator9);
         TEST_CASE(iterator10);
+        TEST_CASE(iterator11);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_member);
@@ -216,6 +217,15 @@ private:
               "    ints2.insert(it1, it2);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(const std::set<int> &ints1)\n"
+              "{\n"
+              "    std::set<int> ints2;\n"
+              "    std::set<int>::iterator it1 = ints1.begin();\n"
+              "    std::set<int>::iterator it2 = ints2.end();\n"
+              "    ints2.insert(it1, it2);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void iterator7() {
@@ -328,6 +338,17 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Same iterator is used with both s1 and s2\n", errout.str());
+    }
+
+    void iterator11() {
+        // Ticket #3433
+        check("int main() {\n"
+              "    map<int, int> myMap;\n"
+              "    vector<string> myVector;\n"
+              "    for(vector<int>::iterator x = myVector.begin(); x != myVector.end(); x++)\n"
+              "        myMap.erase(*x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing invalid pointer

@@ -112,6 +112,10 @@ void CheckStl::iterators()
                             continue; // No warning
                     }
 
+                    // skip error message if the iterator is erased/inserted by value
+                    if (itTok->previous()->str() == "*")
+                        continue;
+
                     // Show error message, mismatching iterator is used.
                     iteratorsError(tok2, tok->strAt(2), tok2->str());
                 }
