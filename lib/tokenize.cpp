@@ -3079,26 +3079,10 @@ static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::
     return true;
 }
 
-void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
-        std::list<Token *> &used,
-        std::set<std::string> &expandedtemplates)
+int Tokenizer::simplifyTemplatesGetTemplateNamePosition(const Token *tok)
 {
-    // this variable is not used at the moment. The intention was to
-    // allow continuous instantiations until all templates has been expanded
-    //bool done = false;
-
-    std::vector<const Token *> type;
-    for (tok = tok->tokAt(2); tok && tok->str() != ">"; tok = tok->next()) {
-        if (Token::Match(tok, "%var% ,|>"))
-            type.push_back(tok);
-    }
-
-    // bail out if the end of the file was reached
-    if (!tok)
-        return;
-
     // get the position of the template name
-    unsigned char namepos = 0;
+    int namepos = 0;
     if (Token::Match(tok, "> class|struct %type% {|:"))
         namepos = 2;
     else if (Token::Match(tok, "> %type% *|&| %type% ("))
@@ -3125,10 +3109,36 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
             else
                 Check::reportError(errmsg);
         }
-        return;
+        return -1;
     }
     if ((tok->strAt(namepos) == "*" || tok->strAt(namepos) == "&"))
         ++namepos;
+
+    return namepos;
+}
+
+void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
+        std::list<Token *> &used,
+        std::set<std::string> &expandedtemplates)
+{
+    // this variable is not used at the moment. The intention was to
+    // allow continuous instantiations until all templates has been expanded
+    //bool done = false;
+
+    std::vector<const Token *> type;
+    for (tok = tok->tokAt(2); tok && tok->str() != ">"; tok = tok->next()) {
+        if (Token::Match(tok, "%var% ,|>"))
+            type.push_back(tok);
+    }
+
+    // bail out if the end of the file was reached
+    if (!tok)
+        return;
+
+    // get the position of the template name
+    int namepos = simplifyTemplatesGetTemplateNamePosition(tok);
+    if (namepos == -1)
+        return;
 
     // name of template function/class..
     const std::string name(tok->strAt(namepos));

@@ -490,6 +490,14 @@ public:
                                       std::set<std::string> &expandedtemplates);
 
     /**
+     * Match template declaration/instantiation
+     * @param tok The ">" token e.g. before "class"
+     * @return -1 to bail out or positive integer to identity the position
+     * of the template name.
+     */
+    int simplifyTemplatesGetTemplateNamePosition(const Token *tok);
+
+    /**
      * Used after simplifyTemplates to perform a little cleanup.
      * Sometimes the simplifyTemplates isn't fully successful and then
      * there are function calls etc with "wrong" syntax.
