@@ -116,7 +116,7 @@ void TestFixture::assert_(const char *filename, int linenr, bool condition)
         if (gcc_style_errors) {
             errmsg << filename << ':' << linenr << ": Assertion failed." << std::endl;
         } else {
-            errmsg << "_____" << std::endl << "Assertion failed in " << filename << " at line " << linenr << std::endl;
+            errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl << "_____" << std::endl;
         }
     }
 }
@@ -200,8 +200,8 @@ void TestFixture::assertThrowFail(const char *filename, int linenr)
         errmsg << filename << ':' << linenr << " Assertion failed. "
                << "The expected exception was not thrown" << std::endl;
     } else {
-        errmsg << "_____" << std::endl << "Assertion failed in " << filename << " at line " << linenr << std::endl
-               << "The expected exception was not thrown" << std::endl;
+        errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
+               << "The expected exception was not thrown" << std::endl << "_____" << std::endl;
     }
 }
 
