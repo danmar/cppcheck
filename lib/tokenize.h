@@ -489,6 +489,13 @@ public:
                                       std::list<Token *> &used,
                                       std::set<std::string> &expandedtemplates);
 
+    void simplifyTemplatesExpandTemplate(const Token *tok,
+                                         const std::string &name,
+                                         std::vector<const Token *> &type,
+                                         const std::string &newName,
+                                         std::vector<const Token *> &types2,
+                                         std::list<Token *> &used);
+
     /**
      * Match template declaration/instantiation
      * @param tok The ">" token e.g. before "class"

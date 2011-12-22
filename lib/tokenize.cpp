@@ -3117,6 +3117,126 @@ int Tokenizer::simplifyTemplatesGetTemplateNamePosition(const Token *tok)
     return namepos;
 }
 
+void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
+        const std::string &name,
+        std::vector<const Token *> &type,
+        const std::string &newName,
+        std::vector<const Token *> &types2,
+        std::list<Token *> &used)
+{
+    int _indentlevel = 0;
+    int _parlevel = 0;
+    for (const Token *tok3 = _tokens; tok3; tok3 = tok3->next()) {
+        if (tok3->str() == "{")
+            ++_indentlevel;
+        else if (tok3->str() == "}")
+            --_indentlevel;
+        else if (tok3->str() == "(")
+            ++_parlevel;
+        else if (tok3->str() == ")")
+            --_parlevel;
+
+        // Start of template..
+        if (tok3 == tok) {
+            tok3 = tok3->next();
+        }
+
+        // member function implemented outside class definition
+        else if (_indentlevel == 0 &&
+                 _parlevel == 0 &&
+                 simplifyTemplatesInstantiateMatch(tok3, name, type.size(), ":: ~| %var% (")) {
+            addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
+            while (tok3->str() != "::")
+                tok3 = tok3->next();
+        }
+
+        // not part of template.. go on to next token
+        else
+            continue;
+
+        int indentlevel = 0;
+        std::stack<Token *> braces;     // holds "{" tokens
+        std::stack<Token *> brackets;   // holds "(" tokens
+        std::stack<Token *> brackets2;  // holds "[" tokens
+
+        for (; tok3; tok3 = tok3->next()) {
+            if (tok3->str() == "{")
+                ++indentlevel;
+
+            else if (tok3->str() == "}") {
+                if (indentlevel <= 1 && brackets.empty() && brackets2.empty()) {
+                    // there is a bug if indentlevel is 0
+                    // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
+                    // if indentlevel ever becomes 0, cppcheck will write:
+                    // ### Error: Invalid number of character {
+                    addtoken("}", tok3->linenr(), tok3->fileIndex());
+                    Token::createMutualLinks(braces.top(), _tokensBack);
+                    braces.pop();
+                    break;
+                }
+                --indentlevel;
+            }
+
+
+            if (tok3->isName()) {
+                // search for this token in the type vector
+                unsigned int itype = 0;
+                while (itype < type.size() && type[itype]->str() != tok3->str())
+                    ++itype;
+
+                // replace type with given type..
+                if (itype < type.size()) {
+                    for (const Token *typetok = types2[itype];
+                         typetok && !Token::Match(typetok, "[,>]");
+                         typetok = typetok->next()) {
+                        addtoken(typetok, tok3->linenr(), tok3->fileIndex());
+                    }
+                    continue;
+                }
+            }
+
+            // replace name..
+            if (Token::Match(tok3, (name + " !!<").c_str())) {
+                addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
+                continue;
+            }
+
+            // copy
+            addtoken(tok3, tok3->linenr(), tok3->fileIndex());
+            if (Token::Match(tok3, "%type% <")) {
+                //if (!Token::simpleMatch(tok3, (name + " <").c_str()))
+                //done = false;
+                used.push_back(_tokensBack);
+            }
+
+            // link() newly tokens manually
+            if (tok3->str() == "{") {
+                braces.push(_tokensBack);
+            } else if (tok3->str() == "}") {
+                assert(braces.empty() == false);
+                Token::createMutualLinks(braces.top(), _tokensBack);
+                braces.pop();
+            } else if (tok3->str() == "(") {
+                brackets.push(_tokensBack);
+            } else if (tok3->str() == "[") {
+                brackets2.push(_tokensBack);
+            } else if (tok3->str() == ")") {
+                assert(brackets.empty() == false);
+                Token::createMutualLinks(brackets.top(), _tokensBack);
+                brackets.pop();
+            } else if (tok3->str() == "]") {
+                assert(brackets2.empty() == false);
+                Token::createMutualLinks(brackets2.top(), _tokensBack);
+                brackets2.pop();
+            }
+
+        }
+
+        assert(braces.empty());
+        assert(brackets.empty());
+    }
+}
+
 void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         std::list<Token *> &used,
         std::set<std::string> &expandedtemplates)
@@ -3231,122 +3351,11 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         }
 
         // New classname/funcname..
-        const std::string name2(name + "<" + type2 + ">");
+        const std::string newName(name + "<" + type2 + ">");
 
-        if (expandedtemplates.find(name2) == expandedtemplates.end()) {
-            expandedtemplates.insert(name2);
-            // Copy template..
-            int _indentlevel = 0;
-            int _parlevel = 0;
-            for (const Token *tok3 = _tokens; tok3; tok3 = tok3->next()) {
-                if (tok3->str() == "{")
-                    ++_indentlevel;
-                else if (tok3->str() == "}")
-                    --_indentlevel;
-                else if (tok3->str() == "(")
-                    ++_parlevel;
-                else if (tok3->str() == ")")
-                    --_parlevel;
-
-                // Start of template..
-                if (tok3 == tok) {
-                    tok3 = tok3->next();
-                }
-
-                // member function implemented outside class definition
-                else if (_indentlevel == 0 &&
-                         _parlevel == 0 &&
-                         simplifyTemplatesInstantiateMatch(tok3, name, type.size(), ":: ~| %var% (")) {
-                    addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
-                    while (tok3->str() != "::")
-                        tok3 = tok3->next();
-                }
-
-                // not part of template.. go on to next token
-                else
-                    continue;
-
-                int indentlevel = 0;
-                std::stack<Token *> braces;     // holds "{" tokens
-                std::stack<Token *> brackets;   // holds "(" tokens
-                std::stack<Token *> brackets2;  // holds "[" tokens
-
-                for (; tok3; tok3 = tok3->next()) {
-                    if (tok3->str() == "{")
-                        ++indentlevel;
-
-                    else if (tok3->str() == "}") {
-                        if (indentlevel <= 1 && brackets.empty() && brackets2.empty()) {
-                            // there is a bug if indentlevel is 0
-                            // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
-                            // if indentlevel ever becomes 0, cppcheck will write:
-                            // ### Error: Invalid number of character {
-                            addtoken("}", tok3->linenr(), tok3->fileIndex());
-                            Token::createMutualLinks(braces.top(), _tokensBack);
-                            braces.pop();
-                            break;
-                        }
-                        --indentlevel;
-                    }
-
-
-                    if (tok3->isName()) {
-                        // search for this token in the type vector
-                        unsigned int itype = 0;
-                        while (itype < type.size() && type[itype]->str() != tok3->str())
-                            ++itype;
-
-                        // replace type with given type..
-                        if (itype < type.size()) {
-                            for (const Token *typetok = types2[itype];
-                                 typetok && !Token::Match(typetok, "[,>]");
-                                 typetok = typetok->next()) {
-                                addtoken(typetok, tok3->linenr(), tok3->fileIndex());
-                            }
-                            continue;
-                        }
-                    }
-
-                    // replace name..
-                    if (Token::Match(tok3, (name + " !!<").c_str())) {
-                        addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
-                        continue;
-                    }
-
-                    // copy
-                    addtoken(tok3, tok3->linenr(), tok3->fileIndex());
-                    if (Token::Match(tok3, "%type% <")) {
-                        //if (!Token::simpleMatch(tok3, (name + " <").c_str()))
-                        //done = false;
-                        used.push_back(_tokensBack);
-                    }
-
-                    // link() newly tokens manually
-                    if (tok3->str() == "{") {
-                        braces.push(_tokensBack);
-                    } else if (tok3->str() == "}") {
-                        assert(braces.empty() == false);
-                        Token::createMutualLinks(braces.top(), _tokensBack);
-                        braces.pop();
-                    } else if (tok3->str() == "(") {
-                        brackets.push(_tokensBack);
-                    } else if (tok3->str() == "[") {
-                        brackets2.push(_tokensBack);
-                    } else if (tok3->str() == ")") {
-                        assert(brackets.empty() == false);
-                        Token::createMutualLinks(brackets.top(), _tokensBack);
-                        brackets.pop();
-                    } else if (tok3->str() == "]") {
-                        assert(brackets2.empty() == false);
-                        Token::createMutualLinks(brackets2.top(), _tokensBack);
-                        brackets2.pop();
-                    }
-
-                }
-
-                assert(braces.empty());
-                assert(brackets.empty());
-            }
+        if (expandedtemplates.find(newName) == expandedtemplates.end()) {
+            expandedtemplates.insert(newName);
+            simplifyTemplatesExpandTemplate(tok,name,type,newName,types2,used);
         }
 
         // Replace all these template usages..
@@ -3376,7 +3385,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                 // matching template usage => replace tokens..
                 // Foo < int >  =>  Foo<int>
                 if (tok5 && tok5->str() == ">" && count + 1U == types2.size()) {
-                    tok4->str(name2);
+                    tok4->str(newName);
                     for (Token *tok6 = tok4->next(); tok6 != tok5; tok6 = tok6->next()) {
                         if (tok6->isName())
                             used.remove(tok6);
