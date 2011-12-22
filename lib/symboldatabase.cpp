@@ -1698,7 +1698,7 @@ const Scope *SymbolDatabase::findVariableType(const Scope *start, const Token *t
         // do the names match?
         if (scope->className == type->str()) {
             // check if type does not have a namespace
-            if (type->previous()->str() != "::") {
+            if (type->previous() != NULL && type->previous()->str() != "::") {
                 const Scope *parent = start;
 
                 // check if in same namespace
