@@ -131,6 +131,7 @@ private:
         TEST_CASE(symboldatabase19); // ticket #2991 (segmentation fault)
         TEST_CASE(symboldatabase20); // ticket #3013 (segmentation fault)
         TEST_CASE(symboldatabase21);
+        TEST_CASE(symboldatabase22); // ticket #3437 (segmentation fault)
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -882,6 +883,13 @@ private:
               "    Foo foo;\n"
               "}\n");
 
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #ticket 3437 (segmentation fault)
+    void symboldatabase22() {
+        check("template <class C> struct A {};\n"
+              "A<int> a;\n");
         ASSERT_EQUALS("", errout.str());
     }
 
