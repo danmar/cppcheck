@@ -1914,6 +1914,8 @@ private:
               "    virtual void foo1 (P & Val) throw ();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("%: return ; ()"); // Don't crash. #3441.
     }
 
 

@@ -1627,6 +1627,9 @@ void CheckOther::checkUnreachableCode()
                 tok = Token::findmatch(secondBreak, "[}:]");
             } else
                 tok = secondBreak;
+
+            if (!tok)
+                break;
         }
     }
 }
