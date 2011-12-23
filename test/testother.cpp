@@ -3026,7 +3026,12 @@ private:
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
 
-
+        check("typedef int (*func)(bool invert);\n"
+              "void x(int, func f);\n"
+              "void foo(int error) {\n"
+              "  if (error == ABC) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -1509,7 +1509,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
 
     std::map<unsigned int, bool> boolvars; // Contains all declarated standard type variables and indicates whether its a bool or not.
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]") && tok->next()->isStandardType()) { // Declaration of standard type variable
+        if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]") && tok->next()->isStandardType() && tok->tokAt(2)->varId() > 0) { // Declaration of standard type variable
             boolvars[tok->tokAt(2)->varId()] = (tok->strAt(1) == "bool");
         } else if (Token::Match(tok, "%var% >|>=|==|!=|<=|< %num%")) { // Comparing variable with number
             const Token *varTok = tok;
