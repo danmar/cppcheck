@@ -24,7 +24,6 @@
 
 #include "check.h"
 #include "token.h"
-#include <set>
 
 /// @addtogroup Checks
 /// @{

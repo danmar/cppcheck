@@ -19,9 +19,9 @@
 #include "cppcheckexecutor.h"
 #include "threadexecutor.h"
 #include "cppcheck.h"
-#include <iostream>
 #include <algorithm>
 #ifdef THREADING_MODEL_FORK
+#include <iostream>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>

@@ -35,13 +35,12 @@
  */
 
 #include "check.h"
-#include "symboldatabase.h"
 
 #include <list>
 #include <string>
-#include <vector>
 
 class Token;
+class Scope;
 
 /// @addtogroup Core
 /// @{

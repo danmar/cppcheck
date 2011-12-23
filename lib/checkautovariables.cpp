@@ -23,8 +23,7 @@
 #include "checkautovariables.h"
 #include "symboldatabase.h"
 
-#include <sstream>
-#include <iostream>
+#include <list>
 #include <string>
 
 //---------------------------------------------------------------------------

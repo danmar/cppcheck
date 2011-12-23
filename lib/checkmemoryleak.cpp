@@ -18,6 +18,7 @@
 
 
 #include "checkmemoryleak.h"
+#include "symboldatabase.h"
 #include "mathlib.h"
 #include "tokenize.h"
 

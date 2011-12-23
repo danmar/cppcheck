@@ -22,10 +22,10 @@
 //---------------------------------------------------------------------------
 
 #include "check.h"
-#include "settings.h"
-#include "symboldatabase.h"
 
 class Token;
+class Scope;
+class Function;
 
 /// @addtogroup Checks
 /// @{
@@ -147,8 +147,8 @@ private:
         return "Check the code for each class.\n"
                "* Missing constructors\n"
                "* Are all variables initialized by the constructors?\n"
-               "* [[CheckMemset|Warn if memset, memcpy etc are used on a class]]\n"
-               //"* If it's a base class, check that the destructor is virtual\n"
+               "* Warn if memset, memcpy etc are used on a class\n"
+               "* If it's a base class, check that the destructor is virtual\n"
                "* Are there unused private functions\n"
                "* 'operator=' should return reference to self\n"
                "* 'operator=' should check for assignment to self\n"

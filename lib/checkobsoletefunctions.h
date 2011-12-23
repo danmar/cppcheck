@@ -24,7 +24,7 @@
 
 #include "check.h"
 #include <string>
-#include <list>
+#include <map>
 
 
 /// @addtogroup Checks

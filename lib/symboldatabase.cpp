@@ -25,10 +25,8 @@
 #include "errorlogger.h"
 #include "check.h"
 
-#include <cstring>
 #include <string>
 #include <sstream>
-#include <algorithm>
 #include <climits>
 
 // Define ULLONG_MAX and LLONG_MAX for Borland

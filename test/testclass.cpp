@@ -1606,7 +1606,7 @@ private:
         checkVirtualDestructor("class Base\n"
                                "{\n"
                                "public:\n"
-                               "~Base() {}\n"
+                               "    ~Base() {}\n"
                                "};\n"
                                "class A : private Base\n"
                                "{\n"
@@ -1619,7 +1619,7 @@ private:
                                "public:\n"
                                "    ~B() { int a; }\n"
                                "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class A which is inherited by class B does not have a virtual destructor\n",
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class Base which is inherited by class B does not have a virtual destructor\n",
                            "", errout.str());
     }
 

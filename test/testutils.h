@@ -18,9 +18,11 @@
 
 #ifndef TestUtilsH
 #define TestUtilsH
+
 #include "settings.h"
 #include "tokenize.h"
-#include "token.h"
+
+class Token;
 
 class givenACodeSampleToTokenize {
 private:

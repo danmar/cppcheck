@@ -30,12 +30,8 @@
 #include <algorithm>
 #include <sstream>
 #include <list>
-#include <cstring>
-#include <cctype>
-#include <climits>
-
 #include <cassert>     // <- assert
-#include <cstdlib>     // <- strtoul
+#include <cstdlib>
 
 //---------------------------------------------------------------------------
 
@@ -2160,7 +2156,6 @@ void CheckBufferOverrun::arrayIndexThenCheck()
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%var% [ %var% ]")) {
-            const std::string arrayName(tok->str());
             const std::string indexName(tok->strAt(2));
 
             // skip array index..

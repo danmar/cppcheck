@@ -1394,6 +1394,14 @@ private:
               "    const char *c = f().c_str();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
+
+
+        check("const char* foo() {\n"
+              "    static std::string text;\n"
+              "    text = \"hello world\n\";\n"
+              "    return text.c_str();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str()); // #3427
     }
 
     void autoPointer() {

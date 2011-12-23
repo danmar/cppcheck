@@ -29,7 +29,6 @@
 #include <fstream>
 #include <cstdlib>
 #include <cctype>
-#include <cstring>
 #include <vector>
 #include <set>
 #include <stack>

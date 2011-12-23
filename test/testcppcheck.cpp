@@ -27,9 +27,8 @@
 #include "path.h"
 
 #include <algorithm>
-#include <map>
+#include <list>
 #include <string>
-#include <stdexcept>
 
 // use tinyxml with STL
 #include <tinyxml.h>

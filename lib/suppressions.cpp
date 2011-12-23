@@ -21,7 +21,6 @@
 #include "path.h"
 
 #include <sstream>
-#include <iostream>
 #include <stack>
 #include <cctype>   // std::isdigit, std::isalnum, etc
 

@@ -26,10 +26,9 @@
 #include "threadexecutor.h"
 #include "cppcheckexecutor.h"
 
-#include <algorithm>
 #include <map>
 #include <string>
-#include <stdexcept>
+#include <vector>
 
 extern std::ostringstream errout;
 extern std::ostringstream output;

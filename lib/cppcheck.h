@@ -26,7 +26,6 @@
 #include <string>
 #include <list>
 #include <sstream>
-#include <vector>
 
 /// @addtogroup Core
 /// @{

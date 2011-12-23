@@ -21,7 +21,6 @@
 #include "token.h"
 #include "settings.h"
 
-#include <cstring>
 #include <vector>
 #include <string>
 

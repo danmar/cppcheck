@@ -21,7 +21,6 @@
 #include "threadexecutor.h"
 #include "preprocessor.h"
 #include "errorlogger.h"
-#include <fstream>
 #include <iostream>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>

@@ -24,7 +24,6 @@
 #include "errorlogger.h"
 #include "symboldatabase.h"
 
-#include <cstring>
 #include <string>
 #include <algorithm>
 

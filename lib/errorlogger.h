@@ -23,7 +23,6 @@
 #include <list>
 #include <string>
 
-#include "settings.h"
 #include "suppressions.h"
 
 class Token;
