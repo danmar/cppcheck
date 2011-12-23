@@ -473,20 +473,20 @@ public:
     /**
      * simplify template instantiations (use default argument values)
      * @param templates list of template declarations
-     * @param instantiations list of template instantiations
+     * @param templateInstantiations list of template instantiations
      */
     void simplifyTemplatesUseDefaultArgumentValues(const std::list<Token *> &templates,
-            const std::list<Token *> &instantiations);
+            const std::list<Token *> &templateInstantiations);
 
     /**
      * Simplify templates : expand all instantiatiations for a template
      * @todo It seems that inner templates should be instantiated recursively
      * @param tok token where the template declaration begins
-     * @param used a list of template usages (not necessarily just for this template)
+     * @param templateInstantiations a list of template usages (not necessarily just for this template)
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
      */
     void simplifyTemplatesInstantiate(const Token *tok,
-                                      std::list<Token *> &used,
+                                      std::list<Token *> &templateInstantiations,
                                       std::set<std::string> &expandedtemplates);
 
     void simplifyTemplatesExpandTemplate(const Token *tok,
@@ -494,7 +494,7 @@ public:
                                          std::vector<const Token *> &type,
                                          const std::string &newName,
                                          std::vector<const Token *> &types2,
-                                         std::list<Token *> &used);
+                                         std::list<Token *> &templateInstantiations);
 
     /**
      * Match template declaration/instantiation

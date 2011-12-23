@@ -2967,7 +2967,7 @@ std::list<Token *> Tokenizer::simplifyTemplatesGetTemplateInstantiations()
 
 
 void Tokenizer::simplifyTemplatesUseDefaultArgumentValues(const std::list<Token *> &templates,
-        const std::list<Token *> &instantiations)
+        const std::list<Token *> &templateInstantiations)
 {
     for (std::list<Token *>::const_iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1) {
         // template parameters with default value has syntax such as:
@@ -3002,7 +3002,7 @@ void Tokenizer::simplifyTemplatesUseDefaultArgumentValues(const std::list<Token 
             continue;
 
         // iterate through all template instantiations
-        for (std::list<Token *>::const_iterator iter2 = instantiations.begin(); iter2 != instantiations.end(); ++iter2) {
+        for (std::list<Token *>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
             Token *tok = *iter2;
 
             if (!Token::Match(tok, (classname + " < %any%").c_str()))
@@ -3122,7 +3122,7 @@ void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
         std::vector<const Token *> &type,
         const std::string &newName,
         std::vector<const Token *> &types2,
-        std::list<Token *> &used)
+        std::list<Token *> &templateInstantiations)
 {
     int _indentlevel = 0;
     int _parlevel = 0;
@@ -3206,7 +3206,7 @@ void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
             if (Token::Match(tok3, "%type% <")) {
                 //if (!Token::simpleMatch(tok3, (name + " <").c_str()))
                 //done = false;
-                used.push_back(_tokensBack);
+                templateInstantiations.push_back(_tokensBack);
             }
 
             // link() newly tokens manually
@@ -3238,7 +3238,7 @@ void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
 }
 
 void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
-        std::list<Token *> &used,
+        std::list<Token *> &templateInstantiations,
         std::set<std::string> &expandedtemplates)
 {
     // this variable is not used at the moment. The intention was to
@@ -3266,13 +3266,13 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
     const bool isfunc(tok->strAt(namepos + 1) == "(");
 
     // locate template usage..
-    std::string::size_type sz1 = used.size();
+    std::string::size_type sz1 = templateInstantiations.size();
     unsigned int recursiveCount = 0;
 
-    for (std::list<Token *>::const_iterator iter2 = used.begin(); iter2 != used.end(); ++iter2) {
+    for (std::list<Token *>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
         // If the size of "used" has changed, simplify calculations
-        if (sz1 != used.size()) {
-            sz1 = used.size();
+        if (sz1 != templateInstantiations.size()) {
+            sz1 = templateInstantiations.size();
             simplifyCalculations();
             ++recursiveCount;
             if (recursiveCount > 100) {
@@ -3355,7 +3355,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
 
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
-            simplifyTemplatesExpandTemplate(tok,name,type,newName,types2,used);
+            simplifyTemplatesExpandTemplate(tok,name,type,newName,types2,templateInstantiations);
         }
 
         // Replace all these template usages..
@@ -3388,7 +3388,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
                     tok4->str(newName);
                     for (Token *tok6 = tok4->next(); tok6 != tok5; tok6 = tok6->next()) {
                         if (tok6->isName())
-                            used.remove(tok6);
+                            templateInstantiations.remove(tok6);
                     }
                     removeTokens.push_back(std::pair<Token*,Token*>(tok4, tok5->next()));
                 }
@@ -3432,16 +3432,16 @@ void Tokenizer::simplifyTemplates()
     }
 
     // Locate possible instantiations of templates..
-    std::list<Token *> used(simplifyTemplatesGetTemplateInstantiations());
+    std::list<Token *> templateInstantiations(simplifyTemplatesGetTemplateInstantiations());
 
     // No template instantiations? Then remove all templates.
-    if (used.empty()) {
+    if (templateInstantiations.empty()) {
         removeTemplates(_tokens);
         return;
     }
 
     // Template arguments with default values
-    simplifyTemplatesUseDefaultArgumentValues(templates, used);
+    simplifyTemplatesUseDefaultArgumentValues(templates, templateInstantiations);
 
     // expand templates
     //bool done = false;
@@ -3449,7 +3449,7 @@ void Tokenizer::simplifyTemplates()
     {
         //done = true;
         for (std::list<Token *>::reverse_iterator iter1 = templates.rbegin(); iter1 != templates.rend(); ++iter1) {
-            simplifyTemplatesInstantiate(*iter1, used, expandedtemplates);
+            simplifyTemplatesInstantiate(*iter1, templateInstantiations, expandedtemplates);
         }
     }
 
