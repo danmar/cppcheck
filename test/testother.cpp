@@ -2773,6 +2773,12 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
+
+        // #3419
+        check("void f() {\n"
+              "    if ( &q != &a && &q != &b ) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {

@@ -2646,6 +2646,11 @@ void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
         unsigned int parantheses = 0;  // ()
         unsigned int brackets = 0;     // []
 
+        // taking address?
+        if (Token::Match(it->second.end->previous(), "%op% &")) {
+            continue;
+        }
+
         for (const Token *tok = it->second.start; tok && tok != it->second.end; tok = tok->next()) {
             if (tok->str() == "(") {
                 ++parantheses;
