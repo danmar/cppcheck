@@ -73,9 +73,9 @@ void CheckOther::clarifyCalculation()
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->strAt(1) == "?") {
+        if (tok->str() == "?" && tok->previous()) {
             // condition
-            const Token *cond = tok;
+            const Token *cond = tok->previous();
             if (cond->isName() || cond->isNumber())
                 cond = cond->previous();
             else if (cond->str() == ")")
@@ -97,8 +97,14 @@ void CheckOther::clarifyCalculation()
             cond = cond->previous();
 
             // skip previous multiplications..
-            while (cond && cond->strAt(-1) == "*" && (cond->isName() || cond->isNumber()))
-                cond = cond->tokAt(-2);
+            while (cond && cond->previous()) {
+                if ((cond->isName() || cond->isNumber()) && cond->previous()->str() == "*")
+                    cond = cond->tokAt(-2);
+                else if (cond->str() == ")")
+                    cond = cond->link()->previous();
+                else
+                    break;
+            }
 
             if (!cond)
                 continue;

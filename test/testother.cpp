@@ -3338,6 +3338,11 @@ private:
               "    return x >> ! y ? 8 : 2;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for >> and ?\n", errout.str());
+
+        check("int f() {\n"
+              "   return (shift < sizeof(int64_t)*8 ? 1 : 2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // clarify conditions with = and comparison
