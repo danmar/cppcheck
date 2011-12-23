@@ -3266,13 +3266,12 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
     const bool isfunc(tok->strAt(namepos + 1) == "(");
 
     // locate template usage..
-    std::string::size_type sz1 = templateInstantiations.size();
+    std::string::size_type amountOftemplateInstantiations = templateInstantiations.size();
     unsigned int recursiveCount = 0;
 
     for (std::list<Token *>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
-        // If the size of "used" has changed, simplify calculations
-        if (sz1 != templateInstantiations.size()) {
-            sz1 = templateInstantiations.size();
+        if (amountOftemplateInstantiations != templateInstantiations.size()) {
+            amountOftemplateInstantiations = templateInstantiations.size();
             simplifyCalculations();
             ++recursiveCount;
             if (recursiveCount > 100) {
@@ -3289,9 +3288,9 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         // TODO: this is a bit hardcoded. make a bit more generic
         if (Token::Match(tok2, "%var% < sizeof ( %type% ) >") && tok2->tokAt(4)->isStandardType()) {
             Token * const tok3 = tok2->next();
-            const unsigned int sz = sizeOfType(tok3->tokAt(3));
+            const unsigned int sizeOfResult = sizeOfType(tok3->tokAt(3));
             tok3->deleteNext(4);
-            tok3->insertToken(MathLib::toString<unsigned int>(sz));
+            tok3->insertToken(MathLib::toString<unsigned int>(sizeOfResult));
         }
 
         if (Token::Match(tok2->previous(), "[;{}=]") &&
@@ -3300,36 +3299,36 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
 
         // New type..
         std::vector<const Token *> types2;
-        std::string s;
-        std::string s1(name + " < ");
+        std::string typeForNewNameStr;
+        std::string templateMatchPattern(name + " < ");
         for (const Token *tok3 = tok2->tokAt(2); tok3 && tok3->str() != ">"; tok3 = tok3->next()) {
             // #2648 - unhandled parenthesis => bail out
             // #2721 - unhandled [ => bail out
             if (tok3->str() == "(" || tok3->str() == "[") {
-                s.clear();
+                typeForNewNameStr.clear();
                 break;
             }
             if (!tok3->next()) {
-                s.clear();
+                typeForNewNameStr.clear();
                 break;
             }
-            s1 += tok3->str();
-            s1 += " ";
+            templateMatchPattern += tok3->str();
+            templateMatchPattern += " ";
             if (Token::Match(tok3->previous(), "[<,]"))
                 types2.push_back(tok3);
             // add additional type information
             if (tok3->isUnsigned())
-                s += "unsigned";
+                typeForNewNameStr += "unsigned";
             else if (tok3->isSigned())
-                s += "signed";
+                typeForNewNameStr += "signed";
             if (tok3->isLong())
-                s += "long";
-            s += tok3->str();
+                typeForNewNameStr += "long";
+            typeForNewNameStr += tok3->str();
         }
-        s1 += ">";
-        const std::string type2(s);
+        templateMatchPattern += ">";
+        const std::string typeForNewName(typeForNewNameStr);
 
-        if (type2.empty() || type.size() != types2.size()) {
+        if (typeForNewName.empty() || type.size() != types2.size()) {
             if (_settings->debugwarnings) {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
@@ -3345,13 +3344,13 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
 
                 _errorLogger->reportErr(errmsg);
             }
-            if (type2.empty())
+            if (typeForNewName.empty())
                 continue;
             break;
         }
 
         // New classname/funcname..
-        const std::string newName(name + "<" + type2 + ">");
+        const std::string newName(name + "<" + typeForNewName + ">");
 
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
@@ -3361,7 +3360,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         // Replace all these template usages..
         std::list< std::pair<Token *, Token *> > removeTokens;
         for (Token *tok4 = tok2; tok4; tok4 = tok4->next()) {
-            if (Token::simpleMatch(tok4, s1.c_str())) {
+            if (Token::simpleMatch(tok4, templateMatchPattern.c_str())) {
                 Token * tok5 = tok4->tokAt(2);
                 unsigned int count = 0;
                 const Token *typetok = (!types2.empty()) ? types2[0] : 0;
