@@ -433,8 +433,9 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
 void CheckOther::checkSizeofForStrncmpSize()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const char pattern1[] = "strncmp ( %any% , %any% , sizeof ( %var% ) )";
-    const char pattern2[] = "strncmp ( %any% , %any% , sizeof %var% )";
+    static const char pattern0[] = "strncmp (";
+    static const char pattern1[] = "sizeof ( %var% ) )";
+    static const char pattern2[] = "sizeof %var% )";
 
     // danmar : this is inconclusive in case the size parameter is
     //          sizeof(char *) by intention.
@@ -442,15 +443,21 @@ void CheckOther::checkSizeofForStrncmpSize()
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, pattern1) || Token::Match(tok, pattern2)) {
-            unsigned short tokIdx = 7;
-            if (tok->strAt(tokIdx) == "(")
-                ++tokIdx;
-            const Token *tokVar = tok->tokAt(tokIdx);
-            if (tokVar->varId() > 0) {
-                const Variable *var = symbolDatabase->getVariableFromVarId(tokVar->varId());
-                if (var && var->nameToken()->strAt(-1) == "*") {
-                    sizeofForStrncmpError(tokVar);
+        if (Token::Match(tok, pattern0)) {
+            const Token *tokVar = tok->tokAt(2);
+            if (tokVar)
+                tokVar = tokVar->nextArgument();
+            if (tokVar)
+                tokVar = tokVar->nextArgument();
+            if (Token::Match(tokVar, pattern1) || Token::Match(tokVar, pattern2)) {
+                tokVar = tokVar->next();
+                if (tokVar->str() == "(")
+                    tokVar = tokVar->next();
+                if (tokVar->varId() > 0) {
+                    const Variable *var = symbolDatabase->getVariableFromVarId(tokVar->varId());
+                    if (var && var->isPointer()) {
+                        sizeofForStrncmpError(tokVar);
+                    }
                 }
             }
         }

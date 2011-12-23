@@ -4097,6 +4097,12 @@ private:
             "  return strncmp(buf1, buf1_ex, sizeof(buf1_ex)) == 0;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Passing sizeof(pointer) as the last argument to strncmp.\n", errout.str());
+
+        check(
+            "int fun(const char *buf1) {\n"
+            "  return strncmp(buf1, foo(buf2), sizeof(buf1)) == 0;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Passing sizeof(pointer) as the last argument to strncmp.\n", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[], bool inconclusive=false) {
