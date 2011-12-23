@@ -1374,6 +1374,14 @@ private:
                            "}");
             ASSERT_EQUALS("", errout.str());
         }
+
+        // Using strncpy isn't necessarily dangerous usage
+        checkUninitVar("void f(const char dev[], char *str) {\n"
+                       "    char buf[10];\n"
+                       "    strncpy(buf, dev, 10);\n"
+                       "    strncpy(str, buf, 10);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // initialization with memset (not 0-terminating string)..

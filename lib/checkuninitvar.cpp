@@ -593,9 +593,17 @@ private:
                 std::list<const Token *> var;
                 CheckNullPointer::parseFunctionCall(tok, var, 1);
                 for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
+                    // does iterator point at first function parameter?
+                    const bool firstPar(*it == tok.tokAt(2));
+
                     // is function memset/memcpy/etc?
                     if (tok.str().compare(0,3,"mem") == 0)
                         use_array_mem(checks, *it);
+
+                    // second parameter for strncpy/strncat/etc
+                    else if (!firstPar && tok.str().compare(0,4,"strn") == 0)
+                        use_array_mem(checks, *it);
+
                     else
                         use_array(checks, *it);
 
