@@ -878,7 +878,7 @@ void CheckStl::size()
 
 void CheckStl::sizeError(const Token *tok)
 {
-    const std::string varname(tok ? tok->str() : std::string("list"));
+    const std::string varname = tok ? tok->str() : std::string("list");
     reportError(tok, Severity::performance, "stlSize",
                 "Possible inefficient checking for '" + varname + "' emptiness.\n"
                 "Checking for '" + varname + "' emptiness might be inefficient. "
