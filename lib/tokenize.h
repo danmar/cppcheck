@@ -460,6 +460,22 @@ public:
 
     void simplifyDoublePlusAndDoubleMinus();
 
+    void simplifyRedundantConsecutiveBraces();
+
+    void simplifyArrayAccessSyntax();
+
+    void simplifyParameterVoid();
+
+    void simplifyDebugNew();
+
+    bool hasEnumsWithTypedef();
+
+    void simplifyDefaultAndDeleteInsideClass();
+
+    bool hasComplicatedSyntaxErrorsInTemplates();
+
+    void simplifyReservedWordNullptr();
+
     /**
      * Get template declarations
      * @return list of template declarations
