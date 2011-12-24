@@ -458,6 +458,8 @@ public:
      */
     std::set<std::string> simplifyTemplatesExpandSpecialized();
 
+    void simplifyDoublePlusAndDoubleMinus();
+
     /**
      * Get template declarations
      * @return list of template declarations

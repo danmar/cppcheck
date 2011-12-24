@@ -2537,32 +2537,7 @@ bool Tokenizer::tokenize(std::istream &code,
     // Convert e.g. atol("0") into 0
     simplifyMathFunctions();
 
-    // Convert + + into + and + - into -
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        while (tok->next()) {
-            if (tok->str() == "+") {
-                if (tok->next()->str() == "+") {
-                    tok->deleteNext();
-                    continue;
-                } else if (tok->next()->str() == "-") {
-                    tok->str("-");
-                    tok->deleteNext();
-                    continue;
-                }
-            } else if (tok->str() == "-") {
-                if (tok->next()->str() == "-") {
-                    tok->str("+");
-                    tok->deleteNext();
-                    continue;
-                } else if (tok->next()->str() == "+") {
-                    tok->deleteNext();
-                    continue;
-                }
-            }
-
-            break;
-        }
-    }
+    simplifyDoublePlusAndDoubleMinus();
 
     // 0[a] -> a[0]
     for (Token *tok = _tokens; tok; tok = tok->next()) {
@@ -2602,6 +2577,36 @@ bool Tokenizer::tokenize(std::istream &code,
     return validate();
 }
 //---------------------------------------------------------------------------
+
+void Tokenizer::simplifyDoublePlusAndDoubleMinus()
+{
+    // Convert + + into + and + - into -
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        while (tok->next()) {
+            if (tok->str() == "+") {
+                if (tok->next()->str() == "+") {
+                    tok->deleteNext();
+                    continue;
+                } else if (tok->next()->str() == "-") {
+                    tok->str("-");
+                    tok->deleteNext();
+                    continue;
+                }
+            } else if (tok->str() == "-") {
+                if (tok->next()->str() == "-") {
+                    tok->str("+");
+                    tok->deleteNext();
+                    continue;
+                } else if (tok->next()->str() == "+") {
+                    tok->deleteNext();
+                    continue;
+                }
+            }
+
+            break;
+        }
+    }
+}
 
 /** Specify array size if it hasn't been given */
 
