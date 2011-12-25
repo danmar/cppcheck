@@ -503,15 +503,15 @@ public:
      * @param templateInstantiations a list of template usages (not necessarily just for this template)
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
      */
-    void simplifyTemplatesInstantiate(const Token *tok,
+    void simplifyTemplateInstantions(const Token *tok,
                                       std::list<Token *> &templateInstantiations,
                                       std::set<std::string> &expandedtemplates);
 
     void simplifyTemplatesExpandTemplate(const Token *tok,
                                          const std::string &name,
-                                         std::vector<const Token *> &type,
+                                         std::vector<const Token *> &typeParametersInDeclaration,
                                          const std::string &newName,
-                                         std::vector<const Token *> &types2,
+                                         std::vector<const Token *> &typesUsedInTemplateInstantion,
                                          std::list<Token *> &templateInstantiations);
 
     /**

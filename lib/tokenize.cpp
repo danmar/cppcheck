@@ -3171,9 +3171,9 @@ int Tokenizer::simplifyTemplatesGetTemplateNamePosition(const Token *tok)
 
 void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
         const std::string &name,
-        std::vector<const Token *> &type,
+        std::vector<const Token *> &typeParametersInDeclaration,
         const std::string &newName,
-        std::vector<const Token *> &types2,
+        std::vector<const Token *> &typesUsedInTemplateInstantion,
         std::list<Token *> &templateInstantiations)
 {
     int _indentlevel = 0;
@@ -3196,7 +3196,7 @@ void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
         // member function implemented outside class definition
         else if (_indentlevel == 0 &&
                  _parlevel == 0 &&
-                 simplifyTemplatesInstantiateMatch(tok3, name, type.size(), ":: ~| %var% (")) {
+                 simplifyTemplatesInstantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
             addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
             while (tok3->str() != "::")
                 tok3 = tok3->next();
@@ -3233,12 +3233,12 @@ void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
             if (tok3->isName()) {
                 // search for this token in the type vector
                 unsigned int itype = 0;
-                while (itype < type.size() && type[itype]->str() != tok3->str())
+                while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != tok3->str())
                     ++itype;
 
                 // replace type with given type..
-                if (itype < type.size()) {
-                    for (const Token *typetok = types2[itype];
+                if (itype < typeParametersInDeclaration.size()) {
+                    for (const Token *typetok = typesUsedInTemplateInstantion[itype];
                          typetok && !Token::Match(typetok, "[,>]");
                          typetok = typetok->next()) {
                         addtoken(typetok, tok3->linenr(), tok3->fileIndex());
@@ -3289,7 +3289,7 @@ void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
     }
 }
 
-void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
+void Tokenizer::simplifyTemplateInstantions(const Token *tok,
         std::list<Token *> &templateInstantiations,
         std::set<std::string> &expandedtemplates)
 {
@@ -3297,10 +3297,11 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
     // allow continuous instantiations until all templates has been expanded
     //bool done = false;
 
-    std::vector<const Token *> type;
+    // Contains tokens such as "T"
+    std::vector<const Token *> typeParametersInDeclaration;
     for (tok = tok->tokAt(2); tok && tok->str() != ">"; tok = tok->next()) {
         if (Token::Match(tok, "%var% ,|>"))
-            type.push_back(tok);
+            typeParametersInDeclaration.push_back(tok);
     }
 
     // bail out if the end of the file was reached
@@ -3346,11 +3347,11 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         }
 
         if (Token::Match(tok2->previous(), "[;{}=]") &&
-            !simplifyTemplatesInstantiateMatch(*iter2, name, type.size(), isfunc ? "(" : "*| %var%"))
+            !simplifyTemplatesInstantiateMatch(*iter2, name, typeParametersInDeclaration.size(), isfunc ? "(" : "*| %var%"))
             continue;
 
         // New type..
-        std::vector<const Token *> types2;
+        std::vector<const Token *> typesUsedInTemplateInstantion;
         std::string typeForNewNameStr;
         std::string templateMatchPattern(name + " < ");
         for (const Token *tok3 = tok2->tokAt(2); tok3 && tok3->str() != ">"; tok3 = tok3->next()) {
@@ -3367,7 +3368,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
             templateMatchPattern += tok3->str();
             templateMatchPattern += " ";
             if (Token::Match(tok3->previous(), "[<,]"))
-                types2.push_back(tok3);
+                typesUsedInTemplateInstantion.push_back(tok3);
             // add additional type information
             if (tok3->isUnsigned())
                 typeForNewNameStr += "unsigned";
@@ -3380,7 +3381,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         templateMatchPattern += ">";
         const std::string typeForNewName(typeForNewNameStr);
 
-        if (typeForNewName.empty() || type.size() != types2.size()) {
+        if (typeForNewName.empty() || typeParametersInDeclaration.size() != typesUsedInTemplateInstantion.size()) {
             if (_settings->debugwarnings) {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
@@ -3406,7 +3407,7 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
 
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
-            simplifyTemplatesExpandTemplate(tok,name,type,newName,types2,templateInstantiations);
+            simplifyTemplatesExpandTemplate(tok,name,typeParametersInDeclaration,newName,typesUsedInTemplateInstantion,templateInstantiations);
         }
 
         // Replace all these template usages..
@@ -3414,8 +3415,8 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
         for (Token *tok4 = tok2; tok4; tok4 = tok4->next()) {
             if (Token::simpleMatch(tok4, templateMatchPattern.c_str())) {
                 Token * tok5 = tok4->tokAt(2);
-                unsigned int count = 0;
-                const Token *typetok = (!types2.empty()) ? types2[0] : 0;
+                unsigned int typeCountInInstantion = 1U; // There is always atleast one type
+                const Token *typetok = (!typesUsedInTemplateInstantion.empty()) ? typesUsedInTemplateInstantion[0] : 0;
                 while (tok5 && tok5->str() != ">") {
                     if (tok5->str() != ",") {
                         if (!typetok ||
@@ -3427,15 +3428,15 @@ void Tokenizer::simplifyTemplatesInstantiate(const Token *tok,
 
                         typetok = typetok ? typetok->next() : 0;
                     } else {
-                        ++count;
-                        typetok = (count < types2.size()) ? types2[count] : 0;
+                        typetok = (typeCountInInstantion < typesUsedInTemplateInstantion.size()) ? typesUsedInTemplateInstantion[typeCountInInstantion] : 0;
+                        ++typeCountInInstantion;
                     }
                     tok5 = tok5->next();
                 }
 
                 // matching template usage => replace tokens..
                 // Foo < int >  =>  Foo<int>
-                if (tok5 && tok5->str() == ">" && count + 1U == types2.size()) {
+                if (tok5 && tok5->str() == ">" && typeCountInInstantion == typesUsedInTemplateInstantion.size()) {
                     tok4->str(newName);
                     for (Token *tok6 = tok4->next(); tok6 != tok5; tok6 = tok6->next()) {
                         if (tok6->isName())
@@ -3500,7 +3501,7 @@ void Tokenizer::simplifyTemplates()
     {
         //done = true;
         for (std::list<Token *>::reverse_iterator iter1 = templates.rbegin(); iter1 != templates.rend(); ++iter1) {
-            simplifyTemplatesInstantiate(*iter1, templateInstantiations, expandedtemplates);
+            simplifyTemplateInstantions(*iter1, templateInstantiations, expandedtemplates);
         }
     }
 
