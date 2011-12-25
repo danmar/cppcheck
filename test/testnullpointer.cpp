@@ -60,6 +60,8 @@ private:
         TEST_CASE(nullpointer_in_for_loop);
         TEST_CASE(nullpointerDelete);
         TEST_CASE(nullpointerExit);
+
+        TEST_CASE(functioncall);
     }
 
     void check(const char code[], bool inconclusive = false, bool cpp11 = false) {
@@ -1715,6 +1717,70 @@ private:
               "  k->f();\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void functioncall() {    // #3443 - function calls
+        // dereference pointer and then check if it's null
+        {
+            // function not seen
+            check("void f(int *p) {\n"
+                  "    *p = 0;\n"
+                  "    foo(p);\n"
+                  "    if (p) { }\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+
+            // function seen (taking pointer parameter)
+            check("void foo(int *p) { }\n"
+                  "\n"
+                  "void f(int *p) {\n"
+                  "    *p = 0;\n"
+                  "    foo(p);\n"
+                  "    if (p) { }\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 6\n", errout.str());
+
+            // function implementation not seen
+            check("void foo(int *p);\n"
+                  "\n"
+                  "void f(int *p) {\n"
+                  "    *p = 0;\n"
+                  "    foo(p);\n"
+                  "    if (p) { }\n"
+                  "}");
+            TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 6\n", "", errout.str());
+        }
+
+        // dereference struct pointer and then check if it's null
+        {
+            // function not seen
+            check("void f(struct ABC *abc) {\n"
+                  "    abc->a = 0;\n"
+                  "    foo(abc);\n"
+                  "    if (abc) { }\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+
+            // function seen (taking pointer parameter)
+            check("void foo(struct ABC *abc) { }\n"
+                  "\n"
+                  "void f(struct ABC *abc) {\n"
+                  "    abc->a = 0;\n"
+                  "    foo(abc);\n"
+                  "    if (abc) { }\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 6\n", errout.str());
+
+            // function implementation not seen
+            check("void foo(struct ABC *abc);\n"
+                  "\n"
+                  "void f(struct ABC *abc) {\n"
+                  "    abc->a = 0;\n"
+                  "    foo(abc);\n"
+                  "    if (abc) { }\n"
+                  "}");
+            TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 6\n", "", errout.str());
+        }
     }
 };
 

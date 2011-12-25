@@ -288,6 +288,44 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     return false;
 }
 
+
+// check if function can assign pointer
+bool CheckNullPointer::CanFunctionAssignPointer(const Token *functiontoken, unsigned int varid) const
+{
+    if (Token::Match(functiontoken, "if|while|sizeof"))
+        return false;
+
+    int argumentNumber = 0;
+    for (const Token *arg = functiontoken->tokAt(2); arg; arg = arg->nextArgument()) {
+        ++argumentNumber;
+        if (Token::Match(arg, "%varid% [,)]", varid)) {
+            const Token *ftok = _tokenizer->getFunctionTokenByName(functiontoken->str().c_str());
+            if (!Token::Match(ftok, "%type% (")) {
+                // assume that the function might assign the pointer
+                return true;
+            }
+
+            ftok = ftok->tokAt(2);
+            while (ftok && argumentNumber > 1) {
+                ftok = ftok->nextArgument();
+                --argumentNumber;
+            }
+
+            // check if it's a pointer parameter..
+            while (ftok && ftok->isName())
+                ftok = ftok->next();
+            if (Token::Match(ftok, "* *| const| %var% [,)]"))
+                // parameter is passed by value
+                return false;
+        }
+    }
+
+    // pointer is not passed
+    return false;
+}
+
+
+
 void CheckNullPointer::nullPointerAfterLoop()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -584,6 +622,10 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             else if (tok2->str() == ":")
                 break;
 
+            // function call..
+            else if (Token::Match(tok2, "[;{}] %var% (") && CanFunctionAssignPointer(tok2->next(), varid1))
+                break;
+
             // Reassignment of the struct
             else if (tok2->varId() == varid1) {
                 if (tok2->next()->str() == "=") {
@@ -688,6 +730,12 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                             nullPointerError(tok2->tokAt(3), varname, tok->linenr());
                             break;
                         }
+                    }
+
+                    // Passing pointer as parameter..
+                    if (Token::Match(tok2, "[;{}] %type% (")) {
+                        if (CanFunctionAssignPointer(tok2->next(), varid))
+                            break;
                     }
 
                     // calling unknown function => it might initialize the pointer
@@ -1232,4 +1280,6 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     else
         reportError(tok, Severity::error, "nullPointer", errmsg);
 }
+
+
 
