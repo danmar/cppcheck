@@ -1547,7 +1547,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     std::vector<Dimension> dimensions;
 
     if (tok && isVariableDeclaration(tok, vartok, typetok, isArray, isPointer)) {
-        isPointer = vartok->previous()->str() == "*" || vartok->strAt(-2) == "*";
+        isPointer = vartok->previous()->str() == "*" || Token::simpleMatch(vartok->tokAt(-2), "* const");
         isClass = (!typetok->isStandardType() && !isPointer && vartok->previous()->str() != "&");
         if (isArray) {
             isArray = check->arrayDimensions(dimensions, vartok->next());
@@ -1646,7 +1646,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         typetok = localTypeTok;
         isArray = false;
     }
-    isPointer = vartok && (vartok->strAt(-1) == "*" || vartok->strAt(-2) == "*");
+    isPointer = vartok && (vartok->strAt(-1) == "*" || Token::simpleMatch(vartok->tokAt(-2), "* const"));
 
     return NULL != vartok;
 }

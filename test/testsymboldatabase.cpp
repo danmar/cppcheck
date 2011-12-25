@@ -132,6 +132,7 @@ private:
         TEST_CASE(symboldatabase20); // ticket #3013 (segmentation fault)
         TEST_CASE(symboldatabase21);
         TEST_CASE(symboldatabase22); // ticket #3437 (segmentation fault)
+        TEST_CASE(symboldatabase23); // ticket #3435
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -892,6 +893,18 @@ private:
               "A<int> a;\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    // #ticket 3435 (std::vector)
+    void symboldatabase23() {
+        GET_SYMBOL_DB("class A { std::vector<int*> ints; };\n");
+        ASSERT_EQUALS(2U, db->scopeList.size());
+        const Scope &scope = db->scopeList.back();
+        ASSERT_EQUALS(1U, scope.varlist.size());
+        const Variable &var = scope.varlist.front();
+        ASSERT_EQUALS(std::string("ints"), var.name());
+        ASSERT_EQUALS(true, var.isClass());
+    }
+
 
 };
 
