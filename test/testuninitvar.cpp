@@ -1733,6 +1733,12 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    struct ABC *abc;\n"
+                        "    abc->a = 0;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: abc\n", errout.str());
+
         // using uninit var in condition
         checkUninitVar2("void f() {\n"
                         "    int x;\n"

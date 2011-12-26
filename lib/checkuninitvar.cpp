@@ -1049,16 +1049,31 @@ void CheckUninitVar::check()
         // only check functions
         if (func_scope->type == Scope::eFunction) {
             for (const Token *tok = func_scope->classStart; tok && tok != func_scope->classEnd; tok = tok->next()) {
-                // Variable declaration..
-                if (Token::Match(tok, "[;{}] %type% %var% ;") && tok->next()->isStandardType()) {
-                    checkScopeForVariable(tok->tokAt(3), tok->tokAt(2)->varId());
+
+                if (Token::Match(tok, "[;{}] %type% !!;")) {
+                    bool stdtype = false;
+                    bool pointer = false;
+                    tok = tok->next();
+                    while (tok->isName() || tok->str() == "*") {
+                        if (tok->isStandardType())
+                            stdtype = true;
+                        else if (tok->str() == "*")
+                            pointer = true;
+                        else if (tok->isName() && tok->next()->str() == ";") {
+                            if (stdtype || pointer || _tokenizer->isC())
+                                checkScopeForVariable(tok->next(), tok->varId(), pointer, NULL);
+                            break;
+                        } else if (!tok->isName())
+                            break;
+                        tok = tok->next();
+                    }
                 }
             }
         }
     }
 }
 
-bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int varid, bool * const possibleInit)
+bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int varid, bool ispointer, bool * const possibleInit)
 {
     if (varid == 0)
         return false;
@@ -1094,7 +1109,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             const Token * const endToken = tok->next()->link();
             for (const Token *tok2 = tok->tokAt(2); tok2 != endToken; tok2 = tok2->next()) {
                 if (tok2->varId() == varid) {
-                    if (!suppressErrors && isVariableUsage(tok2))
+                    if (!suppressErrors && isVariableUsage(tok2, ispointer))
                         uninitvarError(tok2, tok2->str());
                     return true;
                 }
@@ -1106,7 +1121,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             tok = tok->next()->link()->next();
 
             bool possibleInitIf(number_of_if > 0);
-            const bool initif = checkScopeForVariable(tok->next(), varid, &possibleInitIf);
+            const bool initif = checkScopeForVariable(tok->next(), varid, ispointer, &possibleInitIf);
 
             // goto the }
             tok = tok->link();
@@ -1126,7 +1141,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
                 tok = tok->tokAt(2);
 
                 bool possibleInitElse(number_of_if > 0);
-                const bool initelse = checkScopeForVariable(tok->next(), varid, &possibleInitElse);
+                const bool initelse = checkScopeForVariable(tok->next(), varid, ispointer, &possibleInitElse);
 
                 // goto the }
                 tok = tok->link();
@@ -1175,7 +1190,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
         // variable is seen..
         if (tok->varId() == varid) {
             // Use variable
-            if (!suppressErrors && isVariableUsage(tok))
+            if (!suppressErrors && isVariableUsage(tok, ispointer))
                 uninitvarError(tok, tok->str());
 
             else
@@ -1187,7 +1202,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
     return ret;
 }
 
-bool CheckUninitVar::isVariableUsage(const Token *vartok) const
+bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
 {
     if (vartok->previous()->str() == "return")
         return true;
@@ -1202,6 +1217,10 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok) const
             return true;
         }
     }
+
+    bool unknown = false;
+    if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown))
+        return true;
 
     if (Token::Match(vartok->next(), "++|--|%op%"))
         return true;
