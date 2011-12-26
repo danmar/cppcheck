@@ -570,6 +570,15 @@ static bool isPartOfClassStructUnion(const Token* tok)
     return false;
 }
 
+// Skip [ .. ]
+static const Token * skipBrackets(const Token *tok)
+{
+    while (tok && tok->str() == "[")
+        tok = tok->link()->next();
+    return tok;
+}
+
+
 //---------------------------------------------------------------------------
 // Usage of function variables
 //---------------------------------------------------------------------------
@@ -785,13 +794,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 }
             }
 
-            const Token *equal = tok->next();
-
-            if (Token::Match(tok->next(), "[ %any% ]"))
-                equal = tok->tokAt(4);
+            const Token *equal = skipBrackets(tok->next());
 
             // checked for chained assignments
-            if (tok != start && equal->str() == "=") {
+            if (tok != start && equal && equal->str() == "=") {
                 Variables::VariableUsage *var = variables.find(tok->varId());
 
                 if (var && var->_type != Variables::reference)
@@ -802,14 +808,14 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         // assignment
-        else if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->next()->link(), "] =")) {
+        else if (Token::Match(tok, "%var% [") && Token::simpleMatch(skipBrackets(tok->next()), "=")) {
             unsigned int varid = tok->varId();
             const Variables::VariableUsage *var = variables.find(varid);
 
             if (var) {
                 // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
                 if (var->_type == Variables::pointer &&
-                    Token::Match(tok->next()->link(), "] = new|malloc|calloc|g_malloc|kmalloc|vmalloc")) {
+                    Token::Match(skipBrackets(tok->next()), "= new|malloc|calloc|g_malloc|kmalloc|vmalloc")) {
                     variables.allocateMemory(varid);
                 } else if (var->_type == Variables::pointer || var->_type == Variables::reference) {
                     variables.read(varid);
