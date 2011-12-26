@@ -1182,7 +1182,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             return true;
         }
 
-        if (Token::Match(tok, "return|break|continue|throw"))
+        if (Token::Match(tok, "return|break|continue|throw|goto"))
             ret = true;
         else if (ret && tok->str() == ";")
             return true;

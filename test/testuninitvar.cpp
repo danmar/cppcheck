@@ -1801,7 +1801,7 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // return, break, continue
+        // return, break, continue, goto
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
                         "    if (y == 1) { return; }\n"
@@ -1818,6 +1818,17 @@ private:
                         "err:\n"
                         "    return x;\n"
                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int i;\n"
+                        "    if (x) {\n"
+                        "        i = 1;\n"
+                        "    } else {\n"
+                        "        goto out;\n"
+                        "    }\n"
+                        "    i++;\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // for, while
