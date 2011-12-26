@@ -300,8 +300,7 @@ void CheckAutoVariables::returnReference()
 
                     if (var1 && var1->isLocal() && !var1->isStatic()) {
                         // If reference variable is used, check what it references
-                        if (Token::Match(var1->nameToken()->previous(), "& %var% ="))
-                        {
+                        if (Token::Match(var1->nameToken()->previous(), "& %var% =")) {
                             const Token *tok3 = var1->nameToken()->tokAt(2);
                             if (!Token::Match(tok3, "%var% [;.]"))
                                 continue;
@@ -312,7 +311,7 @@ void CheckAutoVariables::returnReference()
                             if (!var2 || !var2->isLocal() || var2->isStatic())
                                 continue;
                         }
-                        
+
                         // report error..
                         errorReturnReference(tok2);
                     }
