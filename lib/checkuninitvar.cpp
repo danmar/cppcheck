@@ -1059,12 +1059,15 @@ void CheckUninitVar::check()
                             stdtype = true;
                         else if (tok->str() == "*")
                             pointer = true;
-                        else if (tok->isName() && tok->next()->str() == ";") {
-                            if (stdtype || pointer || _tokenizer->isC())
+                        else if (Token::Match(tok, "struct %type%"))
+                            tok = tok->next();
+                        else {
+                            if (tok->isName() && tok->next()->str() == ";" &&
+                                (stdtype || pointer)) {
                                 checkScopeForVariable(tok->next(), tok->varId(), pointer, NULL);
+                            }
                             break;
-                        } else if (!tok->isName())
-                            break;
+                        }
                         tok = tok->next();
                     }
                 }

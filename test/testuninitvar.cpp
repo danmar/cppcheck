@@ -1739,6 +1739,12 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: abc\n", errout.str());
 
+        checkUninitVar2("int f() {\n"
+                        "    static int x;\n"
+                        "    return ++x;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // using uninit var in condition
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
