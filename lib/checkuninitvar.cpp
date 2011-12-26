@@ -1103,6 +1103,14 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             break;
         }
 
+        // Unconditional inner scope..
+        if (tok->str() == "{" && Token::Match(tok->previous(), "[;{}]")) {
+            if (checkScopeForVariable(tok->next(), varid, ispointer, possibleInit))
+                return true;
+            tok = tok->link();
+            continue;
+        }
+
         // Inner scope..
         if (Token::Match(tok, "if (")) {
             // initialization in condition..

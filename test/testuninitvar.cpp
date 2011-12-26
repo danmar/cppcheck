@@ -1775,6 +1775,15 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // unconditional initialization
+        checkUninitVar2("int f() {\n"
+                        "    int ret;\n"
+                        "    if (a) { ret = 1; }\n"
+                        "    else { {} ret = 2; }\n"
+                        "    return ret;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // conditional initialization
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
