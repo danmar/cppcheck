@@ -1058,10 +1058,15 @@ void CheckUninitVar::check()
     }
 }
 
-bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int varid)
+bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int varid, bool * const possibleInit)
 {
     if (varid == 0)
         return false;
+
+    const bool suppressErrors(possibleInit && *possibleInit);
+
+    if (possibleInit)
+        *possibleInit = false;
 
     bool ret = false;
 
@@ -1070,8 +1075,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
     for (; tok; tok = tok->next()) {
         // End of scope..
         if (tok->str() == "}") {
-            if (number_of_if)
-                return true;
+            if (number_of_if && possibleInit)
+                *possibleInit = true;
 
             // might be a noreturn function..
             if (Token::simpleMatch(tok->tokAt(-2), ") ; }") &&
@@ -1085,15 +1090,11 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
 
         // Inner scope..
         if (Token::Match(tok, "if (")) {
-            if (number_of_if) {
-                return true;
-            }
-
             // initialization in condition..
             const Token * const endToken = tok->next()->link();
             for (const Token *tok2 = tok->tokAt(2); tok2 != endToken; tok2 = tok2->next()) {
                 if (tok2->varId() == varid) {
-                    if (isVariableUsage(tok2))
+                    if (!suppressErrors && isVariableUsage(tok2))
                         uninitvarError(tok2, tok2->str());
                     return true;
                 }
@@ -1104,7 +1105,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             // goto the {
             tok = tok->next()->link()->next();
 
-            const bool initif = checkScopeForVariable(tok->next(), varid);
+            bool possibleInitIf(number_of_if > 0);
+            const bool initif = checkScopeForVariable(tok->next(), varid, &possibleInitIf);
 
             // goto the }
             tok = tok->link();
@@ -1114,7 +1116,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
                 return true;   // bail out
 
             if (!Token::Match(tok, "} else {")) {
-                if (initif) {
+                if (initif || possibleInitIf) {
                     ++number_of_if;
                     if (number_of_if >= 2)
                         return true;
@@ -1123,7 +1125,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
                 // goto the {
                 tok = tok->tokAt(2);
 
-                const bool initelse = checkScopeForVariable(tok->next(), varid);
+                bool possibleInitElse(number_of_if > 0);
+                const bool initelse = checkScopeForVariable(tok->next(), varid, &possibleInitElse);
 
                 // goto the }
                 tok = tok->link();
@@ -1172,7 +1175,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
         // variable is seen..
         if (tok->varId() == varid) {
             // Use variable
-            if (isVariableUsage(tok))
+            if (!suppressErrors && isVariableUsage(tok))
                 uninitvarError(tok, tok->str());
 
             else

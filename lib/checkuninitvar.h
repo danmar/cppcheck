@@ -60,7 +60,7 @@ public:
 
     /** Check for uninitialized variables */
     void check();
-    bool checkScopeForVariable(const Token *tok, const unsigned int varid);
+    bool checkScopeForVariable(const Token *tok, const unsigned int varid, bool * const possibleInit=0);
     bool isVariableUsage(const Token *vartok) const;
 
     /**
