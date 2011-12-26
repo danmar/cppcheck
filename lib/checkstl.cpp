@@ -50,7 +50,8 @@ void CheckStl::iterators()
     // for (it = foo.begin(); it != bar.end(); ++it)
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Locate an iterator..
-        if (!Token::Match(tok, "%var% = %var% . begin|rbegin|cbegin|crbegin ( ) ;|+"))
+        if (!Token::Match(tok, "%var% = %var% . begin|rbegin|cbegin|crbegin ( ) ;|+") &&
+            !(Token::Match(tok, "%var% = %var% . find (") && Token::simpleMatch(tok->linkAt(5), ") ;")))
             continue;
 
         // Get variable ids for both the iterator and container
@@ -81,7 +82,7 @@ void CheckStl::iterators()
                 break;
 
             // Is iterator compared against different container?
-            if (Token::Match(tok2, "%varid% != %var% . end|rend|cend|crend ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId) {
+            if (Token::Match(tok2, "%varid% !=|== %var% . end|rend|cend|crend ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId) {
                 iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
                 tok2 = tok2->tokAt(6);
             }

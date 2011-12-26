@@ -43,6 +43,7 @@ private:
         TEST_CASE(iterator9);
         TEST_CASE(iterator10);
         TEST_CASE(iterator11);
+        TEST_CASE(iterator12);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_member);
@@ -349,6 +350,17 @@ private:
               "        myMap.erase(*x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator12() {
+        // Ticket #3201
+        check("void f() {\n"
+              "    std::map<int, int> map1;\n"
+              "    std::map<int, int> map2;\n"
+              "    std::map<int, int>::const_iterator it = map1.find(123);\n"
+              "    if (it == map2.end()) { }"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with both map1 and map2\n", errout.str());
     }
 
     // Dereferencing invalid pointer
