@@ -1928,7 +1928,7 @@ private:
                         "    int a;\n"
                         "    if (x == 0 && (a == 1)) { }\n"
                         "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
         // asm
         checkUninitVar2("void f() {\n"

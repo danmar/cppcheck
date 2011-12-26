@@ -1114,7 +1114,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
         // Inner scope..
         if (Token::Match(tok, "if (")) {
             // initialization / usage in condition..
-            if (checkIfForWhileHead(tok->next(), varid, ispointer, suppressErrors))
+            if (checkIfForWhileHead(tok->next(), varid, ispointer, suppressErrors, bool(number_of_if == 0)))
                 return true;
 
             // goto the {
@@ -1185,7 +1185,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
                 return true;
 
             // is variable used / initialized in for-head
-            if (checkIfForWhileHead(tok->next(), varid, ispointer, suppressErrors))
+            if (checkIfForWhileHead(tok->next(), varid, ispointer, suppressErrors, bool(number_of_if == 0)))
                 return true;
         }
 
@@ -1219,7 +1219,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
     return ret;
 }
 
-bool CheckUninitVar::checkIfForWhileHead(const Token *startparanthesis, unsigned int varid, bool ispointer, bool suppressErrors)
+bool CheckUninitVar::checkIfForWhileHead(const Token *startparanthesis, unsigned int varid, bool ispointer, bool suppressErrors, bool isuninit)
 {
     const Token * const endpar = startparanthesis->link();
     for (const Token *tok = startparanthesis->next(); tok && tok != endpar; tok = tok->next()) {
@@ -1230,7 +1230,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparanthesis, unsigned
         }
         if (Token::Match(tok, "sizeof|decltype|offsetof ("))
             tok = tok->next()->link();
-        if (tok->str() == "&&")
+        if (!isuninit && tok->str() == "&&")
             suppressErrors = true;
     }
     return false;
