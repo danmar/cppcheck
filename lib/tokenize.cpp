@@ -6597,10 +6597,10 @@ void Tokenizer::simplifyInitVar()
         if (!tok->isName() || (tok->previous() && !Token::Match(tok->previous(), "[;{}]")))
             continue;
 
-        if (Token::Match(tok, "class|struct|union| %type% *| *| *| %var% ( &|*| *| *| %any% ) ;") ||
-            Token::Match(tok, "%type% *| *| *| %var% ( %type% (")) {
+        if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ;") ||
+            Token::Match(tok, "%type% *| %var% ( %type% (")) {
             tok = initVar(tok);
-        } else if (Token::Match(tok, "class|struct|union| %type% *| *| *| %var% ( &|*| *| *| %any% ) ,")) {
+        } else if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ,")) {
             Token *tok1 = tok;
             while (tok1->str() != ",")
                 tok1 = tok1->next();
