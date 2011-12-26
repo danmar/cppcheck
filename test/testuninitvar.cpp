@@ -1909,6 +1909,14 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    int a=0, b;\n"
+                        "    if (x) { }\n"
+                        "    else if (y==2) { a=1; b=2; }\n"
+                        "    if (a) { ++b; }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // asm
         checkUninitVar2("void f() {\n"
                         "    int x;\n"

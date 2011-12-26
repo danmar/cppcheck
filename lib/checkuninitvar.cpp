@@ -1157,7 +1157,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
                 if (initif && initelse)
                     return true;
 
-                if (initif || initelse)
+                if (initif || initelse || possibleInitElse)
                     ++number_of_if;
             }
         }
