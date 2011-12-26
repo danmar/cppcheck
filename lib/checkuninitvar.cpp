@@ -1113,17 +1113,9 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
 
         // Inner scope..
         if (Token::Match(tok, "if (")) {
-            // initialization in condition..
-            const Token * const endToken = tok->next()->link();
-            for (const Token *tok2 = tok->tokAt(2); tok2 != endToken; tok2 = tok2->next()) {
-                if (tok2->varId() == varid) {
-                    if (!suppressErrors && isVariableUsage(tok2, ispointer))
-                        uninitvarError(tok2, tok2->str());
-                    return true;
-                }
-                if (Token::Match(tok2, "sizeof|decltype|offsetof ("))
-                    tok2 = tok2->next()->link();
-            }
+            // initialization / usage in condition..
+            if (checkIfForWhileHead(tok->next(), varid, ispointer, suppressErrors))
+                return true;
 
             // goto the {
             tok = tok->next()->link()->next();
@@ -1180,8 +1172,25 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
         if (Token::Match(tok, "sizeof|offsetof|decltype ("))
             tok = tok->next()->link();
 
+        // for..
+        if (Token::simpleMatch(tok, "for (")) {
+            // goto the {
+            const Token *tok2 = tok->next()->link()->next();
+
+            bool possibleinit = true;
+            bool init = checkScopeForVariable(tok2->next(), varid, ispointer, &possibleinit);
+
+            // variable is initialized in the loop..
+            if (possibleinit || init)
+                return true;
+
+            // is variable used / initialized in for-head
+            if (checkIfForWhileHead(tok->next(), varid, ispointer, suppressErrors))
+                return true;
+        }
+
         // TODO: handle loops, try, etc
-        if (tok->str() == "for" || Token::simpleMatch(tok, ") {") || Token::Match(tok, "%var% {")) {
+        if (Token::simpleMatch(tok, ") {") || Token::Match(tok, "%var% {")) {
             return true;
         }
 
@@ -1208,6 +1217,23 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
     }
 
     return ret;
+}
+
+bool CheckUninitVar::checkIfForWhileHead(const Token *startparanthesis, unsigned int varid, bool ispointer, bool suppressErrors)
+{
+    const Token * const endpar = startparanthesis->link();
+    for (const Token *tok = startparanthesis->next(); tok && tok != endpar; tok = tok->next()) {
+        if (tok->varId() == varid) {
+            if (!suppressErrors && isVariableUsage(tok, ispointer))
+                uninitvarError(tok, tok->str());
+            return true;
+        }
+        if (Token::Match(tok, "sizeof|decltype|offsetof ("))
+            tok = tok->next()->link();
+        if (tok->str() == "&&")
+            suppressErrors = true;
+    }
+    return false;
 }
 
 bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
