@@ -295,10 +295,24 @@ void CheckAutoVariables::returnReference()
                 // return..
                 if (Token::Match(tok2, "return %var% ;")) {
                     // is the returned variable a local variable?
-                    const unsigned int varid = tok2->next()->varId();
-                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                    const unsigned int varid1 = tok2->next()->varId();
+                    const Variable *var1 = symbolDatabase->getVariableFromVarId(varid1);
 
-                    if (var && var->isLocal() && !var->isStatic()) {
+                    if (var1 && var1->isLocal() && !var1->isStatic()) {
+                        // If reference variable is used, check what it references
+                        if (Token::Match(var1->nameToken()->previous(), "& %var% ="))
+                        {
+                            const Token *tok3 = var1->nameToken()->tokAt(2);
+                            if (!Token::Match(tok3, "%var% [;.]"))
+                                continue;
+
+                            // Only report error if variable that is referenced is
+                            // a auto variable
+                            const Variable *var2 = symbolDatabase->getVariableFromVarId(tok3->varId());
+                            if (!var2 || !var2->isLocal() || var2->isStatic())
+                                continue;
+                        }
+                        
                         // report error..
                         errorReturnReference(tok2);
                     }

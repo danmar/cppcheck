@@ -83,6 +83,7 @@ private:
         TEST_CASE(returnReference1);
         TEST_CASE(returnReference2);
         TEST_CASE(returnReference3);
+        TEST_CASE(returnReference4);
 
         // return c_str()..
         TEST_CASE(returncstr1);
@@ -462,6 +463,16 @@ private:
               "    double ret = getValue();\n"
               "    rd = ret;\n"
               "    return rd;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // Returning reference to global variable
+    void returnReference4() {
+        check("double a;\n"
+              "double & f() {\n"
+              "    double & ref = a;\n"
+              "    return ref;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
