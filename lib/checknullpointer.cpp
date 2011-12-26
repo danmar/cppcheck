@@ -623,8 +623,11 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
                 break;
 
             // function call..
-            else if (Token::Match(tok2, "[;{}] %var% (") && CanFunctionAssignPointer(tok2->next(), varid1))
-                break;
+            else if (Token::Match(tok2, "[;{}] %var% (") && CanFunctionAssignPointer(tok2->next(), varid1)) {
+                if (!_settings->inconclusive)
+                    break;
+                inconclusive = true;
+            }
 
             // Reassignment of the struct
             else if (tok2->varId() == varid1) {
@@ -698,6 +701,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                 continue;
 
             const Token * const decltok = var->nameToken();
+            bool inconclusive = false;
 
             for (const Token *tok1 = tok->previous(); tok1 && tok1 != decltok; tok1 = tok1->previous()) {
                 if (tok1->str() == ")" && Token::Match(tok1->link()->previous(), "%var% (")) {
@@ -727,15 +731,18 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                         std::list<const Token *> varlist;
                         parseFunctionCall(*(tok2->next()), varlist, 0);
                         if (!varlist.empty() && varlist.front() == tok2->tokAt(3)) {
-                            nullPointerError(tok2->tokAt(3), varname, tok->linenr());
+                            nullPointerError(tok2->tokAt(3), varname, tok->linenr(), inconclusive);
                             break;
                         }
                     }
 
                     // Passing pointer as parameter..
                     if (Token::Match(tok2, "[;{}] %type% (")) {
-                        if (CanFunctionAssignPointer(tok2->next(), varid))
-                            break;
+                        if (CanFunctionAssignPointer(tok2->next(), varid)) {
+                            if (!_settings->inconclusive)
+                                break;
+                            inconclusive = true;
+                        }
                     }
 
                     // calling unknown function => it might initialize the pointer
@@ -780,7 +787,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     } else if (Token::Match(tok1->tokAt(-2), "&&|%oror% !")) {
                         break;
                     } else if (CheckNullPointer::isPointerDeRef(tok1, unknown)) {
-                        nullPointerError(tok1, varname, tok->linenr());
+                        nullPointerError(tok1, varname, tok->linenr(), inconclusive);
                         break;
                     } else if (Token::simpleMatch(tok1->previous(), "&")) {
                         break;
