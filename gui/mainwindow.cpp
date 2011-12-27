@@ -1014,6 +1014,20 @@ void MainWindow::UpdateMRUMenuItems()
     }
 
     QStringList projects = mSettings->value(SETTINGS_MRU_PROJECTS).toStringList();
+
+    // Do a sanity check - remove duplicates and empty or space only items
+    int removed = projects.removeDuplicates();
+    for (int i = projects.size() - 1; i >= 0; i--) {
+        QString text = projects[i].trimmed();
+        if (text.isEmpty()) {
+            projects.removeAt(i);
+            removed++;
+        }
+    }
+
+    if (removed)
+        mSettings->setValue(SETTINGS_MRU_PROJECTS, projects);
+
     const int numRecentProjects = qMin(projects.size(), (int)MaxRecentProjects);
     for (int i = 0; i < numRecentProjects; i++) {
         const QString filename = QFileInfo(projects[i]).fileName();
