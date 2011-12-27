@@ -1952,6 +1952,20 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    int a;\n"
+                        "    if (x) { a = 0; }\n"
+                        "    if (x) { if (y) { a++; } }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int a;\n"
+                        "    if (x) { a = 0; }\n"
+                        "    if (x) { if (y) { } else { a++; } }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // asm
         checkUninitVar2("void f() {\n"
                         "    int x;\n"

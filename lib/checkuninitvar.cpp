@@ -1123,7 +1123,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             // goto the {
             tok = tok->next()->link()->next();
 
-            bool possibleInitIf(number_of_if > 0);
+            bool possibleInitIf(number_of_if > 0 || suppressErrors);
             const bool initif = checkScopeForVariable(tok->next(), varid, ispointer, &possibleInitIf);
 
             // goto the }
@@ -1143,7 +1143,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
                 // goto the {
                 tok = tok->tokAt(2);
 
-                bool possibleInitElse(number_of_if > 0);
+                bool possibleInitElse(number_of_if > 0 || suppressErrors);
                 const bool initelse = checkScopeForVariable(tok->next(), varid, ispointer, &possibleInitElse);
 
                 // goto the }
