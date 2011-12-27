@@ -28,6 +28,8 @@
 #include <QDir>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QAction>
+#include <QActionGroup>
 #include "mainwindow.h"
 #include "aboutdialog.h"
 #include "threadhandler.h"
@@ -48,6 +50,7 @@ MainWindow::MainWindow() :
     mTranslation(new TranslationHandler(this)),
     mLogView(NULL),
     mProject(NULL),
+    mPlatformActions(new QActionGroup(this)),
     mExiting(false)
 {
     mUI.setupUi(this);
@@ -148,7 +151,6 @@ MainWindow::MainWindow() :
     mUI.mActionProjectMRU->setVisible(false);
     UpdateMRUMenuItems();
 
-    QActionGroup* platformGroup = new QActionGroup(this);
     for (int i = 0; i < mPlatforms.getCount(); i++) {
         Platform plat = mPlatforms.mPlatforms[i];
         QAction *act = new QAction(this);
@@ -157,7 +159,7 @@ MainWindow::MainWindow() :
         act->setText(plat.mTitle);
         act->setData(plat.mType);
         act->setCheckable(true);
-        act->setActionGroup(platformGroup);
+        act->setActionGroup(mPlatformActions);
         mUI.mMenuCheck->insertAction(mUI.mActionPlatforms, act);
         connect(act, SIGNAL(triggered()), this, SLOT(SelectPlatform()));
     }
@@ -503,6 +505,7 @@ void MainWindow::CheckDone()
     mUI.mActionOpenXML->setEnabled(true);
     EnableProjectActions(true);
     EnableProjectOpenActions(true);
+    mPlatformActions->setEnabled(true);
 
     if (mUI.mResults->HasResults()) {
         mUI.mActionClearResults->setEnabled(true);
@@ -520,6 +523,7 @@ void MainWindow::CheckLockDownUI()
     mUI.mActionOpenXML->setEnabled(false);
     EnableProjectActions(false);
     EnableProjectOpenActions(false);
+    mPlatformActions->setEnabled(false);
 }
 
 void MainWindow::ProgramSettings()
