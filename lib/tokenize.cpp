@@ -4507,8 +4507,6 @@ bool Tokenizer::simplifyTokenList()
             tok->insertToken(varname);
             tok->next()->varId(varid);
         } else if (Token::Match(tok, "; %var% = realloc ( 0 , %num% ) ;")) {
-            const std::string varname(tok->next()->str());
-
             tok = tok->tokAt(3);
             // Change function name "realloc" to "malloc"
             tok->str("malloc");

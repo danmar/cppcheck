@@ -2700,8 +2700,6 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Token * const vartok
                     // skip ahead out of the block
                     bool ret = false;
                     while (tok3) {
-                        // debug info
-                        const std::string tok3str_(tok3->str());
                         if (tok3->str() == "return")
                             ret = true;
                         else if (tok3->str() == "{" || tok3->str() == "}")
