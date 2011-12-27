@@ -60,6 +60,13 @@ void CheckStl::iterators()
         if (iteratorId == 0 || containerId == 0)
             continue;
 
+        // check that it's an iterator..
+        {
+            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(iteratorId);
+            if (!var || !Token::Match(var->nameToken()->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
+                continue;
+        }
+
         // the validIterator flag says if the iterator has a valid value or not
         bool validIterator = true;
         const Token* validatingToken = 0;

@@ -361,6 +361,13 @@ private:
               "    if (it == map2.end()) { }"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with both map1 and map2\n", errout.str());
+
+        check("void f(std::string &s) {\n"
+              "    int pos = s.find(x);\n"
+              "    s.erase(pos);\n"
+              "    s.erase(pos);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing invalid pointer
