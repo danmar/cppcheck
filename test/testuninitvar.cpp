@@ -1972,6 +1972,12 @@ private:
                         "    if (100 == sizeof(i+1));\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    struct ABC *abc;\n"
+                        "    int i = ARRAY_SIZE(abc.a);"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

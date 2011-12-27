@@ -1265,8 +1265,16 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
     }
 
     bool unknown = false;
-    if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown))
-        return true;
+    if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
+        // function parameter?
+        bool functionParameter = false;
+        if (Token::Match(vartok->tokAt(-2), "%var% (") || vartok->previous()->str() == ",")
+            functionParameter = true;
+
+        // if this is not a function parameter report this dereference as variable usage
+        if (!functionParameter)
+            return true;
+    }
 
     if (Token::Match(vartok->next(), "++|--|%op%"))
         return true;
