@@ -41,6 +41,7 @@ class Project;
 class ErrorItem;
 class StatsDialog;
 class QAction;
+class QActionGroup;
 
 /// @addtogroup GUI
 /// @{
@@ -472,6 +473,11 @@ protected:
     * @brief Timer to delay filtering while typing.
     */
     QTimer* mFilterTimer;
+
+    /**
+    * @brief GUI actions for selecting the checked platform.
+    */
+    QActionGroup *mPlatformActions;
 
 private:
 
