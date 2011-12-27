@@ -1982,6 +1982,8 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     // Convert C# code
+    // FIXME: This should be if(isCSharp()), but that makes the lines 5931 and
+    //        5932 of test/testtokenize.cpp fail.
     if (_files[0].find(".cs")) {
         for (Token *tok = _tokens; tok; tok = tok->next()) {
             if (Token::Match(tok, "%type% [ ] %var% [=;]") &&
@@ -2005,9 +2007,10 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // Simplify JAVA/C# code
     if (isJavaOrCSharp()) {
-        const bool isJava(_files[0].find(".java") != std::string::npos);
+        // better don't call isJava in the loop
+        bool isJava_ = isJava();
         for (Token *tok = _tokens; tok; tok = tok->next()) {
-            if (isJava && Token::Match(tok, ") throws %var% {")) {
+            if (isJava_ && Token::Match(tok, ") throws %var% {")) {
                 tok->deleteNext(2);
             } else if (tok->str() == "private")
                 tok->str("private:");
