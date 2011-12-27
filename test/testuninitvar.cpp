@@ -1846,6 +1846,14 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("int f() {\n"
+                        "    int i,x;\n"
+                        "    for (i=0;i<9;++i)\n"
+                        "        if (foo) break;\n"
+                        "    return x;\n"
+                        "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
         // for, while
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
@@ -1866,10 +1874,18 @@ private:
 
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
-                        "    for (int i = 0; i < 10; i += x) {\n"
-                        "    }\n"
+                        "    for (int i = 0; i < 10; i += x) { }\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar2("int f() {\n"
+                        "    int i;\n"
+                        "    for (i=0;i<9;++i)\n"
+                        "        if (foo()) goto out;\n"
+                        "out:\n"
+                        "    return i;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         // try
         checkUninitVar2("void f() {\n"

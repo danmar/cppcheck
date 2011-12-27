@@ -1177,6 +1177,10 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
 
         // for..
         if (Token::simpleMatch(tok, "for (")) {
+            // is variable initialized in for-head (don't report errors yet)?
+            if (checkIfForWhileHead(tok->next(), varid, ispointer, true, false))
+                return true;
+
             // goto the {
             const Token *tok2 = tok->next()->link()->next();
 
@@ -1187,9 +1191,10 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             if (possibleinit || init)
                 return true;
 
-            // is variable used / initialized in for-head
-            if (checkIfForWhileHead(tok->next(), varid, ispointer, suppressErrors, bool(number_of_if == 0)))
-                return true;
+            // is variable used in for-head?
+            if (!suppressErrors) {
+                checkIfForWhileHead(tok->next(), varid, ispointer, false, bool(number_of_if == 0));
+            }
         }
 
         // TODO: handle loops, try, etc
@@ -1227,8 +1232,12 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparanthesis, unsigned
     const Token * const endpar = startparanthesis->link();
     for (const Token *tok = startparanthesis->next(); tok && tok != endpar; tok = tok->next()) {
         if (tok->varId() == varid) {
-            if (!suppressErrors && isVariableUsage(tok, ispointer))
-                uninitvarError(tok, tok->str());
+            if (isVariableUsage(tok, ispointer)) {
+                if (!suppressErrors)
+                    uninitvarError(tok, tok->str());
+                else
+                    continue;
+            }
             return true;
         }
         if (Token::Match(tok, "sizeof|decltype|offsetof ("))
