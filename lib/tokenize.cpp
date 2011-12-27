@@ -1982,9 +1982,7 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     // Convert C# code
-    // FIXME: This should be if(isCSharp()), but that makes the lines 5931 and
-    //        5932 of test/testtokenize.cpp fail.
-    if (_files[0].find(".cs")) {
+    if (isCSharp()) {
         for (Token *tok = _tokens; tok; tok = tok->next()) {
             if (Token::Match(tok, "%type% [ ] %var% [=;]") &&
                 (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {

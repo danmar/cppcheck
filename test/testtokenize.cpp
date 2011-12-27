@@ -5928,8 +5928,12 @@ private:
     }
 
     void cs() {
-        ASSERT_EQUALS("int * i ;", tokenizeAndStringify("int [] i;"));
-        ASSERT_EQUALS("; int * i ;", tokenizeAndStringify("; int [] i;"));
+        bool simplify = false;
+        bool expand = true;
+        Settings::PlatformType platform = Settings::Unspecified;
+        const std::string filename="test.cs";
+        ASSERT_EQUALS("int * i ;", tokenizeAndStringify("int [] i;", simplify, expand, platform, filename));
+        ASSERT_EQUALS("; int * i ;", tokenizeAndStringify("; int [] i;", simplify, expand, platform, filename));
     }
 
     std::string javatest(const char javacode[]) {
