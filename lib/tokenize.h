@@ -57,10 +57,19 @@ public:
         return std::string("");
     }
 
+    /** Is the code JAVA. Used for bailouts */
+    bool isJava() const {
+        return fileExtension() == ".java";
+    }
+
+    /** Is the code C#. Used for bailouts */
+    bool isCSharp() const {
+        return fileExtension() == ".cs";
+    }
+
     /** Is the code JAVA/C#. Used for bailouts */
     bool isJavaOrCSharp() const {
-        std::string ext = fileExtension();
-        return (ext == ".java" || ext == ".cs");
+        return isJava() || isCSharp();
     }
 
     /** Is the code C. Used for bailouts */
