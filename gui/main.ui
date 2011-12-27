@@ -134,6 +134,10 @@
     <addaction name="mActionRecheck"/>
     <addaction name="mActionStop"/>
     <addaction name="separator"/>
+    <addaction name="mActionCplusplus11"/>
+    <addaction name="mActionC99"/>
+    <addaction name="mActionPosix"/>
+    <addaction name="separator"/>
     <addaction name="mActionPlatforms"/>
    </widget>
    <widget class="QMenu" name="mMenuEdit">
@@ -600,6 +604,30 @@
    </property>
    <property name="visible">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="mActionCplusplus11">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++11</string>
+   </property>
+  </action>
+  <action name="mActionC99">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C99</string>
+   </property>
+  </action>
+  <action name="mActionPosix">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Posix</string>
    </property>
   </action>
  </widget>

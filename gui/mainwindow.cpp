@@ -213,6 +213,13 @@ void MainWindow::LoadSettings()
     mUI.mActionShowPerformance->setChecked(types->isShown(ShowTypes::ShowPerformance));
     mUI.mActionShowInformation->setChecked(types->isShown(ShowTypes::ShowInformation));
 
+    const bool stdCpp11 = mSettings->value(SETTINGS_STD_CPP11, false).toBool();
+    mUI.mActionCplusplus11->setChecked(stdCpp11);
+    const bool stdC99 = mSettings->value(SETTINGS_STD_C99, false).toBool();
+    mUI.mActionC99->setChecked(stdC99);
+    const bool stdPosix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
+    mUI.mActionPosix->setChecked(stdPosix);
+
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
     mUI.mActionToolBarMain->setChecked(showMainToolbar);
@@ -262,6 +269,10 @@ void MainWindow::SaveSettings()
     mSettings->setValue(SETTINGS_SHOW_PORTABILITY, mUI.mActionShowPortability->isChecked());
     mSettings->setValue(SETTINGS_SHOW_PERFORMANCE, mUI.mActionShowPerformance->isChecked());
     mSettings->setValue(SETTINGS_SHOW_INFORMATION, mUI.mActionShowInformation->isChecked());
+
+    mSettings->setValue(SETTINGS_STD_CPP11, mUI.mActionCplusplus11->isChecked());
+    mSettings->setValue(SETTINGS_STD_C99, mUI.mActionC99->isChecked());
+    mSettings->setValue(SETTINGS_STD_POSIX, mUI.mActionPosix->isChecked());
 
     // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI.mToolBarMain->isVisible());
@@ -484,6 +495,9 @@ Settings MainWindow::GetCppcheckSettings()
     result._inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
     result.platformType = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+    result.standards.cpp11 = mSettings->value(SETTINGS_STD_CPP11, false).toBool();
+    result.standards.c99 = mSettings->value(SETTINGS_STD_C99, false).toBool();
+    result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
     if (result._jobs <= 0) {
         result._jobs = 1;
@@ -506,6 +520,10 @@ void MainWindow::CheckDone()
     EnableProjectActions(true);
     EnableProjectOpenActions(true);
     mPlatformActions->setEnabled(true);
+    mUI.mActionCplusplus11->setEnabled(true);
+    mUI.mActionC99->setEnabled(true);
+    mUI.mActionPosix->setEnabled(true);
+
 
     if (mUI.mResults->HasResults()) {
         mUI.mActionClearResults->setEnabled(true);
@@ -524,6 +542,9 @@ void MainWindow::CheckLockDownUI()
     EnableProjectActions(false);
     EnableProjectOpenActions(false);
     mPlatformActions->setEnabled(false);
+    mUI.mActionCplusplus11->setEnabled(false);
+    mUI.mActionC99->setEnabled(false);
+    mUI.mActionPosix->setEnabled(false);
 }
 
 void MainWindow::ProgramSettings()
