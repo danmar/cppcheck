@@ -315,6 +315,7 @@ private:
         TEST_CASE(functionpointer2);
         TEST_CASE(functionpointer3);
         TEST_CASE(functionpointer4);
+        TEST_CASE(functionpointer5);
 
         TEST_CASE(removeRedundantAssignment);
 
@@ -5075,6 +5076,13 @@ private:
                                 "7: void f ( ) {\n"
                                 "8: int a@1 [ 9 ] ;\n"
                                 "9: }\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code, false));
+    }
+
+    void functionpointer5() {
+        const char code[] = ";void (*fp[])(int a) = {0,0,0};";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: ; void * fp@1 [ ] = { 0 , 0 , 0 } ;\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code, false));
     }
 
