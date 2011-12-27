@@ -1172,7 +1172,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
         }
 
         // skip sizeof / offsetof
-        if (Token::Match(tok, "sizeof|offsetof|decltype ("))
+        if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
             tok = tok->next()->link();
 
         // for..

@@ -1974,7 +1974,7 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
-        // sizeof / offsetof
+        // sizeof / typeof / offsetof / etc
         checkUninitVar2("void f() {\n"
                         "    int i;\n"
                         "    sizeof(i+1);\n"
@@ -1990,6 +1990,12 @@ private:
         checkUninitVar2("void f() {\n"
                         "    struct ABC *abc;\n"
                         "    int i = ARRAY_SIZE(abc.a);"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int *abc;\n"
+                        "    typeof(*abc);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
     }
