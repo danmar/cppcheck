@@ -47,25 +47,26 @@ public:
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
     virtual ~Tokenizer();
 
-    /** Is the code JAVA/C#. Used for bailouts */
-    bool isJavaOrCSharp() const {
-        if (_files.size() != 1)
-            return false;
+    /** The file extension. Used by isC() etc. */
+    std::string fileExtension() const {
+        if (_files.empty())
+            return std::string("");
         const std::string::size_type pos = _files[0].rfind('.');
         if (pos != std::string::npos)
-            return (_files[0].substr(pos) == ".java" ||
-                    _files[0].substr(pos) == ".cs");
-        return false;
+            return _files[0].substr(pos);
+        return std::string("");
+    }
+
+    /** Is the code JAVA/C#. Used for bailouts */
+    bool isJavaOrCSharp() const {
+        std::string ext = fileExtension();
+        return (ext == ".java" || ext == ".cs");
     }
 
     /** Is the code C. Used for bailouts */
     bool isC() const {
-        if (_files.empty())
-            return false;
-        const std::string::size_type pos = _files[0].rfind('.');
-        if (pos != std::string::npos)
-            return (_files[0].substr(pos) == ".c") || (_files[0].substr(pos) == ".C");
-        return false;
+        std::string ext = fileExtension();
+        return (ext == ".c" || ext == ".C");
     }
 
     /** Is the code CPP. Used for bailouts */
