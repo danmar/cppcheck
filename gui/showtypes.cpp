@@ -47,9 +47,9 @@ ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity::SeverityType severit
     case Severity::portability:
         return ShowTypes::ShowPortability;
     case Severity::information:
-        return ShowTypes::ShowPortability;
+        return ShowTypes::ShowInformation;
     default:
-        return ShowTypes::ShowPortability;
+        return ShowTypes::ShowNone;
     }
 
     return ShowTypes::ShowNone;
