@@ -8380,7 +8380,38 @@ void Tokenizer::simplifyStd()
 // Helper functions for handling the tokens list
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
 
+bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
+{
+    if (unknown)
+        *unknown = false;
+
+    if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {
+        const Token *tok = endScopeToken->linkAt(-2)->previous();
+
+        // function pointer call..
+        if (tok && Token::Match(tok->tokAt(-4), "[;{}] ( * %var% )"))
+            return true;
+
+        if (!tok->isName())
+            return false;
+
+        if (tok->str() == "exit")
+            return true;
+
+        while (tok && (Token::Match(tok, "::|.") || tok->isName()))
+            tok = tok->previous();
+
+        if (Token::Match(tok, "[;{}]")) {
+            if (unknown)
+                *unknown = true;
+            return true;
+        }
+    }
+
+    return false;
+}
 
 //---------------------------------------------------------------------------
 

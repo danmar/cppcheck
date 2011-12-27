@@ -1097,11 +1097,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
                 *possibleInit = true;
 
             // might be a noreturn function..
-            if (Token::simpleMatch(tok->tokAt(-2), ") ; }") &&
-                Token::Match(tok->linkAt(-2)->tokAt(-2), "[;{}] %var% (") &&
-                tok->linkAt(-2)->previous()->varId() == 0) {
-                ret = true;
-            }
+            if (_tokenizer->IsScopeNoReturn(tok))
+                return true;
 
             break;
         }

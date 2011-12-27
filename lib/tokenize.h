@@ -74,6 +74,14 @@ public:
     }
 
     /**
+     * Check if inner scope ends with a call to a noreturn function
+     * \param endScopeToken The '}' token
+     * \param unknown set to true if it's unknown if the scope is noreturn
+     * \return true if scope ends with a function call that might be 'noreturn'
+     */
+    bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = 0) const;
+
+    /**
      * Tokenize code
      * @param code input stream for code, e.g.
      * \code

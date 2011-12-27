@@ -942,11 +942,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     (Token::Match(tok2->link()->tokAt(-2), "[;{}.] %var% (") ||
                      Token::Match(tok2->link()->tokAt(-5), "[;{}] ( * %var% ) ("))) {
                     // noreturn function?
-                    // If inside null pointer check we unknown function call, we must
-                    // assume that it can terminate the program and possible null pointer
-                    // error wont ever happen.
-                    if (tok2->strAt(2) == "}") {
-                        if (!_settings->inconclusive) {
+                    bool unknown = false;
+                    if (_tokenizer->IsScopeNoReturn(tok2->tokAt(2), &unknown)) {
+                        if (!unknown || !_settings->inconclusive) {
                             break;
                         }
                         inconclusive = true;
